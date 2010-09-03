@@ -106,3 +106,7 @@ void ltt_filter_unregister(void)
 	ltt_run_filter = ltt_run_filter_default;
 }
 EXPORT_SYMBOL_GPL(ltt_filter_unregister);
+
+MODULE_LICENSE("GPL and additional rights");
+MODULE_AUTHOR("Mathieu Desnoyers");
+MODULE_DESCRIPTION("Linux Trace Toolkit Next Generation Tracer Core");

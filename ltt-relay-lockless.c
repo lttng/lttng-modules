@@ -121,7 +121,7 @@ void ltt_chanbuf_free(struct ltt_chanbuf *buf)
 	struct ltt_chan *chan = container_of(buf->a.chan, struct ltt_chan, a);
 
 	ltt_relay_print_buffer_errors(chan, buf->a.cpu);
-#ifdef CONFIG_LTT_VMCORE
+#ifdef LTT_VMCORE
 	kfree(buf->commit_seq);
 #endif
 	kfree(buf->commit_count);
@@ -157,7 +157,7 @@ int ltt_chanbuf_create(struct ltt_chanbuf *buf, struct ltt_chan_alloc *chana,
 		goto free_chanbuf;
 	}
 
-#ifdef CONFIG_LTT_VMCORE
+#ifdef LTT_VMCORE
 	buf->commit_seq =
 		kzalloc_node(ALIGN(sizeof(*buf->commit_seq) * chan->a.n_sb,
 				   1 << INTERNODE_CACHE_SHIFT),
@@ -208,7 +208,7 @@ int ltt_chanbuf_create(struct ltt_chanbuf *buf, struct ltt_chan_alloc *chana,
 
 	/* Error handling */
 free_init:
-#ifdef CONFIG_LTT_VMCORE
+#ifdef LTT_VMCORE
 	kfree(buf->commit_seq);
 free_commit:
 #endif

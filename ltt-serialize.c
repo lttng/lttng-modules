@@ -902,7 +902,7 @@ void ltt_vtrace(const struct marker *mdata, void *probe_data, void *call_data,
 			continue;
 		if (unlikely(!ltt_run_filter(trace, eID)))
 			continue;
-#ifdef CONFIG_LTT_DEBUG_EVENT_SIZE
+#ifdef LTT_DEBUG_EVENT_SIZE
 		rflags = LTT_RFLAG_ID_SIZE;
 #else
 		if (unlikely(eID >= LTT_FREE_EVENTS))

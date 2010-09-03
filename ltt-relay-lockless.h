@@ -88,7 +88,7 @@ struct ltt_chanbuf {
 					 * Last timestamp written in the buffer.
 					 */
 	/* End of first 32 bytes cacheline */
-#ifdef CONFIG_LTT_VMCORE
+#ifdef LTT_VMCORE
 	local_t *commit_seq;		/* Consecutive commits */
 #endif
 	atomic_long_t active_readers;	/*
@@ -235,7 +235,7 @@ void ltt_reserve_push_reader(struct ltt_chanbuf *buf, struct ltt_chan *chan,
 					      consumed_new) != consumed_old));
 }
 
-#ifdef CONFIG_LTT_VMCORE
+#ifdef LTT_VMCORE
 static __inline__
 void ltt_vmcore_check_deliver(struct ltt_chanbuf *buf, long commit_count,
 			      long idx)
@@ -342,7 +342,7 @@ int ltt_relay_try_reserve(struct ltt_chanbuf *buf, struct ltt_chan *chan,
 
 	*tsc = trace_clock_read64();
 
-#ifdef CONFIG_LTT_VMCORE
+#ifdef LTT_VMCORE
 	prefetch(&buf->commit_count[SUBBUF_INDEX(*o_begin, chan)]);
 	prefetch(&buf->commit_seq[SUBBUF_INDEX(*o_begin, chan)]);
 #else
@@ -452,7 +452,7 @@ void ltt_force_switch(struct ltt_chanbuf *buf, enum force_switch_mode mode)
  * commit count reaches back the reserve offset (module subbuffer size). It is
  * useful for crash dump.
  */
-#ifdef CONFIG_LTT_VMCORE
+#ifdef LTT_VMCORE
 static __inline__
 void ltt_write_commit_counter(struct ltt_chanbuf *buf, struct ltt_chan *chan,
 			      long idx, long buf_offset, long commit_count,

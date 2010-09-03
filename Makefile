@@ -26,6 +26,7 @@ endif
 else
 	KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 	PWD := $(shell pwd)
+	CFLAGS = $(EXTCFLAGS)
 
 default:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules

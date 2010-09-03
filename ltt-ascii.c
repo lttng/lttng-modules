@@ -568,7 +568,6 @@ EXPORT_SYMBOL_GPL(ltt_ascii_remove_dir);
 __init int ltt_ascii_init(void)
 {
 	ltt_ascii_dir_dentry = debugfs_create_dir(LTT_ASCII, get_ltt_root());
-	put_ltt_root();
 
 	return ltt_ascii_dir_dentry ? 0 : -EFAULT;
 }
@@ -576,6 +575,7 @@ __init int ltt_ascii_init(void)
 __exit void ltt_ascii_exit(void)
 {
 	debugfs_remove(ltt_ascii_dir_dentry);
+	put_ltt_root();
 }
 
 MODULE_LICENSE("GPL and additional rights");
