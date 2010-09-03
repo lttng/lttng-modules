@@ -11,17 +11,15 @@ obj-m += ltt-marker-control.o
 
 obj-m += ltt-relay.o
 ltt-relay-objs := ltt-relay-lockless.o ltt-relay-alloc.o ltt-relay-splice.o \
-		  ltt-relay-vfs.o ltt-event-header.o
+		  ltt-relay-vfs.o ltt-event-header.o ltt-ascii.o \
+		  ltt-serialize.o ltt-type-serializer.o
 
-obj-m += ltt-serialize.o
 obj-m += ltt-statedump.o
-obj-m += ltt-type-serializer.o
 obj-m += ltt-trace-control.o
 obj-m += ltt-userspace-event.o
 obj-m += ltt-filter.o
 obj-m += ltt-kprobes.o
 obj-m += probes/
-obj-m += ltt-ascii.o
 
 endif
 

@@ -374,4 +374,7 @@ ssize_t ltt_relay_file_splice_read(struct file *in, loff_t *ppos,
 				   unsigned int flags);
 loff_t ltt_relay_no_llseek(struct file *file, loff_t offset, int origin);
 
+extern int ltt_ascii_init(void);
+extern void ltt_ascii_exit(void);
+
 #endif /* _LINUX_LTT_RELAY_H */

@@ -720,11 +720,13 @@ static __init int ltt_relay_alloc_init(void)
 {
 	hotcpu_notifier(ltt_relay_hotcpu_callback, 5);
 	ltt_relay_init();
+	ltt_ascii_init();
 	return 0;
 }
 
 static void __exit ltt_relay_alloc_exit(void)
 {
+	ltt_ascii_exit();
 	ltt_relay_exit();
 }
 
