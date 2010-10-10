@@ -364,8 +364,8 @@ ssize_t channel_switch_timer_write(struct file *file,
 	channel_name = file->f_dentry->d_parent->d_name.name;
 	trace_name = file->f_dentry->d_parent->d_parent->d_parent->d_name.name;
 
-	/* Convert from ms to jiffies */
-	num = msecs_to_jiffies(num);
+	/* Convert from ms to us */
+	num *= 1000;
 
 	err = ltt_trace_set_channel_switch_timer(trace_name, channel_name, num);
 	if (IS_ERR_VALUE(err)) {

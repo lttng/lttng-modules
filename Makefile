@@ -10,9 +10,8 @@ obj-m += ltt-tracer.o
 obj-m += ltt-marker-control.o
 
 obj-m += ltt-relay.o
-ltt-relay-objs := ltt-relay-lockless.o ltt-relay-alloc.o ltt-relay-splice.o \
-		  ltt-relay-vfs.o ltt-event-header.o ltt-ascii.o \
-		  ltt-serialize.o ltt-type-serializer.o
+ltt-relay-objs :=  ltt-event-header.o ltt-serialize.o ltt-type-serializer.o
+#ltt-ascii.o
 
 obj-m += ltt-statedump.o
 obj-m += ltt-trace-control.o

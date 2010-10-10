@@ -42,35 +42,35 @@ struct serialize_long_int {
 	unsigned long f1;
 	unsigned int f2;
 	unsigned char end_field[0];
-} LTT_ALIGN;
+} RING_BUFFER_ALIGN_ATTR;
 
 struct serialize_int_int_long {
 	unsigned int f1;
 	unsigned int f2;
 	unsigned long f3;
 	unsigned char end_field[0];
-} LTT_ALIGN;
+} RING_BUFFER_ALIGN_ATTR;
 
 struct serialize_int_int_short {
 	unsigned int f1;
 	unsigned int f2;
 	unsigned short f3;
 	unsigned char end_field[0];
-} LTT_ALIGN;
+} RING_BUFFER_ALIGN_ATTR;
 
 struct serialize_long_long_long {
 	unsigned long f1;
 	unsigned long f2;
 	unsigned long f3;
 	unsigned char end_field[0];
-} LTT_ALIGN;
+} RING_BUFFER_ALIGN_ATTR;
 
 struct serialize_long_long_int {
 	unsigned long f1;
 	unsigned long f2;
 	unsigned int f3;
 	unsigned char end_field[0];
-} LTT_ALIGN;
+} RING_BUFFER_ALIGN_ATTR;
 
 struct serialize_long_long_short_char {
 	unsigned long f1;
@@ -78,45 +78,45 @@ struct serialize_long_long_short_char {
 	unsigned short f3;
 	unsigned char f4;
 	unsigned char end_field[0];
-} LTT_ALIGN;
+} RING_BUFFER_ALIGN_ATTR;
 
 struct serialize_long_long_short {
 	unsigned long f1;
 	unsigned long f2;
 	unsigned short f3;
 	unsigned char end_field[0];
-} LTT_ALIGN;
+} RING_BUFFER_ALIGN_ATTR;
 
 struct serialize_long_short_char {
 	unsigned long f1;
 	unsigned short f2;
 	unsigned char f3;
 	unsigned char end_field[0];
-} LTT_ALIGN;
+} RING_BUFFER_ALIGN_ATTR;
 
 struct serialize_long_short {
 	unsigned long f1;
 	unsigned short f2;
 	unsigned char end_field[0];
-} LTT_ALIGN;
+} RING_BUFFER_ALIGN_ATTR;
 
 struct serialize_long_char {
 	unsigned long f1;
 	unsigned char f2;
 	unsigned char end_field[0];
-} LTT_ALIGN;
+} RING_BUFFER_ALIGN_ATTR;
 
 struct serialize_long_ifname {
 	unsigned long f1;
 	unsigned char f2[IFNAMSIZ];
 	unsigned char end_field[0];
-} LTT_ALIGN;
+} RING_BUFFER_ALIGN_ATTR;
 
 struct serialize_sizet_int {
 	size_t f1;
 	unsigned int f2;
 	unsigned char end_field[0];
-} LTT_ALIGN;
+} RING_BUFFER_ALIGN_ATTR;
 
 struct serialize_long_long_sizet_int {
 	unsigned long f1;
@@ -124,7 +124,7 @@ struct serialize_long_long_sizet_int {
 	size_t f3;
 	unsigned int f4;
 	unsigned char end_field[0];
-} LTT_ALIGN;
+} RING_BUFFER_ALIGN_ATTR;
 
 struct serialize_long_long_sizet_int_int {
 	unsigned long f1;
@@ -133,7 +133,7 @@ struct serialize_long_long_sizet_int_int {
 	unsigned int f4;
 	unsigned int f5;
 	unsigned char end_field[0];
-} LTT_ALIGN;
+} RING_BUFFER_ALIGN_ATTR;
 
 struct serialize_l4421224411111 {
 	unsigned long f1;
@@ -151,7 +151,7 @@ struct serialize_l4421224411111 {
 	uint8_t f13;
 	uint8_t f14;
 	unsigned char end_field[0];
-} LTT_ALIGN;
+} RING_BUFFER_ALIGN_ATTR;
 
 struct serialize_l214421224411111 {
 	unsigned long f1;
@@ -171,7 +171,7 @@ struct serialize_l214421224411111 {
 	uint8_t f15;
 	uint8_t f16;
 	uint8_t end_field[0];
-} LTT_ALIGN;
+} RING_BUFFER_ALIGN_ATTR;
 
 struct serialize_l4412228 {
 	unsigned long f1;
@@ -183,5 +183,5 @@ struct serialize_l4412228 {
 	uint16_t f7;
 	uint64_t f8;
 	unsigned char end_field[0];
-} LTT_ALIGN;
+} RING_BUFFER_ALIGN_ATTR;
 #endif /* _LTT_TYPE_SERIALIZER_H */

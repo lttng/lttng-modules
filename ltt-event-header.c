@@ -12,16 +12,13 @@
  */
 
 #include <linux/module.h>
-
 #include "ltt-tracer.h"
-#include "ltt-relay.h"
 
-size_t ltt_write_event_header_slow(struct ltt_chanbuf_alloc *bufa,
-				   struct ltt_chan_alloc *chana,
-				   long buf_offset, u16 eID, u32 event_size,
-				   u64 tsc, unsigned int rflags)
+size_t ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
+				   struct lib_ring_buffer_ctx *ctx,
+				   u16 eID, u32 event_size)
 {
-	struct ltt_event_header header;
+	struct event_header header;
 	u16 small_size;
 
 	switch (rflags) {
@@ -40,50 +37,31 @@ size_t ltt_write_event_header_slow(struct ltt_chanbuf_alloc *bufa,
 	}
 
 	header.id_time |= (u32)tsc & LTT_TSC_MASK;
-	ltt_relay_write(bufa, chana, buf_offset, &header, sizeof(header));
-	buf_offset += sizeof(header);
+	lib_ring_buffer_write(config, ctx, &header, sizeof(header));
 
 	switch (rflags) {
 	case LTT_RFLAG_ID_SIZE_TSC:
 		small_size = (u16)min_t(u32, event_size, LTT_MAX_SMALL_SIZE);
-		ltt_relay_write(bufa, chana, buf_offset,
-			&eID, sizeof(u16));
-		buf_offset += sizeof(u16);
-		ltt_relay_write(bufa, chana, buf_offset,
-			&small_size, sizeof(u16));
-		buf_offset += sizeof(u16);
-		if (small_size == LTT_MAX_SMALL_SIZE) {
-			ltt_relay_write(bufa, chana, buf_offset,
-				&event_size, sizeof(u32));
-			buf_offset += sizeof(u32);
-		}
-		buf_offset += ltt_align(buf_offset, sizeof(u64));
-		ltt_relay_write(bufa, chana, buf_offset,
-			&tsc, sizeof(u64));
-		buf_offset += sizeof(u64);
+		lib_ring_buffer_write(config, ctx, &eID, sizeof(u16));
+		lib_ring_buffer_write(config, ctx, &small_size, sizeof(u16));
+		if (small_size == LTT_MAX_SMALL_SIZE)
+			lib_ring_buffer_write(config, ctx, &event_size,
+					      sizeof(u32));
+		lib_ring_buffer_align_ctx(config, ctx, sizeof(u64));
+		lib_ring_buffer_write(config, ctx, &ctx->tsc, sizeof(u64));
 		break;
 	case LTT_RFLAG_ID_SIZE:
 		small_size = (u16)min_t(u32, event_size, LTT_MAX_SMALL_SIZE);
-		ltt_relay_write(bufa, chana, buf_offset,
-			&eID, sizeof(u16));
-		buf_offset += sizeof(u16);
-		ltt_relay_write(bufa, chana, buf_offset,
-			&small_size, sizeof(u16));
-		buf_offset += sizeof(u16);
-		if (small_size == LTT_MAX_SMALL_SIZE) {
-			ltt_relay_write(bufa, chana, buf_offset,
-				&event_size, sizeof(u32));
-			buf_offset += sizeof(u32);
-		}
+		lib_ring_buffer_write(config, ctx, &eID, sizeof(u16));
+		lib_ring_buffer_write(config, ctx, &small_size, sizeof(u16));
+		if (small_size == LTT_MAX_SMALL_SIZE)
+			lib_ring_buffer_write(config, ctx, &event_size,
+					      sizeof(u32));
 		break;
 	case LTT_RFLAG_ID:
-		ltt_relay_write(bufa, chana, buf_offset,
-			&eID, sizeof(u16));
-		buf_offset += sizeof(u16);
+		lib_ring_buffer_write(config, ctx, &eID, sizeof(u16));
 		break;
 	}
-
-	return buf_offset;
 }
 EXPORT_SYMBOL_GPL(ltt_write_event_header_slow);
 

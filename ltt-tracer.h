@@ -9,6 +9,13 @@
 #ifndef _LTT_TRACER_H
 #define _LTT_TRACER_H
 
+#ifndef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+/* Align data on its natural alignment */
+#define RING_BUFFER_ALIGN
+#endif
+
+#include <linux/ringbuffer/config.h>
+
 #include <stdarg.h>
 #include <linux/types.h>
 #include <linux/limits.h>
@@ -19,26 +26,14 @@
 #include <linux/wait.h>
 #include <linux/marker.h>
 #include <linux/trace-clock.h>
-#include <linux/ltt-channels.h>
 #include <asm/atomic.h>
 #include <asm/local.h>
 
 #include "ltt-tracer-core.h"
-#include "ltt-relay.h"
+#include "ltt-channels.h"
 
 /* Number of bytes to log with a read/write event */
 #define LTT_LOG_RW_SIZE			32L
-
-/* Interval (in jiffies) at which the LTT per-CPU timer fires */
-#define LTT_PERCPU_TIMER_INTERVAL	1
-
-#ifndef LTT_ARCH_TYPE
-#define LTT_ARCH_TYPE			LTT_ARCH_TYPE_UNDEFINED
-#endif
-
-#ifndef LTT_ARCH_VARIANT
-#define LTT_ARCH_VARIANT		LTT_ARCH_VARIANT_NONE
-#endif
 
 struct ltt_active_marker;
 
@@ -129,29 +124,8 @@ struct user_dbg_data {
 };
 
 struct ltt_trace_ops {
-	/* First 32 bytes cache-hot cacheline */
-	void (*wakeup_channel) (struct ltt_chan *chan);
-	int (*user_blocking) (struct ltt_trace *trace, unsigned int index,
-			      size_t data_size, struct user_dbg_data *dbg);
-	/* End of first 32 bytes cacheline */
 	int (*create_dirs) (struct ltt_trace *new_trace);
 	void (*remove_dirs) (struct ltt_trace *new_trace);
-	int (*create_channel) (const char *channel_name, struct ltt_chan *chan,
-			       struct dentry *parent, size_t sb_size,
-			       size_t n_sb, int overwrite,
-			       struct ltt_trace *trace);
-	void (*finish_channel) (struct ltt_chan *chan);
-	void (*remove_channel) (struct kref *kref);
-	void (*remove_channel_files) (struct ltt_chan *chan);
-	void (*user_errors) (struct ltt_trace *trace, unsigned int index,
-			     size_t data_size, struct user_dbg_data *dbg,
-			     int cpu);
-	void (*start_switch_timer) (struct ltt_chan *chan);
-	void (*stop_switch_timer) (struct ltt_chan *chan);
-#ifdef CONFIG_HOTPLUG_CPU
-	int (*handle_cpuhp) (struct notifier_block *nb, unsigned long action,
-			     void *hcpu, struct ltt_trace *trace);
-#endif
 };
 
 struct ltt_transport {
@@ -170,7 +144,7 @@ enum trace_mode { LTT_TRACE_NORMAL, LTT_TRACE_FLIGHT, LTT_TRACE_HYBRID };
 struct ltt_trace {
 	/* First 32 bytes cache-hot cacheline */
 	struct list_head list;
-	struct ltt_chan *channels;
+	struct ltt_chan **channels;
 	unsigned int nr_channels;
 	int active;
 	/* Second 32 bytes cache-hot cacheline */
@@ -192,7 +166,8 @@ struct ltt_trace {
 	char trace_name[NAME_MAX];
 } ____cacheline_aligned;
 
-/* Hardcoded event headers
+/*
+ * Hardcoded event headers
  *
  * event header for a trace with active heartbeat : 27 bits timestamps
  *
@@ -217,7 +192,7 @@ struct ltt_trace {
 #define LTT_TSC_BITS		27
 #define LTT_TSC_MASK		((1 << LTT_TSC_BITS) - 1)
 
-struct ltt_event_header {
+struct event_header {
 	u32 id_time;		/* 5 bits event id (MSB); 27 bits time (LSB) */
 };
 
@@ -240,7 +215,7 @@ struct ltt_event_header {
  * because gcc generates poor code on at least powerpc and mips. Don't ever
  * let gcc add padding between the structure elements.
  */
-struct ltt_subbuffer_header {
+struct subbuffer_header {
 	uint64_t cycle_count_begin;	/* Cycle count at subbuffer start */
 	uint64_t cycle_count_end;	/* Cycle count at subbuffer end */
 	uint32_t magic_number;		/*
@@ -273,23 +248,22 @@ struct ltt_subbuffer_header {
 	uint8_t header_end[0];		/* End of header */
 };
 
-/**
- * ltt_sb_header_size - called on buffer-switch to a new sub-buffer
- *
- * Return header size without padding after the structure. Don't use packed
- * structure because gcc generates inefficient code on some architectures
- * (powerpc, mips..)
- */
-static __inline__ size_t ltt_sb_header_size(void)
+static inline notrace u64 lib_ring_buffer_clock_read(struct channel *chan)
 {
-	return offsetof(struct ltt_subbuffer_header, header_end);
+	return trace_clock_read64();
 }
 
 /*
- * ltt_get_header_size
+ * record_header_size - Calculate the header size and padding necessary.
+ * @config: ring buffer instance configuration
+ * @chan: channel
+ * @offset: offset in the write buffer
+ * @data_size: size of the payload
+ * @pre_header_padding: padding to add before the header (output)
+ * @rflags: reservation flags
+ * @ctx: reservation context
  *
- * Calculate alignment offset to 32-bits. This is the alignment offset of the
- * event header.
+ * Returns the event header size (including padding).
  *
  * Important note :
  * The event header must be 32-bits. The total offset calculated here :
@@ -304,20 +278,23 @@ static __inline__ size_t ltt_sb_header_size(void)
  *
  * The payload must itself determine its own alignment from the biggest type it
  * contains.
- * */
+ */
 static __inline__
-unsigned char ltt_get_header_size(struct ltt_chan *chan, size_t offset,
-				  size_t data_size, size_t *before_hdr_pad,
-				  unsigned int rflags)
+unsigned char record_header_size(const struct lib_ring_buffer_config *config,
+				 struct channel *chan, size_t offset,
+				 size_t data_size, size_t *pre_header_padding,
+				 unsigned int rflags,
+				 struct lib_ring_buffer_ctx *ctx)
 {
 	size_t orig_offset = offset;
 	size_t padding;
 
-	BUILD_BUG_ON(sizeof(struct ltt_event_header) != sizeof(u32));
+	BUILD_BUG_ON(sizeof(struct event_header) != sizeof(u32));
 
-	padding = ltt_align(offset, sizeof(struct ltt_event_header));
+	padding = lib_ring_buffer_align(config, offset,
+					sizeof(struct event_header));
 	offset += padding;
-	offset += sizeof(struct ltt_event_header);
+	offset += sizeof(struct event_header);
 
 	if (unlikely(rflags)) {
 		switch (rflags) {
@@ -339,9 +316,11 @@ unsigned char ltt_get_header_size(struct ltt_chan *chan, size_t offset,
 		}
 	}
 
-	*before_hdr_pad = padding;
+	*pre_header_padding = padding;
 	return offset - orig_offset;
 }
+
+#include <linux/ringbuffer/api.h>
 
 extern
 size_t ltt_write_event_header_slow(struct ltt_chanbuf_alloc *bufa,
@@ -354,39 +333,30 @@ size_t ltt_write_event_header_slow(struct ltt_chanbuf_alloc *bufa,
  *
  * Writes the event header to the offset (already aligned on 32-bits).
  *
- * @buf : buffer to write to.
- * @chan : pointer to the channel structure..
- * @buf_offset : buffer offset to write to (aligned on 32 bits).
+ * @config: ring buffer instance configuration
+ * @ctx: reservation context
  * @eID : event ID
  * @event_size : size of the event, excluding the event header.
- * @tsc : time stamp counter.
- * @rflags : reservation flags.
- *
- * returns : offset where the event data must be written.
  */
 static __inline__
-size_t ltt_write_event_header(struct ltt_chanbuf_alloc *bufa,
-			      struct ltt_chan_alloc *chana,
-			      long buf_offset, u16 eID, u32 event_size, u64 tsc,
-			      unsigned int rflags)
+void ltt_write_event_header(const struct lib_ring_buffer_config *config,
+			    struct lib_ring_buffer_ctx *ctx,
+			    u16 eID, u32 event_size)
 {
-	struct ltt_event_header header;
+	struct event_header header;
 
-	if (unlikely(rflags))
+	if (unlikely(ctx->rflags))
 		goto slow_path;
 
 	header.id_time = eID << LTT_TSC_BITS;
-	header.id_time |= (u32)tsc & LTT_TSC_MASK;
-	ltt_relay_write(bufa, chana, buf_offset, &header, sizeof(header));
-	buf_offset += sizeof(header);
-
-	return buf_offset;
+	header.id_time |= (u32)ctx->tsc & LTT_TSC_MASK;
+	lib_ring_buffer_write(config, ctx, &header, sizeof(header));
 
 slow_path:
-	return ltt_write_event_header_slow(bufa, chana, buf_offset,
-					   eID, event_size, tsc, rflags);
+	ltt_write_event_header_slow(config, ctx, eID, event_size);
 }
 
+#if 0
 /*
  * ltt_read_event_header
  * buf_offset must aligned on 32 bits
@@ -448,25 +418,7 @@ size_t ltt_read_event_header(struct ltt_chanbuf_alloc *bufa, long buf_offset,
 
 	return buf_offset;
 }
-
-/* Lockless LTTng */
-
-/* Buffer offset macros */
-
-/*
- * BUFFER_TRUNC zeroes the subbuffer offset and the subbuffer number parts of
- * the offset, which leaves only the buffer number.
- */
-#define BUFFER_TRUNC(offset, chan) \
-	((offset) & (~((chan)->a.buf_size - 1)))
-#define BUFFER_OFFSET(offset, chan) ((offset) & ((chan)->a.buf_size - 1))
-#define SUBBUF_OFFSET(offset, chan) ((offset) & ((chan)->a.sb_size - 1))
-#define SUBBUF_ALIGN(offset, chan) \
-	(((offset) + (chan)->a.sb_size) & (~((chan)->a.sb_size - 1)))
-#define SUBBUF_TRUNC(offset, chan) \
-	((offset) & (~((chan)->a.sb_size - 1)))
-#define SUBBUF_INDEX(offset, chan) \
-	(BUFFER_OFFSET((offset), chan) >> (chan)->a.sb_size_order)
+#endif //0
 
 /*
  * Control channels :
@@ -478,7 +430,6 @@ size_t ltt_read_event_header(struct ltt_chanbuf_alloc *bufa, long buf_offset,
  * cpu
  */
 #define LTT_RELAY_ROOT			"ltt"
-#define LTT_RELAY_LOCKED_ROOT		"ltt-locked"
 
 #define LTT_METADATA_CHANNEL		"metadata_state"
 #define LTT_FD_STATE_CHANNEL		"fd_state"
@@ -515,18 +466,20 @@ size_t ltt_read_event_header(struct ltt_chanbuf_alloc *bufa, long buf_offset,
 
 /**
  * ltt_write_trace_header - Write trace header
- * @trace: Trace information
+ * @priv: Private data (struct trace)
  * @header: Memory address where the information must be written to
  */
 static __inline__
-void ltt_write_trace_header(struct ltt_trace *trace,
-			    struct ltt_subbuffer_header *header)
+void ltt_write_trace_header(void *priv,
+			    struct subbuffer_header *header)
 {
+	struct ltt_trace *trace = priv;
+
 	header->magic_number = LTT_TRACER_MAGIC_NUMBER;
 	header->major_version = LTT_TRACER_VERSION_MAJOR;
 	header->minor_version = LTT_TRACER_VERSION_MINOR;
 	header->arch_size = sizeof(void *);
-	header->alignment = ltt_get_alignment();
+	header->alignment = lib_ring_buffer_get_alignment();
 	header->start_time_sec = trace->start_time.tv_sec;
 	header->start_time_usec = trace->start_time.tv_usec;
 	header->start_freq = trace->start_freq;
@@ -590,9 +543,6 @@ int ltt_trace_set_channel_subbufcount(const char *trace_name,
 int ltt_trace_set_channel_switch_timer(const char *trace_name,
 				       const char *channel_name,
 				       unsigned long interval);
-int ltt_trace_set_channel_enable(const char *trace_name,
-				 const char *channel_name,
-				 unsigned int enable);
 int ltt_trace_set_channel_overwrite(const char *trace_name,
 				    const char *channel_name,
 				    unsigned int overwrite);
@@ -656,18 +606,5 @@ static inline void ltt_dump_idt_table(void *call_data)
 {
 }
 #endif
-
-/* Relay IOCTL */
-
-/* Get the next sub-buffer that can be read. */
-#define RELAY_GET_SB			_IOR(0xF5, 0x00, __u32)
-/* Release the oldest reserved (by "get") sub-buffer. */
-#define RELAY_PUT_SB			_IOW(0xF5, 0x01, __u32)
-/* returns the number of sub-buffers in the per cpu channel. */
-#define RELAY_GET_N_SB			_IOR(0xF5, 0x02, __u32)
-/* returns the size of the current sub-buffer. */
-#define RELAY_GET_SB_SIZE		_IOR(0xF5, 0x03, __u32)
-/* returns the maximum size for sub-buffers. */
-#define RELAY_GET_MAX_SB_SIZE		_IOR(0xF5, 0x04, __u32)
 
 #endif /* _LTT_TRACER_H */

@@ -1,14 +1,13 @@
 /*
  * ltt/ltt-tracer.c
  *
- * (C) Copyright	2005-2008 -
- * 		Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
+ * Copyright (c) 2005-2010 - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
  * Tracing management internal kernel API. Trace buffer allocation/free, tracing
  * start/stop.
  *
  * Author:
- *	Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
+ *	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
  * Inspired from LTT :
  *  Karim Yaghmour (karim@opersys.com)
@@ -244,9 +243,7 @@ int ltt_module_register(enum ltt_module_function name, void *function,
 		ltt_statedump_owner = owner;
 		break;
 	}
-
 end:
-
 	return ret;
 }
 EXPORT_SYMBOL_GPL(ltt_module_register);
@@ -348,48 +345,6 @@ int is_channel_overwrite(enum ltt_channels chan, enum trace_mode mode)
 	}
 }
 
-static void trace_async_wakeup(struct ltt_trace *trace)
-{
-	int i;
-	struct ltt_chan *chan;
-
-	/* Must check each channel for pending read wakeup */
-	for (i = 0; i < trace->nr_channels; i++) {
-		chan = &trace->channels[i];
-		if (chan->active)
-			trace->ops->wakeup_channel(chan);
-	}
-}
-
-/* Timer to send async wakeups to the readers */
-static void async_wakeup(unsigned long data)
-{
-	struct ltt_trace *trace;
-
-	/*
-	 * PREEMPT_RT does not allow spinlocks to be taken within preempt
-	 * disable sections (spinlock taken in wake_up). However, mainline won't
-	 * allow mutex to be taken in interrupt context. Ugly.
-	 * Take a standard RCU read lock for RT kernels, which imply that we
-	 * also have to synchronize_rcu() upon updates.
-	 */
-#ifndef CONFIG_PREEMPT_RT
-	rcu_read_lock_sched();
-#else
-	rcu_read_lock();
-#endif
-	list_for_each_entry_rcu(trace, &ltt_traces.head, list) {
-		trace_async_wakeup(trace);
-	}
-#ifndef CONFIG_PREEMPT_RT
-	rcu_read_unlock_sched();
-#else
-	rcu_read_unlock();
-#endif
-
-	mod_timer(&ltt_async_wakeup_timer, jiffies + LTT_PERCPU_TIMER_INTERVAL);
-}
-
 /**
  * _ltt_trace_find - find a trace by given name.
  * trace_name: trace name
@@ -434,7 +389,7 @@ void ltt_release_trace(struct kref *kref)
 
 	trace->ops->remove_dirs(trace);
 	module_put(trace->transport->owner);
-	ltt_channels_trace_free(trace->channels, trace->nr_channels);
+	ltt_channels_trace_free(trace);
 	kfree(trace);
 }
 EXPORT_SYMBOL_GPL(ltt_release_trace);
@@ -485,9 +440,7 @@ int _ltt_trace_setup(const char *trace_name)
 		goto traces_error;
 	}
 	strncpy(new_trace->trace_name, trace_name, NAME_MAX);
-	new_trace->channels = ltt_channels_trace_alloc(&new_trace->nr_channels,
-						       0, 1);
-	if (!new_trace->channels) {
+	if (ltt_channels_trace_alloc(&new_trace->nr_channels, 0)) {
 		printk(KERN_ERR
 			"LTT : Unable to allocate memory for chaninfo  %s\n",
 			trace_name);
@@ -496,25 +449,21 @@ int _ltt_trace_setup(const char *trace_name)
 	}
 
 	/*
-	 * Force metadata channel to active, no overwrite.
+	 * Force metadata channel to no overwrite.
 	 */
 	metadata_index = ltt_channels_get_index_from_name("metadata");
 	WARN_ON(metadata_index < 0);
-	new_trace->channels[metadata_index].overwrite = 0;
-	new_trace->channels[metadata_index].active = 1;
+	new_trace->settings[metadata_index].overwrite = 0;
 
 	/*
 	 * Set hardcoded tracer defaults for some channels
 	 */
 	for (chan = 0; chan < new_trace->nr_channels; chan++) {
-		if (!(new_trace->channels[chan].active))
-			continue;
-
 		chantype = get_channel_type_from_name(
 			ltt_channels_get_name_from_index(chan));
-		new_trace->channels[chan].a.sb_size =
+		new_trace->settings[chan].sb_size =
 			chan_infos[chantype].def_sb_size;
-		new_trace->channels[chan].a.n_sb =
+		new_trace->settings[chan].n_sb =
 			chan_infos[chantype].def_n_sb;
 	}
 
@@ -605,7 +554,7 @@ int ltt_trace_set_channel_subbufsize(const char *trace_name,
 		err = -ENOENT;
 		goto traces_error;
 	}
-	trace->channels[index].a.sb_size = size;
+	trace->settings[index].sb_size = size;
 
 traces_error:
 	ltt_unlock_traces();
@@ -636,7 +585,7 @@ int ltt_trace_set_channel_subbufcount(const char *trace_name,
 		err = -ENOENT;
 		goto traces_error;
 	}
-	trace->channels[index].a.n_sb = cnt;
+	trace->settings[index].n_sb = cnt;
 
 traces_error:
 	ltt_unlock_traces();
@@ -667,54 +616,13 @@ int ltt_trace_set_channel_switch_timer(const char *trace_name,
 		err = -ENOENT;
 		goto traces_error;
 	}
-	ltt_channels_trace_set_timer(&trace->channels[index], interval);
+	ltt_channels_trace_set_timer(&trace->settings[index], interval);
 
 traces_error:
 	ltt_unlock_traces();
 	return err;
 }
 EXPORT_SYMBOL_GPL(ltt_trace_set_channel_switch_timer);
-
-int ltt_trace_set_channel_enable(const char *trace_name,
-				 const char *channel_name, unsigned int enable)
-{
-	int err = 0;
-	struct ltt_trace *trace;
-	int index;
-
-	ltt_lock_traces();
-
-	trace = _ltt_trace_find_setup(trace_name);
-	if (!trace) {
-		printk(KERN_ERR "LTT : Trace not found %s\n", trace_name);
-		err = -ENOENT;
-		goto traces_error;
-	}
-
-	/*
-	 * Datas in metadata channel(marker info) is necessary to be able to
-	 * read the trace, we always enable this channel.
-	 */
-	if (!enable && !strcmp(channel_name, "metadata")) {
-		printk(KERN_ERR "LTT : Trying to disable metadata channel\n");
-		err = -EINVAL;
-		goto traces_error;
-	}
-
-	index = ltt_channels_get_index_from_name(channel_name);
-	if (index < 0) {
-		printk(KERN_ERR "LTT : Channel %s not found\n", channel_name);
-		err = -ENOENT;
-		goto traces_error;
-	}
-
-	trace->channels[index].active = enable;
-
-traces_error:
-	ltt_unlock_traces();
-	return err;
-}
-EXPORT_SYMBOL_GPL(ltt_trace_set_channel_enable);
 
 int ltt_trace_set_channel_overwrite(const char *trace_name,
 				    const char *channel_name,
@@ -753,7 +661,7 @@ int ltt_trace_set_channel_overwrite(const char *trace_name,
 		goto traces_error;
 	}
 
-	trace->channels[index].overwrite = overwrite;
+	trace->settings[index].overwrite = overwrite;
 
 traces_error:
 	ltt_unlock_traces();
@@ -811,23 +719,20 @@ int ltt_trace_alloc(const char *trace_name)
 	local_irq_restore(flags);
 
 	for (chan = 0; chan < trace->nr_channels; chan++) {
-		if (!(trace->channels[chan].active))
-			continue;
-
 		channel_name = ltt_channels_get_name_from_index(chan);
 		WARN_ON(!channel_name);
 		/*
 		 * note: sb_size and n_sb will be overwritten with updated
 		 * values by channel creation.
 		 */
-		sb_size = trace->channels[chan].a.sb_size;
-		n_sb = trace->channels[chan].a.n_sb;
+		sb_size = trace->settings[chan].sb_size;
+		n_sb = trace->settings[chan].n_sb;
 		prepare_chan_size_num(&sb_size, &n_sb);
-		err = trace->ops->create_channel(channel_name,
-				      &trace->channels[chan],
-				      trace->dentry.trace_root,
-				      sb_size, n_sb,
-				      trace->channels[chan].overwrite, trace);
+		trace->channels[chan] = ltt_create_channel(channel_name,
+					      trace, NULL, sb_size, n_sb,
+					      trace->settings[chan].overwrite,
+					      trace->settings[chan].switch_timer_interval,
+					      trace->settings[chan].read_timer_interval);
 		if (err != 0) {
 			printk(KERN_ERR	"LTT : Can't create channel %s.\n",
 				channel_name);
@@ -836,11 +741,8 @@ int ltt_trace_alloc(const char *trace_name)
 	}
 
 	list_del(&trace->list);
-	if (list_empty(&ltt_traces.head)) {
-		mod_timer(&ltt_async_wakeup_timer,
-				jiffies + LTT_PERCPU_TIMER_INTERVAL);
+	if (list_empty(&ltt_traces.head))
 		set_kernel_trace_flag_all_tasks();
-	}
 	list_add_rcu(&trace->list, &ltt_traces.head);
 	synchronize_trace();
 
@@ -849,13 +751,8 @@ int ltt_trace_alloc(const char *trace_name)
 	return 0;
 
 create_channel_error:
-	for (chan--; chan >= 0; chan--) {
-		if (trace->channels[chan].active) {
-			struct ltt_chan *chanp = &trace->channels[chan];
-			trace->ops->remove_channel_files(chanp);
-			kref_put(&chanp->a.kref, trace->ops->remove_channel);
-		}
-	}
+	for (chan--; chan >= 0; chan--)
+		ltt_channel_destroy(trace->channels[chan]);
 	trace->ops->remove_dirs(trace);
 
 dirs_error:
@@ -918,12 +815,6 @@ static int _ltt_trace_destroy(struct ltt_trace *trace)
 	synchronize_trace();
 	if (list_empty(&ltt_traces.head)) {
 		clear_kernel_trace_flag_all_tasks();
-		/*
-		 * We stop the asynchronous delivery of reader wakeup, but
-		 * we must make one last check for reader wakeups pending
-		 * later in __ltt_trace_destroy.
-		 */
-		del_timer_sync(&ltt_async_wakeup_timer);
 	}
 	return 0;
 
@@ -937,48 +828,9 @@ traces_error:
 static void __ltt_trace_destroy(struct ltt_trace *trace)
 {
 	int i;
-	struct ltt_chan *chan;
 
-	for (i = 0; i < trace->nr_channels; i++) {
-		chan = &trace->channels[i];
-		if (chan->active)
-			trace->ops->finish_channel(chan);
-	}
-
-	flush_scheduled_work();
-
-	/*
-	 * The currently destroyed trace is not in the trace list anymore,
-	 * so it's safe to call the async wakeup ourself. It will deliver
-	 * the last subbuffers.
-	 */
-	trace_async_wakeup(trace);
-
-	for (i = 0; i < trace->nr_channels; i++) {
-		chan = &trace->channels[i];
-		if (chan->active) {
-			trace->ops->remove_channel_files(chan);
-			kref_put(&chan->a.kref,
-				 trace->ops->remove_channel);
-		}
-	}
-
-	/*
-	 * Wait for lttd readers to release the files, therefore making sure
-	 * the last subbuffers have been read.
-	 */
-	if (atomic_read(&trace->kref.refcount) > 1) {
-		int ret = 0;
-		/*
-		 * Unlock traces and CPU hotplug while we wait for lttd to
-		 * release the files.
-		 */
-		ltt_unlock_traces();
-		__wait_event_interruptible(trace->kref_wq,
-			(atomic_read(&trace->kref.refcount) == 1), ret);
-		ltt_lock_traces();
-	}
-
+	for (i = 0; i < trace->nr_channels; i++)
+		ltt_channel_destroy(trace->channels[i]);
 	kref_put(&trace->kref, ltt_release_trace);
 }
 
@@ -1018,36 +870,6 @@ error:
 }
 EXPORT_SYMBOL_GPL(ltt_trace_destroy);
 
-/*
- * called with trace lock held.
- */
-static
-void ltt_channels_trace_start_timer(struct ltt_chan *channels,
-				    unsigned int nr_channels)
-{
-	int i;
-
-	for (i = 0; i < nr_channels; i++) {
-		struct ltt_chan *chan = &channels[i];
-		chan->a.trace->ops->start_switch_timer(chan);
-	}
-}
-
-/*
- * called with trace lock held.
- */
-static
-void ltt_channels_trace_stop_timer(struct ltt_chan *channels,
-				   unsigned int nr_channels)
-{
-	int i;
-
-	for (i = 0; i < nr_channels; i++) {
-		struct ltt_chan *chan = &channels[i];
-		chan->a.trace->ops->stop_switch_timer(chan);
-	}
-}
-
 /* must be called from within a traces lock. */
 static int _ltt_trace_start(struct ltt_trace *trace)
 {
@@ -1065,7 +887,6 @@ static int _ltt_trace_start(struct ltt_trace *trace)
 		printk(KERN_ERR "LTT : Can't lock filter module.\n");
 		goto get_ltt_run_filter_error;
 	}
-	ltt_channels_trace_start_timer(trace->channels, trace->nr_channels);
 	trace->active = 1;
 	/* Read by trace points without protection : be careful */
 	ltt_traces.num_active_traces++;
@@ -1132,8 +953,6 @@ static int _ltt_trace_stop(struct ltt_trace *trace)
 		printk(KERN_INFO "LTT : Tracing not active for trace %s\n",
 				trace->trace_name);
 	if (trace->active) {
-		ltt_channels_trace_stop_timer(trace->channels,
-			trace->nr_channels);
 		trace->active = 0;
 		ltt_traces.num_active_traces--;
 		synchronize_trace(); /* Wait for each tracing to be finished */
