@@ -109,7 +109,6 @@ static unsigned int ltt_poll(struct file *filp, poll_table *wait)
 /**
  *	ltt_ioctl - control on the debugfs file
  *
- *	@inode: the inode
  *	@filp: the file
  *	@cmd: the command
  *	@arg: command arg
@@ -129,9 +128,9 @@ static unsigned int ltt_poll(struct file *filp, poll_table *wait)
  *		returns the maximum size for sub-buffers.
  */
 static
-int ltt_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
-	      unsigned long arg)
+long ltt_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
+	struct inode *inode = filp->f_dentry->d_inode;
 	struct ltt_chanbuf *buf = inode->i_private;
 	u32 __user *argp = (u32 __user *)arg;
 
@@ -185,13 +184,7 @@ int ltt_ioctl(struct inode *inode, struct file *filp, unsigned int cmd,
 static
 long ltt_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	long ret = -ENOIOCTLCMD;
-
-	lock_kernel();
-	ret = ltt_ioctl(file->f_dentry->d_inode, file, cmd, arg);
-	unlock_kernel();
-
-	return ret;
+	return ltt_ioctl(file, cmd, arg);
 }
 #endif
 
@@ -200,7 +193,7 @@ static const struct file_operations ltt_file_operations = {
 	.release = ltt_release,
 	.poll = ltt_poll,
 	.splice_read = ltt_relay_file_splice_read,
-	.ioctl = ltt_ioctl,
+	.unlocked_ioctl = ltt_ioctl,
 	.llseek = ltt_relay_no_llseek,
 #ifdef CONFIG_COMPAT
 	.compat_ioctl = ltt_compat_ioctl,
