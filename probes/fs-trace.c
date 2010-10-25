@@ -25,7 +25,7 @@ void probe_fs_buffer_wait_end(void *_data, struct buffer_head *bh)
 		probe_fs_buffer_wait_end, "bh %p", bh);
 }
 
-void probe_fs_exec(void *_data, char *filename)
+void probe_fs_exec(void *_data, const char *filename)
 {
 	trace_mark_tp(fs, exec, fs_exec, probe_fs_exec, "filename %s",
 		filename);
