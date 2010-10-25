@@ -19,10 +19,10 @@ void probe_block_rq_abort(void *data, struct request_queue *q, struct request *r
 {
 	int rw = rq->cmd_flags & 0x03;
 
-	if (blk_discard_rq(rq))
-		rw |= (1 << BIO_RW_DISCARD);
+	if (rq->cmd_flags & REQ_DISCARD)
+		rw |= REQ_DISCARD;
 
-	if (blk_pc_request(rq)) {
+	if (rq->cmd_type == REQ_TYPE_BLOCK_PC) {
 		trace_mark_tp(block, rq_abort_pc, block_rq_abort,
 			probe_block_rq_abort,
 			"data_len %u rw %d errors %d",
@@ -46,10 +46,10 @@ void probe_block_rq_insert(void *data, struct request_queue *q, struct request *
 {
 	int rw = rq->cmd_flags & 0x03;
 
-	if (blk_discard_rq(rq))
-		rw |= (1 << BIO_RW_DISCARD);
+	if (rq->cmd_flags & REQ_DISCARD)
+		rw |= REQ_DISCARD;
 
-	if (blk_pc_request(rq)) {
+	if (rq->cmd_type == REQ_TYPE_BLOCK_PC) {
 		trace_mark_tp(block, rq_insert_pc, block_rq_insert,
 			probe_block_rq_insert,
 			"data_len %u rw %d errors %d",
@@ -73,10 +73,10 @@ void probe_block_rq_issue(void *data, struct request_queue *q, struct request *r
 {
 	int rw = rq->cmd_flags & 0x03;
 
-	if (blk_discard_rq(rq))
-		rw |= (1 << BIO_RW_DISCARD);
+	if (rq->cmd_flags & REQ_DISCARD)
+		rw |= REQ_DISCARD;
 
-	if (blk_pc_request(rq)) {
+	if (rq->cmd_type == REQ_TYPE_BLOCK_PC) {
 		trace_mark_tp(block, rq_issue_pc, block_rq_issue,
 			probe_block_rq_issue,
 			"data_len %u rw %d errors %d",
@@ -100,10 +100,10 @@ void probe_block_rq_requeue(void *data, struct request_queue *q, struct request 
 {
 	int rw = rq->cmd_flags & 0x03;
 
-	if (blk_discard_rq(rq))
-		rw |= (1 << BIO_RW_DISCARD);
+	if (rq->cmd_flags & REQ_DISCARD)
+		rw |= REQ_DISCARD;
 
-	if (blk_pc_request(rq)) {
+	if (rq->cmd_type == REQ_TYPE_BLOCK_PC) {
 		trace_mark_tp(block, rq_requeue_pc, block_rq_requeue,
 			probe_block_rq_requeue,
 			"data_len %u rw %d errors %d",
@@ -128,10 +128,10 @@ void probe_block_rq_complete(void *data, struct request_queue *q, struct request
 {
 	int rw = rq->cmd_flags & 0x03;
 
-	if (blk_discard_rq(rq))
-		rw |= (1 << BIO_RW_DISCARD);
+	if (rq->cmd_flags & REQ_DISCARD)
+		rw |= REQ_DISCARD;
 
-	if (blk_pc_request(rq)) {
+	if (rq->cmd_type == REQ_TYPE_BLOCK_PC) {
 		trace_mark_tp(block, rq_complete_pc, block_rq_complete,
 			probe_block_rq_complete,
 			"data_len %u rw %d errors %d",
