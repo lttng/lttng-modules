@@ -782,7 +782,9 @@ int ltt_trace_alloc(const char *trace_name)
 	kref_init(&trace->kref);
 	init_waitqueue_head(&trace->kref_wq);
 	trace->active = 0;
-	get_trace_clock();
+	err = get_trace_clock();
+	if (err)
+		goto traces_error;
 	trace->freq_scale = trace_clock_freq_scale();
 
 	if (!trace->transport) {
