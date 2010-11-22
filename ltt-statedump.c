@@ -39,6 +39,10 @@
 #include <linux/irq.h>
 #endif
 
+#ifdef CONFIG_HAVE_KVM
+#include <asm/vmx.h>
+#endif
+
 #define NB_PROC_CHUNK 20
 
 /*
@@ -84,6 +88,65 @@ enum lttng_process_status {
 	LTTNG_RUN = 6,
 	LTTNG_DEAD = 7,
 };
+
+struct trace_enum_map {
+	long id;
+	const char *symbol;
+};
+
+#ifdef CONFIG_HAVE_KVM
+static const struct trace_enum_map vmx_kvm_exit_enum[] = {
+	{ EXIT_REASON_EXCEPTION_NMI,            "exception" },
+	{ EXIT_REASON_EXTERNAL_INTERRUPT,       "ext_irq" },
+	{ EXIT_REASON_TRIPLE_FAULT,             "triple_fault" },
+	{ EXIT_REASON_PENDING_INTERRUPT,        "interrupt_window" },
+	{ EXIT_REASON_NMI_WINDOW,               "nmi_window" },
+	{ EXIT_REASON_TASK_SWITCH,              "task_switch" },
+	{ EXIT_REASON_CPUID,                    "cpuid" },
+	{ EXIT_REASON_HLT,                      "halt" },
+	{ EXIT_REASON_INVLPG,                   "invlpg" },
+	{ EXIT_REASON_RDPMC,                    "rdpmc" },
+	{ EXIT_REASON_RDTSC,                    "rdtsc" },
+	{ EXIT_REASON_VMCALL,                   "hypercall" },
+	{ EXIT_REASON_VMCLEAR,                  "vmclear" },
+	{ EXIT_REASON_VMLAUNCH,                 "vmlaunch" },
+	{ EXIT_REASON_VMPTRLD,                  "vmprtld" },
+	{ EXIT_REASON_VMPTRST,                  "vmptrst" },
+	{ EXIT_REASON_VMREAD,                   "vmread" },
+	{ EXIT_REASON_VMRESUME,                 "vmresume" },
+	{ EXIT_REASON_VMWRITE,                  "vmwrite" },
+	{ EXIT_REASON_VMOFF,                    "vmoff" },
+	{ EXIT_REASON_VMON,                     "vmon" },
+	{ EXIT_REASON_CR_ACCESS,                "cr_access" },
+	{ EXIT_REASON_DR_ACCESS,                "dr_access" },
+	{ EXIT_REASON_IO_INSTRUCTION,           "io_instruction" },
+	{ EXIT_REASON_MSR_READ,                 "rdmsr" },
+	{ EXIT_REASON_MSR_WRITE,                "wrmsr" },
+	{ EXIT_REASON_MWAIT_INSTRUCTION,        "mwait_instruction" },
+	{ EXIT_REASON_MONITOR_INSTRUCTION,      "monitor_instruction" },
+	{ EXIT_REASON_PAUSE_INSTRUCTION,        "pause_instruction" },
+	{ EXIT_REASON_MCE_DURING_VMENTRY,       "mce_during_vmentry" },
+	{ EXIT_REASON_TPR_BELOW_THRESHOLD,      "tpr_below_thres" },
+	{ EXIT_REASON_APIC_ACCESS,              "apic_access" },
+	{ EXIT_REASON_EPT_VIOLATION,            "ept_violation" },
+	{ EXIT_REASON_EPT_MISCONFIG,            "epg_misconfig" },
+	{ EXIT_REASON_WBINVD,                   "wbinvd" },
+	{ -1, NULL }
+};
+#endif /* CONFIG_HAVE_KVM */
+
+static void ltt_dump_enum_tables(struct ltt_probe_private_data *call_data)
+{
+#ifdef CONFIG_HAVE_KVM
+	int i;
+	/* KVM exit reasons for VMX */
+	for(i = 0; vmx_kvm_exit_enum[i].symbol; i++) {
+		__trace_mark(0, enum_tables, vmx_kvm_exit, call_data,
+				"id %ld symbol %s", vmx_kvm_exit_enum[i].id,
+				vmx_kvm_exit_enum[i].symbol);
+	}
+#endif /* CONFIG_HAVE_KVM */
+}
 
 #ifdef CONFIG_INET
 static void ltt_enumerate_device(struct ltt_probe_private_data *call_data,
@@ -374,6 +437,7 @@ static int do_ltt_statedump(struct ltt_probe_private_data *call_data)
 	ltt_dump_sys_call_table(call_data);
 	ltt_dump_softirq_vec(call_data);
 	ltt_dump_idt_table(call_data);
+	ltt_dump_enum_tables(call_data);
 
 	mutex_lock(&statedump_cb_mutex);
 

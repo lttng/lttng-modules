@@ -44,4 +44,10 @@ endif
 obj-m += block-trace.o
 endif
 
+ifdef CONFIG_KVM
+ifdef CONFIG_FTRACE
+CFLAGS_REMOVE_kvm-trace.o = -pg
+endif
+obj-m += kvm-trace.o
+endif
 
