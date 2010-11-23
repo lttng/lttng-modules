@@ -13,6 +13,14 @@ static LIST_HEAD(sessions);
 static DEFINE_MUTEX(sessions_mutex);
 static struct kmem_cache *event_cache;
 
+static void synchronize_trace(void)
+{
+	synchronize_sched();
+#ifdef CONFIG_PREEMPT_RT
+	synchronize_rcu();
+#endif
+}
+
 struct ltt_session *ltt_session_create(char *name)
 {
 	struct ltt_session *session;
@@ -41,6 +49,8 @@ int ltt_session_destroy(struct ltt_session *session)
 	struct ltt_event *event, *tmpevent;
 
 	mutex_lock(&sessions_mutex);
+	session->active = 0;
+	synchronize_trace();	/* Wait for in-flight events to complete */
 	list_for_each_entry_safe(event, tmpevent, &session->events, list)
 		_ltt_event_destroy(event);
 	list_for_each_entry_safe(chan, tmpchan, &session->chan, list)
@@ -86,6 +96,7 @@ active:
  */
 int _ltt_channel_destroy(struct ltt_channel *chan)
 {
+	/* TODO: destroy rb channel */
 	list_del(&chan->list);
 	kfree(chan);
 }
