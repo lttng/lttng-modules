@@ -59,6 +59,8 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session, char *name,
 	struct ltt_channel *chan;
 
 	mutex_lock(&sessions_mutex);
+	if (session->active)
+		goto active;	/* Refuse to add channel to active session */
 	list_for_each_entry(chan, &session->chan, list)
 		if (!strcmp(chan->name, name))
 			goto exist;
@@ -74,6 +76,7 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session, char *name,
 	return chan;
 
 exist:
+active:
 	mutex_unlock(&sessions_mutex);
 	return NULL;
 }
@@ -87,12 +90,17 @@ int _ltt_channel_destroy(struct ltt_channel *chan)
 	kfree(chan);
 }
 
+/*
+ * Supports event creation while tracing session is active.
+ */
 struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 				   void *filter)
 {
 	struct ltt_event *event;
 
 	mutex_lock(&sessions_mutex);
+	if (chan->free_event_id == -1UL)
+		goto full;
 	/*
 	 * This is O(n^2) (for each event loop called at event creation).
 	 * Might require a hash if we have lots of events.
@@ -109,15 +117,18 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 	strcpy(event->name, name);
 	event->chan = chan;
 	event->filter = filter;
-	event->id = atomic_inc_return(&chan->free_event_id) - 1;
-	/* TODO register to tracepoint */
+	event->id = chan->free_event_id++;
 	mutex_unlock(&sessions_mutex);
+	/* Populate ltt_event structure before tracepoint registration. */
+	smp_wmb();
+	/* TODO register to tracepoint */
 	return event;
 
 error:
 	kmem_cache_free(event);
 cache_error:
 exist:
+full:
 	mutex_unlock(&sessions_mutex);
 	return NULL;
 }

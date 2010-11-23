@@ -27,12 +27,13 @@ struct ltt_channel {
 	struct channel *chan;		/* Channel buffers */
 	/* Event ID management */
 	struct ltt_session *session;
-	atomic_t free_event_id;		/* Next event ID to allocate */
+	unsigned int free_event_id;	/* Next event ID to allocate */
 	struct list_head list;		/* Channel list */
 	char name[PATH_MAX];
 };
 
 struct ltt_session {
+	int active;			/* Is trace session active ? */
 	struct list_head chan;		/* Channel list head */
 	struct list_head events;	/* Event list head */
 	struct list_head list;		/* Session list */
