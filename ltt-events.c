@@ -150,10 +150,23 @@ static int __init ltt_events_init(void)
 	events_cache = KMEM_CACHE(ltt_event, 0);
 	if (!events_cache)
 		return -ENOMEM;
+
+	/* TODO: show ABI to userspace */
+
 	return 0;
 }
 
 static void __exit ltt_events_exit(void)
 {
+	struct ltt_session *session, *tmpsession;
+
+	/* TODO: hide ABI from userspace, wait for callers to release refs. */
+
+	list_for_each_entry_safe(session, tmpsession, &sessions, list)
+		ltt_session_destroy(session);
 	kmem_cache_destroy(events_cache);
 }
+
+MODULE_LICENSE("GPL and additional rights");
+MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");
+MODULE_DESCRIPTION("LTTng Events");
