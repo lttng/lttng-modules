@@ -21,18 +21,14 @@ static void synchronize_trace(void)
 #endif
 }
 
-struct ltt_session *ltt_session_create(char *name)
+struct ltt_session *ltt_session_create(void)
 {
 	struct ltt_session *session;
 
 	mutex_lock(&sessions_mutex);
-	list_for_each_entry(session, &sessions, list)
-		if (!strcmp(session->name, name))
-			goto exist;
-	session = kmalloc(sizeof(struct ltt_session) + strlen(name) + 1);
+	session = kmalloc(sizeof(struct ltt_session));
 	if (!session)
 		return NULL;
-	strcpy(session->name, name);
 	INIT_LIST_HEAD(&session->chan);
 	list_add(&session->list, &sessions);
 	mutex_unlock(&sessions_mutex);
@@ -60,7 +56,7 @@ int ltt_session_destroy(struct ltt_session *session)
 	kfree(session);
 }
 
-struct ltt_channel *ltt_channel_create(struct ltt_session *session, char *name,
+struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 				       int overwrite, void *buf_addr,
 				       size_t subbuf_size, size_t num_subbuf,
 				       unsigned int switch_timer_interval,
@@ -71,13 +67,9 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session, char *name,
 	mutex_lock(&sessions_mutex);
 	if (session->active)
 		goto active;	/* Refuse to add channel to active session */
-	list_for_each_entry(chan, &session->chan, list)
-		if (!strcmp(chan->name, name))
-			goto exist;
-	chan = kmalloc(sizeof(struct ltt_channel) + strlen(name) + 1, GFP_KERNEL);
+	chan = kmalloc(sizeof(struct ltt_channel), GFP_KERNEL);
 	if (!chan)
 		return NULL;
-	strcpy(chan->name, name);
 	chan->session = session;
 
 	/* TODO: create rb channel */
@@ -105,7 +97,8 @@ int _ltt_channel_destroy(struct ltt_channel *chan)
  * Supports event creation while tracing session is active.
  */
 struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
-				   void *filter)
+				   enum instrum_type itype,
+				   void *probe, void *filter)
 {
 	struct ltt_event *event;
 	int ret;
@@ -128,11 +121,20 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 		goto error;
 	strcpy(event->name, name);
 	event->chan = chan;
+	event->probe = probe;
 	event->filter = filter;
 	event->id = chan->free_event_id++;
+	event->itype = itype;
 	mutex_unlock(&sessions_mutex);
 	/* Populate ltt_event structure before tracepoint registration. */
 	smp_wmb();
+	switch (itype) {
+	case INSTRUM_TRACEPOINTS:
+		ret = tracepoint_probe_register(name, probe, event);
+		break;
+	default:
+		WARN_ON_ONCE(1);
+	}
 	return event;
 
 error:
@@ -149,7 +151,13 @@ full:
  */
 int _ltt_event_destroy(struct ltt_event *event)
 {
-	/* TODO unregister from tracepoint */
+	switch (event->itype) {
+	case INSTRUM_TRACEPOINTS:
+		ret = tracepoint_probe_unregister(name, event->probe, event);
+		break;
+	default:
+		WARN_ON_ONCE(1);
+	}
 	kfree(event->name);
 	kmem_cache_free(event);
 }

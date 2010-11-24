@@ -11,6 +11,10 @@
 struct ltt_channel;
 struct ltt_session;
 
+enum instrum_type itype {
+	INSTRUM_TRACEPOINTS,
+};
+
 /*
  * ltt_event structure is referred to by the tracing fast path. It must be
  * kept small.
@@ -18,8 +22,10 @@ struct ltt_session;
 struct ltt_event {
 	unsigned int id;
 	struct ltt_channel *chan;
+	void *probe;
 	void *filter;
 	char *name;
+	enum instrum_type itype;
 	struct list_head list;		/* Event list */
 };
 
@@ -40,10 +46,10 @@ struct ltt_session {
 	char name[PATH_MAX];
 };
 
-struct ltt_session *ltt_session_create(char *name);
+struct ltt_session *ltt_session_create(void);
 int ltt_session_destroy(struct ltt_session *session);
 
-struct ltt_channel *ltt_channel_create(struct ltt_session *session, char *name,
+struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 				       int overwrite, void *buf_addr,
 				       size_t subbuf_size, size_t num_subbuf,
 				       unsigned int switch_timer_interval,
