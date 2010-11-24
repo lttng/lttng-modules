@@ -108,6 +108,7 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 				   void *filter)
 {
 	struct ltt_event *event;
+	int ret;
 
 	mutex_lock(&sessions_mutex);
 	if (chan->free_event_id == -1UL)
@@ -132,7 +133,6 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 	mutex_unlock(&sessions_mutex);
 	/* Populate ltt_event structure before tracepoint registration. */
 	smp_wmb();
-	/* TODO register to tracepoint */
 	return event;
 
 error:

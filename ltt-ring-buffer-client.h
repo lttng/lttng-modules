@@ -1,9 +1,9 @@
 /*
- * ltt-ring-buffer-client.c
+ * ltt-ring-buffer-client.h
  *
  * Copyright (C) 2010 - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
- * LTTng lib ring buffer client.
+ * LTTng lib ring buffer client template.
  *
  * Dual LGPL v2.1/GPL v2 license.
  */
@@ -109,7 +109,7 @@ static int client_buffer_create(struct lib_ring_buffer *buf, void *priv,
 	}
 
 	snprintf(tmpname, NAME_MAX, "%s%s_%d",
-		 (client_config.mode == RING_BUFFER_OVERWRITE) ?  : "",
+		 (client_config.mode == RING_BUFFER_OVERWRITE) ? "flight-" : "",
 		 name, cpu);
 
 	trace_dentry = chan_priv->trace->dentry.trace_root;
@@ -151,7 +151,7 @@ static const struct lib_ring_buffer_config client_config = {
 	.tsc_bits = 32,
 	.alloc = RING_BUFFER_ALLOC_PER_CPU,
 	.sync = RING_BUFFER_SYNC_PER_CPU,
-	.mode = RING_BUFFER_OVERWRITE,
+	.mode = RING_BUFFER_MODE_TEMPLATE,
 #ifdef RING_BUFFER_ALIGN
 	.align = RING_BUFFER_NATURAL,
 #else
@@ -215,9 +215,6 @@ void ltt_channel_destroy(struct channel *chan)
 
 static void ltt_relay_remove_dirs(struct ltt_trace *trace)
 {
-#if 0
-	ltt_ascii_remove_dir(trace);
-#endif //0
 	debugfs_remove(trace->dentry.trace_root);
 }
 
@@ -238,16 +235,10 @@ static int ltt_relay_create_dirs(struct ltt_trace *new_trace)
 		       new_trace->trace_name);
 		return EEXIST;
 	}
-#if 0
-	ret = ltt_ascii_create_dir(new_trace);
-	if (ret)
-		printk(KERN_WARNING "LTT : Unable to create ascii output file "
-				    "for trace %s\n", new_trace->trace_name);
-#endif //0
 	return 0;
 }
 static struct ltt_transport ltt_relay_transport = {
-	.name = "relay",
+	.name = "relay-" RING_BUFFER_MODE_TEMPLATE_STRING,
 	.owner = THIS_MODULE,
 	.ops = {
 		.create_dirs = ltt_relay_create_dirs,
@@ -255,14 +246,14 @@ static struct ltt_transport ltt_relay_transport = {
 	},
 };
 
-int __init ltt_ring_buffer_client_init(void)
+static int __init ltt_ring_buffer_client_init(void)
 {
 	printk(KERN_INFO "LTT : ltt ring buffer client init\n");
 	ltt_transport_register(&ltt_relay_transport);
 	return 0;
 }
 
-void __exit ltt_ring_buffer_client_exit(void)
+static void __exit ltt_ring_buffer_client_exit(void)
 {
 	printk(KERN_INFO "LTT : ltt ring buffer client exit\n");
 	ltt_transport_unregister(&ltt_relay_transport);
@@ -270,4 +261,5 @@ void __exit ltt_ring_buffer_client_exit(void)
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers");
-MODULE_DESCRIPTION("LTTng Ring Buffer Client");
+MODULE_DESCRIPTION("LTTng ring buffer " RING_BUFFER_MODE_TEMPLATE_STRING
+		   " client");
