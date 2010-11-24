@@ -126,6 +126,13 @@ struct user_dbg_data {
 struct ltt_trace_ops {
 	int (*create_dirs) (struct ltt_trace *new_trace);
 	void (*remove_dirs) (struct ltt_trace *new_trace);
+	struct channel *ltt_channel_create(const char *name,
+				struct ltt_trace *trace,
+				void *buf_addr,
+				size_t subbuf_size, size_t num_subbuf,
+				unsigned int switch_timer_interval,
+				unsigned int read_timer_interval);
+	void ltt_channel_destroy(struct channel *chan);
 };
 
 struct ltt_transport {

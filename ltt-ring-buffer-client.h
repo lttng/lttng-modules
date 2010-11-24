@@ -27,6 +27,7 @@ static u64 client_ring_buffer_clock_read(struct channel *chan)
 	return lib_ring_buffer_clock_read(chan);
 }
 
+static
 size_t client_record_header_size(const struct lib_ring_buffer_config *config,
 				 struct channel *chan, size_t offset,
 				 size_t data_size,
@@ -164,6 +165,7 @@ static const struct lib_ring_buffer_config client_config = {
 	.wakeup = RING_BUFFER_WAKEUP_BY_TIMER,
 };
 
+static
 struct channel *ltt_channel_create(const char *name, struct ltt_trace *trace,
 				   void *buf_addr,
 				   size_t subbuf_size, size_t num_subbuf,
@@ -201,6 +203,7 @@ free_chan_priv:
 	return NULL;
 }
 
+static
 void ltt_channel_destroy(struct channel *chan)
 {
 	struct chan_priv *chan_priv = channel_get_private(chan);
@@ -237,12 +240,15 @@ static int ltt_relay_create_dirs(struct ltt_trace *new_trace)
 	}
 	return 0;
 }
+
 static struct ltt_transport ltt_relay_transport = {
 	.name = "relay-" RING_BUFFER_MODE_TEMPLATE_STRING,
 	.owner = THIS_MODULE,
 	.ops = {
 		.create_dirs = ltt_relay_create_dirs,
 		.remove_dirs = ltt_relay_remove_dirs,
+		.create_channel = ltt_channel_create,
+		.destroy_channel = ltt_channel_destroy,
 	},
 };
 
