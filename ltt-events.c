@@ -71,6 +71,7 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 	if (!chan)
 		return NULL;
 	chan->session = session;
+	init_waitqueue_head(&chan->notify_wait);
 
 	/* TODO: create rb channel */
 	list_add(&chan->list, &session->chan);

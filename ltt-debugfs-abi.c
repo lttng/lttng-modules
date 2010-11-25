@@ -40,7 +40,6 @@ static const struct file_operations lttng_channel_fops;
  */
 
 struct lttng_channel {
-	int session;			/* Session file descriptor */
 	int overwrite;			/* 1: overwrite, 0: discard */
 	u64 subbuf_size;
 	u64 num_subbuf;
@@ -49,7 +48,6 @@ struct lttng_channel {
 };
 
 struct lttng_event {
-	int channel;			/* Channel file descriptor */
 	enum instrum_type itype;
 	char name[];
 };
@@ -61,7 +59,7 @@ int lttng_abi_create_session(void)
 	struct file *session_file;
 	int session_fd;
 
-	session = ltt_session_create()
+	session = ltt_session_create();
 	if (!session)
 		return -ENOMEM;
 	session_fd = get_unused_fd_flags(O_RDWR);
@@ -140,7 +138,7 @@ int lttng_abi_create_channel(struct file *session_filp,
 	int chan_fd;
 	int ret = 0;
 
-	if (copy_from_user(&chan_param, ucham_param, sizeof(chan_param)))
+	if (copy_from_user(&chan_param, uchan_param, sizeof(chan_param)))
 		return -EFAULT;
 	chan = ltt_channel_create(session, chan_param->overwrite, NULL,
 				  chan_param->subbuf_size,
@@ -256,6 +254,55 @@ fd_error:
 	return ret;
 }
 
+static
+int lttng_abi_create_event(struct file *channel_filp,
+			   struct lttng_event __user *uevent_param)
+{
+	struct ltt_channel *channel = channel_filp->private_data;
+	struct ltt_event *event;
+	char *event_name;
+	struct lttng_event event_param;
+	int event_fd, ret;
+
+	if (copy_from_user(&event_param, uevent_param, sizeof(event_param)))
+		return -EFAULT;
+	event_name = kmalloc(PATH_MAX, GFP_KERNEL);
+	if (!event_name)
+		return -ENOMEM;
+	if (strncpy_from_user(event_name, &uevent_param->name, PATH_MAX)) {
+		ret = -EFAULT;
+		goto name_error;
+	}
+	event_name[PATH_MAX - 1] = '\0';
+	event = ltt_event_create(channel, event_param->itype, event_name, NULL);
+	if (!event)
+		return -EEXIST;
+
+	event_fd = get_unused_fd_flags(O_RDWR);
+	if (event_fd < 0) {
+		ret = event_fd;
+		goto fd_error;
+	}
+	event_filp = anon_inode_getfile("[lttng_event]",
+					 &lttng_event_fops,
+					 event, O_RDWR);
+	if (IS_ERR(event_filp)) {
+		ret = PTR_ERR(event_filp);
+		goto file_error;
+	}
+
+	/* The event holds a reference on the channel */
+	atomic_inc(&channel_filp->f_count);
+	return event_fd;
+
+file_error:
+	put_unused_fd(event_fd);
+fd_error:
+	ltt_event_destroy(event);
+name_error:
+	kfree(event_name);
+	return ret;
+}
 
 /**
  *	lttng_channel_ioctl - lttng syscall through ioctl
@@ -268,10 +315,6 @@ fd_error:
  *      LTTNG_STREAM
  *              Returns an event stream file descriptor or failure.
  *              (typically, one event stream records events from one CPU)
- *      LTTNG_STREAM_NOTIFIER
- *              Returns a file descriptor that can be used to monitor
- *              addition/removal of streams to/from a channel. (e.g. notifier
- *              called on CPU hotplug).
  *	LTTNG_EVENT
  *		Returns an event file descriptor or failure.
  *
@@ -284,8 +327,6 @@ long lttng_channel_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 	switch (cmd) {
 	case LTTNG_STREAM:
 		return lttng_abi_open_stream(filp);
-	case LTTNG_STREAM_NOTIFIER:
-		return lttng_abi_open_stream_notifier(filp);
 	case LTTNG_EVENT:
 		return lttng_abi_create_event(filp, (struct lttng_event __user *)arg);
 	default:
@@ -299,9 +340,7 @@ long lttng_channel_compat_ioctl(struct file *filp, unsigned int cmd, unsigned lo
 {
 	switch (cmd) {
 	case LTTNG_STREAM:
-		return lttng_abi_get_stream(filp);
-	case LTTNG_STREAM_NOTIFIER:
-		return lttng_abi_get_stream_notifier(filp);
+		return lttng_abi_open_stream(filp);
 	case LTTNG_EVENT:
 		return lttng_abi_create_event(filp, (struct lttng_event __user *)arg);
 	default:
@@ -310,7 +349,33 @@ long lttng_channel_compat_ioctl(struct file *filp, unsigned int cmd, unsigned lo
 }
 #endif
 
+/**
+ *	lttng_channel_poll - lttng stream addition/removal monitoring
+ *
+ *	@filp: the file
+ *	@wait: poll table
+ */
+unsigned int lttng_channel_poll(struct file *filp, poll_table *wait)
+{
+	struct ltt_channel *channel = filp->private_data;
+	unsigned int mask = 0;
+
+	if (filp->f_mode & FMODE_READ) {
+		poll_wait_set_exclusive(wait);
+		poll_wait(filp, &channel->notify_wait, wait);
+
+		/* TODO: identify when the channel is being finalized. */
+		if (finalized)
+			return POLLHUP;
+		else
+			return POLLIN | POLLRDNORM;
+	}
+	return mask;
+
+}
+
 static const struct file_operations lttng_channel_fops = {
+	.poll = lttng_channel_poll,
 	.unlocked_ioctl = lttng_channel_ioctl,
 #ifdef CONFIG_COMPAT
 	.compat_ioctl = lttng_channel_compat_ioctl,

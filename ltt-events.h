@@ -35,7 +35,7 @@ struct ltt_channel {
 	struct ltt_session *session;
 	unsigned int free_event_id;	/* Next event ID to allocate */
 	struct list_head list;		/* Channel list */
-	char name[PATH_MAX];
+	wait_queue_head_t notify_wait;	/* Channel addition notif. waitqueue */
 };
 
 struct ltt_session {
@@ -43,7 +43,6 @@ struct ltt_session {
 	struct list_head chan;		/* Channel list head */
 	struct list_head events;	/* Event list head */
 	struct list_head list;		/* Session list */
-	char name[PATH_MAX];
 };
 
 struct ltt_session *ltt_session_create(void);
@@ -56,6 +55,8 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 				       unsigned int read_timer_interval);
 int _ltt_channel_destroy(struct ltt_channel *chan);
 
-struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
+struct ltt_event *ltt_event_create(struct ltt_channel *chan,
+				   enum instrum_type itype,
+				   char *name,
 				   void *filter);
 int _ltt_event_destroy(struct ltt_event *event);
