@@ -216,6 +216,26 @@ void ltt_channel_destroy(struct channel *chan)
 	kfree(chan_priv);
 }
 
+static
+struct lib_ring_buffer *ltt_buffer_read_open(struct channel *chan)
+{
+	struct lib_ring_buffer *buf;
+	int cpu;
+
+	for_each_channel_cpu(cpu, chan->chan) {
+		buf = channel_get_ring_buffer(&config_config, chan, cpu);
+		if (!lib_ring_buffer_open_read(buf))
+			return buf;
+	}
+	return NULL;
+}
+
+static
+struct lib_ring_buffer *ltt_buffer_read_close(struct lib_ring_buffer *buf)
+{
+	lib_ring_buffer_release_read(buf);
+}
+
 static void ltt_relay_remove_dirs(struct ltt_trace *trace)
 {
 	debugfs_remove(trace->dentry.trace_root);
@@ -249,6 +269,8 @@ static struct ltt_transport ltt_relay_transport = {
 		.remove_dirs = ltt_relay_remove_dirs,
 		.create_channel = ltt_channel_create,
 		.destroy_channel = ltt_channel_destroy,
+		.buffer_read_open = ltt_buffer_read_open,
+		.buffer_read_close = ltt_buffer_read_close,
 	},
 };
 
