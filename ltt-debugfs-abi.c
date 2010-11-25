@@ -231,7 +231,7 @@ int lttng_abi_open_stream(struct file *channel_filp)
 		goto fd_error;
 	}
 	stream_filp = anon_inode_getfile("[lttng_stream]",
-					 &lttng_stream_fops,
+					 &lib_ring_buffer_file_operations,
 					 buf, O_RDWR);
 	if (IS_ERR(stream_filp)) {
 		ret = PTR_ERR(stream_filp);
