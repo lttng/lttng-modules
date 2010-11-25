@@ -34,6 +34,7 @@ static struct dentry *lttng_dentry;
 static const struct file_operations lttng_fops;
 static const struct file_operations lttng_session_fops;
 static const struct file_operations lttng_channel_fops;
+static const struct file_operations lttng_event_fops;
 
 /*
  * LTTng DebugFS ABI structures.
@@ -275,7 +276,7 @@ int lttng_abi_create_event(struct file *channel_filp,
 		goto fd_error;
 	}
 	event_filp = anon_inode_getfile("[lttng_event]",
-					&lttng_event_fops,
+					&lttng_event_fops, /* TODO: filter */
 					NULL, O_RDWR);
 	if (IS_ERR(event_filp)) {
 		ret = PTR_ERR(event_filp);
