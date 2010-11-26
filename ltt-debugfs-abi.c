@@ -75,6 +75,7 @@ int lttng_abi_create_session(void)
 		ret = PTR_ERR(session_filp);
 		goto file_error;
 	}
+	session->file = session_filp;
 	fd_install(session_fd, session_filp);
 	return session_fd;
 
@@ -153,6 +154,7 @@ int lttng_abi_create_channel(struct file *session_filp,
 		ret = -ENOMEM;
 		goto chan_error;
 	}
+	channel->file = chan_filp;
 	chan_filp->private_data = chan;
 	fd_install(chan_fd, chan_filp);
 	/* The channel created holds a reference on the session */
@@ -363,6 +365,14 @@ unsigned int lttng_channel_poll(struct file *filp, poll_table *wait)
 
 }
 
+static
+int lttng_channel_release(struct inode *inode, struct file *file)
+{
+	struct ltt_channel *channel = file->private_data;
+	fput(channel->session->file);
+	return 0;
+}
+
 static const struct file_operations lttng_channel_fops = {
 	.release = lttng_channel_release,
 	.poll = lttng_channel_poll,
@@ -370,6 +380,18 @@ static const struct file_operations lttng_channel_fops = {
 #ifdef CONFIG_COMPAT
 	.compat_ioctl = lttng_channel_ioctl,
 #endif
+}
+
+static
+int lttng_event_release(struct inode *inode, struct file *file)
+{
+	struct ltt_event *event = file->private_data;
+	fput(event->chan->file);
+	return 0;
+}
+
+static const struct file_operations lttng_event_fops = {
+	.release = lttng_event_release,
 }
 
 static int __init ltt_debugfs_abi_init(void)
