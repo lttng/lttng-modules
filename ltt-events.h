@@ -33,6 +33,7 @@ struct ltt_channel {
 	struct channel *chan;		/* Channel buffers */
 	/* Event ID management */
 	struct ltt_session *session;
+	struct file *file;		/* File associated to channel */
 	unsigned int free_event_id;	/* Next event ID to allocate */
 	struct list_head list;		/* Channel list */
 	wait_queue_head_t notify_wait;	/* Channel addition notif. waitqueue */
@@ -40,6 +41,7 @@ struct ltt_channel {
 
 struct ltt_session {
 	int active;			/* Is trace session active ? */
+	struct file *file;		/* File associated to session */
 	struct list_head chan;		/* Channel list head */
 	struct list_head events;	/* Event list head */
 	struct list_head list;		/* Session list */
