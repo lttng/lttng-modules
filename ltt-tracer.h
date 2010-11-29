@@ -123,30 +123,12 @@ struct user_dbg_data {
 	unsigned long read;
 };
 
-struct ltt_trace_ops {
-	int (*create_dirs) (struct ltt_trace *new_trace);
-	void (*remove_dirs) (struct ltt_trace *new_trace);
-	struct channel *ltt_channel_create(const char *name,
-				struct ltt_trace *trace,
-				void *buf_addr,
-				size_t subbuf_size, size_t num_subbuf,
-				unsigned int switch_timer_interval,
-				unsigned int read_timer_interval);
-	void ltt_channel_destroy(struct channel *chan);
-};
-
-struct ltt_transport {
-	char *name;
-	struct module *owner;
-	struct list_head node;
-	struct ltt_trace_ops ops;
-};
-
 enum trace_mode { LTT_TRACE_NORMAL, LTT_TRACE_FLIGHT, LTT_TRACE_HYBRID };
 
 #define CHANNEL_FLAG_ENABLE	(1U<<0)
 #define CHANNEL_FLAG_OVERWRITE	(1U<<1)
 
+#if 0
 /* Per-trace information - each trace/flight recorder represented by one */
 struct ltt_trace {
 	/* First 32 bytes cache-hot cacheline */
@@ -172,6 +154,7 @@ struct ltt_trace {
 	wait_queue_head_t kref_wq; /* Place for ltt_trace_destroy to sleep */
 	char trace_name[NAME_MAX];
 } ____cacheline_aligned;
+#endif //0
 
 /*
  * Hardcoded event headers
@@ -513,9 +496,6 @@ extern int ltt_module_register(enum ltt_module_function name, void *function,
 			       struct module *owner);
 extern void ltt_module_unregister(enum ltt_module_function name);
 
-void ltt_transport_register(struct ltt_transport *transport);
-void ltt_transport_unregister(struct ltt_transport *transport);
-
 /* Exported control function */
 
 enum ltt_control_msg {
@@ -537,46 +517,9 @@ union ltt_control_args {
 	} new_trace;
 };
 
-int _ltt_trace_setup(const char *trace_name);
-int ltt_trace_setup(const char *trace_name);
-struct ltt_trace *_ltt_trace_find_setup(const char *trace_name);
-int ltt_trace_set_type(const char *trace_name, const char *trace_type);
-int ltt_trace_set_channel_subbufsize(const char *trace_name,
-				     const char *channel_name,
-				     unsigned int size);
-int ltt_trace_set_channel_subbufcount(const char *trace_name,
-				      const char *channel_name,
-				      unsigned int cnt);
-int ltt_trace_set_channel_switch_timer(const char *trace_name,
-				       const char *channel_name,
-				       unsigned long interval);
-int ltt_trace_set_channel_overwrite(const char *trace_name,
-				    const char *channel_name,
-				    unsigned int overwrite);
-int ltt_trace_alloc(const char *trace_name);
-int ltt_trace_destroy(const char *trace_name);
-int ltt_trace_start(const char *trace_name);
-int ltt_trace_stop(const char *trace_name);
-
-extern int ltt_control(enum ltt_control_msg msg, const char *trace_name,
-		       const char *trace_type, union ltt_control_args args);
-
-enum ltt_filter_control_msg {
-	LTT_FILTER_DEFAULT_ACCEPT,
-	LTT_FILTER_DEFAULT_REJECT
-};
-
-extern int ltt_filter_control(enum ltt_filter_control_msg msg,
-			      const char *trace_name);
-
-extern struct dentry *get_filter_root(void);
-
 void ltt_core_register(int (*function)(u8, void *));
 
 void ltt_core_unregister(void);
-
-void ltt_release_trace(struct kref *kref);
-void ltt_release_transport(struct kref *kref);
 
 extern int ltt_probe_register(struct ltt_available_probe *pdata);
 extern int ltt_probe_unregister(struct ltt_available_probe *pdata);
@@ -585,14 +528,6 @@ extern int ltt_marker_connect(const char *channel, const char *mname,
 extern int ltt_marker_disconnect(const char *channel, const char *mname,
 				 const char *pname);
 extern void ltt_dump_marker_state(struct ltt_trace *trace);
-
-void ltt_lock_traces(void);
-void ltt_unlock_traces(void);
-
-extern int ltt_ascii_create_dir(struct ltt_trace *new_trace);
-extern void ltt_ascii_remove_dir(struct ltt_trace *trace);
-extern int ltt_ascii_create(struct ltt_chan *chan);
-extern void ltt_ascii_remove(struct ltt_chan *chan);
 
 extern
 void ltt_statedump_register_kprobes_dump(void (*callback)(void *call_data));

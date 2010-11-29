@@ -57,7 +57,7 @@ static
 int lttng_abi_create_session(void)
 {
 	struct ltt_session *session;
-	struct file *session_filp;
+	struct file *session_file;
 	int session_fd;
 
 	session = ltt_session_create();
@@ -68,15 +68,15 @@ int lttng_abi_create_session(void)
 		ret = session_fd;
 		goto fd_error;
 	}
-	session_filp = anon_inode_getfile("[lttng_session]",
+	session_file = anon_inode_getfile("[lttng_session]",
 					  &lttng_session_fops,
 					  session, O_RDWR);
-	if (IS_ERR(session_filp)) {
-		ret = PTR_ERR(session_filp);
+	if (IS_ERR(session_file)) {
+		ret = PTR_ERR(session_file);
 		goto file_error;
 	}
-	session->file = session_filp;
-	fd_install(session_fd, session_filp);
+	session->file = session_file;
+	fd_install(session_fd, session_file);
 	return session_fd;
 
 file_error:
@@ -89,7 +89,7 @@ fd_error:
 /**
  *	lttng_ioctl - lttng syscall through ioctl
  *
- *	@filp: the file
+ *	@file: the file
  *	@cmd: the command
  *	@arg: command arg
  *
@@ -100,7 +100,7 @@ fd_error:
  * The returned session will be deleted when its file descriptor is closed.
  */
 static
-long lttng_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+long lttng_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	switch (cmd) {
 	case LTTNG_SESSION:
@@ -117,12 +117,12 @@ static const struct file_operations lttng_fops = {
 #endif
 }
 
-int lttng_abi_create_channel(struct file *session_filp,
+int lttng_abi_create_channel(struct file *session_file,
 			     struct lttng_channel __user *uchan_param)
 {
-	struct ltt_session *session = session_filp->private_data;
+	struct ltt_session *session = session_file->private_data;
 	struct ltt_channel *chan;
-	struct file *chan_filp;
+	struct file *chan_file;
 	struct lttng_channel chan_param;
 	int chan_fd;
 	int ret = 0;
@@ -134,11 +134,11 @@ int lttng_abi_create_channel(struct file *session_filp,
 		ret = chan_fd;
 		goto fd_error;
 	}
-	chan_filp = anon_inode_getfile("[lttng_channel]",
+	chan_file = anon_inode_getfile("[lttng_channel]",
 				       &lttng_channel_fops,
 				       NULL, O_RDWR);
-	if (IS_ERR(chan_filp)) {
-		ret = PTR_ERR(chan_filp);
+	if (IS_ERR(chan_file)) {
+		ret = PTR_ERR(chan_file);
 		goto file_error;
 	}
 	/*
@@ -154,16 +154,16 @@ int lttng_abi_create_channel(struct file *session_filp,
 		ret = -ENOMEM;
 		goto chan_error;
 	}
-	channel->file = chan_filp;
-	chan_filp->private_data = chan;
-	fd_install(chan_fd, chan_filp);
+	channel->file = chan_file;
+	chan_file->private_data = chan;
+	fd_install(chan_fd, chan_file);
 	/* The channel created holds a reference on the session */
-	atomic_inc(&session_filp->f_count);
+	atomic_inc(&session_file->f_count);
 
 	return chan_fd;
 
 chan_error:
-	fput(chan_filp);
+	fput(chan_file);
 file_error:
 	put_unused_fd(chan_fd);
 fd_error:
@@ -173,7 +173,7 @@ fd_error:
 /**
  *	lttng_session_ioctl - lttng session fd ioctl
  *
- *	@filp: the file
+ *	@file: the file
  *	@cmd: the command
  *	@arg: command arg
  *
@@ -184,11 +184,19 @@ fd_error:
  * The returned channel will be deleted when its file descriptor is closed.
  */
 static
-long lttng_session_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
+	struct ltt_session *session = file->private_data;
+
 	switch (cmd) {
 	case LTTNG_CHANNEL:
-		return lttng_abi_create_channel(filp, (struct lttng_channel __user *)arg);
+		return lttng_abi_create_channel(file, (struct lttng_channel __user *)arg);
+	case LTTNG_SESSION_START:
+		return ltt_session_start(session);
+	case LTTNG_SESSION_STOP:
+		return ltt_session_stop(session);
+	case LTTNG_SESSION_FINALIZE:
+		return ltt_session_finalize(session);
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -218,9 +226,9 @@ static const struct file_operations lttng_session_fops = {
 }
 
 static
-int lttng_abi_open_stream(struct file *channel_filp)
+int lttng_abi_open_stream(struct file *channel_file)
 {
-	struct ltt_channel *channel = channel_filp->private_data;
+	struct ltt_channel *channel = channel_file->private_data;
 	struct lib_ring_buffer *buf;
 	int stream_fd, ret;
 
@@ -233,16 +241,16 @@ int lttng_abi_open_stream(struct file *channel_filp)
 		ret = stream_fd;
 		goto fd_error;
 	}
-	stream_filp = anon_inode_getfile("[lttng_stream]",
+	stream_file = anon_inode_getfile("[lttng_stream]",
 					 &lib_ring_buffer_file_operations,
 					 buf, O_RDWR);
-	if (IS_ERR(stream_filp)) {
-		ret = PTR_ERR(stream_filp);
+	if (IS_ERR(stream_file)) {
+		ret = PTR_ERR(stream_file);
 		goto file_error;
 	}
-	fd_install(stream_fd, stream_filp);
+	fd_install(stream_fd, stream_file);
 	/* The stream holds a reference on the channel */
-	atomic_inc(&channel_filp->f_count);
+	atomic_inc(&channel_file->f_count);
 	return stream_fd;
 
 file_error:
@@ -253,10 +261,10 @@ fd_error:
 }
 
 static
-int lttng_abi_create_event(struct file *channel_filp,
+int lttng_abi_create_event(struct file *channel_file,
 			   struct lttng_event __user *uevent_param)
 {
-	struct ltt_channel *channel = channel_filp->private_data;
+	struct ltt_channel *channel = channel_file->private_data;
 	struct ltt_event *event;
 	char *event_name;
 	struct lttng_event event_param;
@@ -277,11 +285,11 @@ int lttng_abi_create_event(struct file *channel_filp,
 		ret = event_fd;
 		goto fd_error;
 	}
-	event_filp = anon_inode_getfile("[lttng_event]",
+	event_file = anon_inode_getfile("[lttng_event]",
 					&lttng_event_fops, /* TODO: filter */
 					NULL, O_RDWR);
-	if (IS_ERR(event_filp)) {
-		ret = PTR_ERR(event_filp);
+	if (IS_ERR(event_file)) {
+		ret = PTR_ERR(event_file);
 		goto file_error;
 	}
 	/*
@@ -293,15 +301,15 @@ int lttng_abi_create_event(struct file *channel_filp,
 		goto event_error;
 		ret = -EEXIST;
 	}
-	event_filp->private_data = event;
-	fd_install(event_fd, event_filp);
+	event_file->private_data = event;
+	fd_install(event_fd, event_file);
 	/* The event holds a reference on the channel */
-	atomic_inc(&channel_filp->f_count);
+	atomic_inc(&channel_file->f_count);
 	kfree(event_name);
 	return event_fd;
 
 event_error:
-	fput(event_filp);
+	fput(event_file);
 file_error:
 	put_unused_fd(event_fd);
 fd_error:
@@ -313,7 +321,7 @@ name_error:
 /**
  *	lttng_channel_ioctl - lttng syscall through ioctl
  *
- *	@filp: the file
+ *	@file: the file
  *	@cmd: the command
  *	@arg: command arg
  *
@@ -328,13 +336,13 @@ name_error:
  * Channel and event file descriptors also hold a reference on the session.
  */
 static
-long lttng_channel_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
+long lttng_channel_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	switch (cmd) {
 	case LTTNG_STREAM:
-		return lttng_abi_open_stream(filp);
+		return lttng_abi_open_stream(file);
 	case LTTNG_EVENT:
-		return lttng_abi_create_event(filp, (struct lttng_event __user *)arg);
+		return lttng_abi_create_event(file, (struct lttng_event __user *)arg);
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -343,17 +351,17 @@ long lttng_channel_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 /**
  *	lttng_channel_poll - lttng stream addition/removal monitoring
  *
- *	@filp: the file
+ *	@file: the file
  *	@wait: poll table
  */
-unsigned int lttng_channel_poll(struct file *filp, poll_table *wait)
+unsigned int lttng_channel_poll(struct file *file, poll_table *wait)
 {
-	struct ltt_channel *channel = filp->private_data;
+	struct ltt_channel *channel = file->private_data;
 	unsigned int mask = 0;
 
-	if (filp->f_mode & FMODE_READ) {
+	if (file->f_mode & FMODE_READ) {
 		poll_wait_set_exclusive(wait);
-		poll_wait(filp, &channel->notify_wait, wait);
+		poll_wait(file, &channel->notify_wait, wait);
 
 		/* TODO: identify when the channel is being finalized. */
 		if (finalized)

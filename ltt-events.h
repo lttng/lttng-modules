@@ -47,7 +47,28 @@ struct ltt_session {
 	struct list_head list;		/* Session list */
 };
 
+struct ltt_trace_ops {
+	struct channel *(*channel_create)(const char *name,
+				struct ltt_trace *trace,
+				void *buf_addr,
+				size_t subbuf_size, size_t num_subbuf,
+				unsigned int switch_timer_interval,
+				unsigned int read_timer_interval);
+	void (*channel_destroy)(struct channel *chan);
+	struct lib_ring_buffer *(*buffer_read_open)(struct channel *chan);
+	struct lib_ring_buffer *(*buffer_read_close)(struct lib_ring_buffer *buf);
+};
+
+struct ltt_transport {
+	char *name;
+	struct module *owner;
+	struct list_head node;
+	struct ltt_trace_ops ops;
+};
+
 struct ltt_session *ltt_session_create(void);
+int ltt_session_start(struct ltt_session *session);
+int ltt_session_stop(struct ltt_session *session);
 int ltt_session_destroy(struct ltt_session *session);
 
 struct ltt_channel *ltt_channel_create(struct ltt_session *session,
@@ -62,3 +83,6 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 				   char *name,
 				   void *filter);
 int _ltt_event_destroy(struct ltt_event *event);
+
+void ltt_transport_register(struct ltt_transport *transport);
+void ltt_transport_unregister(struct ltt_transport *transport);
