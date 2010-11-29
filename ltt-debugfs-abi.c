@@ -286,7 +286,7 @@ int lttng_abi_create_event(struct file *channel_file,
 		goto fd_error;
 	}
 	event_file = anon_inode_getfile("[lttng_event]",
-					&lttng_event_fops, /* TODO: filter */
+					&lttng_event_fops,
 					NULL, O_RDWR);
 	if (IS_ERR(event_file)) {
 		ret = PTR_ERR(event_file);
@@ -348,6 +348,8 @@ long lttng_channel_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	}
 }
 
+/* TODO: poll */
+#if 0
 /**
  *	lttng_channel_poll - lttng stream addition/removal monitoring
  *
@@ -372,6 +374,7 @@ unsigned int lttng_channel_poll(struct file *file, poll_table *wait)
 	return mask;
 
 }
+#endif //0
 
 static
 int lttng_channel_release(struct inode *inode, struct file *file)
@@ -383,7 +386,10 @@ int lttng_channel_release(struct inode *inode, struct file *file)
 
 static const struct file_operations lttng_channel_fops = {
 	.release = lttng_channel_release,
+/* TODO */
+#if 0
 	.poll = lttng_channel_poll,
+#endif //0
 	.unlocked_ioctl = lttng_channel_ioctl,
 #ifdef CONFIG_COMPAT
 	.compat_ioctl = lttng_channel_ioctl,
@@ -398,6 +404,7 @@ int lttng_event_release(struct inode *inode, struct file *file)
 	return 0;
 }
 
+/* TODO: filter control ioctl */
 static const struct file_operations lttng_event_fops = {
 	.release = lttng_event_release,
 }
