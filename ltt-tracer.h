@@ -24,21 +24,28 @@
 #include <linux/kernel.h>
 #include <linux/timex.h>
 #include <linux/wait.h>
-#include <linux/marker.h>
 #include <linux/trace-clock.h>
 #include <asm/atomic.h>
 #include <asm/local.h>
 
 #include "ltt-tracer-core.h"
-#include "ltt-channels.h"
 
 /* Number of bytes to log with a read/write event */
 #define LTT_LOG_RW_SIZE			32L
 
-struct ltt_active_marker;
-
 /* Maximum number of callbacks per marker */
 #define LTT_NR_CALLBACKS	10
+
+struct ltt_serialize_closure;
+
+/* Serialization callback */
+typedef size_t (*ltt_serialize_cb)(struct lib_ring_buffer *buf,
+				   size_t buf_offset,
+				   struct ltt_serialize_closure *closure,
+				   void *serialize_private,
+				   unsigned int stack_pos_ctx,
+				   int *largest_align,
+				   const char *fmt, va_list *args);
 
 struct ltt_serialize_closure {
 	ltt_serialize_cb *callbacks;
@@ -46,18 +53,10 @@ struct ltt_serialize_closure {
 	unsigned int cb_idx;
 };
 
-size_t ltt_serialize_data(struct ltt_chanbuf *buf, size_t buf_offset,
+size_t ltt_serialize_data(struct lib_ring_buffer *buf, size_t buf_offset,
 			  struct ltt_serialize_closure *closure,
 			  void *serialize_private, unsigned int stack_pos_ctx,
 			  int *largest_align, const char *fmt, va_list *args);
-
-struct ltt_available_probe {
-	const char *name;		/* probe name */
-	const char *format;
-	marker_probe_func *probe_func;
-	ltt_serialize_cb callbacks[LTT_NR_CALLBACKS];
-	struct list_head node;		/* registered probes list */
-};
 
 enum ltt_channels {
 	LTT_CHANNEL_METADATA,
@@ -80,20 +79,8 @@ enum ltt_channels {
 	LTT_CHANNEL_DEFAULT,
 };
 
-struct ltt_active_marker {
-	struct list_head node;		/* active markers list */
-	const char *channel;
-	const char *name;
-	const char *format;
-	struct ltt_available_probe *probe;
-};
-
-extern void ltt_vtrace(const struct marker *mdata, void *probe_data,
-		       void *call_data, const char *fmt, va_list *args);
-extern void ltt_trace(const struct marker *mdata, void *probe_data,
-		      void *call_data, const char *fmt, ...);
-
-size_t ltt_serialize_printf(struct ltt_chanbuf *buf, unsigned long buf_offset,
+#if 0
+size_t ltt_serialize_printf(struct lib_ring_buffer *buf, unsigned long buf_offset,
 			    size_t *msg_size, char *output, size_t outlen,
 			    const char *fmt);
 
@@ -127,6 +114,7 @@ enum trace_mode { LTT_TRACE_NORMAL, LTT_TRACE_FLIGHT, LTT_TRACE_HYBRID };
 
 #define CHANNEL_FLAG_ENABLE	(1U<<0)
 #define CHANNEL_FLAG_OVERWRITE	(1U<<1)
+#endif //0
 
 #if 0
 /* Per-trace information - each trace/flight recorder represented by one */
@@ -313,10 +301,9 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 #include <linux/ringbuffer/api.h>
 
 extern
-size_t ltt_write_event_header_slow(struct ltt_chanbuf_alloc *bufa,
-				   struct ltt_chan_alloc *chana,
-				   long buf_offset, u16 eID, u32 event_size,
-				   u64 tsc, unsigned int rflags);
+size_t ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
+				   struct lib_ring_buffer_ctx *ctx,
+				   u16 eID, u32 event_size);
 
 /*
  * ltt_write_event_header
@@ -463,17 +450,17 @@ static __inline__
 void ltt_write_trace_header(void *priv,
 			    struct subbuffer_header *header)
 {
-	struct ltt_trace *trace = priv;
+	struct ltt_session *session = priv;
 
 	header->magic_number = LTT_TRACER_MAGIC_NUMBER;
 	header->major_version = LTT_TRACER_VERSION_MAJOR;
 	header->minor_version = LTT_TRACER_VERSION_MINOR;
 	header->arch_size = sizeof(void *);
 	header->alignment = lib_ring_buffer_get_alignment();
-	header->start_time_sec = trace->start_time.tv_sec;
-	header->start_time_usec = trace->start_time.tv_usec;
-	header->start_freq = trace->start_freq;
-	header->freq_scale = trace->freq_scale;
+	header->start_time_sec = session->start_time.tv_sec;
+	header->start_time_usec = session->start_time.tv_usec;
+	header->start_freq = session->start_freq;
+	header->freq_scale = session->freq_scale;
 }
 
 /*
@@ -521,8 +508,6 @@ void ltt_core_register(int (*function)(u8, void *));
 
 void ltt_core_unregister(void);
 
-extern int ltt_probe_register(struct ltt_available_probe *pdata);
-extern int ltt_probe_unregister(struct ltt_available_probe *pdata);
 extern int ltt_marker_connect(const char *channel, const char *mname,
 			      const char *pname);
 extern int ltt_marker_disconnect(const char *channel, const char *mname,

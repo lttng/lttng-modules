@@ -10,6 +10,8 @@
 #include <linux/list.h>
 #include <linux/mutex.h>
 #include <linux/sched.h>
+#include <linux/slab.h>
+#include <linux/vmalloc.h>	/* For vmalloc_sync_all */
 #include "ltt-events.h"
 
 static LIST_HEAD(sessions);
@@ -30,20 +32,16 @@ struct ltt_session *ltt_session_create(void)
 	struct ltt_session *session;
 
 	mutex_lock(&sessions_mutex);
-	session = kmalloc(sizeof(struct ltt_session));
+	session = kmalloc(sizeof(struct ltt_session), GFP_KERNEL);
 	if (!session)
 		return NULL;
 	INIT_LIST_HEAD(&session->chan);
 	list_add(&session->list, &sessions);
 	mutex_unlock(&sessions_mutex);
 	return session;
-
-exist:
-	mutex_unlock(&sessions_mutex);
-	return NULL;
 }
 
-int ltt_session_destroy(struct ltt_session *session)
+void ltt_session_destroy(struct ltt_session *session)
 {
 	struct ltt_channel *chan, *tmpchan;
 	struct ltt_event *event, *tmpevent;
@@ -73,7 +71,7 @@ int ltt_session_start(struct ltt_session *session)
 	synchronize_trace();	/* Wait for in-flight events to complete */
 end:
 	mutex_unlock(&sessions_mutex);
-	return ret
+	return ret;
 }
 
 int ltt_session_stop(struct ltt_session *session)
@@ -89,7 +87,7 @@ int ltt_session_stop(struct ltt_session *session)
 	synchronize_trace();	/* Wait for in-flight events to complete */
 end:
 	mutex_unlock(&sessions_mutex);
-	return ret
+	return ret;
 }
 
 struct ltt_channel *ltt_channel_create(struct ltt_session *session,
@@ -119,9 +117,10 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 		goto nomem;
 	chan->session = session;
 	init_waitqueue_head(&chan->notify_wait);
-	transport->ops.channel_create(session, buf_addr, subbuf_size,
-				      num_subbuf, switch_timer_interval,
-				      read_timer_interval);
+	chan->chan = transport->ops.channel_create("[lttng]", session, buf_addr,
+			subbuf_size, num_subbuf, switch_timer_interval,
+			read_timer_interval);
+	chan->ops = &transport->ops;
 	list_add(&chan->list, &session->chan);
 	mutex_unlock(&sessions_mutex);
 	return chan;
@@ -136,9 +135,9 @@ active:
 /*
  * Only used internally at session destruction.
  */
-int _ltt_channel_destroy(struct ltt_channel *chan)
+void _ltt_channel_destroy(struct ltt_channel *chan)
 {
-	transport->ops.channel_destroy(chan);
+	chan->ops->channel_destroy(chan->chan);
 	list_del(&chan->list);
 	kfree(chan);
 }
@@ -163,32 +162,36 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 	list_for_each_entry(event, &chan->session->events, list)
 		if (!strcmp(event->name, name))
 			goto exist;
-	event = kmem_cache_zalloc(events_cache, GFP_KERNEL);
+	event = kmem_cache_zalloc(event_cache, GFP_KERNEL);
 	if (!event)
 		goto cache_error;
 	event->name = kmalloc(strlen(name) + 1, GFP_KERNEL);
 	if (!event->name)
-		goto error;
+		goto name_error;
 	strcpy(event->name, name);
 	event->chan = chan;
 	event->probe = probe;
 	event->filter = filter;
 	event->id = chan->free_event_id++;
 	event->itype = itype;
-	mutex_unlock(&sessions_mutex);
 	/* Populate ltt_event structure before tracepoint registration. */
 	smp_wmb();
 	switch (itype) {
 	case INSTRUM_TRACEPOINTS:
 		ret = tracepoint_probe_register(name, probe, event);
+		if (ret)
+			goto register_error;
 		break;
 	default:
 		WARN_ON_ONCE(1);
 	}
+	mutex_unlock(&sessions_mutex);
 	return event;
 
-error:
-	kmem_cache_free(event);
+register_error:
+	kfree(event->name);
+name_error:
+	kmem_cache_free(event_cache, event);
 cache_error:
 exist:
 full:
@@ -201,15 +204,21 @@ full:
  */
 int _ltt_event_destroy(struct ltt_event *event)
 {
+	int ret = -EINVAL;
+
 	switch (event->itype) {
 	case INSTRUM_TRACEPOINTS:
-		ret = tracepoint_probe_unregister(name, event->probe, event);
+		ret = tracepoint_probe_unregister(event->name, event->probe,
+						  event);
+		if (ret)
+			return ret;
 		break;
 	default:
 		WARN_ON_ONCE(1);
 	}
 	kfree(event->name);
-	kmem_cache_free(event);
+	kmem_cache_free(event_cache, event);
+	return ret;
 }
 
 /**
@@ -254,13 +263,13 @@ EXPORT_SYMBOL_GPL(ltt_transport_unregister);
 
 static int __init ltt_events_init(void)
 {
-	int ret;
-
-	events_cache = KMEM_CACHE(ltt_event, 0);
-	if (!events_cache)
+	event_cache = KMEM_CACHE(ltt_event, 0);
+	if (!event_cache)
 		return -ENOMEM;
 	return 0;
 }
+
+module_init(ltt_events_init);
 
 static void __exit ltt_events_exit(void)
 {
@@ -268,8 +277,10 @@ static void __exit ltt_events_exit(void)
 
 	list_for_each_entry_safe(session, tmpsession, &sessions, list)
 		ltt_session_destroy(session);
-	kmem_cache_destroy(events_cache);
+	kmem_cache_destroy(event_cache);
 }
+
+module_exit(ltt_events_exit);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");

@@ -22,7 +22,14 @@
  *     - Takes instrumentation source specific arguments.
  */
 
+#include <linux/module.h>
 #include <linux/debugfs.h>
+#include <linux/anon_inodes.h>
+#include <linux/file.h>
+#include <linux/uaccess.h>
+#include <linux/slab.h>
+#include <linux/ringbuffer/vfs.h>
+#include "ltt-debugfs-abi.h"
 #include "ltt-events.h"
 
 /*
@@ -36,29 +43,12 @@ static const struct file_operations lttng_session_fops;
 static const struct file_operations lttng_channel_fops;
 static const struct file_operations lttng_event_fops;
 
-/*
- * LTTng DebugFS ABI structures.
- */
-
-struct lttng_channel {
-	int overwrite;			/* 1: overwrite, 0: discard */
-	u64 subbuf_size;
-	u64 num_subbuf;
-	unsigned int switch_timer_interval;
-	unsigned int read_timer_interval;
-};
-
-struct lttng_event {
-	enum instrum_type itype;
-	char name[];
-};
-
 static
 int lttng_abi_create_session(void)
 {
 	struct ltt_session *session;
 	struct file *session_file;
-	int session_fd;
+	int session_fd, ret;
 
 	session = ltt_session_create();
 	if (!session)
@@ -115,7 +105,7 @@ static const struct file_operations lttng_fops = {
 #ifdef CONFIG_COMPAT
 	.compat_ioctl = lttng_ioctl,
 #endif
-}
+};
 
 int lttng_abi_create_channel(struct file *session_file,
 			     struct lttng_channel __user *uchan_param)
@@ -145,16 +135,16 @@ int lttng_abi_create_channel(struct file *session_file,
 	 * We tolerate no failure path after channel creation. It will stay
 	 * invariant for the rest of the session.
 	 */
-	chan = ltt_channel_create(session, chan_param->overwrite, NULL,
-				  chan_param->subbuf_size,
-				  chan_param->num_subbuf,
-				  chan_param->switch_timer_interval,
-				  chan_param->read_timer_interval);
+	chan = ltt_channel_create(session, chan_param.overwrite, NULL,
+				  chan_param.subbuf_size,
+				  chan_param.num_subbuf,
+				  chan_param.switch_timer_interval,
+				  chan_param.read_timer_interval);
 	if (!chan) {
 		ret = -ENOMEM;
 		goto chan_error;
 	}
-	channel->file = chan_file;
+	chan->file = chan_file;
 	chan_file->private_data = chan;
 	fd_install(chan_fd, chan_file);
 	/* The channel created holds a reference on the session */
@@ -195,8 +185,6 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return ltt_session_start(session);
 	case LTTNG_SESSION_STOP:
 		return ltt_session_stop(session);
-	case LTTNG_SESSION_FINALIZE:
-		return ltt_session_finalize(session);
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -214,7 +202,8 @@ static
 int lttng_session_release(struct inode *inode, struct file *file)
 {
 	struct ltt_session *session = file->private_data;
-	return ltt_session_destroy(session);
+	ltt_session_destroy(session);
+	return 0;
 }
 
 static const struct file_operations lttng_session_fops = {
@@ -223,7 +212,7 @@ static const struct file_operations lttng_session_fops = {
 #ifdef CONFIG_COMPAT
 	.compat_ioctl = lttng_session_ioctl,
 #endif
-}
+};
 
 static
 int lttng_abi_open_stream(struct file *channel_file)
@@ -231,8 +220,9 @@ int lttng_abi_open_stream(struct file *channel_file)
 	struct ltt_channel *channel = channel_file->private_data;
 	struct lib_ring_buffer *buf;
 	int stream_fd, ret;
+	struct file *stream_file;
 
-	buf = ltt_buffer_read_open(channel->chan);
+	buf = channel->ops->buffer_read_open(channel->chan);
 	if (!buf)
 		return -ENOENT;
 
@@ -256,7 +246,7 @@ int lttng_abi_open_stream(struct file *channel_file)
 file_error:
 	put_unused_fd(stream_fd);
 fd_error:
-	ltt_buffer_read_close(buf);
+	channel->ops->buffer_read_close(buf);
 	return ret;
 }
 
@@ -269,13 +259,14 @@ int lttng_abi_create_event(struct file *channel_file,
 	char *event_name;
 	struct lttng_event event_param;
 	int event_fd, ret;
+	struct file *event_file;
 
 	if (copy_from_user(&event_param, uevent_param, sizeof(event_param)))
 		return -EFAULT;
 	event_name = kmalloc(PATH_MAX, GFP_KERNEL);
 	if (!event_name)
 		return -ENOMEM;
-	if (strncpy_from_user(event_name, &uevent_param->name, PATH_MAX)) {
+	if (strncpy_from_user(event_name, uevent_param->name, PATH_MAX)) {
 		ret = -EFAULT;
 		goto name_error;
 	}
@@ -296,7 +287,8 @@ int lttng_abi_create_event(struct file *channel_file,
 	 * We tolerate no failure path after event creation. It will stay
 	 * invariant for the rest of the session.
 	 */
-	event = ltt_event_create(channel, event_param->itype, event_name, NULL);
+	event = ltt_event_create(channel, event_name, event_param.itype,
+				 NULL, NULL);	/* TODO non-null probe */
 	if (!event) {
 		goto event_error;
 		ret = -EEXIST;
@@ -394,7 +386,7 @@ static const struct file_operations lttng_channel_fops = {
 #ifdef CONFIG_COMPAT
 	.compat_ioctl = lttng_channel_ioctl,
 #endif
-}
+};
 
 static
 int lttng_event_release(struct inode *inode, struct file *file)
@@ -407,14 +399,15 @@ int lttng_event_release(struct inode *inode, struct file *file)
 /* TODO: filter control ioctl */
 static const struct file_operations lttng_event_fops = {
 	.release = lttng_event_release,
-}
+};
 
 static int __init ltt_debugfs_abi_init(void)
 {
 	int ret = 0;
 
-	lttng_dentry = debugfs_create_file("lttng", NULL);
-	if (IS_ERR(lttng_dentry) || !lttng_dentry)
+	lttng_dentry = debugfs_create_file("lttng", S_IWUSR, NULL, NULL,
+					   &lttng_session_fops);
+	if (IS_ERR(lttng_dentry) || !lttng_dentry) {
 		printk(KERN_ERR "Error creating LTTng control file\n");
 		ret = -ENOMEM;
 		goto error;
@@ -423,7 +416,15 @@ error:
 	return ret;
 }
 
+module_init(ltt_debugfs_abi_init);
+
 static void __exit ltt_debugfs_abi_exit(void)
 {
-	debugfs_remote(lttng_dentry);
+	debugfs_remove(lttng_dentry);
 }
+
+module_exit(ltt_debugfs_abi_exit);
+
+MODULE_LICENSE("GPL and additional rights");
+MODULE_AUTHOR("Mathieu Desnoyers");
+MODULE_DESCRIPTION("Linux Trace Toolkit Next Generation DebugFS ABI");
