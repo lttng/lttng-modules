@@ -53,7 +53,7 @@ int lttng_abi_create_session(void)
 	session = ltt_session_create();
 	if (!session)
 		return -ENOMEM;
-	session_fd = get_unused_fd_flags(O_RDWR);
+	session_fd = get_unused_fd();
 	if (session_fd < 0) {
 		ret = session_fd;
 		goto fd_error;
@@ -119,7 +119,7 @@ int lttng_abi_create_channel(struct file *session_file,
 
 	if (copy_from_user(&chan_param, uchan_param, sizeof(chan_param)))
 		return -EFAULT;
-	chan_fd = get_unused_fd_flags(O_RDWR);
+	chan_fd = get_unused_fd();
 	if (chan_fd < 0) {
 		ret = chan_fd;
 		goto fd_error;
@@ -226,7 +226,7 @@ int lttng_abi_open_stream(struct file *channel_file)
 	if (!buf)
 		return -ENOENT;
 
-	stream_fd = get_unused_fd_flags(O_RDWR);
+	stream_fd = get_unused_fd();
 	if (stream_fd < 0) {
 		ret = stream_fd;
 		goto fd_error;
@@ -271,7 +271,7 @@ int lttng_abi_create_event(struct file *channel_file,
 		goto name_error;
 	}
 	event_name[PATH_MAX - 1] = '\0';
-	event_fd = get_unused_fd_flags(O_RDWR);
+	event_fd = get_unused_fd();
 	if (event_fd < 0) {
 		ret = event_fd;
 		goto fd_error;
@@ -401,7 +401,7 @@ static const struct file_operations lttng_event_fops = {
 	.release = lttng_event_release,
 };
 
-static int __init ltt_debugfs_abi_init(void)
+int __init ltt_debugfs_abi_init(void)
 {
 	int ret = 0;
 
@@ -416,15 +416,7 @@ error:
 	return ret;
 }
 
-module_init(ltt_debugfs_abi_init);
-
-static void __exit ltt_debugfs_abi_exit(void)
+void __exit ltt_debugfs_abi_exit(void)
 {
 	debugfs_remove(lttng_dentry);
 }
-
-module_exit(ltt_debugfs_abi_exit);
-
-MODULE_LICENSE("GPL and additional rights");
-MODULE_AUTHOR("Mathieu Desnoyers");
-MODULE_DESCRIPTION("Linux Trace Toolkit Next Generation DebugFS ABI");

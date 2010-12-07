@@ -6,14 +6,14 @@ ifneq ($(KERNELRELEASE),)
 ifneq ($(CONFIG_TRACEPOINTS),)
 
 obj-m += ltt-core.o
-obj-m += ltt-debugfs-abi.o
-obj-m += ltt-events.o
 obj-m += ltt-ring-buffer-client-discard.o
 obj-m += ltt-ring-buffer-client-overwrite.o
 
 obj-m += ltt-relay.o
-ltt-relay-objs :=  ltt-event-header.o ltt-serialize.o ltt-type-serializer.o
+ltt-relay-objs :=  ltt-events.o ltt-event-header.o ltt-debugfs-abi.o
 
+#ltt-type-serializer.o
+#ltt-serialize.o
 #obj-m += ltt-marker-control.o
 #obj-m += ltt-trace-control.o
 #ltt-ascii.o

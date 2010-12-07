@@ -17,7 +17,6 @@
 #include <linux/module.h>
 
 #include "ltt-tracer.h"
-#include "ltt-relay-lockless.h"
 
 enum ltt_type {
 	LTT_TYPE_SIGNED_INT,

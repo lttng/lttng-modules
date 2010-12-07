@@ -14,6 +14,7 @@
 
 struct ltt_channel;
 struct ltt_session;
+struct lib_ring_buffer_ctx;
 
 /*
  * ltt_event structure is referred to by the tracing fast path. It must be
@@ -38,7 +39,9 @@ struct ltt_channel_ops {
 				unsigned int read_timer_interval);
 	void (*channel_destroy)(struct channel *chan);
 	struct lib_ring_buffer *(*buffer_read_open)(struct channel *chan);
-	struct lib_ring_buffer *(*buffer_read_close)(struct lib_ring_buffer *buf);
+	void (*buffer_read_close)(struct lib_ring_buffer *buf);
+	int (*event_reserve)(struct lib_ring_buffer_ctx *ctx);
+	void (*event_commit)(struct lib_ring_buffer_ctx *ctx);
 };
 
 struct ltt_channel {
@@ -87,5 +90,8 @@ int _ltt_event_destroy(struct ltt_event *event);
 
 void ltt_transport_register(struct ltt_transport *transport);
 void ltt_transport_unregister(struct ltt_transport *transport);
+
+int ltt_debugfs_abi_init(void);
+void ltt_debugfs_abi_exit(void);
 
 #endif /* _LTT_EVENTS_H */

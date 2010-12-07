@@ -29,6 +29,7 @@
 #include <asm/local.h>
 
 #include "ltt-tracer-core.h"
+#include "ltt-events.h"
 
 /* Number of bytes to log with a read/write event */
 #define LTT_LOG_RW_SIZE			32L
@@ -193,13 +194,24 @@ struct event_header {
  * because gcc generates poor code on at least powerpc and mips. Don't ever
  * let gcc add padding between the structure elements.
  */
-struct subbuffer_header {
-	uint64_t cycle_count_begin;	/* Cycle count at subbuffer start */
-	uint64_t cycle_count_end;	/* Cycle count at subbuffer end */
-	uint32_t magic_number;		/*
+struct packet_header {
+	uint32_t magic;			/*
 					 * Trace magic number.
 					 * contains endianness information.
 					 */
+	uint8_t trace_uuid[16];
+	uint32_t stream_id;
+	uint64_t timestamp_begin;	/* Cycle count at subbuffer start */
+	uint64_t timestamp_end;	/* Cycle count at subbuffer end */
+	uint32_t content_size;		/* Size of data in subbuffer */
+	uint32_t packet_size;		/* Subbuffer size (include padding) */
+	uint32_t events_lost;		/*
+					 * Events lost in this subbuffer since
+					 * the beginning of the trace.
+					 * (may overflow)
+					 */
+	/* TODO: move to metadata */
+#if 0
 	uint8_t major_version;
 	uint8_t minor_version;
 	uint8_t arch_size;		/* Architecture pointer size */
@@ -211,18 +223,7 @@ struct subbuffer_header {
 					 * used all along the trace.
 					 */
 	uint32_t freq_scale;		/* Frequency scaling (divisor) */
-	uint32_t data_size;		/* Size of data in subbuffer */
-	uint32_t sb_size;		/* Subbuffer size (include padding) */
-	uint32_t events_lost;		/*
-					 * Events lost in this subbuffer since
-					 * the beginning of the trace.
-					 * (may overflow)
-					 */
-	uint32_t subbuf_corrupt;	/*
-					 * Corrupted (lost) subbuffers since
-					 * the begginig of the trace.
-					 * (may overflow)
-					 */
+#endif //0
 	uint8_t header_end[0];		/* End of header */
 };
 
@@ -301,9 +302,9 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 #include <linux/ringbuffer/api.h>
 
 extern
-size_t ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
-				   struct lib_ring_buffer_ctx *ctx,
-				   u16 eID, u32 event_size);
+void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
+				 struct lib_ring_buffer_ctx *ctx,
+				 u16 eID, u32 event_size);
 
 /*
  * ltt_write_event_header
@@ -397,49 +398,10 @@ size_t ltt_read_event_header(struct ltt_chanbuf_alloc *bufa, long buf_offset,
 }
 #endif //0
 
-/*
- * Control channels :
- * control/metadata
- * control/interrupts
- * control/...
- *
- * cpu channel :
- * cpu
- */
-#define LTT_RELAY_ROOT			"ltt"
-
-#define LTT_METADATA_CHANNEL		"metadata_state"
-#define LTT_FD_STATE_CHANNEL		"fd_state"
-#define LTT_GLOBAL_STATE_CHANNEL	"global_state"
-#define LTT_IRQ_STATE_CHANNEL		"irq_state"
-#define LTT_MODULE_STATE_CHANNEL	"module_state"
-#define LTT_NETIF_STATE_CHANNEL		"netif_state"
-#define LTT_SOFTIRQ_STATE_CHANNEL	"softirq_state"
-#define LTT_SWAP_STATE_CHANNEL		"swap_state"
-#define LTT_SYSCALL_STATE_CHANNEL	"syscall_state"
-#define LTT_TASK_STATE_CHANNEL		"task_state"
-#define LTT_VM_STATE_CHANNEL		"vm_state"
-#define LTT_FS_CHANNEL			"fs"
-#define LTT_INPUT_CHANNEL		"input"
-#define LTT_IPC_CHANNEL			"ipc"
-#define LTT_KERNEL_CHANNEL		"kernel"
-#define LTT_MM_CHANNEL			"mm"
-#define LTT_RCU_CHANNEL			"rcu"
-
-#define LTT_FLIGHT_PREFIX		"flight-"
-
-#define LTT_ASCII			"ascii"
-
 /* Tracer properties */
-#define LTT_DEFAULT_SUBBUF_SIZE_LOW	65536
-#define LTT_DEFAULT_N_SUBBUFS_LOW	2
-#define LTT_DEFAULT_SUBBUF_SIZE_MED	262144
-#define LTT_DEFAULT_N_SUBBUFS_MED	2
-#define LTT_DEFAULT_SUBBUF_SIZE_HIGH	1048576
-#define LTT_DEFAULT_N_SUBBUFS_HIGH	2
-#define LTT_TRACER_MAGIC_NUMBER		0x00D6B7ED
-#define LTT_TRACER_VERSION_MAJOR	2
-#define LTT_TRACER_VERSION_MINOR	6
+#define CTF_MAGIC_NUMBER		0xC1FC1FC1
+#define LTT_TRACER_VERSION_MAJOR	3
+#define LTT_TRACER_VERSION_MINOR	0
 
 /**
  * ltt_write_trace_header - Write trace header
@@ -447,20 +409,21 @@ size_t ltt_read_event_header(struct ltt_chanbuf_alloc *bufa, long buf_offset,
  * @header: Memory address where the information must be written to
  */
 static __inline__
-void ltt_write_trace_header(void *priv,
-			    struct subbuffer_header *header)
+void write_trace_header(const struct lib_ring_buffer_config *config,
+			struct packet_header *header)
 {
-	struct ltt_session *session = priv;
-
-	header->magic_number = LTT_TRACER_MAGIC_NUMBER;
+	header->magic = CTF_MAGIC_NUMBER;
+#if 0
+	/* TODO: move start time to metadata */
 	header->major_version = LTT_TRACER_VERSION_MAJOR;
 	header->minor_version = LTT_TRACER_VERSION_MINOR;
 	header->arch_size = sizeof(void *);
-	header->alignment = lib_ring_buffer_get_alignment();
-	header->start_time_sec = session->start_time.tv_sec;
-	header->start_time_usec = session->start_time.tv_usec;
-	header->start_freq = session->start_freq;
-	header->freq_scale = session->freq_scale;
+	header->alignment = lib_ring_buffer_get_alignment(config);
+	header->start_time_sec = ltt_chan->session->start_time.tv_sec;
+	header->start_time_usec = ltt_chan->session->start_time.tv_usec;
+	header->start_freq = ltt_chan->session->start_freq;
+	header->freq_scale = ltt_chan->session->freq_scale;
+#endif //0
 }
 
 /*
@@ -485,34 +448,9 @@ extern void ltt_module_unregister(enum ltt_module_function name);
 
 /* Exported control function */
 
-enum ltt_control_msg {
-	LTT_CONTROL_START,
-	LTT_CONTROL_STOP,
-	LTT_CONTROL_CREATE_TRACE,
-	LTT_CONTROL_DESTROY_TRACE
-};
-
-union ltt_control_args {
-	struct {
-		enum trace_mode mode;
-		unsigned int subbuf_size_low;
-		unsigned int n_subbufs_low;
-		unsigned int subbuf_size_med;
-		unsigned int n_subbufs_med;
-		unsigned int subbuf_size_high;
-		unsigned int n_subbufs_high;
-	} new_trace;
-};
-
 void ltt_core_register(int (*function)(u8, void *));
 
 void ltt_core_unregister(void);
-
-extern int ltt_marker_connect(const char *channel, const char *mname,
-			      const char *pname);
-extern int ltt_marker_disconnect(const char *channel, const char *mname,
-				 const char *pname);
-extern void ltt_dump_marker_state(struct ltt_trace *trace);
 
 extern
 void ltt_statedump_register_kprobes_dump(void (*callback)(void *call_data));

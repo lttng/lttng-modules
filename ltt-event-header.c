@@ -14,14 +14,14 @@
 #include <linux/module.h>
 #include "ltt-tracer.h"
 
-size_t ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
+void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 				   struct lib_ring_buffer_ctx *ctx,
 				   u16 eID, u32 event_size)
 {
 	struct event_header header;
 	u16 small_size;
 
-	switch (rflags) {
+	switch (ctx->rflags) {
 	case LTT_RFLAG_ID_SIZE_TSC:
 		header.id_time = 29 << LTT_TSC_BITS;
 		break;
@@ -36,10 +36,10 @@ size_t ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 		header.id_time = 0;
 	}
 
-	header.id_time |= (u32)tsc & LTT_TSC_MASK;
+	header.id_time |= (u32)ctx->tsc & LTT_TSC_MASK;
 	lib_ring_buffer_write(config, ctx, &header, sizeof(header));
 
-	switch (rflags) {
+	switch (ctx->rflags) {
 	case LTT_RFLAG_ID_SIZE_TSC:
 		small_size = (u16)min_t(u32, event_size, LTT_MAX_SMALL_SIZE);
 		lib_ring_buffer_write(config, ctx, &eID, sizeof(u16));
@@ -64,7 +64,3 @@ size_t ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 	}
 }
 EXPORT_SYMBOL_GPL(ltt_write_event_header_slow);
-
-MODULE_LICENSE("GPL and additional rights");
-MODULE_AUTHOR("Mathieu Desnoyers");
-MODULE_DESCRIPTION("Linux Trace Toolkit Next Generation Event Header");

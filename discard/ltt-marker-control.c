@@ -121,7 +121,6 @@ EXPORT_SYMBOL_GPL(ltt_probe_unregister);
  */
 int ltt_marker_connect(const char *channel, const char *mname,
 		       const char *pname)
-
 {
 	int ret;
 	struct ltt_active_marker *pdata;

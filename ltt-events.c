@@ -263,10 +263,18 @@ EXPORT_SYMBOL_GPL(ltt_transport_unregister);
 
 static int __init ltt_events_init(void)
 {
+	int ret;
+
 	event_cache = KMEM_CACHE(ltt_event, 0);
 	if (!event_cache)
 		return -ENOMEM;
+	ret = ltt_debugfs_abi_init();
+	if (ret)
+		goto error;
 	return 0;
+error:
+	kmem_cache_destroy(event_cache);
+	return ret;
 }
 
 module_init(ltt_events_init);
@@ -275,6 +283,7 @@ static void __exit ltt_events_exit(void)
 {
 	struct ltt_session *session, *tmpsession;
 
+	ltt_debugfs_abi_exit();
 	list_for_each_entry_safe(session, tmpsession, &sessions, list)
 		ltt_session_destroy(session);
 	kmem_cache_destroy(event_cache);
