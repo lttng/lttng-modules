@@ -124,7 +124,6 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 		       transport_name);
 		goto notransport;
 	}
-	printk("got transport\n");
 	chan = kzalloc(sizeof(struct ltt_channel), GFP_KERNEL);
 	if (!chan)
 		goto nomem;
@@ -133,7 +132,6 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 	chan->chan = transport->ops.channel_create("[lttng]", session, buf_addr,
 			subbuf_size, num_subbuf, switch_timer_interval,
 			read_timer_interval);
-	printk("chan create %p\n", chan->chan);
 	if (!chan->chan)
 		goto create_error;
 	chan->ops = &transport->ops;

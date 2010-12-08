@@ -268,7 +268,7 @@ int lttng_abi_create_event(struct file *channel_file,
 	event_name = kmalloc(PATH_MAX, GFP_KERNEL);
 	if (!event_name)
 		return -ENOMEM;
-	if (strncpy_from_user(event_name, uevent_param->name, PATH_MAX)) {
+	if (strncpy_from_user(event_name, uevent_param->name, PATH_MAX) < 0) {
 		ret = -EFAULT;
 		goto name_error;
 	}
