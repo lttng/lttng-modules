@@ -148,7 +148,7 @@ int lttng_abi_create_channel(struct file *session_file,
 	chan_file->private_data = chan;
 	fd_install(chan_fd, chan_file);
 	/* The channel created holds a reference on the session */
-	atomic_inc(&session_file->f_count);
+	atomic_long_inc(&session_file->f_count);
 
 	return chan_fd;
 
@@ -240,7 +240,7 @@ int lttng_abi_open_stream(struct file *channel_file)
 	}
 	fd_install(stream_fd, stream_file);
 	/* The stream holds a reference on the channel */
-	atomic_inc(&channel_file->f_count);
+	atomic_long_inc(&channel_file->f_count);
 	return stream_fd;
 
 file_error:
@@ -296,7 +296,7 @@ int lttng_abi_create_event(struct file *channel_file,
 	event_file->private_data = event;
 	fd_install(event_fd, event_file);
 	/* The event holds a reference on the channel */
-	atomic_inc(&channel_file->f_count);
+	atomic_long_inc(&channel_file->f_count);
 	kfree(event_name);
 	return event_fd;
 
