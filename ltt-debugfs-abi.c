@@ -141,7 +141,7 @@ int lttng_abi_create_channel(struct file *session_file,
 				  chan_param.switch_timer_interval,
 				  chan_param.read_timer_interval);
 	if (!chan) {
-		ret = -ENOMEM;
+		ret = -EINVAL;
 		goto chan_error;
 	}
 	chan->file = chan_file;
@@ -412,7 +412,7 @@ int __init ltt_debugfs_abi_init(void)
 	int ret = 0;
 
 	lttng_dentry = debugfs_create_file("lttng", S_IWUSR, NULL, NULL,
-					   &lttng_session_fops);
+					   &lttng_fops);
 	if (IS_ERR(lttng_dentry) || !lttng_dentry) {
 		printk(KERN_ERR "Error creating LTTng control file\n");
 		ret = -ENOMEM;

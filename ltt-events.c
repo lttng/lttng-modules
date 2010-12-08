@@ -32,10 +32,11 @@ struct ltt_session *ltt_session_create(void)
 	struct ltt_session *session;
 
 	mutex_lock(&sessions_mutex);
-	session = kmalloc(sizeof(struct ltt_session), GFP_KERNEL);
+	session = kzalloc(sizeof(struct ltt_session), GFP_KERNEL);
 	if (!session)
 		return NULL;
 	INIT_LIST_HEAD(&session->chan);
+	INIT_LIST_HEAD(&session->events);
 	list_add(&session->list, &sessions);
 	mutex_unlock(&sessions_mutex);
 	return session;
@@ -90,6 +91,17 @@ end:
 	return ret;
 }
 
+static struct ltt_transport *ltt_transport_find(char *name)
+{
+	struct ltt_transport *transport;
+
+	list_for_each_entry(transport, &ltt_transport_list, node) {
+		if (!strcmp(transport->name, name))
+			return transport;
+	}
+	return NULL;
+}
+
 struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 				       int overwrite, void *buf_addr,
 				       size_t subbuf_size, size_t num_subbuf,
@@ -97,22 +109,23 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 				       unsigned int read_timer_interval)
 {
 	struct ltt_channel *chan;
-	struct ltt_transport *transport = NULL, *tran_iter;
+	struct ltt_transport *transport;
 	char *transport_name;
 
 	mutex_lock(&sessions_mutex);
-	if (session->active)
+	if (session->active) {
+		printk(KERN_WARNING "LTTng refusing to add channel to active session\n");
 		goto active;	/* Refuse to add channel to active session */
-	transport_name = overwrite ? "relay-overwrite" : "relay-discard";
-	list_for_each_entry(tran_iter, &ltt_transport_list, node) {
-		if (!strcmp(tran_iter->name, transport_name)) {
-			transport = tran_iter;
-			break;
-		}
 	}
-	if (!transport)
+	transport_name = overwrite ? "relay-overwrite" : "relay-discard";
+	transport = ltt_transport_find(transport_name);
+	if (!transport) {
+		printk(KERN_WARNING "LTTng transport %s not found\n",
+		       transport_name);
 		goto notransport;
-	chan = kmalloc(sizeof(struct ltt_channel), GFP_KERNEL);
+	}
+	printk("got transport\n");
+	chan = kzalloc(sizeof(struct ltt_channel), GFP_KERNEL);
 	if (!chan)
 		goto nomem;
 	chan->session = session;
@@ -120,11 +133,16 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 	chan->chan = transport->ops.channel_create("[lttng]", session, buf_addr,
 			subbuf_size, num_subbuf, switch_timer_interval,
 			read_timer_interval);
+	printk("chan create %p\n", chan->chan);
+	if (!chan->chan)
+		goto create_error;
 	chan->ops = &transport->ops;
 	list_add(&chan->list, &session->chan);
 	mutex_unlock(&sessions_mutex);
 	return chan;
 
+create_error:
+	kfree(chan);
 nomem:
 notransport:
 active:
