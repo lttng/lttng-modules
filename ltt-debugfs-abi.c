@@ -202,7 +202,9 @@ static
 int lttng_session_release(struct inode *inode, struct file *file)
 {
 	struct ltt_session *session = file->private_data;
-	ltt_session_destroy(session);
+
+	if (session)
+		ltt_session_destroy(session);
 	return 0;
 }
 
@@ -372,7 +374,9 @@ static
 int lttng_channel_release(struct inode *inode, struct file *file)
 {
 	struct ltt_channel *channel = file->private_data;
-	fput(channel->session->file);
+
+	if (channel)
+		fput(channel->session->file);
 	return 0;
 }
 
@@ -392,7 +396,9 @@ static
 int lttng_event_release(struct inode *inode, struct file *file)
 {
 	struct ltt_event *event = file->private_data;
-	fput(event->chan->file);
+
+	if (event)
+		fput(event->chan->file);
 	return 0;
 }
 
