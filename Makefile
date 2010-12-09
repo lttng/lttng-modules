@@ -12,6 +12,8 @@ obj-m += ltt-ring-buffer-client-overwrite.o
 obj-m += ltt-relay.o
 ltt-relay-objs :=  ltt-events.o ltt-event-header.o ltt-debugfs-abi.o
 
+obj-m += probes/
+
 #ltt-type-serializer.o
 #ltt-serialize.o
 #obj-m += ltt-marker-control.o
