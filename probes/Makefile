@@ -1,6 +1,6 @@
 #
 # Makefile for the LTT probes.
-#
+# Only build from the package top-level directory. Never use with make directly.
 
 ifneq ($(KERNELRELEASE),)
 ifneq ($(CONFIG_TRACEPOINTS),)
