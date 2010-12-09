@@ -290,7 +290,7 @@ int lttng_abi_create_event(struct file *channel_file,
 	 * invariant for the rest of the session.
 	 */
 	event = ltt_event_create(channel, event_name, event_param.itype,
-				 NULL, NULL);	/* TODO non-null probe */
+				 (void *) 0x1, NULL);	/* TODO connect real probe */
 	if (!event) {
 		goto event_error;
 		ret = -EEXIST;
