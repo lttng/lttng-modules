@@ -55,7 +55,13 @@ TRACE_EVENT_ENUM(hrtimer_mode,
         V(HRTIMER_MODE_PINNED),
         V(HRTIMER_MODE_ABS_PINNED),
         V(HRTIMER_MODE_REL_PINNED),
-	R(HRTIMER_MODE_UNDEFINED, 0x04, 0x100),	/* Example (to remove) */
+	R(HRTIMER_MODE_UNDEFINED, 0x04, 0x20),	/* Example (to remove) */
 )
 
 TRACE_EVENT_TYPE(hrtimer_mode, enum, unsigned char)
+
+/* Tests */
+
+TRACE_EVENT_TYPE(__be32, integer_ext, __BIG_ENDIAN)
+TRACE_EVENT_TYPE(testseq, sequence, unsigned int, size_t)
+TRACE_EVENT_TYPE(teststring, string, UTF8)

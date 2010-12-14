@@ -15,12 +15,23 @@
 
 struct dentry *lttng_types_dentry;
 
-#define ATYPE_ENTRY(name)	[atype_##name] = #name
+#undef ENTRY
+#define ENTRY(name)	[atype_##name] = #name
 
 const char * const astract_types[NR_ABSTRACT_TYPES] = {
-	ATYPE_ENTRY(integer),
-	ATYPE_ENTRY(enum),
-	ATYPE_ENTRY(array),
+	ENTRY(integer),
+	ENTRY(enum),
+	ENTRY(array),
+	ENTRY(sequence),
+	ENTRY(string),
+};
+
+#undef ENTRY
+#define ENTRY(name)	[lttng_encode_##name] = #name
+
+const char * const string_encodings[NR_STRING_ENCODINGS] = {
+	ENTRY(UTF8),
+	ENTRY(ASCII),
 };
 
 #define STAGE_EXPORT_ENUMS
@@ -60,12 +71,17 @@ static void print_event_type(struct seq_file *m, const struct lttng_type *type)
 				"\tparent = %s;\n"
 				"\tsize = %u;\n"
 				"\tsigned = %u;\n"
-				"\talign = %u;\n"
-				"};\n", type->name,
+				"\talign = %u;\n",
+				type->name,
 				astract_types[type->atype],
 				type->u.integer.size,
 				type->u.integer.signedness,
 				type->u.integer.alignment);
+		if (type->u.integer.reverse_byte_order)
+			seq_printf(m, 	"\tbyte_order = %s;\n",
+					(__BYTE_ORDER == __LITTLE_ENDIAN) ?
+					"be" : "le");
+		seq_printf(m, 	"};\n");
 		break;
 	case atype_enum:
 		seq_printf(m,	"type %s {\n"
@@ -88,6 +104,24 @@ static void print_event_type(struct seq_file *m, const struct lttng_type *type)
 				astract_types[type->atype],
 				type->u.array.elem_type,
 				type->u.array.length);
+		break;
+	case atype_sequence:
+		seq_printf(m,	"type %s {\n"
+				"\tparent = %s;\n"
+				"\telem_type = %s;\n"
+				"\tlength_type = %s;\n"
+				"};\n", type->name,
+				astract_types[type->atype],
+				type->u.sequence.elem_type,
+				type->u.sequence.length_type);
+		break;
+	case atype_string:
+		seq_printf(m,	"type %s {\n"
+				"\tparent = %s;\n"
+				"\tencoding = %s;\n"
+				"};\n", type->name,
+				astract_types[type->atype],
+				string_encodings[type->u.string.encoding]);
 		break;
 	default:
 		seq_printf(m,	"<<< unknown abstract type %s for type %s >>>\n",

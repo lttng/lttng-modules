@@ -4,15 +4,18 @@
  * Macros mapping tp_assign() to "=", tp_memcpy() to memcpy() and tp_strcpy() to
  * strcpy().
  */
+#undef tp_assign
 #define tp_assign(dest, src)						\
 	lib_ring_buffer_align_ctx(config, &ctx, sizeof(src));		\
 	lib_ring_buffer_write(config, &ctx, &src, sizeof(src));
 
+#undef tp_memcpy
 #define tp_memcpy(dest, src, len)					\
 	lib_ring_buffer_align_ctx(config, &ctx, sizeof(*(src)));	\
 	lib_ring_buffer_write(config, &ctx, &src, len);
 
 /* TODO */
+#undef tp_strcpy
 #define tp_strcpy(dest, src)		__assign_str(dest, src)
 
 /*
@@ -40,59 +43,71 @@
 			     PARAMS(print));		       \
 	DEFINE_EVENT(name, name, PARAMS(proto), PARAMS(args));
 
-/* Field types must be defined in lttng-types.h */
+/* Named field types must be defined in lttng-types.h */
+
+/* TODO turn into a structure definition ? */
 
 #undef __field
-#define __field(type, item)		type	item;
+#define __field(_type, _item)		#_type " " #_item ";\n"
 
 #undef __field_ext
-#define __field_ext(type, item, filter_type)	type	item;
+#define __field_ext(_type, _item, _filter_type)	#_type " " #_item ";\n"
 
 #undef __array
-#define __array(type, item, len)				\
-	type { parent = array; length = len; elem_type = type; } item;
-
-/* TODO */
+#define __array(_type, _item, _len)				\
+	"type { parent = array; length = " #_len "; elem_type = " #_type "; } " #_item";\n"
 
 #undef __dynamic_array
-#define __dynamic_array(type, item, len) u32 __data_loc_##item;
+#define __dynamic_array(_type, _item, _len)			\
+	"type { parent = sequence; length_type = u32; elem_type = " #_type "; } " #_item ";\n"
 
 #undef __string
-#define __string(item, src) __dynamic_array(char, item, -1)
+#define __string(_item, _src)					\
+	"type { parent = string; encoding = UTF8; } " #_item ";\n"
+
+#undef TP_PROTO
+#define TP_PROTO(args...)
+
+#undef TP_ARGS
+#define TP_ARGS(args...)
 
 #undef TP_STRUCT__entry
-#define TP_STRUCT__entry(args...) args
+#define TP_STRUCT__entry(args...) args	/* Only one used in this phase */
+
+#undef TP_fast_assign
+#define TP_fast_assign(args...)
+
+#undef TP_printk
+#define TP_printk(args...)
 
 #undef DECLARE_EVENT_CLASS
 #define DECLARE_EVENT_CLASS(name, proto, args, tstruct, assign, print)	\
-	struct ftrace_raw_##name {					\
-		struct trace_entry	ent;				\
-		tstruct							\
-		char			__data[0];			\
-	};								\
-									\
-	static struct ftrace_event_class event_class_##name;
+	tstruct
 
 #undef DEFINE_EVENT
-#define DEFINE_EVENT(template, name, proto, args)	\
-	static struct ftrace_event_call	__used		\
-	__attribute__((__aligned__(4))) event_##name
+#define DEFINE_EVENT(template, name, proto, args)
 
 #undef DEFINE_EVENT_PRINT
 #define DEFINE_EVENT_PRINT(template, name, proto, args, print)	\
 	DEFINE_EVENT(template, name, PARAMS(proto), PARAMS(args))
 
-/* Callbacks are meaningless to ftrace. */
+/* Callbacks are meaningless to LTTng. */
 #undef TRACE_EVENT_FN
 #define TRACE_EVENT_FN(name, proto, args, tstruct,			\
 		assign, print, reg, unreg)				\
 	TRACE_EVENT(name, PARAMS(proto), PARAMS(args),			\
 		PARAMS(tstruct), PARAMS(assign), PARAMS(print))		\
 
+#undef DEFINE_TRACE_EVENT_METADATA
+#define DEFINE_TRACE_EVENT_METADATA					\
+	const char trace_event_metadata_##TRACE_SYSTEM[]
 
-
-
+//static DEFINE_TRACE_EVENT_METADATA =
+static const char blah[] =
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+;
+
+#if 0
 
 /*
  * Stage 2 of the trace events.
@@ -805,4 +820,4 @@ static inline void perf_test_probe_##call(void)				\
 #endif /* CONFIG_PERF_EVENTS */
 
 #undef _TRACE_PROFILE_INIT
-
+#endif //0

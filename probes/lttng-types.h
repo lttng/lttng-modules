@@ -7,11 +7,40 @@
 
 #include <lttng.h>
 
+#ifdef __KERNEL__
+# include <asm/byteorder.h>
+# ifdef __BIG_ENDIAN
+#  define __BYTE_ORDER __BIG_ENDIAN
+# elif defined(__LITTLE_ENDIAN)
+#  define __BYTE_ORDER __LITTLE_ENDIAN
+# else
+#  error "unknown endianness"
+# endif
+#ifndef __BIG_ENDIAN
+# define __BIG_ENDIAN 4321
+#endif
+#ifndef __LITTLE_ENDIAN
+# define __LITTLE_ENDIAN 1234
+#endif
+#else
+# include <endian.h>
+#endif
+
+/* Update the astract_types name table in lttng-types.c along with this enum */
 enum abstract_types {
 	atype_integer,
 	atype_enum,
 	atype_array,
+	atype_sequence,
+	atype_string,
 	NR_ABSTRACT_TYPES,
+};
+
+/* Update the string_encodings name table in lttng-types.c along with this enum */
+enum lttng_string_encodings {
+	lttng_encode_UTF8 = 0,
+	lttng_encode_ASCII = 1,
+	NR_STRING_ENCODINGS,
 };
 
 struct lttng_enum_entry {
@@ -32,6 +61,7 @@ struct lttng_type {
 			unsigned int size;		/* in bits */
 			unsigned short alignment;	/* in bits */
 			unsigned int signedness:1;
+			unsigned int reverse_byte_order:1;
 		} integer;
 		struct {
 			const char *parent_type;
@@ -41,6 +71,13 @@ struct lttng_type {
 			const char *elem_type;
 			unsigned int length;		/* num. elems. */
 		} array;
+		struct {
+			const char *elem_type;
+			const char *length_type;
+		} sequence;
+		struct {
+			enum lttng_string_encodings encoding;
+		} string;
 	} u;
 } __attribute__((packed));
 
@@ -76,15 +113,20 @@ struct lttng_type {
 
 #ifdef STAGE_EXPORT_TYPES
 
-#undef TRACE_EVENT_TYPE___integer
-#define TRACE_EVENT_TYPE___integer(_name, _unused)		\
+#undef TRACE_EVENT_TYPE___integer_ext
+#define TRACE_EVENT_TYPE___integer_ext(_name, _byte_order)	\
 		{						\
 		  .atype = atype_integer,			\
 		  .name = #_name,				\
 		  .u.integer.size = sizeof(_name) * 8,		\
 		  .u.integer.alignment = __alignof__(_name) * 8,\
 		  .u.integer.signedness = is_signed_type(_name),\
+		  .u.integer.reverse_byte_order = ((_byte_order) != __BYTE_ORDER),\
 		},
+
+#undef TRACE_EVENT_TYPE___integer
+#define TRACE_EVENT_TYPE___integer(_name, _unused)		\
+		TRACE_EVENT_TYPE___integer_ext(_name, __BYTE_ORDER)
 
 #undef TRACE_EVENT_TYPE___enum
 #define TRACE_EVENT_TYPE___enum(_name, _parent_type)		\
@@ -104,6 +146,24 @@ struct lttng_type {
 		  .u.array.elem_type = #_elem_type,		\
 		  .u.array.length = _length,			\
 		},
+
+#undef TRACE_EVENT_TYPE___sequence
+#define TRACE_EVENT_TYPE___sequence(_name, _elem_type, _length_type)	\
+		{						\
+		  .atype = atype_sequence,			\
+		  .name = #_name,				\
+		  .u.sequence.elem_type = #_elem_type,		\
+		  .u.sequence.length_type = #_length_type,	\
+		},
+
+#undef TRACE_EVENT_TYPE___string
+#define TRACE_EVENT_TYPE___string(_name, _encoding)		\
+		{						\
+		  .atype = atype_string,			\
+		  .name = #_name,				\
+		  .u.string.encoding = lttng_encode_##_encoding,\
+		},
+
 
 /* Local declaration */
 #undef TRACE_EVENT_TYPE
