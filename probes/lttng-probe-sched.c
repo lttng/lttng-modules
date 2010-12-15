@@ -13,6 +13,7 @@
  */
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
+#undef CONFIG_EVENT_TRACING	/* Don't create Ftrace probes */
 
 #include <trace/events/sched.h>
 

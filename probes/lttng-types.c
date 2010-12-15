@@ -46,89 +46,89 @@ struct lttng_type lttng_types[] = {
 #undef STAGE_EXPORT_TYPES
 };
 
-static void print_enum(struct seq_file *m, const struct lttng_enum *lttng_enum)
+static void print_indent(struct seq_file *m, unsigned int indent)
+{
+	int i;
+
+	for (i = 0; i < indent; i++)
+		seq_printf(m, "\t");
+}
+
+static void print_enum(struct seq_file *m, unsigned int indent,
+		       const struct lttng_enum *lttng_enum)
 {
 	int i;
 
 	for (i = 0; i < lttng_enum->len; i++) {
+		print_indent(m, indent);
 		if (lttng_enum->entries[i].start == lttng_enum->entries[i].end)
-			seq_printf(m,	"\t\t{ %llu, %s },\n",
+			seq_printf(m,	"{ %llu, %s },\n",
 					lttng_enum->entries[i].start,
 					lttng_enum->entries[i].string);
 		else
-			seq_printf(m,	"\t\t{ { %llu, %llu }, %s },\n",
+			seq_printf(m,	"{ { %llu, %llu }, %s },\n",
 					lttng_enum->entries[i].start,
 					lttng_enum->entries[i].end,
 					lttng_enum->entries[i].string);
 	}
 }
 
-static void print_event_type(struct seq_file *m, const struct lttng_type *type)
+void lttng_print_event_type(struct seq_file *m, unsigned int indent,
+			    const struct lttng_type *type)
 {
+	print_indent(m, indent);
 	switch(type->atype) {
 	case atype_integer:
-		seq_printf(m,	"type %s {\n"
-				"\tparent = %s;\n"
-				"\tsize = %u;\n"
-				"\tsigned = %u;\n"
-				"\talign = %u;\n",
-				type->name,
+		seq_printf(m,	"type %s%s{ parent = %s; size = %u; signed = %u; align = %u;",
+				type->name ? : "", type->name ? " " : "",
 				astract_types[type->atype],
 				type->u.integer.size,
 				type->u.integer.signedness,
 				type->u.integer.alignment);
 		if (type->u.integer.reverse_byte_order)
-			seq_printf(m, 	"\tbyte_order = %s;\n",
+			seq_printf(m, 	" byte_order = %s;",
 					(__BYTE_ORDER == __LITTLE_ENDIAN) ?
 					"be" : "le");
-		seq_printf(m, 	"};\n");
+		seq_printf(m, 	" }");
 		break;
 	case atype_enum:
-		seq_printf(m,	"type %s {\n"
-				"\tparent = %s;\n"
-				"\tparent.parent = %s;\n"
-				"\tmap = {\n",
-				type->name,
+		seq_printf(m,	"type %s%s{ parent = %s; parent.parent = %s; map = {\n",
+				type->name ? : "", type->name ? " " : "",
 				astract_types[type->atype],
 				type->u.enumeration.parent_type);
-		print_enum(m, &type->u.enumeration.def);
-		seq_printf(m,	"\t};\n"
-				"};\n");
+		print_enum(m, indent + 2, &type->u.enumeration.def);
+		print_indent(m, indent + 1);
+		seq_printf(m,	"};\n");
+		print_indent(m, indent);
+		seq_printf(m,	"}");
 		break;
 	case atype_array:
-		seq_printf(m,	"type %s {\n"
-				"\tparent = %s;\n"
-				"\telem_type = %s;\n"
-				"\tlength = %u;\n"
-				"};\n", type->name,
+		seq_printf(m,	"type %s%s{ parent = %s; elem_type = %s; length = %u; }",
+				type->name ? : "", type->name ? " " : "",
 				astract_types[type->atype],
 				type->u.array.elem_type,
 				type->u.array.length);
 		break;
 	case atype_sequence:
-		seq_printf(m,	"type %s {\n"
-				"\tparent = %s;\n"
-				"\telem_type = %s;\n"
-				"\tlength_type = %s;\n"
-				"};\n", type->name,
+		seq_printf(m,	"type %s%s{ parent = %s; elem_type = %s; length_type = %s; }",
+				type->name ? : "", type->name ? " " : "",
 				astract_types[type->atype],
 				type->u.sequence.elem_type,
 				type->u.sequence.length_type);
 		break;
 	case atype_string:
-		seq_printf(m,	"type %s {\n"
-				"\tparent = %s;\n"
-				"\tencoding = %s;\n"
-				"};\n", type->name,
+		seq_printf(m,	"type %s%s{ parent = %s; encoding = %s; }",
+				type->name ? : "", type->name ? " " : "",
 				astract_types[type->atype],
 				string_encodings[type->u.string.encoding]);
 		break;
 	default:
-		seq_printf(m,	"<<< unknown abstract type %s for type %s >>>\n",
+		seq_printf(m,	"<<< unknown abstract type %s for type %s%s>>>",
 				astract_types[type->atype],
-				type->name);
+				type->name ? : "", type->name ? " " : "");
 	}
 }
+EXPORT_SYMBOL_GPL(lttng_print_event_type);
 
 static void *lttng_seq_start(struct seq_file *m, loff_t *pos)
 {
@@ -156,7 +156,8 @@ static int lttng_seq_show(struct seq_file *m, void *v)
 {
 	struct lttng_type *type = v;
 
-	print_event_type(m, type);
+	lttng_print_event_type(m, 0, type);
+	seq_printf(m, ";\n");
 	return 0;
 }
 

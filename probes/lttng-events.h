@@ -1,5 +1,6 @@
 #include <lttng.h>
 #include <lttng-types.h>
+#include <linux/debugfs.h>
 
 /*
  * Macros mapping tp_assign() to "=", tp_memcpy() to memcpy() and tp_strcpy() to
@@ -26,6 +27,8 @@ struct lttng_event_field {
 
 struct lttng_event_desc {
 	const struct lttng_event_field *fields;
+	const char *name;
+	unsigned int nr_fields;
 };
 
 /*
@@ -194,8 +197,12 @@ struct lttng_event_desc {
 #define TP_printk(args...)
 
 #undef DECLARE_EVENT_CLASS
-#define DECLARE_EVENT_CLASS(name, proto, args, tstruct, assign, print)	\
-		{ .fields = __event_fields___##name },
+#define DECLARE_EVENT_CLASS(_name, proto, args, tstruct, assign, print)	\
+		{							\
+			.fields = __event_fields___##_name,		\
+			.name = #_name,					\
+			.nr_fields = ARRAY_SIZE(__event_fields___##_name), \
+		 },
 
 #undef DEFINE_EVENT
 #define DEFINE_EVENT(template, name, proto, args)
@@ -211,15 +218,202 @@ struct lttng_event_desc {
 	TRACE_EVENT(name, PARAMS(proto), PARAMS(args),			\
 		PARAMS(tstruct), PARAMS(assign), PARAMS(print))		\
 
-#define TRACE_EVENT_DESC_1(_system)	__event_desc___##_system
-#define TRACE_EVENT_DESC(_system)	TRACE_EVENT_DESC_1(_system)
+#define TP_ID1(_token, _system)	_token##_system
+#define TP_ID(_token, _system)	TP_ID1(_token, _system)
 
-static const struct lttng_event_desc TRACE_EVENT_DESC(TRACE_SYSTEM)[] = {
+static const struct lttng_event_desc TP_ID(__event_desc___, TRACE_SYSTEM)[] = {
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 };
 
-#undef TRACE_EVENT_DESC_1
-#undef TRACE_EVENT_DESC
+#undef TP_ID1
+#undef TP_ID
+
+/*
+ * Stage 3 of the trace events.
+ *
+ * Create seq file metadata output.
+ */
+
+/*
+ * DECLARE_EVENT_CLASS can be used to add a generic function
+ * handlers for events. That is, if all events have the same
+ * parameters and just have distinct trace points.
+ * Each tracepoint can be defined with DEFINE_EVENT and that
+ * will map the DECLARE_EVENT_CLASS to the tracepoint.
+ *
+ * TRACE_EVENT is a one to one mapping between tracepoint and template.
+ */
+#undef TRACE_EVENT
+#define TRACE_EVENT(name, proto, args, tstruct, assign, print) \
+	DECLARE_EVENT_CLASS(name,			       \
+			     PARAMS(proto),		       \
+			     PARAMS(args),		       \
+			     PARAMS(tstruct),		       \
+			     PARAMS(assign),		       \
+			     PARAMS(print))		       \
+	DEFINE_EVENT(name, name, PARAMS(proto), PARAMS(args))
+
+/* Named field types must be defined in lttng-types.h */
+
+#undef __field
+#define __field(_type, _item)
+
+#undef __field_ext
+#define __field_ext(_type, _item, _filter_type)
+
+#undef __array
+#define __array(_type, _item, _length)
+
+#undef __dynamic_array
+#define __dynamic_array(_type, _item, _length)
+
+#undef __string
+#define __string(_item, _src)
+
+#undef TP_PROTO
+#define TP_PROTO(args...)
+
+#undef TP_ARGS
+#define TP_ARGS(args...)
+
+#undef TP_STRUCT__entry
+#define TP_STRUCT__entry(args...)
+
+#undef TP_fast_assign
+#define TP_fast_assign(args...)
+
+#undef TP_printk
+#define TP_printk(args...)
+
+#undef DECLARE_EVENT_CLASS
+#define DECLARE_EVENT_CLASS(name, proto, args, tstruct, assign, print)	\
+static void ()
+
+#undef DEFINE_EVENT
+#define DEFINE_EVENT(template, name, proto, args)
+
+#undef DEFINE_EVENT_PRINT
+#define DEFINE_EVENT_PRINT(template, name, proto, args, print)	\
+	DEFINE_EVENT(template, name, PARAMS(proto), PARAMS(args))
+
+/* Callbacks are meaningless to LTTng. */
+#undef TRACE_EVENT_FN
+#define TRACE_EVENT_FN(name, proto, args, tstruct,			\
+		assign, print, reg, unreg)				\
+	TRACE_EVENT(name, PARAMS(proto), PARAMS(args),			\
+		PARAMS(tstruct), PARAMS(assign), PARAMS(print))		\
+
+#define TP_ID1(_token, _system)	_token##_system
+#define TP_ID(_token, _system)	TP_ID1(_token, _system)
+#define module_init_eval1(_token, _system)	module_init(_token##_system)
+#define module_init_eval(_token, _system)	module_init_eval1(_token, _system)
+#define module_exit_eval1(_token, _system)	module_exit(_token##_system)
+#define module_exit_eval(_token, _system)	module_exit_eval1(_token, _system)
+
+static void *TP_ID(__lttng_seq_start__, TRACE_SYSTEM)(struct seq_file *m,
+						      loff_t *pos)
+{
+	const struct lttng_event_desc *desc = &TP_ID(__event_desc___, TRACE_SYSTEM)[*pos];
+
+	if (desc > &TP_ID(__event_desc___, TRACE_SYSTEM)[ARRAY_SIZE(TP_ID(__event_desc___, TRACE_SYSTEM)) - 1])
+		return NULL;
+	return (void *) desc;
+}
+
+static void *TP_ID(__lttng_seq_next__, TRACE_SYSTEM)(struct seq_file *m,
+						     void *p, loff_t *ppos)
+{
+	const struct lttng_event_desc *desc = &TP_ID(__event_desc___, TRACE_SYSTEM)[++(*ppos)];
+
+	if (desc > &TP_ID(__event_desc___, TRACE_SYSTEM)[ARRAY_SIZE(TP_ID(__event_desc___, TRACE_SYSTEM)) - 1])
+		return NULL;
+	return (void *) desc;
+}
+
+static void TP_ID(__lttng_seq_stop__, TRACE_SYSTEM)(struct seq_file *m,
+						    void *p)
+{
+}
+
+static int TP_ID(__lttng_seq_show__, TRACE_SYSTEM)(struct seq_file *m,
+						   void *p)
+{
+	const struct lttng_event_desc *desc = p;
+	int i;
+
+	seq_printf(m,	"event {\n"
+			"\tname = %s;\n"
+			"\tid = UNKNOWN;\n"
+			"\tstream = UNKNOWN;\n"
+			"\tfields = {\n",
+			desc->name);
+	for (i = 0; i < desc->nr_fields; i++) {
+		if (desc->fields[i].type.name)	/* Named type */
+			seq_printf(m,	"\t\t%s",
+					desc->fields[i].type.name);
+		else				/* Nameless type */
+			lttng_print_event_type(m, 2, &desc->fields[i].type);
+		seq_printf(m,	" %s;\n", desc->fields[i].name);
+	}
+	seq_printf(m,	"\t};\n");
+	seq_printf(m,	"};\n");
+	return 0;
+}
+
+static const
+struct seq_operations TP_ID(__lttng_types_seq_ops__, TRACE_SYSTEM) = {
+	.start = TP_ID(__lttng_seq_start__, TRACE_SYSTEM),
+	.next = TP_ID(__lttng_seq_next__, TRACE_SYSTEM),
+	.stop = TP_ID(__lttng_seq_stop__, TRACE_SYSTEM),
+	.show = TP_ID(__lttng_seq_show__, TRACE_SYSTEM),
+};
+
+static int
+TP_ID(__lttng_types_open__, TRACE_SYSTEM)(struct inode *inode, struct file *file)
+{
+	return seq_open(file, &TP_ID(__lttng_types_seq_ops__, TRACE_SYSTEM));
+}
+
+static const struct file_operations TP_ID(__lttng_types_fops__, TRACE_SYSTEM) = {
+        .open = TP_ID(__lttng_types_open__, TRACE_SYSTEM),
+        .read = seq_read,
+        .llseek = seq_lseek,
+        .release = seq_release_private,
+};
+
+static struct dentry *TP_ID(__lttng_types_dentry__, TRACE_SYSTEM);
+
+static int TP_ID(__lttng_types_init__, TRACE_SYSTEM)(void)
+{
+	int ret = 0;
+
+	TP_ID(__lttng_types_dentry__, TRACE_SYSTEM) =
+		debugfs_create_file("lttng-events-" __stringify(TRACE_SYSTEM), S_IWUSR,
+				    NULL, NULL, &TP_ID(__lttng_types_fops__, TRACE_SYSTEM));
+	if (IS_ERR(TP_ID(__lttng_types_dentry__, TRACE_SYSTEM))
+	    || !TP_ID(__lttng_types_dentry__, TRACE_SYSTEM)) {
+		printk(KERN_ERR "Error creating LTTng type export file\n");
+		ret = -ENOMEM;
+		goto error;
+	}
+error:
+	return ret;
+}
+
+module_init_eval(__lttng_types_init__, TRACE_SYSTEM);
+
+static void TP_ID(__lttng_types_exit__, TRACE_SYSTEM)(void)
+{
+	debugfs_remove(TP_ID(__lttng_types_dentry__, TRACE_SYSTEM));
+}
+
+module_exit_eval(__lttng_types_exit__, TRACE_SYSTEM);
+
+#undef module_init_eval
+#undef module_exit_eval
+#undef TP_ID1
+#undef TP_ID
+
 
 #if 0
 

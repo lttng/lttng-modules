@@ -5,6 +5,7 @@
 #ifndef _LTTNG_PROBES_LTTNG_TYPES_H
 #define _LTTNG_PROBES_LTTNG_TYPES_H
 
+#include <linux/seq_file.h>
 #include <lttng.h>
 
 #ifdef __KERNEL__
@@ -80,6 +81,9 @@ struct lttng_type {
 		} string;
 	} u;
 } __attribute__((packed));
+
+void lttng_print_event_type(struct seq_file *m, unsigned int indent,
+			    const struct lttng_type *type);
 
 #endif /* _LTTNG_PROBES_LTTNG_TYPES_H */
 
