@@ -26,6 +26,8 @@
 
 #endif //0
 
+/* TODO : deal with DEFINE_EVENT vs event class */
+
 struct lttng_event_field {
 	const char *name;
 	const struct lttng_type type;
@@ -117,7 +119,7 @@ struct lttng_event_desc {
 #undef __string
 #define __string(_item, _src)					\
 	{							\
-		.name = _item,					\
+		.name = #_item,					\
 		.type = {					\
 		  .atype = atype_string,			\
 		  .name = NULL,					\
@@ -129,9 +131,9 @@ struct lttng_event_desc {
 #define TP_STRUCT__entry(args...) args	/* Only one used in this phase */
 
 #undef DECLARE_EVENT_CLASS
-#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)	\
-	static const struct lttng_event_field __event_fields___##_name[] = {	\
-		_tstruct							\
+#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print) \
+	static const struct lttng_event_field __event_fields___##_name[] = { \
+		_tstruct						     \
 	};
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
@@ -147,11 +149,11 @@ struct lttng_event_desc {
 #include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
 
 #undef DECLARE_EVENT_CLASS
-#define DECLARE_EVENT_CLASS(_name, proto, args, tstruct, assign, print)	\
-		{							\
-			.fields = __event_fields___##_name,		\
-			.name = #_name,					\
-			.nr_fields = ARRAY_SIZE(__event_fields___##_name), \
+#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print) \
+		{							     \
+			.fields = __event_fields___##_name,		     \
+			.name = #_name,					     \
+			.nr_fields = ARRAY_SIZE(__event_fields___##_name),   \
 		},
 
 #define TP_ID1(_token, _system)	_token##_system
@@ -299,43 +301,46 @@ module_exit_eval(__lttng_types_exit__, TRACE_SYSTEM);
 /* Named field types must be defined in lttng-types.h */
 
 #undef __field
-#define __field(_type, _item)						\
-	len += lib_ring_buffer_align(len, sizeof(_type));		\
-	len += sizeof(_type);
+#define __field(_type, _item)						  \
+	__event_len += lib_ring_buffer_align(__event_len, sizeof(_type)); \
+	__event_len += sizeof(_type);
 
 #undef __field_ext
 #define __field_ext(_type, _item, _filter_type)	__field(_type, _item)
 
 #undef __array
-#define __array(_type, _item, _length)					\
-	len += lib_ring_buffer_align(len, sizeof(_type));		\
-	len += sizeof(_type) * (_length);
+#define __array(_type, _item, _length)					  \
+	__event_len += lib_ring_buffer_align(__event_len, sizeof(_type)); \
+	__event_len += sizeof(_type) * (_length);
 
 #undef __dynamic_array
-#define __dynamic_array(_type, _item, _length)				\
-	len += lib_ring_buffer_align(len, sizeof(u32));			\
-	len += sizeof(u32);						\
-	len += lib_ring_buffer_align(len, sizeof(_type));		\
-	len += sizeof(_type) * (_length);
+#define __dynamic_array(_type, _item, _length)				  \
+	__event_len += lib_ring_buffer_align(__event_len, sizeof(u32));	  \
+	__event_len += sizeof(u32);					  \
+	__event_len += lib_ring_buffer_align(__event_len, sizeof(_type)); \
+	__event_len += sizeof(_type) * (_length);
 
 #undef __string
 #define __string(_item, _src)						\
-	len += dynamic_len[dynamic_len_idx++] = strlen(_src) + 1;
+	__event_len += __dynamic_len[__dynamic_len_idx++] = strlen(_src) + 1;
+
+#undef TP_PROTO
+#define TP_PROTO(args...) args
 
 #undef TP_STRUCT__entry
-#define TP_STRUCT__entry(args...) args	/* Only one used in this phase */
+#define TP_STRUCT__entry(args...) args
 
 #undef DECLARE_EVENT_CLASS
-#define DECLARE_EVENT_CLASS(name, proto, args, tstruct, assign, print)	\
-static inline size_t __event_get_size__##name(size_t *dynamic_len)	\
-{									\
-	size_t len = 0;							\
-	unsigned int dynamic_len_idx = 0;				\
-									\
-	if (0)								\
-		(void) dynamic_len_idx;	/* don't warn if unused */	\
-	tstruct								\
-	return len;							\
+#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
+static inline size_t __event_get_size__##_name(size_t *__dynamic_len, _proto) \
+{									      \
+	size_t __event_len = 0;						      \
+	unsigned int __dynamic_len_idx = 0;				      \
+									      \
+	if (0)								      \
+		(void) __dynamic_len_idx;	/* don't warn if unused */    \
+	_tstruct							      \
+	return __event_len;						      \
 }
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
