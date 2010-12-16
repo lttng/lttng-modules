@@ -105,11 +105,6 @@ static const struct lib_ring_buffer_config client_config = {
 	.alloc = RING_BUFFER_ALLOC_PER_CPU,
 	.sync = RING_BUFFER_SYNC_PER_CPU,
 	.mode = RING_BUFFER_MODE_TEMPLATE,
-#ifdef RING_BUFFER_ALIGN
-	.align = RING_BUFFER_NATURAL,
-#else
-	.align = RING_BUFFER_PACKED,
-#endif
 	.backend = RING_BUFFER_PAGE,
 	.output = RING_BUFFER_SPLICE,
 	.oops = RING_BUFFER_OOPS_CONSISTENCY,

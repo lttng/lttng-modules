@@ -9,19 +9,11 @@
 #ifndef _LTT_TRACER_H
 #define _LTT_TRACER_H
 
-#ifndef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
-/* Align data on its natural alignment */
-#define RING_BUFFER_ALIGN
-#endif
-
-#include <linux/ringbuffer/config.h>
-
 #include <stdarg.h>
 #include <linux/types.h>
 #include <linux/limits.h>
 #include <linux/list.h>
 #include <linux/cache.h>
-#include <linux/kernel.h>
 #include <linux/timex.h>
 #include <linux/wait.h>
 #include <linux/trace-clock.h>
@@ -270,7 +262,7 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 
 	BUILD_BUG_ON(sizeof(struct event_header) != sizeof(u32));
 
-	padding = lib_ring_buffer_align(config, offset,
+	padding = lib_ring_buffer_align(offset,
 					sizeof(struct event_header));
 	offset += padding;
 	offset += sizeof(struct event_header);

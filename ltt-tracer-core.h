@@ -13,6 +13,13 @@
 #include <linux/percpu.h>
 #include <linux/ltt-core.h>
 
+#ifndef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+/* Align data on its natural alignment */
+#define RING_BUFFER_ALIGN
+#endif
+
+#include <linux/ringbuffer/config.h>
+
 struct ltt_session;
 struct ltt_channel;
 struct ltt_event;

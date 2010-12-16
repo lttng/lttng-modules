@@ -6,8 +6,10 @@ ifneq ($(KERNELRELEASE),)
 ifneq ($(CONFIG_TRACEPOINTS),)
 
 ccflags-y += -I$(PWD)/probes
-obj-m += lttng-probe-sched.o
 obj-m += lttng-types.o
+
+obj-m += lttng-probe-sched.o
+obj-m += lttng-probe-kvm.o
 
 endif
 

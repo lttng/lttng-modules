@@ -47,7 +47,7 @@ void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 		if (small_size == LTT_MAX_SMALL_SIZE)
 			lib_ring_buffer_write(config, ctx, &event_size,
 					      sizeof(u32));
-		lib_ring_buffer_align_ctx(config, ctx, sizeof(u64));
+		lib_ring_buffer_align_ctx(ctx, sizeof(u64));
 		lib_ring_buffer_write(config, ctx, &ctx->tsc, sizeof(u64));
 		break;
 	case LTT_RFLAG_ID_SIZE:

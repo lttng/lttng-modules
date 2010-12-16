@@ -1,7 +1,11 @@
 #include <lttng.h>
 #include <lttng-types.h>
 #include <linux/debugfs.h>
+#include "../ltt-tracer-core.h"
 
+#if 0
+
+/* keep for a later stage (copy stage) */
 /*
  * Macros mapping tp_assign() to "=", tp_memcpy() to memcpy() and tp_strcpy() to
  * strcpy().
@@ -20,6 +24,8 @@
 #undef tp_strcpy
 #define tp_strcpy(dest, src)		__assign_str(dest, src);
 
+#endif //0
+
 struct lttng_event_field {
 	const char *name;
 	const struct lttng_type type;
@@ -32,10 +38,7 @@ struct lttng_event_desc {
 };
 
 /*
- * Stage 1 of the trace events.
- *
- * Create event field type metadata section.
- * Each event produce an array of fields.
+ * Macro declarations used for all stages.
  */
 
 /*
@@ -47,6 +50,7 @@ struct lttng_event_desc {
  *
  * TRACE_EVENT is a one to one mapping between tracepoint and template.
  */
+
 #undef TRACE_EVENT
 #define TRACE_EVENT(name, proto, args, tstruct, assign, print) \
 	DECLARE_EVENT_CLASS(name,			       \
@@ -57,6 +61,26 @@ struct lttng_event_desc {
 			     PARAMS(print))		       \
 	DEFINE_EVENT(name, name, PARAMS(proto), PARAMS(args))
 
+#undef DEFINE_EVENT_PRINT
+#define DEFINE_EVENT_PRINT(template, name, proto, args, print)	\
+	DEFINE_EVENT(template, name, PARAMS(proto), PARAMS(args))
+
+/* Callbacks are meaningless to LTTng. */
+#undef TRACE_EVENT_FN
+#define TRACE_EVENT_FN(name, proto, args, tstruct,			\
+		assign, print, reg, unreg)				\
+	TRACE_EVENT(name, PARAMS(proto), PARAMS(args),			\
+		PARAMS(tstruct), PARAMS(assign), PARAMS(print))		\
+
+/*
+ * Stage 1 of the trace events.
+ *
+ * Create event field type metadata section.
+ * Each event produce an array of fields.
+ */
+
+#include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
+
 /* Named field types must be defined in lttng-types.h */
 
 #undef __field
@@ -64,8 +88,7 @@ struct lttng_event_desc {
 	{ .name = #_item, .type = { .atype = atype_integer, .name = #_type} },
 
 #undef __field_ext
-#define __field_ext(_type, _item, _filter_type)			\
-	{ .name = #_item, .type = { .atype = atype_integer, .name = #_type} },
+#define __field_ext(_type, _item, _filter_type)		__field(_type, _item)
 
 #undef __array
 #define __array(_type, _item, _length)				\
@@ -102,40 +125,14 @@ struct lttng_event_desc {
 		},						\
 	},
 
-#undef TP_PROTO
-#define TP_PROTO(args...)
-
-#undef TP_ARGS
-#define TP_ARGS(args...)
-
 #undef TP_STRUCT__entry
 #define TP_STRUCT__entry(args...) args	/* Only one used in this phase */
 
-#undef TP_fast_assign
-#define TP_fast_assign(args...)
-
-#undef TP_printk
-#define TP_printk(args...)
-
 #undef DECLARE_EVENT_CLASS
-#define DECLARE_EVENT_CLASS(name, proto, args, tstruct, assign, print)	\
-	static const struct lttng_event_field __event_fields___##name[] = { \
-		tstruct							\
+#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)	\
+	static const struct lttng_event_field __event_fields___##_name[] = {	\
+		_tstruct							\
 	};
-
-#undef DEFINE_EVENT
-#define DEFINE_EVENT(template, name, proto, args)
-
-#undef DEFINE_EVENT_PRINT
-#define DEFINE_EVENT_PRINT(template, name, proto, args, print)	\
-	DEFINE_EVENT(template, name, PARAMS(proto), PARAMS(args))
-
-/* Callbacks are meaningless to LTTng. */
-#undef TRACE_EVENT_FN
-#define TRACE_EVENT_FN(name, proto, args, tstruct,			\
-		assign, print, reg, unreg)				\
-	TRACE_EVENT(name, PARAMS(proto), PARAMS(args),			\
-		PARAMS(tstruct), PARAMS(assign), PARAMS(print))		\
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
@@ -145,56 +142,9 @@ struct lttng_event_desc {
  * Create an array of events.
  */
 
-/*
- * DECLARE_EVENT_CLASS can be used to add a generic function
- * handlers for events. That is, if all events have the same
- * parameters and just have distinct trace points.
- * Each tracepoint can be defined with DEFINE_EVENT and that
- * will map the DECLARE_EVENT_CLASS to the tracepoint.
- *
- * TRACE_EVENT is a one to one mapping between tracepoint and template.
- */
-#undef TRACE_EVENT
-#define TRACE_EVENT(name, proto, args, tstruct, assign, print) \
-	DECLARE_EVENT_CLASS(name,			       \
-			     PARAMS(proto),		       \
-			     PARAMS(args),		       \
-			     PARAMS(tstruct),		       \
-			     PARAMS(assign),		       \
-			     PARAMS(print))		       \
-	DEFINE_EVENT(name, name, PARAMS(proto), PARAMS(args))
-
 /* Named field types must be defined in lttng-types.h */
 
-#undef __field
-#define __field(_type, _item)
-
-#undef __field_ext
-#define __field_ext(_type, _item, _filter_type)
-
-#undef __array
-#define __array(_type, _item, _length)
-
-#undef __dynamic_array
-#define __dynamic_array(_type, _item, _length)
-
-#undef __string
-#define __string(_item, _src)
-
-#undef TP_PROTO
-#define TP_PROTO(args...)
-
-#undef TP_ARGS
-#define TP_ARGS(args...)
-
-#undef TP_STRUCT__entry
-#define TP_STRUCT__entry(args...)
-
-#undef TP_fast_assign
-#define TP_fast_assign(args...)
-
-#undef TP_printk
-#define TP_printk(args...)
+#include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
 
 #undef DECLARE_EVENT_CLASS
 #define DECLARE_EVENT_CLASS(_name, proto, args, tstruct, assign, print)	\
@@ -202,21 +152,7 @@ struct lttng_event_desc {
 			.fields = __event_fields___##_name,		\
 			.name = #_name,					\
 			.nr_fields = ARRAY_SIZE(__event_fields___##_name), \
-		 },
-
-#undef DEFINE_EVENT
-#define DEFINE_EVENT(template, name, proto, args)
-
-#undef DEFINE_EVENT_PRINT
-#define DEFINE_EVENT_PRINT(template, name, proto, args, print)	\
-	DEFINE_EVENT(template, name, PARAMS(proto), PARAMS(args))
-
-/* Callbacks are meaningless to LTTng. */
-#undef TRACE_EVENT_FN
-#define TRACE_EVENT_FN(name, proto, args, tstruct,			\
-		assign, print, reg, unreg)				\
-	TRACE_EVENT(name, PARAMS(proto), PARAMS(args),			\
-		PARAMS(tstruct), PARAMS(assign), PARAMS(print))		\
+		},
 
 #define TP_ID1(_token, _system)	_token##_system
 #define TP_ID(_token, _system)	TP_ID1(_token, _system)
@@ -234,75 +170,6 @@ static const struct lttng_event_desc TP_ID(__event_desc___, TRACE_SYSTEM)[] = {
  * Create seq file metadata output.
  */
 
-/*
- * DECLARE_EVENT_CLASS can be used to add a generic function
- * handlers for events. That is, if all events have the same
- * parameters and just have distinct trace points.
- * Each tracepoint can be defined with DEFINE_EVENT and that
- * will map the DECLARE_EVENT_CLASS to the tracepoint.
- *
- * TRACE_EVENT is a one to one mapping between tracepoint and template.
- */
-#undef TRACE_EVENT
-#define TRACE_EVENT(name, proto, args, tstruct, assign, print) \
-	DECLARE_EVENT_CLASS(name,			       \
-			     PARAMS(proto),		       \
-			     PARAMS(args),		       \
-			     PARAMS(tstruct),		       \
-			     PARAMS(assign),		       \
-			     PARAMS(print))		       \
-	DEFINE_EVENT(name, name, PARAMS(proto), PARAMS(args))
-
-/* Named field types must be defined in lttng-types.h */
-
-#undef __field
-#define __field(_type, _item)
-
-#undef __field_ext
-#define __field_ext(_type, _item, _filter_type)
-
-#undef __array
-#define __array(_type, _item, _length)
-
-#undef __dynamic_array
-#define __dynamic_array(_type, _item, _length)
-
-#undef __string
-#define __string(_item, _src)
-
-#undef TP_PROTO
-#define TP_PROTO(args...)
-
-#undef TP_ARGS
-#define TP_ARGS(args...)
-
-#undef TP_STRUCT__entry
-#define TP_STRUCT__entry(args...)
-
-#undef TP_fast_assign
-#define TP_fast_assign(args...)
-
-#undef TP_printk
-#define TP_printk(args...)
-
-#undef DECLARE_EVENT_CLASS
-#define DECLARE_EVENT_CLASS(name, proto, args, tstruct, assign, print)	\
-static void ()
-
-#undef DEFINE_EVENT
-#define DEFINE_EVENT(template, name, proto, args)
-
-#undef DEFINE_EVENT_PRINT
-#define DEFINE_EVENT_PRINT(template, name, proto, args, print)	\
-	DEFINE_EVENT(template, name, PARAMS(proto), PARAMS(args))
-
-/* Callbacks are meaningless to LTTng. */
-#undef TRACE_EVENT_FN
-#define TRACE_EVENT_FN(name, proto, args, tstruct,			\
-		assign, print, reg, unreg)				\
-	TRACE_EVENT(name, PARAMS(proto), PARAMS(args),			\
-		PARAMS(tstruct), PARAMS(assign), PARAMS(print))		\
-
 #define TP_ID1(_token, _system)	_token##_system
 #define TP_ID(_token, _system)	TP_ID1(_token, _system)
 #define module_init_eval1(_token, _system)	module_init(_token##_system)
@@ -313,9 +180,11 @@ static void ()
 static void *TP_ID(__lttng_seq_start__, TRACE_SYSTEM)(struct seq_file *m,
 						      loff_t *pos)
 {
-	const struct lttng_event_desc *desc = &TP_ID(__event_desc___, TRACE_SYSTEM)[*pos];
+	const struct lttng_event_desc *desc =
+		&TP_ID(__event_desc___, TRACE_SYSTEM)[*pos];
 
-	if (desc > &TP_ID(__event_desc___, TRACE_SYSTEM)[ARRAY_SIZE(TP_ID(__event_desc___, TRACE_SYSTEM)) - 1])
+	if (desc > &TP_ID(__event_desc___, TRACE_SYSTEM)
+			[ARRAY_SIZE(TP_ID(__event_desc___, TRACE_SYSTEM)) - 1])
 		return NULL;
 	return (void *) desc;
 }
@@ -323,9 +192,11 @@ static void *TP_ID(__lttng_seq_start__, TRACE_SYSTEM)(struct seq_file *m,
 static void *TP_ID(__lttng_seq_next__, TRACE_SYSTEM)(struct seq_file *m,
 						     void *p, loff_t *ppos)
 {
-	const struct lttng_event_desc *desc = &TP_ID(__event_desc___, TRACE_SYSTEM)[++(*ppos)];
+	const struct lttng_event_desc *desc =
+		&TP_ID(__event_desc___, TRACE_SYSTEM)[++(*ppos)];
 
-	if (desc > &TP_ID(__event_desc___, TRACE_SYSTEM)[ARRAY_SIZE(TP_ID(__event_desc___, TRACE_SYSTEM)) - 1])
+	if (desc > &TP_ID(__event_desc___, TRACE_SYSTEM)
+			[ARRAY_SIZE(TP_ID(__event_desc___, TRACE_SYSTEM)) - 1])
 		return NULL;
 	return (void *) desc;
 }
@@ -374,7 +245,8 @@ TP_ID(__lttng_types_open__, TRACE_SYSTEM)(struct inode *inode, struct file *file
 	return seq_open(file, &TP_ID(__lttng_types_seq_ops__, TRACE_SYSTEM));
 }
 
-static const struct file_operations TP_ID(__lttng_types_fops__, TRACE_SYSTEM) = {
+static const
+struct file_operations TP_ID(__lttng_types_fops__, TRACE_SYSTEM) = {
         .open = TP_ID(__lttng_types_open__, TRACE_SYSTEM),
         .read = seq_read,
         .llseek = seq_lseek,
@@ -388,8 +260,9 @@ static int TP_ID(__lttng_types_init__, TRACE_SYSTEM)(void)
 	int ret = 0;
 
 	TP_ID(__lttng_types_dentry__, TRACE_SYSTEM) =
-		debugfs_create_file("lttng-events-" __stringify(TRACE_SYSTEM), S_IWUSR,
-				    NULL, NULL, &TP_ID(__lttng_types_fops__, TRACE_SYSTEM));
+		debugfs_create_file("lttng-events-" __stringify(TRACE_SYSTEM),
+				    S_IWUSR, NULL, NULL,
+				    &TP_ID(__lttng_types_fops__, TRACE_SYSTEM));
 	if (IS_ERR(TP_ID(__lttng_types_dentry__, TRACE_SYSTEM))
 	    || !TP_ID(__lttng_types_dentry__, TRACE_SYSTEM)) {
 		printk(KERN_ERR "Error creating LTTng type export file\n");
@@ -415,17 +288,60 @@ module_exit_eval(__lttng_types_exit__, TRACE_SYSTEM);
 #undef TP_ID
 
 
-#if 0
-
 /*
- * Stage 3 of the trace events.
+ * Stage 4 of the trace events.
  *
  * Create static inline function that calculates event size.
  */
 
+#include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
 
+/* Named field types must be defined in lttng-types.h */
+
+#undef __field
+#define __field(_type, _item)						\
+	len += lib_ring_buffer_align(len, sizeof(_type));		\
+	len += sizeof(_type);
+
+#undef __field_ext
+#define __field_ext(_type, _item, _filter_type)	__field(_type, _item)
+
+#undef __array
+#define __array(_type, _item, _length)					\
+	len += lib_ring_buffer_align(len, sizeof(_type));		\
+	len += sizeof(_type) * (_length);
+
+#undef __dynamic_array
+#define __dynamic_array(_type, _item, _length)				\
+	len += lib_ring_buffer_align(len, sizeof(u32));			\
+	len += sizeof(u32);						\
+	len += lib_ring_buffer_align(len, sizeof(_type));		\
+	len += sizeof(_type) * (_length);
+
+#undef __string
+#define __string(_item, _src)						\
+	len += dynamic_len[dynamic_len_idx++] = strlen(_src) + 1;
+
+#undef TP_STRUCT__entry
+#define TP_STRUCT__entry(args...) args	/* Only one used in this phase */
+
+#undef DECLARE_EVENT_CLASS
+#define DECLARE_EVENT_CLASS(name, proto, args, tstruct, assign, print)	\
+static inline size_t __event_get_size__##name(size_t *dynamic_len)	\
+{									\
+	size_t len = 0;							\
+	unsigned int dynamic_len_idx = 0;				\
+									\
+	if (0)								\
+		(void) dynamic_len_idx;	/* don't warn if unused */	\
+	tstruct								\
+	return len;							\
+}
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+
+
+#if 0
 
 /*
  * Stage 4 of the trace events.
