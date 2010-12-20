@@ -335,19 +335,19 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len, _proto) \
 
 #undef __field
 #define __field(_type, _item)						  \
-	__event_align = max_t(size_t, __event_align, sizeof(_type));
+	__event_align = max_t(size_t, __event_align, __alignof__(_type));
 
 #undef __field_ext
 #define __field_ext(_type, _item, _filter_type)	__field(_type, _item)
 
 #undef __array
 #define __array(_type, _item, _length)					  \
-	__event_align = max_t(size_t, __event_align, sizeof(_type));
+	__event_align = max_t(size_t, __event_align, __alignof__(_type));
 
 #undef __dynamic_array
 #define __dynamic_array(_type, _item, _length)				  \
-	__event_align = max_t(size_t, __event_align, sizeof(u32));	  \
-	__event_align = max_t(size_t, __event_align, sizeof(_type));
+	__event_align = max_t(size_t, __event_align, __alignof__(u32));	  \
+	__event_align = max_t(size_t, __event_align, __alignof__(_type));
 
 #undef __string
 #define __string(_item, _src)
@@ -377,8 +377,9 @@ static inline size_t __event_get_align__##_name(_proto)			      \
  * Create the probe function : call even size calculation and write event data
  * into the buffer.
  *
- * Note: the order of fields in TP_fast_assign and TP_STRUCT__entry must be the
- * same.
+ * We use both the field and assignment macros to write the fields in the order
+ * defined in the field declaration. The field declarations control the
+ * execution order, jumping to the appropriate assignment block.
  */
 
 #include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
