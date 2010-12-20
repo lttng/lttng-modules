@@ -1,34 +1,9 @@
 #include <lttng.h>
 #include <lttng-types.h>
 #include <linux/debugfs.h>
+#include <linux/ringbuffer/frontend_types.h>
+#include "../ltt-events.h"
 #include "../ltt-tracer-core.h"
-
-#if 0
-
-/* keep for a later stage (copy stage) */
-/*
- * Macros mapping tp_assign() to "=", tp_memcpy() to memcpy() and tp_strcpy() to
- * strcpy().
- */
-#undef tp_assign
-#define tp_assign(dest, src)						\
-	lib_ring_buffer_align_ctx(config, &ctx, sizeof(src));		\
-	lib_ring_buffer_write(config, &ctx, &src, sizeof(src));
-
-#undef tp_memcpy
-#define tp_memcpy(dest, src, len)					\
-	lib_ring_buffer_align_ctx(config, &ctx, sizeof(*(src)));	\
-	lib_ring_buffer_write(config, &ctx, &src, len);
-
-/* TODO: tp_memcpy_dyn */
-
-/* TODO */
-#undef tp_strcpy
-#define tp_strcpy(dest, src)		__assign_str(dest, src);
-
-#endif //0
-
-/* TODO : deal with DEFINE_EVENT vs event class */
 
 struct lttng_event_field {
 	const char *name;
@@ -291,7 +266,6 @@ module_exit_eval(__lttng_types_exit__, TRACE_SYSTEM);
 #undef TP_ID1
 #undef TP_ID
 
-
 /*
  * Stage 4 of the trace events.
  *
@@ -348,21 +322,188 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len, _proto) \
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
 
-#if 0
 
 /*
- * Stage 4 of the trace events.
+ * Stage 5 of the trace events.
  *
- * Create the probe function : call even size calculation and write event data
- * into the buffer.
+ * Create static inline function that calculates event payload alignment.
  */
 
+#include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
 
+/* Named field types must be defined in lttng-types.h */
+
+#undef __field
+#define __field(_type, _item)						  \
+	__event_align = max_t(size_t, __event_align, sizeof(_type));
+
+#undef __field_ext
+#define __field_ext(_type, _item, _filter_type)	__field(_type, _item)
+
+#undef __array
+#define __array(_type, _item, _length)					  \
+	__event_align = max_t(size_t, __event_align, sizeof(_type));
+
+#undef __dynamic_array
+#define __dynamic_array(_type, _item, _length)				  \
+	__event_align = max_t(size_t, __event_align, sizeof(u32));	  \
+	__event_align = max_t(size_t, __event_align, sizeof(_type));
+
+#undef __string
+#define __string(_item, _src)
+
+#undef TP_PROTO
+#define TP_PROTO(args...) args
+
+#undef TP_STRUCT__entry
+#define TP_STRUCT__entry(args...) args
+
+#undef DECLARE_EVENT_CLASS
+#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
+static inline size_t __event_get_align__##_name(_proto)			      \
+{									      \
+	size_t __event_align = 1;					      \
+	_tstruct							      \
+	return __event_align;						      \
+}
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
 
 
+/*
+ * Stage 6 of the trace events.
+ *
+ * Create the probe function : call even size calculation and write event data
+ * into the buffer.
+ *
+ * Note: the order of fields in TP_fast_assign and TP_STRUCT__entry must be the
+ * same.
+ */
+
+#include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
+
+#undef __field
+#define __field(_type, _item)						\
+	lib_ring_buffer_align_ctx(&ctx, sizeof(_type));			\
+	goto __assign_##_item;						\
+__end_field_##_item:
+
+#undef __field_ext
+#define __field_ext(_type, _item, _filter_type)	__field(_type, _item)
+
+#undef __array
+#define __array(_type, _item, _length)					\
+	lib_ring_buffer_align_ctx(&ctx, sizeof(_type));			\
+	goto __assign_##_item;						\
+__end_field_##_item:
+
+#undef __dynamic_array
+#define __dynamic_array(_type, _item, _length)				\
+	lib_ring_buffer_align_ctx(&ctx, sizeof(u32));			\
+	goto __assign_##_item##_1;					\
+__end_field_##_item##_1:						\
+	lib_ring_buffer_align_ctx(&ctx, sizeof(_type));			\
+	goto __assign_##_item##_2;					\
+__end_field_##_item##_2:
+
+#undef __string
+#define __string(_item, _src)						\
+	goto __assign_##_item;						\
+__end_field_##_item:
+
+/*
+ * Macros mapping tp_assign() to "=", tp_memcpy() to memcpy() and tp_strcpy() to
+ * strcpy().
+ */
+#undef tp_assign
+#define tp_assign(dest, src)						\
+__assign_##dest:							\
+	{								\
+		__typeof__(src) __tmp = (src);				\
+		__chan->ops->event_write(&ctx, &__tmp, sizeof(src));	\
+	}								\
+	goto __end_field_##dest;
+
+#undef tp_memcpy
+#define tp_memcpy(dest, src, len)					\
+__assign_##dest:							\
+	__chan->ops->event_write(&ctx, src, len);			\
+	goto __end_field_##dest;
+
+#undef tp_memcpy_dyn
+#define tp_memcpy_dyn(dest, src, len)					\
+__assign_##dest##_1:							\
+	{								\
+		__typeof__(len) __tmpl = (len);				\
+		__chan->ops->event_write(&ctx, &__tmpl, sizeof(u32));	\
+	}								\
+	goto __end_field_##dest##_1;					\
+__assign_##dest##_2:							\
+	__chan->ops->event_write(&ctx, src, len);			\
+	goto __end_field_##dest##_2;
+
+#undef tp_strcpy
+#define tp_strcpy(dest, src)						\
+	tp_memcpy(dest, src, __get_dynamic_array_len(dest));		\
+
+/* Named field types must be defined in lttng-types.h */
+
+#undef __get_str
+#define __get_str(field)		field
+
+#undef __get_dynamic_array
+#define __get_dynamic_array(field)	field
+
+/* Beware: this get len actually consumes the len value */
+#undef __get_dynamic_array_len
+#define __get_dynamic_array_len(field)	__dynamic_len[__dynamic_len_idx++]
+
+#undef TP_PROTO
+#define TP_PROTO(args...) args
+
+#undef TP_ARGS
+#define TP_ARGS(args...) args
+
+#undef TP_STRUCT__entry
+#define TP_STRUCT__entry(args...) args
+
+#undef TP_fast_assign
+#define TP_fast_assign(args...) args
+
+#undef DECLARE_EVENT_CLASS
+#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
+static void __event_probe__##_name(void *__data, _proto)		      \
+{									      \
+	struct ltt_event *__event = __data;				      \
+	struct ltt_channel *__chan = __event->chan;			      \
+	struct lib_ring_buffer_ctx ctx;					      \
+	size_t __event_len, __event_align;				      \
+	size_t __dynamic_len_idx = 0;					      \
+	size_t __dynamic_len[ARRAY_SIZE(__event_fields___##_name)];	      \
+	int __ret;							      \
+									      \
+	if (0)								      \
+		(void) __dynamic_len_idx;	/* don't warn if unused */    \
+	__event_len = __event_get_size__##_name(__dynamic_len, _args);	      \
+	__event_align = __event_get_align__##_name(_args);		      \
+	lib_ring_buffer_ctx_init(&ctx, __chan->chan, NULL, __event_len,	      \
+				 __event_align, -1);			      \
+	__ret = __chan->ops->event_reserve(&ctx);			      \
+	if (__ret < 0)							      \
+		return;							      \
+	/* Control code (field ordering) */				      \
+	_tstruct							      \
+	__chan->ops->event_commit(&ctx);				      \
+	return;								      \
+	/* Copy code, steered by control code */			      \
+	_assign								      \
+}
+
+#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+
+
+#if 0
 
 #include <linux/ftrace_event.h>
 

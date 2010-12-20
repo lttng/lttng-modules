@@ -176,6 +176,11 @@ void ltt_event_commit(struct lib_ring_buffer_ctx *ctx)
 	lib_ring_buffer_put_cpu(&client_config);
 }
 
+void ltt_event_write(struct lib_ring_buffer_ctx *ctx, const void *src,
+		     size_t len)
+{
+	lib_ring_buffer_write(&client_config, ctx, src, len);
+}
 
 static struct ltt_transport ltt_relay_transport = {
 	.name = "relay-" RING_BUFFER_MODE_TEMPLATE_STRING,
@@ -187,6 +192,7 @@ static struct ltt_transport ltt_relay_transport = {
 		.buffer_read_close = ltt_buffer_read_close,
 		.event_reserve = ltt_event_reserve,
 		.event_commit = ltt_event_commit,
+		.event_write = ltt_event_write,
 	},
 };
 

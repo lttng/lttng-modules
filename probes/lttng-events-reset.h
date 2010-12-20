@@ -18,6 +18,27 @@
 #undef __string
 #define __string(_item, _src)
 
+#undef tp_assign
+#define tp_assign(dest, src)
+
+#undef tp_memcpy
+#define tp_memcpy(dest, src, len)
+
+#undef tp_memcpy_dyn
+#define tp_memcpy_dyn(dest, src, len)
+
+#undef tp_strcpy
+#define tp_strcpy(dest, src)
+
+#undef __get_str
+#define __get_str(field)
+
+#undef __get_dynamic_array
+#define __get_dynamic_array(field)
+
+#undef __get_dynamic_array_len
+#define __get_dynamic_array_len(field)
+
 #undef TP_PROTO
 #define TP_PROTO(args...)
 
