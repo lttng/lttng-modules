@@ -277,27 +277,27 @@ module_exit_eval(__lttng_types_exit__, TRACE_SYSTEM);
 /* Named field types must be defined in lttng-types.h */
 
 #undef __field
-#define __field(_type, _item)						  \
-	__event_len += lib_ring_buffer_align(__event_len, sizeof(_type)); \
+#define __field(_type, _item)						       \
+	__event_len += lib_ring_buffer_align(__event_len, __alignof__(_type)); \
 	__event_len += sizeof(_type);
 
 #undef __field_ext
 #define __field_ext(_type, _item, _filter_type)	__field(_type, _item)
 
 #undef __array
-#define __array(_type, _item, _length)					  \
-	__event_len += lib_ring_buffer_align(__event_len, sizeof(_type)); \
+#define __array(_type, _item, _length)					       \
+	__event_len += lib_ring_buffer_align(__event_len, __alignof__(_type)); \
 	__event_len += sizeof(_type) * (_length);
 
 #undef __dynamic_array
-#define __dynamic_array(_type, _item, _length)				  \
-	__event_len += lib_ring_buffer_align(__event_len, sizeof(u32));	  \
-	__event_len += sizeof(u32);					  \
-	__event_len += lib_ring_buffer_align(__event_len, sizeof(_type)); \
+#define __dynamic_array(_type, _item, _length)				       \
+	__event_len += lib_ring_buffer_align(__event_len, __alignof__(u32));   \
+	__event_len += sizeof(u32);					       \
+	__event_len += lib_ring_buffer_align(__event_len, __alignof__(_type)); \
 	__event_len += sizeof(_type) * (_length);
 
 #undef __string
-#define __string(_item, _src)						\
+#define __string(_item, _src)						       \
 	__event_len += __dynamic_len[__dynamic_len_idx++] = strlen(_src) + 1;
 
 #undef TP_PROTO
@@ -386,7 +386,7 @@ static inline size_t __event_get_align__##_name(_proto)			      \
 
 #undef __field
 #define __field(_type, _item)						\
-	lib_ring_buffer_align_ctx(&ctx, sizeof(_type));			\
+	lib_ring_buffer_align_ctx(&ctx, __alignof__(_type));		\
 	goto __assign_##_item;						\
 __end_field_##_item:
 
@@ -395,16 +395,16 @@ __end_field_##_item:
 
 #undef __array
 #define __array(_type, _item, _length)					\
-	lib_ring_buffer_align_ctx(&ctx, sizeof(_type));			\
+	lib_ring_buffer_align_ctx(&ctx, __alignof__(_type));		\
 	goto __assign_##_item;						\
 __end_field_##_item:
 
 #undef __dynamic_array
 #define __dynamic_array(_type, _item, _length)				\
-	lib_ring_buffer_align_ctx(&ctx, sizeof(u32));			\
+	lib_ring_buffer_align_ctx(&ctx, __alignof__(u32));		\
 	goto __assign_##_item##_1;					\
 __end_field_##_item##_1:						\
-	lib_ring_buffer_align_ctx(&ctx, sizeof(_type));			\
+	lib_ring_buffer_align_ctx(&ctx, __alignof__(_type));		\
 	goto __assign_##_item##_2;					\
 __end_field_##_item##_2:
 
