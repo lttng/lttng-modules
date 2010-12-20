@@ -12,6 +12,9 @@
 #undef __dynamic_array
 #define __dynamic_array(_type, _item, _length)
 
+#undef __dynamic_array
+#define __dynamic_array_len(_type, _item, _length)
+
 #undef __string
 #define __string(_item, _src)
 

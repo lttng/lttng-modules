@@ -11,6 +11,7 @@ obj-m += lttng-types.o
 obj-m += lttng-probe-sched.o
 obj-m += lttng-probe-kvm.o
 obj-m += lttng-probe-irq.o
+obj-m += lttng-probe-block.o
 
 endif
 

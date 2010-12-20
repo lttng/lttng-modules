@@ -20,6 +20,8 @@
 	lib_ring_buffer_align_ctx(config, &ctx, sizeof(*(src)));	\
 	lib_ring_buffer_write(config, &ctx, &src, len);
 
+/* TODO: tp_memcpy_dyn */
+
 /* TODO */
 #undef tp_strcpy
 #define tp_strcpy(dest, src)		__assign_str(dest, src);
@@ -148,12 +150,12 @@ struct lttng_event_desc {
 
 #include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
 
-#undef DECLARE_EVENT_CLASS
-#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print) \
-		{							     \
-			.fields = __event_fields___##_name,		     \
-			.name = #_name,					     \
-			.nr_fields = ARRAY_SIZE(__event_fields___##_name),   \
+#undef DEFINE_EVENT
+#define DEFINE_EVENT(_template, _name, _proto, _args)			       \
+		{							       \
+			.fields = __event_fields___##_template,		       \
+			.name = #_name,					       \
+			.nr_fields = ARRAY_SIZE(__event_fields___##_template), \
 		},
 
 #define TP_ID1(_token, _system)	_token##_system
