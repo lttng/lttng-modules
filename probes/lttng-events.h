@@ -370,9 +370,46 @@ static inline size_t __event_get_align__##_name(_proto)			      \
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
 
-
 /*
  * Stage 6 of the trace events.
+ *
+ * Create structure declaration that allows the "assign" macros to access the
+ * field types.
+ */
+
+#include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
+
+/* Named field types must be defined in lttng-types.h */
+
+#undef __field
+#define __field(_type, _item)	_type	_item;
+
+#undef __field_ext
+#define __field_ext(_type, _item, _filter_type)	__field(_type, _item)
+
+#undef __array
+#define __array(_type, _item, _length)	_type	_item;
+
+#undef __dynamic_array
+#define __dynamic_array(_type, _item, _length)	_type	_item;
+
+#undef __string
+#define __string(_item, _src)	char _item;
+
+#undef TP_STRUCT__entry
+#define TP_STRUCT__entry(args...) args
+
+#undef DECLARE_EVENT_CLASS
+#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
+struct __event_typemap__##_name {					      \
+	_tstruct							      \
+};
+
+#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+
+
+/*
+ * Stage 7 of the trace events.
  *
  * Create the probe function : call even size calculation and write event data
  * into the buffer.
@@ -386,7 +423,6 @@ static inline size_t __event_get_align__##_name(_proto)			      \
 
 #undef __field
 #define __field(_type, _item)						\
-	lib_ring_buffer_align_ctx(&ctx, __alignof__(_type));		\
 	goto __assign_##_item;						\
 __end_field_##_item:
 
@@ -395,16 +431,13 @@ __end_field_##_item:
 
 #undef __array
 #define __array(_type, _item, _length)					\
-	lib_ring_buffer_align_ctx(&ctx, __alignof__(_type));		\
 	goto __assign_##_item;						\
 __end_field_##_item:
 
 #undef __dynamic_array
 #define __dynamic_array(_type, _item, _length)				\
-	lib_ring_buffer_align_ctx(&ctx, __alignof__(u32));		\
 	goto __assign_##_item##_1;					\
 __end_field_##_item##_1:						\
-	lib_ring_buffer_align_ctx(&ctx, __alignof__(_type));		\
 	goto __assign_##_item##_2;					\
 __end_field_##_item##_2:
 
@@ -421,14 +454,16 @@ __end_field_##_item:
 #define tp_assign(dest, src)						\
 __assign_##dest:							\
 	{								\
-		__typeof__(src) __tmp = (src);				\
-		__chan->ops->event_write(&ctx, &__tmp, sizeof(src));	\
+		__typeof__(__typemap.dest) __tmp = (src);		\
+		lib_ring_buffer_align_ctx(&ctx, __alignof__(__tmp));	\
+		__chan->ops->event_write(&ctx, &__tmp, sizeof(__tmp));	\
 	}								\
 	goto __end_field_##dest;
 
 #undef tp_memcpy
 #define tp_memcpy(dest, src, len)					\
 __assign_##dest:							\
+	lib_ring_buffer_align_ctx(&ctx, __alignof__(__typemap.dest));	\
 	__chan->ops->event_write(&ctx, src, len);			\
 	goto __end_field_##dest;
 
@@ -436,17 +471,19 @@ __assign_##dest:							\
 #define tp_memcpy_dyn(dest, src, len)					\
 __assign_##dest##_1:							\
 	{								\
-		__typeof__(len) __tmpl = (len);				\
+		u32 __tmpl = (len);					\
+		lib_ring_buffer_align_ctx(&ctx, __alignof__(u32));	\
 		__chan->ops->event_write(&ctx, &__tmpl, sizeof(u32));	\
 	}								\
 	goto __end_field_##dest##_1;					\
 __assign_##dest##_2:							\
+	lib_ring_buffer_align_ctx(&ctx, __alignof__(__typemap.dest));	\
 	__chan->ops->event_write(&ctx, src, len);			\
 	goto __end_field_##dest##_2;
 
 #undef tp_strcpy
 #define tp_strcpy(dest, src)						\
-	tp_memcpy(dest, src, __get_dynamic_array_len(dest));		\
+	tp_memcpy(dest, src, __get_dynamic_array_len(dest))
 
 /* Named field types must be defined in lttng-types.h */
 
@@ -482,6 +519,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	size_t __event_len, __event_align;				      \
 	size_t __dynamic_len_idx = 0;					      \
 	size_t __dynamic_len[ARRAY_SIZE(__event_fields___##_name)];	      \
+	struct __event_typemap__##_name __typemap;			      \
 	int __ret;							      \
 									      \
 	if (0)								      \
