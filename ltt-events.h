@@ -96,4 +96,11 @@ void ltt_transport_unregister(struct ltt_transport *transport);
 int ltt_debugfs_abi_init(void);
 void ltt_debugfs_abi_exit(void);
 
+int ltt_probe_register(const char *name, void *cb);
+void ltt_probe_unregister(const char *name);
+void *ltt_probe_get(const char *name);
+void ltt_probe_put(void *cb);
+int ltt_probes_init(void);
+void ltt_probes_exit(void);
+
 #endif /* _LTT_EVENTS_H */
