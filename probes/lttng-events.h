@@ -151,10 +151,6 @@ static const struct lttng_event_desc TP_ID(__event_desc___, TRACE_SYSTEM)[] = {
 
 #define TP_ID1(_token, _system)	_token##_system
 #define TP_ID(_token, _system)	TP_ID1(_token, _system)
-#define module_init_eval1(_token, _system)	module_init(_token##_system)
-#define module_init_eval(_token, _system)	module_init_eval1(_token, _system)
-#define module_exit_eval1(_token, _system)	module_exit(_token##_system)
-#define module_exit_eval(_token, _system)	module_exit_eval1(_token, _system)
 
 static void *TP_ID(__lttng_seq_start__, TRACE_SYSTEM)(struct seq_file *m,
 						      loff_t *pos)
@@ -252,17 +248,11 @@ error:
 	return ret;
 }
 
-module_init_eval(__lttng_types_init__, TRACE_SYSTEM);
-
 static void TP_ID(__lttng_types_exit__, TRACE_SYSTEM)(void)
 {
 	debugfs_remove(TP_ID(__lttng_types_dentry__, TRACE_SYSTEM));
 }
 
-module_exit_eval(__lttng_types_exit__, TRACE_SYSTEM);
-
-#undef module_init_eval
-#undef module_exit_eval
 #undef TP_ID1
 #undef TP_ID
 
@@ -541,6 +531,56 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
+
+/*
+ * Stage 8 of the trace events.
+ *
+ * Register/unregister probes at module load/unload.
+ */
+
+#include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
+
+#define TP_ID1(_token, _system)	_token##_system
+#define TP_ID(_token, _system)	TP_ID1(_token, _system)
+#define module_init_eval1(_token, _system)	module_init(_token##_system)
+#define module_init_eval(_token, _system)	module_init_eval1(_token, _system)
+#define module_exit_eval1(_token, _system)	module_exit(_token##_system)
+#define module_exit_eval(_token, _system)	module_exit_eval1(_token, _system)
+
+#undef DEFINE_EVENT
+#define DEFINE_EVENT(_template, _name, _proto, _args)			       \
+	ret = ltt_probe_register(#_name, (void *) __event_probe__##_template); \
+	WARN_ON_ONCE(ret);
+
+static int TP_ID(__lttng_events_init__, TRACE_SYSTEM)(void)
+{
+	int ret = 0;
+
+	ret = TP_ID(__lttng_types_init__, TRACE_SYSTEM)();
+	if (ret)
+		return ret;
+#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+	return ret;
+}
+
+module_init_eval(__lttng_events_init__, TRACE_SYSTEM);
+
+#undef DEFINE_EVENT
+#define DEFINE_EVENT(_template, _name, _proto, _args)			       \
+	ltt_probe_unregister(#_name);
+
+static void TP_ID(__lttng_events_exit__, TRACE_SYSTEM)(void)
+{
+#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+	TP_ID(__lttng_types_exit__, TRACE_SYSTEM)();
+}
+
+module_exit_eval(__lttng_events_exit__, TRACE_SYSTEM);
+
+#undef module_init_eval
+#undef module_exit_eval
+#undef TP_ID1
+#undef TP_ID
 
 #if 0
 
