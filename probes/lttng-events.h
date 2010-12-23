@@ -514,6 +514,8 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 									      \
 	if (0)								      \
 		(void) __dynamic_len_idx;	/* don't warn if unused */    \
+	if (!ACCESS_ONCE(__chan->session->active))			      \
+		return;							      \
 	__event_len = __event_get_size__##_name(__dynamic_len, _args);	      \
 	__event_align = __event_get_align__##_name(_args);		      \
 	lib_ring_buffer_ctx_init(&ctx, __chan->chan, NULL, __event_len,	      \

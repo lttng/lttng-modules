@@ -49,7 +49,7 @@ void ltt_session_destroy(struct ltt_session *session)
 	int ret;
 
 	mutex_lock(&sessions_mutex);
-	session->active = 0;
+	ACCESS_ONCE(session->active) = 0;
 	list_for_each_entry(event, &session->events, list) {
 		ret = _ltt_event_unregister(event);
 		WARN_ON(ret);
@@ -73,7 +73,7 @@ int ltt_session_start(struct ltt_session *session)
 		ret = -EBUSY;
 		goto end;
 	}
-	session->active = 1;
+	ACCESS_ONCE(session->active) = 1;
 	synchronize_trace();	/* Wait for in-flight events to complete */
 end:
 	mutex_unlock(&sessions_mutex);
@@ -89,7 +89,7 @@ int ltt_session_stop(struct ltt_session *session)
 		ret = -EBUSY;
 		goto end;
 	}
-	session->active = 0;
+	ACCESS_ONCE(session->active) = 0;
 	synchronize_trace();	/* Wait for in-flight events to complete */
 end:
 	mutex_unlock(&sessions_mutex);
