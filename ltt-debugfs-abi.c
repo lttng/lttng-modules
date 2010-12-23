@@ -241,8 +241,11 @@ int lttng_abi_open_stream(struct file *channel_file)
 		goto file_error;
 	}
 	fd_install(stream_fd, stream_file);
-	/* The stream holds a reference on the channel */
-	atomic_long_inc(&channel_file->f_count);
+	/*
+	 * The stream holds a reference to the channel within the generic ring
+	 * buffer library, so no need to hold a refcount on the channel and
+	 * session files here.
+	 */
 	return stream_fd;
 
 file_error:
@@ -262,6 +265,7 @@ int lttng_abi_create_event(struct file *channel_file,
 	struct lttng_event event_param;
 	int event_fd, ret;
 	struct file *event_file;
+	void *probe;
 
 	if (copy_from_user(&event_param, uevent_param, sizeof(event_param)))
 		return -EFAULT;
@@ -273,6 +277,12 @@ int lttng_abi_create_event(struct file *channel_file,
 		goto name_error;
 	}
 	event_name[PATH_MAX - 1] = '\0';
+
+	probe = ltt_probe_get(event_name);
+	if (!probe) {
+		ret = -ENOENT;
+		goto probe_error;
+	}
 	event_fd = get_unused_fd();
 	if (event_fd < 0) {
 		ret = event_fd;
@@ -290,7 +300,7 @@ int lttng_abi_create_event(struct file *channel_file,
 	 * invariant for the rest of the session.
 	 */
 	event = ltt_event_create(channel, event_name, event_param.itype,
-				 (void *) 0x1, NULL);	/* TODO connect real probe */
+				 probe, NULL);
 	if (!event) {
 		goto event_error;
 		ret = -EEXIST;
@@ -307,6 +317,8 @@ event_error:
 file_error:
 	put_unused_fd(event_fd);
 fd_error:
+	ltt_probe_put(probe);
+probe_error:
 name_error:
 	kfree(event_name);
 	return ret;

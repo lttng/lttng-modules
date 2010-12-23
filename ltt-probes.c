@@ -21,13 +21,13 @@ static LIST_HEAD(probe_list);
 static DEFINE_MUTEX(probe_mutex);
 static struct kmem_cache *probe_cache;
 
-static void *find_probe(const char *name)
+static struct ltt_probe *find_probe(const char *name)
 {
 	struct ltt_probe *probe;
 
 	list_for_each_entry(probe, &probe_list, list) {
 		if (!strcmp(probe->name, name))
-			return probe->cb;
+			return probe;
 	}
 	return NULL;
 }

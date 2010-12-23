@@ -46,9 +46,14 @@ void ltt_session_destroy(struct ltt_session *session)
 {
 	struct ltt_channel *chan, *tmpchan;
 	struct ltt_event *event, *tmpevent;
+	int ret;
 
 	mutex_lock(&sessions_mutex);
 	session->active = 0;
+	list_for_each_entry(event, &session->events, list) {
+		ret = _ltt_event_unregister(event);
+		WARN_ON(ret);
+	}
 	synchronize_trace();	/* Wait for in-flight events to complete */
 	list_for_each_entry_safe(event, tmpevent, &session->events, list)
 		_ltt_event_destroy(event);
@@ -172,8 +177,8 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 	if (chan->free_event_id == -1UL)
 		goto full;
 	/*
-	 * This is O(n^2) (for each event loop called at event creation).
-	 * Might require a hash if we have lots of events.
+	 * This is O(n^2) (for each event, the loop is called at event
+	 * creation). Might require a hash if we have lots of events.
 	 */
 	list_for_each_entry(event, &chan->session->events, list)
 		if (!strcmp(event->name, name))
@@ -201,6 +206,7 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 	default:
 		WARN_ON_ONCE(1);
 	}
+	list_add(&event->list, &chan->session->events);
 	mutex_unlock(&sessions_mutex);
 	return event;
 
@@ -218,7 +224,7 @@ full:
 /*
  * Only used internally at session destruction.
  */
-int _ltt_event_destroy(struct ltt_event *event)
+int _ltt_event_unregister(struct ltt_event *event)
 {
 	int ret = -EINVAL;
 
@@ -232,9 +238,17 @@ int _ltt_event_destroy(struct ltt_event *event)
 	default:
 		WARN_ON_ONCE(1);
 	}
-	kfree(event->name);
-	kmem_cache_free(event_cache, event);
 	return ret;
+}
+
+/*
+ * Only used internally at session destruction.
+ */
+void _ltt_event_destroy(struct ltt_event *event)
+{
+	kfree(event->name);
+	list_del(&event->list);
+	kmem_cache_free(event_cache, event);
 }
 
 /**
