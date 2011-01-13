@@ -716,9 +716,14 @@ void *ltt_relay_offset_address(struct ltt_chanbuf_alloc *bufa, size_t offset)
 }
 EXPORT_SYMBOL_GPL(ltt_relay_offset_address);
 
+static struct notifier_block ltt_relay_hotcpu = {
+	.notifier_call = ltt_relay_hotcpu_callback,
+	.priority = 5,
+};
+
 static __init int ltt_relay_alloc_init(void)
 {
-	hotcpu_notifier(ltt_relay_hotcpu_callback, 5);
+	register_cpu_notifier(&ltt_relay_hotcpu);
 	ltt_relay_init();
 	ltt_ascii_init();
 	return 0;
@@ -728,6 +733,7 @@ static void __exit ltt_relay_alloc_exit(void)
 {
 	ltt_ascii_exit();
 	ltt_relay_exit();
+	unregister_cpu_notifier(&ltt_relay_hotcpu);
 }
 
 module_init(ltt_relay_alloc_init);
