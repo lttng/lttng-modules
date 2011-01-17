@@ -51,6 +51,15 @@
 #undef TP_fast_assign
 #define TP_fast_assign(args...)
 
+#undef __perf_count
+#define __perf_count(args...)
+
+#undef __perf_addr
+#define __perf_addr(args...)
+
+#undef TP_perf_assign
+#define TP_perf_assign(args...)
+
 #undef TP_printk
 #define TP_printk(args...)
 

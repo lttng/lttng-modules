@@ -7,6 +7,7 @@
  */
 
 #include <linux/module.h>
+#include <linux/interrupt.h>
 
 /*
  * Create LTTng tracepoint probes.
