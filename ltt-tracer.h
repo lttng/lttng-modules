@@ -273,7 +273,7 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 			offset += sizeof(u16) + sizeof(u16);
 			if (data_size >= LTT_MAX_SMALL_SIZE)
 				offset += sizeof(u32);
-			offset += ltt_align(offset, sizeof(u64));
+			offset += lib_ring_buffer_align(offset, sizeof(u64));
 			offset += sizeof(u64);
 			break;
 		case LTT_RFLAG_ID_SIZE:

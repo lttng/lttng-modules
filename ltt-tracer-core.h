@@ -11,7 +11,6 @@
 
 #include <linux/list.h>
 #include <linux/percpu.h>
-#include <linux/ltt-core.h>
 
 #ifndef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
 /* Align data on its natural alignment */
