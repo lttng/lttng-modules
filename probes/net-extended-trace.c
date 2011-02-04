@@ -42,6 +42,9 @@ notrace void probe_net_dev_xmit_extended(void *_data, struct sk_buff *skb)
 	struct serialize_l214421224411111 data;
 	struct iphdr *iph = ip_hdr(skb);
 	struct tcphdr *th = tcp_hdr(skb);
+	struct udphdr *uh = udp_hdr(skb);
+
+	memset(&data, 0, sizeof(struct serialize_l214421224411111));
 
 	data.f1 = (unsigned long)skb;
 	data.f2 = skb->protocol;
@@ -63,6 +66,9 @@ notrace void probe_net_dev_xmit_extended(void *_data, struct sk_buff *skb)
 			data.f14 = th->rst;
 			data.f15 = th->syn;
 			data.f16 = th->fin;
+		} else if (data.f3 == IPPROTO_UDP) {
+			data.f8 = uh->source;
+			data.f9 = uh->dest;
 		}
 	}
 
