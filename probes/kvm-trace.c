@@ -59,12 +59,12 @@ void probe_kvm_apic (void *_data, unsigned int rw, unsigned int reg,
 		reg, val);
 }
 
-void probe_kvm_exit(void *_data, unsigned int exit_reason, struct kvm_vcpu *vcpu)
+void probe_kvm_exit(void *_data, unsigned int exit_reason, struct kvm_vcpu *vcpu, u32 isa)
 {
 	trace_mark_tp(kvm, kvm_exit, kvm_exit,
 		probe_kvm_exit,
-		"reason %d",
-		exit_reason);
+		"reason %d isa %u",
+		exit_reason, (unsigned int)isa);
 }
 
 void probe_kvm_inj_virq(void *_data, unsigned int irq)
