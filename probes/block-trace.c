@@ -163,15 +163,15 @@ void probe_block_bio_bounce(void *data, struct request_queue *q, struct bio *bio
 		bio->bi_rw, !bio_flagged(bio, BIO_UPTODATE));
 }
 
-void probe_block_bio_complete(void *data, struct request_queue *q, struct bio *bio)
+void probe_block_bio_complete(void *data, struct request_queue *q, struct bio *bio, int error)
 {
 	trace_mark_tp(block, bio_complete, block_bio_complete,
 		probe_block_bio_complete,
 		"sector %llu size %u rw(FAILFAST_DRIVER,FAILFAST_TRANSPORT,"
 		"FAILFAST_DEV,DISCARD,META,SYNC,BARRIER,AHEAD,RW) %lX "
-		"not_uptodate #1u%d",
+		"not_uptodate #1u%d error %d",
 		(unsigned long long)bio->bi_sector, bio->bi_size,
-		bio->bi_rw, !bio_flagged(bio, BIO_UPTODATE));
+		bio->bi_rw, !bio_flagged(bio, BIO_UPTODATE), error);
 }
 
 void probe_block_bio_backmerge(void *data, struct request_queue *q, struct bio *bio)
@@ -288,20 +288,38 @@ void probe_block_split(void *data, struct request_queue *q, struct bio *bio,
 		bio->bi_rw, !bio_flagged(bio, BIO_UPTODATE), pdu);
 }
 
-void probe_block_remap(void *data, struct request_queue *q, struct bio *bio,
-		       dev_t dev, sector_t from)
+void probe_block_bio_remap(void *data, struct request_queue *q, struct bio *bio,
+			   dev_t dev, sector_t from)
 {
-	trace_mark_tp(block, remap, block_remap,
-		probe_block_remap,
-		"device_from %lu sector_from %llu device_to %lu "
-		"size %u rw(FAILFAST_DRIVER,FAILFAST_TRANSPORT,"
+	trace_mark_tp(block, bio_remap, block_bio_remap,
+		probe_block_bio_remap,
+		"device_from %lu sector_from %llu nr_sector %llu device_to %lu "
+		"sector_to %llu size %u rw(FAILFAST_DRIVER,FAILFAST_TRANSPORT,"
 		"FAILFAST_DEV,DISCARD,META,SYNC,BARRIER,AHEAD,RW) %lX "
 		"not_uptodate #1u%d",
-		(unsigned long)bio->bi_bdev->bd_dev,
-		(unsigned long long)from,
 		(unsigned long)dev,
+		(unsigned long long)from,
+		(unsigned long long)bio->bi_size >> 9,
+		(unsigned long)bio->bi_bdev->bd_dev,
+		(unsigned long long)bio->bi_sector,
 		bio->bi_size, bio->bi_rw,
 		!bio_flagged(bio, BIO_UPTODATE));
+}
+
+void probe_block_rq_remap(void *data, struct request_queue *q,
+			  struct request *rq,
+			  dev_t dev, sector_t from)
+{
+	trace_mark_tp(block, rq_remap, block_rq_remap,
+		probe_block_rq_remap,
+		"device_from %lu sector_from %llu nr_sector %llu device_to %lu "
+		"sector_to %llu size %u",
+		(unsigned long)dev,
+		(unsigned long long)from,
+		(unsigned long long)blk_rq_sectors(rq),
+		(unsigned long)disk_devt(rq->rq_disk),
+		(unsigned long long)blk_rq_pos(rq),
+		blk_rq_bytes(rq));
 }
 
 MODULE_LICENSE("GPL and additional rights");

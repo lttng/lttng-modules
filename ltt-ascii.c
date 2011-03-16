@@ -543,7 +543,7 @@ void ltt_ascii_remove(struct ltt_chan *chan)
 	 * Wait for every reference to the dentry to be gone,
 	 * except us.
 	 */
-	while (atomic_read(&dentry->d_count) != 1)
+	while (ACCESS_ONCE(dentry->d_count) != 1)
 		msleep(100);
 	dput(dentry);
 }
