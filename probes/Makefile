@@ -5,15 +5,21 @@ CFLAGS_REMOVE_kernel-trace.o = -pg
 CFLAGS_REMOVE_mm-trace.o = -pg
 CFLAGS_REMOVE_fs-trace.o = -pg
 CFLAGS_REMOVE_ipc-trace.o = -pg
-CFLAGS_REMOVE_lockdep-trace.o = -pg
 CFLAGS_REMOVE_rcu-trace.o = -pg
 CFLAGS_REMOVE_syscall-trace.o = -pg
 CFLAGS_REMOVE_trap-trace.o = -pg
 CFLAGS_REMOVE_pm-trace.o = -pg
 endif
 
-obj-m += kernel-trace.o mm-trace.o fs-trace.o ipc-trace.o lockdep-trace.o \
+obj-m += kernel-trace.o mm-trace.o fs-trace.o ipc-trace.o \
 	 rcu-trace.o syscall-trace.o trap-trace.o pm-trace.o
+
+ifdef CONFIG_LOCKDEP
+ifdef CONFIG_FTRACE
+CFLAGS_REMOVE_lockdep-trace.o = -pg
+endif
+obj-m += lockdep-trace.o
+endif
 
 ifeq ($(CONFIG_NET),y)
 ifdef CONFIG_FTRACE
