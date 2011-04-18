@@ -240,6 +240,12 @@ int lttng_abi_open_stream(struct file *channel_file)
 		ret = PTR_ERR(stream_file);
 		goto file_error;
 	}
+	/*
+	 * OPEN_FMODE, called within anon_inode_getfile/alloc_file, don't honor
+	 * FMODE_LSEEK, FMODE_PREAD nor FMODE_PWRITE. We need to read from this
+	 * file descriptor, so we set FMODE_PREAD here.
+	 */
+	stream_file->f_mode = FMODE_PREAD;
 	fd_install(stream_fd, stream_file);
 	/*
 	 * The stream holds a reference to the channel within the generic ring
