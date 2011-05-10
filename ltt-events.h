@@ -78,6 +78,12 @@ int ltt_session_stop(struct ltt_session *session);
 void ltt_session_destroy(struct ltt_session *session);
 
 struct ltt_channel *ltt_channel_create(struct ltt_session *session,
+				       const char *transport_name,
+				       void *buf_addr,
+				       size_t subbuf_size, size_t num_subbuf,
+				       unsigned int switch_timer_interval,
+				       unsigned int read_timer_interval);
+struct ltt_channel *ltt_global_channel_create(struct ltt_session *session,
 				       int overwrite, void *buf_addr,
 				       size_t subbuf_size, size_t num_subbuf,
 				       unsigned int switch_timer_interval,

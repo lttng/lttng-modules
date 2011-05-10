@@ -108,21 +108,20 @@ static struct ltt_transport *ltt_transport_find(char *name)
 }
 
 struct ltt_channel *ltt_channel_create(struct ltt_session *session,
-				       int overwrite, void *buf_addr,
+				       const char *transport_name,
+				       void *buf_addr,
 				       size_t subbuf_size, size_t num_subbuf,
 				       unsigned int switch_timer_interval,
 				       unsigned int read_timer_interval)
 {
 	struct ltt_channel *chan;
 	struct ltt_transport *transport;
-	char *transport_name;
 
 	mutex_lock(&sessions_mutex);
 	if (session->active) {
 		printk(KERN_WARNING "LTTng refusing to add channel to active session\n");
 		goto active;	/* Refuse to add channel to active session */
 	}
-	transport_name = overwrite ? "relay-overwrite" : "relay-discard";
 	transport = ltt_transport_find(transport_name);
 	if (!transport) {
 		printk(KERN_WARNING "LTTng transport %s not found\n",

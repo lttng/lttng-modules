@@ -38,5 +38,6 @@ struct lttng_event {
 #define LTTNG_CHANNEL		_IOW(0xF6, 0x43, struct lttng_channel)
 #define LTTNG_STREAM		_IO(0xF6, 0x44)
 #define LTTNG_EVENT		_IOW(0xF6, 0x45, struct lttng_event)
+#define LTTNG_METADATA		_IOW(0xF6, 0x46, struct lttng_channel)
 
 #endif /* _LTT_DEBUGFS_ABI_H */

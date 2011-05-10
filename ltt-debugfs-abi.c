@@ -41,7 +41,14 @@ static struct dentry *lttng_dentry;
 static const struct file_operations lttng_fops;
 static const struct file_operations lttng_session_fops;
 static const struct file_operations lttng_channel_fops;
+static const struct file_operations lttng_metadata_fops;
 static const struct file_operations lttng_event_fops;
+
+enum channel_type {
+	PER_CPU_CHANNEL,
+	GLOBAL_CHANNEL,
+	METADATA_CHANNEL,
+};
 
 static
 int lttng_abi_create_session(void)
@@ -107,10 +114,52 @@ static const struct file_operations lttng_fops = {
 #endif
 };
 
+/*
+ * We tolerate no failure in this function (if one happens, we print a dmesg
+ * error, but cannot return any error, because the channel information is
+ * invariant.
+ */
+static
+void lttng_metadata_create_events(struct file *channel_file)
+{
+	struct ltt_channel *channel = channel_file->private_data;
+	char *event_name = "lttng-metadata";
+	struct ltt_event *event;
+	int ret;
+	void *probe;
+
+	probe = ltt_probe_get(event_name);
+	if (!probe) {
+		ret = -ENOENT;
+		goto probe_error;
+	}
+	/*
+	 * We tolerate no failure path after event creation. It will stay
+	 * invariant for the rest of the session.
+	 */
+	event = ltt_event_create(channel, event_name, INSTRUM_TRACEPOINTS,
+				 probe, NULL);
+	if (!event) {
+		goto event_error;
+		ret = -EEXIST;
+	}
+	return;
+
+event_error:
+	ltt_probe_put(probe);
+probe_error:
+	WARN_ON(1);
+	return;		/* not allowed to return error */
+}
+
+static
 int lttng_abi_create_channel(struct file *session_file,
-			     struct lttng_channel __user *uchan_param)
+			     struct lttng_channel __user *uchan_param,
+			     enum channel_type channel_type)
 {
 	struct ltt_session *session = session_file->private_data;
+	const struct file_operations *fops;
+	const char *transport_name;
 	struct ltt_channel *chan;
 	struct file *chan_file;
 	struct lttng_channel chan_param;
@@ -131,11 +180,30 @@ int lttng_abi_create_channel(struct file *session_file,
 		ret = PTR_ERR(chan_file);
 		goto file_error;
 	}
+	switch (channel_type) {
+	case PER_CPU_CHANNEL:
+		transport_name = chan_param.overwrite ?
+			"relay-overwrite" : "relay-discard";
+		fops = &lttng_channel_fops;
+		break;
+	case GLOBAL_CHANNEL:
+		transport_name = chan_param.overwrite ?
+			"global-relay-overwrite" : "global-relay-discard";
+		fops = &lttng_channel_fops;
+		break;
+	case METADATA_CHANNEL:
+		transport_name = "global-relay-discard";
+		fops = &lttng_metadata_fops;
+		break;
+	default:
+		transport_name = "<unknown>";
+		break;
+	}
 	/*
 	 * We tolerate no failure path after channel creation. It will stay
 	 * invariant for the rest of the session.
 	 */
-	chan = ltt_channel_create(session, chan_param.overwrite, NULL,
+	chan = ltt_channel_create(session, transport_name, NULL,
 				  chan_param.subbuf_size,
 				  chan_param.num_subbuf,
 				  chan_param.switch_timer_interval,
@@ -147,6 +215,9 @@ int lttng_abi_create_channel(struct file *session_file,
 	chan->file = chan_file;
 	chan_file->private_data = chan;
 	fd_install(chan_fd, chan_file);
+	if (channel_type == METADATA_CHANNEL)
+		lttng_metadata_create_events(chan_file);
+
 	/* The channel created holds a reference on the session */
 	atomic_long_inc(&session_file->f_count);
 
@@ -180,11 +251,17 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
 	switch (cmd) {
 	case LTTNG_CHANNEL:
-		return lttng_abi_create_channel(file, (struct lttng_channel __user *)arg);
+		return lttng_abi_create_channel(file,
+				(struct lttng_channel __user *)arg,
+				PER_CPU_CHANNEL);
 	case LTTNG_SESSION_START:
 		return ltt_session_start(session);
 	case LTTNG_SESSION_STOP:
 		return ltt_session_stop(session);
+	case LTTNG_METADATA:
+		return lttng_abi_create_channel(file,
+				(struct lttng_channel __user *)arg,
+				METADATA_CHANNEL);
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -344,7 +421,6 @@ name_error:
  *	LTTNG_EVENT
  *		Returns an event file descriptor or failure.
  *
- * The returned session will be deleted when its file descriptor is closed.
  * Channel and event file descriptors also hold a reference on the session.
  */
 static
@@ -355,6 +431,30 @@ long lttng_channel_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return lttng_abi_open_stream(file);
 	case LTTNG_EVENT:
 		return lttng_abi_create_event(file, (struct lttng_event __user *)arg);
+	default:
+		return -ENOIOCTLCMD;
+	}
+}
+
+/**
+ *	lttng_metadata_ioctl - lttng syscall through ioctl
+ *
+ *	@file: the file
+ *	@cmd: the command
+ *	@arg: command arg
+ *
+ *	This ioctl implements lttng commands:
+ *      LTTNG_STREAM
+ *              Returns an event stream file descriptor or failure.
+ *
+ * Channel and event file descriptors also hold a reference on the session.
+ */
+static
+long lttng_metadata_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+{
+	switch (cmd) {
+	case LTTNG_STREAM:
+		return lttng_abi_open_stream(file);
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -407,6 +507,14 @@ static const struct file_operations lttng_channel_fops = {
 	.unlocked_ioctl = lttng_channel_ioctl,
 #ifdef CONFIG_COMPAT
 	.compat_ioctl = lttng_channel_ioctl,
+#endif
+};
+
+static const struct file_operations lttng_metadata_fops = {
+	.release = lttng_channel_release,
+	.unlocked_ioctl = lttng_metadata_ioctl,
+#ifdef CONFIG_COMPAT
+	.compat_ioctl = lttng_metadata_ioctl,
 #endif
 };
 
