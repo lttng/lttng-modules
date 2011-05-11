@@ -11,7 +11,7 @@
 #include <linux/seq_file.h>
 #include <linux/jbd.h>	/* tid_t */
 #include <linux/debugfs.h>
-#include <linux/vmalloc.h>	/* for vmalloc_sync_all */
+#include "../wrapper/symbols.h"	/* for wrapper_vmalloc_sync_all() */
 #include "lttng-types.h"
 
 struct dentry *lttng_types_dentry;
@@ -186,7 +186,7 @@ static int lttng_types_init(void)
 {
 	int ret = 0;
 
-	vmalloc_sync_all();
+	wrapper_vmalloc_sync_all();
 	lttng_types_dentry = debugfs_create_file("lttng-types", S_IWUSR,
 					NULL, NULL, &lttng_types_fops);
 	if (IS_ERR(lttng_types_dentry) || !lttng_types_dentry) {

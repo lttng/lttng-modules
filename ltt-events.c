@@ -11,7 +11,7 @@
 #include <linux/mutex.h>
 #include <linux/sched.h>
 #include <linux/slab.h>
-#include <linux/vmalloc.h>	/* For vmalloc_sync_all */
+#include "wrapper/symbols.h"	/* for wrapper_vmalloc_sync_all() */
 #include "ltt-events.h"
 
 static LIST_HEAD(sessions);
@@ -269,7 +269,7 @@ void ltt_transport_register(struct ltt_transport *transport)
 	 * registered. We deal with this here so we don't have to call
 	 * vmalloc_sync_all() in each module's init.
 	 */
-	vmalloc_sync_all();
+	wrapper_vmalloc_sync_all();
 
 	mutex_lock(&sessions_mutex);
 	list_add_tail(&transport->node, &ltt_transport_list);

@@ -6,7 +6,6 @@
  * Dual LGPL v2.1/GPL v2 license.
  */
 
-#include <linux/vmalloc.h>
 #include <linux/stddef.h>
 #include <linux/module.h>
 #include <linux/string.h>
@@ -17,6 +16,7 @@
 #include <linux/cpu.h>
 #include <linux/mm.h>
 
+#include "../../wrapper/symbols.h"	/* for wrapper_vmalloc_sync_all() */
 #include "../../wrapper/ringbuffer/config.h"
 #include "../../wrapper/ringbuffer/backend.h"
 #include "../../wrapper/ringbuffer/frontend.h"
@@ -131,7 +131,7 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 	 * If kmalloc ever uses vmalloc underneath, make sure the buffer pages
 	 * will not fault.
 	 */
-	vmalloc_sync_all();
+	wrapper_vmalloc_sync_all();
 	kfree(virt);
 	kfree(pages);
 	return 0;
