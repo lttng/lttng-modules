@@ -47,7 +47,6 @@ static const struct file_operations lttng_event_fops;
 
 enum channel_type {
 	PER_CPU_CHANNEL,
-	GLOBAL_CHANNEL,
 	METADATA_CHANNEL,
 };
 
@@ -187,13 +186,8 @@ int lttng_abi_create_channel(struct file *session_file,
 			"relay-overwrite" : "relay-discard";
 		fops = &lttng_channel_fops;
 		break;
-	case GLOBAL_CHANNEL:
-		transport_name = chan_param.overwrite ?
-			"global-relay-overwrite" : "global-relay-discard";
-		fops = &lttng_channel_fops;
-		break;
 	case METADATA_CHANNEL:
-		transport_name = "global-relay-discard";
+		transport_name = "relay-metadata";
 		fops = &lttng_metadata_fops;
 		break;
 	default:

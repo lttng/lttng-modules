@@ -7,9 +7,10 @@ ifneq ($(CONFIG_TRACEPOINTS),)
 
 obj-m += ltt-ring-buffer-client-discard.o
 obj-m += ltt-ring-buffer-client-overwrite.o
+obj-m += ltt-ring-buffer-metadata-client.o
 
 obj-m += ltt-relay.o
-ltt-relay-objs :=  ltt-events.o ltt-event-header.o ltt-debugfs-abi.o \
+ltt-relay-objs :=  ltt-events.o ltt-debugfs-abi.o \
 			ltt-probes.o ltt-core.o
 
 obj-m += probes/
