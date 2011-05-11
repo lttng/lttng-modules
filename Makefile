@@ -15,18 +15,6 @@ ltt-relay-objs :=  ltt-events.o ltt-event-header.o ltt-debugfs-abi.o \
 
 obj-m += probes/
 
-#ltt-type-serializer.o
-#ltt-serialize.o
-#obj-m += ltt-marker-control.o
-#obj-m += ltt-trace-control.o
-#ltt-ascii.o
-
-#obj-m += ltt-statedump.o
-#obj-m += ltt-userspace-event.o
-#obj-m += ltt-filter.o
-#obj-m += ltt-kprobes.o
-#obj-m += probes/
-
 endif
 
 else
