@@ -54,6 +54,28 @@ struct lttng_event_desc {
 		PARAMS(tstruct), PARAMS(assign), PARAMS(print))		\
 
 /*
+ * Stage 0.1 of the trace events.
+ *
+ * Create dummy trace calls for each events, verifying that the LTTng module
+ * TRACE_EVENT headers match the kernel arguments. Will be optimized out by the
+ * compiler.
+ */
+
+#include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
+
+#undef TP_PROTO
+#define TP_PROTO(args...) args
+
+#undef TP_ARGS
+#define TP_ARGS(args...) args
+
+#undef DEFINE_EVENT
+#define DEFINE_EVENT(_template, _name, _proto, _args)			\
+void trace_##_name(proto);
+
+#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+
+/*
  * Stage 1 of the trace events.
  *
  * Create event field type metadata section.
