@@ -28,6 +28,7 @@
 #include <linux/file.h>
 #include <linux/uaccess.h>
 #include <linux/slab.h>
+#include <linux/vmalloc.h>	/* For vmalloc_sync_all */
 #include "wrapper/ringbuffer/vfs.h"
 #include "ltt-debugfs-abi.h"
 #include "ltt-events.h"
@@ -537,6 +538,7 @@ int __init ltt_debugfs_abi_init(void)
 {
 	int ret = 0;
 
+	vmalloc_sync_all();
 	lttng_dentry = debugfs_create_file("lttng", S_IWUSR, NULL, NULL,
 					   &lttng_fops);
 	if (IS_ERR(lttng_dentry) || !lttng_dentry) {

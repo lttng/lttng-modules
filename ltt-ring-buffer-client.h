@@ -10,6 +10,7 @@
 
 #include <linux/module.h>
 #include <linux/types.h>
+#include <linux/vmalloc.h>	/* for vmalloc_sync_all */
 #include "wrapper/trace-clock.h"
 #include "ltt-events.h"
 #include "ltt-tracer.h"
@@ -198,6 +199,11 @@ static struct ltt_transport ltt_relay_transport = {
 
 static int __init ltt_ring_buffer_client_init(void)
 {
+	/*
+	 * This vmalloc sync all also takes care of the lib ring buffer
+	 * vmalloc'd module pages when it is built as a module into LTTng.
+	 */
+	vmalloc_sync_all();
 	printk(KERN_INFO "LTT : ltt ring buffer client init\n");
 	ltt_transport_register(&ltt_relay_transport);
 	return 0;

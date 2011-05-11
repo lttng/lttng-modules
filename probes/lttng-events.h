@@ -1,6 +1,7 @@
 #include <lttng.h>
 #include <lttng-types.h>
 #include <linux/debugfs.h>
+#include <linux/vmalloc.h>	/* for vmalloc_sync_all() */
 #include "../wrapper/ringbuffer/frontend_types.h"
 #include "../ltt-events.h"
 #include "../ltt-tracer-core.h"
@@ -572,6 +573,7 @@ static int TP_ID(__lttng_events_init__, TRACE_SYSTEM)(void)
 	int ret;
 	int i;
 
+	vmalloc_sync_all();
 	ret = TP_ID(__lttng_types_init__, TRACE_SYSTEM)();
 	if (ret)
 		return ret;
