@@ -16,10 +16,10 @@
 #include <linux/cache.h>
 #include <linux/timex.h>
 #include <linux/wait.h>
-#include <linux/trace-clock.h>
 #include <asm/atomic.h>
 #include <asm/local.h>
 
+#include "trace-clock.h"
 #include "ltt-tracer-core.h"
 #include "ltt-events.h"
 

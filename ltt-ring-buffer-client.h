@@ -10,7 +10,7 @@
 
 #include <linux/module.h>
 #include <linux/types.h>
-#include <linux/trace-clock.h>
+#include "trace-clock.h"
 #include "ltt-events.h"
 #include "ltt-tracer.h"
 
