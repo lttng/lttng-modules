@@ -96,7 +96,7 @@ end:
 	return ret;
 }
 
-static struct ltt_transport *ltt_transport_find(char *name)
+static struct ltt_transport *ltt_transport_find(const char *name)
 {
 	struct ltt_transport *transport;
 
