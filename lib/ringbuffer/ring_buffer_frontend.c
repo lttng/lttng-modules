@@ -437,7 +437,7 @@ int __cpuinit lib_ring_buffer_cpu_hp_callback(struct notifier_block *nb,
 }
 #endif
 
-#ifdef CONFIG_NO_HZ
+#if defined(CONFIG_NO_HZ) && !defined(CONFIG_LIB_RING_BUFFER)
 /*
  * For per-cpu buffers, call the reader wakeups before switching the buffer, so
  * that wake-up-tracing generated events are flushed before going idle (in
@@ -517,7 +517,7 @@ void notrace lib_ring_buffer_tick_nohz_restart(void)
 	atomic_notifier_call_chain(&tick_nohz_notifier, TICK_NOHZ_RESTART,
 				   NULL);
 }
-#endif /* CONFIG_NO_HZ */
+#endif /* defined(CONFIG_NO_HZ) && !defined(CONFIG_LIB_RING_BUFFER) */
 
 /*
  * Holds CPU hotplug.
