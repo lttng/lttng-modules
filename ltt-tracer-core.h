@@ -17,7 +17,7 @@
 #define RING_BUFFER_ALIGN
 #endif
 
-#include <linux/ringbuffer/config.h>
+#include "wrapper/ringbuffer/config.h"
 
 struct ltt_session;
 struct ltt_channel;

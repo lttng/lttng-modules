@@ -19,7 +19,7 @@
 #include <asm/atomic.h>
 #include <asm/local.h>
 
-#include "trace-clock.h"
+#include "wrapper/trace-clock.h"
 #include "ltt-tracer-core.h"
 #include "ltt-events.h"
 
@@ -226,7 +226,7 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 	return offset - orig_offset;
 }
 
-#include <linux/ringbuffer/api.h>
+#include "wrapper/ringbuffer/api.h"
 
 extern
 void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,

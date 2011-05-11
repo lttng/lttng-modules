@@ -1,7 +1,7 @@
 #include <lttng.h>
 #include <lttng-types.h>
 #include <linux/debugfs.h>
-#include <linux/ringbuffer/frontend_types.h>
+#include "../wrapper/ringbuffer/frontend_types.h"
 #include "../ltt-events.h"
 #include "../ltt-tracer-core.h"
 

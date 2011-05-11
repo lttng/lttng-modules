@@ -63,6 +63,9 @@ static inline int get_trace_clock(void)
 	printk(KERN_WARNING "You should consider deploying a kernel with the the LTTng kernel\n");
 	printk(KERN_WARNING "patches, or, better, ask the Linux tracing maintainers to integrate\n");
 	printk(KERN_WARNING "them if you care deeply about this.\n");
+
+#warning "LTTng: Using mainline kernel monotonic clock. NMIs will not be traced, and expect significant performance degradation compared to the LTTng trace clocks. You should consider deploying a kernel with the the LTTng kernel patches, or, better, ask the Linux tracing maintainers to integrate them if you care deeply about this."
+
 	return 0;
 }
 

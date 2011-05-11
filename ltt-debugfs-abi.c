@@ -28,7 +28,7 @@
 #include <linux/file.h>
 #include <linux/uaccess.h>
 #include <linux/slab.h>
-#include <linux/ringbuffer/vfs.h>
+#include "wrapper/ringbuffer/vfs.h"
 #include "ltt-debugfs-abi.h"
 #include "ltt-events.h"
 
