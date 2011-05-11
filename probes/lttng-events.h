@@ -71,7 +71,7 @@ struct lttng_event_desc {
 
 #undef DEFINE_EVENT
 #define DEFINE_EVENT(_template, _name, _proto, _args)			\
-void trace_##_name(proto);
+void trace_##_name(_proto);
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
