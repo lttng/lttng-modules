@@ -28,7 +28,7 @@
 #include <linux/file.h>
 #include <linux/uaccess.h>
 #include <linux/slab.h>
-#include "wrapper/symbols.h"	/* for wrapper_vmalloc_sync_all() */
+#include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "wrapper/ringbuffer/vfs.h"
 #include "ltt-debugfs-abi.h"
 #include "ltt-events.h"

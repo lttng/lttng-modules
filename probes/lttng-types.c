@@ -11,7 +11,7 @@
 #include <linux/seq_file.h>
 #include <linux/jbd.h>	/* tid_t */
 #include <linux/debugfs.h>
-#include "../wrapper/symbols.h"	/* for wrapper_vmalloc_sync_all() */
+#include "../wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "lttng-types.h"
 
 struct dentry *lttng_types_dentry;

@@ -11,7 +11,7 @@
 #include <linux/mutex.h>
 #include <linux/sched.h>
 #include <linux/slab.h>
-#include "wrapper/symbols.h"	/* for wrapper_vmalloc_sync_all() */
+#include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "ltt-events.h"
 
 static LIST_HEAD(sessions);

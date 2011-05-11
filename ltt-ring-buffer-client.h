@@ -10,7 +10,7 @@
 
 #include <linux/module.h>
 #include <linux/types.h>
-#include "wrapper/symbols.h"	/* for wrapper_vmalloc_sync_all() */
+#include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "wrapper/trace-clock.h"
 #include "ltt-events.h"
 #include "ltt-tracer.h"

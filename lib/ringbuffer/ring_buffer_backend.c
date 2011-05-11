@@ -16,7 +16,7 @@
 #include <linux/cpu.h>
 #include <linux/mm.h>
 
-#include "../../wrapper/symbols.h"	/* for wrapper_vmalloc_sync_all() */
+#include "../../wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "../../wrapper/ringbuffer/config.h"
 #include "../../wrapper/ringbuffer/backend.h"
 #include "../../wrapper/ringbuffer/frontend.h"

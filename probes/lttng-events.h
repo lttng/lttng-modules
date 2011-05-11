@@ -1,7 +1,7 @@
 #include <lttng.h>
 #include <lttng-types.h>
 #include <linux/debugfs.h>
-#include "../wrapper/symbols.h"	/* for wrapper_vmalloc_sync_all() */
+#include "../wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "../wrapper/ringbuffer/frontend_types.h"
 #include "../ltt-events.h"
 #include "../ltt-tracer-core.h"

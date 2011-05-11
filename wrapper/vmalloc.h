@@ -1,3 +1,6 @@
+#ifndef _LTT_WRAPPER_VMALLOC_H
+#define _LTT_WRAPPER_VMALLOC_H
+
 /*
  * Copyright (C) 2011 Mathieu Desnoyers (mathieu.desnoyers@efficios.com)
  *
@@ -41,3 +44,5 @@ void wrapper_vmalloc_sync_all(void)
 	return vmalloc_sync_all();
 }
 #endif
+
+#endif /* _LTT_WRAPPER_VMALLOC_H */
