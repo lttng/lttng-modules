@@ -13,6 +13,7 @@ struct lttng_event_field {
 struct lttng_event_desc {
 	const struct lttng_event_field *fields;
 	const char *name;
+	void *probe_callback;
 	unsigned int nr_fields;
 };
 
@@ -116,6 +117,23 @@ struct lttng_event_desc {
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
 /*
+ * Stage 1.1 of the trace events.
+ *
+ * Create probe callback prototypes.
+ */
+
+#include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
+
+#undef TP_PROTO
+#define TP_PROTO(args...) args
+
+#undef DECLARE_EVENT_CLASS
+#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
+static void __event_probe__##_name(void *__data, _proto);
+
+#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+
+/*
  * Stage 2 of the trace events.
  *
  * Create an array of events.
@@ -130,6 +148,7 @@ struct lttng_event_desc {
 		{							       \
 			.fields = __event_fields___##_template,		       \
 			.name = #_name,					       \
+			.probe_callback = (void *) &__event_probe__##_template,\
 			.nr_fields = ARRAY_SIZE(__event_fields___##_template), \
 		},
 
@@ -533,7 +552,6 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
-
 /*
  * Stage 8 of the trace events.
  *
@@ -549,31 +567,47 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 #define module_exit_eval1(_token, _system)	module_exit(_token##_system)
 #define module_exit_eval(_token, _system)	module_exit_eval1(_token, _system)
 
-#undef DEFINE_EVENT
-#define DEFINE_EVENT(_template, _name, _proto, _args)			       \
-	ret = ltt_probe_register(#_name, (void *) __event_probe__##_template); \
-	WARN_ON_ONCE(ret);
-
 static int TP_ID(__lttng_events_init__, TRACE_SYSTEM)(void)
 {
-	int ret = 0;
+	int ret;
+	int i;
 
 	ret = TP_ID(__lttng_types_init__, TRACE_SYSTEM)();
 	if (ret)
 		return ret;
-#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+	for (i = 0; i < ARRAY_SIZE(TP_ID(__event_desc___, TRACE_SYSTEM)); i++) {
+		const struct lttng_event_desc *event_desc;
+
+		event_desc = &TP_ID(__event_desc___, TRACE_SYSTEM)[i];
+		ret = ltt_probe_register(event_desc->name,
+					 event_desc->probe_callback);
+		if (ret)
+			goto error;
+	}
+	return 0;
+
+error:
+	for (i--; i >= 0; i--) {
+		const struct lttng_event_desc *event_desc;
+
+		event_desc = &TP_ID(__event_desc___, TRACE_SYSTEM)[i];
+		ltt_probe_unregister(event_desc->name);
+	}
 	return ret;
 }
 
 module_init_eval(__lttng_events_init__, TRACE_SYSTEM);
 
-#undef DEFINE_EVENT
-#define DEFINE_EVENT(_template, _name, _proto, _args)			       \
-	ltt_probe_unregister(#_name);
-
 static void TP_ID(__lttng_events_exit__, TRACE_SYSTEM)(void)
 {
-#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(TP_ID(__event_desc___, TRACE_SYSTEM)); i++) {
+		const struct lttng_event_desc *event_desc;
+
+		event_desc = &TP_ID(__event_desc___, TRACE_SYSTEM)[i];
+		ltt_probe_unregister(event_desc->name);
+	}
 	TP_ID(__lttng_types_exit__, TRACE_SYSTEM)();
 }
 
