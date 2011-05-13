@@ -1,22 +1,10 @@
-#include <lttng.h>
-#include <lttng-types.h>
 #include <linux/debugfs.h>
+#include "lttng.h"
+#include "lttng-types.h"
 #include "../wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "../wrapper/ringbuffer/frontend_types.h"
 #include "../ltt-events.h"
 #include "../ltt-tracer-core.h"
-
-struct lttng_event_field {
-	const char *name;
-	const struct lttng_type type;
-};
-
-struct lttng_event_desc {
-	const struct lttng_event_field *fields;
-	const char *name;
-	void *probe_callback;
-	unsigned int nr_fields;
-};
 
 /*
  * Macro declarations used for all stages.

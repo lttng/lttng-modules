@@ -6,7 +6,8 @@
 #define _LTTNG_PROBES_LTTNG_TYPES_H
 
 #include <linux/seq_file.h>
-#include <lttng.h>
+#include "lttng.h"
+#include "../ltt-events.h"
 
 #ifdef __KERNEL__
 # include <asm/byteorder.h>
@@ -26,61 +27,6 @@
 #else
 # include <endian.h>
 #endif
-
-/* Update the astract_types name table in lttng-types.c along with this enum */
-enum abstract_types {
-	atype_integer,
-	atype_enum,
-	atype_array,
-	atype_sequence,
-	atype_string,
-	NR_ABSTRACT_TYPES,
-};
-
-/* Update the string_encodings name table in lttng-types.c along with this enum */
-enum lttng_string_encodings {
-	lttng_encode_UTF8 = 0,
-	lttng_encode_ASCII = 1,
-	NR_STRING_ENCODINGS,
-};
-
-struct lttng_enum_entry {
-	unsigned long long start, end;	/* start and end are inclusive */
-	const char *string;
-};
-
-struct lttng_enum {
-	const struct lttng_enum_entry *entries;
-	unsigned int len;
-};
-
-struct lttng_type {
-	enum abstract_types atype;
-	const char *name;
-	union {
-		struct {
-			unsigned int size;		/* in bits */
-			unsigned short alignment;	/* in bits */
-			unsigned int signedness:1;
-			unsigned int reverse_byte_order:1;
-		} integer;
-		struct {
-			const char *parent_type;
-			const struct lttng_enum def;
-		} enumeration;
-		struct {
-			const char *elem_type;
-			unsigned int length;		/* num. elems. */
-		} array;
-		struct {
-			const char *elem_type;
-			const char *length_type;
-		} sequence;
-		struct {
-			enum lttng_string_encodings encoding;
-		} string;
-	} u;
-} __attribute__((packed));
 
 void lttng_print_event_type(struct seq_file *m, unsigned int indent,
 			    const struct lttng_type *type);
