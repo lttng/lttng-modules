@@ -124,30 +124,30 @@ void lttng_metadata_create_events(struct file *channel_file)
 {
 	struct ltt_channel *channel = channel_file->private_data;
 	char *event_name = "lttng-metadata";
+	const struct lttng_event_desc *event_desc;
 	struct ltt_event *event;
 	int ret;
-	void *probe;
 
-	probe = ltt_probe_get(event_name);
-	if (!probe) {
+	event_desc = ltt_event_get(event_name);
+	if (!event_desc) {
 		ret = -ENOENT;
-		goto probe_error;
+		goto get_error;
 	}
 	/*
 	 * We tolerate no failure path after event creation. It will stay
 	 * invariant for the rest of the session.
 	 */
 	event = ltt_event_create(channel, event_name, INSTRUM_TRACEPOINTS,
-				 probe, NULL);
+				 event_desc, NULL);
 	if (!event) {
-		goto event_error;
+		goto create_error;
 		ret = -EEXIST;
 	}
 	return;
 
-event_error:
-	ltt_probe_put(probe);
-probe_error:
+create_error:
+	ltt_event_put(event_desc);
+get_error:
 	WARN_ON(1);
 	return;		/* not allowed to return error */
 }
@@ -338,12 +338,12 @@ int lttng_abi_create_event(struct file *channel_file,
 			   struct lttng_event __user *uevent_param)
 {
 	struct ltt_channel *channel = channel_file->private_data;
+	const struct lttng_event_desc *event_desc;
 	struct ltt_event *event;
 	char *event_name;
 	struct lttng_event event_param;
 	int event_fd, ret;
 	struct file *event_file;
-	void *probe;
 
 	if (copy_from_user(&event_param, uevent_param, sizeof(event_param)))
 		return -EFAULT;
@@ -356,10 +356,10 @@ int lttng_abi_create_event(struct file *channel_file,
 	}
 	event_name[PATH_MAX - 1] = '\0';
 
-	probe = ltt_probe_get(event_name);
-	if (!probe) {
+	event_desc = ltt_event_get(event_name);
+	if (!event_desc) {
 		ret = -ENOENT;
-		goto probe_error;
+		goto get_error;
 	}
 	event_fd = get_unused_fd();
 	if (event_fd < 0) {
@@ -378,7 +378,7 @@ int lttng_abi_create_event(struct file *channel_file,
 	 * invariant for the rest of the session.
 	 */
 	event = ltt_event_create(channel, event_name, event_param.itype,
-				 probe, NULL);
+				 event_desc, NULL);
 	if (!event) {
 		goto event_error;
 		ret = -EEXIST;
@@ -395,8 +395,8 @@ event_error:
 file_error:
 	put_unused_fd(event_fd);
 fd_error:
-	ltt_probe_put(probe);
-probe_error:
+	ltt_event_put(event_desc);
+get_error:
 name_error:
 	kfree(event_name);
 	return ret;

@@ -173,6 +173,25 @@ static const struct lttng_event_desc TP_ID(__event_desc___, TRACE_SYSTEM)[] = {
 #undef TP_ID1
 #undef TP_ID
 
+
+/*
+ * Stage 2.1 of the trace events.
+ *
+ * Create a toplevel descriptor for the whole probe.
+ */
+
+#define TP_ID1(_token, _system)	_token##_system
+#define TP_ID(_token, _system)	TP_ID1(_token, _system)
+
+/* non-const because list head will be modified when registered. */
+static struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
+	.event_desc = TP_ID(__event_desc___, TRACE_SYSTEM),
+	.nr_events = ARRAY_SIZE(TP_ID(__event_desc___, TRACE_SYSTEM)),
+};
+
+#undef TP_ID1
+#undef TP_ID
+
 /*
  * Stage 3 of the trace events.
  *
@@ -581,46 +600,20 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 static int TP_ID(__lttng_events_init__, TRACE_SYSTEM)(void)
 {
 	int ret;
-	int i;
 
 	wrapper_vmalloc_sync_all();
 	ret = TP_ID(__lttng_types_init__, TRACE_SYSTEM)();
 	if (ret)
 		return ret;
-	for (i = 0; i < ARRAY_SIZE(TP_ID(__event_desc___, TRACE_SYSTEM)); i++) {
-		const struct lttng_event_desc *event_desc;
-
-		event_desc = &TP_ID(__event_desc___, TRACE_SYSTEM)[i];
-		ret = ltt_probe_register(event_desc->name,
-					 event_desc->probe_callback);
-		if (ret)
-			goto error;
-	}
-	return 0;
-
-error:
-	for (i--; i >= 0; i--) {
-		const struct lttng_event_desc *event_desc;
-
-		event_desc = &TP_ID(__event_desc___, TRACE_SYSTEM)[i];
-		ltt_probe_unregister(event_desc->name);
-	}
-	return ret;
+	return ltt_probe_register(&TP_ID(__probe_desc___, TRACE_SYSTEM));
 }
 
 module_init_eval(__lttng_events_init__, TRACE_SYSTEM);
 
 static void TP_ID(__lttng_events_exit__, TRACE_SYSTEM)(void)
 {
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(TP_ID(__event_desc___, TRACE_SYSTEM)); i++) {
-		const struct lttng_event_desc *event_desc;
-
-		event_desc = &TP_ID(__event_desc___, TRACE_SYSTEM)[i];
-		ltt_probe_unregister(event_desc->name);
-	}
 	TP_ID(__lttng_types_exit__, TRACE_SYSTEM)();
+	ltt_probe_unregister(&TP_ID(__probe_desc___, TRACE_SYSTEM));
 }
 
 module_exit_eval(__lttng_events_exit__, TRACE_SYSTEM);

@@ -167,7 +167,8 @@ void _ltt_channel_destroy(struct ltt_channel *chan)
  */
 struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 				   enum instrum_type itype,
-				   void *probe, void *filter)
+				   const struct lttng_event_desc *event_desc,
+				   void *filter)
 {
 	struct ltt_event *event;
 	int ret;
@@ -180,17 +181,13 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 	 * creation). Might require a hash if we have lots of events.
 	 */
 	list_for_each_entry(event, &chan->session->events, list)
-		if (!strcmp(event->name, name))
+		if (!strcmp(event->desc->name, name))
 			goto exist;
 	event = kmem_cache_zalloc(event_cache, GFP_KERNEL);
 	if (!event)
 		goto cache_error;
-	event->name = kmalloc(strlen(name) + 1, GFP_KERNEL);
-	if (!event->name)
-		goto name_error;
-	strcpy(event->name, name);
 	event->chan = chan;
-	event->probe = probe;
+	event->desc = event_desc;
 	event->filter = filter;
 	event->id = chan->free_event_id++;
 	event->itype = itype;
@@ -198,7 +195,8 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 	smp_wmb();
 	switch (itype) {
 	case INSTRUM_TRACEPOINTS:
-		ret = tracepoint_probe_register(name, probe, event);
+		ret = tracepoint_probe_register(name, event_desc->probe_callback,
+						event);
 		if (ret)
 			goto register_error;
 		break;
@@ -210,8 +208,6 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 	return event;
 
 register_error:
-	kfree(event->name);
-name_error:
 	kmem_cache_free(event_cache, event);
 cache_error:
 exist:
@@ -229,7 +225,8 @@ int _ltt_event_unregister(struct ltt_event *event)
 
 	switch (event->itype) {
 	case INSTRUM_TRACEPOINTS:
-		ret = tracepoint_probe_unregister(event->name, event->probe,
+		ret = tracepoint_probe_unregister(event->desc->name,
+						  event->desc->probe_callback,
 						  event);
 		if (ret)
 			return ret;
@@ -245,7 +242,7 @@ int _ltt_event_unregister(struct ltt_event *event)
  */
 void _ltt_event_destroy(struct ltt_event *event)
 {
-	kfree(event->name);
+	ltt_event_put(event->desc);
 	list_del(&event->list);
 	kmem_cache_free(event_cache, event);
 }
@@ -297,16 +294,11 @@ static int __init ltt_events_init(void)
 	event_cache = KMEM_CACHE(ltt_event, 0);
 	if (!event_cache)
 		return -ENOMEM;
-	ret = ltt_probes_init();
-	if (ret)
-		goto error;
 	ret = ltt_debugfs_abi_init();
 	if (ret)
 		goto error_abi;
 	return 0;
 error_abi:
-	ltt_probes_exit();
-error:
 	kmem_cache_destroy(event_cache);
 	return ret;
 }
@@ -318,7 +310,6 @@ static void __exit ltt_events_exit(void)
 	struct ltt_session *session, *tmpsession;
 
 	ltt_debugfs_abi_exit();
-	ltt_probes_exit();
 	list_for_each_entry_safe(session, tmpsession, &sessions, list)
 		ltt_session_destroy(session);
 	kmem_cache_destroy(event_cache);

@@ -9,103 +9,82 @@
 #include <linux/module.h>
 #include <linux/list.h>
 #include <linux/mutex.h>
-#include <linux/slab.h>
 
-struct ltt_probe {
-	const char *name;
-	void *cb;
-	struct list_head list;
-};
+#include "ltt-events.h"
 
 static LIST_HEAD(probe_list);
 static DEFINE_MUTEX(probe_mutex);
-static struct kmem_cache *probe_cache;
 
-static struct ltt_probe *find_probe(const char *name)
+static
+const struct lttng_event_desc *find_event(const char *name)
 {
-	struct ltt_probe *probe;
+	struct lttng_probe_desc *probe_desc;
+	int i;
 
-	list_for_each_entry(probe, &probe_list, list) {
-		if (!strcmp(probe->name, name))
-			return probe;
+	list_for_each_entry(probe_desc, &probe_list, head) {
+		for (i = 0; i < probe_desc->nr_events; i++) {
+			if (!strcmp(probe_desc->event_desc[i].name, name))
+				return &probe_desc->event_desc[i];
+		}
 	}
 	return NULL;
 }
 
-int ltt_probe_register(const char *name, void *cb)
+/*
+ * TODO: registration of probe descriptions in dynamically allocated memory (not
+ * directly in a module memory) will require some care for refcounting: it's
+ * currently done by just refcounting the module in event_get/put.
+ */
+int ltt_probe_register(struct lttng_probe_desc *desc)
 {
-	struct ltt_probe *probe;
 	int ret = 0;
-
-	if (!cb)
-		return -EPERM;
+	int i;
 
 	mutex_lock(&probe_mutex);
-	if (find_probe(name)) {
-		ret = -EEXIST;
-		goto end;
+	/*
+	 * TODO: This is O(N^2). Turn into a hash table when probe registration
+	 * overhead becomes an issue.
+	 */
+	for (i = 0; i < desc->nr_events; i++) {
+		if (find_event(desc->event_desc[i].name)) {
+			ret = -EEXIST;
+			goto end;
+		}
 	}
-	probe = kmem_cache_zalloc(probe_cache, GFP_KERNEL);
-	if (!probe) {
-		ret = -ENOMEM;
-		goto end;
-	}
-	probe->name = name;
-	probe->cb = cb;
-	list_add(&probe->list, &probe_list);
+	list_add(&desc->head, &probe_list);
 end:
 	mutex_unlock(&probe_mutex);
 	return ret;
 }
 EXPORT_SYMBOL_GPL(ltt_probe_register);
 
-void ltt_probe_unregister(const char *name)
+void ltt_probe_unregister(struct lttng_probe_desc *desc)
 {
-	struct ltt_probe *probe;
-
 	mutex_lock(&probe_mutex);
-	probe = find_probe(name);
-	WARN_ON_ONCE(!probe);
-	list_del(&probe->list);
+	list_del(&desc->head);
 	mutex_unlock(&probe_mutex);
-	kmem_cache_free(probe_cache, probe);
 }
 EXPORT_SYMBOL_GPL(ltt_probe_unregister);
 
-void *ltt_probe_get(const char *name)
+const struct lttng_event_desc *ltt_event_get(const char *name)
 {
-	struct ltt_probe *probe;
-	void *cb = NULL;
+	const struct lttng_event_desc *event;
 	int ret;
 
 	mutex_lock(&probe_mutex);
-	probe = find_probe(name);
-	if (!probe)
+	event = find_event(name);
+	if (!event)
 		goto end;
-	cb = probe->cb;
-	ret = try_module_get(__module_text_address((unsigned long) cb));
+	ret = try_module_get(__module_text_address((unsigned long) event));
 	WARN_ON_ONCE(!ret);
 end:
 	mutex_unlock(&probe_mutex);
-	return cb;
+	return event;
 }
-EXPORT_SYMBOL_GPL(ltt_probe_get);
+EXPORT_SYMBOL_GPL(ltt_event_get);
 
-void ltt_probe_put(void *cb)
+void ltt_event_put(const struct lttng_event_desc *event)
 {
-	module_put(__module_text_address((unsigned long) cb));
+	module_put(__module_text_address((unsigned long) event));
 }
-EXPORT_SYMBOL_GPL(ltt_probe_put);
-
-int __init ltt_probes_init(void)
-{
-	probe_cache = KMEM_CACHE(ltt_probe, 0);
-	if (!probe_cache)
-		return -ENOMEM;
-	return 0;
-}
-
-void __exit ltt_probes_exit(void)
-{
-	kmem_cache_destroy(probe_cache);
-}
+EXPORT_SYMBOL_GPL(ltt_event_put);
