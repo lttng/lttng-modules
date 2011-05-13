@@ -28,7 +28,7 @@ static inline u64 trace_clock_monotonic_wrapper(void)
 	 * nest over the xtime write seqlock and deadlock.
 	 */
 	if (in_nmi())
-		return 0;
+		return (u64) -EIO;
 
 	ktime = ktime_get();
 	return (u64) ktime.tv64;

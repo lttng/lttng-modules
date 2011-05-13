@@ -1482,7 +1482,9 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_switch_slow);
 /*
  * Returns :
  * 0 if ok
- * !0 if execution must be aborted.
+ * -ENOSPC if event size is too large for packet.
+ * -ENOBUFS if there is currently not enough space in buffer for the event.
+ * -EIO if data cannot be written into the buffer for any other reason.
  */
 static
 int lib_ring_buffer_try_reserve_slow(struct lib_ring_buffer *buf,
@@ -1501,6 +1503,8 @@ int lib_ring_buffer_try_reserve_slow(struct lib_ring_buffer *buf,
 	offsets->pre_header_padding = 0;
 
 	ctx->tsc = config->cb.ring_buffer_clock_read(chan);
+	if ((int64_t) ctx->tsc == -EIO)
+		return -EIO;
 
 	if (last_tsc_overflow(config, buf, ctx->tsc))
 		ctx->rflags = RING_BUFFER_RFLAG_FULL_TSC;
@@ -1553,7 +1557,7 @@ int lib_ring_buffer_try_reserve_slow(struct lib_ring_buffer *buf,
 				 * and we are full : record is lost.
 				 */
 				v_inc(config, &buf->records_lost_full);
-				return -1;
+				return -ENOBUFS;
 			} else {
 				/*
 				 * Next subbuffer not being written to, and we
@@ -1570,7 +1574,7 @@ int lib_ring_buffer_try_reserve_slow(struct lib_ring_buffer *buf,
 			 * many nested writes over a reserve/commit pair.
 			 */
 			v_inc(config, &buf->records_lost_wrap);
-			return -1;
+			return -EIO;
 		}
 		offsets->size =
 			config->cb.record_header_size(config, chan,
@@ -1589,7 +1593,7 @@ int lib_ring_buffer_try_reserve_slow(struct lib_ring_buffer *buf,
 			 * complete the sub-buffer switch.
 			 */
 			v_inc(config, &buf->records_lost_big);
-			return -1;
+			return -ENOSPC;
 		} else {
 			/*
 			 * We just made a successful buffer switch and the
@@ -1618,7 +1622,8 @@ int lib_ring_buffer_try_reserve_slow(struct lib_ring_buffer *buf,
  * lib_ring_buffer_reserve_slow - Atomic slot reservation in a buffer.
  * @ctx: ring buffer context.
  *
- * Return : -ENOSPC if not enough space, else returns 0.
+ * Return : -NOBUFS if not enough space, -ENOSPC if event size too large,
+ * -EIO for other errors, else returns 0.
  * It will take care of sub-buffer switching.
  */
 int lib_ring_buffer_reserve_slow(struct lib_ring_buffer_ctx *ctx)
@@ -1637,9 +1642,10 @@ int lib_ring_buffer_reserve_slow(struct lib_ring_buffer_ctx *ctx)
 	offsets.size = 0;
 
 	do {
-		if (unlikely(lib_ring_buffer_try_reserve_slow(buf, chan, &offsets,
-							  ctx)))
-			return -ENOSPC;
+		ret = lib_ring_buffer_try_reserve_slow(buf, chan, &offsets,
+						       ctx);
+		if (unlikely(ret))
+			return ret;
 	} while (unlikely(v_cmpxchg(config, &buf->offset, offsets.old,
 				    offsets.end)
 			  != offsets.old));

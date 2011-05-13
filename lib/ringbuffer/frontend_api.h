@@ -82,6 +82,8 @@ int lib_ring_buffer_try_reserve(const struct lib_ring_buffer_config *config,
 	*o_old = *o_begin;
 
 	ctx->tsc = lib_ring_buffer_clock_read(chan);
+	if ((int64_t) ctx->tsc == -EIO)
+		return 1;
 
 	/*
 	 * Prefetch cacheline for read because we have to read the previous
@@ -130,8 +132,12 @@ int lib_ring_buffer_try_reserve(const struct lib_ring_buffer_config *config,
  * Atomic wait-free slot reservation. The reserved space starts at the context
  * "pre_offset". Its length is "slot_size". The associated time-stamp is "tsc".
  *
- * Return : -ENOSPC if not enough space, -EAGAIN if channel is disabled.
- *          Returns 0 on success.
+ * Return :
+ *  0 on success.
+ * -EAGAIN if channel is disabled.
+ * -ENOSPC if event size is too large for packet.
+ * -ENOBUFS if there is currently not enough space in buffer for the event.
+ * -EIO if data cannot be written into the buffer for any other reason.
  */
 
 static inline
