@@ -113,66 +113,29 @@ struct event_header {
 
 #define LTT_MAX_SMALL_SIZE		0xFFFFU
 
+#ifdef RING_BUFFER_ALIGN
 static inline
 size_t ltt_get_header_alignment(void)
 {
-#ifdef RING_BUFFER_ALIGN
 	return sizeof(struct event_header) * CHAR_BIT;
-#else
-	return CHAR_BIT;
-#endif
 }
 
-/*
- * We use asm/timex.h : cpu_khz/HZ variable in here : we might have to deal
- * specifically with CPU frequency scaling someday, so using an interpolation
- * between the start and end of buffer values is not flexible enough. Using an
- * immediate frequency value permits to calculate directly the times for parts
- * of a buffer that would be before a frequency change.
- *
- * Keep the natural field alignment for _each field_ within this structure if
- * you ever add/remove a field from this header. Packed attribute is not used
- * because gcc generates poor code on at least powerpc and mips. Don't ever
- * let gcc add padding between the structure elements.
- */
-struct packet_header {
-	uint32_t magic;			/*
-					 * Trace magic number.
-					 * contains endianness information.
-					 */
-	uint8_t trace_uuid[16];
-	uint32_t stream_id;
-	uint64_t timestamp_begin;	/* Cycle count at subbuffer start */
-	uint64_t timestamp_end;	/* Cycle count at subbuffer end */
-	uint32_t content_size;		/* Size of data in subbuffer */
-	uint32_t packet_size;		/* Subbuffer size (include padding) */
-	uint32_t events_lost;		/*
-					 * Events lost in this subbuffer since
-					 * the beginning of the trace.
-					 * (may overflow)
-					 */
-	/* TODO: move to metadata */
-#if 0
-	uint8_t major_version;
-	uint8_t minor_version;
-	uint8_t arch_size;		/* Architecture pointer size */
-	uint8_t alignment;		/* LTT data alignment */
-	uint64_t start_time_sec;	/* NTP-corrected start time */
-	uint64_t start_time_usec;
-	uint64_t start_freq;		/*
-					 * Frequency at trace start,
-					 * used all along the trace.
-					 */
-	uint32_t freq_scale;		/* Frequency scaling (divisor) */
-#endif //0
-	uint8_t header_end[0];		/* End of header */
-};
+#define ltt_alignof(type)	__alignof__(type)
+#else
+static inline
+size_t ltt_get_header_alignment(void)
+{
+	return CHAR_BIT;
+}
+
+#define ltt_alignof(type)	1
+#endif
 
 /* Tracer properties */
 #define CTF_MAGIC_NUMBER		0xC1FC1FC1
 #define TSDL_MAGIC_NUMBER		0x75D11D57
-#define LTT_TRACER_VERSION_MAJOR	3
-#define LTT_TRACER_VERSION_MINOR	0
+#define CTF_VERSION_MAJOR		0
+#define CTF_VERSION_MINOR		1
 
 /*
  * Number of milliseconds to retry before failing metadata writes on buffer full

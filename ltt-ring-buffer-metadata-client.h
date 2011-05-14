@@ -86,10 +86,10 @@ static void client_buffer_begin(struct lib_ring_buffer *buf, u64 tsc,
 		(struct metadata_packet_header *)
 			lib_ring_buffer_offset_address(&buf->backend,
 				subbuf_idx * chan->backend.subbuf_size);
+	struct ltt_session *session = channel_get_private(chan);
 
 	header->magic = TSDL_MAGIC_NUMBER;
-	/* TODO */
-	//header->trace_uuid = ;	/* Unique Universal Identifier */
+	memcpy(header->trace_uuid, session->uuid.b, sizeof(session->uuid));
 	header->checksum = 0;		/* 0 if unused */
 	header->content_size = 0xFFFFFFFF; /* in bits, for debugging */
 	header->packet_size = 0xFFFFFFFF;  /* in bits, for debugging */
@@ -106,7 +106,7 @@ static void client_buffer_end(struct lib_ring_buffer *buf, u64 tsc,
 			      unsigned int subbuf_idx, unsigned long data_size)
 {
 	struct channel *chan = buf->backend.chan;
-	struct packet_header *header =
+	struct metadata_packet_header *header =
 		(struct packet_header *)
 			lib_ring_buffer_offset_address(&buf->backend,
 				subbuf_idx * chan->backend.subbuf_size);

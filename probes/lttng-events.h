@@ -222,7 +222,7 @@ static struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 
 #undef __field
 #define __field(_type, _item)						       \
-	__event_len += lib_ring_buffer_align(__event_len, __alignof__(_type)); \
+	__event_len += lib_ring_buffer_align(__event_len, ltt_alignof(_type)); \
 	__event_len += sizeof(_type);
 
 #undef __field_ext
@@ -230,14 +230,14 @@ static struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 
 #undef __array
 #define __array(_type, _item, _length)					       \
-	__event_len += lib_ring_buffer_align(__event_len, __alignof__(_type)); \
+	__event_len += lib_ring_buffer_align(__event_len, ltt_alignof(_type)); \
 	__event_len += sizeof(_type) * (_length);
 
 #undef __dynamic_array
 #define __dynamic_array(_type, _item, _length)				       \
-	__event_len += lib_ring_buffer_align(__event_len, __alignof__(u32));   \
+	__event_len += lib_ring_buffer_align(__event_len, ltt_alignof(u32));   \
 	__event_len += sizeof(u32);					       \
-	__event_len += lib_ring_buffer_align(__event_len, __alignof__(_type)); \
+	__event_len += lib_ring_buffer_align(__event_len, ltt_alignof(_type)); \
 	__event_len += sizeof(_type) * (_length);
 
 #undef __string
@@ -277,19 +277,19 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len, _proto) \
 
 #undef __field
 #define __field(_type, _item)						  \
-	__event_align = max_t(size_t, __event_align, __alignof__(_type));
+	__event_align = max_t(size_t, __event_align, ltt_alignof(_type));
 
 #undef __field_ext
 #define __field_ext(_type, _item, _filter_type)	__field(_type, _item)
 
 #undef __array
 #define __array(_type, _item, _length)					  \
-	__event_align = max_t(size_t, __event_align, __alignof__(_type));
+	__event_align = max_t(size_t, __event_align, ltt_alignof(_type));
 
 #undef __dynamic_array
 #define __dynamic_array(_type, _item, _length)				  \
-	__event_align = max_t(size_t, __event_align, __alignof__(u32));	  \
-	__event_align = max_t(size_t, __event_align, __alignof__(_type));
+	__event_align = max_t(size_t, __event_align, ltt_alignof(u32));	  \
+	__event_align = max_t(size_t, __event_align, ltt_alignof(_type));
 
 #undef __string
 #define __string(_item, _src)
@@ -397,7 +397,7 @@ __end_field_##_item:
 __assign_##dest:							\
 	{								\
 		__typeof__(__typemap.dest) __tmp = (src);		\
-		lib_ring_buffer_align_ctx(&ctx, __alignof__(__tmp));	\
+		lib_ring_buffer_align_ctx(&ctx, ltt_alignof(__tmp));	\
 		__chan->ops->event_write(&ctx, &__tmp, sizeof(__tmp));	\
 	}								\
 	goto __end_field_##dest;
@@ -405,7 +405,9 @@ __assign_##dest:							\
 #undef tp_memcpy
 #define tp_memcpy(dest, src, len)					\
 __assign_##dest:							\
-	lib_ring_buffer_align_ctx(&ctx, __alignof__(__typemap.dest));	\
+	if (0)								\
+		(void) __typemap.dest;					\
+	lib_ring_buffer_align_ctx(&ctx, ltt_alignof(__typemap.dest));	\
 	__chan->ops->event_write(&ctx, src, len);			\
 	goto __end_field_##dest;
 
@@ -414,12 +416,12 @@ __assign_##dest:							\
 __assign_##dest##_1:							\
 	{								\
 		u32 __tmpl = (len);					\
-		lib_ring_buffer_align_ctx(&ctx, __alignof__(u32));	\
+		lib_ring_buffer_align_ctx(&ctx, ltt_alignof(u32));	\
 		__chan->ops->event_write(&ctx, &__tmpl, sizeof(u32));	\
 	}								\
 	goto __end_field_##dest##_1;					\
 __assign_##dest##_2:							\
-	lib_ring_buffer_align_ctx(&ctx, __alignof__(__typemap.dest));	\
+	lib_ring_buffer_align_ctx(&ctx, ltt_alignof(__typemap.dest));	\
 	__chan->ops->event_write(&ctx, src, len);			\
 	goto __end_field_##dest##_2;
 

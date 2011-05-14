@@ -12,6 +12,7 @@
 #include <linux/sched.h>
 #include <linux/slab.h>
 #include <linux/jiffies.h>
+#include <linux/uuid.h>
 #include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "ltt-events.h"
 #include "ltt-tracer.h"
@@ -48,6 +49,7 @@ struct ltt_session *ltt_session_create(void)
 		return NULL;
 	INIT_LIST_HEAD(&session->chan);
 	INIT_LIST_HEAD(&session->events);
+	uuid_le_gen(&session->uuid);
 	list_add(&session->list, &sessions);
 	mutex_unlock(&sessions_mutex);
 	return session;
@@ -316,10 +318,11 @@ int lttng_metadata_printf(struct ltt_session *session,
 			ret != -ENOBUFS || !ret;
 		}),
 		msecs_to_jiffies(LTTNG_METADATA_TIMEOUT_MSEC));
-	if (waitret || ret) {
+	if (!waitret || waitret == -ERESTARTSYS || ret) {
 		printk(KERN_WARNING "LTTng: Failure to write metadata to buffers (%s)\n",
 			waitret == -ERESTARTSYS ? "interrupted" :
 				(ret == -ENOBUFS ? "timeout" : "I/O error"));
+		printk("waitret %d retval %d\n", waitret, ret);
 		if (waitret == -ERESTARTSYS)
 			ret = waitret;
 		goto end;
@@ -459,7 +462,7 @@ int _ltt_event_metadata_statedump(struct ltt_session *session,
 	 */
 	ret = lttng_metadata_printf(session,
 		"	} aligned(%u);\n"
-		"};\n", ltt_get_header_alignment());
+		"};\n\n", ltt_get_header_alignment());
 	if (ret)
 		goto end;
 
@@ -488,7 +491,7 @@ int _ltt_channel_metadata_statedump(struct ltt_session *session,
 		"stream {\n"
 		"	id = %u;\n"
 		"	event.header := %s;\n",
-		"};\n",
+		"};\n\n",
 		chan->id,
 		chan->header_type == 1 ? "struct event_header_compact" :
 			"struct event_header_large");
@@ -506,6 +509,7 @@ end:
 static
 int _ltt_session_metadata_statedump(struct ltt_session *session)
 {
+	char uuid_s[37];
 	struct ltt_channel *chan;
 	struct ltt_event *event;
 	int ret = 0;
@@ -518,6 +522,49 @@ int _ltt_session_metadata_statedump(struct ltt_session *session)
 		printk(KERN_WARNING "LTTng: attempt to start tracing, but metadata channel is not found. Operation abort.\n");
 		return -EPERM;
 	}
+
+	snprintf(uuid_s, sizeof(uuid_s),
+		"%x%x%x%x-%x%x-%x%x-%x%x-%x%x%x%x%x%x",
+		uuid_s[0], uuid_s[1], uuid_s[2], uuid_s[3],
+		uuid_s[4], uuid_s[5], uuid_s[6], uuid_s[7],
+		uuid_s[8], uuid_s[9], uuid_s[10], uuid_s[11],
+		uuid_s[12], uuid_s[13], uuid_s[14], uuid_s[15]);
+
+	ret = lttng_metadata_printf(session,
+		"typealias integer {size = 8; align = %u; signed = false; } := uint8_t;\n"
+		"typealias integer {size = 32; align = %u; signed = false; } := uint32_t;\n"
+		"typealias integer {size = 64; align = %u; signed = false; } := uint64_t;\n"
+		"\n"
+		"trace {\n"
+		"	major = %u;\n"
+		"	minor = %u;\n"
+		"	uuid = %s;\n"
+		"	byte_order = %s;\n"
+		"	packet.header := struct {\n"
+		"		uint32_t magic;\n"
+		"		uint8_t  trace_uuid[16];\n"
+		"		uint32_t stream_id;\n"
+		"		uint64_t timestamp_begin;\n"
+		"		uint64_t timestamp_end;\n"
+		"		uint32_t content_size;\n"
+		"		uint32_t packet_size;\n"
+		"		uint32_t events_lost;\n"
+		"	};\n",
+		"};\n\n",
+		ltt_alignof(uint8_t) * CHAR_BIT,
+		ltt_alignof(uint32_t) * CHAR_BIT,
+		ltt_alignof(uint64_t) * CHAR_BIT,
+		CTF_VERSION_MAJOR,
+		CTF_VERSION_MINOR,
+		uuid_s,
+#ifdef __BIG_ENDIAN
+		"be"
+#else
+		"le"
+#endif
+		);
+	if (ret)
+		goto end;
 
 skip_session:
 	list_for_each_entry(chan, &session->chan, list) {

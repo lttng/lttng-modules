@@ -8,6 +8,7 @@
 #include <linux/seq_file.h>
 #include "lttng.h"
 #include "../ltt-events.h"
+#include "../ltt-tracer.h"
 
 #ifdef __KERNEL__
 # include <asm/byteorder.h>

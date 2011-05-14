@@ -15,6 +15,41 @@
 #include "ltt-events.h"
 #include "ltt-tracer.h"
 
+/*
+ * Keep the natural field alignment for _each field_ within this structure if
+ * you ever add/remove a field from this header. Packed attribute is not used
+ * because gcc generates poor code on at least powerpc and mips. Don't ever
+ * let gcc add padding between the structure elements.
+ */
+struct packet_header {
+	uint32_t magic;			/*
+					 * Trace magic number.
+					 * contains endianness information.
+					 */
+	uint8_t trace_uuid[16];
+	uint32_t stream_id;
+	uint64_t timestamp_begin;	/* Cycle count at subbuffer start */
+	uint64_t timestamp_end;	/* Cycle count at subbuffer end */
+	uint32_t content_size;		/* Size of data in subbuffer */
+	uint32_t packet_size;		/* Subbuffer size (include padding) */
+	uint32_t events_lost;		/*
+					 * Events lost in this subbuffer since
+					 * the beginning of the trace.
+					 * (may overflow)
+					 */
+#if 0
+	uint64_t start_time_sec;	/* NTP-corrected start time */
+	uint64_t start_time_usec;
+	uint64_t start_freq;		/*
+					 * Frequency at trace start,
+				 * used all along the trace.
+					 */
+	uint32_t freq_scale;		/* Frequency scaling (divisor) */
+#endif //0
+	uint8_t header_end[0];		/* End of header */
+};
+
+
 static inline notrace u64 lib_ring_buffer_clock_read(struct channel *chan)
 {
 	return trace_clock_read64();
@@ -122,29 +157,6 @@ slow_path:
 	ltt_write_event_header_slow(config, ctx, eID, event_size);
 }
 
-/**
- * ltt_write_trace_header - Write trace header
- * @priv: Private data (struct trace)
- * @header: Memory address where the information must be written to
- */
-static __inline__
-void write_trace_header(const struct lib_ring_buffer_config *config,
-			struct packet_header *header)
-{
-	header->magic = CTF_MAGIC_NUMBER;
-#if 0
-	/* TODO: move start time to metadata */
-	header->major_version = LTT_TRACER_VERSION_MAJOR;
-	header->minor_version = LTT_TRACER_VERSION_MINOR;
-	header->arch_size = sizeof(void *);
-	header->alignment = lib_ring_buffer_get_alignment(config);
-	header->start_time_sec = ltt_chan->session->start_time.tv_sec;
-	header->start_time_usec = ltt_chan->session->start_time.tv_usec;
-	header->start_freq = ltt_chan->session->start_freq;
-	header->freq_scale = ltt_chan->session->freq_scale;
-#endif //0
-}
-
 void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 				   struct lib_ring_buffer_ctx *ctx,
 				   u16 eID, u32 event_size)
@@ -234,10 +246,21 @@ static void client_buffer_begin(struct lib_ring_buffer *buf, u64 tsc,
 		(struct packet_header *)
 			lib_ring_buffer_offset_address(&buf->backend,
 				subbuf_idx * chan->backend.subbuf_size);
+	struct ltt_session *session = channel_get_private(chan);
 
+	header->magic = CTF_MAGIC_NUMBER;
+	memcpy(header->trace_uuid, session->uuid.b, sizeof(session->uuid));
 	header->timestamp_begin = tsc;
+	header->timestamp_end = 0;
 	header->content_size = 0xFFFFFFFF; /* for debugging */
-	write_trace_header(&client_config, header);
+	header->packet_size = 0xFFFFFFFF;
+	header->events_lost = 0;
+#if 0
+	header->start_time_sec = ltt_chan->session->start_time.tv_sec;
+	header->start_time_usec = ltt_chan->session->start_time.tv_usec;
+	header->start_freq = ltt_chan->session->start_freq;
+	header->freq_scale = ltt_chan->session->freq_scale;
+#endif //0
 }
 
 /*
@@ -254,9 +277,9 @@ static void client_buffer_end(struct lib_ring_buffer *buf, u64 tsc,
 				subbuf_idx * chan->backend.subbuf_size);
 	unsigned long records_lost = 0;
 
+	header->timestamp_end = tsc;
 	header->content_size = data_size;
 	header->packet_size = PAGE_ALIGN(data_size);
-	header->timestamp_end = tsc;
 	records_lost += lib_ring_buffer_get_records_lost_full(&client_config, buf);
 	records_lost += lib_ring_buffer_get_records_lost_wrap(&client_config, buf);
 	records_lost += lib_ring_buffer_get_records_lost_big(&client_config, buf);

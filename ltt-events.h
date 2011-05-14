@@ -10,6 +10,7 @@
  */
 
 #include <linux/list.h>
+#include <linux/uuid.h>
 #include "ltt-debugfs-abi.h"
 
 struct ltt_channel;
@@ -46,7 +47,7 @@ struct lttng_enum_entry {
 	    .u.basic.integer =					\
 		{						\
 		  .size = sizeof(_type),			\
-		  .alignment = __alignof__(_type),		\
+		  .alignment = ltt_alignof(_type) * CHAR_BIT,	\
 		  .signedness = is_signed_type(_type),		\
 		  .reverse_byte_order = _byte_order != __BYTE_ORDER,	\
 		},						\
@@ -171,6 +172,7 @@ struct ltt_session {
 	struct list_head events;	/* Event list head */
 	struct list_head list;		/* Session list */
 	unsigned int free_chan_id;	/* Next chan ID to allocate */
+	uuid_le uuid;			/* Trace session unique ID */
 	int metadata_dumped:1;
 };
 
