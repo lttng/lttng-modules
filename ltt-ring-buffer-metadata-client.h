@@ -172,13 +172,10 @@ static
 struct lib_ring_buffer *ltt_buffer_read_open(struct channel *chan)
 {
 	struct lib_ring_buffer *buf;
-	int cpu;
 
-	for_each_channel_cpu(cpu, chan) {
-		buf = channel_get_ring_buffer(&client_config, chan, cpu);
-		if (!lib_ring_buffer_open_read(buf))
-			return buf;
-	}
+	buf = channel_get_ring_buffer(&client_config, chan, 0);
+	if (!lib_ring_buffer_open_read(buf))
+		return buf;
 	return NULL;
 }
 
@@ -186,7 +183,6 @@ static
 void ltt_buffer_read_close(struct lib_ring_buffer *buf)
 {
 	lib_ring_buffer_release_read(buf);
-	
 }
 
 static

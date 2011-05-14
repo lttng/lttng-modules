@@ -217,5 +217,7 @@ int ltt_probe_register(struct lttng_probe_desc *desc);
 void ltt_probe_unregister(struct lttng_probe_desc *desc);
 const struct lttng_event_desc *ltt_event_get(const char *name);
 void ltt_event_put(const struct lttng_event_desc *desc);
+int ltt_probes_init(void);
+void ltt_probes_exit(void);
 
 #endif /* _LTT_EVENTS_H */

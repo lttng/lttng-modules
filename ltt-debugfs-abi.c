@@ -123,7 +123,7 @@ static
 void lttng_metadata_create_events(struct file *channel_file)
 {
 	struct ltt_channel *channel = channel_file->private_data;
-	char *event_name = "lttng-metadata";
+	char *event_name = "lttng_metadata";
 	const struct lttng_event_desc *event_desc;
 	struct ltt_event *event;
 	int ret;
@@ -210,8 +210,10 @@ int lttng_abi_create_channel(struct file *session_file,
 	chan->file = chan_file;
 	chan_file->private_data = chan;
 	fd_install(chan_fd, chan_file);
-	if (channel_type == METADATA_CHANNEL)
+	if (channel_type == METADATA_CHANNEL) {
 		lttng_metadata_create_events(chan_file);
+		session->metadata = chan;
+	}
 
 	/* The channel created holds a reference on the session */
 	atomic_long_inc(&session_file->f_count);
