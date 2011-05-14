@@ -40,38 +40,63 @@ struct lttng_enum_entry {
 	const char *string;
 };
 
-struct lttng_enum {
-	const struct lttng_enum_entry *entries;
-	unsigned int len;
+#define __type_integer(_type, _byte_order)			\
+	{							\
+	    .atype = atype_integer,				\
+	    .u.basic.integer =					\
+		{						\
+		  .size = sizeof(_type),			\
+		  .alignment = __alignof__(_type),		\
+		  .signedness = is_signed_type(_type),		\
+		  .reverse_byte_order = _byte_order != __BYTE_ORDER,	\
+		},						\
+	}							\
+
+struct lttng_integer_type {
+	unsigned int size;		/* in bits */
+	unsigned short alignment;	/* in bits */
+	unsigned int signedness:1;
+	unsigned int reverse_byte_order:1;
+};
+
+union _lttng_basic_type {
+	struct lttng_integer_type integer;
+	struct {
+		const char *name;
+	} enumeration;
+	struct {
+		enum lttng_string_encodings encoding;
+	} string;
+};
+
+struct lttng_basic_type {
+	enum abstract_types atype;
+	union {
+		union _lttng_basic_type basic;
+	} u;
 };
 
 struct lttng_type {
 	enum abstract_types atype;
-	const char *name;
 	union {
+		union _lttng_basic_type basic;
 		struct {
-			unsigned int size;		/* in bits */
-			unsigned short alignment;	/* in bits */
-			unsigned int signedness:1;
-			unsigned int reverse_byte_order:1;
-		} integer;
-		struct {
-			const char *parent_type;
-			const struct lttng_enum def;
-		} enumeration;
-		struct {
-			const char *elem_type;
+			struct lttng_basic_type elem_type;
 			unsigned int length;		/* num. elems. */
 		} array;
 		struct {
-			const char *elem_type;
-			const char *length_type;
+			struct lttng_basic_type length_type;
+			struct lttng_basic_type elem_type;
 		} sequence;
-		struct {
-			enum lttng_string_encodings encoding;
-		} string;
 	} u;
-} __attribute__((packed));
+};
+
+struct lttng_enum {
+	const char *name;
+	struct lttng_type container_type;
+	const struct lttng_enum_entry *entries;
+	unsigned int len;
+};
 
 /* Event field description */
 
@@ -104,6 +129,7 @@ struct ltt_event {
 	void *filter;
 	enum instrum_type itype;
 	struct list_head list;		/* Event list */
+	int metadata_dumped:1;
 };
 
 struct ltt_channel_ops {
@@ -120,9 +146,11 @@ struct ltt_channel_ops {
 	void (*event_commit)(struct lib_ring_buffer_ctx *ctx);
 	void (*event_write)(struct lib_ring_buffer_ctx *ctx, const void *src,
 			    size_t len);
+	wait_queue_head_t *(*get_reader_wait_queue)(struct ltt_channel *chan);
 };
 
 struct ltt_channel {
+	unsigned int id;
 	struct channel *chan;		/* Channel buffers */
 	/* Event ID management */
 	struct ltt_session *session;
@@ -131,14 +159,19 @@ struct ltt_channel {
 	struct list_head list;		/* Channel list */
 	wait_queue_head_t notify_wait;	/* Channel addition notif. waitqueue */
 	struct ltt_channel_ops *ops;
+	int metadata_dumped:1;
+	int header_type:2;		/* 0: unset, 1: compact, 2: large */
 };
 
 struct ltt_session {
 	int active;			/* Is trace session active ? */
 	struct file *file;		/* File associated to session */
+	struct ltt_channel *metadata;	/* Metadata channel */
 	struct list_head chan;		/* Channel list head */
 	struct list_head events;	/* Event list head */
 	struct list_head list;		/* Session list */
+	unsigned int free_chan_id;	/* Next chan ID to allocate */
+	int metadata_dumped:1;
 };
 
 struct ltt_transport {

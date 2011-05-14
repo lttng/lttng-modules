@@ -1632,6 +1632,7 @@ int lib_ring_buffer_reserve_slow(struct lib_ring_buffer_ctx *ctx)
 	const struct lib_ring_buffer_config *config = chan->backend.config;
 	struct lib_ring_buffer *buf;
 	struct switch_offsets offsets;
+	int ret;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
 		buf = per_cpu_ptr(chan->backend.buf, ctx->cpu);

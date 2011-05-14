@@ -73,12 +73,11 @@ const struct lttng_event_desc *ltt_event_get(const char *name)
 
 	mutex_lock(&probe_mutex);
 	event = find_event(name);
+	mutex_unlock(&probe_mutex);
 	if (!event)
-		goto end;
+		return NULL;
 	ret = try_module_get(__module_text_address((unsigned long) event));
 	WARN_ON_ONCE(!ret);
-end:
-	mutex_unlock(&probe_mutex);
 	return event;
 }
 EXPORT_SYMBOL_GPL(ltt_event_get);

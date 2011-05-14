@@ -32,6 +32,9 @@ struct lttng_event {
 	char name[];
 };
 
+/* TODO: LTTNG_KERNEL_SESSION..... */
+/* TODO: ioctl LTTNG_KERNEL_TRACER_VERSION */
+
 #define LTTNG_SESSION		_IO(0xF6, 0x40)
 #define LTTNG_SESSION_START	_IO(0xF6, 0x41)
 #define LTTNG_SESSION_STOP	_IO(0xF6, 0x42)

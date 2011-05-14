@@ -332,6 +332,7 @@ void ltt_buffer_read_close(struct lib_ring_buffer *buf)
 	
 }
 
+static
 int ltt_event_reserve(struct lib_ring_buffer_ctx *ctx)
 {
 	int ret, cpu;
@@ -351,16 +352,24 @@ put:
 	return ret;
 }
 
+static
 void ltt_event_commit(struct lib_ring_buffer_ctx *ctx)
 {
 	lib_ring_buffer_commit(&client_config, ctx);
 	lib_ring_buffer_put_cpu(&client_config);
 }
 
+static
 void ltt_event_write(struct lib_ring_buffer_ctx *ctx, const void *src,
 		     size_t len)
 {
 	lib_ring_buffer_write(&client_config, ctx, src, len);
+}
+
+static
+wait_queue_head_t *ltt_get_reader_wait_queue(struct ltt_channel *chan)
+{
+	return &chan->chan->read_wait;
 }
 
 static struct ltt_transport ltt_relay_transport = {
@@ -374,6 +383,7 @@ static struct ltt_transport ltt_relay_transport = {
 		.event_reserve = ltt_event_reserve,
 		.event_commit = ltt_event_commit,
 		.event_write = ltt_event_write,
+		.get_reader_wait_queue = ltt_get_reader_wait_queue,
 	},
 };
 

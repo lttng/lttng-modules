@@ -23,6 +23,10 @@
 #include "ltt-tracer-core.h"
 #include "ltt-events.h"
 
+#ifndef CHAR_BIT
+#define CHAR_BIT 8
+#endif
+
 /* Number of bytes to log with a read/write event */
 #define LTT_LOG_RW_SIZE			32L
 
@@ -109,6 +113,16 @@ struct event_header {
 
 #define LTT_MAX_SMALL_SIZE		0xFFFFU
 
+static inline
+size_t ltt_get_header_alignment(void)
+{
+#ifdef RING_BUFFER_ALIGN
+	return sizeof(struct event_header) * CHAR_BIT;
+#else
+	return CHAR_BIT;
+#endif
+}
+
 /*
  * We use asm/timex.h : cpu_khz/HZ variable in here : we might have to deal
  * specifically with CPU frequency scaling someday, so using an interpolation
@@ -159,6 +173,12 @@ struct packet_header {
 #define TSDL_MAGIC_NUMBER		0x75D11D57
 #define LTT_TRACER_VERSION_MAJOR	3
 #define LTT_TRACER_VERSION_MINOR	0
+
+/*
+ * Number of milliseconds to retry before failing metadata writes on buffer full
+ * condition. (10 seconds)
+ */
+#define LTTNG_METADATA_TIMEOUT_MSEC	10000
 
 /*
  * Size reserved for high priority events (interrupts, NMI, BH) at the end of a

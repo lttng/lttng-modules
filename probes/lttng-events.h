@@ -42,7 +42,7 @@
 		PARAMS(tstruct), PARAMS(assign), PARAMS(print))		\
 
 /*
- * Stage 0.1 of the trace events.
+ * Stage 1 of the trace events.
  *
  * Create dummy trace calls for each events, verifying that the LTTng module
  * TRACE_EVENT headers match the kernel arguments. Will be optimized out by the
@@ -64,7 +64,7 @@ void trace_##_name(_proto);
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
 /*
- * Stage 1 of the trace events.
+ * Stage 2 of the trace events.
  *
  * Create event field type metadata section.
  * Each event produce an array of fields.
@@ -76,43 +76,59 @@ void trace_##_name(_proto);
 
 #undef __field
 #define __field(_type, _item)					\
-	{ .name = #_item, .type = { .atype = atype_integer, .name = #_type} },
+	{							\
+	  .name = #_item,					\
+	  .type = __type_integer(_type, __BYTE_ORDER),		\
+	},
 
 #undef __field_ext
 #define __field_ext(_type, _item, _filter_type)		__field(_type, _item)
 
+#undef __field_network
+#define __field_network(_type, _item)				\
+	{							\
+	  .name = #_item,					\
+	  .type = __type_integer(_type, __BIG_ENDIAN),		\
+	},
+
 #undef __array
 #define __array(_type, _item, _length)				\
 	{							\
-		.name = #_item,					\
-		.type = {					\
+	  .name = #_item,					\
+	  .type =						\
+		{						\
 		  .atype = atype_array,				\
-		  .name = NULL,					\
-		  .u.array.elem_type = #_type,			\
-		  .u.array.length = _length,			\
+		  .u.array =					\
+			{					\
+			    .length = _length,			\
+			    .elem_type = __type_integer(_type, __BYTE_ORDER), \
+			},					\
 		},						\
 	},
 
 #undef __dynamic_array
 #define __dynamic_array(_type, _item, _length)			\
 	{							\
-		.name = #_item,					\
-		.type = {					\
+	  .name = #_item,					\
+	  .type =						\
+		{						\
 		  .atype = atype_sequence,			\
-		  .name = NULL,					\
-		  .u.sequence.elem_type = #_type,		\
-		  .u.sequence.length_type = "u32",		\
+		  .u.sequence =					\
+			{					\
+			    .length_type = __type_integer(u32, __BYTE_ORDER), \
+			    .elem_type = __type_integer(_type, __BYTE_ORDER), \
+			},					\
 		},						\
 	},
 
 #undef __string
 #define __string(_item, _src)					\
 	{							\
-		.name = #_item,					\
-		.type = {					\
+	  .name = #_item,					\
+	  .type =						\
+		{						\
 		  .atype = atype_string,			\
-		  .name = NULL,					\
-		  .u.string.encoding = lttng_encode_UTF8,	\
+		  .u.basic.string.encoding = lttng_encode_UTF8,	\
 		},						\
 	},
 
@@ -127,8 +143,10 @@ void trace_##_name(_proto);
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
+#undef __type_integer
+
 /*
- * Stage 1.1 of the trace events.
+ * Stage 3 of the trace events.
  *
  * Create probe callback prototypes.
  */
@@ -145,7 +163,7 @@ static void __event_probe__##_name(void *__data, _proto);
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
 /*
- * Stage 2 of the trace events.
+ * Stage 4 of the trace events.
  *
  * Create an array of events.
  */
@@ -175,7 +193,7 @@ static const struct lttng_event_desc TP_ID(__event_desc___, TRACE_SYSTEM)[] = {
 
 
 /*
- * Stage 2.1 of the trace events.
+ * Stage 5 of the trace events.
  *
  * Create a toplevel descriptor for the whole probe.
  */
@@ -193,120 +211,7 @@ static struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 #undef TP_ID
 
 /*
- * Stage 3 of the trace events.
- *
- * Create seq file metadata output.
- */
-
-#define TP_ID1(_token, _system)	_token##_system
-#define TP_ID(_token, _system)	TP_ID1(_token, _system)
-
-static void *TP_ID(__lttng_seq_start__, TRACE_SYSTEM)(struct seq_file *m,
-						      loff_t *pos)
-{
-	const struct lttng_event_desc *desc =
-		&TP_ID(__event_desc___, TRACE_SYSTEM)[*pos];
-
-	if (desc > &TP_ID(__event_desc___, TRACE_SYSTEM)
-			[ARRAY_SIZE(TP_ID(__event_desc___, TRACE_SYSTEM)) - 1])
-		return NULL;
-	return (void *) desc;
-}
-
-static void *TP_ID(__lttng_seq_next__, TRACE_SYSTEM)(struct seq_file *m,
-						     void *p, loff_t *ppos)
-{
-	const struct lttng_event_desc *desc =
-		&TP_ID(__event_desc___, TRACE_SYSTEM)[++(*ppos)];
-
-	if (desc > &TP_ID(__event_desc___, TRACE_SYSTEM)
-			[ARRAY_SIZE(TP_ID(__event_desc___, TRACE_SYSTEM)) - 1])
-		return NULL;
-	return (void *) desc;
-}
-
-static void TP_ID(__lttng_seq_stop__, TRACE_SYSTEM)(struct seq_file *m,
-						    void *p)
-{
-}
-
-static int TP_ID(__lttng_seq_show__, TRACE_SYSTEM)(struct seq_file *m,
-						   void *p)
-{
-	const struct lttng_event_desc *desc = p;
-	int i;
-
-	seq_printf(m,	"event {\n"
-			"\tname = %s;\n"
-			"\tid = UNKNOWN;\n"
-			"\tstream = UNKNOWN;\n"
-			"\tfields = {\n",
-			desc->name);
-	for (i = 0; i < desc->nr_fields; i++) {
-		if (desc->fields[i].type.name)	/* Named type */
-			seq_printf(m,	"\t\t%s",
-					desc->fields[i].type.name);
-		else				/* Nameless type */
-			lttng_print_event_type(m, 2, &desc->fields[i].type);
-		seq_printf(m,	" %s;\n", desc->fields[i].name);
-	}
-	seq_printf(m,	"\t};\n");
-	seq_printf(m,	"};\n");
-	return 0;
-}
-
-static const
-struct seq_operations TP_ID(__lttng_types_seq_ops__, TRACE_SYSTEM) = {
-	.start = TP_ID(__lttng_seq_start__, TRACE_SYSTEM),
-	.next = TP_ID(__lttng_seq_next__, TRACE_SYSTEM),
-	.stop = TP_ID(__lttng_seq_stop__, TRACE_SYSTEM),
-	.show = TP_ID(__lttng_seq_show__, TRACE_SYSTEM),
-};
-
-static int
-TP_ID(__lttng_types_open__, TRACE_SYSTEM)(struct inode *inode, struct file *file)
-{
-	return seq_open(file, &TP_ID(__lttng_types_seq_ops__, TRACE_SYSTEM));
-}
-
-static const
-struct file_operations TP_ID(__lttng_types_fops__, TRACE_SYSTEM) = {
-        .open = TP_ID(__lttng_types_open__, TRACE_SYSTEM),
-        .read = seq_read,
-        .llseek = seq_lseek,
-        .release = seq_release_private,
-};
-
-static struct dentry *TP_ID(__lttng_types_dentry__, TRACE_SYSTEM);
-
-static int TP_ID(__lttng_types_init__, TRACE_SYSTEM)(void)
-{
-	int ret = 0;
-
-	TP_ID(__lttng_types_dentry__, TRACE_SYSTEM) =
-		debugfs_create_file("lttng-events-" __stringify(TRACE_SYSTEM),
-				    S_IWUSR, NULL, NULL,
-				    &TP_ID(__lttng_types_fops__, TRACE_SYSTEM));
-	if (IS_ERR(TP_ID(__lttng_types_dentry__, TRACE_SYSTEM))
-	    || !TP_ID(__lttng_types_dentry__, TRACE_SYSTEM)) {
-		printk(KERN_ERR "Error creating LTTng type export file\n");
-		ret = -ENOMEM;
-		goto error;
-	}
-error:
-	return ret;
-}
-
-static void TP_ID(__lttng_types_exit__, TRACE_SYSTEM)(void)
-{
-	debugfs_remove(TP_ID(__lttng_types_dentry__, TRACE_SYSTEM));
-}
-
-#undef TP_ID1
-#undef TP_ID
-
-/*
- * Stage 4 of the trace events.
+ * Stage 6 of the trace events.
  *
  * Create static inline function that calculates event size.
  */
@@ -360,10 +265,8 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len, _proto) \
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
-
-
 /*
- * Stage 5 of the trace events.
+ * Stage 7 of the trace events.
  *
  * Create static inline function that calculates event payload alignment.
  */
@@ -410,7 +313,7 @@ static inline size_t __event_get_align__##_name(_proto)			      \
 
 
 /*
- * Stage 6 of the trace events.
+ * Stage 8 of the trace events.
  *
  * Create structure declaration that allows the "assign" macros to access the
  * field types.
@@ -448,7 +351,7 @@ struct __event_typemap__##_name {					      \
 
 
 /*
- * Stage 7 of the trace events.
+ * Stage 9 of the trace events.
  *
  * Create the probe function : call even size calculation and write event data
  * into the buffer.
@@ -583,7 +486,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
 /*
- * Stage 8 of the trace events.
+ * Stage 10 of the trace events.
  *
  * Register/unregister probes at module load/unload.
  */
@@ -599,12 +502,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 
 static int TP_ID(__lttng_events_init__, TRACE_SYSTEM)(void)
 {
-	int ret;
-
 	wrapper_vmalloc_sync_all();
-	ret = TP_ID(__lttng_types_init__, TRACE_SYSTEM)();
-	if (ret)
-		return ret;
 	return ltt_probe_register(&TP_ID(__probe_desc___, TRACE_SYSTEM));
 }
 
@@ -612,7 +510,6 @@ module_init_eval(__lttng_events_init__, TRACE_SYSTEM);
 
 static void TP_ID(__lttng_events_exit__, TRACE_SYSTEM)(void)
 {
-	TP_ID(__lttng_types_exit__, TRACE_SYSTEM)();
 	ltt_probe_unregister(&TP_ID(__probe_desc___, TRACE_SYSTEM));
 }
 

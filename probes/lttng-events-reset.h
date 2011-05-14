@@ -6,6 +6,9 @@
 #undef __field_ext
 #define __field_ext(_type, _item, _filter_type)
 
+#undef __field_network
+#define __field_network(_type, _item)
+
 #undef __array
 #define __array(_type, _item, _length)
 

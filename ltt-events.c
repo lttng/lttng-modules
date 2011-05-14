@@ -11,15 +11,26 @@
 #include <linux/mutex.h>
 #include <linux/sched.h>
 #include <linux/slab.h>
+#include <linux/jiffies.h>
 #include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "ltt-events.h"
+#include "ltt-tracer.h"
 
 static LIST_HEAD(sessions);
 static LIST_HEAD(ltt_transport_list);
 static DEFINE_MUTEX(sessions_mutex);
 static struct kmem_cache *event_cache;
 
-static void synchronize_trace(void)
+static
+int _ltt_event_metadata_statedump(struct ltt_session *session,
+				  struct ltt_channel *chan,
+				  struct ltt_event *event);
+static
+int _ltt_session_metadata_statedump(struct ltt_session *session);
+
+
+static
+void synchronize_trace(void)
 {
 	synchronize_sched();
 #ifdef CONFIG_PREEMPT_RT
@@ -67,14 +78,34 @@ void ltt_session_destroy(struct ltt_session *session)
 int ltt_session_start(struct ltt_session *session)
 {
 	int ret = 0;
+	struct ltt_channel *chan;
 
 	mutex_lock(&sessions_mutex);
 	if (session->active) {
 		ret = -EBUSY;
 		goto end;
 	}
+
+	/*
+	 * Snapshot the number of events per channel to know the type of header
+	 * we need to use.
+	 */
+	list_for_each_entry(chan, &session->chan, list) {
+		if (chan->header_type)
+			continue;		/* don't change it if session stop/restart */
+		if (chan->free_event_id < 31)
+			chan->header_type = 1;	/* compact */
+		else
+			chan->header_type = 2;	/* large */
+	}
+
 	ACCESS_ONCE(session->active) = 1;
 	synchronize_trace();	/* Wait for in-flight events to complete */
+	ret = _ltt_session_metadata_statedump(session);
+	if (ret) {
+		ACCESS_ONCE(session->active) = 0;
+		synchronize_trace();	/* Wait for in-flight events to complete */
+	}
 end:
 	mutex_unlock(&sessions_mutex);
 	return ret;
@@ -138,6 +169,7 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 			read_timer_interval);
 	if (!chan->chan)
 		goto create_error;
+	chan->id = session->free_chan_id++;
 	chan->ops = &transport->ops;
 	list_add(&chan->list, &session->chan);
 	mutex_unlock(&sessions_mutex);
@@ -203,10 +235,16 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 	default:
 		WARN_ON_ONCE(1);
 	}
+	ret = _ltt_event_metadata_statedump(chan->session, chan, event);
+	if (ret)
+		goto statedump_error;
 	list_add(&event->list, &chan->session->events);
 	mutex_unlock(&sessions_mutex);
 	return event;
 
+statedump_error:
+	WARN_ON_ONCE(tracepoint_probe_unregister(name, event_desc->probe_callback,
+						 event));
 register_error:
 	kmem_cache_free(event_cache, event);
 cache_error:
@@ -247,6 +285,213 @@ void _ltt_event_destroy(struct ltt_event *event)
 	kmem_cache_free(event_cache, event);
 }
 
+int lttng_metadata_printf(struct ltt_session *session,
+			  const char *fmt, ...)
+{
+	struct lib_ring_buffer_ctx ctx;
+	struct ltt_channel *chan = session->metadata;
+	char *str;
+	int ret = 0, waitret;
+	size_t len;
+	va_list ap;
+
+	WARN_ON_ONCE(!ACCESS_ONCE(session->active));
+
+	va_start(ap, fmt);
+	str = kvasprintf(GFP_KERNEL, fmt, ap);
+	va_end(ap);
+	if (!str)
+		return -ENOMEM;
+
+	len = strlen(str) + 1;
+	lib_ring_buffer_ctx_init(&ctx, chan->chan, NULL, len, sizeof(char), -1);
+	/*
+	 * We don't care about metadata buffer's records lost count, because we
+	 * always retry here. Report error if we need to bail out after timeout
+	 * or being interrupted.
+	 */
+	waitret = wait_event_interruptible_timeout(*chan->ops->get_reader_wait_queue(chan),
+		({
+			ret = chan->ops->event_reserve(&ctx);
+			ret != -ENOBUFS || !ret;
+		}),
+		msecs_to_jiffies(LTTNG_METADATA_TIMEOUT_MSEC));
+	if (waitret || ret) {
+		printk(KERN_WARNING "LTTng: Failure to write metadata to buffers (%s)\n",
+			waitret == -ERESTARTSYS ? "interrupted" :
+				(ret == -ENOBUFS ? "timeout" : "I/O error"));
+		if (waitret == -ERESTARTSYS)
+			ret = waitret;
+		goto end;
+	}
+	chan->ops->event_write(&ctx, str, len);
+	chan->ops->event_commit(&ctx);
+end:
+	kfree(str);
+	return ret;
+}
+
+static
+int _ltt_fields_metadata_statedump(struct ltt_session *session,
+				   struct ltt_event *event)
+{
+	const struct lttng_event_desc *desc = event->desc;
+	int ret = 0;
+	int i;
+
+	for (i = 0; i < desc->nr_fields; i++) {
+		const struct lttng_event_field *field = &desc->fields[i];
+
+		switch (field->type.atype) {
+		case atype_integer:
+			ret = lttng_metadata_printf(session,
+				"		integer { size = %u; align = %u; signed = %u;%s } %s;\n",
+				field->type.u.basic.integer.size,
+				field->type.u.basic.integer.alignment,
+				field->type.u.basic.integer.signedness,
+#ifdef __BIG_ENDIAN
+				field->type.u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
+#else
+				field->type.u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
+#endif
+				field->name);
+			break;
+		case atype_enum:
+			ret = lttng_metadata_printf(session,
+				"		%s %s;\n",
+				field->type.u.basic.enumeration.name,
+				field->name);
+			break;
+		case atype_array:
+			break;
+		case atype_sequence:
+			break;
+
+		case atype_string:
+			ret = lttng_metadata_printf(session,
+				"		string%s %s;\n",
+				field->type.u.basic.string.encoding == lttng_encode_ASCII ?
+					" { encoding = ASCII; }" : "",
+				field->name);
+			break;
+		default:
+			WARN_ON_ONCE(1);
+			return -EINVAL;
+		}
+	}
+	return ret;
+}
+
+static
+int _ltt_event_metadata_statedump(struct ltt_session *session,
+				  struct ltt_channel *chan,
+				  struct ltt_event *event)
+{
+	int ret = 0;
+
+	if (event->metadata_dumped || !ACCESS_ONCE(session->active))
+		return 0;
+	if (chan == session->metadata)
+		return 0;
+
+	ret = lttng_metadata_printf(session,
+		"event {\n"
+		"	name = %s;\n"
+		"	id = %u;\n"
+		"	stream_id = %u;\n"
+		"	event.fields := struct {\n",
+		event->desc->name,
+		event->id,
+		event->chan->id);
+	if (ret)
+		goto end;
+
+	ret = _ltt_fields_metadata_statedump(session, event);
+	if (ret)
+		goto end;
+
+	/*
+	 * LTTng space reservation can only reserve multiples of the
+	 * byte size.
+	 */
+	ret = lttng_metadata_printf(session,
+		"	} aligned(%u);\n"
+		"};\n", ltt_get_header_alignment());
+	if (ret)
+		goto end;
+
+
+
+
+	event->metadata_dumped = 1;
+end:
+	return ret;
+
+}
+
+static
+int _ltt_channel_metadata_statedump(struct ltt_session *session,
+				    struct ltt_channel *chan)
+{
+	int ret = 0;
+
+	if (chan->metadata_dumped || !ACCESS_ONCE(session->active))
+		return 0;
+	if (chan == session->metadata)
+		return 0;
+
+	WARN_ON_ONCE(!chan->header_type);
+	ret = lttng_metadata_printf(session,
+		"stream {\n"
+		"	id = %u;\n"
+		"	event.header := %s;\n",
+		"};\n",
+		chan->id,
+		chan->header_type == 1 ? "struct event_header_compact" :
+			"struct event_header_large");
+	if (ret)
+		goto end;
+
+	chan->metadata_dumped = 1;
+end:
+	return ret;
+}
+
+/*
+ * Output metadata into this session's metadata buffers.
+ */
+static
+int _ltt_session_metadata_statedump(struct ltt_session *session)
+{
+	struct ltt_channel *chan;
+	struct ltt_event *event;
+	int ret = 0;
+
+	if (!ACCESS_ONCE(session->active))
+		return 0;
+	if (session->metadata_dumped)
+		goto skip_session;
+
+
+
+
+skip_session:
+	list_for_each_entry(chan, &session->chan, list) {
+		ret = _ltt_channel_metadata_statedump(session, chan);
+		if (ret)
+			goto end;
+	}
+
+	list_for_each_entry(event, &session->events, list) {
+		ret = _ltt_event_metadata_statedump(session, chan, event);
+		if (ret)
+			goto end;
+	}
+	session->metadata_dumped = 1;
+end:
+	return ret;
+}
+
 /**
  * ltt_transport_register - LTT transport registration
  * @transport: transport structure
@@ -285,7 +530,6 @@ void ltt_transport_unregister(struct ltt_transport *transport)
 	mutex_unlock(&sessions_mutex);
 }
 EXPORT_SYMBOL_GPL(ltt_transport_unregister);
-
 
 static int __init ltt_events_init(void)
 {
