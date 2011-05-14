@@ -363,9 +363,52 @@ int _ltt_fields_metadata_statedump(struct ltt_session *session,
 				field->name);
 			break;
 		case atype_array:
+		{
+			const struct lttng_basic_type *elem_type;
+
+			elem_type = &field->type.u.array.elem_type;
+			ret = lttng_metadata_printf(session,
+				"		integer { size = %u; align = %u; signed = %u;%s } %s[%u];\n",
+				elem_type->u.basic.integer.size,
+				elem_type->u.basic.integer.alignment,
+				elem_type->u.basic.integer.signedness,
+#ifdef __BIG_ENDIAN
+				elem_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
+#else
+				elem_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
+#endif
+				field->name, field->type.u.array.length);
 			break;
+		}
 		case atype_sequence:
+		{
+			const struct lttng_basic_type *elem_type;
+			const struct lttng_basic_type *length_type;
+
+			elem_type = &field->type.u.sequence.elem_type;
+			length_type = &field->type.u.sequence.length_type;
+			ret = lttng_metadata_printf(session,
+				"		integer { size = %u; align = %u; signed = %u;%s } %s[ integer { size = %u; align = %u; signed = %u;%s } ];\n",
+				elem_type->u.basic.integer.size,
+				elem_type->u.basic.integer.alignment,
+				elem_type->u.basic.integer.signedness,
+#ifdef __BIG_ENDIAN
+				elem_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
+#else
+				elem_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
+#endif
+				field->name,
+					length_type->u.basic.integer.size,
+					length_type->u.basic.integer.alignment,
+					length_type->u.basic.integer.signedness,
+#ifdef __BIG_ENDIAN
+					length_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
+#else
+					length_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : ""
+#endif
+				);
 			break;
+		}
 
 		case atype_string:
 			ret = lttng_metadata_printf(session,
