@@ -16,6 +16,7 @@
  * Dual LGPL v2.1/GPL v2 license.
  */
 
+#include <linux/kref.h>
 #include "../../wrapper/ringbuffer/config.h"
 #include "../../wrapper/ringbuffer/backend_types.h"
 #include "../../wrapper/prio_heap.h"	/* For per-CPU read-side iterator */
@@ -62,7 +63,7 @@ struct channel {
 	int hp_iter_enable:1;			/* Enable hp iter notif. */
 	wait_queue_head_t read_wait;		/* reader wait queue */
 	struct channel_iter iter;		/* Channel read-side iterator */
-	atomic_long_t read_ref;			/* Reader reference count */
+	struct kref ref;			/* Reference count */
 };
 
 /* Per-subbuffer commit counters used on the hot path */

@@ -514,9 +514,10 @@ int _ltt_session_metadata_statedump(struct ltt_session *session)
 		return 0;
 	if (session->metadata_dumped)
 		goto skip_session;
-
-
-
+	if (!session->metadata) {
+		printk(KERN_WARNING "LTTng: tracing is starting, but metadata channel is not found\n");
+		return -EPERM;
+	}
 
 skip_session:
 	list_for_each_entry(chan, &session->chan, list) {

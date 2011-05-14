@@ -624,6 +624,7 @@ struct channel *channel_create(const struct lib_ring_buffer_config *config,
 	chan->commit_count_mask = (~0UL >> chan->backend.num_subbuf_order);
 	chan->switch_timer_interval = usecs_to_jiffies(switch_timer_interval);
 	chan->read_timer_interval = usecs_to_jiffies(read_timer_interval);
+	kref_init(&chan->ref);
 	init_waitqueue_head(&chan->read_wait);
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
@@ -685,6 +686,13 @@ error:
 }
 EXPORT_SYMBOL_GPL(channel_create);
 
+static
+void channel_release(struct kref *kref)
+{
+	struct channel *chan = container_of(kref, struct channel, ref);
+	channel_free(chan);
+}
+
 /**
  * channel_destroy - Finalize, wait for q.s. and destroy channel.
  * @chan: channel to destroy
@@ -741,13 +749,8 @@ void *channel_destroy(struct channel *chan)
 		wake_up_interruptible(&buf->read_wait);
 	}
 	wake_up_interruptible(&chan->read_wait);
-
-	while (atomic_long_read(&chan->read_ref) > 0)
-		msleep(100);
-	/* Finish waiting for refcount before free */
-	smp_mb();
+	kref_put(&chan->ref, channel_release);
 	priv = chan->backend.priv;
-	channel_free(chan);
 	return priv;
 }
 EXPORT_SYMBOL_GPL(channel_destroy);
@@ -769,7 +772,7 @@ int lib_ring_buffer_open_read(struct lib_ring_buffer *buf)
 
 	if (!atomic_long_add_unless(&buf->active_readers, 1, 1))
 		return -EBUSY;
-	atomic_long_inc(&chan->read_ref);
+	kref_get(&chan->ref);
 	smp_mb__after_atomic_inc();
 	return 0;
 }
@@ -781,8 +784,8 @@ void lib_ring_buffer_release_read(struct lib_ring_buffer *buf)
 
 	CHAN_WARN_ON(chan, atomic_long_read(&buf->active_readers) != 1);
 	smp_mb__before_atomic_dec();
-	atomic_long_dec(&chan->read_ref);
 	atomic_long_dec(&buf->active_readers);
+	kref_put(&chan->ref, channel_release);
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_release_read);
 
