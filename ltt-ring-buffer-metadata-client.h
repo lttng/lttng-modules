@@ -16,7 +16,7 @@
 
 struct metadata_packet_header {
 	uint32_t magic;			/* 0x75D11D57 */
-	uint8_t  trace_uuid[16];	/* Unique Universal Identifier */
+	uint8_t  uuid[16];		/* Unique Universal Identifier */
 	uint32_t checksum;		/* 0 if unused */
 	uint32_t content_size;		/* in bits */
 	uint32_t packet_size;		/* in bits */
@@ -89,7 +89,7 @@ static void client_buffer_begin(struct lib_ring_buffer *buf, u64 tsc,
 	struct ltt_session *session = channel_get_private(chan);
 
 	header->magic = TSDL_MAGIC_NUMBER;
-	memcpy(header->trace_uuid, session->uuid.b, sizeof(session->uuid));
+	memcpy(header->uuid, session->uuid.b, sizeof(session->uuid));
 	header->checksum = 0;		/* 0 if unused */
 	header->content_size = 0xFFFFFFFF; /* in bits, for debugging */
 	header->packet_size = 0xFFFFFFFF;  /* in bits, for debugging */
@@ -107,7 +107,7 @@ static void client_buffer_end(struct lib_ring_buffer *buf, u64 tsc,
 {
 	struct channel *chan = buf->backend.chan;
 	struct metadata_packet_header *header =
-		(struct packet_header *)
+		(struct metadata_packet_header *)
 			lib_ring_buffer_offset_address(&buf->backend,
 				subbuf_idx * chan->backend.subbuf_size);
 	unsigned long records_lost = 0;
@@ -205,6 +205,23 @@ void ltt_event_write(struct lib_ring_buffer_ctx *ctx, const void *src,
 }
 
 static
+size_t ltt_packet_avail_size(struct channel *chan)
+			     
+{
+	unsigned long o_begin;
+	struct lib_ring_buffer *buf;
+
+	buf = chan->backend.buf;	/* Only for global buffer ! */
+	o_begin = v_read(&client_config, &buf->offset);
+	if (subbuf_offset(o_begin, chan) != 0) {
+		return chan->backend.subbuf_size - subbuf_offset(o_begin, chan);
+	} else {
+		return chan->backend.subbuf_size - subbuf_offset(o_begin, chan)
+			- sizeof(struct metadata_packet_header);
+	}
+}
+
+static
 wait_queue_head_t *ltt_get_reader_wait_queue(struct ltt_channel *chan)
 {
 	return &chan->chan->read_wait;
@@ -221,6 +238,7 @@ static struct ltt_transport ltt_relay_transport = {
 		.event_reserve = ltt_event_reserve,
 		.event_commit = ltt_event_commit,
 		.event_write = ltt_event_write,
+		.packet_avail_size = ltt_packet_avail_size,
 		.get_reader_wait_queue = ltt_get_reader_wait_queue,
 	},
 };

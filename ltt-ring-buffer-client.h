@@ -26,7 +26,7 @@ struct packet_header {
 					 * Trace magic number.
 					 * contains endianness information.
 					 */
-	uint8_t trace_uuid[16];
+	uint8_t uuid[16];
 	uint32_t stream_id;
 	uint64_t timestamp_begin;	/* Cycle count at subbuffer start */
 	uint64_t timestamp_end;	/* Cycle count at subbuffer end */
@@ -249,7 +249,7 @@ static void client_buffer_begin(struct lib_ring_buffer *buf, u64 tsc,
 	struct ltt_session *session = channel_get_private(chan);
 
 	header->magic = CTF_MAGIC_NUMBER;
-	memcpy(header->trace_uuid, session->uuid.b, sizeof(session->uuid));
+	memcpy(header->uuid, session->uuid.b, sizeof(session->uuid));
 	header->timestamp_begin = tsc;
 	header->timestamp_end = 0;
 	header->content_size = 0xFFFFFFFF; /* for debugging */
@@ -406,6 +406,7 @@ static struct ltt_transport ltt_relay_transport = {
 		.event_reserve = ltt_event_reserve,
 		.event_commit = ltt_event_commit,
 		.event_write = ltt_event_write,
+		.packet_avail_size = NULL,	/* Would be racy anyway */
 		.get_reader_wait_queue = ltt_get_reader_wait_queue,
 	},
 };

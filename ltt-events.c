@@ -287,6 +287,12 @@ void _ltt_event_destroy(struct ltt_event *event)
 	kmem_cache_free(event_cache, event);
 }
 
+/*
+ * We have exclusive access to our metadata buffer (protected by the
+ * sessions_mutex), so we can do racy operations such as looking for
+ * remaining space left in packet and write, since mutual exclusion
+ * protects us from concurrent writes.
+ */
 int lttng_metadata_printf(struct ltt_session *session,
 			  const char *fmt, ...)
 {
@@ -294,7 +300,7 @@ int lttng_metadata_printf(struct ltt_session *session,
 	struct ltt_channel *chan = session->metadata;
 	char *str;
 	int ret = 0, waitret;
-	size_t len;
+	size_t len, reserve_len, pos;
 	va_list ap;
 
 	WARN_ON_ONCE(!ACCESS_ONCE(session->active));
@@ -305,30 +311,38 @@ int lttng_metadata_printf(struct ltt_session *session,
 	if (!str)
 		return -ENOMEM;
 
-	len = strlen(str) + 1;
-	lib_ring_buffer_ctx_init(&ctx, chan->chan, NULL, len, sizeof(char), -1);
-	/*
-	 * We don't care about metadata buffer's records lost count, because we
-	 * always retry here. Report error if we need to bail out after timeout
-	 * or being interrupted.
-	 */
-	waitret = wait_event_interruptible_timeout(*chan->ops->get_reader_wait_queue(chan),
-		({
-			ret = chan->ops->event_reserve(&ctx);
-			ret != -ENOBUFS || !ret;
-		}),
-		msecs_to_jiffies(LTTNG_METADATA_TIMEOUT_MSEC));
-	if (!waitret || waitret == -ERESTARTSYS || ret) {
-		printk(KERN_WARNING "LTTng: Failure to write metadata to buffers (%s)\n",
-			waitret == -ERESTARTSYS ? "interrupted" :
-				(ret == -ENOBUFS ? "timeout" : "I/O error"));
-		printk("waitret %d retval %d\n", waitret, ret);
-		if (waitret == -ERESTARTSYS)
-			ret = waitret;
-		goto end;
+	len = strlen(str);
+	pos = 0;
+
+	for (pos = 0; pos < len; pos += reserve_len) {
+		reserve_len = min_t(size_t,
+				chan->ops->packet_avail_size(chan->chan),
+				len - pos);
+		lib_ring_buffer_ctx_init(&ctx, chan->chan, NULL, reserve_len,
+					 sizeof(char), -1);
+		/*
+		 * We don't care about metadata buffer's records lost
+		 * count, because we always retry here. Report error if
+		 * we need to bail out after timeout or being
+		 * interrupted.
+		 */
+		waitret = wait_event_interruptible_timeout(*chan->ops->get_reader_wait_queue(chan),
+			({
+				ret = chan->ops->event_reserve(&ctx);
+				ret != -ENOBUFS || !ret;
+			}),
+			msecs_to_jiffies(LTTNG_METADATA_TIMEOUT_MSEC));
+		if (!waitret || waitret == -ERESTARTSYS || ret) {
+			printk(KERN_WARNING "LTTng: Failure to write metadata to buffers (%s)\n",
+				waitret == -ERESTARTSYS ? "interrupted" :
+					(ret == -ENOBUFS ? "timeout" : "I/O error"));
+			if (waitret == -ERESTARTSYS)
+				ret = waitret;
+			goto end;
+		}
+		chan->ops->event_write(&ctx, &str[pos], len);
+		chan->ops->event_commit(&ctx);
 	}
-	chan->ops->event_write(&ctx, str, len);
-	chan->ops->event_commit(&ctx);
 end:
 	kfree(str);
 	return ret;
@@ -542,7 +556,7 @@ int _ltt_session_metadata_statedump(struct ltt_session *session)
 		"	byte_order = %s;\n"
 		"	packet.header := struct {\n"
 		"		uint32_t magic;\n"
-		"		uint8_t  trace_uuid[16];\n"
+		"		uint8_t  uuid[16];\n"
 		"		uint32_t stream_id;\n"
 		"		uint64_t timestamp_begin;\n"
 		"		uint64_t timestamp_end;\n"
