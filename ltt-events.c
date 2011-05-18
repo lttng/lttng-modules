@@ -22,6 +22,8 @@ static LIST_HEAD(ltt_transport_list);
 static DEFINE_MUTEX(sessions_mutex);
 static struct kmem_cache *event_cache;
 
+static void _ltt_event_destroy(struct ltt_event *event);
+static int _ltt_event_unregister(struct ltt_event *event);
 static
 int _ltt_event_metadata_statedump(struct ltt_session *session,
 				  struct ltt_channel *chan,
@@ -278,8 +280,22 @@ int _ltt_event_unregister(struct ltt_event *event)
 }
 
 /*
+ * Used when an event FD is released.
+ */
+int ltt_event_unregister(struct ltt_event *event)
+{
+	int ret;
+
+	mutex_lock(&sessions_mutex);
+	ret = ltt_event_unregister(event);
+	mutex_unlock(&sessions_mutex);
+	return ret;
+}
+
+/*
  * Only used internally at session destruction.
  */
+static
 void _ltt_event_destroy(struct ltt_event *event)
 {
 	ltt_event_put(event->desc);

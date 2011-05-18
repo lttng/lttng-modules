@@ -212,8 +212,7 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 				   enum instrum_type itype,
 				   const struct lttng_event_desc *event_desc,
 				   void *filter);
-int _ltt_event_unregister(struct ltt_event *event);
-void _ltt_event_destroy(struct ltt_event *event);
+int ltt_event_unregister(struct ltt_event *event);
 
 void ltt_transport_register(struct ltt_transport *transport);
 void ltt_transport_unregister(struct ltt_transport *transport);
