@@ -202,7 +202,7 @@ void _ltt_channel_destroy(struct ltt_channel *chan)
  * Supports event creation while tracing session is active.
  */
 struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
-				   enum instrum_type itype,
+				   enum lttng_kernel_instrumentation instrumentation,
 				   const struct lttng_event_desc *event_desc,
 				   void *filter)
 {
@@ -226,11 +226,11 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 	event->desc = event_desc;
 	event->filter = filter;
 	event->id = chan->free_event_id++;
-	event->itype = itype;
+	event->instrumentation = instrumentation;
 	/* Populate ltt_event structure before tracepoint registration. */
 	smp_wmb();
-	switch (itype) {
-	case INSTRUM_TRACEPOINTS:
+	switch (instrumentation) {
+	case LTTNG_KERNEL_TRACEPOINTS:
 		ret = tracepoint_probe_register(name, event_desc->probe_callback,
 						event);
 		if (ret)
@@ -265,8 +265,8 @@ int _ltt_event_unregister(struct ltt_event *event)
 {
 	int ret = -EINVAL;
 
-	switch (event->itype) {
-	case INSTRUM_TRACEPOINTS:
+	switch (event->instrumentation) {
+	case LTTNG_KERNEL_TRACEPOINTS:
 		ret = tracepoint_probe_unregister(event->desc->name,
 						  event->desc->probe_callback,
 						  event);

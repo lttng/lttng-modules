@@ -128,7 +128,7 @@ struct ltt_event {
 	struct ltt_channel *chan;
 	const struct lttng_event_desc *desc;
 	void *filter;
-	enum instrum_type itype;
+	enum lttng_kernel_instrumentation instrumentation;
 	struct list_head list;		/* Event list */
 	int metadata_dumped:1;
 };
@@ -209,7 +209,7 @@ void _ltt_channel_destroy(struct ltt_channel *chan);
 
 struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 				   char *name,
-				   enum instrum_type itype,
+				   enum lttng_kernel_instrumentation instrumentation,
 				   const struct lttng_event_desc *event_desc,
 				   void *filter);
 int ltt_event_unregister(struct ltt_event *event);

@@ -91,7 +91,7 @@ fd_error:
  *	@arg: command arg
  *
  *	This ioctl implements lttng commands:
- *	LTTNG_SESSION
+ *	LTTNG_KERNEL_SESSION
  *		Returns a LTTng trace session file descriptor
  *
  * The returned session will be deleted when its file descriptor is closed.
@@ -100,7 +100,7 @@ static
 long lttng_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	switch (cmd) {
-	case LTTNG_SESSION:
+	case LTTNG_KERNEL_SESSION:
 		return lttng_abi_create_session();
 	default:
 		return -ENOIOCTLCMD;
@@ -137,7 +137,7 @@ void lttng_metadata_create_events(struct file *channel_file)
 	 * We tolerate no failure path after event creation. It will stay
 	 * invariant for the rest of the session.
 	 */
-	event = ltt_event_create(channel, event_name, INSTRUM_TRACEPOINTS,
+	event = ltt_event_create(channel, event_name, LTTNG_KERNEL_TRACEPOINTS,
 				 event_desc, NULL);
 	if (!event) {
 		goto create_error;
@@ -154,7 +154,7 @@ get_error:
 
 static
 int lttng_abi_create_channel(struct file *session_file,
-			     struct lttng_channel __user *uchan_param,
+			     struct lttng_kernel_channel __user *uchan_param,
 			     enum channel_type channel_type)
 {
 	struct ltt_session *session = session_file->private_data;
@@ -162,7 +162,7 @@ int lttng_abi_create_channel(struct file *session_file,
 	const char *transport_name;
 	struct ltt_channel *chan;
 	struct file *chan_file;
-	struct lttng_channel chan_param;
+	struct lttng_kernel_channel chan_param;
 	int chan_fd;
 	int ret = 0;
 
@@ -236,7 +236,7 @@ fd_error:
  *	@arg: command arg
  *
  *	This ioctl implements lttng commands:
- *	LTTNG_CHANNEL
+ *	LTTNG_KERNEL_CHANNEL
  *		Returns a LTTng channel file descriptor
  *
  * The returned channel will be deleted when its file descriptor is closed.
@@ -247,17 +247,17 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	struct ltt_session *session = file->private_data;
 
 	switch (cmd) {
-	case LTTNG_CHANNEL:
+	case LTTNG_KERNEL_CHANNEL:
 		return lttng_abi_create_channel(file,
-				(struct lttng_channel __user *)arg,
+				(struct lttng_kernel_channel __user *) arg,
 				PER_CPU_CHANNEL);
-	case LTTNG_SESSION_START:
+	case LTTNG_KERNEL_SESSION_START:
 		return ltt_session_start(session);
-	case LTTNG_SESSION_STOP:
+	case LTTNG_KERNEL_SESSION_STOP:
 		return ltt_session_stop(session);
-	case LTTNG_METADATA:
+	case LTTNG_KERNEL_METADATA:
 		return lttng_abi_create_channel(file,
-				(struct lttng_channel __user *)arg,
+				(struct lttng_kernel_channel __user *) arg,
 				METADATA_CHANNEL);
 	default:
 		return -ENOIOCTLCMD;
@@ -337,13 +337,13 @@ fd_error:
 
 static
 int lttng_abi_create_event(struct file *channel_file,
-			   struct lttng_event __user *uevent_param)
+			   struct lttng_kernel_event __user *uevent_param)
 {
 	struct ltt_channel *channel = channel_file->private_data;
 	const struct lttng_event_desc *event_desc;
 	struct ltt_event *event;
 	char *event_name;
-	struct lttng_event event_param;
+	struct lttng_kernel_event event_param;
 	int event_fd, ret;
 	struct file *event_file;
 
@@ -379,7 +379,7 @@ int lttng_abi_create_event(struct file *channel_file,
 	 * We tolerate no failure path after event creation. It will stay
 	 * invariant for the rest of the session.
 	 */
-	event = ltt_event_create(channel, event_name, event_param.itype,
+	event = ltt_event_create(channel, event_name, event_param.instrumentation,
 				 event_desc, NULL);
 	if (!event) {
 		goto event_error;
@@ -412,10 +412,10 @@ name_error:
  *	@arg: command arg
  *
  *	This ioctl implements lttng commands:
- *      LTTNG_STREAM
+ *      LTTNG_KERNEL_STREAM
  *              Returns an event stream file descriptor or failure.
  *              (typically, one event stream records events from one CPU)
- *	LTTNG_EVENT
+ *	LTTNG_KERNEL_EVENT
  *		Returns an event file descriptor or failure.
  *
  * Channel and event file descriptors also hold a reference on the session.
@@ -424,10 +424,10 @@ static
 long lttng_channel_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	switch (cmd) {
-	case LTTNG_STREAM:
+	case LTTNG_KERNEL_STREAM:
 		return lttng_abi_open_stream(file);
-	case LTTNG_EVENT:
-		return lttng_abi_create_event(file, (struct lttng_event __user *)arg);
+	case LTTNG_KERNEL_EVENT:
+		return lttng_abi_create_event(file, (struct lttng_kernel_event __user *) arg);
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -441,7 +441,7 @@ long lttng_channel_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
  *	@arg: command arg
  *
  *	This ioctl implements lttng commands:
- *      LTTNG_STREAM
+ *      LTTNG_KERNEL_STREAM
  *              Returns an event stream file descriptor or failure.
  *
  * Channel and event file descriptors also hold a reference on the session.
@@ -450,7 +450,7 @@ static
 long lttng_metadata_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	switch (cmd) {
-	case LTTNG_STREAM:
+	case LTTNG_KERNEL_STREAM:
 		return lttng_abi_open_stream(file);
 	default:
 		return -ENOIOCTLCMD;
