@@ -71,3 +71,6 @@
 
 #undef DEFINE_EVENT
 #define DEFINE_EVENT(_template, _name, _proto, _args)
+
+#undef TRACE_EVENT_FLAGS
+#define TRACE_EVENT_FLAGS(name, value)
