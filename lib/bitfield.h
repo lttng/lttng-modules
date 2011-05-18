@@ -19,7 +19,7 @@
  * all copies or substantial portions of the Software.
  */
 
-#include "ltt-endian.h"
+#include "../ltt-endian.h"
 
 #ifndef CHAR_BIT
 #define CHAR_BIT 8
