@@ -153,6 +153,12 @@ void probe_fs_poll(void *_data, int fd)
 		"fd %d", fd);
 }
 
+void probe_fs_dup(void *_data, unsigned int oldfd, unsigned int newfd)
+{
+	trace_mark_tp(fs, dup, fs_dup, probe_fs_dup,
+		"oldfd %d newfd %d", oldfd, newfd);
+}
+
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers");
 MODULE_DESCRIPTION("FS Tracepoint Probes");
