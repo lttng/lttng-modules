@@ -172,7 +172,7 @@ void probe_socket_socketpair(void *_data, int family, int type, int protocol,
 void probe_socket_sendmsg(void *_data, struct socket *sock, struct msghdr *msg, size_t size,
 	int ret);
 
-DEFINE_MARKER_TP(net, socket_sendmsg, net_socket_sendmsg,
+DEFINE_MARKER_TP(net, socket_sendmsg, socket_sendmsg,
 	probe_socket_sendmsg,
 	"sock %p msg %p size %zu ret %d");
 
@@ -195,7 +195,7 @@ notrace void probe_socket_sendmsg(void *_data, struct socket *sock, struct msghd
 void probe_socket_recvmsg(void *_data, struct socket *sock, struct msghdr *msg, size_t size,
 	int flags, int ret);
 
-DEFINE_MARKER_TP(net, socket_recvmsg, net_socket_recvmsg,
+DEFINE_MARKER_TP(net, socket_recvmsg, socket_recvmsg,
 	probe_socket_recvmsg,
 	"sock %p msg %p size %zu flags %d ret %d");
 
