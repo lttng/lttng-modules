@@ -32,6 +32,7 @@
 #include "wrapper/ringbuffer/vfs.h"
 #include "ltt-debugfs-abi.h"
 #include "ltt-events.h"
+#include "ltt-tracer.h"
 
 /*
  * This is LTTng's own personal way to create a system call as an external
@@ -83,6 +84,21 @@ fd_error:
 	return ret;
 }
 
+static
+long lttng_abi_tracer_version(struct file *file, 
+	struct lttng_kernel_tracer_version __user *uversion_param)
+{
+	struct lttng_kernel_tracer_version v;
+
+	v.version = LTTNG_VERSION;
+	v.patchlevel = LTTNG_PATCHLEVEL;
+	v.sublevel = LTTNG_SUBLEVEL;
+
+	if (copy_to_user(uversion_param, &v, sizeof(v)))
+		return -EFAULT;
+	return 0;
+}
+
 /**
  *	lttng_ioctl - lttng syscall through ioctl
  *
@@ -102,6 +118,9 @@ long lttng_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	switch (cmd) {
 	case LTTNG_KERNEL_SESSION:
 		return lttng_abi_create_session();
+	case LTTNG_KERNEL_TRACER_VERSION:
+		return lttng_abi_tracer_version(file,
+				(struct lttng_kernel_tracer_version __user *) arg);
 	default:
 		return -ENOIOCTLCMD;
 	}

@@ -22,8 +22,8 @@ enum lttng_kernel_instrumentation {
 
 struct lttng_kernel_channel {
 	int overwrite;			/* 1: overwrite, 0: discard */
-	u64 subbuf_size;
-	u64 num_subbuf;
+	uint64_t subbuf_size;
+	uint64_t num_subbuf;
 	unsigned int switch_timer_interval;
 	unsigned int read_timer_interval;
 };
@@ -37,10 +37,16 @@ struct lttng_kernel_event {
  * Either addr is used, or symbol_name and offset.
  */
 struct lttng_kernel_kprobe {
-	u64 addr;
+	uint64_t addr;
 
-	u64 offset;
+	uint64_t offset;
 	char symbol_name[];
+};
+
+struct lttng_kernel_tracer_version {
+	uint32_t version;
+	uint32_t patchlevel;
+	uint32_t sublevel;
 };
 
 #define LTTNG_KERNEL_SESSION		_IO(0xF6, 0x40)
@@ -56,6 +62,6 @@ struct lttng_kernel_kprobe {
 #define LTTNG_KERNEL_KPROBE		\
 	_IOW(0xF6, 0x47, struct lttng_kernel_kprobe)
 #define LTTNG_KERNEL_TRACER_VERSION	\
-	_IOW(0xF6, 0x48, struct lttng_kernel_tracer_version)
+	_IOR(0xF6, 0x48, struct lttng_kernel_tracer_version)
 
 #endif /* _LTT_DEBUGFS_ABI_H */
