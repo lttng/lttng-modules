@@ -135,7 +135,7 @@ struct ltt_event {
 
 struct ltt_channel_ops {
 	struct channel *(*channel_create)(const char *name,
-				struct ltt_session *session,
+				struct ltt_channel *ltt_chan,
 				void *buf_addr,
 				size_t subbuf_size, size_t num_subbuf,
 				unsigned int switch_timer_interval,
@@ -166,8 +166,8 @@ struct ltt_channel {
 	struct list_head list;		/* Channel list */
 	wait_queue_head_t notify_wait;	/* Channel addition notif. waitqueue */
 	struct ltt_channel_ops *ops;
+	int header_type;		/* 0: unset, 1: compact, 2: large */
 	int metadata_dumped:1;
-	int header_type:2;		/* 0: unset, 1: compact, 2: large */
 };
 
 struct ltt_session {

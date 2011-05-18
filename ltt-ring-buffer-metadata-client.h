@@ -86,7 +86,8 @@ static void client_buffer_begin(struct lib_ring_buffer *buf, u64 tsc,
 		(struct metadata_packet_header *)
 			lib_ring_buffer_offset_address(&buf->backend,
 				subbuf_idx * chan->backend.subbuf_size);
-	struct ltt_session *session = channel_get_private(chan);
+	struct ltt_channel *ltt_chan = channel_get_private(chan);
+	struct ltt_session *session = ltt_chan->session;
 
 	header->magic = TSDL_MAGIC_NUMBER;
 	memcpy(header->uuid, session->uuid.b, sizeof(session->uuid));

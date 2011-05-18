@@ -96,38 +96,11 @@ enum ltt_channels {
  * concerns.
  */
 
-#define LTT_RESERVED_EVENTS	3
-#define LTT_EVENT_BITS		5
-#define LTT_FREE_EVENTS		((1 << LTT_EVENT_BITS) - LTT_RESERVED_EVENTS)
-#define LTT_TSC_BITS		27
-#define LTT_TSC_MASK		((1 << LTT_TSC_BITS) - 1)
-
-struct event_header {
-	u32 id_time;		/* 5 bits event id (MSB); 27 bits time (LSB) */
-};
-
-/* Reservation flags */
-#define	LTT_RFLAG_ID			(1 << 0)
-#define	LTT_RFLAG_ID_SIZE		(1 << 1)
-#define	LTT_RFLAG_ID_SIZE_TSC		(1 << 2)
-
 #define LTT_MAX_SMALL_SIZE		0xFFFFU
 
 #ifdef RING_BUFFER_ALIGN
-static inline
-size_t ltt_get_header_alignment(void)
-{
-	return sizeof(struct event_header) * CHAR_BIT;
-}
-
 #define ltt_alignof(type)	__alignof__(type)
 #else
-static inline
-size_t ltt_get_header_alignment(void)
-{
-	return CHAR_BIT;
-}
-
 #define ltt_alignof(type)	1
 #endif
 

@@ -213,10 +213,4 @@ unsigned long lib_ring_buffer_get_records_read(
 	return v_read(config, &buf->backend.records_read);
 }
 
-static inline
-void *channel_get_private(struct channel *chan)
-{
-	return chan->backend.priv;
-}
-
 #endif /* _LINUX_RING_BUFFER_FRONTEND_H */

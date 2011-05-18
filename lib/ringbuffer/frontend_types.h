@@ -139,6 +139,12 @@ struct lib_ring_buffer {
 	int read_timer_enabled:1;	/* Protected by ring_buffer_nohz_lock */
 };
 
+static inline
+void *channel_get_private(struct channel *chan)
+{
+	return chan->backend.priv;
+}
+
 /*
  * Issue warnings and disable channels upon internal error.
  * Can receive struct lib_ring_buffer or struct lib_ring_buffer_backend

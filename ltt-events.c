@@ -168,7 +168,7 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 		goto nomem;
 	chan->session = session;
 	init_waitqueue_head(&chan->notify_wait);
-	chan->chan = transport->ops.channel_create("[lttng]", session, buf_addr,
+	chan->chan = transport->ops.channel_create("[lttng]", chan, buf_addr,
 			subbuf_size, num_subbuf, switch_timer_interval,
 			read_timer_interval);
 	if (!chan->chan)
@@ -491,8 +491,8 @@ int _ltt_event_metadata_statedump(struct ltt_session *session,
 	 * byte size.
 	 */
 	ret = lttng_metadata_printf(session,
-		"	} aligned(%u);\n"
-		"};\n\n", ltt_get_header_alignment());
+		"	};\n"
+		"};\n\n");
 	if (ret)
 		goto end;
 
@@ -520,7 +520,8 @@ int _ltt_channel_metadata_statedump(struct ltt_session *session,
 	ret = lttng_metadata_printf(session,
 		"stream {\n"
 		"	id = %u;\n"
-		"	event.header := %s;\n",
+		"	event.header := %s;\n"
+		"	packet.context := struct packet_context;\n"
 		"};\n\n",
 		chan->id,
 		chan->header_type == 1 ? "struct event_header_compact" :
@@ -531,6 +532,64 @@ int _ltt_channel_metadata_statedump(struct ltt_session *session,
 	chan->metadata_dumped = 1;
 end:
 	return ret;
+}
+
+static
+int _ltt_stream_packet_context_declare(struct ltt_session *session)
+{
+	return lttng_metadata_printf(session,
+		"struct packet_context {\n"
+		"	uint64_t timestamp_begin;\n"
+		"	uint64_t timestamp_end;\n"
+		"	uint32_t events_discarded;\n"
+		"	uint32_t content_size;\n"
+		"	uint32_t packet_size;\n"
+		"	uint32_t cpu_id;\n"
+		"};\n"
+		);
+}
+
+/*
+ * Compact header:
+ * id: range: 0 - 30.
+ * id 31 is reserved to indicate an extended header.
+ *
+ * Large header:
+ * id: range: 0 - 65534.
+ * id 65535 is reserved to indicate an extended header.
+ */
+static
+int _ltt_event_header_declare(struct ltt_session *session)
+{
+	return lttng_metadata_printf(session,
+	"struct event_header_compact {\n"
+	"	enum : uint5_t { compact = 0 ... 30, extended = 31 } id;\n"
+	"	variant <id> {\n"
+	"		struct {\n"
+	"			uint27_t timestamp;\n"
+	"		} compact;\n"
+	"		struct {\n"
+	"			uint32_t id;\n"
+	"			uint64_t timestamp;\n"
+	"		} extended;\n"
+	"	} v;\n"
+	"} align(%u);\n"
+	"\n"
+	"struct event_header_large {\n"
+	"	enum : uint16_t { compact = 0 ... 65534, extended = 65535 } id;\n"
+	"	variant <id> {\n"
+	"		struct {\n"
+	"			uint32_t timestamp;\n"
+	"		} compact;\n"
+	"		struct {\n"
+	"			uint32_t id;\n"
+	"			uint64_t timestamp;\n"
+	"		} extended;\n"
+	"	} v;\n"
+	"} align(%u);\n\n",
+	ltt_alignof(uint32_t) * CHAR_BIT,
+	ltt_alignof(uint16_t) * CHAR_BIT
+	);
 }
 
 /*
@@ -561,9 +620,12 @@ int _ltt_session_metadata_statedump(struct ltt_session *session)
 		uuid_s[12], uuid_s[13], uuid_s[14], uuid_s[15]);
 
 	ret = lttng_metadata_printf(session,
-		"typealias integer {size = 8; align = %u; signed = false; } := uint8_t;\n"
-		"typealias integer {size = 32; align = %u; signed = false; } := uint32_t;\n"
-		"typealias integer {size = 64; align = %u; signed = false; } := uint64_t;\n"
+		"typealias integer { size = 8; align = %u; signed = false; } := uint8_t;\n"
+		"typealias integer { size = 16; align = %u; signed = false; } := uint16_t;\n"
+		"typealias integer { size = 32; align = %u; signed = false; } := uint32_t;\n"
+		"typealias integer { size = 64; align = %u; signed = false; } := uint64_t;\n"
+		"typealias integer { size = 5; align = 1; signed = false; } := uint5_t;\n"
+		"typealias integer { size = 27; align = 1; signed = false; } := uint27_t;\n"
 		"\n"
 		"trace {\n"
 		"	major = %u;\n"
@@ -574,11 +636,6 @@ int _ltt_session_metadata_statedump(struct ltt_session *session)
 		"		uint32_t magic;\n"
 		"		uint8_t  uuid[16];\n"
 		"		uint32_t stream_id;\n"
-		"		uint64_t timestamp_begin;\n"
-		"		uint64_t timestamp_end;\n"
-		"		uint32_t content_size;\n"
-		"		uint32_t packet_size;\n"
-		"		uint32_t events_lost;\n"
 		"	};\n",
 		"};\n\n",
 		ltt_alignof(uint8_t) * CHAR_BIT,
@@ -593,6 +650,14 @@ int _ltt_session_metadata_statedump(struct ltt_session *session)
 		"le"
 #endif
 		);
+	if (ret)
+		goto end;
+
+	ret = _ltt_stream_packet_context_declare(session);
+	if (ret)
+		goto end;
+
+	ret = _ltt_event_header_declare(session);
 	if (ret)
 		goto end;
 
