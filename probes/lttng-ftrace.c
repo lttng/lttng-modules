@@ -7,6 +7,12 @@
  * Dual LGPL v2.1/GPL v2 license.
  */
 
+/*
+ * Ftrace function tracer does not seem to provide synchronization between probe
+ * teardown and callback execution. Therefore, we make this module permanently
+ * loaded (unloadable).
+ */
+
 #include <linux/module.h>
 #include <linux/ftrace.h>
 #include <linux/slab.h>
@@ -134,6 +140,13 @@ void lttng_ftrace_unregister(struct ltt_event *event)
 	kfree(event->desc);
 }
 EXPORT_SYMBOL_GPL(lttng_ftrace_unregister);
+
+/* This module is permanent. */
+int lttng_ftrace_init(void)
+{
+	return 0;
+}
+module_init(lttng_ftrace_init)
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers");
