@@ -104,7 +104,7 @@ struct lttng_enum {
 
 struct lttng_event_field {
 	const char *name;
-	const struct lttng_type type;
+	struct lttng_type type;
 };
 
 struct lttng_event_desc {
@@ -127,7 +127,7 @@ struct lttng_probe_desc {
 struct ltt_event {
 	unsigned int id;
 	struct ltt_channel *chan;
-	const struct lttng_event_desc *desc;
+	struct lttng_event_desc *desc;
 	void *filter;
 	enum lttng_kernel_instrumentation instrumentation;
 	union {
@@ -234,6 +234,11 @@ void ltt_event_put(const struct lttng_event_desc *desc);
 int ltt_probes_init(void);
 void ltt_probes_exit(void);
 
-void lttng_kprobes_handler_pre(struct kprobe *p, struct pt_regs *regs);
+int lttng_kprobes_register(const char *name,
+		const char *symbol_name,
+		uint64_t offset,
+		uint64_t addr,
+		struct ltt_event *event);
+void lttng_kprobes_unregister(struct ltt_event *event);
 
 #endif /* _LTT_EVENTS_H */

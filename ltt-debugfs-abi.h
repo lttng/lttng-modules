@@ -16,6 +16,7 @@
 enum lttng_kernel_instrumentation {
 	LTTNG_KERNEL_TRACEPOINTS,
 	LTTNG_KERNEL_KPROBES,
+	LTTNG_KERNEL_FUNCTION_TRACER,
 };
 
 /*
@@ -40,13 +41,18 @@ struct lttng_kernel_kprobe {
 	char symbol_name[LTTNG_KPROBE_SYM_NAME_LEN];
 };
 
+struct lttng_kernel_function_tracer {
+	char symbol_name[LTTNG_KPROBE_SYM_NAME_LEN];
+};
+
 struct lttng_kernel_event {
 	enum lttng_kernel_instrumentation instrumentation;
 	/* Per instrumentation type configuration */
 	union {
 		struct lttng_kernel_kprobe kprobe;
+		struct lttng_kernel_function_tracer ftrace;
 	} u;
-	char name[];
+	char name[];	/* event name */
 };
 
 struct lttng_kernel_tracer_version {
