@@ -24,11 +24,11 @@ enum lttng_kernel_instrumentation {
  */
 
 struct lttng_kernel_channel {
-	int overwrite;			/* 1: overwrite, 0: discard */
-	uint64_t subbuf_size;
+	int overwrite;				/* 1: overwrite, 0: discard */
+	uint64_t subbuf_size;			/* in bytes */
 	uint64_t num_subbuf;
-	unsigned int switch_timer_interval;
-	unsigned int read_timer_interval;
+	unsigned int switch_timer_interval;	/* usecs */
+	unsigned int read_timer_interval;	/* usecs */
 };
 
 /*
