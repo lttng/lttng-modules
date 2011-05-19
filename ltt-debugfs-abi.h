@@ -11,6 +11,8 @@
 
 #include <linux/fs.h>
 
+#define LTTNG_KPROBE_SYM_NAME_LEN	128
+
 enum lttng_kernel_instrumentation {
 	LTTNG_KERNEL_TRACEPOINTS,
 	LTTNG_KERNEL_KPROBES,
@@ -28,11 +30,6 @@ struct lttng_kernel_channel {
 	unsigned int read_timer_interval;
 };
 
-struct lttng_kernel_event {
-	enum lttng_kernel_instrumentation instrumentation;
-	char name[];
-};
-
 /*
  * Either addr is used, or symbol_name and offset.
  */
@@ -40,7 +37,16 @@ struct lttng_kernel_kprobe {
 	uint64_t addr;
 
 	uint64_t offset;
-	char symbol_name[];
+	char symbol_name[LTTNG_KPROBE_SYM_NAME_LEN];
+};
+
+struct lttng_kernel_event {
+	enum lttng_kernel_instrumentation instrumentation;
+	/* Per instrumentation type configuration */
+	union {
+		struct lttng_kernel_kprobe kprobe;
+	} u;
+	char name[];
 };
 
 struct lttng_kernel_tracer_version {

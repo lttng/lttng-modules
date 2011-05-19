@@ -11,6 +11,7 @@
 
 #include <linux/list.h>
 #include <linux/uuid.h>
+#include <linux/kprobes.h>
 #include "ltt-debugfs-abi.h"
 
 struct ltt_channel;
@@ -129,6 +130,12 @@ struct ltt_event {
 	const struct lttng_event_desc *desc;
 	void *filter;
 	enum lttng_kernel_instrumentation instrumentation;
+	union {
+		struct {
+			struct kprobe kp;
+			char *symbol_name;
+		} kprobe;
+	} u;
 	struct list_head list;		/* Event list */
 	int metadata_dumped:1;
 };
@@ -209,7 +216,7 @@ void _ltt_channel_destroy(struct ltt_channel *chan);
 
 struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 				   char *name,
-				   enum lttng_kernel_instrumentation instrumentation,
+				   struct lttng_kernel_event *event_param,
 				   const struct lttng_event_desc *event_desc,
 				   void *filter);
 int ltt_event_unregister(struct ltt_event *event);
@@ -226,5 +233,7 @@ const struct lttng_event_desc *ltt_event_get(const char *name);
 void ltt_event_put(const struct lttng_event_desc *desc);
 int ltt_probes_init(void);
 void ltt_probes_exit(void);
+
+void lttng_kprobes_handler_pre(struct kprobe *p, struct pt_regs *regs);
 
 #endif /* _LTT_EVENTS_H */

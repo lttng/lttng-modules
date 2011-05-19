@@ -398,11 +398,11 @@ int lttng_abi_create_event(struct file *channel_file,
 	 * We tolerate no failure path after event creation. It will stay
 	 * invariant for the rest of the session.
 	 */
-	event = ltt_event_create(channel, event_name, event_param.instrumentation,
+	event = ltt_event_create(channel, event_name, &event_param,
 				 event_desc, NULL);
 	if (!event) {
-		goto event_error;
 		ret = -EEXIST;
+		goto event_error;
 	}
 	event_file->private_data = event;
 	fd_install(event_fd, event_file);

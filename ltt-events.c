@@ -202,7 +202,7 @@ void _ltt_channel_destroy(struct ltt_channel *chan)
  * Supports event creation while tracing session is active.
  */
 struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
-				   enum lttng_kernel_instrumentation instrumentation,
+				   struct lttng_kernel_event *event_param,
 				   const struct lttng_event_desc *event_desc,
 				   void *filter)
 {
@@ -226,15 +226,35 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 	event->desc = event_desc;
 	event->filter = filter;
 	event->id = chan->free_event_id++;
-	event->instrumentation = instrumentation;
+	event->instrumentation = event_param->instrumentation;
 	/* Populate ltt_event structure before tracepoint registration. */
 	smp_wmb();
-	switch (instrumentation) {
+	switch (event_param->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINTS:
 		ret = tracepoint_probe_register(name, event_desc->probe_callback,
 						event);
 		if (ret)
 			goto register_error;
+		break;
+	case LTTNG_KERNEL_KPROBES:
+		event->u.kprobe.kp.pre_handler = lttng_kprobes_handler_pre;
+		event->u.kprobe.symbol_name =
+			kzalloc(LTTNG_KPROBE_SYM_NAME_LEN * sizeof(char),
+				GFP_KERNEL);
+		if (!event->u.kprobe.symbol_name)
+			goto register_error;
+		memcpy(event->u.kprobe.symbol_name,
+		       event_param->u.kprobe.symbol_name,
+		       LTTNG_KPROBE_SYM_NAME_LEN * sizeof(char));
+		event->u.kprobe.kp.symbol_name =
+			event->u.kprobe.symbol_name;
+		event->u.kprobe.kp.offset = event_param->u.kprobe.offset;
+		event->u.kprobe.kp.addr = (void *) event_param->u.kprobe.addr;
+		ret = register_kprobe(&event->u.kprobe.kp);
+		if (ret) {
+			kfree(event->u.kprobe.symbol_name);
+			goto register_error;
+		}
 		break;
 	default:
 		WARN_ON_ONCE(1);
@@ -272,6 +292,11 @@ int _ltt_event_unregister(struct ltt_event *event)
 						  event);
 		if (ret)
 			return ret;
+		break;
+	case LTTNG_KERNEL_KPROBES:
+		unregister_kprobe(&event->u.kprobe.kp);
+		kfree(event->u.kprobe.symbol_name);
+		ret = 0;
 		break;
 	default:
 		WARN_ON_ONCE(1);

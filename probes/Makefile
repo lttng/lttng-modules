@@ -16,6 +16,8 @@ obj-m += lttng-probe-irq.o
 obj-m += lttng-probe-block.o
 obj-m += lttng-probe-syscalls.o
 
+obj-m += lttng-kprobes.o
+
 endif
 
 else
