@@ -153,12 +153,12 @@ static const struct lib_ring_buffer_config client_config = {
 
 static
 struct channel *_channel_create(const char *name,
-				struct ltt_session *session, void *buf_addr,
+				struct ltt_channel *ltt_chan, void *buf_addr,
 				size_t subbuf_size, size_t num_subbuf,
 				unsigned int switch_timer_interval,
 				unsigned int read_timer_interval)
 {
-	return channel_create(&client_config, name, session, buf_addr,
+	return channel_create(&client_config, name, ltt_chan, buf_addr,
 			      subbuf_size, num_subbuf, switch_timer_interval,
 			      read_timer_interval);
 }
