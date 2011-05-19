@@ -12,10 +12,11 @@
 #include <linux/slab.h>
 #include "../ltt-events.h"
 #include "../wrapper/ringbuffer/frontend_types.h"
+#include "../wrapper/ftrace.h"
 #include "../ltt-tracer.h"
 
 static
-int lttng_ftrace_handler(unsigned long ip, unsigned long parent_ip, void **data)
+void lttng_ftrace_handler(unsigned long ip, unsigned long parent_ip, void **data)
 {
 	struct ltt_event *event = *data;
 	struct ltt_channel *chan = event->chan;
@@ -27,18 +28,18 @@ int lttng_ftrace_handler(unsigned long ip, unsigned long parent_ip, void **data)
 	int ret;
 
 	if (!ACCESS_ONCE(chan->session->active))
-		return 0;
+		return;
 	lib_ring_buffer_ctx_init(&ctx, chan->chan, NULL,
 				 sizeof(payload), ltt_alignof(payload), -1);
 	ret = chan->ops->event_reserve(&ctx);
 	if (ret < 0)
-		return 0;
+		return;
 	payload.ip = ip;
 	payload.parent_ip = parent_ip;
 	lib_ring_buffer_align_ctx(&ctx, ltt_alignof(payload));
 	chan->ops->event_write(&ctx, &payload, sizeof(payload));
 	chan->ops->event_commit(&ctx);
-	return 0;
+	return;
 }
 
 /*
@@ -108,7 +109,7 @@ int lttng_ftrace_register(const char *name,
 	if (!event->u.ftrace.symbol_name)
 		goto name_error;
 
-	ret = register_ftrace_function_probe(symbol_name,
+	ret = wrapper_register_ftrace_function_probe(event->u.ftrace.symbol_name,
 			&lttng_ftrace_ops, event);
 	if (ret)
 		goto register_error;
@@ -126,7 +127,7 @@ EXPORT_SYMBOL_GPL(lttng_ftrace_register);
 
 void lttng_ftrace_unregister(struct ltt_event *event)
 {
-	unregister_ftrace_function_probe(event->u.ftrace.symbol_name,
+	wrapper_unregister_ftrace_function_probe(event->u.ftrace.symbol_name,
 			&lttng_ftrace_ops, event);
 	kfree(event->u.ftrace.symbol_name);
 	kfree(event->desc->name);
