@@ -11,7 +11,7 @@
 
 #include <linux/fs.h>
 
-#define LTTNG_KPROBE_SYM_NAME_LEN	128
+#define LTTNG_SYM_NAME_LEN	128
 
 enum lttng_kernel_instrumentation {
 	LTTNG_KERNEL_TRACEPOINTS,
@@ -38,11 +38,11 @@ struct lttng_kernel_kprobe {
 	uint64_t addr;
 
 	uint64_t offset;
-	char symbol_name[LTTNG_KPROBE_SYM_NAME_LEN];
+	char symbol_name[LTTNG_SYM_NAME_LEN];
 };
 
 struct lttng_kernel_function_tracer {
-	char symbol_name[LTTNG_KPROBE_SYM_NAME_LEN];
+	char symbol_name[LTTNG_SYM_NAME_LEN];
 };
 
 struct lttng_kernel_event {

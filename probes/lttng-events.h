@@ -78,7 +78,7 @@ void trace_##_name(_proto);
 #define __field(_type, _item)					\
 	{							\
 	  .name = #_item,					\
-	  .type = __type_integer(_type, __BYTE_ORDER),		\
+	  .type = __type_integer(_type, __BYTE_ORDER, 10),	\
 	},
 
 #undef __field_ext
@@ -88,7 +88,7 @@ void trace_##_name(_proto);
 #define __field_network(_type, _item)				\
 	{							\
 	  .name = #_item,					\
-	  .type = __type_integer(_type, __BIG_ENDIAN),		\
+	  .type = __type_integer(_type, __BIG_ENDIAN, 10),	\
 	},
 
 #undef __array
@@ -101,7 +101,7 @@ void trace_##_name(_proto);
 		  .u.array =					\
 			{					\
 			    .length = _length,			\
-			    .elem_type = __type_integer(_type, __BYTE_ORDER), \
+			    .elem_type = __type_integer(_type, __BYTE_ORDER, 10), \
 			},					\
 		},						\
 	},
@@ -115,8 +115,8 @@ void trace_##_name(_proto);
 		  .atype = atype_sequence,			\
 		  .u.sequence =					\
 			{					\
-			    .length_type = __type_integer(u32, __BYTE_ORDER), \
-			    .elem_type = __type_integer(_type, __BYTE_ORDER), \
+			    .length_type = __type_integer(u32, __BYTE_ORDER, 10), \
+			    .elem_type = __type_integer(_type, __BYTE_ORDER, 10), \
 			},					\
 		},						\
 	},

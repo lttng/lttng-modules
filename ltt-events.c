@@ -247,6 +247,13 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 		if (ret)
 			goto register_error;
 		break;
+	case LTTNG_KERNEL_FUNCTION_TRACER:
+		ret = lttng_ftrace_register(name,
+				event_param->u.ftrace.symbol_name,
+				event);
+		if (ret)
+			goto register_error;
+		break;
 	default:
 		WARN_ON_ONCE(1);
 	}
@@ -289,6 +296,10 @@ int _ltt_event_unregister(struct ltt_event *event)
 		break;
 	case LTTNG_KERNEL_KPROBES:
 		lttng_kprobes_unregister(event);
+		ret = 0;
+		break;
+	case LTTNG_KERNEL_FUNCTION_TRACER:
+		lttng_ftrace_unregister(event);
 		ret = 0;
 		break;
 	default:
@@ -396,10 +407,16 @@ int _ltt_fields_metadata_statedump(struct ltt_session *session,
 		switch (field->type.atype) {
 		case atype_integer:
 			ret = lttng_metadata_printf(session,
-				"		integer { size = %u; align = %u; signed = %u;%s } %s;\n",
+				"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } %s;\n",
 				field->type.u.basic.integer.size,
 				field->type.u.basic.integer.alignment,
 				field->type.u.basic.integer.signedness,
+				(field->type.u.basic.integer.encoding == lttng_encode_none)
+					? "none"
+					: (field->type.u.basic.integer.encoding == lttng_encode_UTF8)
+						? "UTF8"
+						: "ASCII",
+				field->type.u.basic.integer.base,
 #ifdef __BIG_ENDIAN
 				field->type.u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
 #else
@@ -419,10 +436,16 @@ int _ltt_fields_metadata_statedump(struct ltt_session *session,
 
 			elem_type = &field->type.u.array.elem_type;
 			ret = lttng_metadata_printf(session,
-				"		integer { size = %u; align = %u; signed = %u;%s } %s[%u];\n",
+				"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } %s[%u];\n",
 				elem_type->u.basic.integer.size,
 				elem_type->u.basic.integer.alignment,
 				elem_type->u.basic.integer.signedness,
+				(elem_type->u.basic.integer.encoding == lttng_encode_none)
+					? "none"
+					: (elem_type->u.basic.integer.encoding == lttng_encode_UTF8)
+						? "UTF8"
+						: "ASCII",
+				elem_type->u.basic.integer.base,
 #ifdef __BIG_ENDIAN
 				elem_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
 #else
@@ -439,29 +462,46 @@ int _ltt_fields_metadata_statedump(struct ltt_session *session,
 			elem_type = &field->type.u.sequence.elem_type;
 			length_type = &field->type.u.sequence.length_type;
 			ret = lttng_metadata_printf(session,
-				"		integer { size = %u; align = %u; signed = %u;%s } %s[ integer { size = %u; align = %u; signed = %u;%s } ];\n",
+				"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } __%s_length;\n",
+				"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } %s[ __%s_length ];\n",
+				length_type->u.basic.integer.size,
+				length_type->u.basic.integer.alignment,
+				length_type->u.basic.integer.signedness,
+				(length_type->u.basic.integer.encoding == lttng_encode_none)
+					? "none"
+					: (length_type->u.basic.integer.encoding == lttng_encode_UTF8)
+						? "UTF8"
+						: "ASCII",
+				length_type->u.basic.integer.base,
+#ifdef __BIG_ENDIAN
+				length_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
+#else
+				length_type->u.basic.integer.reverse_byte_order
+? " byte_order = be;" : "",
+#endif
+				field->name,
 				elem_type->u.basic.integer.size,
 				elem_type->u.basic.integer.alignment,
 				elem_type->u.basic.integer.signedness,
+				(elem_type->u.basic.integer.encoding == lttng_encode_none)
+					? "none"
+					: (elem_type->u.basic.integer.encoding == lttng_encode_UTF8)
+						? "UTF8"
+						: "ASCII",
+				elem_type->u.basic.integer.base,
 #ifdef __BIG_ENDIAN
 				elem_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
 #else
 				elem_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
 #endif
 				field->name,
-					length_type->u.basic.integer.size,
-					length_type->u.basic.integer.alignment,
-					length_type->u.basic.integer.signedness,
-#ifdef __BIG_ENDIAN
-					length_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
-#else
-					length_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : ""
-#endif
+				field->name
 				);
 			break;
 		}
 
 		case atype_string:
+			/* Default encoding is UTF8 */
 			ret = lttng_metadata_printf(session,
 				"		string%s %s;\n",
 				field->type.u.basic.string.encoding == lttng_encode_ASCII ?

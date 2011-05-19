@@ -367,8 +367,16 @@ int lttng_abi_create_event(struct file *channel_file,
 		goto name_error;
 	}
 	event_name[PATH_MAX - 1] = '\0';
-	event_param.u.kprobe.symbol_name[LTTNG_KPROBE_SYM_NAME_LEN - 1] = '\0';
-
+	switch (event_param.instrumentation) {
+	case LTTNG_KERNEL_KPROBES:
+		event_param.u.kprobe.symbol_name[LTTNG_SYM_NAME_LEN - 1] = '\0';
+		break;
+	case LTTNG_KERNEL_FUNCTION_TRACER:
+		event_param.u.ftrace.symbol_name[LTTNG_SYM_NAME_LEN - 1] = '\0';
+		break;
+	default:
+		break;
+	}
 	event_fd = get_unused_fd();
 	if (event_fd < 0) {
 		ret = event_fd;

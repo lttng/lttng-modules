@@ -32,8 +32,9 @@ enum abstract_types {
 
 /* Update the string_encodings name table in lttng-types.c along with this enum */
 enum lttng_string_encodings {
-	lttng_encode_UTF8 = 0,
-	lttng_encode_ASCII = 1,
+	lttng_encode_none = 0,
+	lttng_encode_UTF8 = 1,
+	lttng_encode_ASCII = 2,
 	NR_STRING_ENCODINGS,
 };
 
@@ -42,7 +43,7 @@ struct lttng_enum_entry {
 	const char *string;
 };
 
-#define __type_integer(_type, _byte_order)			\
+#define __type_integer(_type, _byte_order, _base)		\
 	{							\
 	    .atype = atype_integer,				\
 	    .u.basic.integer =					\
@@ -51,6 +52,8 @@ struct lttng_enum_entry {
 		  .alignment = ltt_alignof(_type) * CHAR_BIT,	\
 		  .signedness = is_signed_type(_type),		\
 		  .reverse_byte_order = _byte_order != __BYTE_ORDER,	\
+		  .base = _base,				\
+		  .encoding = lttng_encode_none,		\
 		},						\
 	}							\
 
@@ -59,6 +62,8 @@ struct lttng_integer_type {
 	unsigned short alignment;	/* in bits */
 	unsigned int signedness:1;
 	unsigned int reverse_byte_order:1;
+	unsigned int base;		/* 2, 8, 10, 16, for pretty print */
+	enum lttng_string_encodings encoding;
 };
 
 union _lttng_basic_type {
@@ -135,6 +140,9 @@ struct ltt_event {
 			struct kprobe kp;
 			char *symbol_name;
 		} kprobe;
+		struct {
+			char *symbol_name;
+		} ftrace;
 	} u;
 	struct list_head list;		/* Event list */
 	int metadata_dumped:1;
@@ -240,4 +248,23 @@ int lttng_kprobes_register(const char *name,
 		struct ltt_event *event);
 void lttng_kprobes_unregister(struct ltt_event *event);
 
+#ifdef CONFIG_DYNAMIC_FTRACE
+int lttng_ftrace_register(const char *name,
+			  const char *symbol_name,
+			  struct ltt_event *event);
+void lttng_ftrace_unregister(struct ltt_event *event);
+#else
+static inline
+int lttng_ftrace_register(const char *name,
+			  const char *symbol_name,
+			  struct ltt_event *event)
+{
+	return 0;
+}
+
+static inline
+void lttng_ftrace_unregister(struct ltt_event *event)
+{
+}
+#endif
 #endif /* _LTT_EVENTS_H */

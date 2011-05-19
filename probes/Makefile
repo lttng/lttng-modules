@@ -18,6 +18,10 @@ obj-m += lttng-probe-syscalls.o
 
 obj-m += lttng-kprobes.o
 
+ifneq ($(CONFIG_DYNAMIC_FTRACE),)
+obj-m += lttng-ftrace.o
+endif
+
 endif
 
 else

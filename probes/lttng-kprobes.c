@@ -64,6 +64,8 @@ int lttng_create_kprobe_event(const char *name, struct ltt_event *event)
 	field->type.u.basic.integer.alignment = ltt_alignof(unsigned long);
 	field->type.u.basic.integer.signedness = 0;
 	field->type.u.basic.integer.reverse_byte_order = 0;
+	field->type.u.basic.integer.base = 16;
+	field->type.u.basic.integer.encoding = lttng_encode_none;
 	event->desc = desc;
 
 	return 0;
@@ -87,14 +89,14 @@ int lttng_kprobes_register(const char *name,
 	memset(&event->u.kprobe.kp, 0, sizeof(event->u.kprobe.kp));
 	event->u.kprobe.kp.pre_handler = lttng_kprobes_handler_pre;
 	event->u.kprobe.symbol_name =
-		kzalloc(LTTNG_KPROBE_SYM_NAME_LEN * sizeof(char),
+		kzalloc(LTTNG_SYM_NAME_LEN * sizeof(char),
 			GFP_KERNEL);
 	if (!event->u.kprobe.symbol_name) {
 		ret = -ENOMEM;
 		goto name_error;
 	}
 	memcpy(event->u.kprobe.symbol_name, symbol_name,
-	       LTTNG_KPROBE_SYM_NAME_LEN * sizeof(char));
+	       LTTNG_SYM_NAME_LEN * sizeof(char));
 	event->u.kprobe.kp.symbol_name =
 		event->u.kprobe.symbol_name;
 	event->u.kprobe.kp.offset = offset;
