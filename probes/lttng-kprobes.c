@@ -44,18 +44,19 @@ static
 int lttng_create_kprobe_event(const char *name, struct ltt_event *event)
 {
 	struct lttng_event_field *field;
+	struct lttng_event_desc *desc;
 	int ret;
 
-	event->desc = kzalloc(sizeof(*event->desc), GFP_KERNEL);
-	if (!event->desc)
+	desc = kzalloc(sizeof(*event->desc), GFP_KERNEL);
+	if (!desc)
 		return -ENOMEM;
-	event->desc->name = kstrdup(name, GFP_KERNEL);
-	if (!event->desc->name) {
+	desc->name = kstrdup(name, GFP_KERNEL);
+	if (!desc->name) {
 		ret = -ENOMEM;
 		goto error_str;
 	}
-	event->desc->nr_fields = 1;
-	event->desc->fields = field =
+	desc->nr_fields = 1;
+	desc->fields = field =
 		kzalloc(1 * sizeof(struct lttng_event_field), GFP_KERNEL);
 	field->name = "ip";
 	field->type.atype = atype_integer;
@@ -63,11 +64,12 @@ int lttng_create_kprobe_event(const char *name, struct ltt_event *event)
 	field->type.u.basic.integer.alignment = ltt_alignof(unsigned long);
 	field->type.u.basic.integer.signedness = 0;
 	field->type.u.basic.integer.reverse_byte_order = 0;
+	event->desc = desc;
 
 	return 0;
 
 error_str:
-	kfree(event->desc);
+	kfree(desc);
 	return ret;
 }
 

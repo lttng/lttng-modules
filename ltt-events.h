@@ -127,7 +127,7 @@ struct lttng_probe_desc {
 struct ltt_event {
 	unsigned int id;
 	struct ltt_channel *chan;
-	struct lttng_event_desc *desc;
+	const struct lttng_event_desc *desc;
 	void *filter;
 	enum lttng_kernel_instrumentation instrumentation;
 	union {
@@ -217,7 +217,6 @@ void _ltt_channel_destroy(struct ltt_channel *chan);
 struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 				   char *name,
 				   struct lttng_kernel_event *event_param,
-				   const struct lttng_event_desc *event_desc,
 				   void *filter);
 int ltt_event_unregister(struct ltt_event *event);
 

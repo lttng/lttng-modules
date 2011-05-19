@@ -143,21 +143,15 @@ void lttng_metadata_create_events(struct file *channel_file)
 {
 	struct ltt_channel *channel = channel_file->private_data;
 	char *event_name = "lttng_metadata";
-	const struct lttng_event_desc *event_desc;
 	struct ltt_event *event;
 	int ret;
 
-	event_desc = ltt_event_get(event_name);
-	if (!event_desc) {
-		ret = -ENOENT;
-		goto get_error;
-	}
 	/*
 	 * We tolerate no failure path after event creation. It will stay
 	 * invariant for the rest of the session.
 	 */
 	event = ltt_event_create(channel, event_name, LTTNG_KERNEL_TRACEPOINTS,
-				 event_desc, NULL);
+				 NULL);
 	if (!event) {
 		goto create_error;
 		ret = -EEXIST;
@@ -165,8 +159,6 @@ void lttng_metadata_create_events(struct file *channel_file)
 	return;
 
 create_error:
-	ltt_event_put(event_desc);
-get_error:
 	WARN_ON(1);
 	return;		/* not allowed to return error */
 }
@@ -359,7 +351,6 @@ int lttng_abi_create_event(struct file *channel_file,
 			   struct lttng_kernel_event __user *uevent_param)
 {
 	struct ltt_channel *channel = channel_file->private_data;
-	const struct lttng_event_desc *event_desc;
 	struct ltt_event *event;
 	char *event_name;
 	struct lttng_kernel_event event_param;
@@ -376,12 +367,8 @@ int lttng_abi_create_event(struct file *channel_file,
 		goto name_error;
 	}
 	event_name[PATH_MAX - 1] = '\0';
+	event_param.u.kprobe.symbol_name[LTTNG_KPROBE_SYM_NAME_LEN - 1] = '\0';
 
-	event_desc = ltt_event_get(event_name);
-	if (!event_desc) {
-		ret = -ENOENT;
-		goto get_error;
-	}
 	event_fd = get_unused_fd();
 	if (event_fd < 0) {
 		ret = event_fd;
@@ -398,8 +385,7 @@ int lttng_abi_create_event(struct file *channel_file,
 	 * We tolerate no failure path after event creation. It will stay
 	 * invariant for the rest of the session.
 	 */
-	event = ltt_event_create(channel, event_name, &event_param,
-				 event_desc, NULL);
+	event = ltt_event_create(channel, event_name, &event_param, NULL);
 	if (!event) {
 		ret = -EEXIST;
 		goto event_error;
@@ -416,8 +402,6 @@ event_error:
 file_error:
 	put_unused_fd(event_fd);
 fd_error:
-	ltt_event_put(event_desc);
-get_error:
 name_error:
 	kfree(event_name);
 	return ret;

@@ -203,7 +203,6 @@ void _ltt_channel_destroy(struct ltt_channel *chan)
  */
 struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 				   struct lttng_kernel_event *event_param,
-				   const struct lttng_event_desc *event_desc,
 				   void *filter)
 {
 	struct ltt_event *event;
@@ -223,7 +222,6 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 	if (!event)
 		goto cache_error;
 	event->chan = chan;
-	event->desc = event_desc;
 	event->filter = filter;
 	event->id = chan->free_event_id++;
 	event->instrumentation = event_param->instrumentation;
@@ -231,8 +229,12 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 	smp_wmb();
 	switch (event_param->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINTS:
-		ret = tracepoint_probe_register(name, event_desc->probe_callback,
-						event);
+		event->desc = ltt_event_get(name);
+		if (!event->desc)
+			goto register_error;
+		ret = tracepoint_probe_register(name,
+				event->desc->probe_callback,
+				event);
 		if (ret)
 			goto register_error;
 		break;
@@ -256,8 +258,10 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 	return event;
 
 statedump_error:
-	WARN_ON_ONCE(tracepoint_probe_unregister(name, event_desc->probe_callback,
-						 event));
+	WARN_ON_ONCE(tracepoint_probe_unregister(name,
+				event->desc->probe_callback,
+				event));
+	ltt_event_put(event->desc);
 register_error:
 	kmem_cache_free(event_cache, event);
 cache_error:
@@ -281,6 +285,7 @@ int _ltt_event_unregister(struct ltt_event *event)
 						  event);
 		if (ret)
 			return ret;
+		ltt_event_put(event->desc);
 		break;
 	case LTTNG_KERNEL_KPROBES:
 		lttng_kprobes_unregister(event);
