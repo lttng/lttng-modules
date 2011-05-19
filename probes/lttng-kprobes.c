@@ -12,6 +12,7 @@
 #include <linux/slab.h>
 #include "../ltt-events.h"
 #include "../wrapper/ringbuffer/frontend_types.h"
+#include "../wrapper/vmalloc.h"
 #include "../ltt-tracer.h"
 
 static
@@ -101,6 +102,14 @@ int lttng_kprobes_register(const char *name,
 		event->u.kprobe.symbol_name;
 	event->u.kprobe.kp.offset = offset;
 	event->u.kprobe.kp.addr = (void *) addr;
+
+	/*
+	 * Ensure the memory we just allocated don't trigger page faults.
+	 * Well.. kprobes itself puts the page fault handler on the blacklist,
+	 * but we can never be too careful.
+	 */
+	wrapper_vmalloc_sync_all();
+
 	ret = register_kprobe(&event->u.kprobe.kp);
 	if (ret)
 		goto register_error;

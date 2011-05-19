@@ -19,6 +19,7 @@
 #include "../ltt-events.h"
 #include "../wrapper/ringbuffer/frontend_types.h"
 #include "../wrapper/ftrace.h"
+#include "../wrapper/vmalloc.h"
 #include "../ltt-tracer.h"
 
 static
@@ -115,6 +116,9 @@ int lttng_ftrace_register(const char *name,
 	if (!event->u.ftrace.symbol_name)
 		goto name_error;
 
+	/* Ensure the memory we just allocated don't trigger page faults */
+	wrapper_vmalloc_sync_all();
+
 	ret = wrapper_register_ftrace_function_probe(event->u.ftrace.symbol_name,
 			&lttng_ftrace_ops, event);
 	if (ret)
@@ -144,6 +148,7 @@ EXPORT_SYMBOL_GPL(lttng_ftrace_unregister);
 /* This module is permanent. */
 int lttng_ftrace_init(void)
 {
+	wrapper_vmalloc_sync_all();
 	return 0;
 }
 module_init(lttng_ftrace_init)
