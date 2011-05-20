@@ -112,10 +112,16 @@ struct lttng_event_field {
 	struct lttng_type type;
 };
 
-struct lttng_event_desc {
+struct lttng_event_ctx {
 	const struct lttng_event_field *fields;
+	unsigned int nr_fields;
+};
+
+struct lttng_event_desc {
 	const char *name;
 	void *probe_callback;
+	const struct lttng_event_ctx *ctx;	/* context */
+	const struct lttng_event_field *fields;	/* event payload */
 	unsigned int nr_fields;
 };
 

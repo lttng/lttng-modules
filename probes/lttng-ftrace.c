@@ -70,6 +70,10 @@ int lttng_create_ftrace_event(const char *name, struct ltt_event *event)
 	desc->nr_fields = 2;
 	desc->fields = fields =
 		kzalloc(2 * sizeof(struct lttng_event_field), GFP_KERNEL);
+	if (!desc->fields) {
+		ret = -ENOMEM;
+		goto error_fields;
+	}
 	fields[0].name = "ip";
 	fields[0].type.atype = atype_integer;
 	fields[0].type.u.basic.integer.size = sizeof(unsigned long);
@@ -92,6 +96,8 @@ int lttng_create_ftrace_event(const char *name, struct ltt_event *event)
 
 	return 0;
 
+error_fields:
+	kfree(desc->name);
 error_str:
 	kfree(desc);
 	return ret;
@@ -140,6 +146,7 @@ void lttng_ftrace_unregister(struct ltt_event *event)
 	wrapper_unregister_ftrace_function_probe(event->u.ftrace.symbol_name,
 			&lttng_ftrace_ops, event);
 	kfree(event->u.ftrace.symbol_name);
+	kfree(desc->fields);
 	kfree(event->desc->name);
 	kfree(event->desc);
 }

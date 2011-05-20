@@ -59,6 +59,10 @@ int lttng_create_kprobe_event(const char *name, struct ltt_event *event)
 	desc->nr_fields = 1;
 	desc->fields = field =
 		kzalloc(1 * sizeof(struct lttng_event_field), GFP_KERNEL);
+	if (!field) {
+		ret = -ENOMEM;
+		goto error_field;
+	}
 	field->name = "ip";
 	field->type.atype = atype_integer;
 	field->type.u.basic.integer.size = sizeof(unsigned long);
@@ -71,6 +75,8 @@ int lttng_create_kprobe_event(const char *name, struct ltt_event *event)
 
 	return 0;
 
+error_field:
+	kfree(desc->name);
 error_str:
 	kfree(desc);
 	return ret;
@@ -118,6 +124,7 @@ int lttng_kprobes_register(const char *name,
 register_error:
 	kfree(event->u.kprobe.symbol_name);
 name_error:
+	kfree(event->desc->fields);
 	kfree(event->desc->name);
 	kfree(event->desc);
 error:
@@ -129,6 +136,7 @@ void lttng_kprobes_unregister(struct ltt_event *event)
 {
 	unregister_kprobe(&event->u.kprobe.kp);
 	kfree(event->u.kprobe.symbol_name);
+	kfree(event->desc->fields);
 	kfree(event->desc->name);
 	kfree(event->desc);
 }
