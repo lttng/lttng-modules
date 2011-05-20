@@ -241,12 +241,28 @@ void ltt_event_put(const struct lttng_event_desc *desc);
 int ltt_probes_init(void);
 void ltt_probes_exit(void);
 
+#ifdef CONFIG_KPROBES
 int lttng_kprobes_register(const char *name,
 		const char *symbol_name,
 		uint64_t offset,
 		uint64_t addr,
 		struct ltt_event *event);
 void lttng_kprobes_unregister(struct ltt_event *event);
+#else
+static inline
+int lttng_kprobes_register(const char *name,
+		const char *symbol_name,
+		uint64_t offset,
+		uint64_t addr,
+		struct ltt_event *event)
+{
+	return -ENOSYS;
+}
+
+void lttng_kprobes_unregister(struct ltt_event *event)
+{
+}
+#endif
 
 #ifdef CONFIG_DYNAMIC_FTRACE
 int lttng_ftrace_register(const char *name,
@@ -259,7 +275,7 @@ int lttng_ftrace_register(const char *name,
 			  const char *symbol_name,
 			  struct ltt_event *event)
 {
-	return 0;
+	return -ENOSYS;
 }
 
 static inline

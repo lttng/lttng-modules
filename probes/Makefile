@@ -16,7 +16,9 @@ obj-m += lttng-probe-irq.o
 obj-m += lttng-probe-block.o
 obj-m += lttng-probe-syscalls.o
 
+ifneq ($(CONFIG_KPROBES),)
 obj-m += lttng-kprobes.o
+endif
 
 ifneq ($(CONFIG_DYNAMIC_FTRACE),)
 obj-m += lttng-ftrace.o
