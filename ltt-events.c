@@ -23,6 +23,7 @@ static DEFINE_MUTEX(sessions_mutex);
 static struct kmem_cache *event_cache;
 
 static void _ltt_event_destroy(struct ltt_event *event);
+static void _ltt_channel_destroy(struct ltt_channel *chan);
 static int _ltt_event_unregister(struct ltt_event *event);
 static
 int _ltt_event_metadata_statedump(struct ltt_session *session,
@@ -191,6 +192,7 @@ active:
 /*
  * Only used internally at session destruction.
  */
+static
 void _ltt_channel_destroy(struct ltt_channel *chan)
 {
 	chan->ops->channel_destroy(chan->chan);
@@ -305,19 +307,6 @@ int _ltt_event_unregister(struct ltt_event *event)
 	default:
 		WARN_ON_ONCE(1);
 	}
-	return ret;
-}
-
-/*
- * Used when an event FD is released.
- */
-int ltt_event_unregister(struct ltt_event *event)
-{
-	int ret;
-
-	mutex_lock(&sessions_mutex);
-	ret = ltt_event_unregister(event);
-	mutex_unlock(&sessions_mutex);
 	return ret;
 }
 

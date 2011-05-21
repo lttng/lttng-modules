@@ -242,13 +242,11 @@ struct ltt_channel *ltt_global_channel_create(struct ltt_session *session,
 				       size_t subbuf_size, size_t num_subbuf,
 				       unsigned int switch_timer_interval,
 				       unsigned int read_timer_interval);
-void _ltt_channel_destroy(struct ltt_channel *chan);
 
 struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 				   char *name,
 				   struct lttng_kernel_event *event_param,
 				   void *filter);
-int ltt_event_unregister(struct ltt_event *event);
 
 void ltt_transport_register(struct ltt_transport *transport);
 void ltt_transport_unregister(struct ltt_transport *transport);

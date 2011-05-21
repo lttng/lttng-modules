@@ -534,10 +534,8 @@ int lttng_event_release(struct inode *inode, struct file *file)
 {
 	struct ltt_event *event = file->private_data;
 
-	if (event) {
-		ltt_event_unregister(event);
+	if (event)
 		fput(event->chan->file);
-	}
 	return 0;
 }
 
