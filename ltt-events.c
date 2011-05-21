@@ -589,7 +589,7 @@ int _ltt_stream_packet_context_declare(struct ltt_session *session)
 		"	uint32_t content_size;\n"
 		"	uint32_t packet_size;\n"
 		"	uint32_t cpu_id;\n"
-		"};\n"
+		"};\n\n"
 		);
 }
 
