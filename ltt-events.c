@@ -522,7 +522,7 @@ int _ltt_event_metadata_statedump(struct ltt_session *session,
 		"	name = %s;\n"
 		"	id = %u;\n"
 		"	stream_id = %u;\n"
-		"	event.fields := struct {\n",
+		"	fields := struct {\n",
 		event->desc->name,
 		event->id,
 		event->chan->id);
@@ -715,7 +715,7 @@ skip_session:
 	}
 
 	list_for_each_entry(event, &session->events, list) {
-		ret = _ltt_event_metadata_statedump(session, chan, event);
+		ret = _ltt_event_metadata_statedump(session, event->chan, event);
 		if (ret)
 			goto end;
 	}
