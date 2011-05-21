@@ -142,6 +142,10 @@ static
 void lttng_metadata_create_events(struct file *channel_file)
 {
 	struct ltt_channel *channel = channel_file->private_data;
+	static struct lttng_kernel_event metadata_params = {
+		.instrumentation = LTTNG_KERNEL_TRACEPOINTS,
+		.name = "lttng_metadata",
+	};
 	char *event_name = "lttng_metadata";
 	struct ltt_event *event;
 	int ret;
@@ -150,8 +154,7 @@ void lttng_metadata_create_events(struct file *channel_file)
 	 * We tolerate no failure path after event creation. It will stay
 	 * invariant for the rest of the session.
 	 */
-	event = ltt_event_create(channel, event_name, LTTNG_KERNEL_TRACEPOINTS,
-				 NULL);
+	event = ltt_event_create(channel, event_name, &metadata_params, NULL);
 	if (!event) {
 		goto create_error;
 		ret = -EEXIST;
