@@ -65,8 +65,8 @@ int lttng_create_kprobe_event(const char *name, struct ltt_event *event)
 	}
 	field->name = "ip";
 	field->type.atype = atype_integer;
-	field->type.u.basic.integer.size = sizeof(unsigned long);
-	field->type.u.basic.integer.alignment = ltt_alignof(unsigned long);
+	field->type.u.basic.integer.size = sizeof(unsigned long) * CHAR_BIT;
+	field->type.u.basic.integer.alignment = ltt_alignof(unsigned long) * CHAR_BIT;
 	field->type.u.basic.integer.signedness = 0;
 	field->type.u.basic.integer.reverse_byte_order = 0;
 	field->type.u.basic.integer.base = 16;

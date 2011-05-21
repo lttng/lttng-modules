@@ -17,6 +17,7 @@
 struct ltt_channel;
 struct ltt_session;
 struct lib_ring_buffer_ctx;
+struct perf_event;
 
 /* Type description */
 
@@ -112,9 +113,22 @@ struct lttng_event_field {
 	struct lttng_type type;
 };
 
-struct lttng_event_ctx {
-	const struct lttng_event_field *fields;
+struct lttng_ctx_field {
+	const char *name;
+	struct lttng_type type;
+	void *ctx_field_callback;
+	union {
+		struct {
+			struct perf_event **e;	/* per-cpu array */
+			struct list_head *head;
+		} perf_counter;
+	} u;
+};
+
+struct lttng_ctx {
+	const struct lttng_ctx_field *fields;
 	unsigned int nr_fields;
+	unsigned int allocated_fields;
 };
 
 struct lttng_event_desc {
