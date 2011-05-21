@@ -680,9 +680,10 @@ int _ltt_session_metadata_statedump(struct ltt_session *session)
 		"		uint32_t magic;\n"
 		"		uint8_t  uuid[16];\n"
 		"		uint32_t stream_id;\n"
-		"	};\n",
+		"	};\n"
 		"};\n\n",
 		ltt_alignof(uint8_t) * CHAR_BIT,
+		ltt_alignof(uint16_t) * CHAR_BIT,
 		ltt_alignof(uint32_t) * CHAR_BIT,
 		ltt_alignof(uint64_t) * CHAR_BIT,
 		CTF_VERSION_MAJOR,
