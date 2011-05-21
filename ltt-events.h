@@ -50,7 +50,7 @@ struct lttng_enum_entry {
 	    .atype = atype_integer,				\
 	    .u.basic.integer =					\
 		{						\
-		  .size = sizeof(_type),			\
+		  .size = sizeof(_type) * CHAR_BIT,		\
 		  .alignment = ltt_alignof(_type) * CHAR_BIT,	\
 		  .signedness = is_signed_type(_type),		\
 		  .reverse_byte_order = _byte_order != __BYTE_ORDER,	\
@@ -244,7 +244,6 @@ struct ltt_channel *ltt_global_channel_create(struct ltt_session *session,
 				       unsigned int read_timer_interval);
 
 struct ltt_event *ltt_event_create(struct ltt_channel *chan,
-				   char *name,
 				   struct lttng_kernel_event *event_param,
 				   void *filter);
 

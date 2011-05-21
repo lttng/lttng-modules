@@ -31,6 +31,9 @@ struct lttng_kernel_channel {
 	unsigned int read_timer_interval;	/* usecs */
 };
 
+struct lttng_kernel_tracepoint {
+};
+
 /*
  * Either addr is used, or symbol_name and offset.
  */
@@ -46,13 +49,14 @@ struct lttng_kernel_function_tracer {
 };
 
 struct lttng_kernel_event {
+	char name[LTTNG_SYM_NAME_LEN];	/* event name */
 	enum lttng_kernel_instrumentation instrumentation;
 	/* Per instrumentation type configuration */
 	union {
+		struct lttng_kernel_tracepoint tracepoint;
 		struct lttng_kernel_kprobe kprobe;
 		struct lttng_kernel_function_tracer ftrace;
 	} u;
-	char name[];	/* event name */
 };
 
 struct lttng_kernel_tracer_version {

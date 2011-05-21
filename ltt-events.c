@@ -203,7 +203,7 @@ void _ltt_channel_destroy(struct ltt_channel *chan)
 /*
  * Supports event creation while tracing session is active.
  */
-struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
+struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 				   struct lttng_kernel_event *event_param,
 				   void *filter)
 {
@@ -218,7 +218,7 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 	 * creation). Might require a hash if we have lots of events.
 	 */
 	list_for_each_entry(event, &chan->session->events, list)
-		if (!strcmp(event->desc->name, name))
+		if (!strcmp(event->desc->name, event_param->name))
 			goto exist;
 	event = kmem_cache_zalloc(event_cache, GFP_KERNEL);
 	if (!event)
@@ -231,17 +231,17 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 	smp_wmb();
 	switch (event_param->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINTS:
-		event->desc = ltt_event_get(name);
+		event->desc = ltt_event_get(event_param->name);
 		if (!event->desc)
 			goto register_error;
-		ret = tracepoint_probe_register(name,
+		ret = tracepoint_probe_register(event_param->name,
 				event->desc->probe_callback,
 				event);
 		if (ret)
 			goto register_error;
 		break;
 	case LTTNG_KERNEL_KPROBES:
-		ret = lttng_kprobes_register(name,
+		ret = lttng_kprobes_register(event_param->name,
 				event_param->u.kprobe.symbol_name,
 				event_param->u.kprobe.offset,
 				event_param->u.kprobe.addr,
@@ -250,7 +250,7 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 			goto register_error;
 		break;
 	case LTTNG_KERNEL_FUNCTION_TRACER:
-		ret = lttng_ftrace_register(name,
+		ret = lttng_ftrace_register(event_param->name,
 				event_param->u.ftrace.symbol_name,
 				event);
 		if (ret)
@@ -267,7 +267,7 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan, char *name,
 	return event;
 
 statedump_error:
-	WARN_ON_ONCE(tracepoint_probe_unregister(name,
+	WARN_ON_ONCE(tracepoint_probe_unregister(event_param->name,
 				event->desc->probe_callback,
 				event));
 	ltt_event_put(event->desc);
@@ -642,7 +642,8 @@ int _ltt_event_header_declare(struct ltt_session *session)
 static
 int _ltt_session_metadata_statedump(struct ltt_session *session)
 {
-	char uuid_s[37];
+	unsigned char *uuid_c = session->uuid.b;
+	unsigned char uuid_s[37];
 	struct ltt_channel *chan;
 	struct ltt_event *event;
 	int ret = 0;
@@ -657,11 +658,11 @@ int _ltt_session_metadata_statedump(struct ltt_session *session)
 	}
 
 	snprintf(uuid_s, sizeof(uuid_s),
-		"%x%x%x%x-%x%x-%x%x-%x%x-%x%x%x%x%x%x",
-		uuid_s[0], uuid_s[1], uuid_s[2], uuid_s[3],
-		uuid_s[4], uuid_s[5], uuid_s[6], uuid_s[7],
-		uuid_s[8], uuid_s[9], uuid_s[10], uuid_s[11],
-		uuid_s[12], uuid_s[13], uuid_s[14], uuid_s[15]);
+		"%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+		uuid_c[0], uuid_c[1], uuid_c[2], uuid_c[3],
+		uuid_c[4], uuid_c[5], uuid_c[6], uuid_c[7],
+		uuid_c[8], uuid_c[9], uuid_c[10], uuid_c[11],
+		uuid_c[12], uuid_c[13], uuid_c[14], uuid_c[15]);
 
 	ret = lttng_metadata_printf(session,
 		"typealias integer { size = 8; align = %u; signed = false; } := uint8_t;\n"
@@ -674,7 +675,7 @@ int _ltt_session_metadata_statedump(struct ltt_session *session)
 		"trace {\n"
 		"	major = %u;\n"
 		"	minor = %u;\n"
-		"	uuid = %s;\n"
+		"	uuid = \"%s\";\n"
 		"	byte_order = %s;\n"
 		"	packet.header := struct {\n"
 		"		uint32_t magic;\n"

@@ -146,7 +146,6 @@ void lttng_metadata_create_events(struct file *channel_file)
 		.instrumentation = LTTNG_KERNEL_TRACEPOINTS,
 		.name = "lttng_metadata",
 	};
-	char *event_name = "lttng_metadata";
 	struct ltt_event *event;
 	int ret;
 
@@ -154,7 +153,7 @@ void lttng_metadata_create_events(struct file *channel_file)
 	 * We tolerate no failure path after event creation. It will stay
 	 * invariant for the rest of the session.
 	 */
-	event = ltt_event_create(channel, event_name, &metadata_params, NULL);
+	event = ltt_event_create(channel, &metadata_params, NULL);
 	if (!event) {
 		goto create_error;
 		ret = -EEXIST;
@@ -355,21 +354,13 @@ int lttng_abi_create_event(struct file *channel_file,
 {
 	struct ltt_channel *channel = channel_file->private_data;
 	struct ltt_event *event;
-	char *event_name;
 	struct lttng_kernel_event event_param;
 	int event_fd, ret;
 	struct file *event_file;
 
 	if (copy_from_user(&event_param, uevent_param, sizeof(event_param)))
 		return -EFAULT;
-	event_name = kmalloc(PATH_MAX, GFP_KERNEL);
-	if (!event_name)
-		return -ENOMEM;
-	if (strncpy_from_user(event_name, uevent_param->name, PATH_MAX) < 0) {
-		ret = -EFAULT;
-		goto name_error;
-	}
-	event_name[PATH_MAX - 1] = '\0';
+	event_param.name[LTTNG_SYM_NAME_LEN - 1] = '\0';
 	switch (event_param.instrumentation) {
 	case LTTNG_KERNEL_KPROBES:
 		event_param.u.kprobe.symbol_name[LTTNG_SYM_NAME_LEN - 1] = '\0';
@@ -396,7 +387,7 @@ int lttng_abi_create_event(struct file *channel_file,
 	 * We tolerate no failure path after event creation. It will stay
 	 * invariant for the rest of the session.
 	 */
-	event = ltt_event_create(channel, event_name, &event_param, NULL);
+	event = ltt_event_create(channel, &event_param, NULL);
 	if (!event) {
 		ret = -EEXIST;
 		goto event_error;
@@ -405,7 +396,6 @@ int lttng_abi_create_event(struct file *channel_file,
 	fd_install(event_fd, event_file);
 	/* The event holds a reference on the channel */
 	atomic_long_inc(&channel_file->f_count);
-	kfree(event_name);
 	return event_fd;
 
 event_error:
@@ -413,8 +403,6 @@ event_error:
 file_error:
 	put_unused_fd(event_fd);
 fd_error:
-name_error:
-	kfree(event_name);
 	return ret;
 }
 

@@ -13,11 +13,11 @@ TRACE_EVENT(lttng_metadata,
 	TP_ARGS(str),
 
 	TP_STRUCT__entry(
-		__string(	string,		str	)
+		__string(	str,		str	)
 	),
 
 	TP_fast_assign(
-		tp_strcpy(string, str)
+		tp_strcpy(str, str)
 	),
 
 	TP_printk("")
