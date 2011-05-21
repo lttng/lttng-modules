@@ -222,8 +222,8 @@ int lttng_abi_create_channel(struct file *session_file,
 	chan_file->private_data = chan;
 	fd_install(chan_fd, chan_file);
 	if (channel_type == METADATA_CHANNEL) {
-		lttng_metadata_create_events(chan_file);
 		session->metadata = chan;
+		lttng_metadata_create_events(chan_file);
 	}
 
 	/* The channel created holds a reference on the session */

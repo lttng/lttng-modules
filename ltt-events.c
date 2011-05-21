@@ -554,9 +554,6 @@ int _ltt_event_metadata_statedump(struct ltt_session *session,
 	if (ret)
 		goto end;
 
-
-
-
 	event->metadata_dumped = 1;
 end:
 	return ret;
