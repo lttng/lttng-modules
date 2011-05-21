@@ -281,6 +281,7 @@ int lttng_kprobes_register(const char *name,
 	return -ENOSYS;
 }
 
+static inline
 void lttng_kprobes_unregister(struct ltt_event *event)
 {
 }

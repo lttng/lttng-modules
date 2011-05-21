@@ -146,7 +146,7 @@ void lttng_ftrace_unregister(struct ltt_event *event)
 	wrapper_unregister_ftrace_function_probe(event->u.ftrace.symbol_name,
 			&lttng_ftrace_ops, event);
 	kfree(event->u.ftrace.symbol_name);
-	kfree(desc->fields);
+	kfree(event->desc->fields);
 	kfree(event->desc->name);
 	kfree(event->desc);
 }
