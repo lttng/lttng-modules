@@ -362,7 +362,7 @@ int lttng_metadata_printf(struct ltt_session *session,
 		 */
 		waitret = wait_event_interruptible_timeout(*chan->ops->get_reader_wait_queue(chan),
 			({
-				ret = chan->ops->event_reserve(&ctx);
+				ret = chan->ops->event_reserve(&ctx, 0);
 				ret != -ENOBUFS || !ret;
 			}),
 			msecs_to_jiffies(LTTNG_METADATA_TIMEOUT_MSEC));

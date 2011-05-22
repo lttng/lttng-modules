@@ -180,7 +180,8 @@ struct ltt_channel_ops {
 	void (*channel_destroy)(struct channel *chan);
 	struct lib_ring_buffer *(*buffer_read_open)(struct channel *chan);
 	void (*buffer_read_close)(struct lib_ring_buffer *buf);
-	int (*event_reserve)(struct lib_ring_buffer_ctx *ctx);
+	int (*event_reserve)(struct lib_ring_buffer_ctx *ctx,
+			     uint16_t event_id);
 	void (*event_commit)(struct lib_ring_buffer_ctx *ctx);
 	void (*event_write)(struct lib_ring_buffer_ctx *ctx, const void *src,
 			    size_t len);

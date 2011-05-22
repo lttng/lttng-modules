@@ -474,7 +474,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	__event_align = __event_get_align__##_name(_args);		      \
 	lib_ring_buffer_ctx_init(&ctx, __chan->chan, NULL, __event_len,	      \
 				 __event_align, -1);			      \
-	__ret = __chan->ops->event_reserve(&ctx);			      \
+	__ret = __chan->ops->event_reserve(&ctx, __event->id);		      \
 	if (__ret < 0)							      \
 		return;							      \
 	/* Control code (field ordering) */				      \

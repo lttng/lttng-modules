@@ -187,7 +187,7 @@ void ltt_buffer_read_close(struct lib_ring_buffer *buf)
 }
 
 static
-int ltt_event_reserve(struct lib_ring_buffer_ctx *ctx)
+int ltt_event_reserve(struct lib_ring_buffer_ctx *ctx, uint16_t event_id)
 {
 	return lib_ring_buffer_reserve(&client_config, ctx);
 }

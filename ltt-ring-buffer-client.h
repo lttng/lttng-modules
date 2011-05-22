@@ -126,7 +126,7 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 extern
 void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 				 struct lib_ring_buffer_ctx *ctx,
-				 u16 eID, u32 event_size);
+				 uint16_t event_id);
 
 /*
  * ltt_write_event_header
@@ -135,13 +135,12 @@ void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
  *
  * @config: ring buffer instance configuration
  * @ctx: reservation context
- * @eID : event ID
- * @event_size : size of the event, excluding the event header.
+ * @event_id: event ID
  */
 static __inline__
 void ltt_write_event_header(const struct lib_ring_buffer_config *config,
 			    struct lib_ring_buffer_ctx *ctx,
-			    u16 eID, u32 event_size)
+			    uint16_t event_id)
 {
 	struct ltt_channel *ltt_chan = channel_get_private(ctx->chan);
 
@@ -153,14 +152,13 @@ void ltt_write_event_header(const struct lib_ring_buffer_config *config,
 	{
 		uint32_t id_time = 0;
 
-		bt_bitfield_write(&id_time, uint32_t, 0, 5, eID);
+		bt_bitfield_write(&id_time, uint32_t, 0, 5, event_id);
 		bt_bitfield_write(&id_time, uint32_t, 5, 27, ctx->tsc);
 		lib_ring_buffer_write(config, ctx, &id_time, sizeof(id_time));
 		break;
 	}
 	case 2:	/* large */
 	{
-		uint16_t event_id = eID;
 		uint32_t timestamp = (uint32_t) ctx->tsc;
 
 		lib_ring_buffer_write(config, ctx, &event_id, sizeof(event_id));
@@ -174,7 +172,7 @@ void ltt_write_event_header(const struct lib_ring_buffer_config *config,
 	return;
 
 slow_path:
-	ltt_write_event_header_slow(config, ctx, eID, event_size);
+	ltt_write_event_header_slow(config, ctx, event_id);
 }
 
 /*
@@ -182,7 +180,7 @@ slow_path:
  */
 void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 				   struct lib_ring_buffer_ctx *ctx,
-				   u16 eID, u32 event_size)
+				   uint16_t event_id)
 {
 	struct ltt_channel *ltt_chan = channel_get_private(ctx->chan);
 
@@ -191,12 +189,12 @@ void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 		if (!(ctx->rflags & RING_BUFFER_RFLAG_FULL_TSC)) {
 			uint32_t id_time = 0;
 
-			bt_bitfield_write(&id_time, uint32_t, 0, 5, eID);
+			bt_bitfield_write(&id_time, uint32_t, 0, 5, event_id);
 			bt_bitfield_write(&id_time, uint32_t, 5, 27, ctx->tsc);
 			lib_ring_buffer_write(config, ctx, &id_time, sizeof(id_time));
 		} else {
 			uint8_t id = 0;
-			uint32_t event_id = (uint32_t) eID;
+			uint32_t event_id = (uint32_t) event_id;
 			uint64_t timestamp = ctx->tsc;
 
 			bt_bitfield_write(&id, uint8_t, 0, 5, 31);
@@ -211,7 +209,6 @@ void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 	case 2:	/* large */
 	{
 		if (!(ctx->rflags & RING_BUFFER_RFLAG_FULL_TSC)) {
-			uint16_t event_id = eID;
 			uint32_t timestamp = (uint32_t) ctx->tsc;
 
 			lib_ring_buffer_write(config, ctx, &event_id, sizeof(event_id));
@@ -219,7 +216,7 @@ void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 			lib_ring_buffer_write(config, ctx, &timestamp, sizeof(timestamp));
 		} else {
 			uint16_t event_id = 65535;
-			uint32_t event_id_ext = (uint32_t) eID;
+			uint32_t event_id_ext = (uint32_t) event_id;
 			uint64_t timestamp = ctx->tsc;
 
 			lib_ring_buffer_write(config, ctx, &event_id, sizeof(event_id));
@@ -382,7 +379,8 @@ void ltt_buffer_read_close(struct lib_ring_buffer *buf)
 }
 
 static
-int ltt_event_reserve(struct lib_ring_buffer_ctx *ctx)
+int ltt_event_reserve(struct lib_ring_buffer_ctx *ctx,
+		      uint16_t event_id)
 {
 	int ret, cpu;
 
@@ -394,8 +392,8 @@ int ltt_event_reserve(struct lib_ring_buffer_ctx *ctx)
 	ret = lib_ring_buffer_reserve(&client_config, ctx);
 	if (ret)
 		goto put;
-	return ret;
-
+	ltt_write_event_header(&client_config, ctx, event_id);
+	return 0;
 put:
 	lib_ring_buffer_put_cpu(&client_config);
 	return ret;
