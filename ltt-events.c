@@ -170,6 +170,11 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 	chan->session = session;
 	init_waitqueue_head(&chan->notify_wait);
 	chan->id = session->free_chan_id++;
+	/*
+	 * Note: the channel creation op already writes into the packet
+	 * headers. Therefore the "chan" information used as input
+	 * should be already accessible.
+	 */
 	chan->chan = transport->ops.channel_create("[lttng]", chan, buf_addr,
 			subbuf_size, num_subbuf, switch_timer_interval,
 			read_timer_interval);
