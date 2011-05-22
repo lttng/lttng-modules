@@ -1510,16 +1510,15 @@ int lib_ring_buffer_try_reserve_slow(struct lib_ring_buffer *buf,
 		return -EIO;
 
 	if (last_tsc_overflow(config, buf, ctx->tsc))
-		ctx->rflags = RING_BUFFER_RFLAG_FULL_TSC;
+		ctx->rflags |= RING_BUFFER_RFLAG_FULL_TSC;
 
 	if (unlikely(subbuf_offset(offsets->begin, ctx->chan) == 0)) {
 		offsets->switch_new_start = 1;		/* For offsets->begin */
 	} else {
 		offsets->size = config->cb.record_header_size(config, chan,
 						offsets->begin,
-						ctx->data_size,
 						&offsets->pre_header_padding,
-						ctx->rflags, ctx);
+						ctx);
 		offsets->size +=
 			lib_ring_buffer_align(offsets->begin + offsets->size,
 					      ctx->largest_align)
@@ -1582,9 +1581,8 @@ int lib_ring_buffer_try_reserve_slow(struct lib_ring_buffer *buf,
 		offsets->size =
 			config->cb.record_header_size(config, chan,
 						offsets->begin,
-						ctx->data_size,
 						&offsets->pre_header_padding,
-						ctx->rflags, ctx);
+						ctx);
 		offsets->size +=
 			lib_ring_buffer_align(offsets->begin + offsets->size,
 					      ctx->largest_align)

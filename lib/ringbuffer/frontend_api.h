@@ -93,14 +93,13 @@ int lib_ring_buffer_try_reserve(const struct lib_ring_buffer_config *config,
 	prefetch(&buf->commit_hot[subbuf_index(*o_begin, chan)]);
 
 	if (last_tsc_overflow(config, buf, ctx->tsc))
-		ctx->rflags = RING_BUFFER_RFLAG_FULL_TSC;
+		ctx->rflags |= RING_BUFFER_RFLAG_FULL_TSC;
 
 	if (unlikely(subbuf_offset(*o_begin, chan) == 0))
 		return 1;
 
 	ctx->slot_size = record_header_size(config, chan, *o_begin,
-					    ctx->data_size, before_hdr_pad,
-					    ctx->rflags, ctx);
+					    before_hdr_pad, ctx);
 	ctx->slot_size +=
 		lib_ring_buffer_align(*o_begin + ctx->slot_size,
 				      ctx->largest_align) + ctx->data_size;

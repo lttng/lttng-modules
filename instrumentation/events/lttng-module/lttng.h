@@ -12,6 +12,11 @@ TRACE_EVENT(lttng_metadata,
 
 	TP_ARGS(str),
 
+	/*
+	 * Not exactly a string: more a sequence of bytes (dynamic
+	 * array) without the length. This is a dummy anyway: we only
+	 * use this declaration to generate an event metadata entry.
+	 */
 	TP_STRUCT__entry(
 		__string(	str,		str	)
 	),

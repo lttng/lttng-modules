@@ -58,7 +58,7 @@ DECLARE_EVENT_CLASS(block_rq_with_error,
 		__field(  unsigned int,	nr_sector		)
 		__field(  int,		errors			)
 		__field(  unsigned int,	rwbs			)
-		__dynamic_array( char,	cmd,	blk_cmd_buf_len(rq)	)
+		__dynamic_array_text( char,	cmd,	blk_cmd_buf_len(rq)	)
 	),
 
 	TP_fast_assign(
@@ -144,8 +144,8 @@ DECLARE_EVENT_CLASS(block_rq,
 		__field(  unsigned int,	nr_sector		)
 		__field(  unsigned int,	bytes			)
 		__field(  unsigned int,	rwbs			)
-		__array(  char,         comm,   TASK_COMM_LEN   )
-		__dynamic_array( char,	cmd,	blk_cmd_buf_len(rq)	)
+		__array_text(  char,         comm,   TASK_COMM_LEN   )
+		__dynamic_array_text( char,	cmd,	blk_cmd_buf_len(rq)	)
 	),
 
 	TP_fast_assign(
@@ -225,7 +225,7 @@ TRACE_EVENT(block_bio_bounce,
 		__field( sector_t,	sector			)
 		__field( unsigned int,	nr_sector		)
 		__field( unsigned int,	rwbs			)
-		__array( char,		comm,	TASK_COMM_LEN	)
+		__array_text( char,		comm,	TASK_COMM_LEN	)
 	),
 
 	TP_fast_assign(
@@ -293,7 +293,7 @@ DECLARE_EVENT_CLASS(block_bio,
 		__field( sector_t,	sector			)
 		__field( unsigned int,	nr_sector		)
 		__field( unsigned int,	rwbs			)
-		__array( char,		comm,	TASK_COMM_LEN	)
+		__array_text( char,		comm,	TASK_COMM_LEN	)
 	),
 
 	TP_fast_assign(
@@ -366,7 +366,7 @@ DECLARE_EVENT_CLASS(block_get_rq,
 		__field( sector_t,	sector			)
 		__field( unsigned int,	nr_sector		)
 		__field( unsigned int,	rwbs			)
-		__array( char,		comm,	TASK_COMM_LEN	)
+		__array_text( char,		comm,	TASK_COMM_LEN	)
         ),
 
 	TP_fast_assign(
@@ -434,7 +434,7 @@ TRACE_EVENT(block_plug,
 	TP_ARGS(q),
 
 	TP_STRUCT__entry(
-		__array( char,		comm,	TASK_COMM_LEN	)
+		__array_text( char,		comm,	TASK_COMM_LEN	)
 	),
 
 	TP_fast_assign(
@@ -452,7 +452,7 @@ DECLARE_EVENT_CLASS(block_unplug,
 
 	TP_STRUCT__entry(
 		__field( int,		nr_rq			)
-		__array( char,		comm,	TASK_COMM_LEN	)
+		__array_text( char,		comm,	TASK_COMM_LEN	)
 	),
 
 	TP_fast_assign(
@@ -502,7 +502,7 @@ TRACE_EVENT(block_split,
 		__field( sector_t,	sector				)
 		__field( sector_t,	new_sector			)
 		__field( unsigned int,	rwbs		)
-		__array( char,		comm,		TASK_COMM_LEN	)
+		__array_text( char,		comm,		TASK_COMM_LEN	)
 	),
 
 	TP_fast_assign(

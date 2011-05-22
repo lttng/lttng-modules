@@ -45,7 +45,7 @@ struct lttng_enum_entry {
 	const char *string;
 };
 
-#define __type_integer(_type, _byte_order, _base)		\
+#define __type_integer(_type, _byte_order, _base, _encoding)	\
 	{							\
 	    .atype = atype_integer,				\
 	    .u.basic.integer =					\
@@ -55,7 +55,7 @@ struct lttng_enum_entry {
 		  .signedness = is_signed_type(_type),		\
 		  .reverse_byte_order = _byte_order != __BYTE_ORDER,	\
 		  .base = _base,				\
-		  .encoding = lttng_encode_none,		\
+		  .encoding = lttng_encode_##_encoding,		\
 		},						\
 	}							\
 
@@ -181,7 +181,7 @@ struct ltt_channel_ops {
 	struct lib_ring_buffer *(*buffer_read_open)(struct channel *chan);
 	void (*buffer_read_close)(struct lib_ring_buffer *buf);
 	int (*event_reserve)(struct lib_ring_buffer_ctx *ctx,
-			     uint16_t event_id);
+			     uint32_t event_id);
 	void (*event_commit)(struct lib_ring_buffer_ctx *ctx);
 	void (*event_write)(struct lib_ring_buffer_ctx *ctx, const void *src,
 			    size_t len);

@@ -41,8 +41,7 @@ u64 lib_ring_buffer_clock_read(struct channel *chan)
 static inline
 unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 				 struct channel *chan, size_t offset,
-				 size_t data_size, size_t *pre_header_padding,
-				 unsigned int rflags,
+				 size_t *pre_header_padding,
 				 struct lib_ring_buffer_ctx *ctx)
 {
 	return 0;
@@ -187,7 +186,7 @@ void ltt_buffer_read_close(struct lib_ring_buffer *buf)
 }
 
 static
-int ltt_event_reserve(struct lib_ring_buffer_ctx *ctx, uint16_t event_id)
+int ltt_event_reserve(struct lib_ring_buffer_ctx *ctx, uint32_t event_id)
 {
 	return lib_ring_buffer_reserve(&client_config, ctx);
 }

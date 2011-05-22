@@ -78,7 +78,7 @@ void trace_##_name(_proto);
 #define __field(_type, _item)					\
 	{							\
 	  .name = #_item,					\
-	  .type = __type_integer(_type, __BYTE_ORDER, 10),	\
+	  .type = __type_integer(_type, __BYTE_ORDER, 10, none),\
 	},
 
 #undef __field_ext
@@ -88,11 +88,11 @@ void trace_##_name(_proto);
 #define __field_network(_type, _item)				\
 	{							\
 	  .name = #_item,					\
-	  .type = __type_integer(_type, __BIG_ENDIAN, 10),	\
+	  .type = __type_integer(_type, __BIG_ENDIAN, 10, none),\
 	},
 
-#undef __array
-#define __array(_type, _item, _length)				\
+#undef __array_enc
+#define __array_enc(_type, _item, _length, _encoding)		\
 	{							\
 	  .name = #_item,					\
 	  .type =						\
@@ -101,13 +101,21 @@ void trace_##_name(_proto);
 		  .u.array =					\
 			{					\
 			    .length = _length,			\
-			    .elem_type = __type_integer(_type, __BYTE_ORDER, 10), \
+			    .elem_type = __type_integer(_type, __BYTE_ORDER, 10, _encoding), \
 			},					\
 		},						\
 	},
 
-#undef __dynamic_array
-#define __dynamic_array(_type, _item, _length)			\
+#undef __array
+#define __array(_type, _item, _length)				\
+	__array_enc(_type, _item, _length, none)
+
+#undef __array_text
+#define __array_text(_type, _item, _length)			\
+	__array_enc(_type, _item, _length, UTF8)
+
+#undef __dynamic_array_enc
+#define __dynamic_array_enc(_type, _item, _length, _encoding)	\
 	{							\
 	  .name = #_item,					\
 	  .type =						\
@@ -115,11 +123,19 @@ void trace_##_name(_proto);
 		  .atype = atype_sequence,			\
 		  .u.sequence =					\
 			{					\
-			    .length_type = __type_integer(u32, __BYTE_ORDER, 10), \
-			    .elem_type = __type_integer(_type, __BYTE_ORDER, 10), \
+			    .length_type = __type_integer(u32, __BYTE_ORDER, 10, none), \
+			    .elem_type = __type_integer(_type, __BYTE_ORDER, 10, _encoding), \
 			},					\
 		},						\
 	},
+
+#undef __dynamic_array
+#define __dynamic_array(_type, _item, _length)			\
+	__dynamic_array_enc(_type, _item, _length, none)
+
+#undef __dynamic_array_text
+#define __dynamic_array_text(_type, _item, _length)		\
+	__dynamic_array_enc(_type, _item, _length, UTF8)
 
 #undef __string
 #define __string(_item, _src)					\
@@ -233,12 +249,20 @@ static struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 	__event_len += lib_ring_buffer_align(__event_len, ltt_alignof(_type)); \
 	__event_len += sizeof(_type) * (_length);
 
+#undef __array_text
+#define __array_text(_type, _item, _length)				       \
+	__array(_type, _item, _length)
+
 #undef __dynamic_array
 #define __dynamic_array(_type, _item, _length)				       \
 	__event_len += lib_ring_buffer_align(__event_len, ltt_alignof(u32));   \
 	__event_len += sizeof(u32);					       \
 	__event_len += lib_ring_buffer_align(__event_len, ltt_alignof(_type)); \
 	__event_len += sizeof(_type) * (_length);
+
+#undef __dynamic_array_text
+#define __dynamic_array_text(_type, _item, _length)			       \
+	__dynamic_array(_type, _item, _length)
 
 #undef __string
 #define __string(_item, _src)						       \
@@ -286,10 +310,18 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len, _proto) \
 #define __array(_type, _item, _length)					  \
 	__event_align = max_t(size_t, __event_align, ltt_alignof(_type));
 
+#undef __array_text
+#define __array_text(_type, _item, _length)				  \
+	__array(_type, _item, _length)
+
 #undef __dynamic_array
 #define __dynamic_array(_type, _item, _length)				  \
 	__event_align = max_t(size_t, __event_align, ltt_alignof(u32));	  \
 	__event_align = max_t(size_t, __event_align, ltt_alignof(_type));
+
+#undef __dynamic_array_text
+#define __dynamic_array_text(_type, _item, _length)			  \
+	__dynamic_array(_type, _item, _length)
 
 #undef __string
 #define __string(_item, _src)
@@ -332,8 +364,16 @@ static inline size_t __event_get_align__##_name(_proto)			      \
 #undef __array
 #define __array(_type, _item, _length)	_type	_item;
 
+#undef __array_text
+#define __array_text(_type, _item, _length)				  \
+	__array(_type, _item, _length)
+
 #undef __dynamic_array
 #define __dynamic_array(_type, _item, _length)	_type	_item;
+
+#undef __dynamic_array_text
+#define __dynamic_array_text(_type, _item, _length)			  \
+	__dynamic_array(_type, _item, _length)
 
 #undef __string
 #define __string(_item, _src)	char _item;
@@ -376,12 +416,20 @@ __end_field_##_item:
 	goto __assign_##_item;						\
 __end_field_##_item:
 
+#undef __array_text
+#define __array_text(_type, _item, _length)				\
+	__array(_type, _item, _length)
+
 #undef __dynamic_array
 #define __dynamic_array(_type, _item, _length)				\
 	goto __assign_##_item##_1;					\
 __end_field_##_item##_1:						\
 	goto __assign_##_item##_2;					\
 __end_field_##_item##_2:
+
+#undef __dynamic_array_text
+#define __dynamic_array_text(_type, _item, _length)			\
+	__dynamic_array(_type, _item, _length)
 
 #undef __string
 #define __string(_item, _src)						\

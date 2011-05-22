@@ -128,6 +128,9 @@ enum ltt_channels {
  */
 #define LTT_RESERVE_CRITICAL		4096
 
+#define LTT_RFLAG_EXTENDED		RING_BUFFER_RFLAG_END
+#define LTT_RFLAG_END			(LTT_RFLAG_EXTENDED << 1)
+
 /* Register and unregister function pointers */
 
 enum ltt_module_function {

@@ -33,9 +33,7 @@ struct lib_ring_buffer_client_cb {
 	u64 (*ring_buffer_clock_read) (struct channel *chan);
 	size_t (*record_header_size) (const struct lib_ring_buffer_config *config,
 				      struct channel *chan, size_t offset,
-				      size_t data_size,
 				      size_t *pre_header_padding,
-				      unsigned int rflags,
 				      struct lib_ring_buffer_ctx *ctx);
 
 	/* Slow path only, at subbuffer switch */
@@ -210,6 +208,7 @@ void lib_ring_buffer_ctx_init(struct lib_ring_buffer_ctx *ctx,
 	ctx->data_size = data_size;
 	ctx->largest_align = largest_align;
 	ctx->cpu = cpu;
+	ctx->rflags = 0;
 }
 
 /*

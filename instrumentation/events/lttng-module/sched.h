@@ -37,7 +37,7 @@ TRACE_EVENT(sched_kthread_stop,
 	TP_ARGS(t),
 
 	TP_STRUCT__entry(
-		__array(	char,	comm,	TASK_COMM_LEN	)
+		__array_text(	char,	comm,	TASK_COMM_LEN	)
 		__field(	pid_t,	pid			)
 	),
 
@@ -79,7 +79,7 @@ DECLARE_EVENT_CLASS(sched_wakeup_template,
 	TP_ARGS(p, success),
 
 	TP_STRUCT__entry(
-		__array(	char,	comm,	TASK_COMM_LEN	)
+		__array_text(	char,	comm,	TASK_COMM_LEN	)
 		__field(	pid_t,	pid			)
 		__field(	int,	prio			)
 		__field(	int,	success			)
@@ -121,11 +121,11 @@ TRACE_EVENT(sched_switch,
 	TP_ARGS(prev, next),
 
 	TP_STRUCT__entry(
-		__array(	char,	prev_comm,	TASK_COMM_LEN	)
+		__array_text(	char,	prev_comm,	TASK_COMM_LEN	)
 		__field(	pid_t,	prev_pid			)
 		__field(	int,	prev_prio			)
 		__field(	long,	prev_state			)
-		__array(	char,	next_comm,	TASK_COMM_LEN	)
+		__array_text(	char,	next_comm,	TASK_COMM_LEN	)
 		__field(	pid_t,	next_pid			)
 		__field(	int,	next_prio			)
 	),
@@ -160,7 +160,7 @@ TRACE_EVENT(sched_migrate_task,
 	TP_ARGS(p, dest_cpu),
 
 	TP_STRUCT__entry(
-		__array(	char,	comm,	TASK_COMM_LEN	)
+		__array_text(	char,	comm,	TASK_COMM_LEN	)
 		__field(	pid_t,	pid			)
 		__field(	int,	prio			)
 		__field(	int,	orig_cpu		)
@@ -187,7 +187,7 @@ DECLARE_EVENT_CLASS(sched_process_template,
 	TP_ARGS(p),
 
 	TP_STRUCT__entry(
-		__array(	char,	comm,	TASK_COMM_LEN	)
+		__array_text(	char,	comm,	TASK_COMM_LEN	)
 		__field(	pid_t,	pid			)
 		__field(	int,	prio			)
 	),
@@ -234,7 +234,7 @@ TRACE_EVENT(sched_process_wait,
 	TP_ARGS(pid),
 
 	TP_STRUCT__entry(
-		__array(	char,	comm,	TASK_COMM_LEN	)
+		__array_text(	char,	comm,	TASK_COMM_LEN	)
 		__field(	pid_t,	pid			)
 		__field(	int,	prio			)
 	),
@@ -259,9 +259,9 @@ TRACE_EVENT(sched_process_fork,
 	TP_ARGS(parent, child),
 
 	TP_STRUCT__entry(
-		__array(	char,	parent_comm,	TASK_COMM_LEN	)
+		__array_text(	char,	parent_comm,	TASK_COMM_LEN	)
 		__field(	pid_t,	parent_pid			)
-		__array(	char,	child_comm,	TASK_COMM_LEN	)
+		__array_text(	char,	child_comm,	TASK_COMM_LEN	)
 		__field(	pid_t,	child_pid			)
 	),
 
@@ -288,7 +288,7 @@ DECLARE_EVENT_CLASS(sched_stat_template,
 	TP_ARGS(tsk, delay),
 
 	TP_STRUCT__entry(
-		__array( char,	comm,	TASK_COMM_LEN	)
+		__array_text( char,	comm,	TASK_COMM_LEN	)
 		__field( pid_t,	pid			)
 		__field( u64,	delay			)
 	),
@@ -343,7 +343,7 @@ TRACE_EVENT(sched_stat_runtime,
 	TP_ARGS(tsk, runtime, vruntime),
 
 	TP_STRUCT__entry(
-		__array( char,	comm,	TASK_COMM_LEN	)
+		__array_text( char,	comm,	TASK_COMM_LEN	)
 		__field( pid_t,	pid			)
 		__field( u64,	runtime			)
 		__field( u64,	vruntime			)
@@ -376,7 +376,7 @@ TRACE_EVENT(sched_pi_setprio,
 	TP_ARGS(tsk, newprio),
 
 	TP_STRUCT__entry(
-		__array( char,	comm,	TASK_COMM_LEN	)
+		__array_text( char,	comm,	TASK_COMM_LEN	)
 		__field( pid_t,	pid			)
 		__field( int,	oldprio			)
 		__field( int,	newprio			)

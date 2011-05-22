@@ -14,12 +14,7 @@ ltt-relay-objs :=  ltt-events.o ltt-debugfs-abi.o \
 			ltt-probes.o ltt-core.o
 
 obj-m += probes/
-
-# Use externally packaged lib ring buffer if missing in kernel
-ifneq ($(CONFIG_LIB_RING_BUFFER),)
-else
 obj-m += lib/
-endif
 
 endif
 

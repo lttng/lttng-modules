@@ -60,9 +60,7 @@ static inline notrace u64 lib_ring_buffer_clock_read(struct channel *chan)
  * @config: ring buffer instance configuration
  * @chan: channel
  * @offset: offset in the write buffer
- * @data_size: size of the payload
  * @pre_header_padding: padding to add before the header (output)
- * @rflags: reservation flags
  * @ctx: reservation context
  *
  * Returns the event header size (including padding).
@@ -73,8 +71,7 @@ static inline notrace u64 lib_ring_buffer_clock_read(struct channel *chan)
 static __inline__
 unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 				 struct channel *chan, size_t offset,
-				 size_t data_size, size_t *pre_header_padding,
-				 unsigned int rflags,
+				 size_t *pre_header_padding,
 				 struct lib_ring_buffer_ctx *ctx)
 {
 	struct ltt_channel *ltt_chan = channel_get_private(chan);
@@ -85,7 +82,7 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 	case 1:	/* compact */
 		padding = lib_ring_buffer_align(offset, ltt_alignof(uint32_t));
 		offset += padding;
-		if (!(rflags & RING_BUFFER_RFLAG_FULL_TSC)) {
+		if (!(ctx->rflags & (RING_BUFFER_RFLAG_FULL_TSC | LTT_RFLAG_EXTENDED))) {
 			offset += sizeof(uint32_t);	/* id and timestamp */
 		} else {
 			/* Minimum space taken by 5-bit id */
@@ -101,7 +98,7 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 		padding = lib_ring_buffer_align(offset, ltt_alignof(uint16_t));
 		offset += padding;
 		offset += sizeof(uint16_t);
-		if (!(rflags & RING_BUFFER_RFLAG_FULL_TSC)) {
+		if (!(ctx->rflags & (RING_BUFFER_RFLAG_FULL_TSC | LTT_RFLAG_EXTENDED))) {
 			offset += lib_ring_buffer_align(offset, ltt_alignof(uint32_t));
 			offset += sizeof(uint32_t);	/* timestamp */
 		} else {
@@ -114,7 +111,7 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 		}
 		break;
 	default:
-		WARN_ON(1);
+		WARN_ON_ONCE(1);
 	}
 
 	*pre_header_padding = padding;
@@ -126,7 +123,7 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 extern
 void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 				 struct lib_ring_buffer_ctx *ctx,
-				 uint16_t event_id);
+				 uint32_t event_id);
 
 /*
  * ltt_write_event_header
@@ -140,7 +137,7 @@ void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 static __inline__
 void ltt_write_event_header(const struct lib_ring_buffer_config *config,
 			    struct lib_ring_buffer_ctx *ctx,
-			    uint16_t event_id)
+			    uint32_t event_id)
 {
 	struct ltt_channel *ltt_chan = channel_get_private(ctx->chan);
 
@@ -167,7 +164,7 @@ void ltt_write_event_header(const struct lib_ring_buffer_config *config,
 		break;
 	}
 	default:
-		WARN_ON(1);
+		WARN_ON_ONCE(1);
 	}
 	return;
 
@@ -175,18 +172,15 @@ slow_path:
 	ltt_write_event_header_slow(config, ctx, event_id);
 }
 
-/*
- * TODO: For now, we only support 65536 event ids per channel.
- */
 void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
-				   struct lib_ring_buffer_ctx *ctx,
-				   uint16_t event_id)
+				 struct lib_ring_buffer_ctx *ctx,
+				 uint32_t event_id)
 {
 	struct ltt_channel *ltt_chan = channel_get_private(ctx->chan);
 
 	switch (ltt_chan->header_type) {
 	case 1:	/* compact */
-		if (!(ctx->rflags & RING_BUFFER_RFLAG_FULL_TSC)) {
+		if (!(ctx->rflags & (RING_BUFFER_RFLAG_FULL_TSC | LTT_RFLAG_EXTENDED))) {
 			uint32_t id_time = 0;
 
 			bt_bitfield_write(&id_time, uint32_t, 0, 5, event_id);
@@ -208,28 +202,27 @@ void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 		break;
 	case 2:	/* large */
 	{
-		if (!(ctx->rflags & RING_BUFFER_RFLAG_FULL_TSC)) {
+		if (!(ctx->rflags & (RING_BUFFER_RFLAG_FULL_TSC | LTT_RFLAG_EXTENDED))) {
 			uint32_t timestamp = (uint32_t) ctx->tsc;
 
 			lib_ring_buffer_write(config, ctx, &event_id, sizeof(event_id));
 			lib_ring_buffer_align_ctx(ctx, ltt_alignof(uint32_t));
 			lib_ring_buffer_write(config, ctx, &timestamp, sizeof(timestamp));
 		} else {
-			uint16_t event_id = 65535;
-			uint32_t event_id_ext = (uint32_t) event_id;
+			uint16_t id = 65535;
 			uint64_t timestamp = ctx->tsc;
 
-			lib_ring_buffer_write(config, ctx, &event_id, sizeof(event_id));
+			lib_ring_buffer_write(config, ctx, &id, sizeof(id));
 			/* Align extended struct on largest member */
 			lib_ring_buffer_align_ctx(ctx, ltt_alignof(uint64_t));
-			lib_ring_buffer_write(config, ctx, &event_id_ext, sizeof(event_id_ext));
+			lib_ring_buffer_write(config, ctx, &event_id, sizeof(event_id));
 			lib_ring_buffer_align_ctx(ctx, ltt_alignof(uint64_t));
 			lib_ring_buffer_write(config, ctx, &timestamp, sizeof(timestamp));
 		}
 		break;
 	}
 	default:
-		WARN_ON(1);
+		WARN_ON_ONCE(1);
 	}
 }
 
@@ -243,13 +236,11 @@ static u64 client_ring_buffer_clock_read(struct channel *chan)
 static
 size_t client_record_header_size(const struct lib_ring_buffer_config *config,
 				 struct channel *chan, size_t offset,
-				 size_t data_size,
 				 size_t *pre_header_padding,
-				 unsigned int rflags,
 				 struct lib_ring_buffer_ctx *ctx)
 {
-	return record_header_size(config, chan, offset, data_size,
-				  pre_header_padding, rflags, ctx);
+	return record_header_size(config, chan, offset,
+				  pre_header_padding, ctx);
 }
 
 /**
@@ -380,14 +371,28 @@ void ltt_buffer_read_close(struct lib_ring_buffer *buf)
 
 static
 int ltt_event_reserve(struct lib_ring_buffer_ctx *ctx,
-		      uint16_t event_id)
+		      uint32_t event_id)
 {
+	struct ltt_channel *ltt_chan = channel_get_private(ctx->chan);
 	int ret, cpu;
 
 	cpu = lib_ring_buffer_get_cpu(&client_config);
 	if (cpu < 0)
 		return -EPERM;
 	ctx->cpu = cpu;
+
+	switch (ltt_chan->header_type) {
+	case 1:	/* compact */
+		if (event_id > 30)
+			ctx->rflags |= LTT_RFLAG_EXTENDED;
+		break;
+	case 2:	/* large */
+		if (event_id > 65534)
+			ctx->rflags |= LTT_RFLAG_EXTENDED;
+		break;
+	default:
+		WARN_ON_ONCE(1);
+	}
 
 	ret = lib_ring_buffer_reserve(&client_config, ctx);
 	if (ret)
