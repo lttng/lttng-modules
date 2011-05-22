@@ -169,12 +169,12 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 		goto nomem;
 	chan->session = session;
 	init_waitqueue_head(&chan->notify_wait);
+	chan->id = session->free_chan_id++;
 	chan->chan = transport->ops.channel_create("[lttng]", chan, buf_addr,
 			subbuf_size, num_subbuf, switch_timer_interval,
 			read_timer_interval);
 	if (!chan->chan)
 		goto create_error;
-	chan->id = session->free_chan_id++;
 	chan->ops = &transport->ops;
 	list_add(&chan->list, &session->chan);
 	mutex_unlock(&sessions_mutex);
