@@ -188,7 +188,6 @@ void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 			lib_ring_buffer_write(config, ctx, &id_time, sizeof(id_time));
 		} else {
 			uint8_t id = 0;
-			uint32_t event_id = (uint32_t) event_id;
 			uint64_t timestamp = ctx->tsc;
 
 			bt_bitfield_write(&id, uint8_t, 0, 5, 31);
