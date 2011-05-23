@@ -40,24 +40,7 @@ void heap_free(struct ptr_heap *heap)
 
 static void heapify(struct ptr_heap *heap, int pos)
 {
-	void **ptrs = heap->ptrs;
-	void *p = ptrs[pos];
-
-	while (1) {
-		int left = 2 * pos + 1;
-		int right = 2 * pos + 2;
-		int largest = pos;
-		if (left < heap->size && heap->gt(ptrs[left], p))
-			largest = left;
-		if (right < heap->size && heap->gt(ptrs[right], ptrs[largest]))
-			largest = right;
-		if (largest == pos)
-			break;
-		/* Push p down the heap one level and bump one up */
-		ptrs[pos] = ptrs[largest];
-		ptrs[largest] = p;
-		pos = largest;
-	}
+	/* TODO */
 }
 
 void *heap_replace_max(struct ptr_heap *heap, void *p)
