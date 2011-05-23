@@ -158,8 +158,11 @@ int heap_insert(struct ptr_heap *heap, void *p)
 			ptrs[pos] = ptrs[parent(pos)];
 			ptrs[parent(pos)] = tmp;
 			pos = parent(pos);
-			/* rebalance */
-			heapify(heap, pos);
+			/*
+			 * No need to rebalance: if we are larger than
+			 * our parent, we are necessarily larger than
+			 * its other child.
+			 */
 		} else {
 			break;
 		}
