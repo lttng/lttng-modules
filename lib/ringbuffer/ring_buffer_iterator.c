@@ -377,8 +377,7 @@ int channel_iterator_init(struct channel *chan)
 
 		INIT_LIST_HEAD(&chan->iter.empty_head);
 		ret = heap_init(&chan->iter.heap,
-				num_possible_cpus()
-				* sizeof(struct lib_ring_buffer *),
+				num_possible_cpus(),
 				GFP_KERNEL, buf_is_higher);
 		if (ret)
 			return ret;
