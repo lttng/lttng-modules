@@ -4,8 +4,7 @@
 /*
  * prio_heap.h
  *
- * Static-sized priority heap containing pointers. Based on CLRS,
- * chapter 6.
+ * Priority heap containing pointers. Based on CLRS, chapter 6.
  *
  * Copyright 2011 - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
@@ -23,9 +22,10 @@
 #include <linux/gfp.h>
 
 struct ptr_heap {
-	size_t size, max;
+	size_t len, alloc_len;
 	void **ptrs;
 	int (*gt)(void *a, void *b);
+	gfp_t gfpmask;
 };
 
 /**
@@ -37,20 +37,21 @@ struct ptr_heap {
  */
 static inline void *heap_maximum(const struct ptr_heap *heap)
 {
-	return heap->size ? heap->ptrs[0] : NULL;
+	return heap->len ? heap->ptrs[0] : NULL;
 }
 
 /**
  * heap_init - initialize the heap
  * @heap: the heap to initialize
- * @size: maximum number of elements
+ * @alloc_len: number of elements initially allocated
  * @gfp: allocation flags
  * @gt: function to compare the elements
  *
  * Returns -ENOMEM if out of memory.
  */
-extern int heap_init(struct ptr_heap *heap, size_t size,
-		     gfp_t gfpmask, int gt(void *a, void *b));
+extern int heap_init(struct ptr_heap *heap,
+		     size_t alloc_len, gfp_t gfpmask,
+		     int gt(void *a, void *b));
 
 /**
  * heap_free - free the heap
@@ -61,12 +62,13 @@ extern void heap_free(struct ptr_heap *heap);
 /**
  * heap_insert - insert an element into the heap
  * @heap: the heap to be operated on
+ * @p: the element to add
  *
- * Insert an element into the heap. If the heap is full, return the
- * largest element between those previously present in the heap and the
- * element being added, else return NULL.
+ * Insert an element into the heap.
+ *
+ * Returns -ENOMEM if out of memory.
  */
-extern void *heap_insert(struct ptr_heap *heap, void *p);
+extern int heap_insert(struct ptr_heap *heap, void *p);
 
 /**
  * heap_remove - remove the largest element from the heap
@@ -98,7 +100,7 @@ extern void *heap_cherrypick(struct ptr_heap *heap, void *p);
  * the heap is empty.
  *
  * This is the equivalent of calling heap_remove() and then heap_insert(), but
- * it only rebalances the heap once.
+ * it only rebalances the heap once. It never allocates memory.
  */
 extern void *heap_replace_max(struct ptr_heap *heap, void *p);
 

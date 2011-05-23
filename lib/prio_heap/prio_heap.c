@@ -1,8 +1,7 @@
 /*
  * prio_heap.c
  *
- * Static-sized priority heap containing pointers. Based on CLRS,
- * chapter 6.
+ * Priority heap containing pointers. Based on CLRS, chapter 6.
  *
  * Copyright 2011 - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
@@ -18,19 +17,69 @@
  */
 
 #include <linux/slab.h>
-#include <linux/prio_heap.h>
+#include "prio_heap.h"
 
-int heap_init(struct ptr_heap *heap, size_t size,
-	       gfp_t gfpmask, int gt(void *a, void *b))
+static
+size_t parent(size_t i)
 {
-	WARN_ON_ONCE(size == 0);
-	heap->ptrs = kmalloc(size * sizeof(void *), gfpmask);
-	if (!heap->ptrs)
+	return i >> 1;
+}
+
+static
+size_t left(size_t i)
+{
+	return i << 1;
+}
+
+static
+size_t right(size_t i)
+{
+	return (i << 1) + 1;
+}
+
+static
+int heap_grow(struct ptr_heap *heap, size_t new_len)
+{
+	void **new_ptrs;
+
+	if (heap->alloc_len >= new_len)
+		return 0;
+
+	heap->alloc_len = max_t(size_t, new_len, heap->alloc_len << 1);
+	new_ptrs = kmalloc(heap->alloc_len * sizeof(void *), heap->gfpmask);
+	if (!new_ptrs)
 		return -ENOMEM;
-	heap->size = 0;
-	heap->max = size;
-	heap->gt = gt;
+	if (heap->ptrs)
+		memcpy(new_ptrs, heap->ptrs, heap->len * sizeof(void *));
+	kfree(heap->ptrs);
+	heap->ptrs = new_ptrs;
 	return 0;
+}
+
+static
+int heap_set_len(struct ptr_heap *heap, size_t new_len)
+{
+	int ret;
+
+	ret = heap_grow(heap, new_len);
+	if (ret)
+		return ret;
+	heap->len = new_len;
+	return 0;
+}
+
+int heap_init(struct ptr_heap *heap, size_t alloc_len,
+	      gfp_t gfpmask, int gt(void *a, void *b))
+{
+	heap->ptrs = NULL;
+	heap->len = 0;
+	heap->alloc_len = 0;
+	heap->gt = gt;
+	/*
+	 * Minimum size allocated is 1 entry to ensure memory allocation
+	 * never fails within heap_replace_max.
+	 */
+	return heap_grow(heap, min_t(size_t, 1, alloc_len));
 }
 
 void heap_free(struct ptr_heap *heap)
@@ -38,9 +87,32 @@ void heap_free(struct ptr_heap *heap)
 	kfree(heap->ptrs);
 }
 
-static void heapify(struct ptr_heap *heap, int pos)
+static void heapify(struct ptr_heap *heap, size_t i)
 {
-	/* TODO */
+	void **ptrs = heap->ptrs;
+	size_t l, r, largest;
+
+	for (;;) {
+		l = left(i);
+		r = right(i);
+		if (l <= heap->len && ptrs[l] > ptrs[i])
+			largest = l;
+		else
+			largest = i;
+		if (r <= heap->len && ptrs[r] > ptrs[largest])
+			largest = r;
+		if (largest != i) {
+			void *tmp;
+
+			tmp = ptrs[i];
+			ptrs[i] = ptrs[largest];
+			ptrs[largest] = tmp;
+			i = largest;
+			continue;
+		} else {
+			break;
+		}
+	}
 }
 
 void *heap_replace_max(struct ptr_heap *heap, void *p)
@@ -48,9 +120,9 @@ void *heap_replace_max(struct ptr_heap *heap, void *p)
 	void *res;
 	void **ptrs = heap->ptrs;
 
-	if (!heap->size) {
+	if (!heap->len) {
+		(void) heap_set_len(heap, 1);
 		ptrs[0] = p;
-		heap->size = 1;
 		return NULL;
 	}
 
@@ -61,68 +133,54 @@ void *heap_replace_max(struct ptr_heap *heap, void *p)
 	return res;
 }
 
-void *heap_insert(struct ptr_heap *heap, void *p)
+int heap_insert(struct ptr_heap *heap, void *p)
 {
 	void **ptrs = heap->ptrs;
-	void *tmp = NULL;
+	int ret;
 
-	if (heap->size < heap->max) {
-		/* Add the element to the end */
-		heap->ptrs[heap->size++] = p;
-		/* rebalance */
-		heapify(heap, 0);
-		return NULL;
-	}
-
-	/*
-	 * Full. We need to replace the largest (if we are
-	 * smaller or equal to this element).
-	 */
-	if (heap->gt(ptrs[0], p)) {
-		tmp = ptrs[0];
-		ptrs[0] = p;
-		/* rebalance */
-		heapify(heap, 0);
-	} else {
-		tmp = p;
-	}
-	return tmp;
+	ret = heap_set_len(heap, heap->len + 1);
+	if (ret)
+		return ret;
+	/* Add the element to the end */
+	ptrs[heap->len - 1] = p;
+	/* rebalance */
+	heapify(heap, 0);
+	return 0;
 }
 
 void *heap_remove(struct ptr_heap *heap)
 {
 	void **ptrs = heap->ptrs;
 
-	switch (heap->size) {
+	switch (heap->len) {
 	case 0:
 		return NULL;
 	case 1:
-		heap->size = 0;
+		(void) heap_set_len(heap, 0);
 		return ptrs[0];
 	}
-
 	/* Shrink, replace the current max by previous last entry and heapify */
-	return heap_replace_max(heap, ptrs[--heap->size]);
+	heap_set_len(heap, heap->len - 1);
+	return heap_replace_max(heap, ptrs[heap->len - 1]);
 }
 
 void *heap_cherrypick(struct ptr_heap *heap, void *p)
 {
 	void **ptrs = heap->ptrs;
-	size_t pos, size = heap->size;
+	size_t pos, len = heap->len;
 
-	for (pos = 0; pos < size; pos++)
+	for (pos = 0; pos < len; pos++)
 		if (ptrs[pos] == p)
 			goto found;
 	return NULL;
 found:
-	if (heap->size == 1) {
-		heap->size = 0;
+	if (heap->len == 1) {
+		(void) heap_set_len(heap, 0);
 		return ptrs[0];
 	}
-	/*
-	 * Replace p with previous last entry and heapify.
-	 */
-	ptrs[pos] = ptrs[--heap->size];
+	/* Replace p with previous last entry and heapify. */
+	heap_set_len(heap, heap->len - 1);
+	ptrs[pos] = ptrs[heap->len - 1];
 	heapify(heap, pos);
 	return p;
 }
