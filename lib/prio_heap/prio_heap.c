@@ -20,9 +20,23 @@
 #include <linux/slab.h>
 #include <linux/prio_heap.h>
 
-/*
- * TODO implement heap_init, heap_free, heap_insert.
- */
+int heap_init(struct ptr_heap *heap, size_t size,
+	       gfp_t gfpmask, int gt(void *a, void *b))
+{
+	WARN_ON_ONCE(size == 0);
+	heap->ptrs = kmalloc(size * sizeof(void *), gfpmask);
+	if (!heap->ptrs)
+		return -ENOMEM;
+	heap->size = 0;
+	heap->max = size;
+	heap->gt = gt;
+	return 0;
+}
+
+void heap_free(struct ptr_heap *heap)
+{
+	kfree(heap->ptrs);
+}
 
 static void heapify(struct ptr_heap *heap, int pos)
 {
@@ -62,6 +76,34 @@ void *heap_replace_max(struct ptr_heap *heap, void *p)
 	ptrs[0] = p;
 	heapify(heap, 0);
 	return res;
+}
+
+void *heap_insert(struct ptr_heap *heap, void *p)
+{
+	void **ptrs = heap->ptrs;
+	void *tmp = NULL;
+
+	if (heap->size < heap->max) {
+		/* Add the element to the end */
+		heap->ptrs[heap->size++] = p;
+		/* rebalance */
+		heapify(heap, 0);
+		return NULL;
+	}
+
+	/*
+	 * Full. We need to replace the largest (if we are
+	 * smaller or equal to this element).
+	 */
+	if (heap->gt(ptrs[0], p)) {
+		tmp = ptrs[0];
+		ptrs[0] = p;
+		/* rebalance */
+		heapify(heap, 0);
+	} else {
+		tmp = p;
+	}
+	return tmp;
 }
 
 void *heap_remove(struct ptr_heap *heap)

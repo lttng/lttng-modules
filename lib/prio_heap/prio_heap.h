@@ -20,10 +20,13 @@
  * all copies or substantial portions of the Software.
  */
 
-/*
- * TODO:
- * implement struct ptr_head, heap_init, heap_free, heap_insert.
- */
+#include <linux/gfp.h>
+
+struct ptr_heap {
+	size_t size, max;
+	void **ptrs;
+	int (*gt)(void *a, void *b);
+};
 
 /**
  * heap_maximum - return the largest element in the heap
@@ -37,6 +40,33 @@ static inline void *heap_maximum(const struct ptr_heap *heap)
 	return heap->size ? heap->ptrs[0] : NULL;
 }
 
+/**
+ * heap_init - initialize the heap
+ * @heap: the heap to initialize
+ * @size: maximum number of elements
+ * @gfp: allocation flags
+ * @gt: function to compare the elements
+ *
+ * Returns -ENOMEM if out of memory.
+ */
+extern int heap_init(struct ptr_heap *heap, size_t size,
+		     gfp_t gfpmask, int gt(void *a, void *b));
+
+/**
+ * heap_free - free the heap
+ * @heap: the heap to free
+ */
+extern void heap_free(struct ptr_heap *heap);
+
+/**
+ * heap_insert - insert an element into the heap
+ * @heap: the heap to be operated on
+ *
+ * Insert an element into the heap. If the heap is full, return the
+ * largest element between those previously present in the heap and the
+ * element being added, else return NULL.
+ */
+extern void *heap_insert(struct ptr_heap *heap, void *p);
 
 /**
  * heap_remove - remove the largest element from the heap
