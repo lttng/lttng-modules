@@ -19,7 +19,7 @@
 #include <linux/slab.h>
 #include "prio_heap.h"
 
-static
+static __attribute__((unused))
 size_t parent(size_t i)
 {
 	return i >> 1;
