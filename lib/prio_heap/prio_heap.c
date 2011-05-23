@@ -1,31 +1,28 @@
 /*
- * LICENSING: this file is copied from the Linux kernel. We should therefore
- * assume a GPLv2 license for the code that comes from the Linux mainline.
- */
-
-/*
- * Static-sized priority heap containing pointers. Based on CLR, chapter 7.
+ * prio_heap.c
+ *
+ * Static-sized priority heap containing pointers. Based on CLRS,
+ * chapter 6.
+ *
+ * Copyright 2011 - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  */
 
 #include <linux/slab.h>
 #include <linux/prio_heap.h>
 
-int heap_init(struct ptr_heap *heap, size_t size, gfp_t gfp_mask,
-	      int (*gt)(void *, void *))
-{
-	heap->ptrs = kmalloc(size, gfp_mask);
-	if (!heap->ptrs)
-		return -ENOMEM;
-	heap->size = 0;
-	heap->max = size / sizeof(void *);
-	heap->gt = gt;
-	return 0;
-}
-
-void heap_free(struct ptr_heap *heap)
-{
-	kfree(heap->ptrs);
-}
+/*
+ * TODO implement heap_init, heap_free, heap_insert.
+ */
 
 static void heapify(struct ptr_heap *heap, int pos)
 {
@@ -65,32 +62,6 @@ void *heap_replace_max(struct ptr_heap *heap, void *p)
 	ptrs[0] = p;
 	heapify(heap, 0);
 	return res;
-}
-
-void *heap_insert(struct ptr_heap *heap, void *p)
-{
-	void **ptrs = heap->ptrs;
-	int pos;
-
-	if (heap->size < heap->max) {
-		/* Heap insertion */
-		pos = heap->size++;
-		while (pos > 0 && heap->gt(p, ptrs[(pos-1)/2])) {
-			ptrs[pos] = ptrs[(pos-1)/2];
-			pos = (pos-1)/2;
-		}
-		ptrs[pos] = p;
-		return NULL;
-	}
-
-	/* The heap is full, so something will have to be dropped */
-
-	/* If the new pointer is greater than the current max, drop it */
-	if (heap->gt(p, ptrs[0]))
-		return p;
-
-	/* Replace the current max and heapify */
-	return heap_replace_max(heap, p);
 }
 
 void *heap_remove(struct ptr_heap *heap)
