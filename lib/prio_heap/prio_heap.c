@@ -79,7 +79,7 @@ int heap_init(struct ptr_heap *heap, size_t alloc_len,
 	 * Minimum size allocated is 1 entry to ensure memory allocation
 	 * never fails within heap_replace_max.
 	 */
-	return heap_grow(heap, min_t(size_t, 1, alloc_len));
+	return heap_grow(heap, max_t(size_t, 1, alloc_len));
 }
 
 void heap_free(struct ptr_heap *heap)
