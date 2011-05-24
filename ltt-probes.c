@@ -90,6 +90,7 @@ void *tp_list_start(struct seq_file *m, loff_t *pos)
 	struct lttng_probe_desc *probe_desc;
 	int iter = 0, i;
 
+	mutex_lock(&probe_mutex);
 	list_for_each_entry(probe_desc, &probe_list, head) {
 		for (i = 0; i < probe_desc->nr_events; i++) {
 			if (iter++ >= *pos)
@@ -120,6 +121,7 @@ void *tp_list_next(struct seq_file *m, void *p, loff_t *ppos)
 static
 void tp_list_stop(struct seq_file *m, void *p)
 {
+	mutex_unlock(&probe_mutex);
 }
 
 static
