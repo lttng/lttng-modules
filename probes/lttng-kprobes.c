@@ -71,6 +71,7 @@ int lttng_create_kprobe_event(const char *name, struct ltt_event *event)
 	field->type.u.basic.integer.reverse_byte_order = 0;
 	field->type.u.basic.integer.base = 16;
 	field->type.u.basic.integer.encoding = lttng_encode_none;
+	desc->owner = THIS_MODULE;
 	event->desc = desc;
 
 	return 0;

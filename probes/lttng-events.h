@@ -195,6 +195,7 @@ static void __event_probe__##_name(void *__data, _proto);
 			.name = #_name,					       \
 			.probe_callback = (void *) &__event_probe__##_template,\
 			.nr_fields = ARRAY_SIZE(__event_fields___##_template), \
+			.owner = THIS_MODULE,				       \
 		},
 
 #define TP_ID1(_token, _system)	_token##_system

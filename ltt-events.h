@@ -139,6 +139,7 @@ struct lttng_event_desc {
 	const struct lttng_event_ctx *ctx;	/* context */
 	const struct lttng_event_field *fields;	/* event payload */
 	unsigned int nr_fields;
+	struct module *owner;
 };
 
 struct lttng_probe_desc {

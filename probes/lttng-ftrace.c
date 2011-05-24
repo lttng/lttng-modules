@@ -92,6 +92,7 @@ int lttng_create_ftrace_event(const char *name, struct ltt_event *event)
 	fields[1].type.u.basic.integer.base = 16;
 	fields[1].type.u.basic.integer.encoding = lttng_encode_none;
 
+	desc->owner = THIS_MODULE;
 	event->desc = desc;
 
 	return 0;

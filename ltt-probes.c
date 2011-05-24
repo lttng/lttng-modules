@@ -30,11 +30,6 @@ const struct lttng_event_desc *find_event(const char *name)
 	return NULL;
 }
 
-/*
- * TODO: registration of probe descriptions in dynamically allocated memory (not
- * directly in a module memory) will require some care for refcounting: it's
- * currently done by just refcounting the module in event_get/put.
- */
 int ltt_probe_register(struct lttng_probe_desc *desc)
 {
 	int ret = 0;
@@ -76,7 +71,7 @@ const struct lttng_event_desc *ltt_event_get(const char *name)
 	mutex_unlock(&probe_mutex);
 	if (!event)
 		return NULL;
-	ret = try_module_get(__module_text_address((unsigned long) event));
+	ret = try_module_get(event->owner);
 	WARN_ON_ONCE(!ret);
 	return event;
 }
@@ -84,6 +79,6 @@ EXPORT_SYMBOL_GPL(ltt_event_get);
 
 void ltt_event_put(const struct lttng_event_desc *event)
 {
-	module_put(__module_text_address((unsigned long) event));
+	module_put(event->owner);
 }
 EXPORT_SYMBOL_GPL(ltt_event_put);
