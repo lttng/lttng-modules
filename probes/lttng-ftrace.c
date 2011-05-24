@@ -118,7 +118,7 @@ int lttng_ftrace_register(const char *name,
 	if (ret)
 		goto error;
 
-	event->u.ftrace.symbol_name = kstrdup(name, GFP_KERNEL);
+	event->u.ftrace.symbol_name = kstrdup(symbol_name, GFP_KERNEL);
 	if (!event->u.ftrace.symbol_name)
 		goto name_error;
 
@@ -127,7 +127,7 @@ int lttng_ftrace_register(const char *name,
 
 	ret = wrapper_register_ftrace_function_probe(event->u.ftrace.symbol_name,
 			&lttng_ftrace_ops, event);
-	if (ret)
+	if (ret < 0)
 		goto register_error;
 	return 0;
 
