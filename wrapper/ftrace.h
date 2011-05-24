@@ -24,7 +24,7 @@ int wrapper_register_ftrace_function_probe(char *glob,
 	int (*register_ftrace_function_probe_sym)(char *glob,
 			struct ftrace_probe_ops *ops, void *data);
 
-	register_ftrace_function_probe_sym = (void *) kallsyms_lookup_name("register_ftrace_function_probe_sym");
+	register_ftrace_function_probe_sym = (void *) kallsyms_lookup_name("register_ftrace_function_probe");
 	if (register_ftrace_function_probe_sym) {
 		return register_ftrace_function_probe_sym(glob, ops, data);
 	} else {
@@ -40,7 +40,7 @@ void wrapper_unregister_ftrace_function_probe(char *glob,
 	void (*unregister_ftrace_function_probe_sym)(char *glob,
 			struct ftrace_probe_ops *ops, void *data);
 
-	unregister_ftrace_function_probe_sym = (void *) kallsyms_lookup_name("unregister_ftrace_function_probe_sym");
+	unregister_ftrace_function_probe_sym = (void *) kallsyms_lookup_name("unregister_ftrace_function_probe");
 	if (unregister_ftrace_function_probe_sym) {
 		unregister_ftrace_function_probe_sym(glob, ops, data);
 	} else {
