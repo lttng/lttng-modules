@@ -156,7 +156,7 @@ void lttng_metadata_create_events(struct file *channel_file)
 	event = ltt_event_create(channel, &metadata_params, NULL);
 	if (!event) {
 		goto create_error;
-		ret = -EEXIST;
+		ret = -EINVAL;
 	}
 	return;
 
