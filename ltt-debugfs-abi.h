@@ -79,5 +79,7 @@ struct lttng_kernel_tracer_version {
 	_IOW(0xF6, 0x47, struct lttng_kernel_kprobe)
 #define LTTNG_KERNEL_TRACER_VERSION	\
 	_IOR(0xF6, 0x48, struct lttng_kernel_tracer_version)
+#define LTTNG_KERNEL_FUNCTION_TRACER	\
+	_IOW(0xF6, 0x49, struct lttng_kernel_function_tracer)
 
 #endif /* _LTT_DEBUGFS_ABI_H */
