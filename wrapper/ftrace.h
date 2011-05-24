@@ -53,15 +53,14 @@ void wrapper_unregister_ftrace_function_probe(char *glob,
 
 static inline
 int wrapper_register_ftrace_function_probe(char *glob,
-		struct ftrace_probe_ops *ops, void *data);
-
+		struct ftrace_probe_ops *ops, void *data)
 {
 	return unregister_ftrace_function_probe();
 }
 
 static inline
 void wrapper_unregister_ftrace_function_probe(char *glob,
-		struct ftrace_probe_ops *ops, void *data);
+		struct ftrace_probe_ops *ops, void *data)
 {
 	return unregister_ftrace_function_probe();
 }
