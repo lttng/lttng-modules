@@ -85,6 +85,33 @@ fd_error:
 }
 
 static
+int lttng_abi_tracepoint_list(void)
+{
+	struct file *tracepoint_list_file;
+	int file_fd, ret;
+
+	file_fd = get_unused_fd();
+	if (file_fd < 0) {
+		ret = file_fd;
+		goto fd_error;
+	}
+	tracepoint_list_file = anon_inode_getfile("[lttng_session]",
+					  &lttng_tracepoint_list_fops,
+					  NULL, O_RDWR);
+	if (IS_ERR(tracepoint_list_file)) {
+		ret = PTR_ERR(tracepoint_list_file);
+		goto file_error;
+	}
+	fd_install(file_fd, tracepoint_list_file);
+	return file_fd;
+
+file_error:
+	put_unused_fd(file_fd);
+fd_error:
+	return ret;
+}
+
+static
 long lttng_abi_tracer_version(struct file *file, 
 	struct lttng_kernel_tracer_version __user *uversion_param)
 {
@@ -109,6 +136,10 @@ long lttng_abi_tracer_version(struct file *file,
  *	This ioctl implements lttng commands:
  *	LTTNG_KERNEL_SESSION
  *		Returns a LTTng trace session file descriptor
+ *	LTTNG_KERNEL_TRACER_VERSION
+ *		Returns the LTTng kernel tracer version
+ *	LTTNG_KERNEL_TRACEPOINT_LIST
+ *		Returns a file descriptor listing available tracepoints
  *
  * The returned session will be deleted when its file descriptor is closed.
  */
@@ -121,6 +152,8 @@ long lttng_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	case LTTNG_KERNEL_TRACER_VERSION:
 		return lttng_abi_tracer_version(file,
 				(struct lttng_kernel_tracer_version __user *) arg);
+	case LTTNG_KERNEL_TRACEPOINT_LIST:
+		return lttng_abi_tracepoint_list();
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -155,8 +188,8 @@ void lttng_metadata_create_events(struct file *channel_file)
 	 */
 	event = ltt_event_create(channel, &metadata_params, NULL);
 	if (!event) {
-		goto create_error;
 		ret = -EINVAL;
+		goto create_error;
 	}
 	return;
 
@@ -389,7 +422,7 @@ int lttng_abi_create_event(struct file *channel_file,
 	 */
 	event = ltt_event_create(channel, &event_param, NULL);
 	if (!event) {
-		ret = -EEXIST;
+		ret = -EINVAL;
 		goto event_error;
 	}
 	event_file->private_data = event;

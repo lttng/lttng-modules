@@ -69,6 +69,7 @@ struct lttng_kernel_tracer_version {
 #define LTTNG_KERNEL_SESSION			_IO(0xF6, 0x40)
 #define LTTNG_KERNEL_TRACER_VERSION		\
 	_IOR(0xF6, 0x41, struct lttng_kernel_tracer_version)
+#define LTTNG_KERNEL_TRACEPOINT_LIST		_IO(0xF6, 0x42)
 
 /* Session FD ioctl */
 #define LTTNG_KERNEL_METADATA			\

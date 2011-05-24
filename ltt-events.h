@@ -305,4 +305,7 @@ void lttng_ftrace_unregister(struct ltt_event *event)
 {
 }
 #endif
+
+extern const struct file_operations lttng_tracepoint_list_fops;
+
 #endif /* _LTT_EVENTS_H */

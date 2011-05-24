@@ -9,6 +9,7 @@
 #include <linux/module.h>
 #include <linux/list.h>
 #include <linux/mutex.h>
+#include <linux/seq_file.h>
 
 #include "ltt-events.h"
 
@@ -82,3 +83,72 @@ void ltt_event_put(const struct lttng_event_desc *event)
 	module_put(event->owner);
 }
 EXPORT_SYMBOL_GPL(ltt_event_put);
+
+static
+void *tp_list_start(struct seq_file *m, loff_t *pos)
+{
+	struct lttng_probe_desc *probe_desc;
+	int iter = 0, i;
+
+	list_for_each_entry(probe_desc, &probe_list, head) {
+		for (i = 0; i < probe_desc->nr_events; i++) {
+			if (iter++ >= *pos)
+				return (void *) &probe_desc->event_desc[i];
+		}
+	}
+	/* End of list */
+	return NULL;
+}
+
+static
+void *tp_list_next(struct seq_file *m, void *p, loff_t *ppos)
+{
+	struct lttng_probe_desc *probe_desc;
+	int iter = 0, i;
+
+	(*ppos)++;
+	list_for_each_entry(probe_desc, &probe_list, head) {
+		for (i = 0; i < probe_desc->nr_events; i++) {
+			if (iter++ >= *ppos)
+				return (void *) &probe_desc->event_desc[i];
+		}
+	}
+	/* End of list */
+	return NULL;
+}
+
+static
+void tp_list_stop(struct seq_file *m, void *p)
+{
+}
+
+static
+int tp_list_show(struct seq_file *m, void *p)
+{
+	const struct lttng_event_desc *probe_desc = p;
+
+	seq_printf(m,	"event { name = %s; };\n",
+		   probe_desc->name);
+	return 0;
+}
+
+static
+const struct seq_operations lttng_tracepoint_list_seq_ops = {
+	.start = tp_list_start,
+	.next = tp_list_next,
+	.stop = tp_list_stop,
+	.show = tp_list_show,
+};
+
+static
+int lttng_tracepoint_list_open(struct inode *inode, struct file *file)
+{
+	return seq_open(file, &lttng_tracepoint_list_seq_ops);
+}
+
+const struct file_operations lttng_tracepoint_list_fops = {
+	.open = lttng_tracepoint_list_open,
+	.read = seq_read,
+	.llseek = seq_lseek,
+	.release = seq_release_private,
+};
