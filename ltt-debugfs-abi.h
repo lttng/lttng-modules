@@ -65,17 +65,22 @@ struct lttng_kernel_tracer_version {
 	uint32_t sublevel;
 };
 
+/* LTTng file descriptor ioctl */
 #define LTTNG_KERNEL_SESSION			_IO(0xF6, 0x40)
-#define LTTNG_KERNEL_SESSION_START		_IO(0xF6, 0x41)
-#define LTTNG_KERNEL_SESSION_STOP		_IO(0xF6, 0x42)
-#define LTTNG_KERNEL_CHANNEL			\
-	_IOW(0xF6, 0x43, struct lttng_kernel_channel)
-#define LTTNG_KERNEL_STREAM			_IO(0xF6, 0x44)
-#define LTTNG_KERNEL_EVENT			\
-	_IOW(0xF6, 0x45, struct lttng_kernel_event)
-#define LTTNG_KERNEL_METADATA			\
-	_IOW(0xF6, 0x46, struct lttng_kernel_channel)
 #define LTTNG_KERNEL_TRACER_VERSION		\
-	_IOR(0xF6, 0x47, struct lttng_kernel_tracer_version)
+	_IOR(0xF6, 0x41, struct lttng_kernel_tracer_version)
+
+/* Session FD ioctl */
+#define LTTNG_KERNEL_METADATA			\
+	_IOW(0xF6, 0x50, struct lttng_kernel_channel)
+#define LTTNG_KERNEL_CHANNEL			\
+	_IOW(0xF6, 0x51, struct lttng_kernel_channel)
+#define LTTNG_KERNEL_SESSION_START		_IO(0xF6, 0x52)
+#define LTTNG_KERNEL_SESSION_STOP		_IO(0xF6, 0x53)
+
+/* Channel FD ioctl */
+#define LTTNG_KERNEL_STREAM			_IO(0xF6, 0x60)
+#define LTTNG_KERNEL_EVENT			\
+	_IOW(0xF6, 0x61, struct lttng_kernel_event)
 
 #endif /* _LTT_DEBUGFS_ABI_H */
