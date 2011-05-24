@@ -235,7 +235,7 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 	/* Populate ltt_event structure before tracepoint registration. */
 	smp_wmb();
 	switch (event_param->instrumentation) {
-	case LTTNG_KERNEL_TRACEPOINTS:
+	case LTTNG_KERNEL_TRACEPOINT:
 		event->desc = ltt_event_get(event_param->name);
 		if (!event->desc)
 			goto register_error;
@@ -245,7 +245,7 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 		if (ret)
 			goto register_error;
 		break;
-	case LTTNG_KERNEL_KPROBES:
+	case LTTNG_KERNEL_KPROBE:
 		ret = lttng_kprobes_register(event_param->name,
 				event_param->u.kprobe.symbol_name,
 				event_param->u.kprobe.offset,
@@ -254,7 +254,7 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 		if (ret)
 			goto register_error;
 		break;
-	case LTTNG_KERNEL_FUNCTION_TRACER:
+	case LTTNG_KERNEL_FUNCTION:
 		ret = lttng_ftrace_register(event_param->name,
 				event_param->u.ftrace.symbol_name,
 				event);
@@ -293,7 +293,7 @@ int _ltt_event_unregister(struct ltt_event *event)
 	int ret = -EINVAL;
 
 	switch (event->instrumentation) {
-	case LTTNG_KERNEL_TRACEPOINTS:
+	case LTTNG_KERNEL_TRACEPOINT:
 		ret = tracepoint_probe_unregister(event->desc->name,
 						  event->desc->probe_callback,
 						  event);
@@ -301,11 +301,11 @@ int _ltt_event_unregister(struct ltt_event *event)
 			return ret;
 		ltt_event_put(event->desc);
 		break;
-	case LTTNG_KERNEL_KPROBES:
+	case LTTNG_KERNEL_KPROBE:
 		lttng_kprobes_unregister(event);
 		ret = 0;
 		break;
-	case LTTNG_KERNEL_FUNCTION_TRACER:
+	case LTTNG_KERNEL_FUNCTION:
 		lttng_ftrace_unregister(event);
 		ret = 0;
 		break;

@@ -143,7 +143,7 @@ void lttng_metadata_create_events(struct file *channel_file)
 {
 	struct ltt_channel *channel = channel_file->private_data;
 	static struct lttng_kernel_event metadata_params = {
-		.instrumentation = LTTNG_KERNEL_TRACEPOINTS,
+		.instrumentation = LTTNG_KERNEL_TRACEPOINT,
 		.name = "lttng_metadata",
 	};
 	struct ltt_event *event;
@@ -362,10 +362,10 @@ int lttng_abi_create_event(struct file *channel_file,
 		return -EFAULT;
 	event_param.name[LTTNG_SYM_NAME_LEN - 1] = '\0';
 	switch (event_param.instrumentation) {
-	case LTTNG_KERNEL_KPROBES:
+	case LTTNG_KERNEL_KPROBE:
 		event_param.u.kprobe.symbol_name[LTTNG_SYM_NAME_LEN - 1] = '\0';
 		break;
-	case LTTNG_KERNEL_FUNCTION_TRACER:
+	case LTTNG_KERNEL_FUNCTION:
 		event_param.u.ftrace.symbol_name[LTTNG_SYM_NAME_LEN - 1] = '\0';
 		break;
 	default:

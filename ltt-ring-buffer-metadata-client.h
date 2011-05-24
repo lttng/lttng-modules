@@ -57,9 +57,7 @@ static u64 client_ring_buffer_clock_read(struct channel *chan)
 static
 size_t client_record_header_size(const struct lib_ring_buffer_config *config,
 				 struct channel *chan, size_t offset,
-				 size_t data_size,
 				 size_t *pre_header_padding,
-				 unsigned int rflags,
 				 struct lib_ring_buffer_ctx *ctx)
 {
 	return 0;

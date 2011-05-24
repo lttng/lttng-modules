@@ -151,11 +151,11 @@ void lib_ring_buffer_get_empty_buf_records(const struct lib_ring_buffer_config *
 		default:
 			/*
 			 * Insert buffer into the heap, remove from empty buffer
-			 * list. The heap should never overflow.
+			 * list.
 			 */
 			CHAN_WARN_ON(chan, len < 0);
 			list_del(&buf->iter.empty_node);
-			CHAN_WARN_ON(chan, heap_insert(heap, buf) != NULL);
+			CHAN_WARN_ON(chan, heap_insert(heap, buf));
 		}
 	}
 }
