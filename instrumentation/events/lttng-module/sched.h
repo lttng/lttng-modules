@@ -397,4 +397,4 @@ TRACE_EVENT(sched_pi_setprio,
 #endif /* _TRACE_SCHED_H */
 
 /* This part must be outside protection */
-#include "define_trace.h"
+#include "../../../probes/define_trace.h"

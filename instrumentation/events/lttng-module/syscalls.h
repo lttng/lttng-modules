@@ -69,5 +69,5 @@ TRACE_EVENT(sys_exit,
 #endif /* _TRACE_EVENTS_SYSCALLS_H */
 
 /* This part must be outside protection */
-#include "define_trace.h"
+#include "../../../probes/define_trace.h"
 

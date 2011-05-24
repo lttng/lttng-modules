@@ -31,4 +31,4 @@ TRACE_EVENT(lttng_metadata,
 #endif /*  _TRACE_LTTNG_H */
 
 /* This part must be outside protection */
-#include "define_trace.h"
+#include "../../../probes/define_trace.h"

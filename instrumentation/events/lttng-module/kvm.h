@@ -309,4 +309,4 @@ TRACE_EVENT(
 #endif /* _TRACE_KVM_MAIN_H */
 
 /* This part must be outside protection */
-#include "define_trace.h"
+#include "../../../probes/define_trace.h"
