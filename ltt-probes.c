@@ -150,5 +150,5 @@ const struct file_operations lttng_tracepoint_list_fops = {
 	.open = lttng_tracepoint_list_open,
 	.read = seq_read,
 	.llseek = seq_lseek,
-	.release = seq_release_private,
+	.release = seq_release,
 };
