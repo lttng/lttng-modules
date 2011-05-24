@@ -152,13 +152,21 @@ void lttng_ftrace_unregister(struct ltt_event *event)
 }
 EXPORT_SYMBOL_GPL(lttng_ftrace_unregister);
 
-/* This module is permanent. */
 int lttng_ftrace_init(void)
 {
 	wrapper_vmalloc_sync_all();
 	return 0;
 }
 module_init(lttng_ftrace_init)
+
+/*
+ * Ftrace takes care of waiting for a grace period (RCU sched) at probe
+ * unregistration, and disables preemption around probe call.
+ */
+void lttng_ftrace_exit(void)
+{
+}
+module_exit(lttng_ftrace_exit)
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers");
