@@ -76,6 +76,6 @@ struct lttng_kernel_tracer_version {
 #define LTTNG_KERNEL_METADATA			\
 	_IOW(0xF6, 0x46, struct lttng_kernel_channel)
 #define LTTNG_KERNEL_TRACER_VERSION		\
-	_IOR(0xF6, 0x48, struct lttng_kernel_tracer_version)
+	_IOR(0xF6, 0x47, struct lttng_kernel_tracer_version)
 
 #endif /* _LTT_DEBUGFS_ABI_H */
