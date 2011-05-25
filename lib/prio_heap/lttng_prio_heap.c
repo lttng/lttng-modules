@@ -1,5 +1,5 @@
 /*
- * prio_heap.c
+ * lttng_prio_heap.c
  *
  * Priority heap containing pointers. Based on CLRS, chapter 6.
  *
@@ -17,10 +17,10 @@
  */
 
 #include <linux/slab.h>
-#include "prio_heap.h"
+#include "lttng_prio_heap.h"
 
 #ifdef DEBUG_HEAP
-void check_heap(const struct ptr_heap *heap)
+void lttng_check_heap(const struct lttng_ptr_heap *heap)
 {
 	size_t i;
 
@@ -54,7 +54,7 @@ size_t right(size_t i)
  * Copy of heap->ptrs pointer is invalid after heap_grow.
  */
 static
-int heap_grow(struct ptr_heap *heap, size_t new_len)
+int heap_grow(struct lttng_ptr_heap *heap, size_t new_len)
 {
 	void **new_ptrs;
 
@@ -73,7 +73,7 @@ int heap_grow(struct ptr_heap *heap, size_t new_len)
 }
 
 static
-int heap_set_len(struct ptr_heap *heap, size_t new_len)
+int heap_set_len(struct lttng_ptr_heap *heap, size_t new_len)
 {
 	int ret;
 
@@ -84,7 +84,7 @@ int heap_set_len(struct ptr_heap *heap, size_t new_len)
 	return 0;
 }
 
-int heap_init(struct ptr_heap *heap, size_t alloc_len,
+int lttng_heap_init(struct lttng_ptr_heap *heap, size_t alloc_len,
 	      gfp_t gfpmask, int gt(void *a, void *b))
 {
 	heap->ptrs = NULL;
@@ -98,12 +98,12 @@ int heap_init(struct ptr_heap *heap, size_t alloc_len,
 	return heap_grow(heap, max_t(size_t, 1, alloc_len));
 }
 
-void heap_free(struct ptr_heap *heap)
+void lttng_heap_free(struct lttng_ptr_heap *heap)
 {
 	kfree(heap->ptrs);
 }
 
-static void heapify(struct ptr_heap *heap, size_t i)
+static void heapify(struct lttng_ptr_heap *heap, size_t i)
 {
 	void **ptrs = heap->ptrs;
 	size_t l, r, largest;
@@ -126,17 +126,17 @@ static void heapify(struct ptr_heap *heap, size_t i)
 		ptrs[largest] = tmp;
 		i = largest;
 	}
-	check_heap(heap);
+	lttng_check_heap(heap);
 }
 
-void *heap_replace_max(struct ptr_heap *heap, void *p)
+void *lttng_heap_replace_max(struct lttng_ptr_heap *heap, void *p)
 {
 	void *res;
 
 	if (!heap->len) {
 		(void) heap_set_len(heap, 1);
 		heap->ptrs[0] = p;
-		check_heap(heap);
+		lttng_check_heap(heap);
 		return NULL;
 	}
 
@@ -147,7 +147,7 @@ void *heap_replace_max(struct ptr_heap *heap, void *p)
 	return res;
 }
 
-int heap_insert(struct ptr_heap *heap, void *p)
+int lttng_heap_insert(struct lttng_ptr_heap *heap, void *p)
 {
 	void **ptrs;
 	size_t pos;
@@ -164,11 +164,11 @@ int heap_insert(struct ptr_heap *heap, void *p)
 		pos = parent(pos);
 	}
 	ptrs[pos] = p;
-	check_heap(heap);
+	lttng_check_heap(heap);
 	return 0;
 }
 
-void *heap_remove(struct ptr_heap *heap)
+void *lttng_heap_remove(struct lttng_ptr_heap *heap)
 {
 	switch (heap->len) {
 	case 0:
@@ -180,10 +180,10 @@ void *heap_remove(struct ptr_heap *heap)
 	/* Shrink, replace the current max by previous last entry and heapify */
 	heap_set_len(heap, heap->len - 1);
 	/* len changed. previous last entry is at heap->len */
-	return heap_replace_max(heap, heap->ptrs[heap->len]);
+	return lttng_heap_replace_max(heap, heap->ptrs[heap->len]);
 }
 
-void *heap_cherrypick(struct ptr_heap *heap, void *p)
+void *lttng_heap_cherrypick(struct lttng_ptr_heap *heap, void *p)
 {
 	size_t pos, len = heap->len;
 
@@ -194,7 +194,7 @@ void *heap_cherrypick(struct ptr_heap *heap, void *p)
 found:
 	if (heap->len == 1) {
 		(void) heap_set_len(heap, 0);
-		check_heap(heap);
+		lttng_check_heap(heap);
 		return heap->ptrs[0];
 	}
 	/* Replace p with previous last entry and heapify. */

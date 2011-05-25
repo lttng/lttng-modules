@@ -120,7 +120,7 @@ static
 void lib_ring_buffer_get_empty_buf_records(const struct lib_ring_buffer_config *config,
 					   struct channel *chan)
 {
-	struct ptr_heap *heap = &chan->iter.heap;
+	struct lttng_ptr_heap *heap = &chan->iter.heap;
 	struct lib_ring_buffer *buf, *tmp;
 	ssize_t len;
 
@@ -155,7 +155,7 @@ void lib_ring_buffer_get_empty_buf_records(const struct lib_ring_buffer_config *
 			 */
 			CHAN_WARN_ON(chan, len < 0);
 			list_del(&buf->iter.empty_node);
-			CHAN_WARN_ON(chan, heap_insert(heap, buf));
+			CHAN_WARN_ON(chan, lttng_heap_insert(heap, buf));
 		}
 	}
 }
@@ -227,7 +227,7 @@ ssize_t channel_get_next_record(struct channel *chan,
 {
 	const struct lib_ring_buffer_config *config = chan->backend.config;
 	struct lib_ring_buffer *buf;
-	struct ptr_heap *heap;
+	struct lttng_ptr_heap *heap;
 	ssize_t len;
 
 	if (config->alloc == RING_BUFFER_ALLOC_GLOBAL) {
@@ -240,7 +240,7 @@ ssize_t channel_get_next_record(struct channel *chan,
 	/*
 	 * get next record for topmost buffer.
 	 */
-	buf = heap_maximum(heap);
+	buf = lttng_heap_maximum(heap);
 	if (buf) {
 		len = lib_ring_buffer_get_next_record(chan, buf);
 		/*
@@ -252,7 +252,7 @@ ssize_t channel_get_next_record(struct channel *chan,
 			buf->iter.timestamp = 0;
 			list_add(&buf->iter.empty_node, &chan->iter.empty_head);
 			/* Remove topmost buffer from the heap */
-			CHAN_WARN_ON(chan, heap_remove(heap) != buf);
+			CHAN_WARN_ON(chan, lttng_heap_remove(heap) != buf);
 			break;
 		case -ENODATA:
 			/*
@@ -260,7 +260,7 @@ ssize_t channel_get_next_record(struct channel *chan,
 			 * don't add to list of empty buffer, because it has no
 			 * more data to provide, ever.
 			 */
-			CHAN_WARN_ON(chan, heap_remove(heap) != buf);
+			CHAN_WARN_ON(chan, lttng_heap_remove(heap) != buf);
 			break;
 		case -EBUSY:
 			CHAN_WARN_ON(chan, 1);
@@ -269,15 +269,15 @@ ssize_t channel_get_next_record(struct channel *chan,
 			/*
 			 * Reinsert buffer into the heap. Note that heap can be
 			 * partially empty, so we need to use
-			 * heap_replace_max().
+			 * lttng_heap_replace_max().
 			 */
 			CHAN_WARN_ON(chan, len < 0);
-			CHAN_WARN_ON(chan, heap_replace_max(heap, buf) != buf);
+			CHAN_WARN_ON(chan, lttng_heap_replace_max(heap, buf) != buf);
 			break;
 		}
 	}
 
-	buf = heap_maximum(heap);
+	buf = lttng_heap_maximum(heap);
 	if (!buf || buf->iter.timestamp > chan->iter.last_qs) {
 		/*
 		 * Deal with buffers previously showing no data.
@@ -287,7 +287,7 @@ ssize_t channel_get_next_record(struct channel *chan,
 		lib_ring_buffer_wait_for_qs(config, chan);
 	}
 
-	*ret_buf = buf = heap_maximum(heap);
+	*ret_buf = buf = lttng_heap_maximum(heap);
 	if (buf) {
 		/*
 		 * If this warning triggers, you probably need to check your
@@ -376,7 +376,7 @@ int channel_iterator_init(struct channel *chan)
 		int cpu, ret;
 
 		INIT_LIST_HEAD(&chan->iter.empty_head);
-		ret = heap_init(&chan->iter.heap,
+		ret = lttng_heap_init(&chan->iter.heap,
 				num_possible_cpus(),
 				GFP_KERNEL, buf_is_higher);
 		if (ret)
@@ -426,7 +426,7 @@ void channel_iterator_free(struct channel *chan)
 	const struct lib_ring_buffer_config *config = chan->backend.config;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
-		heap_free(&chan->iter.heap);
+		lttng_heap_free(&chan->iter.heap);
 }
 
 int lib_ring_buffer_iterator_open(struct lib_ring_buffer *buf)
@@ -514,7 +514,7 @@ void lib_ring_buffer_iterator_reset(struct lib_ring_buffer *buf)
 		lib_ring_buffer_put_next_subbuf(buf);
 	buf->iter.state = ITER_GET_SUBBUF;
 	/* Remove from heap (if present). */
-	if (heap_cherrypick(&chan->iter.heap, buf))
+	if (lttng_heap_cherrypick(&chan->iter.heap, buf))
 		list_add(&buf->iter.empty_node, &chan->iter.empty_head);
 	buf->iter.timestamp = 0;
 	buf->iter.header_len = 0;
@@ -532,7 +532,7 @@ void channel_iterator_reset(struct channel *chan)
 	int cpu;
 
 	/* Empty heap, put into empty_head */
-	while ((buf = heap_remove(&chan->iter.heap)) != NULL)
+	while ((buf = lttng_heap_remove(&chan->iter.heap)) != NULL)
 		list_add(&buf->iter.empty_node, &chan->iter.empty_head);
 
 	for_each_channel_cpu(cpu, chan) {
@@ -573,7 +573,7 @@ ssize_t channel_ring_buffer_file_read(struct file *filp,
 			read_offset = *ppos;
 			if (config->alloc == RING_BUFFER_ALLOC_PER_CPU
 			    && fusionmerge)
-				buf = heap_maximum(&chan->iter.heap);
+				buf = lttng_heap_maximum(&chan->iter.heap);
 			CHAN_WARN_ON(chan, !buf);
 			goto skip_get_next;
 		}

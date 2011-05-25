@@ -19,7 +19,7 @@
 #include "../../wrapper/ringbuffer/config.h"
 #include "../../wrapper/ringbuffer/backend_types.h"
 #include "../../wrapper/ringbuffer/frontend_types.h"
-#include "../../wrapper/prio_heap.h"	/* For per-CPU read-side iterator */
+#include "../../lib/prio_heap/lttng_prio_heap.h"	/* For per-CPU read-side iterator */
 
 /* Buffer offset macros */
 

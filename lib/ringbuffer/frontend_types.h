@@ -19,7 +19,7 @@
 #include <linux/kref.h>
 #include "../../wrapper/ringbuffer/config.h"
 #include "../../wrapper/ringbuffer/backend_types.h"
-#include "../../wrapper/prio_heap.h"	/* For per-CPU read-side iterator */
+#include "../../lib/prio_heap/lttng_prio_heap.h"	/* For per-CPU read-side iterator */
 
 /*
  * A switch is done during tracing or as a final flush after tracing (so it
@@ -30,7 +30,7 @@ enum switch_mode { SWITCH_ACTIVE, SWITCH_FLUSH };
 /* channel-level read-side iterator */
 struct channel_iter {
 	/* Prio heap of buffers. Lowest timestamps at the top. */
-	struct ptr_heap heap;		/* Heap of struct lib_ring_buffer ptrs */
+	struct lttng_ptr_heap heap;	/* Heap of struct lib_ring_buffer ptrs */
 	struct list_head empty_head;	/* Empty buffers linked-list head */
 	int read_open;			/* Opened for reading ? */
 	u64 last_qs;			/* Last quiescent state timestamp */
