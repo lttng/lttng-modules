@@ -95,6 +95,7 @@ int lttng_abi_tracepoint_list(void)
 		ret = file_fd;
 		goto fd_error;
 	}
+
 	tracepoint_list_file = anon_inode_getfile("[lttng_session]",
 					  &lttng_tracepoint_list_fops,
 					  NULL, O_RDWR);
@@ -102,9 +103,18 @@ int lttng_abi_tracepoint_list(void)
 		ret = PTR_ERR(tracepoint_list_file);
 		goto file_error;
 	}
+	ret = lttng_tracepoint_list_fops.open(NULL, tracepoint_list_file);
+	if (ret < 0)
+		goto open_error;
 	fd_install(file_fd, tracepoint_list_file);
+	if (file_fd < 0) {
+		ret = file_fd;
+		goto fd_error;
+	}
 	return file_fd;
 
+open_error:
+	fput(tracepoint_list_file);
 file_error:
 	put_unused_fd(file_fd);
 fd_error:
