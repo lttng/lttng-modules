@@ -269,6 +269,7 @@ int lttng_kprobes_register(const char *name,
 		uint64_t addr,
 		struct ltt_event *event);
 void lttng_kprobes_unregister(struct ltt_event *event);
+void lttng_kprobes_destroy_private(struct ltt_event *event);
 #else
 static inline
 int lttng_kprobes_register(const char *name,
@@ -284,6 +285,11 @@ static inline
 void lttng_kprobes_unregister(struct ltt_event *event)
 {
 }
+
+static inline
+void lttng_kprobes_destroy_private(struct ltt_event *event)
+{
+}
 #endif
 
 #ifdef CONFIG_DYNAMIC_FTRACE
@@ -291,6 +297,7 @@ int lttng_ftrace_register(const char *name,
 			  const char *symbol_name,
 			  struct ltt_event *event);
 void lttng_ftrace_unregister(struct ltt_event *event);
+void lttng_ftrace_destroy_private(struct ltt_event *event);
 #else
 static inline
 int lttng_ftrace_register(const char *name,
@@ -302,6 +309,11 @@ int lttng_ftrace_register(const char *name,
 
 static inline
 void lttng_ftrace_unregister(struct ltt_event *event)
+{
+}
+
+static inline
+void lttng_ftrace_destroy_private(struct ltt_event *event)
 {
 }
 #endif

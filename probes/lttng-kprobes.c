@@ -136,12 +136,17 @@ EXPORT_SYMBOL_GPL(lttng_kprobes_register);
 void lttng_kprobes_unregister(struct ltt_event *event)
 {
 	unregister_kprobe(&event->u.kprobe.kp);
+}
+EXPORT_SYMBOL_GPL(lttng_kprobes_unregister);
+
+void lttng_kprobes_destroy_private(struct ltt_event *event)
+{
 	kfree(event->u.kprobe.symbol_name);
 	kfree(event->desc->fields);
 	kfree(event->desc->name);
 	kfree(event->desc);
 }
-EXPORT_SYMBOL_GPL(lttng_kprobes_unregister);
+EXPORT_SYMBOL_GPL(lttng_kprobes_destroy_private);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers");

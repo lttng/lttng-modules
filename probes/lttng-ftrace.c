@@ -146,12 +146,17 @@ void lttng_ftrace_unregister(struct ltt_event *event)
 {
 	wrapper_unregister_ftrace_function_probe(event->u.ftrace.symbol_name,
 			&lttng_ftrace_ops, event);
+}
+EXPORT_SYMBOL_GPL(lttng_ftrace_unregister);
+
+void lttng_ftrace_destroy_private(struct ltt_event *event)
+{
 	kfree(event->u.ftrace.symbol_name);
 	kfree(event->desc->fields);
 	kfree(event->desc->name);
 	kfree(event->desc);
 }
-EXPORT_SYMBOL_GPL(lttng_ftrace_unregister);
+EXPORT_SYMBOL_GPL(lttng_ftrace_destroy_private);
 
 int lttng_ftrace_init(void)
 {

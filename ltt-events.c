@@ -253,6 +253,8 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 				event);
 		if (ret)
 			goto register_error;
+		ret = try_module_get(event->desc->owner);
+		WARN_ON_ONCE(!ret);
 		break;
 	case LTTNG_KERNEL_FUNCTION:
 		ret = lttng_ftrace_register(event_param->name,
@@ -260,6 +262,8 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 				event);
 		if (ret)
 			goto register_error;
+		ret = try_module_get(event->desc->owner);
+		WARN_ON_ONCE(!ret);
 		break;
 	default:
 		WARN_ON_ONCE(1);
@@ -299,7 +303,6 @@ int _ltt_event_unregister(struct ltt_event *event)
 						  event);
 		if (ret)
 			return ret;
-		ltt_event_put(event->desc);
 		break;
 	case LTTNG_KERNEL_KPROBE:
 		lttng_kprobes_unregister(event);
@@ -321,7 +324,21 @@ int _ltt_event_unregister(struct ltt_event *event)
 static
 void _ltt_event_destroy(struct ltt_event *event)
 {
-	ltt_event_put(event->desc);
+	switch (event->instrumentation) {
+	case LTTNG_KERNEL_TRACEPOINT:
+		ltt_event_put(event->desc);
+		break;
+	case LTTNG_KERNEL_KPROBE:
+		module_put(event->desc->owner);
+		lttng_kprobes_destroy_private(event);
+		break;
+	case LTTNG_KERNEL_FUNCTION:
+		module_put(event->desc->owner);
+		lttng_ftrace_destroy_private(event);
+		break;
+	default:
+		WARN_ON_ONCE(1);
+	}
 	list_del(&event->list);
 	kmem_cache_free(event_cache, event);
 }
