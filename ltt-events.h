@@ -125,6 +125,7 @@ struct lttng_ctx_field {
 			struct perf_event_attr *attr;
 		} perf_counter;
 	} u;
+	void (*destroy)(struct lttng_ctx_field *field);
 };
 
 struct lttng_ctx {
@@ -261,6 +262,8 @@ const struct lttng_event_desc *ltt_event_get(const char *name);
 void ltt_event_put(const struct lttng_event_desc *desc);
 int ltt_probes_init(void);
 void ltt_probes_exit(void);
+struct lttng_ctx_field *lttng_append_context(struct lttng_ctx **ctx);
+void lttng_destroy_context(struct lttng_ctx *ctx);
 
 #ifdef CONFIG_KPROBES
 int lttng_kprobes_register(const char *name,

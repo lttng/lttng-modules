@@ -46,9 +46,24 @@ void overflow_callback(struct perf_event *event, int nmi,
 {
 }
 
+static
+void lttng_destroy_perf_counter_field(struct lttng_ctx_field *field)
+{
+	struct perf_event **events = field->u.perf_counter.e;
+	int cpu;
+
+	mutex_lock(&perf_counter_mutex);
+	list_del(&field->u.perf_counter.head);
+	for_each_online_cpu(cpu)
+		perf_event_release_kernel(events[cpu]);
+	mutex_unlock(&perf_counter_mutex);
+	kfree(field->u.perf_counter.attr);
+	kfree(events);
+}
+
 int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  uint64_t config,
-				  struct lttng_ctx *ctx)
+				  struct lttng_ctx **ctx)
 {
 	struct lttng_ctx_field *field;
 	struct perf_event **events;
@@ -83,22 +98,12 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 		}
 	}
 
-	ctx->nr_fields++;
-	if (ctx->nr_fields > ctx->allocated_fields) {
-		struct lttng_ctx_field *new_fields;
-
-		ctx->allocated_fields = min_t(size_t, 1, 2 * ctx->allocated_fields);
-		new_fields = kzalloc(ctx->allocated_fields * sizeof(struct lttng_ctx_field), GFP_KERNEL);
-		if (!new_fields) {
-			ret = -ENOMEM;
-			goto error;
-		}
-		if (ctx->fields)
-			memcpy(new_fields, ctx->fields, ctx->nr_fields - 1);
-		kfree(ctx->fields);
-		ctx->fields = new_fields;
+	field = lttng_append_context(ctx);
+	if (!field) {
+		ret = -ENOMEM;
+		goto error;
 	}
-	field = &ctx->fields[ctx->nr_fields - 1];
+	field->destroy = lttng_destroy_perf_counter_field;
 
 	field->name = "dummyname";//TODO: lookup_counter_name(type, config);
 	field->type.atype = atype_integer;
@@ -128,31 +133,6 @@ error:
 error_attr:
 	kfree(events);
 	return ret;
-}
-
-struct lttng_ctx *lttng_create_perf_counter_ctx(void)
-{
-	return kzalloc(sizeof(struct lttng_ctx), GFP_KERNEL);
-}
-
-void lttng_destroy_perf_counter_ctx(struct lttng_ctx *ctx)
-{
-	int i;
-
-	for (i = 0; i < ctx->nr_fields; i++) {
-		struct perf_event **events = ctx->fields[i].u.perf_counter.e;
-		int cpu;
-
-		mutex_lock(&perf_counter_mutex);
-		list_del(&ctx->fields[i].u.perf_counter.head);
-		for_each_online_cpu(cpu)
-			perf_event_release_kernel(events[cpu]);
-		mutex_unlock(&perf_counter_mutex);
-		kfree(ctx->fields[i].u.perf_counter.attr);
-		kfree(events);
-	}
-	kfree(ctx->fields);
-	kfree(ctx);
 }
 
 MODULE_LICENSE("GPL and additional rights");
