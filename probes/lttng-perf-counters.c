@@ -34,8 +34,7 @@ void perf_counter_record(struct lttng_ctx_field *field,
 	event = field->u.perf_counter.e[ctx->cpu];
 	event->pmu->read(event);
 	value = local64_read(&event->count);
-	lib_ring_buffer_align_ctx(ctx,
-		ltt_alignof(field->type.u.basic.integer.alignment / CHAR_BIT));
+	lib_ring_buffer_align_ctx(ctx, ltt_alignof(value));
 	chan->ops->event_write(ctx, &value, sizeof(value));
 }
 
@@ -109,7 +108,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	field->type.atype = atype_integer;
 	field->type.u.basic.integer.size = sizeof(unsigned long) * CHAR_BIT;
 	field->type.u.basic.integer.alignment = ltt_alignof(unsigned long) * CHAR_BIT;
-	field->type.u.basic.integer.signedness = 0;
+	field->type.u.basic.integer.signedness = is_signed_type(unsigned long);
 	field->type.u.basic.integer.reverse_byte_order = 0;
 	field->type.u.basic.integer.base = 10;
 	field->type.u.basic.integer.encoding = lttng_encode_none;

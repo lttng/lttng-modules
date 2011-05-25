@@ -78,7 +78,7 @@ int lttng_create_ftrace_event(const char *name, struct ltt_event *event)
 	fields[0].type.atype = atype_integer;
 	fields[0].type.u.basic.integer.size = sizeof(unsigned long) * CHAR_BIT;
 	fields[0].type.u.basic.integer.alignment = ltt_alignof(unsigned long) * CHAR_BIT;
-	fields[0].type.u.basic.integer.signedness = 0;
+	fields[0].type.u.basic.integer.signedness = is_signed_type(unsigned long);
 	fields[0].type.u.basic.integer.reverse_byte_order = 0;
 	fields[0].type.u.basic.integer.base = 16;
 	fields[0].type.u.basic.integer.encoding = lttng_encode_none;
@@ -87,7 +87,7 @@ int lttng_create_ftrace_event(const char *name, struct ltt_event *event)
 	fields[1].type.atype = atype_integer;
 	fields[1].type.u.basic.integer.size = sizeof(unsigned long) * CHAR_BIT;
 	fields[1].type.u.basic.integer.alignment = ltt_alignof(unsigned long) * CHAR_BIT;
-	fields[1].type.u.basic.integer.signedness = 0;
+	fields[1].type.u.basic.integer.signedness = is_signed_type(unsigned long);
 	fields[1].type.u.basic.integer.reverse_byte_order = 0;
 	fields[1].type.u.basic.integer.base = 16;
 	fields[1].type.u.basic.integer.encoding = lttng_encode_none;

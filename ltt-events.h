@@ -14,6 +14,9 @@
 #include <linux/kprobes.h>
 #include "ltt-debugfs-abi.h"
 
+#undef is_signed_type
+#define is_signed_type(type)		(((type)(-1)) < 0)
+
 struct ltt_channel;
 struct ltt_session;
 struct lib_ring_buffer_ctx;

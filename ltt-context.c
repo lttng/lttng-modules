@@ -47,8 +47,10 @@ void lttng_destroy_context(struct lttng_ctx *ctx)
 {
 	int i;
 
-	for (i = 0; i < ctx->nr_fields; i++)
-		ctx->fields[i].destroy(&ctx->fields[i]);
+	for (i = 0; i < ctx->nr_fields; i++) {
+		if (ctx->fields[i].destroy)
+			ctx->fields[i].destroy(&ctx->fields[i]);
+	}
 	kfree(ctx->fields);
 	kfree(ctx);
 }
