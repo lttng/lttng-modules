@@ -120,7 +120,10 @@ struct lttng_event_field {
 struct lttng_ctx_field {
 	const char *name;
 	struct lttng_type type;
-	void *callback;
+	size_t (*get_size)(size_t offset);
+	void (*record)(struct lttng_ctx_field *field,
+		       struct lib_ring_buffer_ctx *ctx,
+		       struct ltt_channel *chan);
 	union {
 		struct {
 			struct perf_event **e;	/* per-cpu array */
@@ -161,6 +164,7 @@ struct ltt_event {
 	struct ltt_channel *chan;
 	const struct lttng_event_desc *desc;
 	void *filter;
+	struct lttng_ctx *ctx;
 	enum lttng_kernel_instrumentation instrumentation;
 	union {
 		struct {
@@ -202,6 +206,7 @@ struct ltt_channel_ops {
 struct ltt_channel {
 	unsigned int id;
 	struct channel *chan;		/* Channel buffers */
+	struct lttng_ctx *ctx;
 	/* Event ID management */
 	struct ltt_session *session;
 	struct file *file;		/* File associated to channel */
@@ -215,6 +220,7 @@ struct ltt_channel {
 
 struct ltt_session {
 	int active;			/* Is trace session active ? */
+	struct lttng_ctx *ctx;
 	struct file *file;		/* File associated to session */
 	struct ltt_channel *metadata;	/* Metadata channel */
 	struct list_head chan;		/* Channel list head */

@@ -36,7 +36,7 @@ void lttng_ftrace_handler(unsigned long ip, unsigned long parent_ip, void **data
 
 	if (!ACCESS_ONCE(chan->session->active))
 		return;
-	lib_ring_buffer_ctx_init(&ctx, chan->chan, NULL,
+	lib_ring_buffer_ctx_init(&ctx, chan->chan, event,
 				 sizeof(payload), ltt_alignof(payload), -1);
 	ret = chan->ops->event_reserve(&ctx, event->id);
 	if (ret < 0)

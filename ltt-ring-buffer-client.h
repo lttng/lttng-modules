@@ -55,6 +55,32 @@ static inline notrace u64 lib_ring_buffer_clock_read(struct channel *chan)
 	return trace_clock_read64();
 }
 
+static inline
+size_t ctx_get_size(size_t offset, struct lttng_ctx *ctx)
+{
+	int i;
+	size_t orig_offset = offset;
+
+	if (likely(!ctx))
+		return 0;
+	for (i = 0; i < ctx->nr_fields; i++)
+		offset += ctx->fields[i].get_size(offset);
+	return offset - orig_offset;
+}
+
+static inline
+void ctx_record(struct lib_ring_buffer_ctx *bufctx,
+		struct ltt_channel *chan,
+		struct lttng_ctx *ctx)
+{
+	int i;
+
+	if (likely(!ctx))
+		return;
+	for (i = 0; i < ctx->nr_fields; i++)
+		ctx->fields[i].record(&ctx->fields[i], bufctx, chan);
+}
+
 /*
  * record_header_size - Calculate the header size and padding necessary.
  * @config: ring buffer instance configuration
@@ -75,6 +101,7 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 				 struct lib_ring_buffer_ctx *ctx)
 {
 	struct ltt_channel *ltt_chan = channel_get_private(chan);
+	struct ltt_event *event = ctx->priv;
 	size_t orig_offset = offset;
 	size_t padding;
 
@@ -113,6 +140,9 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 	default:
 		WARN_ON_ONCE(1);
 	}
+	offset += ctx_get_size(offset, event->ctx);
+	offset += ctx_get_size(offset, ltt_chan->ctx);
+	offset += ctx_get_size(offset, ltt_chan->session->ctx);
 
 	*pre_header_padding = padding;
 	return offset - orig_offset;
@@ -140,6 +170,7 @@ void ltt_write_event_header(const struct lib_ring_buffer_config *config,
 			    uint32_t event_id)
 {
 	struct ltt_channel *ltt_chan = channel_get_private(ctx->chan);
+	struct ltt_event *event = ctx->priv;
 
 	if (unlikely(ctx->rflags))
 		goto slow_path;
@@ -166,6 +197,11 @@ void ltt_write_event_header(const struct lib_ring_buffer_config *config,
 	default:
 		WARN_ON_ONCE(1);
 	}
+
+	ctx_record(ctx, ltt_chan, event->ctx);
+	ctx_record(ctx, ltt_chan, ltt_chan->ctx);
+	ctx_record(ctx, ltt_chan, ltt_chan->session->ctx);
+
 	return;
 
 slow_path:
@@ -177,6 +213,7 @@ void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 				 uint32_t event_id)
 {
 	struct ltt_channel *ltt_chan = channel_get_private(ctx->chan);
+	struct ltt_event *event = ctx->priv;
 
 	switch (ltt_chan->header_type) {
 	case 1:	/* compact */
@@ -223,6 +260,9 @@ void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 	default:
 		WARN_ON_ONCE(1);
 	}
+	ctx_record(ctx, ltt_chan, event->ctx);
+	ctx_record(ctx, ltt_chan, ltt_chan->ctx);
+	ctx_record(ctx, ltt_chan, ltt_chan->session->ctx);
 }
 
 static const struct lib_ring_buffer_config client_config;

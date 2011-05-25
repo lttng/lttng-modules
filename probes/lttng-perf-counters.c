@@ -24,6 +24,16 @@ static DEFINE_MUTEX(perf_counter_mutex);
 static LIST_HEAD(perf_counter_contexts);
 
 static
+size_t perf_counter_get_size(size_t offset)
+{
+	size_t size = 0;
+
+	size += lib_ring_buffer_align(offset, ltt_alignof(uint64_t));
+	size += sizeof(uint64_t);
+	return size;
+}
+
+static
 void perf_counter_record(struct lttng_ctx_field *field,
 			 struct lib_ring_buffer_ctx *ctx,
 			 struct ltt_channel *chan)
@@ -112,7 +122,8 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	field->type.u.basic.integer.reverse_byte_order = 0;
 	field->type.u.basic.integer.base = 10;
 	field->type.u.basic.integer.encoding = lttng_encode_none;
-	field->callback = perf_counter_record;
+	field->get_size = perf_counter_get_size;
+	field->record = perf_counter_record;
 	field->u.perf_counter.e = events;
 	field->u.perf_counter.attr = attr;
 

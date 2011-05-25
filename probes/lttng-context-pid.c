@@ -16,6 +16,16 @@
 #include "../ltt-tracer.h"
 
 static
+size_t pid_get_size(size_t offset)
+{
+	size_t size = 0;
+
+	size += lib_ring_buffer_align(offset, ltt_alignof(pid_t));
+	size += sizeof(pid_t);
+	return size;
+}
+
+static
 void pid_record(struct lttng_ctx_field *field,
 		struct lib_ring_buffer_ctx *ctx,
 		struct ltt_channel *chan)
@@ -43,7 +53,8 @@ int lttng_add_pid_to_ctx(struct lttng_ctx **ctx)
 	field->type.u.basic.integer.reverse_byte_order = 0;
 	field->type.u.basic.integer.base = 10;
 	field->type.u.basic.integer.encoding = lttng_encode_none;
-	field->callback = pid_record;
+	field->get_size = pid_get_size;
+	field->record = pid_record;
 	wrapper_vmalloc_sync_all();
 	return 0;
 }
