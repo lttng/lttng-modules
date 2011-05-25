@@ -28,8 +28,6 @@ ifneq ($(CONFIG_PERF_EVENTS),)
 obj-m += lttng-perf-counters.o
 endif
 
-obj-m += lttng-context-pid.o
-
 endif
 
 else
