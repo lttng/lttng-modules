@@ -136,6 +136,29 @@ long lttng_abi_tracer_version(struct file *file,
 	return 0;
 }
 
+static
+long lttng_abi_add_context(struct file *file,
+	struct lttng_kernel_context __user *ucontext_param,
+	struct lttng_ctx **ctx, struct ltt_session *session)
+{
+	struct lttng_kernel_context context_param;
+
+	if (session->been_active)
+		return -EPERM;
+
+	if (copy_from_user(&context_param, ucontext_param, sizeof(context_param)))
+		return -EFAULT;
+
+	switch (context_param.ctx) {
+	case LTTNG_CONTEXT_PID:
+		return lttng_add_pid_to_ctx(ctx);
+	case LTTNG_CONTEXT_PERF_COUNTER:
+		return -ENOSYS;
+	default:
+		return -EINVAL;
+	}
+}
+
 /**
  *	lttng_ioctl - lttng syscall through ioctl
  *
@@ -294,6 +317,12 @@ fd_error:
  *	This ioctl implements lttng commands:
  *	LTTNG_KERNEL_CHANNEL
  *		Returns a LTTng channel file descriptor
+ *	LTTNG_KERNEL_SESSION_START
+ *		Starts tracing session
+ *	LTTNG_KERNEL_SESSION_STOP
+ *		Stops tracing session
+ *	LTTNG_KERNEL_METADATA
+ *		Returns a LTTng metadata file descriptor
  *
  * The returned channel will be deleted when its file descriptor is closed.
  */
@@ -462,17 +491,25 @@ fd_error:
  *              (typically, one event stream records events from one CPU)
  *	LTTNG_KERNEL_EVENT
  *		Returns an event file descriptor or failure.
+ *	LTTNG_KERNEL_CONTEXT
+ *		Prepend a context field to each event in the channel
  *
  * Channel and event file descriptors also hold a reference on the session.
  */
 static
 long lttng_channel_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
+	struct ltt_channel *channel = file->private_data;
+
 	switch (cmd) {
 	case LTTNG_KERNEL_STREAM:
 		return lttng_abi_open_stream(file);
 	case LTTNG_KERNEL_EVENT:
 		return lttng_abi_create_event(file, (struct lttng_kernel_event __user *) arg);
+	case LTTNG_KERNEL_CONTEXT:
+		return lttng_abi_add_context(file,
+				(struct lttng_kernel_context __user *) arg,
+				&channel->ctx, channel->session);
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -560,6 +597,37 @@ static const struct file_operations lttng_metadata_fops = {
 #endif
 };
 
+/**
+ *	lttng_event_ioctl - lttng syscall through ioctl
+ *
+ *	@file: the file
+ *	@cmd: the command
+ *	@arg: command arg
+ *
+ *	This ioctl implements lttng commands:
+ *      LTTNG_KERNEL_STREAM
+ *              Returns an event stream file descriptor or failure.
+ *              (typically, one event stream records events from one CPU)
+ *	LTTNG_KERNEL_EVENT
+ *		Returns an event file descriptor or failure.
+ *	LTTNG_KERNEL_CONTEXT
+ *		Prepend a context field to each record of this event
+ */
+static
+long lttng_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+{
+	struct ltt_event *event = file->private_data;
+
+	switch (cmd) {
+	case LTTNG_KERNEL_CONTEXT:
+		return lttng_abi_add_context(file,
+				(struct lttng_kernel_context __user *) arg,
+				&event->ctx, event->chan->session);
+	default:
+		return -ENOIOCTLCMD;
+	}
+}
+
 static
 int lttng_event_release(struct inode *inode, struct file *file)
 {
@@ -573,6 +641,10 @@ int lttng_event_release(struct inode *inode, struct file *file)
 /* TODO: filter control ioctl */
 static const struct file_operations lttng_event_fops = {
 	.release = lttng_event_release,
+	.unlocked_ioctl = lttng_event_ioctl,
+#ifdef CONFIG_COMPAT
+	.compat_ioctl = lttng_event_ioctl,
+#endif
 };
 
 int __init ltt_debugfs_abi_init(void)

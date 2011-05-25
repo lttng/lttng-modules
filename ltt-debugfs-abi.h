@@ -65,6 +65,27 @@ struct lttng_kernel_tracer_version {
 	uint32_t sublevel;
 };
 
+enum lttng_context {
+	LTTNG_CONTEXT_PID,
+	LTTNG_CONTEXT_PERF_COUNTER,
+};
+
+struct lttng_kernel_pid_ctx {
+};
+
+struct lttng_kernel_perf_counter_ctx {
+	uint32_t type;
+	uint64_t config;
+};
+
+struct lttng_kernel_context {
+	enum lttng_context ctx;
+	union {
+		struct lttng_kernel_pid_ctx pid;
+		struct lttng_kernel_perf_counter_ctx perf_counter;
+	} u;
+};
+
 /* LTTng file descriptor ioctl */
 #define LTTNG_KERNEL_SESSION			_IO(0xF6, 0x40)
 #define LTTNG_KERNEL_TRACER_VERSION		\
@@ -83,5 +104,9 @@ struct lttng_kernel_tracer_version {
 #define LTTNG_KERNEL_STREAM			_IO(0xF6, 0x60)
 #define LTTNG_KERNEL_EVENT			\
 	_IOW(0xF6, 0x61, struct lttng_kernel_event)
+
+/* Event and Channel FD ioctl */
+#define LTTNG_KERNEL_CONTEXT			\
+	_IOW(0xF6, 0x70, struct lttng_kernel_context)
 
 #endif /* _LTT_DEBUGFS_ABI_H */

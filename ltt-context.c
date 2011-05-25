@@ -47,6 +47,8 @@ void lttng_destroy_context(struct lttng_ctx *ctx)
 {
 	int i;
 
+	if (!ctx)
+		return;
 	for (i = 0; i < ctx->nr_fields; i++) {
 		if (ctx->fields[i].destroy)
 			ctx->fields[i].destroy(&ctx->fields[i]);

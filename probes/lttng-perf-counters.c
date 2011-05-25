@@ -114,14 +114,14 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	}
 	field->destroy = lttng_destroy_perf_counter_field;
 
-	field->name = "dummyname";//TODO: lookup_counter_name(type, config);
-	field->type.atype = atype_integer;
-	field->type.u.basic.integer.size = sizeof(unsigned long) * CHAR_BIT;
-	field->type.u.basic.integer.alignment = ltt_alignof(unsigned long) * CHAR_BIT;
-	field->type.u.basic.integer.signedness = is_signed_type(unsigned long);
-	field->type.u.basic.integer.reverse_byte_order = 0;
-	field->type.u.basic.integer.base = 10;
-	field->type.u.basic.integer.encoding = lttng_encode_none;
+	field->event_field.name = "dummyname";//TODO: lookup_counter_name(type, config);
+	field->event_field.type.atype = atype_integer;
+	field->event_field.type.u.basic.integer.size = sizeof(unsigned long) * CHAR_BIT;
+	field->event_field.type.u.basic.integer.alignment = ltt_alignof(unsigned long) * CHAR_BIT;
+	field->event_field.type.u.basic.integer.signedness = is_signed_type(unsigned long);
+	field->event_field.type.u.basic.integer.reverse_byte_order = 0;
+	field->event_field.type.u.basic.integer.base = 10;
+	field->event_field.type.u.basic.integer.encoding = lttng_encode_none;
 	field->get_size = perf_counter_get_size;
 	field->record = perf_counter_record;
 	field->u.perf_counter.e = events;

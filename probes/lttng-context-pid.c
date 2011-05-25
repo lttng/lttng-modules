@@ -45,19 +45,20 @@ int lttng_add_pid_to_ctx(struct lttng_ctx **ctx)
 	field = lttng_append_context(ctx);
 	if (!field)
 		return ret;
-	field->name = "pid";
-	field->type.atype = atype_integer;
-	field->type.u.basic.integer.size = sizeof(pid_t) * CHAR_BIT;
-	field->type.u.basic.integer.alignment = ltt_alignof(pid_t) * CHAR_BIT;
-	field->type.u.basic.integer.signedness = is_signed_type(pid_t);
-	field->type.u.basic.integer.reverse_byte_order = 0;
-	field->type.u.basic.integer.base = 10;
-	field->type.u.basic.integer.encoding = lttng_encode_none;
+	field->event_field.name = "pid";
+	field->event_field.type.atype = atype_integer;
+	field->event_field.type.u.basic.integer.size = sizeof(pid_t) * CHAR_BIT;
+	field->event_field.type.u.basic.integer.alignment = ltt_alignof(pid_t) * CHAR_BIT;
+	field->event_field.type.u.basic.integer.signedness = is_signed_type(pid_t);
+	field->event_field.type.u.basic.integer.reverse_byte_order = 0;
+	field->event_field.type.u.basic.integer.base = 10;
+	field->event_field.type.u.basic.integer.encoding = lttng_encode_none;
 	field->get_size = pid_get_size;
 	field->record = pid_record;
 	wrapper_vmalloc_sync_all();
 	return 0;
 }
+EXPORT_SYMBOL_GPL(lttng_add_pid_to_ctx);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers");

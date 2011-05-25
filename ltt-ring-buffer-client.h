@@ -142,7 +142,6 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 	}
 	offset += ctx_get_size(offset, event->ctx);
 	offset += ctx_get_size(offset, ltt_chan->ctx);
-	offset += ctx_get_size(offset, ltt_chan->session->ctx);
 
 	*pre_header_padding = padding;
 	return offset - orig_offset;
@@ -200,7 +199,6 @@ void ltt_write_event_header(const struct lib_ring_buffer_config *config,
 
 	ctx_record(ctx, ltt_chan, event->ctx);
 	ctx_record(ctx, ltt_chan, ltt_chan->ctx);
-	ctx_record(ctx, ltt_chan, ltt_chan->session->ctx);
 
 	return;
 
@@ -262,7 +260,6 @@ void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 	}
 	ctx_record(ctx, ltt_chan, event->ctx);
 	ctx_record(ctx, ltt_chan, ltt_chan->ctx);
-	ctx_record(ctx, ltt_chan, ltt_chan->session->ctx);
 }
 
 static const struct lib_ring_buffer_config client_config;

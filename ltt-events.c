@@ -105,6 +105,7 @@ int ltt_session_start(struct ltt_session *session)
 	}
 
 	ACCESS_ONCE(session->active) = 1;
+	ACCESS_ONCE(session->been_active) = 1;
 	synchronize_trace();	/* Wait for in-flight events to complete */
 	ret = _ltt_session_metadata_statedump(session);
 	if (ret) {
@@ -154,10 +155,8 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 	struct ltt_transport *transport;
 
 	mutex_lock(&sessions_mutex);
-	if (session->active) {
-		printk(KERN_WARNING "LTTng refusing to add channel to active session\n");
+	if (session->been_active)
 		goto active;	/* Refuse to add channel to active session */
-	}
 	transport = ltt_transport_find(transport_name);
 	if (!transport) {
 		printk(KERN_WARNING "LTTng transport %s not found\n",
@@ -202,6 +201,7 @@ void _ltt_channel_destroy(struct ltt_channel *chan)
 {
 	chan->ops->channel_destroy(chan->chan);
 	list_del(&chan->list);
+	lttng_destroy_context(chan->ctx);
 	kfree(chan);
 }
 
@@ -340,6 +340,7 @@ void _ltt_event_destroy(struct ltt_event *event)
 		WARN_ON_ONCE(1);
 	}
 	list_del(&event->list);
+	lttng_destroy_context(event->ctx);
 	kmem_cache_free(event_cache, event);
 }
 
@@ -405,6 +406,142 @@ end:
 }
 
 static
+int _ltt_field_statedump(struct ltt_session *session,
+			 const struct lttng_event_field *field)
+{
+	int ret = 0;
+
+	switch (field->type.atype) {
+	case atype_integer:
+		ret = lttng_metadata_printf(session,
+			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } %s;\n",
+			field->type.u.basic.integer.size,
+			field->type.u.basic.integer.alignment,
+			field->type.u.basic.integer.signedness,
+			(field->type.u.basic.integer.encoding == lttng_encode_none)
+				? "none"
+				: (field->type.u.basic.integer.encoding == lttng_encode_UTF8)
+					? "UTF8"
+					: "ASCII",
+			field->type.u.basic.integer.base,
+#ifdef __BIG_ENDIAN
+			field->type.u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
+#else
+			field->type.u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
+#endif
+			field->name);
+		break;
+	case atype_enum:
+		ret = lttng_metadata_printf(session,
+			"		%s %s;\n",
+			field->type.u.basic.enumeration.name,
+			field->name);
+		break;
+	case atype_array:
+	{
+		const struct lttng_basic_type *elem_type;
+
+		elem_type = &field->type.u.array.elem_type;
+		ret = lttng_metadata_printf(session,
+			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } %s[%u];\n",
+			elem_type->u.basic.integer.size,
+			elem_type->u.basic.integer.alignment,
+			elem_type->u.basic.integer.signedness,
+			(elem_type->u.basic.integer.encoding == lttng_encode_none)
+				? "none"
+				: (elem_type->u.basic.integer.encoding == lttng_encode_UTF8)
+					? "UTF8"
+					: "ASCII",
+			elem_type->u.basic.integer.base,
+#ifdef __BIG_ENDIAN
+			elem_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
+#else
+			elem_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
+#endif
+			field->name, field->type.u.array.length);
+		break;
+	}
+	case atype_sequence:
+	{
+		const struct lttng_basic_type *elem_type;
+		const struct lttng_basic_type *length_type;
+
+		elem_type = &field->type.u.sequence.elem_type;
+		length_type = &field->type.u.sequence.length_type;
+		ret = lttng_metadata_printf(session,
+			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } __%s_length;\n",
+			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } %s[ __%s_length ];\n",
+			length_type->u.basic.integer.size,
+			length_type->u.basic.integer.alignment,
+			length_type->u.basic.integer.signedness,
+			(length_type->u.basic.integer.encoding == lttng_encode_none)
+				? "none"
+				: (length_type->u.basic.integer.encoding == lttng_encode_UTF8)
+					? "UTF8"
+					: "ASCII",
+			length_type->u.basic.integer.base,
+#ifdef __BIG_ENDIAN
+			length_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
+#else
+			length_type->u.basic.integer.reverse_byte_order
+? " byte_order = be;" : "",
+#endif
+			field->name,
+			elem_type->u.basic.integer.size,
+			elem_type->u.basic.integer.alignment,
+			elem_type->u.basic.integer.signedness,
+			(elem_type->u.basic.integer.encoding == lttng_encode_none)
+				? "none"
+				: (elem_type->u.basic.integer.encoding == lttng_encode_UTF8)
+					? "UTF8"
+					: "ASCII",
+			elem_type->u.basic.integer.base,
+#ifdef __BIG_ENDIAN
+			elem_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
+#else
+			elem_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
+#endif
+			field->name,
+			field->name
+			);
+		break;
+	}
+
+	case atype_string:
+		/* Default encoding is UTF8 */
+		ret = lttng_metadata_printf(session,
+			"		string%s %s;\n",
+			field->type.u.basic.string.encoding == lttng_encode_ASCII ?
+				" { encoding = ASCII; }" : "",
+			field->name);
+		break;
+	default:
+		WARN_ON_ONCE(1);
+		return -EINVAL;
+	}
+	return ret;
+}
+
+static
+int _ltt_context_metadata_statedump(struct ltt_session *session,
+				    struct lttng_ctx *ctx)
+{
+	int ret = 0;
+	int i;
+
+	if (!ctx)
+		return 0;
+	for (i = 0; i < ctx->nr_fields; i++) {
+		const struct lttng_ctx_field *field = &ctx->fields[i];
+
+		ret = _ltt_field_statedump(session, &field->event_field);
+		if (ret)
+			return ret;
+	}
+	return ret;
+}
+
+static
 int _ltt_fields_metadata_statedump(struct ltt_session *session,
 				   struct ltt_event *event)
 {
@@ -415,114 +552,9 @@ int _ltt_fields_metadata_statedump(struct ltt_session *session,
 	for (i = 0; i < desc->nr_fields; i++) {
 		const struct lttng_event_field *field = &desc->fields[i];
 
-		switch (field->type.atype) {
-		case atype_integer:
-			ret = lttng_metadata_printf(session,
-				"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } %s;\n",
-				field->type.u.basic.integer.size,
-				field->type.u.basic.integer.alignment,
-				field->type.u.basic.integer.signedness,
-				(field->type.u.basic.integer.encoding == lttng_encode_none)
-					? "none"
-					: (field->type.u.basic.integer.encoding == lttng_encode_UTF8)
-						? "UTF8"
-						: "ASCII",
-				field->type.u.basic.integer.base,
-#ifdef __BIG_ENDIAN
-				field->type.u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
-#else
-				field->type.u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
-#endif
-				field->name);
-			break;
-		case atype_enum:
-			ret = lttng_metadata_printf(session,
-				"		%s %s;\n",
-				field->type.u.basic.enumeration.name,
-				field->name);
-			break;
-		case atype_array:
-		{
-			const struct lttng_basic_type *elem_type;
-
-			elem_type = &field->type.u.array.elem_type;
-			ret = lttng_metadata_printf(session,
-				"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } %s[%u];\n",
-				elem_type->u.basic.integer.size,
-				elem_type->u.basic.integer.alignment,
-				elem_type->u.basic.integer.signedness,
-				(elem_type->u.basic.integer.encoding == lttng_encode_none)
-					? "none"
-					: (elem_type->u.basic.integer.encoding == lttng_encode_UTF8)
-						? "UTF8"
-						: "ASCII",
-				elem_type->u.basic.integer.base,
-#ifdef __BIG_ENDIAN
-				elem_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
-#else
-				elem_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
-#endif
-				field->name, field->type.u.array.length);
-			break;
-		}
-		case atype_sequence:
-		{
-			const struct lttng_basic_type *elem_type;
-			const struct lttng_basic_type *length_type;
-
-			elem_type = &field->type.u.sequence.elem_type;
-			length_type = &field->type.u.sequence.length_type;
-			ret = lttng_metadata_printf(session,
-				"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } __%s_length;\n",
-				"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } %s[ __%s_length ];\n",
-				length_type->u.basic.integer.size,
-				length_type->u.basic.integer.alignment,
-				length_type->u.basic.integer.signedness,
-				(length_type->u.basic.integer.encoding == lttng_encode_none)
-					? "none"
-					: (length_type->u.basic.integer.encoding == lttng_encode_UTF8)
-						? "UTF8"
-						: "ASCII",
-				length_type->u.basic.integer.base,
-#ifdef __BIG_ENDIAN
-				length_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
-#else
-				length_type->u.basic.integer.reverse_byte_order
-? " byte_order = be;" : "",
-#endif
-				field->name,
-				elem_type->u.basic.integer.size,
-				elem_type->u.basic.integer.alignment,
-				elem_type->u.basic.integer.signedness,
-				(elem_type->u.basic.integer.encoding == lttng_encode_none)
-					? "none"
-					: (elem_type->u.basic.integer.encoding == lttng_encode_UTF8)
-						? "UTF8"
-						: "ASCII",
-				elem_type->u.basic.integer.base,
-#ifdef __BIG_ENDIAN
-				elem_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
-#else
-				elem_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
-#endif
-				field->name,
-				field->name
-				);
-			break;
-		}
-
-		case atype_string:
-			/* Default encoding is UTF8 */
-			ret = lttng_metadata_printf(session,
-				"		string%s %s;\n",
-				field->type.u.basic.string.encoding == lttng_encode_ASCII ?
-					" { encoding = ASCII; }" : "",
-				field->name);
-			break;
-		default:
-			WARN_ON_ONCE(1);
-			return -EINVAL;
-		}
+		ret = _ltt_field_statedump(session, field);
+		if (ret)
+			return ret;
 	}
 	return ret;
 }
@@ -544,10 +576,21 @@ int _ltt_event_metadata_statedump(struct ltt_session *session,
 		"	name = %s;\n"
 		"	id = %u;\n"
 		"	stream_id = %u;\n"
-		"	fields := struct {\n",
+		"	context := struct {\n",
 		event->desc->name,
 		event->id,
 		event->chan->id);
+	if (ret)
+		goto end;
+
+	ret = _ltt_context_metadata_statedump(session, event->ctx);
+	if (ret)
+		goto end;
+
+	ret = lttng_metadata_printf(session,
+		"	};\n"
+		"	fields := struct {\n"
+		);
 	if (ret)
 		goto end;
 
@@ -588,12 +631,21 @@ int _ltt_channel_metadata_statedump(struct ltt_session *session,
 		"	id = %u;\n"
 		"	event.header := %s;\n"
 		"	packet.context := struct packet_context;\n"
-		"};\n\n",
+		"	event.context := {\n",
 		chan->id,
 		chan->header_type == 1 ? "struct event_header_compact" :
 			"struct event_header_large");
 	if (ret)
 		goto end;
+
+	ret = _ltt_context_metadata_statedump(session, chan->ctx);
+	if (ret)
+		goto end;
+
+	ret = lttng_metadata_printf(session,
+		"	};\n"
+		"};\n\n"
+		);
 
 	chan->metadata_dumped = 1;
 end:

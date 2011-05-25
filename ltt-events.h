@@ -118,8 +118,7 @@ struct lttng_event_field {
 };
 
 struct lttng_ctx_field {
-	const char *name;
-	struct lttng_type type;
+	struct lttng_event_field event_field;
 	size_t (*get_size)(size_t offset);
 	void (*record)(struct lttng_ctx_field *field,
 		       struct lib_ring_buffer_ctx *ctx,
@@ -220,7 +219,7 @@ struct ltt_channel {
 
 struct ltt_session {
 	int active;			/* Is trace session active ? */
-	struct lttng_ctx *ctx;
+	int been_active;		/* Has trace session been active ? */
 	struct file *file;		/* File associated to session */
 	struct ltt_channel *metadata;	/* Metadata channel */
 	struct list_head chan;		/* Channel list head */
@@ -273,6 +272,7 @@ int ltt_probes_init(void);
 void ltt_probes_exit(void);
 struct lttng_ctx_field *lttng_append_context(struct lttng_ctx **ctx);
 void lttng_destroy_context(struct lttng_ctx *ctx);
+int lttng_add_pid_to_ctx(struct lttng_ctx **ctx);
 
 #ifdef CONFIG_KPROBES
 int lttng_kprobes_register(const char *name,
