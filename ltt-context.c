@@ -28,7 +28,7 @@ struct lttng_ctx_field *lttng_append_context(struct lttng_ctx **ctx_p)
 	if (ctx->nr_fields + 1 > ctx->allocated_fields) {
 		struct lttng_ctx_field *new_fields;
 
-		ctx->allocated_fields = min_t(size_t, 1, 2 * ctx->allocated_fields);
+		ctx->allocated_fields = max_t(size_t, 1, 2 * ctx->allocated_fields);
 		new_fields = kzalloc(ctx->allocated_fields * sizeof(struct lttng_ctx_field), GFP_KERNEL);
 		if (!new_fields)
 			return NULL;
