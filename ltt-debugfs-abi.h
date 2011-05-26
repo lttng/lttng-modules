@@ -31,9 +31,6 @@ struct lttng_kernel_channel {
 	unsigned int read_timer_interval;	/* usecs */
 };
 
-struct lttng_kernel_tracepoint {
-};
-
 /*
  * Either addr is used, or symbol_name and offset.
  */
@@ -53,7 +50,6 @@ struct lttng_kernel_event {
 	enum lttng_kernel_instrumentation instrumentation;
 	/* Per instrumentation type configuration */
 	union {
-		struct lttng_kernel_tracepoint tracepoint;
 		struct lttng_kernel_kprobe kprobe;
 		struct lttng_kernel_function_tracer ftrace;
 	} u;
@@ -68,9 +64,7 @@ struct lttng_kernel_tracer_version {
 enum lttng_kernel_context_type {
 	LTTNG_KERNEL_CONTEXT_PID,
 	LTTNG_KERNEL_CONTEXT_PERF_COUNTER,
-};
-
-struct lttng_kernel_pid_ctx {
+	LTTNG_KERNEL_CONTEXT_COMM,
 };
 
 struct lttng_kernel_perf_counter_ctx {
@@ -81,7 +75,6 @@ struct lttng_kernel_perf_counter_ctx {
 struct lttng_kernel_context {
 	enum lttng_kernel_context_type ctx;
 	union {
-		struct lttng_kernel_pid_ctx pid;
 		struct lttng_kernel_perf_counter_ctx perf_counter;
 	} u;
 };

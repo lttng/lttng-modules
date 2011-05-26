@@ -12,7 +12,7 @@ obj-m += ltt-ring-buffer-metadata-client.o
 obj-m += ltt-relay.o
 ltt-relay-objs :=  ltt-events.o ltt-debugfs-abi.o \
 			ltt-probes.o ltt-core.o ltt-context.o \
-			lttng-context-pid.o
+			lttng-context-pid.o lttng-context-comm.o
 
 obj-m += probes/
 obj-m += lib/
