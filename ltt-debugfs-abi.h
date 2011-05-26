@@ -65,9 +65,9 @@ struct lttng_kernel_tracer_version {
 	uint32_t sublevel;
 };
 
-enum lttng_context {
-	LTTNG_CONTEXT_PID,
-	LTTNG_CONTEXT_PERF_COUNTER,
+enum lttng_kernel_context_type {
+	LTTNG_KERNEL_CONTEXT_PID,
+	LTTNG_KERNEL_CONTEXT_PERF_COUNTER,
 };
 
 struct lttng_kernel_pid_ctx {
@@ -79,7 +79,7 @@ struct lttng_kernel_perf_counter_ctx {
 };
 
 struct lttng_kernel_context {
-	enum lttng_context ctx;
+	enum lttng_kernel_context_type ctx;
 	union {
 		struct lttng_kernel_pid_ctx pid;
 		struct lttng_kernel_perf_counter_ctx perf_counter;
