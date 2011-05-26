@@ -34,7 +34,7 @@ TRACE_EVENT(sys_enter,
 			unsigned long args_copy[6];
 
 			syscall_get_arguments(current, regs, 0, 6, args_copy);
-			tp_memcpy(args, args_copy, 6 * sizeof(args_copy));
+			tp_memcpy(args, args_copy, sizeof(args_copy));
 		}
 	),
 
