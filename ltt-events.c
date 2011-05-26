@@ -575,20 +575,30 @@ int _ltt_event_metadata_statedump(struct ltt_session *session,
 		"event {\n"
 		"	name = %s;\n"
 		"	id = %u;\n"
-		"	stream_id = %u;\n"
-		"	context := struct {\n",
+		"	stream_id = %u;\n",
 		event->desc->name,
 		event->id,
 		event->chan->id);
 	if (ret)
 		goto end;
 
+	if (event->ctx) {
+		ret = lttng_metadata_printf(session,
+			"	context := struct {\n");
+		if (ret)
+			goto end;
+	}
 	ret = _ltt_context_metadata_statedump(session, event->ctx);
 	if (ret)
 		goto end;
+	if (event->ctx) {
+		ret = lttng_metadata_printf(session,
+			"	};\n");
+		if (ret)
+			goto end;
+	}
 
 	ret = lttng_metadata_printf(session,
-		"	};\n"
 		"	fields := struct {\n"
 		);
 	if (ret)
@@ -630,22 +640,31 @@ int _ltt_channel_metadata_statedump(struct ltt_session *session,
 		"stream {\n"
 		"	id = %u;\n"
 		"	event.header := %s;\n"
-		"	packet.context := struct packet_context;\n"
-		"	event.context := {\n",
+		"	packet.context := struct packet_context;\n",
 		chan->id,
 		chan->header_type == 1 ? "struct event_header_compact" :
 			"struct event_header_large");
 	if (ret)
 		goto end;
 
+	if (chan->ctx) {
+		ret = lttng_metadata_printf(session,
+			"	event.context := struct {\n");
+		if (ret)
+			goto end;
+	}
 	ret = _ltt_context_metadata_statedump(session, chan->ctx);
 	if (ret)
 		goto end;
+	if (chan->ctx) {
+		ret = lttng_metadata_printf(session,
+			"	};\n");
+		if (ret)
+			goto end;
+	}
 
 	ret = lttng_metadata_printf(session,
-		"	};\n"
-		"};\n\n"
-		);
+		"};\n\n");
 
 	chan->metadata_dumped = 1;
 end:
