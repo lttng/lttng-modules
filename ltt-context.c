@@ -33,7 +33,7 @@ struct lttng_ctx_field *lttng_append_context(struct lttng_ctx **ctx_p)
 		if (!new_fields)
 			return NULL;
 		if (ctx->fields)
-			memcpy(new_fields, ctx->fields, ctx->nr_fields);
+			memcpy(new_fields, ctx->fields, sizeof(*ctx->fields) * ctx->nr_fields);
 		kfree(ctx->fields);
 		ctx->fields = new_fields;
 	}
