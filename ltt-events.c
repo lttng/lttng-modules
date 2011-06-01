@@ -476,15 +476,14 @@ int _ltt_field_statedump(struct ltt_session *session,
 			length_type->u.basic.integer.signedness,
 			(length_type->u.basic.integer.encoding == lttng_encode_none)
 				? "none"
-				: (length_type->u.basic.integer.encoding == lttng_encode_UTF8)
+				: ((length_type->u.basic.integer.encoding == lttng_encode_UTF8)
 					? "UTF8"
-					: "ASCII",
+					: "ASCII"),
 			length_type->u.basic.integer.base,
 #ifdef __BIG_ENDIAN
 			length_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
 #else
-			length_type->u.basic.integer.reverse_byte_order
-? " byte_order = be;" : "",
+			length_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
 #endif
 			field->name,
 			elem_type->u.basic.integer.size,
@@ -492,9 +491,9 @@ int _ltt_field_statedump(struct ltt_session *session,
 			elem_type->u.basic.integer.signedness,
 			(elem_type->u.basic.integer.encoding == lttng_encode_none)
 				? "none"
-				: (elem_type->u.basic.integer.encoding == lttng_encode_UTF8)
+				: ((elem_type->u.basic.integer.encoding == lttng_encode_UTF8)
 					? "UTF8"
-					: "ASCII",
+					: "ASCII"),
 			elem_type->u.basic.integer.base,
 #ifdef __BIG_ENDIAN
 			elem_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
