@@ -32,7 +32,7 @@ void prio_record(struct lttng_ctx_field *field,
 {
 	int prio;
 
-	prio = task_prio(current);
+	prio = wrapper_task_prio_sym(current);
 	lib_ring_buffer_align_ctx(ctx, ltt_alignof(prio));
 	chan->ops->event_write(ctx, &prio, sizeof(prio));
 }
