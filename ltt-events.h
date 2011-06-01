@@ -274,6 +274,7 @@ struct lttng_ctx_field *lttng_append_context(struct lttng_ctx **ctx);
 void lttng_destroy_context(struct lttng_ctx *ctx);
 int lttng_add_pid_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_comm_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_prio_to_ctx(struct lttng_ctx **ctx);
 
 #ifdef CONFIG_KPROBES
 int lttng_kprobes_register(const char *name,

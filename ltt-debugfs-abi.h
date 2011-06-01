@@ -65,6 +65,7 @@ enum lttng_kernel_context_type {
 	LTTNG_KERNEL_CONTEXT_PID,
 	LTTNG_KERNEL_CONTEXT_PERF_COUNTER,
 	LTTNG_KERNEL_CONTEXT_COMM,
+	LTTNG_KERNEL_CONTEXT_PRIO,
 };
 
 struct lttng_kernel_perf_counter_ctx {
