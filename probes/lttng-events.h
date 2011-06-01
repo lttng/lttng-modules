@@ -259,7 +259,9 @@ static struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 	__event_len += lib_ring_buffer_align(__event_len, ltt_alignof(u32));   \
 	__event_len += sizeof(u32);					       \
 	__event_len += lib_ring_buffer_align(__event_len, ltt_alignof(_type)); \
-	__event_len += sizeof(_type) * (_length);
+	__dynamic_len[__dynamic_len_idx] = (_length);			       \
+	__event_len += sizeof(_type) * __dynamic_len[__dynamic_len_idx];       \
+	__dynamic_len_idx++;
 
 #undef __dynamic_array_text
 #define __dynamic_array_text(_type, _item, _length)			       \
@@ -461,17 +463,18 @@ __assign_##dest:							\
 	goto __end_field_##dest;
 
 #undef tp_memcpy_dyn
-#define tp_memcpy_dyn(dest, src, len)					\
+#define tp_memcpy_dyn(dest, src)					\
 __assign_##dest##_1:							\
 	{								\
-		u32 __tmpl = (len);					\
+		u32 __tmpl = __dynamic_len[__dynamic_len_idx];		\
 		lib_ring_buffer_align_ctx(&ctx, ltt_alignof(u32));	\
 		__chan->ops->event_write(&ctx, &__tmpl, sizeof(u32));	\
 	}								\
 	goto __end_field_##dest##_1;					\
 __assign_##dest##_2:							\
 	lib_ring_buffer_align_ctx(&ctx, ltt_alignof(__typemap.dest));	\
-	__chan->ops->event_write(&ctx, src, len);			\
+	__chan->ops->event_write(&ctx, src,				\
+		sizeof(__typemap.dest) * __get_dynamic_array_len(dest));\
 	goto __end_field_##dest##_2;
 
 #undef tp_strcpy
