@@ -860,9 +860,6 @@ static int __init ltt_events_init(void)
 {
 	int ret;
 
-	ret = wrapper_task_prio_init();
-	if (ret)
-		return ret;
 	event_cache = KMEM_CACHE(ltt_event, 0);
 	if (!event_cache)
 		return -ENOMEM;

@@ -16,6 +16,19 @@
 #include "ltt-tracer.h"
 
 static
+int (*wrapper_task_prio_sym)(struct task_struct *t);
+
+int wrapper_task_prio_init(void)
+{
+	wrapper_task_prio_sym = (void *) kallsyms_lookup_name("task_prio");
+	if (!wrapper_task_prio_sym) {
+		printk(KERN_WARNING "LTTng: task_prio symbol lookup failed.\n");
+		return -EINVAL;
+	}
+	return 0;
+}
+
+static
 size_t prio_get_size(size_t offset)
 {
 	size_t size = 0;
@@ -41,6 +54,12 @@ int lttng_add_prio_to_ctx(struct lttng_ctx **ctx)
 {
 	struct lttng_ctx_field *field;
 	int ret;
+
+	if (!wrapper_task_prio_sym) {
+		ret = wrapper_task_prio_init();
+		if (ret)
+			return ret;
+	}
 
 	field = lttng_append_context(ctx);
 	if (!field)
