@@ -472,7 +472,7 @@ int _ltt_field_statedump(struct ltt_session *session,
 			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } __%s_length;\n",
 			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } %s[ __%s_length ];\n",
 			length_type->u.basic.integer.size,
-			length_type->u.basic.integer.alignment,
+			(unsigned int) length_type->u.basic.integer.alignment,
 			length_type->u.basic.integer.signedness,
 			(length_type->u.basic.integer.encoding == lttng_encode_none)
 				? "none"
@@ -487,7 +487,7 @@ int _ltt_field_statedump(struct ltt_session *session,
 #endif
 			field->name,
 			elem_type->u.basic.integer.size,
-			elem_type->u.basic.integer.alignment,
+			(unsigned int) elem_type->u.basic.integer.alignment,
 			elem_type->u.basic.integer.signedness,
 			(elem_type->u.basic.integer.encoding == lttng_encode_none)
 				? "none"
