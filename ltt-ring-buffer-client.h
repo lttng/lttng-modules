@@ -134,7 +134,6 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 			offset += sizeof(uint32_t);	/* id */
 			offset += lib_ring_buffer_align(offset, ltt_alignof(uint64_t));
 			offset += sizeof(uint64_t);	/* timestamp */
-			
 		}
 		break;
 	default:
@@ -402,7 +401,6 @@ static
 void ltt_buffer_read_close(struct lib_ring_buffer *buf)
 {
 	lib_ring_buffer_release_read(buf);
-	
 }
 
 static
