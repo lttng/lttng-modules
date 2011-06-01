@@ -31,10 +31,13 @@ TRACE_EVENT(sys_enter,
 	TP_fast_assign(
 		tp_assign(id, id)
 		{
-			unsigned long args_copy[6];
-
-			syscall_get_arguments(current, regs, 0, 6, args_copy);
-			tp_memcpy(args, args_copy, sizeof(args_copy));
+			tp_memcpy(args,
+				({
+					unsigned long args_copy[6];
+					syscall_get_arguments(current, regs,
+							0, 6, args_copy);
+					args_copy;
+				}), 6 * sizeof(unsigned long));
 		}
 	),
 
