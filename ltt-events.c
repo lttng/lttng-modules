@@ -470,7 +470,6 @@ int _ltt_field_statedump(struct ltt_session *session,
 		length_type = &field->type.u.sequence.length_type;
 		ret = lttng_metadata_printf(session,
 			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } __%s_length;\n",
-			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } %s[ __%s_length ];\n",
 			length_type->u.basic.integer.size,
 			(unsigned int) length_type->u.basic.integer.alignment,
 			length_type->u.basic.integer.signedness,
@@ -485,7 +484,12 @@ int _ltt_field_statedump(struct ltt_session *session,
 #else
 			length_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
 #endif
-			field->name,
+			field->name);
+		if (ret)
+			return ret;
+
+		ret = lttng_metadata_printf(session,
+			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } %s[ __%s_length ];\n",
 			elem_type->u.basic.integer.size,
 			(unsigned int) elem_type->u.basic.integer.alignment,
 			elem_type->u.basic.integer.signedness,
@@ -501,8 +505,7 @@ int _ltt_field_statedump(struct ltt_session *session,
 			elem_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
 #endif
 			field->name,
-			field->name
-			);
+			field->name);
 		break;
 	}
 
