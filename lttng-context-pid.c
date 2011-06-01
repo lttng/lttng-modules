@@ -62,4 +62,4 @@ EXPORT_SYMBOL_GPL(lttng_add_pid_to_ctx);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers");
-MODULE_DESCRIPTION("Linux Trace Toolkit Perf Support");
+MODULE_DESCRIPTION("Linux Trace Toolkit PID Context");

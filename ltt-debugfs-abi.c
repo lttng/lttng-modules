@@ -154,6 +154,8 @@ long lttng_abi_add_context(struct file *file,
 		return lttng_add_pid_to_ctx(ctx);
 	case LTTNG_KERNEL_CONTEXT_PRIO:
 		return lttng_add_prio_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_NICE:
+		return lttng_add_nice_to_ctx(ctx);
 	case LTTNG_KERNEL_CONTEXT_PERF_COUNTER:
 		return -ENOSYS;
 	case LTTNG_KERNEL_CONTEXT_COMM:

@@ -2,7 +2,7 @@
  * (C) Copyright	2009-2011 -
  * 		Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
- * LTTng priority context.
+ * LTTng nice context.
  *
  * Dual LGPL v2.1/GPL v2 license.
  */
@@ -16,7 +16,7 @@
 #include "ltt-tracer.h"
 
 static
-size_t prio_get_size(size_t offset)
+size_t nice_get_size(size_t offset)
 {
 	size_t size = 0;
 
@@ -26,18 +26,18 @@ size_t prio_get_size(size_t offset)
 }
 
 static
-void prio_record(struct lttng_ctx_field *field,
+void nice_record(struct lttng_ctx_field *field,
 		struct lib_ring_buffer_ctx *ctx,
 		struct ltt_channel *chan)
 {
-	int prio;
+	int nice;
 
-	prio = task_prio(current);
-	lib_ring_buffer_align_ctx(ctx, ltt_alignof(prio));
-	chan->ops->event_write(ctx, &prio, sizeof(prio));
+	nice = task_nice(current);
+	lib_ring_buffer_align_ctx(ctx, ltt_alignof(nice));
+	chan->ops->event_write(ctx, &nice, sizeof(nice));
 }
 
-int lttng_add_prio_to_ctx(struct lttng_ctx **ctx)
+int lttng_add_nice_to_ctx(struct lttng_ctx **ctx)
 {
 	struct lttng_ctx_field *field;
 	int ret;
@@ -45,7 +45,7 @@ int lttng_add_prio_to_ctx(struct lttng_ctx **ctx)
 	field = lttng_append_context(ctx);
 	if (!field)
 		return ret;
-	field->event_field.name = "prio";
+	field->event_field.name = "nice";
 	field->event_field.type.atype = atype_integer;
 	field->event_field.type.u.basic.integer.size = sizeof(int) * CHAR_BIT;
 	field->event_field.type.u.basic.integer.alignment = ltt_alignof(int) * CHAR_BIT;
@@ -53,13 +53,13 @@ int lttng_add_prio_to_ctx(struct lttng_ctx **ctx)
 	field->event_field.type.u.basic.integer.reverse_byte_order = 0;
 	field->event_field.type.u.basic.integer.base = 10;
 	field->event_field.type.u.basic.integer.encoding = lttng_encode_none;
-	field->get_size = prio_get_size;
-	field->record = prio_record;
+	field->get_size = nice_get_size;
+	field->record = nice_record;
 	wrapper_vmalloc_sync_all();
 	return 0;
 }
-EXPORT_SYMBOL_GPL(lttng_add_prio_to_ctx);
+EXPORT_SYMBOL_GPL(lttng_add_nice_to_ctx);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers");
-MODULE_DESCRIPTION("Linux Trace Toolkit Priority Context");
+MODULE_DESCRIPTION("Linux Trace Toolkit Nice Context");
