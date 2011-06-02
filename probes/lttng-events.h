@@ -1,3 +1,12 @@
+/*
+ * lttng-events.h
+ *
+ * Copyright (C) 2009 Steven Rostedt <rostedt@goodmis.org>
+ * Copyright (C) 2010-2011 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+ *
+ * Dual LGPL v2.1/GPL v2 license.
+ */
+
 #include <linux/debugfs.h>
 #include "lttng.h"
 #include "lttng-types.h"

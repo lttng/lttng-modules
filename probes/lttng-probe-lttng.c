@@ -4,6 +4,8 @@
  * Copyright 2010 (c) - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
  * LTTng core probes.
+ *
+ * Dual LGPL v2.1/GPL v2 license.
  */
 
 #include <linux/module.h>

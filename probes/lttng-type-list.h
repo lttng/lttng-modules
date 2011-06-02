@@ -1,3 +1,11 @@
+/*
+ * lttng-type-list.h
+ *
+ * Copyright (C) 2010-2011 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+ *
+ * Dual LGPL v2.1/GPL v2 license.
+ */
+
 /* Type list, used to create metadata */
 
 /* Enumerations */

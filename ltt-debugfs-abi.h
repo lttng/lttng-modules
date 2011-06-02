@@ -7,6 +7,8 @@
  * Copyright 2010 (c) - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
  * LTTng debugfs ABI header
+ *
+ * Dual LGPL v2.1/GPL v2 license.
  */
 
 #include <linux/fs.h>

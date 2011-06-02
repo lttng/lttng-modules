@@ -4,6 +4,8 @@
  * Copyright 2010 (c) - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
  * Holds LTTng probes registry.
+ *
+ * Dual LGPL v2.1/GPL v2 license.
  */
 
 #include <linux/module.h>

@@ -1,0 +1,17 @@
+LTTng modules licensing
+Mathieu Desnoyers
+June 2, 2011
+
+* LGPLv2.1/GPLv2 dual-license
+
+The files contained within this package are licensed under
+LGPLv2.1/GPLv2 dual-license, except for files identified by the
+following section.
+
+* GPLv2 license
+
+These files are licensed exclusively under the GPLv2 license:
+
+lib/ringbuffer/ring_buffer_splice.c
+instrumentation/events/mainline/*.h
+instrumentation/events/lttng-modules/*.h

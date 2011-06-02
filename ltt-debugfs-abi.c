@@ -20,6 +20,8 @@
  *     - Takes an instrumentation source as parameter
  *       - e.g. tracepoints, dynamic_probes...
  *     - Takes instrumentation source specific arguments.
+ *
+ * Dual LGPL v2.1/GPL v2 license.
  */
 
 #include <linux/module.h>

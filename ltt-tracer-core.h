@@ -1,13 +1,15 @@
+#ifndef LTT_TRACER_CORE_H
+#define LTT_TRACER_CORE_H
+
 /*
- * Copyright (C) 2005,2006 Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
+ * ltt-tracer-core.h
+ *
+ * Copyright (C) 2005-2011 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
  * This contains the core definitions for the Linux Trace Toolkit.
  *
  * Dual LGPL v2.1/GPL v2 license.
  */
-
-#ifndef LTT_TRACER_CORE_H
-#define LTT_TRACER_CORE_H
 
 #include <linux/list.h>
 #include <linux/percpu.h>

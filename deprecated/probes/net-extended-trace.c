@@ -15,6 +15,8 @@
  * especially interested in the details of network traffic and do not wish to
  * synchronize distributed traces.
  *
+ * (C) Copyright 2009 - Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+ *
  * Dual LGPL v2.1/GPL v2 license.
  */
 

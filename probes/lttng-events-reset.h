@@ -1,3 +1,11 @@
+/*
+ * lttng-events-reset.h
+ *
+ * Copyright (C) 2010-2011 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+ *
+ * Dual LGPL v2.1/GPL v2 license.
+ */
+
 /* Reset macros used within TRACE_EVENT to "nothing" */
 
 #undef __field

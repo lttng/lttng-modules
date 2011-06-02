@@ -1,3 +1,11 @@
+/*
+ * wrapper/poll.h
+ *
+ * Copyright (C) 2010-2011 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+ *
+ * Dual LGPL v2.1/GPL v2 license.
+ */
+
 #ifndef CONFIG_LIB_RING_BUFFER
 #include <linux/poll.h>
 

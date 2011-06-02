@@ -1,6 +1,14 @@
 #ifndef _LTT_ENDIAN_H
 #define _LTT_ENDIAN_H
 
+/*
+ * ltt-endian.h
+ *
+ * Copyright 2010 (c) - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+ *
+ * Dual LGPL v2.1/GPL v2 license.
+ */
+
 #ifdef __KERNEL__
 # include <asm/byteorder.h>
 # ifdef __BIG_ENDIAN

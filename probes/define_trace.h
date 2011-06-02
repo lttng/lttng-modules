@@ -1,4 +1,13 @@
 /*
+ * define_trace.h
+ *
+ * Copyright (C) 2009 Steven Rostedt <rostedt@goodmis.org>
+ * Copyright (C) 2010-2011 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+ *
+ * Dual LGPL v2.1/GPL v2 license.
+ */
+
+/*
  * Trace files that want to automate creationg of all tracepoints defined
  * in their file should include this file. The following are macros that the
  * trace file may define:

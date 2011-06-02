@@ -1,13 +1,15 @@
+#ifndef _LTT_TRACER_H
+#define _LTT_TRACER_H
+
 /*
- * Copyright (C) 2005,2006,2008 Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca)
+ * ltt-tracer.h
+ *
+ * Copyright (C) 2005-2011 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
  * This contains the definitions for the Linux Trace Toolkit tracer.
  *
  * Dual LGPL v2.1/GPL v2 license.
  */
-
-#ifndef _LTT_TRACER_H
-#define _LTT_TRACER_H
 
 #include <stdarg.h>
 #include <linux/types.h>

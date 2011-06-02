@@ -5,6 +5,16 @@
 #ifndef _LTTNG_PROBES_LTTNG_TYPES_H
 #define _LTTNG_PROBES_LTTNG_TYPES_H
 
+/*
+ * probes/lttng-types.h
+ *
+ * Copyright 2010 (c) - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+ *
+ * LTTng types.
+ *
+ * Dual LGPL v2.1/GPL v2 license.
+ */
+
 #include <linux/seq_file.h>
 #include "lttng.h"
 #include "../ltt-events.h"
