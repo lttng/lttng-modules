@@ -112,7 +112,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	}
 
 	name_alloc = kstrdup(name, GFP_KERNEL);
-	if (!field->event_field.name)
+	if (!name_alloc)
 		goto name_alloc_error;
 
 	field = lttng_append_context(ctx);
