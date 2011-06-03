@@ -186,8 +186,9 @@ void ltt_write_event_header(const struct lib_ring_buffer_config *config,
 	case 2:	/* large */
 	{
 		uint32_t timestamp = (uint32_t) ctx->tsc;
+		uint16_t id = event_id;
 
-		lib_ring_buffer_write(config, ctx, &event_id, sizeof(event_id));
+		lib_ring_buffer_write(config, ctx, &id, sizeof(id));
 		lib_ring_buffer_align_ctx(ctx, ltt_alignof(uint32_t));
 		lib_ring_buffer_write(config, ctx, &timestamp, sizeof(timestamp));
 		break;
@@ -237,8 +238,9 @@ void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 	{
 		if (!(ctx->rflags & (RING_BUFFER_RFLAG_FULL_TSC | LTT_RFLAG_EXTENDED))) {
 			uint32_t timestamp = (uint32_t) ctx->tsc;
+			uint16_t id = event_id;
 
-			lib_ring_buffer_write(config, ctx, &event_id, sizeof(event_id));
+			lib_ring_buffer_write(config, ctx, &id, sizeof(id));
 			lib_ring_buffer_align_ctx(ctx, ltt_alignof(uint32_t));
 			lib_ring_buffer_write(config, ctx, &timestamp, sizeof(timestamp));
 		} else {
