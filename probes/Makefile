@@ -24,10 +24,6 @@ ifneq ($(CONFIG_DYNAMIC_FTRACE),)
 obj-m += lttng-ftrace.o
 endif
 
-ifneq ($(CONFIG_PERF_EVENTS),)
-obj-m += lttng-perf-counters.o
-endif
-
 endif
 
 else

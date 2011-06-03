@@ -159,7 +159,11 @@ long lttng_abi_add_context(struct file *file,
 	case LTTNG_KERNEL_CONTEXT_NICE:
 		return lttng_add_nice_to_ctx(ctx);
 	case LTTNG_KERNEL_CONTEXT_PERF_COUNTER:
-		return -ENOSYS;
+		context_param.u.perf_counter.name[LTTNG_SYM_NAME_LEN - 1] = '\0';
+		return lttng_add_perf_counter_to_ctx(context_param.u.perf_counter.type,
+				context_param.u.perf_counter.config,
+				context_param.u.perf_counter.name,
+				ctx);
 	case LTTNG_KERNEL_CONTEXT_COMM:
 		return lttng_add_comm_to_ctx(ctx);
 	default:

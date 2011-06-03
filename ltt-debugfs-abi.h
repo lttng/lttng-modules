@@ -74,6 +74,7 @@ enum lttng_kernel_context_type {
 struct lttng_kernel_perf_counter_ctx {
 	uint32_t type;
 	uint64_t config;
+	char name[LTTNG_SYM_NAME_LEN];
 };
 
 struct lttng_kernel_context {

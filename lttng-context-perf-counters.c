@@ -11,10 +11,11 @@
 #include <linux/slab.h>
 #include <linux/perf_event.h>
 #include <linux/list.h>
-#include "../ltt-events.h"
-#include "../wrapper/ringbuffer/frontend_types.h"
-#include "../wrapper/vmalloc.h"
-#include "../ltt-tracer.h"
+#include <linux/string.h>
+#include "ltt-events.h"
+#include "wrapper/ringbuffer/frontend_types.h"
+#include "wrapper/vmalloc.h"
+#include "ltt-tracer.h"
 
 /*
  * TODO: Add CPU hotplug support.
@@ -66,12 +67,14 @@ void lttng_destroy_perf_counter_field(struct lttng_ctx_field *field)
 	for_each_online_cpu(cpu)
 		perf_event_release_kernel(events[cpu]);
 	mutex_unlock(&perf_counter_mutex);
+	kfree(field->event_field.name);
 	kfree(field->u.perf_counter.attr);
 	kfree(events);
 }
 
 int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  uint64_t config,
+				  const char *name,
 				  struct lttng_ctx **ctx)
 {
 	struct lttng_ctx_field *field;
@@ -79,6 +82,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	struct perf_event_attr *attr;
 	int ret;
 	int cpu;
+	char *name_alloc;
 
 	events = kzalloc(num_possible_cpus() * sizeof(*events), GFP_KERNEL);
 	if (!events)
@@ -107,6 +111,10 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 		}
 	}
 
+	name_alloc = kstrdup(name, GFP_KERNEL);
+	if (!field->event_field.name)
+		goto name_alloc_error;
+
 	field = lttng_append_context(ctx);
 	if (!field) {
 		ret = -ENOMEM;
@@ -114,7 +122,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	}
 	field->destroy = lttng_destroy_perf_counter_field;
 
-	field->event_field.name = "dummyname";//TODO: lookup_counter_name(type, config);
+	field->event_field.name = name_alloc;
 	field->event_field.type.atype = atype_integer;
 	field->event_field.type.u.basic.integer.size = sizeof(unsigned long) * CHAR_BIT;
 	field->event_field.type.u.basic.integer.alignment = ltt_alignof(unsigned long) * CHAR_BIT;
@@ -134,6 +142,8 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	return 0;
 
 error:
+	kfree(name_alloc);
+name_alloc_error:
 	for_each_online_cpu(cpu) {
 		if (events[cpu])
 			perf_event_release_kernel(events[cpu]);

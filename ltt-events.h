@@ -278,6 +278,10 @@ int lttng_add_pid_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_comm_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_prio_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_nice_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_perf_counter_to_ctx(uint32_t type,
+				  uint64_t config,
+				  const char *name,
+				  struct lttng_ctx **ctx);
 
 #ifdef CONFIG_KPROBES
 int lttng_kprobes_register(const char *name,

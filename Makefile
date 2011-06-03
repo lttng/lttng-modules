@@ -15,6 +15,10 @@ ltt-relay-objs :=  ltt-events.o ltt-debugfs-abi.o \
 			lttng-context-pid.o lttng-context-comm.o \
 			lttng-context-prio.o lttng-context-nice.o
 
+ifneq ($(CONFIG_PERF_EVENTS),)
+ltt-relay-objs += lttng-context-perf-counters.o
+endif
+
 obj-m += probes/
 obj-m += lib/
 
