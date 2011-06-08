@@ -399,7 +399,7 @@ int lttng_metadata_printf(struct ltt_session *session,
 				ret = waitret;
 			goto end;
 		}
-		chan->ops->event_write(&ctx, &str[pos], len);
+		chan->ops->event_write(&ctx, &str[pos], reserve_len);
 		chan->ops->event_commit(&ctx);
 	}
 end:
