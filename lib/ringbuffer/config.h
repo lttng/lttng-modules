@@ -14,6 +14,7 @@
 
 #include <linux/types.h>
 #include <linux/percpu.h>
+#include "../align.h"
 
 struct lib_ring_buffer;
 struct channel;
