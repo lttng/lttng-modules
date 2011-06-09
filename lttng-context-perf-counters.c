@@ -36,8 +36,19 @@ void perf_counter_record(struct lttng_ctx_field *field,
 	uint64_t value;
 
 	event = field->u.perf_counter.e[ctx->cpu];
-	event->pmu->read(event);
-	value = local64_read(&event->count);
+	if (likely(event)) {
+		event->pmu->read(event);
+		value = local64_read(&event->count);
+	} else {
+		/*
+		 * Perf chooses not to be clever and not to support enabling a
+		 * perf counter before the cpu is brought up. Therefore, we need
+		 * to support having events coming (e.g. scheduler events)
+		 * before the counter is setup. Write an arbitrary 0 in this
+		 * case.
+		 */
+		value = 0;
+	}
 	lib_ring_buffer_align_ctx(ctx, ltt_alignof(value));
 	chan->ops->event_write(ctx, &value, sizeof(value));
 }
@@ -90,7 +101,7 @@ int __cpuinit lttng_perf_counter_cpu_hp_callback(struct notifier_block *nb,
 		container_of(nb, struct lttng_ctx_field, u.perf_counter.nb);
 	struct perf_event **events = field->u.perf_counter.e;
 	struct perf_event_attr *attr = field->u.perf_counter.attr;
-	
+	struct perf_event *pevent;
 
 	if (!field->u.perf_counter.hp_enable)
 		return NOTIFY_OK;
@@ -98,16 +109,21 @@ int __cpuinit lttng_perf_counter_cpu_hp_callback(struct notifier_block *nb,
 	switch (action) {
 	case CPU_ONLINE:
 	case CPU_ONLINE_FROZEN:
-		events[cpu] = perf_event_create_kernel_counter(attr,
+		pevent = perf_event_create_kernel_counter(attr,
 				cpu, NULL, overflow_callback);
-		if (!events[cpu])
+		if (!pevent)
 			return NOTIFY_BAD;
+		barrier();	/* Create perf counter before setting event */
+		events[cpu] = pevent;
 		break;
 	case CPU_UP_CANCELED:
 	case CPU_UP_CANCELED_FROZEN:
 	case CPU_DEAD:
 	case CPU_DEAD_FROZEN:
-		perf_event_release_kernel(events[cpu]);
+		pevent = events[cpu];
+		events[cpu] = NULL;
+		barrier();	/* NULLify event before perf counter teardown */
+		perf_event_release_kernel(pevent);
 		break;
 	}
 	return NOTIFY_OK;
