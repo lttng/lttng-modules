@@ -11,36 +11,9 @@
  * Dual LGPL v2.1/GPL v2 license.
  */
 
-#ifdef CONFIG_KALLSYMS
-
-#include <linux/kallsyms.h>
 #include <linux/splice.h>
 
-static inline
 ssize_t wrapper_splice_to_pipe(struct pipe_inode_info *pipe,
-			       struct splice_pipe_desc *spd)
-{
-	ssize_t (*splice_to_pipe_sym)(struct pipe_inode_info *pipe,
-				      struct splice_pipe_desc *spd);
-
-	splice_to_pipe_sym = (void *) kallsyms_lookup_name("splice_to_pipe");
-	if (splice_to_pipe_sym) {
-		return splice_to_pipe_sym(pipe, spd);
-	} else {
-		printk(KERN_WARNING "LTTng: splice_to_pipe symbol lookup failed.\n");
-		return -ENOSYS;
-	}
-}
-#else
-
-#include <linux/splice.h>
-
-static inline
-ssize_t wrapper_splice_to_pipe(struct pipe_inode_info *pipe,
-			       struct splice_pipe_desc *spd)
-{
-	return splice_to_pipe(pipe, spd);
-}
-#endif
+			       struct splice_pipe_desc *spd);
 
 #endif /* _LTT_WRAPPER_SPLICE_H */
