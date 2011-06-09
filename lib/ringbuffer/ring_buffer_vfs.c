@@ -86,19 +86,24 @@ unsigned int lib_ring_buffer_poll(struct file *filp, poll_table *wait)
 	struct lib_ring_buffer *buf = filp->private_data;
 	struct channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = chan->backend.config;
-	int finalized;
+	int finalized, disabled;
 
 	if (filp->f_mode & FMODE_READ) {
 		init_poll_funcptr(wait, wrapper_pollwait_exclusive);
 		poll_wait(filp, &buf->read_wait, wait);
 
 		finalized = lib_ring_buffer_is_finalized(config, buf);
+		disabled = lib_ring_buffer_channel_is_disabled(chan);
+
 		/*
 		 * lib_ring_buffer_is_finalized() contains a smp_rmb() ordering
 		 * finalized load before offsets loads.
 		 */
 		WARN_ON(atomic_long_read(&buf->active_readers) != 1);
 retry:
+		if (disabled)
+			return POLLERR;
+
 		if (subbuf_trunc(lib_ring_buffer_get_offset(config, buf), chan)
 		  - subbuf_trunc(lib_ring_buffer_get_consumed(config, buf), chan)
 		  == 0) {
@@ -158,6 +163,9 @@ long lib_ring_buffer_ioctl(struct file *filp, unsigned int cmd, unsigned long ar
 	struct lib_ring_buffer *buf = filp->private_data;
 	struct channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = chan->backend.config;
+
+	if (lib_ring_buffer_channel_is_disabled(chan))
+		return -EIO;
 
 	switch (cmd) {
 	case RING_BUFFER_SNAPSHOT:
@@ -249,6 +257,9 @@ long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
 	struct lib_ring_buffer *buf = filp->private_data;
 	struct channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = chan->backend.config;
+
+	if (lib_ring_buffer_channel_is_disabled(chan))
+		return -EIO;
 
 	switch (cmd) {
 	case RING_BUFFER_SNAPSHOT:

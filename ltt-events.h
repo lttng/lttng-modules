@@ -205,6 +205,7 @@ struct ltt_channel_ops {
 	wait_queue_head_t *(*get_reader_wait_queue)(struct channel *chan);
 	wait_queue_head_t *(*get_hp_wait_queue)(struct channel *chan);
 	int (*is_finalized)(struct channel *chan);
+	int (*is_disabled)(struct channel *chan);
 };
 
 struct ltt_channel {

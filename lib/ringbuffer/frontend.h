@@ -164,6 +164,12 @@ int lib_ring_buffer_channel_is_finalized(const struct channel *chan)
 }
 
 static inline
+int lib_ring_buffer_channel_is_disabled(const struct channel *chan)
+{
+	return atomic_read(&chan->record_disabled);
+}
+
+static inline
 unsigned long lib_ring_buffer_get_read_data_size(
 				const struct lib_ring_buffer_config *config,
 				struct lib_ring_buffer *buf)

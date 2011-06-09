@@ -237,6 +237,12 @@ int ltt_is_finalized(struct channel *chan)
 	return lib_ring_buffer_channel_is_finalized(chan);
 }
 
+static
+int ltt_is_disabled(struct channel *chan)
+{
+	return lib_ring_buffer_channel_is_disabled(chan);
+}
+
 static struct ltt_transport ltt_relay_transport = {
 	.name = "relay-" RING_BUFFER_MODE_TEMPLATE_STRING,
 	.owner = THIS_MODULE,
@@ -252,6 +258,7 @@ static struct ltt_transport ltt_relay_transport = {
 		.get_reader_wait_queue = ltt_get_reader_wait_queue,
 		.get_hp_wait_queue = ltt_get_hp_wait_queue,
 		.is_finalized = ltt_is_finalized,
+		.is_disabled = ltt_is_disabled,
 	},
 };
 

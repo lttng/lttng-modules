@@ -568,6 +568,8 @@ unsigned int lttng_channel_poll(struct file *file, poll_table *wait)
 		poll_wait(file, channel->ops->get_hp_wait_queue(channel->chan),
 			  wait);
 
+		if (channel->ops->is_disabled(channel->chan))
+			return POLLERR;
 		if (channel->ops->is_finalized(channel->chan))
 			return POLLHUP;
 		else
