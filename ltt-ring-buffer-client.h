@@ -455,9 +455,21 @@ void ltt_event_write(struct lib_ring_buffer_ctx *ctx, const void *src,
 }
 
 static
-wait_queue_head_t *ltt_get_reader_wait_queue(struct ltt_channel *chan)
+wait_queue_head_t *ltt_get_reader_wait_queue(struct channel *chan)
 {
-	return &chan->chan->read_wait;
+	return &chan->read_wait;
+}
+
+static
+wait_queue_head_t *ltt_get_hp_wait_queue(struct channel *chan)
+{
+	return &chan->hp_wait;
+}
+
+static
+int ltt_is_finalized(struct channel *chan)
+{
+	return lib_ring_buffer_channel_is_finalized(chan);
 }
 
 static struct ltt_transport ltt_relay_transport = {
@@ -473,6 +485,8 @@ static struct ltt_transport ltt_relay_transport = {
 		.event_write = ltt_event_write,
 		.packet_avail_size = NULL,	/* Would be racy anyway */
 		.get_reader_wait_queue = ltt_get_reader_wait_queue,
+		.get_hp_wait_queue = ltt_get_hp_wait_queue,
+		.is_finalized = ltt_is_finalized,
 	},
 };
 

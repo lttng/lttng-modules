@@ -410,6 +410,7 @@ int __cpuinit lib_ring_buffer_cpu_hp_callback(struct notifier_block *nb,
 	case CPU_DOWN_FAILED_FROZEN:
 	case CPU_ONLINE:
 	case CPU_ONLINE_FROZEN:
+		wake_up_interruptible(&chan->hp_wait);
 		lib_ring_buffer_start_switch_timer(buf);
 		lib_ring_buffer_start_read_timer(buf);
 		return NOTIFY_OK;
@@ -626,6 +627,7 @@ struct channel *channel_create(const struct lib_ring_buffer_config *config,
 	chan->read_timer_interval = usecs_to_jiffies(read_timer_interval);
 	kref_init(&chan->ref);
 	init_waitqueue_head(&chan->read_wait);
+	init_waitqueue_head(&chan->hp_wait);
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
 #if defined(CONFIG_NO_HZ) && defined(CONFIG_LIB_RING_BUFFER)
@@ -748,6 +750,8 @@ void *channel_destroy(struct channel *chan)
 		ACCESS_ONCE(buf->finalized) = 1;
 		wake_up_interruptible(&buf->read_wait);
 	}
+	ACCESS_ONCE(chan->finalized) = 1;
+	wake_up_interruptible(&chan->hp_wait);
 	wake_up_interruptible(&chan->read_wait);
 	kref_put(&chan->ref, channel_release);
 	priv = chan->backend.priv;

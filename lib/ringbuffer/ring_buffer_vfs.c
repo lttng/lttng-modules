@@ -89,7 +89,7 @@ unsigned int lib_ring_buffer_poll(struct file *filp, poll_table *wait)
 	int finalized;
 
 	if (filp->f_mode & FMODE_READ) {
-		poll_wait_set_exclusive(wait);
+		init_poll_funcptr(wait, wrapper_pollwait_exclusive);
 		poll_wait(filp, &buf->read_wait, wait);
 
 		finalized = lib_ring_buffer_is_finalized(config, buf);

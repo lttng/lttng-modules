@@ -1,20 +1,20 @@
+#ifndef _LTTNG_WRAPPER_POLL_H
+#define _LTTNG_WRAPPER_POLL_H
+
 /*
- * wrapper/poll.h
+ * Copyright (C) 2011 Mathieu Desnoyers (mathieu.desnoyers@efficios.com)
  *
- * Copyright (C) 2010-2011 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+ * wrapper around poll __pollwait and poll_get_entry. Using KALLSYMS to get its
+ * address when available, else we need to have a kernel that exports this
+ * function to GPL modules.
  *
  * Dual LGPL v2.1/GPL v2 license.
  */
 
-#ifndef CONFIG_LIB_RING_BUFFER
 #include <linux/poll.h>
 
-#warning "poll_wait_set_exclusive() is defined as no-op. Will increase LTTng overhead. Please consider using the LTTng kernel tree for better results."
+void wrapper_pollwait_exclusive(struct file *filp,
+			 wait_queue_head_t *wait_address,
+			 poll_table *p);
 
-/*
- * Will cause higher overhead when signalling all possible reader threads when a
- * buffer is ready to be consumed.
- */
-#define poll_wait_set_exclusive(poll_table)
-
-#endif
+#endif /* _LTTNG_WRAPPER_POLL_H */

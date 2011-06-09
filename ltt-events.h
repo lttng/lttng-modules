@@ -202,7 +202,9 @@ struct ltt_channel_ops {
 	 * may change due to concurrent writes.
 	 */
 	size_t (*packet_avail_size)(struct channel *chan);
-	wait_queue_head_t *(*get_reader_wait_queue)(struct ltt_channel *chan);
+	wait_queue_head_t *(*get_reader_wait_queue)(struct channel *chan);
+	wait_queue_head_t *(*get_hp_wait_queue)(struct channel *chan);
+	int (*is_finalized)(struct channel *chan);
 };
 
 struct ltt_channel {
@@ -214,7 +216,6 @@ struct ltt_channel {
 	struct file *file;		/* File associated to channel */
 	unsigned int free_event_id;	/* Next event ID to allocate */
 	struct list_head list;		/* Channel list */
-	wait_queue_head_t notify_wait;	/* Channel addition notif. waitqueue */
 	struct ltt_channel_ops *ops;
 	int header_type;		/* 0: unset, 1: compact, 2: large */
 	int metadata_dumped:1;

@@ -7,4 +7,5 @@ lib-ring-buffer-objs := \
 	ringbuffer/ring_buffer_vfs.o \
 	ringbuffer/ring_buffer_splice.o \
 	ringbuffer/ring_buffer_mmap.o \
-	prio_heap/lttng_prio_heap.o
+	prio_heap/lttng_prio_heap.o \
+	../wrapper/poll.o

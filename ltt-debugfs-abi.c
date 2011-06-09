@@ -32,6 +32,7 @@
 #include <linux/slab.h>
 #include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "wrapper/ringbuffer/vfs.h"
+#include "wrapper/poll.h"
 #include "ltt-debugfs-abi.h"
 #include "ltt-events.h"
 #include "ltt-tracer.h"
@@ -551,8 +552,6 @@ long lttng_metadata_ioctl(struct file *file, unsigned int cmd, unsigned long arg
 	}
 }
 
-/* TODO: poll */
-#if 0
 /**
  *	lttng_channel_poll - lttng stream addition/removal monitoring
  *
@@ -565,11 +564,11 @@ unsigned int lttng_channel_poll(struct file *file, poll_table *wait)
 	unsigned int mask = 0;
 
 	if (file->f_mode & FMODE_READ) {
-		poll_wait_set_exclusive(wait);
-		poll_wait(file, &channel->notify_wait, wait);
+		init_poll_funcptr(wait, wrapper_pollwait_exclusive);
+		poll_wait(file, channel->ops->get_hp_wait_queue(channel->chan),
+			  wait);
 
-		/* TODO: identify when the channel is being finalized. */
-		if (finalized)
+		if (channel->ops->is_finalized(channel->chan))
 			return POLLHUP;
 		else
 			return POLLIN | POLLRDNORM;
@@ -577,7 +576,6 @@ unsigned int lttng_channel_poll(struct file *file, poll_table *wait)
 	return mask;
 
 }
-#endif //0
 
 static
 int lttng_channel_release(struct inode *inode, struct file *file)
@@ -591,10 +589,7 @@ int lttng_channel_release(struct inode *inode, struct file *file)
 
 static const struct file_operations lttng_channel_fops = {
 	.release = lttng_channel_release,
-/* TODO */
-#if 0
 	.poll = lttng_channel_poll,
-#endif //0
 	.unlocked_ioctl = lttng_channel_ioctl,
 #ifdef CONFIG_COMPAT
 	.compat_ioctl = lttng_channel_ioctl,
