@@ -17,13 +17,6 @@
 #include "wrapper/vmalloc.h"
 #include "ltt-tracer.h"
 
-/*
- * TODO: Add CPU hotplug support.
- */
-
-static DEFINE_MUTEX(perf_counter_mutex);
-static LIST_HEAD(perf_counter_contexts);
-
 static
 size_t perf_counter_get_size(size_t offset)
 {
@@ -62,15 +55,65 @@ void lttng_destroy_perf_counter_field(struct lttng_ctx_field *field)
 	struct perf_event **events = field->u.perf_counter.e;
 	int cpu;
 
-	mutex_lock(&perf_counter_mutex);
-	list_del(&field->u.perf_counter.head);
+	get_online_cpus();
 	for_each_online_cpu(cpu)
 		perf_event_release_kernel(events[cpu]);
-	mutex_unlock(&perf_counter_mutex);
+	put_online_cpus();
+#ifdef CONFIG_HOTPLUG_CPU
+	unregister_cpu_notifier(&field->u.perf_counter.nb);
+#endif
 	kfree(field->event_field.name);
 	kfree(field->u.perf_counter.attr);
 	kfree(events);
 }
+
+#ifdef CONFIG_HOTPLUG_CPU
+
+/**
+ *	lttng_perf_counter_hp_callback - CPU hotplug callback
+ *	@nb: notifier block
+ *	@action: hotplug action to take
+ *	@hcpu: CPU number
+ *
+ *	Returns the success/failure of the operation. (%NOTIFY_OK, %NOTIFY_BAD)
+ *
+ * We can setup perf counters when the cpu is online (up prepare seems to be too
+ * soon).
+ */
+static
+int __cpuinit lttng_perf_counter_cpu_hp_callback(struct notifier_block *nb,
+						 unsigned long action,
+						 void *hcpu)
+{
+	unsigned int cpu = (unsigned long) hcpu;
+	struct lttng_ctx_field *field =
+		container_of(nb, struct lttng_ctx_field, u.perf_counter.nb);
+	struct perf_event **events = field->u.perf_counter.e;
+	struct perf_event_attr *attr = field->u.perf_counter.attr;
+	
+
+	if (!field->u.perf_counter.hp_enable)
+		return NOTIFY_OK;
+
+	switch (action) {
+	case CPU_ONLINE:
+	case CPU_ONLINE_FROZEN:
+		events[cpu] = perf_event_create_kernel_counter(attr,
+				cpu, NULL, overflow_callback);
+		if (!events[cpu])
+			return NOTIFY_BAD;
+		break;
+	case CPU_UP_CANCELED:
+	case CPU_UP_CANCELED_FROZEN:
+	case CPU_DEAD:
+	case CPU_DEAD_FROZEN:
+		perf_event_release_kernel(events[cpu]);
+		break;
+	}
+	return NOTIFY_OK;
+}
+
+#endif
 
 int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  uint64_t config,
@@ -100,17 +143,6 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	attr->pinned = 1;
 	attr->disabled = 0;
 
-	mutex_lock(&perf_counter_mutex);
-
-	for_each_online_cpu(cpu) {
-		events[cpu] = perf_event_create_kernel_counter(attr,
-					cpu, NULL, overflow_callback);
-		if (!events[cpu]) {
-			ret = -EINVAL;
-			goto name_alloc_error;
-		}
-	}
-
 	name_alloc = kstrdup(name, GFP_KERNEL);
 	if (!name_alloc) {
 		ret = -ENOMEM;
@@ -120,8 +152,27 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	field = lttng_append_context(ctx);
 	if (!field) {
 		ret = -ENOMEM;
-		goto error;
+		goto append_context_error;
 	}
+
+#ifdef CONFIG_HOTPLUG_CPU
+	field->u.perf_counter.nb.notifier_call =
+		lttng_perf_counter_cpu_hp_callback;
+	field->u.perf_counter.nb.priority = 0;
+	register_cpu_notifier(&field->u.perf_counter.nb);
+#endif
+
+	get_online_cpus();
+	for_each_online_cpu(cpu) {
+		events[cpu] = perf_event_create_kernel_counter(attr,
+					cpu, NULL, overflow_callback);
+		if (!events[cpu]) {
+			ret = -EINVAL;
+			goto counter_error;
+		}
+	}
+	put_online_cpus();
+
 	field->destroy = lttng_destroy_perf_counter_field;
 
 	field->event_field.name = name_alloc;
@@ -136,21 +187,24 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	field->record = perf_counter_record;
 	field->u.perf_counter.e = events;
 	field->u.perf_counter.attr = attr;
-
-	list_add(&field->u.perf_counter.head, &perf_counter_contexts);
-	mutex_unlock(&perf_counter_mutex);
+	field->u.perf_counter.hp_enable = 1;
 
 	wrapper_vmalloc_sync_all();
 	return 0;
 
-error:
-	kfree(name_alloc);
-name_alloc_error:
+counter_error:
 	for_each_online_cpu(cpu) {
 		if (events[cpu])
 			perf_event_release_kernel(events[cpu]);
 	}
-	mutex_unlock(&perf_counter_mutex);
+	put_online_cpus();
+#ifdef CONFIG_HOTPLUG_CPU
+	unregister_cpu_notifier(&field->u.perf_counter.nb);
+#endif
+	lttng_remove_context_field(ctx, field);
+append_context_error:
+	kfree(name_alloc);
+name_alloc_error:
 	kfree(attr);
 error_attr:
 	kfree(events);

@@ -128,7 +128,8 @@ struct lttng_ctx_field {
 	union {
 		struct {
 			struct perf_event **e;	/* per-cpu array */
-			struct list_head head;
+			struct notifier_block nb;
+			int hp_enable;
 			struct perf_event_attr *attr;
 		} perf_counter;
 	} u;
@@ -273,6 +274,8 @@ void ltt_event_put(const struct lttng_event_desc *desc);
 int ltt_probes_init(void);
 void ltt_probes_exit(void);
 struct lttng_ctx_field *lttng_append_context(struct lttng_ctx **ctx);
+void lttng_remove_context_field(struct lttng_ctx **ctx,
+				struct lttng_ctx_field *field);
 void lttng_destroy_context(struct lttng_ctx *ctx);
 int lttng_add_pid_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_comm_to_ctx(struct lttng_ctx **ctx);
