@@ -11,6 +11,10 @@
  * Ftrace function tracer does not seem to provide synchronization between probe
  * teardown and callback execution. Therefore, we make this module permanently
  * loaded (unloadable).
+ *
+ * TODO: Move to register_ftrace_function() (which is exported for
+ * modules) for Linux >= 3.0. It is faster (only enables the selected
+ * functions), and will stay there.
  */
 
 #include <linux/module.h>
