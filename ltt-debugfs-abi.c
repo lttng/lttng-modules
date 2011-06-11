@@ -564,7 +564,7 @@ unsigned int lttng_channel_poll(struct file *file, poll_table *wait)
 	unsigned int mask = 0;
 
 	if (file->f_mode & FMODE_READ) {
-		init_poll_funcptr(wait, wrapper_pollwait_exclusive);
+		poll_wait_set_exclusive(wait);
 		poll_wait(file, channel->ops->get_hp_wait_queue(channel->chan),
 			  wait);
 

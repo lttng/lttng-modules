@@ -13,8 +13,7 @@ obj-m += ltt-relay.o
 ltt-relay-objs :=  ltt-events.o ltt-debugfs-abi.o \
 			ltt-probes.o ltt-core.o ltt-context.o \
 			lttng-context-pid.o lttng-context-comm.o \
-			lttng-context-prio.o lttng-context-nice.o \
-			wrapper/poll.o
+			lttng-context-prio.o lttng-context-nice.o
 
 ifneq ($(CONFIG_PERF_EVENTS),)
 ltt-relay-objs += lttng-context-perf-counters.o

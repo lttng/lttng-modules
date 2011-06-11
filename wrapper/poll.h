@@ -4,17 +4,13 @@
 /*
  * Copyright (C) 2011 Mathieu Desnoyers (mathieu.desnoyers@efficios.com)
  *
- * wrapper around poll __pollwait and poll_get_entry. Using KALLSYMS to get its
- * address when available, else we need to have a kernel that exports this
- * function to GPL modules.
- *
  * Dual LGPL v2.1/GPL v2 license.
  */
 
 #include <linux/poll.h>
 
-void wrapper_pollwait_exclusive(struct file *filp,
-			 wait_queue_head_t *wait_address,
-			 poll_table *p);
+#warning "poll_wait_set_exclusive() is defined as no-op. Thundering herd effect can be noticed with large number of consumer threads."
+
+#define poll_wait_set_exclusive(poll_table)
 
 #endif /* _LTTNG_WRAPPER_POLL_H */
