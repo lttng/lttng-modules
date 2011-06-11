@@ -128,7 +128,8 @@ struct lttng_ctx_field {
 	union {
 		struct {
 			struct perf_event **e;	/* per-cpu array */
-			struct list_head head;
+			struct notifier_block nb;
+			int hp_enable;
 			struct perf_event_attr *attr;
 		} perf_counter;
 	} u;
@@ -201,7 +202,10 @@ struct ltt_channel_ops {
 	 * may change due to concurrent writes.
 	 */
 	size_t (*packet_avail_size)(struct channel *chan);
-	wait_queue_head_t *(*get_reader_wait_queue)(struct ltt_channel *chan);
+	wait_queue_head_t *(*get_reader_wait_queue)(struct channel *chan);
+	wait_queue_head_t *(*get_hp_wait_queue)(struct channel *chan);
+	int (*is_finalized)(struct channel *chan);
+	int (*is_disabled)(struct channel *chan);
 };
 
 struct ltt_channel {
@@ -213,7 +217,6 @@ struct ltt_channel {
 	struct file *file;		/* File associated to channel */
 	unsigned int free_event_id;	/* Next event ID to allocate */
 	struct list_head list;		/* Channel list */
-	wait_queue_head_t notify_wait;	/* Channel addition notif. waitqueue */
 	struct ltt_channel_ops *ops;
 	int header_type;		/* 0: unset, 1: compact, 2: large */
 	int metadata_dumped:1;
@@ -273,6 +276,8 @@ void ltt_event_put(const struct lttng_event_desc *desc);
 int ltt_probes_init(void);
 void ltt_probes_exit(void);
 struct lttng_ctx_field *lttng_append_context(struct lttng_ctx **ctx);
+void lttng_remove_context_field(struct lttng_ctx **ctx,
+				struct lttng_ctx_field *field);
 void lttng_destroy_context(struct lttng_ctx *ctx);
 int lttng_add_pid_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_comm_to_ctx(struct lttng_ctx **ctx);

@@ -169,7 +169,6 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 	if (!chan)
 		goto nomem;
 	chan->session = session;
-	init_waitqueue_head(&chan->notify_wait);
 	chan->id = session->free_chan_id++;
 	/*
 	 * Note: the channel creation op already writes into the packet
@@ -385,7 +384,7 @@ int lttng_metadata_printf(struct ltt_session *session,
 		 * we need to bail out after timeout or being
 		 * interrupted.
 		 */
-		waitret = wait_event_interruptible_timeout(*chan->ops->get_reader_wait_queue(chan),
+		waitret = wait_event_interruptible_timeout(*chan->ops->get_reader_wait_queue(chan->chan),
 			({
 				ret = chan->ops->event_reserve(&ctx, 0);
 				ret != -ENOBUFS || !ret;

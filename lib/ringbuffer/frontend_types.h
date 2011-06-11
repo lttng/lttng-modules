@@ -62,6 +62,8 @@ struct channel {
 	int cpu_hp_enable:1;			/* Enable CPU hotplug notif. */
 	int hp_iter_enable:1;			/* Enable hp iter notif. */
 	wait_queue_head_t read_wait;		/* reader wait queue */
+	wait_queue_head_t hp_wait;		/* CPU hotplug wait queue */
+	int finalized;				/* Has channel been finalized */
 	struct channel_iter iter;		/* Channel read-side iterator */
 	struct kref ref;			/* Reference count */
 };
