@@ -107,4 +107,8 @@ struct lttng_kernel_context {
 #define LTTNG_KERNEL_CONTEXT			\
 	_IOW(0xF6, 0x70, struct lttng_kernel_context)
 
+/* Event, Channel and Session ioctl */
+#define LTTNG_KERNEL_ENABLE			_IO(0xF6, 0x80)
+#define LTTNG_KERNEL_DISABLE			_IO(0xF6, 0x81)
+
 #endif /* _LTT_DEBUGFS_ABI_H */

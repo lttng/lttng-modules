@@ -25,8 +25,13 @@ int lttng_kprobes_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	int ret;
 	unsigned long data = (unsigned long) p->addr;
 
-	if (!ACCESS_ONCE(chan->session->active))
+	if (unlikely(!ACCESS_ONCE(chan->session->active)))
 		return 0;
+	if (unlikely(!ACCESS_ONCE(chan->enabled)))
+		return 0;
+	if (unlikely(!ACCESS_ONCE(event->enabled)))
+		return 0;
+
 	lib_ring_buffer_ctx_init(&ctx, chan->chan, event, sizeof(data),
 				 ltt_alignof(data), -1);
 	ret = chan->ops->event_reserve(&ctx, event->id);

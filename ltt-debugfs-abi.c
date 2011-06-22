@@ -330,10 +330,10 @@ fd_error:
  *	This ioctl implements lttng commands:
  *	LTTNG_KERNEL_CHANNEL
  *		Returns a LTTng channel file descriptor
- *	LTTNG_KERNEL_SESSION_START
- *		Starts tracing session
- *	LTTNG_KERNEL_SESSION_STOP
- *		Stops tracing session
+ *	LTTNG_KERNEL_ENABLE
+ *		Enables tracing for a session (weak enable)
+ *	LTTNG_KERNEL_DISABLE
+ *		Disables tracing for a session (strong disable)
  *	LTTNG_KERNEL_METADATA
  *		Returns a LTTng metadata file descriptor
  *
@@ -350,9 +350,11 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 				(struct lttng_kernel_channel __user *) arg,
 				PER_CPU_CHANNEL);
 	case LTTNG_KERNEL_SESSION_START:
-		return ltt_session_start(session);
+	case LTTNG_KERNEL_ENABLE:
+		return ltt_session_enable(session);
 	case LTTNG_KERNEL_SESSION_STOP:
-		return ltt_session_stop(session);
+	case LTTNG_KERNEL_DISABLE:
+		return ltt_session_disable(session);
 	case LTTNG_KERNEL_METADATA:
 		return lttng_abi_create_channel(file,
 				(struct lttng_kernel_channel __user *) arg,
@@ -506,6 +508,10 @@ fd_error:
  *		Returns an event file descriptor or failure.
  *	LTTNG_KERNEL_CONTEXT
  *		Prepend a context field to each event in the channel
+ *	LTTNG_KERNEL_ENABLE
+ *		Enable recording for events in this channel (weak enable)
+ *	LTTNG_KERNEL_DISABLE
+ *		Disable recording for events in this channel (strong disable)
  *
  * Channel and event file descriptors also hold a reference on the session.
  */
@@ -523,6 +529,10 @@ long lttng_channel_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return lttng_abi_add_context(file,
 				(struct lttng_kernel_context __user *) arg,
 				&channel->ctx, channel->session);
+	case LTTNG_KERNEL_ENABLE:
+		return ltt_channel_enable(channel);
+	case LTTNG_KERNEL_DISABLE:
+		return ltt_channel_disable(channel);
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -614,13 +624,12 @@ static const struct file_operations lttng_metadata_fops = {
  *	@arg: command arg
  *
  *	This ioctl implements lttng commands:
- *      LTTNG_KERNEL_STREAM
- *              Returns an event stream file descriptor or failure.
- *              (typically, one event stream records events from one CPU)
- *	LTTNG_KERNEL_EVENT
- *		Returns an event file descriptor or failure.
  *	LTTNG_KERNEL_CONTEXT
  *		Prepend a context field to each record of this event
+ *	LTTNG_KERNEL_ENABLE
+ *		Enable recording for this event (weak enable)
+ *	LTTNG_KERNEL_DISABLE
+ *		Disable recording for this event (strong disable)
  */
 static
 long lttng_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
@@ -632,6 +641,10 @@ long lttng_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return lttng_abi_add_context(file,
 				(struct lttng_kernel_context __user *) arg,
 				&event->ctx, event->chan->session);
+	case LTTNG_KERNEL_ENABLE:
+		return ltt_event_enable(event);
+	case LTTNG_KERNEL_DISABLE:
+		return ltt_event_disable(event);
 	default:
 		return -ENOIOCTLCMD;
 	}
