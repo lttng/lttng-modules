@@ -2,7 +2,7 @@
  * (C) Copyright	2009-2011 -
  * 		Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
- * LTTng PID context.
+ * LTTng TID context.
  *
  * Dual LGPL v2.1/GPL v2 license.
  */
@@ -16,7 +16,7 @@
 #include "ltt-tracer.h"
 
 static
-size_t pid_get_size(size_t offset)
+size_t tid_get_size(size_t offset)
 {
 	size_t size = 0;
 
@@ -26,18 +26,18 @@ size_t pid_get_size(size_t offset)
 }
 
 static
-void pid_record(struct lttng_ctx_field *field,
-		struct lib_ring_buffer_ctx *ctx,
-		struct ltt_channel *chan)
+void tid_record(struct lttng_ctx_field *field,
+		 struct lib_ring_buffer_ctx *ctx,
+		 struct ltt_channel *chan)
 {
-	pid_t pid;
+	pid_t tid;
 
-	pid = task_tgid_nr(current);
-	lib_ring_buffer_align_ctx(ctx, ltt_alignof(pid));
-	chan->ops->event_write(ctx, &pid, sizeof(pid));
+	tid = task_pid_nr(current);
+	lib_ring_buffer_align_ctx(ctx, ltt_alignof(tid));
+	chan->ops->event_write(ctx, &tid, sizeof(tid));
 }
 
-int lttng_add_pid_to_ctx(struct lttng_ctx **ctx)
+int lttng_add_tid_to_ctx(struct lttng_ctx **ctx)
 {
 	struct lttng_ctx_field *field;
 	int ret;
@@ -45,7 +45,7 @@ int lttng_add_pid_to_ctx(struct lttng_ctx **ctx)
 	field = lttng_append_context(ctx);
 	if (!field)
 		return ret;
-	field->event_field.name = "pid";
+	field->event_field.name = "tid";
 	field->event_field.type.atype = atype_integer;
 	field->event_field.type.u.basic.integer.size = sizeof(pid_t) * CHAR_BIT;
 	field->event_field.type.u.basic.integer.alignment = ltt_alignof(pid_t) * CHAR_BIT;
@@ -53,13 +53,13 @@ int lttng_add_pid_to_ctx(struct lttng_ctx **ctx)
 	field->event_field.type.u.basic.integer.reverse_byte_order = 0;
 	field->event_field.type.u.basic.integer.base = 10;
 	field->event_field.type.u.basic.integer.encoding = lttng_encode_none;
-	field->get_size = pid_get_size;
-	field->record = pid_record;
+	field->get_size = tid_get_size;
+	field->record = tid_record;
 	wrapper_vmalloc_sync_all();
 	return 0;
 }
-EXPORT_SYMBOL_GPL(lttng_add_pid_to_ctx);
+EXPORT_SYMBOL_GPL(lttng_add_tid_to_ctx);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers");
-MODULE_DESCRIPTION("Linux Trace Toolkit PID Context");
+MODULE_DESCRIPTION("Linux Trace Toolkit TID Context");

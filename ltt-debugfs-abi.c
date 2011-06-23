@@ -159,6 +159,16 @@ long lttng_abi_add_context(struct file *file,
 		return lttng_add_prio_to_ctx(ctx);
 	case LTTNG_KERNEL_CONTEXT_NICE:
 		return lttng_add_nice_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_VPID:
+		return lttng_add_vpid_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_TID:
+		return lttng_add_tid_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_VTID:
+		return lttng_add_vtid_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_PPID:
+		return lttng_add_ppid_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_VPPID:
+		return lttng_add_vppid_to_ctx(ctx);
 	case LTTNG_KERNEL_CONTEXT_PERF_COUNTER:
 		context_param.u.perf_counter.name[LTTNG_SYM_NAME_LEN - 1] = '\0';
 		return lttng_add_perf_counter_to_ctx(context_param.u.perf_counter.type,
