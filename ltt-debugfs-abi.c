@@ -212,6 +212,9 @@ long lttng_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 				(struct lttng_kernel_tracer_version __user *) arg);
 	case LTTNG_KERNEL_TRACEPOINT_LIST:
 		return lttng_abi_tracepoint_list();
+	case LTTNG_KERNEL_WAIT_QUIESCENT:
+		synchronize_trace();
+		return 0;
 	default:
 		return -ENOIOCTLCMD;
 	}
