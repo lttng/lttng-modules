@@ -196,6 +196,8 @@ long lttng_abi_add_context(struct file *file,
  *		Returns the LTTng kernel tracer version
  *	LTTNG_KERNEL_TRACEPOINT_LIST
  *		Returns a file descriptor listing available tracepoints
+ *	LTTNG_KERNEL_WAIT_QUIESCENT
+ *		Returns after all previously running probes have completed
  *
  * The returned session will be deleted when its file descriptor is closed.
  */
