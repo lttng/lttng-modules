@@ -359,4 +359,8 @@ void lttng_ftrace_destroy_private(struct ltt_event *event)
 
 extern const struct file_operations lttng_tracepoint_list_fops;
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
+#define TRACEPOINT_HAS_DATA_ARG
+#endif
+
 #endif /* _LTT_EVENTS_H */
