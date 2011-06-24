@@ -40,7 +40,6 @@ void vtid_record(struct lttng_ctx_field *field,
 int lttng_add_vtid_to_ctx(struct lttng_ctx **ctx)
 {
 	struct lttng_ctx_field *field;
-	int ret;
 
 	field = lttng_append_context(ctx);
 	if (!field)
