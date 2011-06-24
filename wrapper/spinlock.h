@@ -13,10 +13,10 @@
 
 #define raw_spin_lock_init(lock)				\
 	do {							\
-		*(lock) = __RAW_SPIN_LOCK_UNLOCKED(lock);	\
+		*(lock) = __RAW_SPIN_LOCK_UNLOCKED;		\
 	} while (0)
 
-#define raw_spin_is_locked(lock)	spin_is_locked(lock)
+#define raw_spin_is_locked(lock)	__raw_spin_is_locked(lock)
 
 
 #endif
