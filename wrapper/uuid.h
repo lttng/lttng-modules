@@ -22,7 +22,7 @@ typedef struct {
 static inline
 void uuid_le_gen(uuid_le *u)
 {
-	genarate_random_uuid(u);
+	generate_random_uuid(u);
 }
 
 #endif
