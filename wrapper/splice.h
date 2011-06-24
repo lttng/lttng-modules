@@ -16,4 +16,8 @@
 ssize_t wrapper_splice_to_pipe(struct pipe_inode_info *pipe,
 			       struct splice_pipe_desc *spd);
 
+#ifndef PIPE_DEF_BUFFERS
+#define PIPE_DEF_BUFFERS 16
+#endif
+
 #endif /* _LTT_WRAPPER_SPLICE_H */
