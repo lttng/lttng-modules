@@ -36,7 +36,7 @@ void perf_counter_record(struct lttng_ctx_field *field,
 	uint64_t value;
 
 	event = field->u.perf_counter.e[ctx->cpu];
-	if (likely(event) && likely(event->pmu)) {
+	if (likely(event)) {
 		event->pmu->read(event);
 		value = local64_read(&event->count);
 	} else {
@@ -111,7 +111,7 @@ int __cpuinit lttng_perf_counter_cpu_hp_callback(struct notifier_block *nb,
 	case CPU_ONLINE_FROZEN:
 		pevent = perf_event_create_kernel_counter(attr,
 				cpu, NULL, overflow_callback);
-		if (!pevent)
+		if (!pevent || IS_ERR(pevent))
 			return NOTIFY_BAD;
 		barrier();	/* Create perf counter before setting event */
 		events[cpu] = pevent;
@@ -182,7 +182,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	for_each_online_cpu(cpu) {
 		events[cpu] = perf_event_create_kernel_counter(attr,
 					cpu, NULL, overflow_callback);
-		if (!events[cpu]) {
+		if (!events[cpu] || IS_ERR(events[cpu])) {
 			ret = -EINVAL;
 			goto counter_error;
 		}
@@ -210,7 +210,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 
 counter_error:
 	for_each_online_cpu(cpu) {
-		if (events[cpu])
+		if (events[cpu] && !IS_ERR(events[cpu]))
 			perf_event_release_kernel(events[cpu]);
 	}
 	put_online_cpus();
