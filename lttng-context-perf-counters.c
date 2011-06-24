@@ -36,7 +36,7 @@ void perf_counter_record(struct lttng_ctx_field *field,
 	uint64_t value;
 
 	event = field->u.perf_counter.e[ctx->cpu];
-	if (likely(event)) {
+	if (likely(event) && likely(event->pmu)) {
 		event->pmu->read(event);
 		value = local64_read(&event->count);
 	} else {
