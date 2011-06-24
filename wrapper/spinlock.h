@@ -11,9 +11,12 @@
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,33))
 
-#define raw_spin_lock_init(lock)				\
-	do {							\
-		*(lock) = __RAW_SPIN_LOCK_UNLOCKED;		\
+#include <linux/string.h>
+
+#define raw_spin_lock_init(lock)					\
+	do {								\
+		raw_spinlock_t __lock = __RAW_SPIN_LOCK_UNLOCKED;	\
+		memcpy(lock, &__lock, sizeof(lock));			\
 	} while (0)
 
 #define raw_spin_is_locked(lock)	__raw_spin_is_locked(lock)
