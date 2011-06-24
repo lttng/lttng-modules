@@ -19,6 +19,7 @@
 #include <linux/kref.h>
 #include "../../wrapper/ringbuffer/config.h"
 #include "../../wrapper/ringbuffer/backend_types.h"
+#include "../../wrapper/spinlock.h"
 #include "../../lib/prio_heap/lttng_prio_heap.h"	/* For per-CPU read-side iterator */
 
 /*
