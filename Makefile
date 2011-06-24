@@ -19,7 +19,9 @@ ltt-relay-objs :=  ltt-events.o ltt-debugfs-abi.o \
 			lttng-context-vppid.o
 
 ifneq ($(CONFIG_PERF_EVENTS),)
-ltt-relay-objs += lttng-context-perf-counters.o
+ltt-relay-objs += $(shell \
+	if [ $(VERSION) -ge 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 33 ] ; then \
+		echo "lttng-context-perf-counters.o" ; fi;)
 endif
 
 obj-m += probes/

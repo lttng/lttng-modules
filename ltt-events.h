@@ -296,10 +296,21 @@ int lttng_add_tid_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_vtid_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_ppid_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_vppid_to_ctx(struct lttng_ctx **ctx);
+#ifdef CONFIG_PERF_EVENTS
 int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  uint64_t config,
 				  const char *name,
 				  struct lttng_ctx **ctx);
+#else
+static inline
+int lttng_add_perf_counter_to_ctx(uint32_t type,
+				  uint64_t config,
+				  const char *name,
+				  struct lttng_ctx **ctx)
+{
+	return -ENOSYS;
+}
+#endif
 
 #ifdef CONFIG_KPROBES
 int lttng_kprobes_register(const char *name,
