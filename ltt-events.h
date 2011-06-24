@@ -12,8 +12,8 @@
  */
 
 #include <linux/list.h>
-#include <linux/uuid.h>
 #include <linux/kprobes.h>
+#include "wrapper/uuid.h"
 #include "ltt-debugfs-abi.h"
 
 #undef is_signed_type

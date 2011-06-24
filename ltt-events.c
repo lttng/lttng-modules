@@ -14,7 +14,7 @@
 #include <linux/sched.h>
 #include <linux/slab.h>
 #include <linux/jiffies.h>
-#include <linux/uuid.h>
+#include "wrapper/uuid.h"
 #include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "ltt-events.h"
 #include "ltt-tracer.h"
