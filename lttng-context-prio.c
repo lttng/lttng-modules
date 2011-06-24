@@ -63,7 +63,7 @@ int lttng_add_prio_to_ctx(struct lttng_ctx **ctx)
 
 	field = lttng_append_context(ctx);
 	if (!field)
-		return ret;
+		return -ENOMEM;
 	field->event_field.name = "prio";
 	field->event_field.type.atype = atype_integer;
 	field->event_field.type.u.basic.integer.size = sizeof(int) * CHAR_BIT;

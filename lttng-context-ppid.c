@@ -43,11 +43,10 @@ void ppid_record(struct lttng_ctx_field *field,
 int lttng_add_ppid_to_ctx(struct lttng_ctx **ctx)
 {
 	struct lttng_ctx_field *field;
-	int ret;
 
 	field = lttng_append_context(ctx);
 	if (!field)
-		return ret;
+		return -ENOMEM;
 	field->event_field.name = "ppid";
 	field->event_field.type.atype = atype_integer;
 	field->event_field.type.u.basic.integer.size = sizeof(pid_t) * CHAR_BIT;

@@ -40,11 +40,10 @@ void nice_record(struct lttng_ctx_field *field,
 int lttng_add_nice_to_ctx(struct lttng_ctx **ctx)
 {
 	struct lttng_ctx_field *field;
-	int ret;
 
 	field = lttng_append_context(ctx);
 	if (!field)
-		return ret;
+		return -ENOMEM;
 	field->event_field.name = "nice";
 	field->event_field.type.atype = atype_integer;
 	field->event_field.type.u.basic.integer.size = sizeof(int) * CHAR_BIT;

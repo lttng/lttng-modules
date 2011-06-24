@@ -41,11 +41,10 @@ void comm_record(struct lttng_ctx_field *field,
 int lttng_add_comm_to_ctx(struct lttng_ctx **ctx)
 {
 	struct lttng_ctx_field *field;
-	int ret;
 
 	field = lttng_append_context(ctx);
 	if (!field)
-		return ret;
+		return -ENOMEM;
 	field->event_field.name = "comm";
 	field->event_field.type.atype = atype_array;
 	field->event_field.type.u.array.elem_type.atype = atype_integer;
