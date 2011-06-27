@@ -91,6 +91,7 @@ int lttng_heap_init(struct lttng_ptr_heap *heap, size_t alloc_len,
 	heap->len = 0;
 	heap->alloc_len = 0;
 	heap->gt = gt;
+	heap->gfpmask = gfpmask;
 	/*
 	 * Minimum size allocated is 1 entry to ensure memory allocation
 	 * never fails within heap_replace_max.
