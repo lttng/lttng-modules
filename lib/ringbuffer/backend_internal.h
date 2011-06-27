@@ -12,7 +12,7 @@
  */
 
 #include "../../wrapper/ringbuffer/config.h"
-#include "../../wrapper//ringbuffer/backend_types.h"
+#include "../../wrapper/ringbuffer/backend_types.h"
 #include "../../wrapper/ringbuffer/frontend_types.h"
 #include <linux/string.h>
 
