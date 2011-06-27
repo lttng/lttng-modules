@@ -504,7 +504,6 @@ static int __init ltt_ring_buffer_client_init(void)
 	 * vmalloc'd module pages when it is built as a module into LTTng.
 	 */
 	wrapper_vmalloc_sync_all();
-	printk(KERN_INFO "LTT : ltt ring buffer client init\n");
 	ltt_transport_register(&ltt_relay_transport);
 	return 0;
 }
@@ -513,7 +512,6 @@ module_init(ltt_ring_buffer_client_init);
 
 static void __exit ltt_ring_buffer_client_exit(void)
 {
-	printk(KERN_INFO "LTT : ltt ring buffer client exit\n");
 	ltt_transport_unregister(&ltt_relay_transport);
 }
 
