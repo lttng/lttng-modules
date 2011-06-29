@@ -22,6 +22,14 @@ enum lttng_kernel_instrumentation {
 };
 
 /*
+ * LTTng consumer mode
+ */
+enum lttng_kernel_output {
+	LTTNG_KERNEL_SPLICE	= 0,
+	LTTNG_KERNEL_MMAP	= 1,
+};
+
+/*
  * LTTng DebugFS ABI structures.
  */
 
@@ -31,6 +39,7 @@ struct lttng_kernel_channel {
 	uint64_t num_subbuf;
 	unsigned int switch_timer_interval;	/* usecs */
 	unsigned int read_timer_interval;	/* usecs */
+	enum lttng_kernel_output output;	/* splice, mmap */
 };
 
 /*

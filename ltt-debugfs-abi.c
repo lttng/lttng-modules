@@ -289,12 +289,24 @@ int lttng_abi_create_channel(struct file *session_file,
 	}
 	switch (channel_type) {
 	case PER_CPU_CHANNEL:
-		transport_name = chan_param.overwrite ?
-			"relay-overwrite" : "relay-discard";
+		if (chan_param.output == LTTNG_KERNEL_SPLICE) {
+			transport_name = chan_param.overwrite ?
+				"relay-overwrite" : "relay-discard";
+		} else if (chan_param.output == LTTNG_KERNEL_MMAP) {
+			transport_name = chan_param.overwrite ?
+				"relay-overwrite-mmap" : "relay-discard-mmap";
+		} else {
+			return -EINVAL;
+		}
 		fops = &lttng_channel_fops;
 		break;
 	case METADATA_CHANNEL:
-		transport_name = "relay-metadata";
+		if (chan_param.output == LTTNG_KERNEL_SPLICE)
+			transport_name = "relay-metadata";
+		else if (chan_param.output == LTTNG_KERNEL_MMAP)
+			transport_name = "relay-metadata-mmap";
+		else
+			return -EINVAL;
 		fops = &lttng_metadata_fops;
 		break;
 	default:
