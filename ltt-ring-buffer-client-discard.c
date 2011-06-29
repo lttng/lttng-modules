@@ -13,6 +13,7 @@
 
 #define RING_BUFFER_MODE_TEMPLATE		RING_BUFFER_DISCARD
 #define RING_BUFFER_MODE_TEMPLATE_STRING	"discard"
+#define RING_BUFFER_OUTPUT_TEMPLATE		RING_BUFFER_SPLICE
 #include "ltt-ring-buffer-client.h"
 
 MODULE_LICENSE("GPL and additional rights");

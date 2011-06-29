@@ -12,8 +12,8 @@
 #include "ltt-tracer.h"
 
 #define RING_BUFFER_MODE_TEMPLATE		RING_BUFFER_DISCARD
-#define RING_BUFFER_MODE_TEMPLATE_STRING	"metadata"
-#define RING_BUFFER_OUTPUT_TEMPLATE		RING_BUFFER_SPLICE
+#define RING_BUFFER_MODE_TEMPLATE_STRING	"metadata-mmap"
+#define RING_BUFFER_OUTPUT_TEMPLATE		RING_BUFFER_MMAP
 #include "ltt-ring-buffer-metadata-client.h"
 
 MODULE_LICENSE("GPL and additional rights");

@@ -12,8 +12,8 @@
 #include "ltt-tracer.h"
 
 #define RING_BUFFER_MODE_TEMPLATE		RING_BUFFER_OVERWRITE
-#define RING_BUFFER_MODE_TEMPLATE_STRING	"overwrite"
-#define RING_BUFFER_OUTPUT_TEMPLATE		RING_BUFFER_SPLICE
+#define RING_BUFFER_MODE_TEMPLATE_STRING	"overwrite-mmap"
+#define RING_BUFFER_OUTPUT_TEMPLATE		RING_BUFFER_MMAP
 #include "ltt-ring-buffer-client.h"
 
 MODULE_LICENSE("GPL and additional rights");
