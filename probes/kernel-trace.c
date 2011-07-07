@@ -111,19 +111,17 @@ notrace void probe_irq_exit(void *_data, irqreturn_t retval)
 
 /* kernel_softirq_entry specialized tracepoint probe */
 
-void probe_softirq_entry(void *_data, struct softirq_action *h,
-	struct softirq_action *softirq_vec);
+void probe_softirq_entry(void *_data, unsigned int vec_nr);
 
 DEFINE_MARKER_TP(kernel, softirq_entry, softirq_entry,
 	probe_softirq_entry, "softirq_id #1u%lu");
 
-notrace void probe_softirq_entry(void *_data, struct softirq_action *h,
-	struct softirq_action *softirq_vec)
+notrace void probe_softirq_entry(void *_data, unsigned int vec_nr)
 {
 	struct marker *marker;
 	unsigned char data;
 
-	data = ((unsigned long)h - (unsigned long)softirq_vec) / sizeof(*h);
+	data = vec_nr;
 
 	marker = &GET_MARKER(kernel, softirq_entry);
 	ltt_specialized_trace(marker, marker->single.probe_private,
@@ -132,19 +130,17 @@ notrace void probe_softirq_entry(void *_data, struct softirq_action *h,
 
 /* kernel_softirq_exit specialized tracepoint probe */
 
-void probe_softirq_exit(void *_data, struct softirq_action *h,
-	struct softirq_action *softirq_vec);
+void probe_softirq_exit(void *_data, unsigned int vec_nr);
 
 DEFINE_MARKER_TP(kernel, softirq_exit, softirq_exit,
 	probe_softirq_exit, "softirq_id #1u%lu");
 
-notrace void probe_softirq_exit(void *_data, struct softirq_action *h,
-	struct softirq_action *softirq_vec)
+notrace void probe_softirq_exit(void *_data, unsigned int vec_nr)
 {
 	struct marker *marker;
 	unsigned char data;
 
-	data = ((unsigned long)h - (unsigned long)softirq_vec) / sizeof(*h);
+	data = vec_nr;
 
 	marker = &GET_MARKER(kernel, softirq_exit);
 	ltt_specialized_trace(marker, marker->single.probe_private,
