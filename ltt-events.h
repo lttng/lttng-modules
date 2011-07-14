@@ -191,6 +191,7 @@ struct ltt_channel_ops {
 				unsigned int read_timer_interval);
 	void (*channel_destroy)(struct channel *chan);
 	struct lib_ring_buffer *(*buffer_read_open)(struct channel *chan);
+	int (*buffer_has_read_closed_stream)(struct channel *chan);
 	void (*buffer_read_close)(struct lib_ring_buffer *buf);
 	int (*event_reserve)(struct lib_ring_buffer_ctx *ctx,
 			     uint32_t event_id);

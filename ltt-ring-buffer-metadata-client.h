@@ -178,6 +178,20 @@ struct lib_ring_buffer *ltt_buffer_read_open(struct channel *chan)
 }
 
 static
+int ltt_buffer_has_read_closed_stream(struct channel *chan)
+{
+	struct lib_ring_buffer *buf;
+	int cpu;
+
+	for_each_channel_cpu(cpu, chan) {
+		buf = channel_get_ring_buffer(&client_config, chan, cpu);
+		if (!atomic_long_read(&buf->active_readers))
+			return 1;
+	}
+	return 0;
+}
+
+static
 void ltt_buffer_read_close(struct lib_ring_buffer *buf)
 {
 	lib_ring_buffer_release_read(buf);
@@ -250,6 +264,8 @@ static struct ltt_transport ltt_relay_transport = {
 		.channel_create = _channel_create,
 		.channel_destroy = ltt_channel_destroy,
 		.buffer_read_open = ltt_buffer_read_open,
+		.buffer_has_read_closed_stream =
+			ltt_buffer_has_read_closed_stream,
 		.buffer_read_close = ltt_buffer_read_close,
 		.event_reserve = ltt_event_reserve,
 		.event_commit = ltt_event_commit,

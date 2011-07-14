@@ -609,8 +609,9 @@ unsigned int lttng_channel_poll(struct file *file, poll_table *wait)
 			return POLLERR;
 		if (channel->ops->is_finalized(channel->chan))
 			return POLLHUP;
-		else
+		if (channel->ops->buffer_has_read_closed_stream(channel->chan))
 			return POLLIN | POLLRDNORM;
+		return 0;
 	}
 	return mask;
 
