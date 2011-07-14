@@ -44,6 +44,10 @@ int lttng_add_nice_to_ctx(struct lttng_ctx **ctx)
 	field = lttng_append_context(ctx);
 	if (!field)
 		return -ENOMEM;
+	if (lttng_find_context(*ctx, "nice")) {
+		lttng_remove_context_field(ctx, field);
+		return -EEXIST;
+	}
 	field->event_field.name = "nice";
 	field->event_field.type.atype = atype_integer;
 	field->event_field.type.u.basic.integer.size = sizeof(int) * CHAR_BIT;

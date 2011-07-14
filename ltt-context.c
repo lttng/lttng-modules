@@ -16,6 +16,18 @@
 #include "ltt-events.h"
 #include "ltt-tracer.h"
 
+int lttng_find_context(struct lttng_ctx *ctx, const char *name)
+{
+	unsigned int i;
+
+	for (i = 0; i < ctx->nr_fields; i++) {
+		if (!strcmp(ctx->fields[i].event_field.name, name))
+			return 1;
+	}
+	return 0;
+}
+EXPORT_SYMBOL_GPL(lttng_find_context);
+
 struct lttng_ctx_field *lttng_append_context(struct lttng_ctx **ctx_p)
 {
 	struct lttng_ctx_field *field;

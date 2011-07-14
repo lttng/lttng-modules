@@ -45,6 +45,10 @@ int lttng_add_comm_to_ctx(struct lttng_ctx **ctx)
 	field = lttng_append_context(ctx);
 	if (!field)
 		return -ENOMEM;
+	if (lttng_find_context(*ctx, "comm")) {
+		lttng_remove_context_field(ctx, field);
+		return -EEXIST;
+	}
 	field->event_field.name = "comm";
 	field->event_field.type.atype = atype_array;
 	field->event_field.type.u.array.elem_type.atype = atype_integer;

@@ -284,6 +284,7 @@ void ltt_event_put(const struct lttng_event_desc *desc);
 int ltt_probes_init(void);
 void ltt_probes_exit(void);
 struct lttng_ctx_field *lttng_append_context(struct lttng_ctx **ctx);
+int lttng_find_context(struct lttng_ctx *ctx, const char *name);
 void lttng_remove_context_field(struct lttng_ctx **ctx,
 				struct lttng_ctx_field *field);
 void lttng_destroy_context(struct lttng_ctx *ctx);

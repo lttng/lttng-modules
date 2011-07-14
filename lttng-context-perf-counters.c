@@ -170,6 +170,10 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 		ret = -ENOMEM;
 		goto append_context_error;
 	}
+	if (lttng_find_context(*ctx, name_alloc))  {
+		ret = -EEXIST;
+		goto find_error;
+	}
 
 #ifdef CONFIG_HOTPLUG_CPU
 	field->u.perf_counter.nb.notifier_call =
@@ -217,6 +221,7 @@ counter_error:
 #ifdef CONFIG_HOTPLUG_CPU
 	unregister_cpu_notifier(&field->u.perf_counter.nb);
 #endif
+find_error:
 	lttng_remove_context_field(ctx, field);
 append_context_error:
 	kfree(name_alloc);

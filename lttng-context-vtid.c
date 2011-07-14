@@ -44,6 +44,10 @@ int lttng_add_vtid_to_ctx(struct lttng_ctx **ctx)
 	field = lttng_append_context(ctx);
 	if (!field)
 		return -ENOMEM;
+	if (lttng_find_context(*ctx, "vtid")) {
+		lttng_remove_context_field(ctx, field);
+		return -EEXIST;
+	}
 	field->event_field.name = "vtid";
 	field->event_field.type.atype = atype_integer;
 	field->event_field.type.u.basic.integer.size = sizeof(pid_t) * CHAR_BIT;
