@@ -21,6 +21,9 @@ int lttng_find_context(struct lttng_ctx *ctx, const char *name)
 	unsigned int i;
 
 	for (i = 0; i < ctx->nr_fields; i++) {
+		/* Skip allocated (but non-initialized) contexts */
+		if (!ctx->fields[i].event_field.name)
+			continue;
 		if (!strcmp(ctx->fields[i].event_field.name, name))
 			return 1;
 	}
