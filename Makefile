@@ -23,7 +23,8 @@ ltt-relay-objs :=  ltt-events.o ltt-debugfs-abi.o \
 
 ifneq ($(CONFIG_PERF_EVENTS),)
 ltt-relay-objs += $(shell \
-	if [ $(VERSION) -ge 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 33 ] ; then \
+	if [ $(VERSION) -ge 3 \
+		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 33 \) ] ; then \
 		echo "lttng-context-perf-counters.o" ; fi;)
 endif
 
