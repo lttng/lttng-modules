@@ -13,8 +13,13 @@ obj-m += lttng-probe-lttng.o
 obj-m += lttng-probe-sched.o
 obj-m += lttng-probe-kvm.o
 obj-m += lttng-probe-irq.o
-obj-m += lttng-probe-block.o
 obj-m += lttng-probe-syscalls.o
+
+ifneq ($(CONFIG_BLOCK),)
+ifneq ($(CONFIG_EVENT_TRACING),)	# need blk_cmd_buf_len
+obj-m += lttng-probe-block.o
+endif
+endif
 
 ifneq ($(CONFIG_KPROBES),)
 obj-m += lttng-kprobes.o
