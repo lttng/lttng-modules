@@ -149,7 +149,7 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 
 #include "wrapper/ringbuffer/api.h"
 
-extern
+static
 void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 				 struct lib_ring_buffer_ctx *ctx,
 				 uint32_t event_id);
@@ -207,6 +207,7 @@ slow_path:
 	ltt_write_event_header_slow(config, ctx, event_id);
 }
 
+static
 void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 				 struct lib_ring_buffer_ctx *ctx,
 				 uint32_t event_id)
