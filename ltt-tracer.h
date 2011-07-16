@@ -36,52 +36,6 @@
 /* Number of bytes to log with a read/write event */
 #define LTT_LOG_RW_SIZE			32L
 
-/* Maximum number of callbacks per marker */
-#define LTT_NR_CALLBACKS	10
-
-struct ltt_serialize_closure;
-
-/* Serialization callback */
-typedef size_t (*ltt_serialize_cb)(struct lib_ring_buffer *buf,
-				   size_t buf_offset,
-				   struct ltt_serialize_closure *closure,
-				   void *serialize_private,
-				   unsigned int stack_pos_ctx,
-				   int *largest_align,
-				   const char *fmt, va_list *args);
-
-struct ltt_serialize_closure {
-	ltt_serialize_cb *callbacks;
-	long cb_args[LTT_NR_CALLBACKS];
-	unsigned int cb_idx;
-};
-
-size_t ltt_serialize_data(struct lib_ring_buffer *buf, size_t buf_offset,
-			  struct ltt_serialize_closure *closure,
-			  void *serialize_private, unsigned int stack_pos_ctx,
-			  int *largest_align, const char *fmt, va_list *args);
-
-enum ltt_channels {
-	LTT_CHANNEL_METADATA,
-	LTT_CHANNEL_FD_STATE,
-	LTT_CHANNEL_GLOBAL_STATE,
-	LTT_CHANNEL_IRQ_STATE,
-	LTT_CHANNEL_MODULE_STATE,
-	LTT_CHANNEL_NETIF_STATE,
-	LTT_CHANNEL_SOFTIRQ_STATE,
-	LTT_CHANNEL_SWAP_STATE,
-	LTT_CHANNEL_SYSCALL_STATE,
-	LTT_CHANNEL_TASK_STATE,
-	LTT_CHANNEL_VM_STATE,
-	LTT_CHANNEL_FS,
-	LTT_CHANNEL_INPUT,
-	LTT_CHANNEL_IPC,
-	LTT_CHANNEL_KERNEL,
-	LTT_CHANNEL_MM,
-	LTT_CHANNEL_RCU,
-	LTT_CHANNEL_DEFAULT,
-};
-
 /*
  * Hardcoded event headers
  *
