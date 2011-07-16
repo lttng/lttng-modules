@@ -35,27 +35,6 @@
 
 /* Number of bytes to log with a read/write event */
 #define LTT_LOG_RW_SIZE			32L
-
-/*
- * Hardcoded event headers
- *
- * event header for a trace with active heartbeat : 27 bits timestamps
- *
- * headers are 32-bits aligned. In order to insure such alignment, a dynamic per
- * trace alignment value must be done.
- *
- * Remember that the C compiler does align each member on the boundary
- * equivalent to their own size.
- *
- * As relay subbuffers are aligned on pages, we are sure that they are 4 and 8
- * bytes aligned, so the buffer header and trace header are aligned.
- *
- * Event headers are aligned depending on the trace alignment option.
- *
- * Note using C structure bitfields for cross-endianness and portability
- * concerns.
- */
-
 #define LTT_MAX_SMALL_SIZE		0xFFFFU
 
 #ifdef RING_BUFFER_ALIGN
@@ -75,14 +54,6 @@
  * condition. (10 seconds)
  */
 #define LTTNG_METADATA_TIMEOUT_MSEC	10000
-
-/*
- * Size reserved for high priority events (interrupts, NMI, BH) at the end of a
- * nearly full buffer. User space won't use this last amount of space when in
- * blocking mode. This space also includes the event header that would be
- * written by this user space event.
- */
-#define LTT_RESERVE_CRITICAL		4096
 
 #define LTT_RFLAG_EXTENDED		RING_BUFFER_RFLAG_END
 #define LTT_RFLAG_END			(LTT_RFLAG_EXTENDED << 1)
