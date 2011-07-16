@@ -58,42 +58,4 @@
 #define LTT_RFLAG_EXTENDED		RING_BUFFER_RFLAG_END
 #define LTT_RFLAG_END			(LTT_RFLAG_EXTENDED << 1)
 
-/* Register and unregister function pointers */
-
-enum ltt_module_function {
-	LTT_FUNCTION_RUN_FILTER,
-	LTT_FUNCTION_FILTER_CONTROL,
-	LTT_FUNCTION_STATEDUMP
-};
-
-extern int ltt_module_register(enum ltt_module_function name, void *function,
-			       struct module *owner);
-extern void ltt_module_unregister(enum ltt_module_function name);
-
-/* Exported control function */
-
-void ltt_core_register(int (*function)(u8, void *));
-
-void ltt_core_unregister(void);
-
-extern
-void ltt_statedump_register_kprobes_dump(void (*callback)(void *call_data));
-extern
-void ltt_statedump_unregister_kprobes_dump(void (*callback)(void *call_data));
-
-extern void ltt_dump_softirq_vec(void *call_data);
-
-#ifdef CONFIG_HAVE_LTT_DUMP_TABLES
-extern void ltt_dump_sys_call_table(void *call_data);
-extern void ltt_dump_idt_table(void *call_data);
-#else
-static inline void ltt_dump_sys_call_table(void *call_data)
-{
-}
-
-static inline void ltt_dump_idt_table(void *call_data)
-{
-}
-#endif
-
 #endif /* _LTT_TRACER_H */
