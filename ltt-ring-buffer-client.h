@@ -137,6 +137,7 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 		}
 		break;
 	default:
+		padding = 0;
 		WARN_ON_ONCE(1);
 	}
 	offset += ctx_get_size(offset, event->ctx);
