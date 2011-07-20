@@ -8,13 +8,14 @@ need for additional patches. Other features:
 
 - Produces CTF (Common Trace Format) natively,
   (http://www.efficios.com/ctf)
-- Function tracer, perf counters and kprobes support,
+- Tracepoints, Function tracer, CPU Performance Monitoring Unit (PMU)
+  counters and kprobes support,
 - Integrated interface for both kernel and userspace tracing,
 - Have the ability to attach "context" information to events in the
-  trace (e.g. any perf counter, pid, ppid, tid, comm name, etc).
-  basically, all the extra information fields to be collected with
-  events are optional, specified on a per-tracing-session basis
-  (except for timestamp and event id, which are mandatory).
+  trace (e.g. any PMU counter, pid, ppid, tid, comm name, etc).
+  All the extra information fields to be collected with events are
+  optional, specified on a per-tracing-session basis (except for
+  timestamp and event id, which are mandatory).
 
 To build and install, you will need to have your kernel headers available (or
 access to your full kernel source tree), and use:
