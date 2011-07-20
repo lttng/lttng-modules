@@ -28,8 +28,14 @@ against, use:
 KERNELDIR=path_to_kernel_dir make
 KERNELDIR=path_to_kernel_dir make install
 
-Use lttng-tools to control the tracer. LTTng tools should automatically load the
-kernel modules when needed.
+Use lttng-tools (git://git.lttng.org/lttng-tools.git) to control the tracer.
+LTTng tools should automatically load the kernel modules when needed.
+
+Use Babeltrace (git://git.efficios.com/babeltrace.git) to print traces as a
+human-readable text log.
+
+Please note that the LTTng-UST 2.0 (user-space tracing counterpart of LTTng 2.0)
+is still in active development and not released yet.
 
 So far, it has been tested on vanilla kernels 2.6.38 and 2.6.39 (on x86 at the
 moment). It should work fine with newer kernels and other architectures, but
