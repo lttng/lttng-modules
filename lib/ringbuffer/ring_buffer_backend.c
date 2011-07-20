@@ -569,11 +569,10 @@ int __lib_ring_buffer_copy_to_user(struct lib_ring_buffer_backend *bufb,
 	struct channel_backend *chanb = &bufb->chan->backend;
 	const struct lib_ring_buffer_config *config = chanb->config;
 	size_t index;
-	ssize_t pagecpy, orig_len;
+	ssize_t pagecpy;
 	struct lib_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 
-	orig_len = len;
 	offset &= chanb->buf_size - 1;
 	index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
 	if (unlikely(!len))

@@ -81,7 +81,7 @@ static int subbuf_splice_actor(struct file *in,
 		.ops = &ring_buffer_pipe_buf_ops,
 		.spd_release = lib_ring_buffer_page_release,
 	};
-	unsigned long consumed_old, consumed_idx, roffset;
+	unsigned long consumed_old, roffset;
 	unsigned long bytes_avail;
 
 	/*
@@ -90,7 +90,6 @@ static int subbuf_splice_actor(struct file *in,
 	WARN_ON(atomic_long_read(&buf->active_readers) != 1);
 	consumed_old = lib_ring_buffer_get_consumed(config, buf);
 	consumed_old += *ppos;
-	consumed_idx = subbuf_index(consumed_old, chan);
 
 	/*
 	 * Adjust read len, if longer than what is available.

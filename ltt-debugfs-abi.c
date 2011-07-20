@@ -247,7 +247,6 @@ void lttng_metadata_create_events(struct file *channel_file)
 		.name = "lttng_metadata",
 	};
 	struct ltt_event *event;
-	int ret;
 
 	/*
 	 * We tolerate no failure path after event creation. It will stay
@@ -255,7 +254,6 @@ void lttng_metadata_create_events(struct file *channel_file)
 	 */
 	event = ltt_event_create(channel, &metadata_params, NULL);
 	if (!event) {
-		ret = -EINVAL;
 		goto create_error;
 	}
 	return;
@@ -271,7 +269,7 @@ int lttng_abi_create_channel(struct file *session_file,
 			     enum channel_type channel_type)
 {
 	struct ltt_session *session = session_file->private_data;
-	const struct file_operations *fops;
+	const struct file_operations *fops = NULL;
 	const char *transport_name;
 	struct ltt_channel *chan;
 	struct file *chan_file;
@@ -286,8 +284,17 @@ int lttng_abi_create_channel(struct file *session_file,
 		ret = chan_fd;
 		goto fd_error;
 	}
+	switch (channel_type) {
+	case PER_CPU_CHANNEL:
+		fops = &lttng_channel_fops;
+		break;
+	case METADATA_CHANNEL:
+		fops = &lttng_metadata_fops;
+		break;
+	}
+		
 	chan_file = anon_inode_getfile("[lttng_channel]",
-				       &lttng_channel_fops,
+				       fops,
 				       NULL, O_RDWR);
 	if (IS_ERR(chan_file)) {
 		ret = PTR_ERR(chan_file);
@@ -304,7 +311,6 @@ int lttng_abi_create_channel(struct file *session_file,
 		} else {
 			return -EINVAL;
 		}
-		fops = &lttng_channel_fops;
 		break;
 	case METADATA_CHANNEL:
 		if (chan_param.output == LTTNG_KERNEL_SPLICE)
@@ -313,7 +319,6 @@ int lttng_abi_create_channel(struct file *session_file,
 			transport_name = "relay-metadata-mmap";
 		else
 			return -EINVAL;
-		fops = &lttng_metadata_fops;
 		break;
 	default:
 		transport_name = "<unknown>";

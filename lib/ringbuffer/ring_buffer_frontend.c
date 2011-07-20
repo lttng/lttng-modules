@@ -164,7 +164,6 @@ int lib_ring_buffer_create(struct lib_ring_buffer *buf,
 	const struct lib_ring_buffer_config *config = chanb->config;
 	struct channel *chan = container_of(chanb, struct channel, backend);
 	void *priv = chanb->priv;
-	unsigned int num_subbuf;
 	size_t subbuf_header_size;
 	u64 tsc;
 	int ret;
@@ -203,7 +202,6 @@ int lib_ring_buffer_create(struct lib_ring_buffer *buf,
 		goto free_commit;
 	}
 
-	num_subbuf = chan->backend.num_subbuf;
 	init_waitqueue_head(&buf->read_wait);
 	raw_spin_lock_init(&buf->raw_tick_nohz_spinlock);
 
