@@ -11,9 +11,9 @@ need for additional patches. Other features:
 - Function tracer, perf counters and kprobes support,
 - Integrated interface for both kernel and userspace tracing,
 - Have the ability to attach "context" information to events in the
-  trace (e.g. any perf counter, pid, ppid, tid, comm name, etc). So
-  basically, all the perf "required fields" like "preempt count" and
-  "bkl count" are all optional, specified on a per-tracing-session basis
+  trace (e.g. any perf counter, pid, ppid, tid, comm name, etc).
+  basically, all the extra information fields to be collected with
+  events are optional, specified on a per-tracing-session basis
   (except for timestamp and event id, which are mandatory).
 
 To build and install, you will need to have your kernel headers available (or
