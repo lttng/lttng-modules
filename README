@@ -1,0 +1,39 @@
+LTTng 2.0 modules
+
+Mathieu Desnoyers
+July 19, 2011
+
+LTTng 2.0 kernel modules build against a vanilla or distribution kernel, without
+need for additional patches. Other features:
+
+- Produces CTF (Common Trace Format) natively,
+  (http://www.efficios.com/ctf)
+- Function tracer, perf counters and kprobes support,
+- Integrated interface for both kernel and userspace tracing,
+- Have the ability to attach "context" information to events in the
+  trace (e.g. any perf counter, pid, ppid, tid, comm name, etc). So
+  basically, all the perf "required fields" like "preempt count" and
+  "bkl count" are all optional, specified on a per-tracing-session basis
+  (except for timestamp and event id, which are mandatory).
+
+To build and install, you will need to have your kernel headers available (or
+access to your full kernel source tree), and use:
+
+make
+make install
+
+If you need to specify the target directory to the kernel you want to build
+against, use:
+
+KERNELDIR=path_to_kernel_dir make
+KERNELDIR=path_to_kernel_dir make install
+
+Use lttng-tools to control the tracer. LTTng tools should automatically load the
+kernel modules when needed.
+
+So far, it has been tested on vanilla kernels 2.6.38 and 2.6.39 (on x86 at the
+moment). It should work fine with newer kernels and other architectures, but
+expect build issues with kernels older than 2.6.36. The clock source currently
+used is the standard gettimeofday (slower, less scalable and less precise than
+the LTTng 0.x clocks). Support for LTTng 0.x clocks will be added back soon into
+LTTng 2.0.
