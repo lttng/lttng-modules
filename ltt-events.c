@@ -196,7 +196,7 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 				       unsigned int read_timer_interval)
 {
 	struct ltt_channel *chan;
-	struct ltt_transport *transport;
+	struct ltt_transport *transport = NULL;
 
 	mutex_lock(&sessions_mutex);
 	if (session->been_active)
@@ -205,6 +205,10 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 	if (!transport) {
 		printk(KERN_WARNING "LTTng transport %s not found\n",
 		       transport_name);
+		goto notransport;
+	}
+	if (!try_module_get(transport->owner)) {
+		printk(KERN_WARNING "LTT : Can't lock transport module.\n");
 		goto notransport;
 	}
 	chan = kzalloc(sizeof(struct ltt_channel), GFP_KERNEL);
@@ -224,6 +228,7 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 		goto create_error;
 	chan->enabled = 1;
 	chan->ops = &transport->ops;
+	chan->transport = transport;
 	list_add(&chan->list, &session->chan);
 	mutex_unlock(&sessions_mutex);
 	return chan;
@@ -231,6 +236,8 @@ struct ltt_channel *ltt_channel_create(struct ltt_session *session,
 create_error:
 	kfree(chan);
 nomem:
+	if (transport)
+		module_put(transport->owner);
 notransport:
 active:
 	mutex_unlock(&sessions_mutex);
@@ -244,6 +251,7 @@ static
 void _ltt_channel_destroy(struct ltt_channel *chan)
 {
 	chan->ops->channel_destroy(chan->chan);
+	module_put(chan->transport->owner);
 	list_del(&chan->list);
 	lttng_destroy_context(chan->ctx);
 	kfree(chan);

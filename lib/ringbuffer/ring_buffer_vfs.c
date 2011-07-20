@@ -368,6 +368,7 @@ long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
 #endif
 
 const struct file_operations lib_ring_buffer_file_operations = {
+	.owner = THIS_MODULE,
 	.open = lib_ring_buffer_open,
 	.release = lib_ring_buffer_release,
 	.poll = lib_ring_buffer_poll,

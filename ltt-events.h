@@ -210,6 +210,13 @@ struct ltt_channel_ops {
 	int (*is_disabled)(struct channel *chan);
 };
 
+struct ltt_transport {
+	char *name;
+	struct module *owner;
+	struct list_head node;
+	struct ltt_channel_ops ops;
+};
+
 struct ltt_channel {
 	unsigned int id;
 	struct channel *chan;		/* Channel buffers */
@@ -221,6 +228,7 @@ struct ltt_channel {
 	unsigned int free_event_id;	/* Next event ID to allocate */
 	struct list_head list;		/* Channel list */
 	struct ltt_channel_ops *ops;
+	struct ltt_transport *transport;
 	int header_type;		/* 0: unset, 1: compact, 2: large */
 	int metadata_dumped:1;
 };
@@ -236,13 +244,6 @@ struct ltt_session {
 	unsigned int free_chan_id;	/* Next chan ID to allocate */
 	uuid_le uuid;			/* Trace session unique ID */
 	int metadata_dumped:1;
-};
-
-struct ltt_transport {
-	char *name;
-	struct module *owner;
-	struct list_head node;
-	struct ltt_channel_ops ops;
 };
 
 struct ltt_session *ltt_session_create(void);

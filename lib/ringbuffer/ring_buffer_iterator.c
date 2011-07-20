@@ -780,6 +780,7 @@ int channel_file_release(struct inode *inode, struct file *file)
 }
 
 const struct file_operations channel_payload_file_operations = {
+	.owner = THIS_MODULE,
 	.open = channel_file_open,
 	.release = channel_file_release,
 	.read = channel_file_read,
@@ -788,6 +789,7 @@ const struct file_operations channel_payload_file_operations = {
 EXPORT_SYMBOL_GPL(channel_payload_file_operations);
 
 const struct file_operations lib_ring_buffer_payload_file_operations = {
+	.owner = THIS_MODULE,
 	.open = lib_ring_buffer_file_open,
 	.release = lib_ring_buffer_file_release,
 	.read = lib_ring_buffer_file_read,

@@ -49,6 +49,11 @@ static const struct file_operations lttng_channel_fops;
 static const struct file_operations lttng_metadata_fops;
 static const struct file_operations lttng_event_fops;
 
+/*
+ * Teardown management: opened file descriptors keep a refcount on the module,
+ * so it can only exit when all file descriptors are closed.
+ */
+
 enum channel_type {
 	PER_CPU_CHANNEL,
 	METADATA_CHANNEL,
@@ -221,6 +226,7 @@ long lttng_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 }
 
 static const struct file_operations lttng_fops = {
+	.owner = THIS_MODULE,
 	.unlocked_ioctl = lttng_ioctl,
 #ifdef CONFIG_COMPAT
 	.compat_ioctl = lttng_ioctl,
@@ -410,6 +416,7 @@ int lttng_session_release(struct inode *inode, struct file *file)
 }
 
 static const struct file_operations lttng_session_fops = {
+	.owner = THIS_MODULE,
 	.release = lttng_session_release,
 	.unlocked_ioctl = lttng_session_ioctl,
 #ifdef CONFIG_COMPAT
@@ -628,6 +635,7 @@ int lttng_channel_release(struct inode *inode, struct file *file)
 }
 
 static const struct file_operations lttng_channel_fops = {
+	.owner = THIS_MODULE,
 	.release = lttng_channel_release,
 	.poll = lttng_channel_poll,
 	.unlocked_ioctl = lttng_channel_ioctl,
@@ -637,6 +645,7 @@ static const struct file_operations lttng_channel_fops = {
 };
 
 static const struct file_operations lttng_metadata_fops = {
+	.owner = THIS_MODULE,
 	.release = lttng_channel_release,
 	.unlocked_ioctl = lttng_metadata_ioctl,
 #ifdef CONFIG_COMPAT
@@ -690,6 +699,7 @@ int lttng_event_release(struct inode *inode, struct file *file)
 
 /* TODO: filter control ioctl */
 static const struct file_operations lttng_event_fops = {
+	.owner = THIS_MODULE,
 	.release = lttng_event_release,
 	.unlocked_ioctl = lttng_event_ioctl,
 #ifdef CONFIG_COMPAT
