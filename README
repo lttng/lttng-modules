@@ -20,20 +20,19 @@ need for additional patches. Other features:
 To build and install, you will need to have your kernel headers available (or
 access to your full kernel source tree), and use:
 
-make
-make modules_install
+% make
+# make modules_install
 
 If you need to specify the target directory to the kernel you want to build
 against, use:
 
-KERNELDIR=path_to_kernel_dir make
-KERNELDIR=path_to_kernel_dir make modules_install
+% KERNELDIR=path_to_kernel_dir make
+# KERNELDIR=path_to_kernel_dir make modules_install
 
-Use lttng-tools (git://git.lttng.org/lttng-tools.git) to control the tracer.
-LTTng tools should automatically load the kernel modules when needed.
-
-Use Babeltrace (git://git.efficios.com/babeltrace.git) to print traces as a
-human-readable text log.
+Use lttng-tools to control the tracer. LTTng tools should automatically load
+the kernel modules when needed. Use Babeltrace to print traces as a
+human-readable text log. These tools are available at the following URL:
+http://lttng.org/lttng2.0
 
 Please note that the LTTng-UST 2.0 (user-space tracing counterpart of LTTng 2.0)
 is still in active development and not released yet.
