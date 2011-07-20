@@ -20,13 +20,13 @@ To build and install, you will need to have your kernel headers available (or
 access to your full kernel source tree), and use:
 
 make
-make install
+make modules_install
 
 If you need to specify the target directory to the kernel you want to build
 against, use:
 
 KERNELDIR=path_to_kernel_dir make
-KERNELDIR=path_to_kernel_dir make install
+KERNELDIR=path_to_kernel_dir make modules_install
 
 Use lttng-tools (git://git.lttng.org/lttng-tools.git) to control the tracer.
 LTTng tools should automatically load the kernel modules when needed.
