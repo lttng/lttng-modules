@@ -133,11 +133,11 @@ TRACE_EVENT(sched_switch,
 	TP_fast_assign(
 		tp_memcpy(next_comm, next->comm, TASK_COMM_LEN)
 		tp_assign(prev_tid, prev->pid)
-		tp_assign(prev_prio, prev->prio)
+		tp_assign(prev_prio, prev->prio - MAX_RT_PRIO)
 		tp_assign(prev_state, __trace_sched_switch_state(prev))
 		tp_memcpy(prev_comm, prev->comm, TASK_COMM_LEN)
 		tp_assign(next_tid, next->pid)
-		tp_assign(next_prio, next->prio)
+		tp_assign(next_prio, next->prio - MAX_RT_PRIO)
 	),
 
 	TP_printk("prev_comm=%s prev_tid=%d prev_prio=%d prev_state=%s ==> next_comm=%s next_tid=%d next_prio=%d",
@@ -170,7 +170,7 @@ TRACE_EVENT(sched_migrate_task,
 	TP_fast_assign(
 		tp_memcpy(comm, p->comm, TASK_COMM_LEN)
 		tp_assign(tid, p->pid)
-		tp_assign(prio, p->prio)
+		tp_assign(prio, p->prio - MAX_RT_PRIO)
 		tp_assign(orig_cpu, task_cpu(p))
 		tp_assign(dest_cpu, dest_cpu)
 	),
@@ -195,7 +195,7 @@ DECLARE_EVENT_CLASS(sched_process_template,
 	TP_fast_assign(
 		tp_memcpy(comm, p->comm, TASK_COMM_LEN)
 		tp_assign(tid, p->pid)
-		tp_assign(prio, p->prio)
+		tp_assign(prio, p->prio - MAX_RT_PRIO)
 	),
 
 	TP_printk("comm=%s tid=%d prio=%d",
@@ -242,7 +242,7 @@ TRACE_EVENT(sched_process_wait,
 	TP_fast_assign(
 		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
 		tp_assign(tid, pid_nr(pid))
-		tp_assign(prio, current->prio)
+		tp_assign(prio, current->prio - MAX_RT_PRIO)
 	),
 
 	TP_printk("comm=%s tid=%d prio=%d",
@@ -385,8 +385,8 @@ TRACE_EVENT(sched_pi_setprio,
 	TP_fast_assign(
 		tp_memcpy(comm, tsk->comm, TASK_COMM_LEN)
 		tp_assign(tid, tsk->pid)
-		tp_assign(oldprio, tsk->prio)
-		tp_assign(newprio, newprio)
+		tp_assign(oldprio, tsk->prio - MAX_RT_PRIO)
+		tp_assign(newprio, newprio - MAX_RT_PRIO)
 	),
 
 	TP_printk("comm=%s tid=%d oldprio=%d newprio=%d",
