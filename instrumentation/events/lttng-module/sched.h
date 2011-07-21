@@ -38,15 +38,15 @@ TRACE_EVENT(sched_kthread_stop,
 
 	TP_STRUCT__entry(
 		__array_text(	char,	comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	pid			)
+		__field(	pid_t,	tid			)
 	),
 
 	TP_fast_assign(
 		tp_memcpy(comm, t->comm, TASK_COMM_LEN)
-		tp_assign(pid, t->pid)
+		tp_assign(tid, t->pid)
 	),
 
-	TP_printk("comm=%s pid=%d", __entry->comm, __entry->pid)
+	TP_printk("comm=%s tid=%d", __entry->comm, __entry->tid)
 )
 
 /*
@@ -80,7 +80,7 @@ DECLARE_EVENT_CLASS(sched_wakeup_template,
 
 	TP_STRUCT__entry(
 		__array_text(	char,	comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	pid			)
+		__field(	pid_t,	tid			)
 		__field(	int,	prio			)
 		__field(	int,	success			)
 		__field(	int,	target_cpu		)
@@ -88,14 +88,14 @@ DECLARE_EVENT_CLASS(sched_wakeup_template,
 
 	TP_fast_assign(
 		tp_memcpy(comm, p->comm, TASK_COMM_LEN)
-		tp_assign(pid, p->pid)
+		tp_assign(tid, p->pid)
 		tp_assign(prio, p->prio)
 		tp_assign(success, success)
 		tp_assign(target_cpu, task_cpu(p))
 	),
 
-	TP_printk("comm=%s pid=%d prio=%d success=%d target_cpu=%03d",
-		  __entry->comm, __entry->pid, __entry->prio,
+	TP_printk("comm=%s tid=%d prio=%d success=%d target_cpu=%03d",
+		  __entry->comm, __entry->tid, __entry->prio,
 		  __entry->success, __entry->target_cpu)
 )
 
@@ -122,32 +122,32 @@ TRACE_EVENT(sched_switch,
 
 	TP_STRUCT__entry(
 		__array_text(	char,	prev_comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	prev_pid			)
+		__field(	pid_t,	prev_tid			)
 		__field(	int,	prev_prio			)
 		__field(	long,	prev_state			)
 		__array_text(	char,	next_comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	next_pid			)
+		__field(	pid_t,	next_tid			)
 		__field(	int,	next_prio			)
 	),
 
 	TP_fast_assign(
 		tp_memcpy(next_comm, next->comm, TASK_COMM_LEN)
-		tp_assign(prev_pid, prev->pid)
+		tp_assign(prev_tid, prev->pid)
 		tp_assign(prev_prio, prev->prio)
 		tp_assign(prev_state, __trace_sched_switch_state(prev))
 		tp_memcpy(prev_comm, prev->comm, TASK_COMM_LEN)
-		tp_assign(next_pid, next->pid)
+		tp_assign(next_tid, next->pid)
 		tp_assign(next_prio, next->prio)
 	),
 
-	TP_printk("prev_comm=%s prev_pid=%d prev_prio=%d prev_state=%s ==> next_comm=%s next_pid=%d next_prio=%d",
-		__entry->prev_comm, __entry->prev_pid, __entry->prev_prio,
+	TP_printk("prev_comm=%s prev_tid=%d prev_prio=%d prev_state=%s ==> next_comm=%s next_tid=%d next_prio=%d",
+		__entry->prev_comm, __entry->prev_tid, __entry->prev_prio,
 		__entry->prev_state ?
 		  __print_flags(__entry->prev_state, "|",
 				{ 1, "S"} , { 2, "D" }, { 4, "T" }, { 8, "t" },
 				{ 16, "Z" }, { 32, "X" }, { 64, "x" },
 				{ 128, "W" }) : "R",
-		__entry->next_comm, __entry->next_pid, __entry->next_prio)
+		__entry->next_comm, __entry->next_tid, __entry->next_prio)
 )
 
 /*
@@ -161,7 +161,7 @@ TRACE_EVENT(sched_migrate_task,
 
 	TP_STRUCT__entry(
 		__array_text(	char,	comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	pid			)
+		__field(	pid_t,	tid			)
 		__field(	int,	prio			)
 		__field(	int,	orig_cpu		)
 		__field(	int,	dest_cpu		)
@@ -169,14 +169,14 @@ TRACE_EVENT(sched_migrate_task,
 
 	TP_fast_assign(
 		tp_memcpy(comm, p->comm, TASK_COMM_LEN)
-		tp_assign(pid, p->pid)
+		tp_assign(tid, p->pid)
 		tp_assign(prio, p->prio)
 		tp_assign(orig_cpu, task_cpu(p))
 		tp_assign(dest_cpu, dest_cpu)
 	),
 
-	TP_printk("comm=%s pid=%d prio=%d orig_cpu=%d dest_cpu=%d",
-		  __entry->comm, __entry->pid, __entry->prio,
+	TP_printk("comm=%s tid=%d prio=%d orig_cpu=%d dest_cpu=%d",
+		  __entry->comm, __entry->tid, __entry->prio,
 		  __entry->orig_cpu, __entry->dest_cpu)
 )
 
@@ -188,18 +188,18 @@ DECLARE_EVENT_CLASS(sched_process_template,
 
 	TP_STRUCT__entry(
 		__array_text(	char,	comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	pid			)
+		__field(	pid_t,	tid			)
 		__field(	int,	prio			)
 	),
 
 	TP_fast_assign(
 		tp_memcpy(comm, p->comm, TASK_COMM_LEN)
-		tp_assign(pid, p->pid)
+		tp_assign(tid, p->pid)
 		tp_assign(prio, p->prio)
 	),
 
-	TP_printk("comm=%s pid=%d prio=%d",
-		  __entry->comm, __entry->pid, __entry->prio)
+	TP_printk("comm=%s tid=%d prio=%d",
+		  __entry->comm, __entry->tid, __entry->prio)
 )
 
 /*
@@ -235,18 +235,18 @@ TRACE_EVENT(sched_process_wait,
 
 	TP_STRUCT__entry(
 		__array_text(	char,	comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	pid			)
+		__field(	pid_t,	tid			)
 		__field(	int,	prio			)
 	),
 
 	TP_fast_assign(
 		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
-		tp_assign(pid, pid_nr(pid))
+		tp_assign(tid, pid_nr(pid))
 		tp_assign(prio, current->prio)
 	),
 
-	TP_printk("comm=%s pid=%d prio=%d",
-		  __entry->comm, __entry->pid, __entry->prio)
+	TP_printk("comm=%s tid=%d prio=%d",
+		  __entry->comm, __entry->tid, __entry->prio)
 )
 
 /*
@@ -260,21 +260,21 @@ TRACE_EVENT(sched_process_fork,
 
 	TP_STRUCT__entry(
 		__array_text(	char,	parent_comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	parent_pid			)
+		__field(	pid_t,	parent_tid			)
 		__array_text(	char,	child_comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	child_pid			)
+		__field(	pid_t,	child_tid			)
 	),
 
 	TP_fast_assign(
 		tp_memcpy(parent_comm, parent->comm, TASK_COMM_LEN)
-		tp_assign(parent_pid, parent->pid)
+		tp_assign(parent_tid, parent->pid)
 		tp_memcpy(child_comm, child->comm, TASK_COMM_LEN)
-		tp_assign(child_pid, child->pid)
+		tp_assign(child_tid, child->pid)
 	),
 
-	TP_printk("comm=%s pid=%d child_comm=%s child_pid=%d",
-		__entry->parent_comm, __entry->parent_pid,
-		__entry->child_comm, __entry->child_pid)
+	TP_printk("comm=%s tid=%d child_comm=%s child_tid=%d",
+		__entry->parent_comm, __entry->parent_tid,
+		__entry->child_comm, __entry->child_tid)
 )
 
 /*
@@ -289,21 +289,21 @@ DECLARE_EVENT_CLASS(sched_stat_template,
 
 	TP_STRUCT__entry(
 		__array_text( char,	comm,	TASK_COMM_LEN	)
-		__field( pid_t,	pid			)
+		__field( pid_t,	tid			)
 		__field( u64,	delay			)
 	),
 
 	TP_fast_assign(
 		tp_memcpy(comm, tsk->comm, TASK_COMM_LEN)
-		tp_assign(pid,  tsk->pid)
+		tp_assign(tid,  tsk->pid)
 		tp_assign(delay, delay)
 	)
 	TP_perf_assign(
 		__perf_count(delay)
 	),
 
-	TP_printk("comm=%s pid=%d delay=%Lu [ns]",
-			__entry->comm, __entry->pid,
+	TP_printk("comm=%s tid=%d delay=%Lu [ns]",
+			__entry->comm, __entry->tid,
 			(unsigned long long)__entry->delay)
 )
 
@@ -344,14 +344,14 @@ TRACE_EVENT(sched_stat_runtime,
 
 	TP_STRUCT__entry(
 		__array_text( char,	comm,	TASK_COMM_LEN	)
-		__field( pid_t,	pid			)
+		__field( pid_t,	tid			)
 		__field( u64,	runtime			)
 		__field( u64,	vruntime			)
 	),
 
 	TP_fast_assign(
 		tp_memcpy(comm, tsk->comm, TASK_COMM_LEN)
-		tp_assign(pid, tsk->pid)
+		tp_assign(tid, tsk->pid)
 		tp_assign(runtime, runtime)
 		tp_assign(vruntime, vruntime)
 	)
@@ -359,8 +359,8 @@ TRACE_EVENT(sched_stat_runtime,
 		__perf_count(runtime)
 	),
 
-	TP_printk("comm=%s pid=%d runtime=%Lu [ns] vruntime=%Lu [ns]",
-			__entry->comm, __entry->pid,
+	TP_printk("comm=%s tid=%d runtime=%Lu [ns] vruntime=%Lu [ns]",
+			__entry->comm, __entry->tid,
 			(unsigned long long)__entry->runtime,
 			(unsigned long long)__entry->vruntime)
 )
@@ -377,20 +377,20 @@ TRACE_EVENT(sched_pi_setprio,
 
 	TP_STRUCT__entry(
 		__array_text( char,	comm,	TASK_COMM_LEN	)
-		__field( pid_t,	pid			)
+		__field( pid_t,	tid			)
 		__field( int,	oldprio			)
 		__field( int,	newprio			)
 	),
 
 	TP_fast_assign(
 		tp_memcpy(comm, tsk->comm, TASK_COMM_LEN)
-		tp_assign(pid, tsk->pid)
+		tp_assign(tid, tsk->pid)
 		tp_assign(oldprio, tsk->prio)
 		tp_assign(newprio, newprio)
 	),
 
-	TP_printk("comm=%s pid=%d oldprio=%d newprio=%d",
-			__entry->comm, __entry->pid,
+	TP_printk("comm=%s tid=%d oldprio=%d newprio=%d",
+			__entry->comm, __entry->tid,
 			__entry->oldprio, __entry->newprio)
 )
 
