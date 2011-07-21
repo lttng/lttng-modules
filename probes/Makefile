@@ -12,7 +12,10 @@ obj-m += lttng-probe-lttng.o
 
 obj-m += lttng-probe-sched.o
 obj-m += lttng-probe-irq.o
+
+ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
 obj-m += lttng-probe-syscalls.o
+endif
 
 ifneq ($(CONFIG_KVM),)
 obj-m += lttng-probe-kvm.o
