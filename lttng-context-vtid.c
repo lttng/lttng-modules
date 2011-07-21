@@ -32,7 +32,13 @@ void vtid_record(struct lttng_ctx_field *field,
 {
 	pid_t vtid;
 
-	vtid = task_pid_vnr(current);
+	/*
+	 * nsproxy can be NULL when scheduled out of exit.
+	 */
+	if (!current->nsproxy)
+		vtid = 0;
+	else
+		vtid = task_pid_vnr(current);
 	lib_ring_buffer_align_ctx(ctx, ltt_alignof(vtid));
 	chan->ops->event_write(ctx, &vtid, sizeof(vtid));
 }

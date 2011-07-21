@@ -31,10 +31,18 @@ void vppid_record(struct lttng_ctx_field *field,
 		  struct lib_ring_buffer_ctx *ctx,
 		  struct ltt_channel *chan)
 {
+	struct task_struct *parent;
 	pid_t vppid;
 
+	/*
+	 * nsproxy can be NULL when scheduled out of exit.
+	 */
 	rcu_read_lock();
-	vppid = task_tgid_vnr(current->real_parent);
+	parent = rcu_dereference(current->real_parent);
+	if (!parent->nsproxy)
+		vppid = 0;
+	else
+		vppid = task_tgid_vnr(parent);
 	rcu_read_unlock();
 	lib_ring_buffer_align_ctx(ctx, ltt_alignof(vppid));
 	chan->ops->event_write(ctx, &vppid, sizeof(vppid));
