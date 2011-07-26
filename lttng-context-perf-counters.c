@@ -35,7 +35,7 @@ void perf_counter_record(struct lttng_ctx_field *field,
 	struct perf_event *event;
 	uint64_t value;
 
-	event = field->u.perf_counter.e[ctx->cpu];
+	event = field->u.perf_counter->e[ctx->cpu];
 	if (likely(event)) {
 		event->pmu->read(event);
 		value = local64_read(&event->count);
@@ -63,7 +63,7 @@ void overflow_callback(struct perf_event *event, int nmi,
 static
 void lttng_destroy_perf_counter_field(struct lttng_ctx_field *field)
 {
-	struct perf_event **events = field->u.perf_counter.e;
+	struct perf_event **events = field->u.perf_counter->e;
 	int cpu;
 
 	get_online_cpus();
@@ -71,11 +71,12 @@ void lttng_destroy_perf_counter_field(struct lttng_ctx_field *field)
 		perf_event_release_kernel(events[cpu]);
 	put_online_cpus();
 #ifdef CONFIG_HOTPLUG_CPU
-	unregister_cpu_notifier(&field->u.perf_counter.nb);
+	unregister_cpu_notifier(&field->u.perf_counter->nb);
 #endif
 	kfree(field->event_field.name);
-	kfree(field->u.perf_counter.attr);
+	kfree(field->u.perf_counter->attr);
 	kfree(events);
+	kfree(field->u.perf_counter);
 }
 
 #ifdef CONFIG_HOTPLUG_CPU
@@ -97,13 +98,13 @@ int __cpuinit lttng_perf_counter_cpu_hp_callback(struct notifier_block *nb,
 						 void *hcpu)
 {
 	unsigned int cpu = (unsigned long) hcpu;
-	struct lttng_ctx_field *field =
-		container_of(nb, struct lttng_ctx_field, u.perf_counter.nb);
-	struct perf_event **events = field->u.perf_counter.e;
-	struct perf_event_attr *attr = field->u.perf_counter.attr;
+	struct lttng_perf_counter_field *perf_field =
+		container_of(nb, struct lttng_perf_counter_field, nb);
+	struct perf_event **events = perf_field->e;
+	struct perf_event_attr *attr = perf_field->attr;
 	struct perf_event *pevent;
 
-	if (!field->u.perf_counter.hp_enable)
+	if (!perf_field->hp_enable)
 		return NOTIFY_OK;
 
 	switch (action) {
@@ -137,6 +138,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  struct lttng_ctx **ctx)
 {
 	struct lttng_ctx_field *field;
+	struct lttng_perf_counter_field *perf_field;
 	struct perf_event **events;
 	struct perf_event_attr *attr;
 	int ret;
@@ -147,7 +149,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	if (!events)
 		return -ENOMEM;
 
-	attr = kzalloc(sizeof(*field->u.perf_counter.attr), GFP_KERNEL);
+	attr = kzalloc(sizeof(struct perf_event_attr), GFP_KERNEL);
 	if (!attr) {
 		ret = -ENOMEM;
 		goto error_attr;
@@ -158,6 +160,14 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	attr->size = sizeof(struct perf_event_attr);
 	attr->pinned = 1;
 	attr->disabled = 0;
+
+	perf_field = kzalloc(sizeof(struct lttng_perf_counter_field), GFP_KERNEL);
+	if (!perf_field) {
+		ret = -ENOMEM;
+		goto error_alloc_perf_field;
+	}
+	perf_field->e = events;
+	perf_field->attr = attr;
 
 	name_alloc = kstrdup(name, GFP_KERNEL);
 	if (!name_alloc) {
@@ -170,16 +180,16 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 		ret = -ENOMEM;
 		goto append_context_error;
 	}
-	if (lttng_find_context(*ctx, name_alloc))  {
+	if (lttng_find_context(*ctx, name_alloc)) {
 		ret = -EEXIST;
 		goto find_error;
 	}
 
 #ifdef CONFIG_HOTPLUG_CPU
-	field->u.perf_counter.nb.notifier_call =
+	perf_field->nb.notifier_call =
 		lttng_perf_counter_cpu_hp_callback;
-	field->u.perf_counter.nb.priority = 0;
-	register_cpu_notifier(&field->u.perf_counter.nb);
+	perf_field->nb.priority = 0;
+	register_cpu_notifier(&perf_field->nb);
 #endif
 
 	get_online_cpus();
@@ -205,9 +215,8 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	field->event_field.type.u.basic.integer.encoding = lttng_encode_none;
 	field->get_size = perf_counter_get_size;
 	field->record = perf_counter_record;
-	field->u.perf_counter.e = events;
-	field->u.perf_counter.attr = attr;
-	field->u.perf_counter.hp_enable = 1;
+	field->u.perf_counter = perf_field;
+	perf_field->hp_enable = 1;
 
 	wrapper_vmalloc_sync_all();
 	return 0;
@@ -219,13 +228,15 @@ counter_error:
 	}
 	put_online_cpus();
 #ifdef CONFIG_HOTPLUG_CPU
-	unregister_cpu_notifier(&field->u.perf_counter.nb);
+	unregister_cpu_notifier(&perf_field->nb);
 #endif
 find_error:
 	lttng_remove_context_field(ctx, field);
 append_context_error:
 	kfree(name_alloc);
 name_alloc_error:
+	kfree(perf_field);
+error_alloc_perf_field:
 	kfree(attr);
 error_attr:
 	kfree(events);

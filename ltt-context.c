@@ -31,6 +31,9 @@ int lttng_find_context(struct lttng_ctx *ctx, const char *name)
 }
 EXPORT_SYMBOL_GPL(lttng_find_context);
 
+/*
+ * Note: as we append context information, the pointer location may change.
+ */
 struct lttng_ctx_field *lttng_append_context(struct lttng_ctx **ctx_p)
 {
 	struct lttng_ctx_field *field;

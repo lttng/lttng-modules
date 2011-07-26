@@ -119,6 +119,17 @@ struct lttng_event_field {
 	struct lttng_type type;
 };
 
+/*
+ * We need to keep this perf counter field separately from struct
+ * lttng_ctx_field because cpu hotplug needs fixed-location addresses.
+ */
+struct lttng_perf_counter_field {
+	struct notifier_block nb;
+	int hp_enable;
+	struct perf_event_attr *attr;
+	struct perf_event **e;	/* per-cpu array */
+};
+
 struct lttng_ctx_field {
 	struct lttng_event_field event_field;
 	size_t (*get_size)(size_t offset);
@@ -126,12 +137,7 @@ struct lttng_ctx_field {
 		       struct lib_ring_buffer_ctx *ctx,
 		       struct ltt_channel *chan);
 	union {
-		struct {
-			struct perf_event **e;	/* per-cpu array */
-			struct notifier_block nb;
-			int hp_enable;
-			struct perf_event_attr *attr;
-		} perf_counter;
+		struct lttng_perf_counter_field *perf_counter;
 	} u;
 	void (*destroy)(struct lttng_ctx_field *field);
 };
