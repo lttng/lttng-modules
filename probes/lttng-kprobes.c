@@ -96,22 +96,28 @@ int lttng_kprobes_register(const char *name,
 {
 	int ret;
 
+	/* Kprobes expects a NULL symbol name if unused */
+	if (symbol_name[0] == '\0')
+		symbol_name = NULL;
+
 	ret = lttng_create_kprobe_event(name, event);
 	if (ret)
 		goto error;
 	memset(&event->u.kprobe.kp, 0, sizeof(event->u.kprobe.kp));
 	event->u.kprobe.kp.pre_handler = lttng_kprobes_handler_pre;
-	event->u.kprobe.symbol_name =
-		kzalloc(LTTNG_SYM_NAME_LEN * sizeof(char),
-			GFP_KERNEL);
-	if (!event->u.kprobe.symbol_name) {
-		ret = -ENOMEM;
-		goto name_error;
+	if (symbol_name) {
+		event->u.kprobe.symbol_name =
+			kzalloc(LTTNG_SYM_NAME_LEN * sizeof(char),
+				GFP_KERNEL);
+		if (!event->u.kprobe.symbol_name) {
+			ret = -ENOMEM;
+			goto name_error;
+		}
+		memcpy(event->u.kprobe.symbol_name, symbol_name,
+		       LTTNG_SYM_NAME_LEN * sizeof(char));
+		event->u.kprobe.kp.symbol_name =
+			event->u.kprobe.symbol_name;
 	}
-	memcpy(event->u.kprobe.symbol_name, symbol_name,
-	       LTTNG_SYM_NAME_LEN * sizeof(char));
-	event->u.kprobe.kp.symbol_name =
-		event->u.kprobe.symbol_name;
 	event->u.kprobe.kp.offset = offset;
 	event->u.kprobe.kp.addr = (void *) addr;
 
