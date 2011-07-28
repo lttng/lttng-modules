@@ -19,6 +19,7 @@ enum lttng_kernel_instrumentation {
 	LTTNG_KERNEL_TRACEPOINT	= 0,
 	LTTNG_KERNEL_KPROBE	= 1,
 	LTTNG_KERNEL_FUNCTION	= 2,
+	LTTNG_KERNEL_KRETPROBE	= 3,
 };
 
 /*
@@ -42,6 +43,13 @@ struct lttng_kernel_channel {
 	enum lttng_kernel_output output;	/* splice, mmap */
 };
 
+struct lttng_kernel_kretprobe {
+	uint64_t addr;
+
+	uint64_t offset;
+	char symbol_name[LTTNG_SYM_NAME_LEN];
+};
+
 /*
  * Either addr is used, or symbol_name and offset.
  */
@@ -61,6 +69,7 @@ struct lttng_kernel_event {
 	enum lttng_kernel_instrumentation instrumentation;
 	/* Per instrumentation type configuration */
 	union {
+		struct lttng_kernel_kretprobe kretprobe;
 		struct lttng_kernel_kprobe kprobe;
 		struct lttng_kernel_function_tracer ftrace;
 	} u;

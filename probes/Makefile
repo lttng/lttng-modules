@@ -31,6 +31,11 @@ ifneq ($(CONFIG_KPROBES),)
 obj-m += lttng-kprobes.o
 endif
 
+
+ifneq ($(CONFIG_KRETPROBES),)
+obj-m += lttng-kretprobes.o
+endif
+
 ifneq ($(CONFIG_DYNAMIC_FTRACE),)
 obj-m += lttng-ftrace.o
 endif

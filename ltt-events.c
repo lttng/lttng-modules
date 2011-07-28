@@ -309,6 +309,49 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 		ret = try_module_get(event->desc->owner);
 		WARN_ON_ONCE(!ret);
 		break;
+	case LTTNG_KERNEL_KRETPROBE:
+	{
+		struct ltt_event *event_return;
+
+		/* kretprobe defines 2 events */
+		event_return =
+			kmem_cache_zalloc(event_cache, GFP_KERNEL);
+		if (!event_return)
+			goto register_error;
+		event_return->chan = chan;
+		event_return->filter = filter;
+		event_return->id = chan->free_event_id++;
+		event_return->enabled = 1;
+		event_return->instrumentation = event_param->instrumentation;
+		/*
+		 * Populate ltt_event structure before kretprobe registration.
+		 */
+		smp_wmb();
+		ret = lttng_kretprobes_register(event_param->name,
+				event_param->u.kretprobe.symbol_name,
+				event_param->u.kretprobe.offset,
+				event_param->u.kretprobe.addr,
+				event, event_return);
+		if (ret) {
+			kmem_cache_free(event_cache, event_return);
+			goto register_error;
+		}
+		/* Take 2 refs on the module: one per event. */
+		ret = try_module_get(event->desc->owner);
+		WARN_ON_ONCE(!ret);
+		ret = try_module_get(event->desc->owner);
+		WARN_ON_ONCE(!ret);
+		ret = _ltt_event_metadata_statedump(chan->session, chan,
+						    event_return);
+		if (ret) {
+			kmem_cache_free(event_cache, event_return);
+			module_put(event->desc->owner);
+			module_put(event->desc->owner);
+			goto statedump_error;
+		}
+		list_add(&event_return->list, &chan->session->events);
+		break;
+	}
 	case LTTNG_KERNEL_FUNCTION:
 		ret = lttng_ftrace_register(event_param->name,
 				event_param->u.ftrace.symbol_name,
@@ -361,6 +404,10 @@ int _ltt_event_unregister(struct ltt_event *event)
 		lttng_kprobes_unregister(event);
 		ret = 0;
 		break;
+	case LTTNG_KERNEL_KRETPROBE:
+		lttng_kretprobes_unregister(event);
+		ret = 0;
+		break;
 	case LTTNG_KERNEL_FUNCTION:
 		lttng_ftrace_unregister(event);
 		ret = 0;
@@ -384,6 +431,10 @@ void _ltt_event_destroy(struct ltt_event *event)
 	case LTTNG_KERNEL_KPROBE:
 		module_put(event->desc->owner);
 		lttng_kprobes_destroy_private(event);
+		break;
+	case LTTNG_KERNEL_KRETPROBE:
+		module_put(event->desc->owner);
+		lttng_kretprobes_destroy_private(event);
 		break;
 	case LTTNG_KERNEL_FUNCTION:
 		module_put(event->desc->owner);

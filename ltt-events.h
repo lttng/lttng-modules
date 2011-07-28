@@ -163,6 +163,8 @@ struct lttng_probe_desc {
 	struct list_head head;			/* chain registered probes */
 };
 
+struct lttng_krp;				/* Kretprobe handling */
+
 /*
  * ltt_event structure is referred to by the tracing fast path. It must be
  * kept small.
@@ -180,6 +182,10 @@ struct ltt_event {
 			struct kprobe kp;
 			char *symbol_name;
 		} kprobe;
+		struct {
+			struct lttng_krp *lttng_krp;
+			char *symbol_name;
+		} kretprobe;
 		struct {
 			char *symbol_name;
 		} ftrace;
@@ -347,6 +353,38 @@ void lttng_kprobes_unregister(struct ltt_event *event)
 
 static inline
 void lttng_kprobes_destroy_private(struct ltt_event *event)
+{
+}
+#endif
+
+#ifdef CONFIG_KRETPROBES
+int lttng_kretprobes_register(const char *name,
+		const char *symbol_name,
+		uint64_t offset,
+		uint64_t addr,
+		struct ltt_event *event_entry,
+		struct ltt_event *event_exit);
+void lttng_kretprobes_unregister(struct ltt_event *event);
+void lttng_kretprobes_destroy_private(struct ltt_event *event);
+#else
+static inline
+int lttng_kretprobes_register(const char *name,
+		const char *symbol_name,
+		uint64_t offset,
+		uint64_t addr,
+		struct ltt_event *event_entry,
+		struct ltt_event *event_exit)
+{
+	return -ENOSYS;
+}
+
+static inline
+void lttng_kretprobes_unregister(struct ltt_event *event)
+{
+}
+
+static inline
+void lttng_kretprobes_destroy_private(struct ltt_event *event)
 {
 }
 #endif

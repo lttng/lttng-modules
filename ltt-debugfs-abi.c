@@ -488,6 +488,9 @@ int lttng_abi_create_event(struct file *channel_file,
 		return -EFAULT;
 	event_param.name[LTTNG_SYM_NAME_LEN - 1] = '\0';
 	switch (event_param.instrumentation) {
+	case LTTNG_KERNEL_KRETPROBE:
+		event_param.u.kretprobe.symbol_name[LTTNG_SYM_NAME_LEN - 1] = '\0';
+		break;
 	case LTTNG_KERNEL_KPROBE:
 		event_param.u.kprobe.symbol_name[LTTNG_SYM_NAME_LEN - 1] = '\0';
 		break;
