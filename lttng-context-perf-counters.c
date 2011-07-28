@@ -37,8 +37,12 @@ void perf_counter_record(struct lttng_ctx_field *field,
 
 	event = field->u.perf_counter->e[ctx->cpu];
 	if (likely(event)) {
-		event->pmu->read(event);
-		value = local64_read(&event->count);
+		if (unlikely(event->state == PERF_EVENT_STATE_ERROR)) {
+			value = 0;
+		} else {
+			event->pmu->read(event);
+			value = local64_read(&event->count);
+		}
 	} else {
 		/*
 		 * Perf chooses not to be clever and not to support enabling a
@@ -114,6 +118,10 @@ int __cpuinit lttng_perf_counter_cpu_hp_callback(struct notifier_block *nb,
 				cpu, NULL, overflow_callback);
 		if (!pevent || IS_ERR(pevent))
 			return NOTIFY_BAD;
+		if (pevent->state == PERF_EVENT_STATE_ERROR) {
+			perf_event_release_kernel(pevent);
+			return NOTIFY_BAD;
+		}
 		barrier();	/* Create perf counter before setting event */
 		events[cpu] = pevent;
 		break;
@@ -200,6 +208,10 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 			ret = -EINVAL;
 			goto counter_error;
 		}
+		if (events[cpu]->state == PERF_EVENT_STATE_ERROR) {
+			ret = -EBUSY;
+			goto counter_busy;
+		}
 	}
 	put_online_cpus();
 
@@ -221,6 +233,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	wrapper_vmalloc_sync_all();
 	return 0;
 
+counter_busy:
 counter_error:
 	for_each_online_cpu(cpu) {
 		if (events[cpu] && !IS_ERR(events[cpu]))
