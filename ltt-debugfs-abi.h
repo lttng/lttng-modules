@@ -81,6 +81,19 @@ struct lttng_kernel_tracer_version {
 	uint32_t sublevel;
 };
 
+enum lttng_calibrate_type {
+	LTTNG_CALIBRATE_KRETPROBE,
+};
+
+struct lttng_calibrate {
+	enum lttng_calibrate_type type;	/* type (input) */
+	union {
+		struct {
+			uint64_t addr;	/* address to probe (output) */
+		} kretprobe;
+	} u;
+};
+
 enum lttng_kernel_context_type {
 	LTTNG_KERNEL_CONTEXT_PID		= 0,
 	LTTNG_KERNEL_CONTEXT_PERF_COUNTER	= 1,
@@ -113,6 +126,8 @@ struct lttng_kernel_context {
 	_IOR(0xF6, 0x41, struct lttng_kernel_tracer_version)
 #define LTTNG_KERNEL_TRACEPOINT_LIST		_IO(0xF6, 0x42)
 #define LTTNG_KERNEL_WAIT_QUIESCENT		_IO(0xF6, 0x43)
+#define LTTNG_KERNEL_CALIBRATE			\
+	_IOWR(0xF6, 0x44, struct lttng_calibrate)
 
 /* Session FD ioctl */
 #define LTTNG_KERNEL_METADATA			\

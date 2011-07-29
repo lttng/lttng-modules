@@ -415,6 +415,8 @@ void lttng_ftrace_destroy_private(struct ltt_event *event)
 }
 #endif
 
+int lttng_calibrate(struct lttng_calibrate *calibrate);
+
 extern const struct file_operations lttng_tracepoint_list_fops;
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))

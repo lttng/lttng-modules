@@ -19,7 +19,7 @@ ltt-relay-objs :=  ltt-events.o ltt-debugfs-abi.o \
 			lttng-context-prio.o lttng-context-nice.o \
 			lttng-context-vpid.o lttng-context-tid.o \
 			lttng-context-vtid.o lttng-context-ppid.o \
-			lttng-context-vppid.o
+			lttng-context-vppid.o lttng-calibrate.o
 
 ifneq ($(CONFIG_PERF_EVENTS),)
 ltt-relay-objs += $(shell \

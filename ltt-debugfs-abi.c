@@ -220,6 +220,20 @@ long lttng_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	case LTTNG_KERNEL_WAIT_QUIESCENT:
 		synchronize_trace();
 		return 0;
+	case LTTNG_KERNEL_CALIBRATE:
+	{
+		struct lttng_calibrate __user *ucalibrate =
+			(struct lttng_calibrate __user *) arg;
+		struct lttng_calibrate calibrate;
+		int ret;
+
+		if (copy_from_user(&calibrate, ucalibrate, sizeof(calibrate)))
+			return -EFAULT;
+		ret = lttng_calibrate(&calibrate);
+		if (copy_to_user(ucalibrate, &calibrate, sizeof(calibrate)))
+			return -EFAULT;
+		return ret;
+	}
 	default:
 		return -ENOIOCTLCMD;
 	}
