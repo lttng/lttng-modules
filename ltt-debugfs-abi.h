@@ -87,11 +87,6 @@ enum lttng_calibrate_type {
 
 struct lttng_calibrate {
 	enum lttng_calibrate_type type;	/* type (input) */
-	union {
-		struct {
-			uint64_t addr;	/* address to probe (output) */
-		} kretprobe;
-	} u;
 };
 
 enum lttng_kernel_context_type {

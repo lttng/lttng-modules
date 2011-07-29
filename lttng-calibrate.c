@@ -13,13 +13,14 @@
 
 void lttng_calibrate_kretprobe(void)
 {
+	asm volatile ("");
 }
 
 int lttng_calibrate(struct lttng_calibrate *calibrate)
 {
 	switch (calibrate->type) {
 	case LTTNG_CALIBRATE_KRETPROBE:
-		calibrate->u.kretprobe.addr = &lttng_calibrate_kretprobe;
+		lttng_calibrate_kretprobe();
 		break;
 	default:
 		return -EINVAL;
