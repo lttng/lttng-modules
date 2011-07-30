@@ -9,7 +9,7 @@ need for additional patches. Other features:
 - Produces CTF (Common Trace Format) natively,
   (http://www.efficios.com/ctf)
 - Tracepoints, Function tracer, CPU Performance Monitoring Unit (PMU)
-  counters and kprobes support,
+  counters, kprobes, and kretprobes support,
 - Integrated interface for both kernel and userspace tracing,
 - Have the ability to attach "context" information to events in the
   trace (e.g. any PMU counter, pid, ppid, tid, comm name, etc).
