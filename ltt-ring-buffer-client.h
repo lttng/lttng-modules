@@ -22,6 +22,14 @@
  * you ever add/remove a field from this header. Packed attribute is not used
  * because gcc generates poor code on at least powerpc and mips. Don't ever
  * let gcc add padding between the structure elements.
+ *
+ * The guarantee we have with timestamps is that all the events in a
+ * packet are included (inclusive) within the begin/end timestamps of
+ * the packet. Another guarantee we have is that the "timestamp begin",
+ * as well as the event timestamps, are monotonically increasing (never
+ * decrease) when moving forward in a stream (physically). But this
+ * guarantee does not apply to "timestamp end", because it is sampled at
+ * commit time, which is not ordered with respect to space reservation.
  */
 
 struct packet_header {
