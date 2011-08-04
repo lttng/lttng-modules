@@ -698,11 +698,11 @@ void channel_release(struct kref *kref)
  * @chan: channel to destroy
  *
  * Holds cpu hotplug.
- * Call "destroy" callback, finalize channels, wait for readers to release their
- * reference, then destroy ring buffer data. Note that when readers have
- * completed data consumption of finalized channels, get_subbuf() will return
- * -ENODATA. They should release their handle at that point.
- * Returns the private data pointer.
+ * Call "destroy" callback, finalize channels, and then decrement the
+ * channel reference count.  Note that when readers have completed data
+ * consumption of finalized channels, get_subbuf() will return -ENODATA.
+ * They should release their handle at that point.  Returns the private
+ * data pointer.
  */
 void *channel_destroy(struct channel *chan)
 {
