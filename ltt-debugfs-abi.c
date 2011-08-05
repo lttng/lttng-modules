@@ -222,9 +222,9 @@ long lttng_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return 0;
 	case LTTNG_KERNEL_CALIBRATE:
 	{
-		struct lttng_calibrate __user *ucalibrate =
-			(struct lttng_calibrate __user *) arg;
-		struct lttng_calibrate calibrate;
+		struct lttng_kernel_calibrate __user *ucalibrate =
+			(struct lttng_kernel_calibrate __user *) arg;
+		struct lttng_kernel_calibrate calibrate;
 		int ret;
 
 		if (copy_from_user(&calibrate, ucalibrate, sizeof(calibrate)))

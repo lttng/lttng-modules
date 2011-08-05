@@ -415,7 +415,7 @@ void lttng_ftrace_destroy_private(struct ltt_event *event)
 }
 #endif
 
-int lttng_calibrate(struct lttng_calibrate *calibrate);
+int lttng_calibrate(struct lttng_kernel_calibrate *calibrate);
 
 extern const struct file_operations lttng_tracepoint_list_fops;
 

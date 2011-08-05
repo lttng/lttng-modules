@@ -16,10 +16,10 @@ void lttng_calibrate_kretprobe(void)
 	asm volatile ("");
 }
 
-int lttng_calibrate(struct lttng_calibrate *calibrate)
+int lttng_calibrate(struct lttng_kernel_calibrate *calibrate)
 {
 	switch (calibrate->type) {
-	case LTTNG_CALIBRATE_KRETPROBE:
+	case LTTNG_KERNEL_CALIBRATE_KRETPROBE:
 		lttng_calibrate_kretprobe();
 		break;
 	default:
