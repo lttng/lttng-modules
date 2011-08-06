@@ -11,6 +11,7 @@
 #include "ltt-debugfs-abi.h"
 #include "ltt-events.h"
 
+noinline
 void lttng_calibrate_kretprobe(void)
 {
 	asm volatile ("");
