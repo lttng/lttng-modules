@@ -14,6 +14,7 @@ These files are licensed exclusively under the GPLv2 license. See
 gpl-2.0.txt for details.
 
 lib/ringbuffer/ring_buffer_splice.c
+lib/ringbuffer/ring_buffer_mmap.c
 instrumentation/events/mainline/*.h
 instrumentation/events/lttng-modules/*.h
 
