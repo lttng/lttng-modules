@@ -156,6 +156,7 @@ int lttng_tracepoint_list_open(struct inode *inode, struct file *file)
 }
 
 const struct file_operations lttng_tracepoint_list_fops = {
+	.owner = THIS_MODULE,
 	.open = lttng_tracepoint_list_open,
 	.read = seq_read,
 	.llseek = seq_lseek,
