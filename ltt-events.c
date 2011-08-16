@@ -487,7 +487,7 @@ int lttng_metadata_printf(struct ltt_session *session,
 		 * we need to bail out after timeout or being
 		 * interrupted.
 		 */
-		waitret = wait_event_interruptible_timeout(*chan->ops->get_reader_wait_queue(chan->chan),
+		waitret = wait_event_interruptible_timeout(*chan->ops->get_writer_buf_wait_queue(chan->chan, -1),
 			({
 				ret = chan->ops->event_reserve(&ctx, 0);
 				ret != -ENOBUFS || !ret;

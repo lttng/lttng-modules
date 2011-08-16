@@ -203,6 +203,7 @@ int lib_ring_buffer_create(struct lib_ring_buffer *buf,
 	}
 
 	init_waitqueue_head(&buf->read_wait);
+	init_waitqueue_head(&buf->write_wait);
 	raw_spin_lock_init(&buf->raw_tick_nohz_spinlock);
 
 	/*
@@ -867,6 +868,8 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_snapshot);
 
 /**
  * lib_ring_buffer_put_snapshot - move consumed counter forward
+ *
+ * Should only be called from consumer context.
  * @buf: ring buffer
  * @consumed_new: new consumed count value
  */
@@ -888,6 +891,8 @@ void lib_ring_buffer_move_consumer(struct lib_ring_buffer *buf,
 	while ((long) consumed - (long) consumed_new < 0)
 		consumed = atomic_long_cmpxchg(&buf->consumed, consumed,
 					       consumed_new);
+	/* Wake-up the metadata producer */
+	wake_up_interruptible(&buf->write_wait);
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_move_consumer);
 

@@ -216,7 +216,7 @@ struct ltt_channel_ops {
 	 * may change due to concurrent writes.
 	 */
 	size_t (*packet_avail_size)(struct channel *chan);
-	wait_queue_head_t *(*get_reader_wait_queue)(struct channel *chan);
+	wait_queue_head_t *(*get_writer_buf_wait_queue)(struct channel *chan, int cpu);
 	wait_queue_head_t *(*get_hp_wait_queue)(struct channel *chan);
 	int (*is_finalized)(struct channel *chan);
 	int (*is_disabled)(struct channel *chan);

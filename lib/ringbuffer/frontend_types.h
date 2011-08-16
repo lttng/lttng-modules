@@ -129,6 +129,7 @@ struct lib_ring_buffer {
 	union v_atomic records_count;	/* Number of records written */
 	union v_atomic records_overrun;	/* Number of overwritten records */
 	wait_queue_head_t read_wait;	/* reader buffer-level wait queue */
+	wait_queue_head_t write_wait;	/* writer buffer-level wait queue (for metadata only) */
 	int finalized;			/* buffer has been finalized */
 	struct timer_list switch_timer;	/* timer for periodical switch */
 	struct timer_list read_timer;	/* timer for read poll */

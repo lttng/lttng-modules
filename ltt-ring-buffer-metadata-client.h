@@ -116,7 +116,11 @@ static void client_buffer_end(struct lib_ring_buffer *buf, u64 tsc,
 
 	header->content_size = data_size * CHAR_BIT;		/* in bits */
 	header->packet_size = PAGE_ALIGN(data_size) * CHAR_BIT; /* in bits */
-	records_lost += lib_ring_buffer_get_records_lost_full(&client_config, buf);
+	/*
+	 * We do not care about the records lost count, because the metadata
+	 * channel waits and retry.
+	 */
+	(void) lib_ring_buffer_get_records_lost_full(&client_config, buf);
 	records_lost += lib_ring_buffer_get_records_lost_wrap(&client_config, buf);
 	records_lost += lib_ring_buffer_get_records_lost_big(&client_config, buf);
 	WARN_ON_ONCE(records_lost != 0);
@@ -238,9 +242,11 @@ size_t ltt_packet_avail_size(struct channel *chan)
 }
 
 static
-wait_queue_head_t *ltt_get_reader_wait_queue(struct channel *chan)
+wait_queue_head_t *ltt_get_writer_buf_wait_queue(struct channel *chan, int cpu)
 {
-	return &chan->read_wait;
+	struct lib_ring_buffer *buf = channel_get_ring_buffer(&client_config,
+					chan, cpu);
+	return &buf->write_wait;
 }
 
 static
@@ -275,7 +281,7 @@ static struct ltt_transport ltt_relay_transport = {
 		.event_commit = ltt_event_commit,
 		.event_write = ltt_event_write,
 		.packet_avail_size = ltt_packet_avail_size,
-		.get_reader_wait_queue = ltt_get_reader_wait_queue,
+		.get_writer_buf_wait_queue = ltt_get_writer_buf_wait_queue,
 		.get_hp_wait_queue = ltt_get_hp_wait_queue,
 		.is_finalized = ltt_is_finalized,
 		.is_disabled = ltt_is_disabled,
