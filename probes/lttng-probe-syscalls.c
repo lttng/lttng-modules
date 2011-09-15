@@ -21,10 +21,11 @@
  */
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH ../instrumentation/syscalls/headers
+//test #define TRACE_INCLUDE_PATH ../instrumentation/syscalls/headers
+#define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module
 
 //test #include "../instrumentation/syscalls/headers/syscalls.h"
-#include "../instrumentation/events/lttng-module/syscalsl.h"
+#include "../instrumentation/events/lttng-module/syscalls.h"
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");
