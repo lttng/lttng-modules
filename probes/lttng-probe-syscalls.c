@@ -14,16 +14,16 @@
  * Create the tracepoint static inlines from the kernel to validate that our
  * trace event macros match the kernel we run on.
  */
-#include <trace/events/syscalls.h>
+//#include <trace/events/syscalls.h>
 
 /*
  * Create LTTng tracepoint probes.
  */
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module
+#define TRACE_INCLUDE_PATH ../instrumentation/syscalls/headers
 
-#include "../instrumentation/events/lttng-module/syscalls.h"
+#include "../instrumentation/syscalls/headers/syscall.h"
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");
