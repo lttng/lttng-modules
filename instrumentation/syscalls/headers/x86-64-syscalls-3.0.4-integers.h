@@ -1,9 +1,9 @@
 /* THIS FILE IS AUTO-GENERATED. DO NOT EDIT */
 #undef TRACE_SYSTEM
-#define TRACE_SYSTEM syscall
+#define TRACE_SYSTEM syscalls
 
-#if !defined(_TRACE_SYSCALL_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_SYSCALL_H
+#if !defined(_TRACE_SYSCALLS_H) || defined(TRACE_HEADER_MULTI_READ)
+#define _TRACE_SYSCALLS_H
 
 #include <linux/tracepoint.h>
 #include <linux/syscalls.h>
@@ -527,7 +527,7 @@ TRACE_EVENT(sys_mmap,
 	TP_printk()
 )
 
-#endif /*  _TRACE_SYSCALL_H */
+#endif /*  _TRACE_SYSCALLS_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"
