@@ -457,8 +457,8 @@ __end_field_##_item:
 __assign_##dest:							\
 	{								\
 		__typeof__(__typemap.dest) __tmp = (src);		\
-		lib_ring_buffer_align_ctx(&ctx, ltt_alignof(__tmp));	\
-		__chan->ops->event_write(&ctx, &__tmp, sizeof(__tmp));	\
+		lib_ring_buffer_align_ctx(&__ctx, ltt_alignof(__tmp));	\
+		__chan->ops->event_write(&__ctx, &__tmp, sizeof(__tmp));\
 	}								\
 	goto __end_field_##dest;
 
@@ -467,8 +467,8 @@ __assign_##dest:							\
 __assign_##dest:							\
 	if (0)								\
 		(void) __typemap.dest;					\
-	lib_ring_buffer_align_ctx(&ctx, ltt_alignof(__typemap.dest));	\
-	__chan->ops->event_write(&ctx, src, len);			\
+	lib_ring_buffer_align_ctx(&__ctx, ltt_alignof(__typemap.dest));	\
+	__chan->ops->event_write(&__ctx, src, len);			\
 	goto __end_field_##dest;
 
 #undef tp_memcpy_dyn
@@ -476,13 +476,13 @@ __assign_##dest:							\
 __assign_##dest##_1:							\
 	{								\
 		u32 __tmpl = __dynamic_len[__dynamic_len_idx];		\
-		lib_ring_buffer_align_ctx(&ctx, ltt_alignof(u32));	\
-		__chan->ops->event_write(&ctx, &__tmpl, sizeof(u32));	\
+		lib_ring_buffer_align_ctx(&__ctx, ltt_alignof(u32));	\
+		__chan->ops->event_write(&__ctx, &__tmpl, sizeof(u32));	\
 	}								\
 	goto __end_field_##dest##_1;					\
 __assign_##dest##_2:							\
-	lib_ring_buffer_align_ctx(&ctx, ltt_alignof(__typemap.dest));	\
-	__chan->ops->event_write(&ctx, src,				\
+	lib_ring_buffer_align_ctx(&__ctx, ltt_alignof(__typemap.dest));	\
+	__chan->ops->event_write(&__ctx, src,				\
 		sizeof(__typemap.dest) * __get_dynamic_array_len(dest));\
 	goto __end_field_##dest##_2;
 
@@ -520,7 +520,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 {									      \
 	struct ltt_event *__event = __data;				      \
 	struct ltt_channel *__chan = __event->chan;			      \
-	struct lib_ring_buffer_ctx ctx;					      \
+	struct lib_ring_buffer_ctx __ctx;				      \
 	size_t __event_len, __event_align;				      \
 	size_t __dynamic_len_idx = 0;					      \
 	size_t __dynamic_len[ARRAY_SIZE(__event_fields___##_name)];	      \
@@ -537,14 +537,14 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 		return;							      \
 	__event_len = __event_get_size__##_name(__dynamic_len, _args);	      \
 	__event_align = __event_get_align__##_name(_args);		      \
-	lib_ring_buffer_ctx_init(&ctx, __chan->chan, __event, __event_len,    \
+	lib_ring_buffer_ctx_init(&__ctx, __chan->chan, __event, __event_len,  \
 				 __event_align, -1);			      \
-	__ret = __chan->ops->event_reserve(&ctx, __event->id);		      \
+	__ret = __chan->ops->event_reserve(&__ctx, __event->id);	      \
 	if (__ret < 0)							      \
 		return;							      \
 	/* Control code (field ordering) */				      \
 	_tstruct							      \
-	__chan->ops->event_commit(&ctx);				      \
+	__chan->ops->event_commit(&__ctx);				      \
 	return;								      \
 	/* Copy code, steered by control code */			      \
 	_assign								      \
