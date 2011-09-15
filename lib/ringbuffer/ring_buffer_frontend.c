@@ -752,8 +752,8 @@ void *channel_destroy(struct channel *chan)
 	ACCESS_ONCE(chan->finalized) = 1;
 	wake_up_interruptible(&chan->hp_wait);
 	wake_up_interruptible(&chan->read_wait);
-	kref_put(&chan->ref, channel_release);
 	priv = chan->backend.priv;
+	kref_put(&chan->ref, channel_release);
 	return priv;
 }
 EXPORT_SYMBOL_GPL(channel_destroy);
