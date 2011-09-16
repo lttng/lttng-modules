@@ -44,7 +44,9 @@ HEADER=headers/${INPUTFILE}-${CLASS}.h
 echo "/* THIS FILE IS AUTO-GENERATED. DO NOT EDIT */" > ${HEADER}
 
 echo \
-"#undef TRACE_SYSTEM
+"#ifndef CREATE_SYSCALL_TABLE
+
+#undef TRACE_SYSTEM
 #define TRACE_SYSTEM syscalls
 
 #if !defined(_TRACE_SYSCALLS_H) || defined(TRACE_HEADER_MULTI_READ)
@@ -167,16 +169,23 @@ for NRARGS in $(seq 1 6); do
 	grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} >> ${TMPFILE}
 done
 
-sed 's/^syscall \([^ ]*\) nr \([^ ]*\).*$/'\
-'TRACE_SYSCALL_TABLE(sys_\1, \2)/g'\
-	${TMPFILE} >> ${HEADER}
-
-echo -n \
+echo \
 "
 #endif /*  _TRACE_SYSCALLS_H */
 
 /* This part must be outside protection */
 #include \"../../../probes/define_trace.h\"
+
+#else /* CREATE_SYSCALL_TABLE */
+" >> ${HEADER}
+
+sed 's/^syscall \([^ ]*\) nr \([^ ]*\) nbargs \([^ ]*\) .*$/'\
+'TRACE_SYSCALL_TABLE(sys_\1, \2, \3)/g'\
+	${TMPFILE} >> ${HEADER}
+
+echo -n \
+"
+#endif /* CREATE_SYSCALL_TABLE */
 " >> ${HEADER}
 
 rm -f ${INPUTFILE}.tmp
