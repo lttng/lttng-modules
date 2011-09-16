@@ -66,6 +66,10 @@ void ltt_session_destroy(struct ltt_session *session)
 
 	mutex_lock(&sessions_mutex);
 	ACCESS_ONCE(session->active) = 0;
+	list_for_each_entry(chan, &session->chan, list) {
+		ret = lttng_syscalls_unregister(chan);
+		WARN_ON(ret);
+	}
 	list_for_each_entry(event, &session->events, list) {
 		ret = _ltt_event_unregister(event);
 		WARN_ON(ret);
@@ -360,6 +364,8 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 			goto register_error;
 		ret = try_module_get(event->desc->owner);
 		WARN_ON_ONCE(!ret);
+		break;
+	case LTTNG_KERNEL_NOOP:
 		break;
 	default:
 		WARN_ON_ONCE(1);

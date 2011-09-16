@@ -241,6 +241,7 @@ struct ltt_channel {
 	struct list_head list;		/* Channel list */
 	struct ltt_channel_ops *ops;
 	struct ltt_transport *transport;
+	struct ltt_event **sc_table;	/* for syscall tracing */
 	int header_type;		/* 0: unset, 1: compact, 2: large */
 	int metadata_dumped:1;
 };
@@ -297,6 +298,22 @@ const struct lttng_event_desc *ltt_event_get(const char *name);
 void ltt_event_put(const struct lttng_event_desc *desc);
 int ltt_probes_init(void);
 void ltt_probes_exit(void);
+
+#ifdef SYSCALL_DETAIL
+int lttng_syscalls_register(struct ltt_channel *chan, void *filter);
+int lttng_syscalls_unregister(struct ltt_channel *chan);
+#else
+static inline int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
+{
+	return -ENOSYS;
+}
+
+static inline int lttng_syscalls_unregister(struct ltt_channel *chan)
+{
+	return 0;
+}
+#endif
+
 struct lttng_ctx_field *lttng_append_context(struct lttng_ctx **ctx);
 int lttng_find_context(struct lttng_ctx *ctx, const char *name);
 void lttng_remove_context_field(struct lttng_ctx **ctx,

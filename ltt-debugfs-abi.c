@@ -514,31 +514,41 @@ int lttng_abi_create_event(struct file *channel_file,
 	default:
 		break;
 	}
-	event_fd = get_unused_fd();
-	if (event_fd < 0) {
-		ret = event_fd;
-		goto fd_error;
+	switch (event_param.instrumentation) {
+	default:
+		event_fd = get_unused_fd();
+		if (event_fd < 0) {
+			ret = event_fd;
+			goto fd_error;
+		}
+		event_file = anon_inode_getfile("[lttng_event]",
+						&lttng_event_fops,
+						NULL, O_RDWR);
+		if (IS_ERR(event_file)) {
+			ret = PTR_ERR(event_file);
+			goto file_error;
+		}
+		/*
+		 * We tolerate no failure path after event creation. It
+		 * will stay invariant for the rest of the session.
+		 */
+		event = ltt_event_create(channel, &event_param, NULL);
+		if (!event) {
+			ret = -EINVAL;
+			goto event_error;
+		}
+		event_file->private_data = event;
+		fd_install(event_fd, event_file);
+		/* The event holds a reference on the channel */
+		atomic_long_inc(&channel_file->f_count);
+		break;
+	case LTTNG_KERNEL_SYSCALLS:
+		ret = lttng_syscalls_register(channel, NULL);
+		if (ret)
+			goto fd_error;
+		event_fd = 0;
+		break;
 	}
-	event_file = anon_inode_getfile("[lttng_event]",
-					&lttng_event_fops,
-					NULL, O_RDWR);
-	if (IS_ERR(event_file)) {
-		ret = PTR_ERR(event_file);
-		goto file_error;
-	}
-	/*
-	 * We tolerate no failure path after event creation. It will stay
-	 * invariant for the rest of the session.
-	 */
-	event = ltt_event_create(channel, &event_param, NULL);
-	if (!event) {
-		ret = -EINVAL;
-		goto event_error;
-	}
-	event_file->private_data = event;
-	fd_install(event_fd, event_file);
-	/* The event holds a reference on the channel */
-	atomic_long_inc(&channel_file->f_count);
 	return event_fd;
 
 event_error:

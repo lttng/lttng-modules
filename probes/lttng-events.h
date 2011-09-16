@@ -211,12 +211,16 @@ static void __event_probe__##_name(void *__data, _proto);
 
 #include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
 
+#ifndef TP_PROBE_CB
+#define TP_PROBE_CB(_template)	&__event_probe__##_template
+#endif
+
 #undef DEFINE_EVENT
 #define DEFINE_EVENT(_template, _name, _proto, _args)			       \
 		{							       \
 			.fields = __event_fields___##_template,		       \
 			.name = #_name,					       \
-			.probe_callback = (void *) &__event_probe__##_template,\
+			.probe_callback = (void *) TP_PROBE_CB(_template),     \
 			.nr_fields = ARRAY_SIZE(__event_fields___##_template), \
 			.owner = THIS_MODULE,				       \
 		},
@@ -532,6 +536,15 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 
 #include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
 
+/* Override for syscall tracing */
+#ifndef TP_REGISTER_OVERRIDE
+#define TP_REGISTER_OVERRIDE	ltt_probe_register
+#endif
+
+#ifndef TP_UNREGISTER_OVERRIDE
+#define TP_UNREGISTER_OVERRIDE	ltt_probe_unregister
+#endif
+
 #define TP_ID1(_token, _system)	_token##_system
 #define TP_ID(_token, _system)	TP_ID1(_token, _system)
 #define module_init_eval1(_token, _system)	module_init(_token##_system)
@@ -542,14 +555,14 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 static int TP_ID(__lttng_events_init__, TRACE_SYSTEM)(void)
 {
 	wrapper_vmalloc_sync_all();
-	return ltt_probe_register(&TP_ID(__probe_desc___, TRACE_SYSTEM));
+	return TP_REGISTER_OVERRIDE(&TP_ID(__probe_desc___, TRACE_SYSTEM));
 }
 
 module_init_eval(__lttng_events_init__, TRACE_SYSTEM);
 
 static void TP_ID(__lttng_events_exit__, TRACE_SYSTEM)(void)
 {
-	ltt_probe_unregister(&TP_ID(__probe_desc___, TRACE_SYSTEM));
+	TP_UNREGISTER_OVERRIDE(&TP_ID(__probe_desc___, TRACE_SYSTEM));
 }
 
 module_exit_eval(__lttng_events_exit__, TRACE_SYSTEM);
