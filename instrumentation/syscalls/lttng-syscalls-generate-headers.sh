@@ -160,6 +160,12 @@ sed 's/^syscall \([^ ]*\) nr \([^ ]*\) nbargs \([^ ]*\) '\
 ')/g'\
 	${TMPFILE} >> ${HEADER}
 
+# Macro for tracing syscall table
+
+sed 's/^syscall \([^ ]*\) nr \([^ ]*\).*$/'\
+'TRACE_SYSCALL_TABLE(sys_\1, \2)/g'\
+	${SRCFILE} >> ${HEADER}
+
 echo -n \
 "
 #endif /*  _TRACE_SYSCALLS_H */
