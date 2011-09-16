@@ -162,9 +162,14 @@ sed 's/^syscall \([^ ]*\) nr \([^ ]*\) nbargs \([^ ]*\) '\
 
 # Macro for tracing syscall table
 
+rm -f ${TMPFILE}
+for NRARGS in $(seq 1 6); do
+	grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} >> ${TMPFILE}
+done
+
 sed 's/^syscall \([^ ]*\) nr \([^ ]*\).*$/'\
 'TRACE_SYSCALL_TABLE(sys_\1, \2)/g'\
-	${SRCFILE} >> ${HEADER}
+	${TMPFILE} >> ${HEADER}
 
 echo -n \
 "
