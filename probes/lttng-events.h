@@ -83,25 +83,31 @@ void trace_##_name(_proto);
 
 /* Named field types must be defined in lttng-types.h */
 
-#undef __field
-#define __field(_type, _item)					\
+#undef __field_full
+#define __field_full(_type, _item, _order, _base)		\
 	{							\
 	  .name = #_item,					\
-	  .type = __type_integer(_type, __BYTE_ORDER, 10, none),\
+	  .type = __type_integer(_type, _order, _base, none),	\
 	},
 
+#undef __field
+#define __field(_type, _item)					\
+	__field_full(_type, _item, __BYTE_ORDER, 10)
+
 #undef __field_ext
-#define __field_ext(_type, _item, _filter_type)		__field(_type, _item)
+#define __field_ext(_type, _item, _filter_type)			\
+	__field(_type, _item)
 
 #undef __field_network
 #define __field_network(_type, _item)				\
-	{							\
-	  .name = #_item,					\
-	  .type = __type_integer(_type, __BIG_ENDIAN, 10, none),\
-	},
+	__field_full(_type, _item, __BIG_ENDIAN, 10)
 
-#undef __array_enc
-#define __array_enc(_type, _item, _length, _encoding)		\
+#undef __field_network_hex
+#define __field_network_hex(_type, _item)				\
+	__field_full(_type, _item, __BIG_ENDIAN, 16)
+
+#undef __array_enc_ext
+#define __array_enc_ext(_type, _item, _length, _order, _base, _encoding)\
 	{							\
 	  .name = #_item,					\
 	  .type =						\
@@ -110,21 +116,25 @@ void trace_##_name(_proto);
 		  .u.array =					\
 			{					\
 			    .length = _length,			\
-			    .elem_type = __type_integer(_type, __BYTE_ORDER, 10, _encoding), \
+			    .elem_type = __type_integer(_type, _order, _base, _encoding), \
 			},					\
 		},						\
 	},
 
 #undef __array
 #define __array(_type, _item, _length)				\
-	__array_enc(_type, _item, _length, none)
+	__array_enc_ext(_type, _item, _length, __BYTE_ORDER, 10, none)
 
 #undef __array_text
 #define __array_text(_type, _item, _length)			\
-	__array_enc(_type, _item, _length, UTF8)
+	__array_enc_ext(_type, _item, _length, __BYTE_ORDER, 10, UTF8)
 
-#undef __dynamic_array_enc
-#define __dynamic_array_enc(_type, _item, _length, _encoding)	\
+#undef __array_hex
+#define __array_hex(_type, _item, _length)			\
+	__array_enc_ext(_type, _item, _length, __BYTE_ORDER, 16, none)
+
+#undef __dynamic_array_enc_ext
+#define __dynamic_array_enc_ext(_type, _item, _length, _order, _base, _encoding) \
 	{							\
 	  .name = #_item,					\
 	  .type =						\
@@ -133,18 +143,22 @@ void trace_##_name(_proto);
 		  .u.sequence =					\
 			{					\
 			    .length_type = __type_integer(u32, __BYTE_ORDER, 10, none), \
-			    .elem_type = __type_integer(_type, __BYTE_ORDER, 10, _encoding), \
+			    .elem_type = __type_integer(_type, _order, _base, _encoding), \
 			},					\
 		},						\
 	},
 
 #undef __dynamic_array
 #define __dynamic_array(_type, _item, _length)			\
-	__dynamic_array_enc(_type, _item, _length, none)
+	__dynamic_array_enc_ext(_type, _item, _length, __BYTE_ORDER, 10, none)
 
 #undef __dynamic_array_text
 #define __dynamic_array_text(_type, _item, _length)		\
-	__dynamic_array_enc(_type, _item, _length, UTF8)
+	__dynamic_array_enc_ext(_type, _item, _length, __BYTE_ORDER, 10, UTF8)
+
+#undef __dynamic_array_hex
+#define __dynamic_array_hex(_type, _item, _length)		\
+	__dynamic_array_enc_ext(_type, _item, _length, __BYTE_ORDER, 16, none)
 
 #undef __string
 #define __string(_item, _src)					\
@@ -246,35 +260,24 @@ static struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 
 /* Named field types must be defined in lttng-types.h */
 
-#undef __field
-#define __field(_type, _item)						       \
+#undef __field_full
+#define __field_full(_type, _item, _order, _base)			       \
 	__event_len += lib_ring_buffer_align(__event_len, ltt_alignof(_type)); \
 	__event_len += sizeof(_type);
 
-#undef __field_ext
-#define __field_ext(_type, _item, _filter_type)	__field(_type, _item)
-
-#undef __array
-#define __array(_type, _item, _length)					       \
+#undef __array_enc_ext
+#define __array_enc_ext(_type, _item, _length, _order, _base, _encoding)       \
 	__event_len += lib_ring_buffer_align(__event_len, ltt_alignof(_type)); \
 	__event_len += sizeof(_type) * (_length);
 
-#undef __array_text
-#define __array_text(_type, _item, _length)				       \
-	__array(_type, _item, _length)
-
-#undef __dynamic_array
-#define __dynamic_array(_type, _item, _length)				       \
+#undef __dynamic_array_enc_ext
+#define __dynamic_array_enc_ext(_type, _item, _length, _order, _base, _encoding)\
 	__event_len += lib_ring_buffer_align(__event_len, ltt_alignof(u32));   \
 	__event_len += sizeof(u32);					       \
 	__event_len += lib_ring_buffer_align(__event_len, ltt_alignof(_type)); \
 	__dynamic_len[__dynamic_len_idx] = (_length);			       \
 	__event_len += sizeof(_type) * __dynamic_len[__dynamic_len_idx];       \
 	__dynamic_len_idx++;
-
-#undef __dynamic_array_text
-#define __dynamic_array_text(_type, _item, _length)			       \
-	__dynamic_array(_type, _item, _length)
 
 #undef __string
 #define __string(_item, _src)						       \
@@ -311,29 +314,18 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len, _proto) \
 
 /* Named field types must be defined in lttng-types.h */
 
-#undef __field
-#define __field(_type, _item)						  \
+#undef __field_full
+#define __field_full(_type, _item, _order, _base)			  \
 	__event_align = max_t(size_t, __event_align, ltt_alignof(_type));
 
-#undef __field_ext
-#define __field_ext(_type, _item, _filter_type)	__field(_type, _item)
-
-#undef __array
-#define __array(_type, _item, _length)					  \
+#undef __array_enc_ext
+#define __array_enc_ext(_type, _item, _length, _order, _base, _encoding)  \
 	__event_align = max_t(size_t, __event_align, ltt_alignof(_type));
 
-#undef __array_text
-#define __array_text(_type, _item, _length)				  \
-	__array(_type, _item, _length)
-
-#undef __dynamic_array
-#define __dynamic_array(_type, _item, _length)				  \
+#undef __dynamic_array_enc_ext
+#define __dynamic_array_enc_ext(_type, _item, _length, _order, _base, _encoding)\
 	__event_align = max_t(size_t, __event_align, ltt_alignof(u32));	  \
 	__event_align = max_t(size_t, __event_align, ltt_alignof(_type));
-
-#undef __dynamic_array_text
-#define __dynamic_array_text(_type, _item, _length)			  \
-	__dynamic_array(_type, _item, _length)
 
 #undef __string
 #define __string(_item, _src)
@@ -367,25 +359,16 @@ static inline size_t __event_get_align__##_name(_proto)			      \
 
 /* Named field types must be defined in lttng-types.h */
 
-#undef __field
-#define __field(_type, _item)	_type	_item;
+#undef __field_full
+#define __field_full(_type, _item, _order, _base)	_type	_item;
 
-#undef __field_ext
-#define __field_ext(_type, _item, _filter_type)	__field(_type, _item)
+#undef __array_enc_ext
+#define __array_enc_ext(_type, _item, _length, _order, _base, _encoding)  \
+	_type	_item;
 
-#undef __array
-#define __array(_type, _item, _length)	_type	_item;
-
-#undef __array_text
-#define __array_text(_type, _item, _length)				  \
-	__array(_type, _item, _length)
-
-#undef __dynamic_array
-#define __dynamic_array(_type, _item, _length)	_type	_item;
-
-#undef __dynamic_array_text
-#define __dynamic_array_text(_type, _item, _length)			  \
-	__dynamic_array(_type, _item, _length)
+#undef __dynamic_array_enc_ext
+#define __dynamic_array_enc_ext(_type, _item, _length, _order, _base, _encoding)\
+	_type	_item;
 
 #undef __string
 #define __string(_item, _src)	char _item;
@@ -415,33 +398,22 @@ struct __event_typemap__##_name {					      \
 
 #include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
 
-#undef __field
-#define __field(_type, _item)						\
+#undef __field_full
+#define __field_full(_type, _item, _order, _base)			\
 	goto __assign_##_item;						\
 __end_field_##_item:
 
-#undef __field_ext
-#define __field_ext(_type, _item, _filter_type)	__field(_type, _item)
-
-#undef __array
-#define __array(_type, _item, _length)					\
+#undef __array_enc_ext
+#define __array_enc_ext(_type, _item, _length, _order, _base, _encoding)\
 	goto __assign_##_item;						\
 __end_field_##_item:
 
-#undef __array_text
-#define __array_text(_type, _item, _length)				\
-	__array(_type, _item, _length)
-
-#undef __dynamic_array
-#define __dynamic_array(_type, _item, _length)				\
+#undef __dynamic_array_enc_ext
+#define __dynamic_array_enc_ext(_type, _item, _length, _order, _base, _encoding)\
 	goto __assign_##_item##_1;					\
 __end_field_##_item##_1:						\
 	goto __assign_##_item##_2;					\
 __end_field_##_item##_2:
-
-#undef __dynamic_array_text
-#define __dynamic_array_text(_type, _item, _length)			\
-	__dynamic_array(_type, _item, _length)
 
 #undef __string
 #define __string(_item, _src)						\

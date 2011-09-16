@@ -8,22 +8,16 @@
 
 /* Reset macros used within TRACE_EVENT to "nothing" */
 
-#undef __field
-#define __field(_type, _item)
+#undef __field_full
+#define __field_full(_type, _item, _order, _base)
 
-#undef __field_ext
-#define __field_ext(_type, _item, _filter_type)
+#undef __array_enc_ext
+#define __array_enc_ext(_type, _item, _length, _order, _base, _encoding)
 
-#undef __field_network
-#define __field_network(_type, _item)
+#undef __dynamic_array_enc_ext
+#define __dynamic_array_enc_ext(_type, _item, _length, _order, _base, _encoding)
 
-#undef __array
-#define __array(_type, _item, _length)
-
-#undef __dynamic_array
-#define __dynamic_array(_type, _item, _length)
-
-#undef __dynamic_array
+#undef __dynamic_array_len
 #define __dynamic_array_len(_type, _item, _length)
 
 #undef __string
