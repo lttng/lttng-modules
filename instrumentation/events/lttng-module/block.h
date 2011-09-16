@@ -58,7 +58,9 @@ DECLARE_EVENT_CLASS(block_rq_with_error,
 		__field(  unsigned int,	nr_sector		)
 		__field(  int,		errors			)
 		__field(  unsigned int,	rwbs			)
-		__dynamic_array_text( char,	cmd,	blk_cmd_buf_len(rq)	)
+		__dynamic_array_hex( unsigned char,	cmd,
+			(rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
+				rq->cmd_len : 0)
 	),
 
 	TP_fast_assign(
@@ -70,7 +72,7 @@ DECLARE_EVENT_CLASS(block_rq_with_error,
 		tp_assign(errors, rq->errors)
 		blk_fill_rwbs(rwbs, rq->cmd_flags, blk_rq_bytes(rq))
 		tp_memcpy_dyn(cmd, (rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
-					rq->cmd : (unsigned char *) "");
+					rq->cmd : NULL);
 	),
 
 	TP_printk("%d,%d %s (%s) %llu + %u [%d]",
@@ -146,7 +148,9 @@ DECLARE_EVENT_CLASS(block_rq,
 		__field(  unsigned int,	bytes			)
 		__field(  unsigned int,	rwbs			)
 		__array_text(  char,         comm,   TASK_COMM_LEN   )
-		__dynamic_array_text( char,	cmd,	blk_cmd_buf_len(rq)	)
+		__dynamic_array_hex( unsigned char,	cmd,
+			(rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
+				rq->cmd_len : 0)
 	),
 
 	TP_fast_assign(
@@ -159,7 +163,7 @@ DECLARE_EVENT_CLASS(block_rq,
 					blk_rq_bytes(rq) : 0)
 		blk_fill_rwbs(rwbs, rq->cmd_flags, blk_rq_bytes(rq))
 		tp_memcpy_dyn(cmd, (rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
-					rq->cmd : (unsigned char *) "");
+					rq->cmd : NULL);
 		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
 	),
 
