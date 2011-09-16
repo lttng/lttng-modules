@@ -536,15 +536,6 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 
 #include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
 
-/* Override for syscall tracing */
-#ifndef TP_REGISTER_OVERRIDE
-#define TP_REGISTER_OVERRIDE	ltt_probe_register
-#endif
-
-#ifndef TP_UNREGISTER_OVERRIDE
-#define TP_UNREGISTER_OVERRIDE	ltt_probe_unregister
-#endif
-
 #define TP_ID1(_token, _system)	_token##_system
 #define TP_ID(_token, _system)	TP_ID1(_token, _system)
 #define module_init_eval1(_token, _system)	module_init(_token##_system)
@@ -552,20 +543,22 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 #define module_exit_eval1(_token, _system)	module_exit(_token##_system)
 #define module_exit_eval(_token, _system)	module_exit_eval1(_token, _system)
 
+#ifndef TP_MODULE_OVERRIDE
 static int TP_ID(__lttng_events_init__, TRACE_SYSTEM)(void)
 {
 	wrapper_vmalloc_sync_all();
-	return TP_REGISTER_OVERRIDE(&TP_ID(__probe_desc___, TRACE_SYSTEM));
+	return ltt_probe_register(&TP_ID(__probe_desc___, TRACE_SYSTEM));
 }
 
 module_init_eval(__lttng_events_init__, TRACE_SYSTEM);
 
 static void TP_ID(__lttng_events_exit__, TRACE_SYSTEM)(void)
 {
-	TP_UNREGISTER_OVERRIDE(&TP_ID(__probe_desc___, TRACE_SYSTEM));
+	ltt_probe_unregister(&TP_ID(__probe_desc___, TRACE_SYSTEM));
 }
 
 module_exit_eval(__lttng_events_exit__, TRACE_SYSTEM);
+#endif
 
 #undef module_init_eval
 #undef module_exit_eval

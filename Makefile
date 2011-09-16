@@ -21,6 +21,8 @@ ltt-relay-objs :=  ltt-events.o ltt-debugfs-abi.o \
 			lttng-context-vtid.o lttng-context-ppid.o \
 			lttng-context-vppid.o lttng-calibrate.o
 
+#add for testing	lttng-syscalls.o
+
 ifneq ($(CONFIG_PERF_EVENTS),)
 ltt-relay-objs += $(shell \
 	if [ $(VERSION) -ge 3 \

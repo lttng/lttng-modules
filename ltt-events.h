@@ -278,7 +278,8 @@ struct ltt_channel *ltt_global_channel_create(struct ltt_session *session,
 
 struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 				   struct lttng_kernel_event *event_param,
-				   void *filter);
+				   void *filter,
+				   const struct lttng_event_desc *internal_desc);
 
 int ltt_channel_enable(struct ltt_channel *channel);
 int ltt_channel_disable(struct ltt_channel *channel);

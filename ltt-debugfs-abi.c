@@ -268,7 +268,7 @@ void lttng_metadata_create_events(struct file *channel_file)
 	 * We tolerate no failure path after event creation. It will stay
 	 * invariant for the rest of the session.
 	 */
-	event = ltt_event_create(channel, &metadata_params, NULL);
+	event = ltt_event_create(channel, &metadata_params, NULL, NULL);
 	if (!event) {
 		goto create_error;
 	}
@@ -534,7 +534,7 @@ int lttng_abi_create_event(struct file *channel_file,
 		 * We tolerate no failure path after event creation. It
 		 * will stay invariant for the rest of the session.
 		 */
-		event = ltt_event_create(channel, &event_param, NULL);
+		event = ltt_event_create(channel, &event_param, NULL, NULL);
 		if (!event) {
 			ret = -EINVAL;
 			goto event_error;

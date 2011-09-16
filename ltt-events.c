@@ -266,7 +266,8 @@ void _ltt_channel_destroy(struct ltt_channel *chan)
  */
 struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 				   struct lttng_kernel_event *event_param,
-				   void *filter)
+				   void *filter,
+				   const struct lttng_event_desc *internal_desc)
 {
 	struct ltt_event *event;
 	int ret;
@@ -366,6 +367,9 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 		WARN_ON_ONCE(!ret);
 		break;
 	case LTTNG_KERNEL_NOOP:
+		event->desc = internal_desc;
+		if (!event->desc)
+			goto register_error;
 		break;
 	default:
 		WARN_ON_ONCE(1);
@@ -378,10 +382,7 @@ struct ltt_event *ltt_event_create(struct ltt_channel *chan,
 	return event;
 
 statedump_error:
-	WARN_ON_ONCE(tracepoint_probe_unregister(event_param->name,
-				event->desc->probe_callback,
-				event));
-	ltt_event_put(event->desc);
+	/* If a statedump error occurs, events will not be readable. */
 register_error:
 	kmem_cache_free(event_cache, event);
 cache_error:
@@ -418,6 +419,9 @@ int _ltt_event_unregister(struct ltt_event *event)
 		lttng_ftrace_unregister(event);
 		ret = 0;
 		break;
+	case LTTNG_KERNEL_NOOP:
+		ret = 0;
+		break;
 	default:
 		WARN_ON_ONCE(1);
 	}
@@ -445,6 +449,8 @@ void _ltt_event_destroy(struct ltt_event *event)
 	case LTTNG_KERNEL_FUNCTION:
 		module_put(event->desc->owner);
 		lttng_ftrace_destroy_private(event);
+		break;
+	case LTTNG_KERNEL_NOOP:
 		break;
 	default:
 		WARN_ON_ONCE(1);
