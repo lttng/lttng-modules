@@ -69,7 +69,8 @@ DECLARE_EVENT_CLASS(block_rq_with_error,
 					0 : blk_rq_sectors(rq))
 		tp_assign(errors, rq->errors)
 		blk_fill_rwbs(rwbs, rq->cmd_flags, blk_rq_bytes(rq))
-		tp_memcpy_dyn(cmd, rq->cmd)
+		tp_memcpy_dyn(cmd, (rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
+					rq->cmd : (unsigned char *) "");
 	),
 
 	TP_printk("%d,%d %s (%s) %llu + %u [%d]",
@@ -157,7 +158,8 @@ DECLARE_EVENT_CLASS(block_rq,
 		tp_assign(bytes, (rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
 					blk_rq_bytes(rq) : 0)
 		blk_fill_rwbs(rwbs, rq->cmd_flags, blk_rq_bytes(rq))
-		tp_memcpy_dyn(cmd, rq->cmd)
+		tp_memcpy_dyn(cmd, (rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
+					rq->cmd : (unsigned char *) "");
 		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
 	),
 
