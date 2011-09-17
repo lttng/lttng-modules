@@ -9,28 +9,62 @@
 
 #include <linux/tracepoint.h>
 #include <linux/syscalls.h>
+#include "x86-64-syscalls-3.0.4_integers_override.h"
 
 DECLARE_EVENT_CLASS_NOARGS(syscalls_noargs,
 	TP_STRUCT__entry(),
 	TP_fast_assign(),
 	TP_printk()
 )
+#ifndef OVERRIDE_sys_sched_yield
 DEFINE_EVENT_NOARGS(syscalls_noargs, sys_sched_yield)
+#endif
+#ifndef OVERRIDE_sys_pause
 DEFINE_EVENT_NOARGS(syscalls_noargs, sys_pause)
+#endif
+#ifndef OVERRIDE_sys_getpid
 DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getpid)
+#endif
+#ifndef OVERRIDE_sys_getuid
 DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getuid)
+#endif
+#ifndef OVERRIDE_sys_getgid
 DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getgid)
+#endif
+#ifndef OVERRIDE_sys_geteuid
 DEFINE_EVENT_NOARGS(syscalls_noargs, sys_geteuid)
+#endif
+#ifndef OVERRIDE_sys_getegid
 DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getegid)
+#endif
+#ifndef OVERRIDE_sys_getppid
 DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getppid)
+#endif
+#ifndef OVERRIDE_sys_getpgrp
 DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getpgrp)
+#endif
+#ifndef OVERRIDE_sys_setsid
 DEFINE_EVENT_NOARGS(syscalls_noargs, sys_setsid)
+#endif
+#ifndef OVERRIDE_sys_munlockall
 DEFINE_EVENT_NOARGS(syscalls_noargs, sys_munlockall)
+#endif
+#ifndef OVERRIDE_sys_vhangup
 DEFINE_EVENT_NOARGS(syscalls_noargs, sys_vhangup)
+#endif
+#ifndef OVERRIDE_sys_sync
 DEFINE_EVENT_NOARGS(syscalls_noargs, sys_sync)
+#endif
+#ifndef OVERRIDE_sys_gettid
 DEFINE_EVENT_NOARGS(syscalls_noargs, sys_gettid)
+#endif
+#ifndef OVERRIDE_sys_restart_syscall
 DEFINE_EVENT_NOARGS(syscalls_noargs, sys_restart_syscall)
+#endif
+#ifndef OVERRIDE_sys_inotify_init
 DEFINE_EVENT_NOARGS(syscalls_noargs, sys_inotify_init)
+#endif
+#ifndef OVERRIDE_sys_close
 TRACE_EVENT(sys_close,
 	TP_PROTO(unsigned int fd),
 	TP_ARGS(fd),
@@ -38,6 +72,8 @@ TRACE_EVENT(sys_close,
 	TP_fast_assign(tp_assign(fd, fd)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_brk
 TRACE_EVENT(sys_brk,
 	TP_PROTO(unsigned long brk),
 	TP_ARGS(brk),
@@ -45,6 +81,8 @@ TRACE_EVENT(sys_brk,
 	TP_fast_assign(tp_assign(brk, brk)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_dup
 TRACE_EVENT(sys_dup,
 	TP_PROTO(unsigned int fildes),
 	TP_ARGS(fildes),
@@ -52,6 +90,8 @@ TRACE_EVENT(sys_dup,
 	TP_fast_assign(tp_assign(fildes, fildes)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_alarm
 TRACE_EVENT(sys_alarm,
 	TP_PROTO(unsigned int seconds),
 	TP_ARGS(seconds),
@@ -59,6 +99,8 @@ TRACE_EVENT(sys_alarm,
 	TP_fast_assign(tp_assign(seconds, seconds)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_exit
 TRACE_EVENT(sys_exit,
 	TP_PROTO(int error_code),
 	TP_ARGS(error_code),
@@ -66,6 +108,8 @@ TRACE_EVENT(sys_exit,
 	TP_fast_assign(tp_assign(error_code, error_code)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_fsync
 TRACE_EVENT(sys_fsync,
 	TP_PROTO(unsigned int fd),
 	TP_ARGS(fd),
@@ -73,6 +117,8 @@ TRACE_EVENT(sys_fsync,
 	TP_fast_assign(tp_assign(fd, fd)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_fdatasync
 TRACE_EVENT(sys_fdatasync,
 	TP_PROTO(unsigned int fd),
 	TP_ARGS(fd),
@@ -80,6 +126,8 @@ TRACE_EVENT(sys_fdatasync,
 	TP_fast_assign(tp_assign(fd, fd)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_fchdir
 TRACE_EVENT(sys_fchdir,
 	TP_PROTO(unsigned int fd),
 	TP_ARGS(fd),
@@ -87,6 +135,8 @@ TRACE_EVENT(sys_fchdir,
 	TP_fast_assign(tp_assign(fd, fd)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_umask
 TRACE_EVENT(sys_umask,
 	TP_PROTO(int mask),
 	TP_ARGS(mask),
@@ -94,6 +144,8 @@ TRACE_EVENT(sys_umask,
 	TP_fast_assign(tp_assign(mask, mask)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_setuid
 TRACE_EVENT(sys_setuid,
 	TP_PROTO(uid_t uid),
 	TP_ARGS(uid),
@@ -101,6 +153,8 @@ TRACE_EVENT(sys_setuid,
 	TP_fast_assign(tp_assign(uid, uid)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_setgid
 TRACE_EVENT(sys_setgid,
 	TP_PROTO(gid_t gid),
 	TP_ARGS(gid),
@@ -108,6 +162,8 @@ TRACE_EVENT(sys_setgid,
 	TP_fast_assign(tp_assign(gid, gid)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_getpgid
 TRACE_EVENT(sys_getpgid,
 	TP_PROTO(pid_t pid),
 	TP_ARGS(pid),
@@ -115,6 +171,8 @@ TRACE_EVENT(sys_getpgid,
 	TP_fast_assign(tp_assign(pid, pid)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_setfsuid
 TRACE_EVENT(sys_setfsuid,
 	TP_PROTO(uid_t uid),
 	TP_ARGS(uid),
@@ -122,6 +180,8 @@ TRACE_EVENT(sys_setfsuid,
 	TP_fast_assign(tp_assign(uid, uid)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_setfsgid
 TRACE_EVENT(sys_setfsgid,
 	TP_PROTO(gid_t gid),
 	TP_ARGS(gid),
@@ -129,6 +189,8 @@ TRACE_EVENT(sys_setfsgid,
 	TP_fast_assign(tp_assign(gid, gid)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_getsid
 TRACE_EVENT(sys_getsid,
 	TP_PROTO(pid_t pid),
 	TP_ARGS(pid),
@@ -136,6 +198,8 @@ TRACE_EVENT(sys_getsid,
 	TP_fast_assign(tp_assign(pid, pid)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_personality
 TRACE_EVENT(sys_personality,
 	TP_PROTO(unsigned int personality),
 	TP_ARGS(personality),
@@ -143,6 +207,8 @@ TRACE_EVENT(sys_personality,
 	TP_fast_assign(tp_assign(personality, personality)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_sched_getscheduler
 TRACE_EVENT(sys_sched_getscheduler,
 	TP_PROTO(pid_t pid),
 	TP_ARGS(pid),
@@ -150,6 +216,8 @@ TRACE_EVENT(sys_sched_getscheduler,
 	TP_fast_assign(tp_assign(pid, pid)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_sched_get_priority_max
 TRACE_EVENT(sys_sched_get_priority_max,
 	TP_PROTO(int policy),
 	TP_ARGS(policy),
@@ -157,6 +225,8 @@ TRACE_EVENT(sys_sched_get_priority_max,
 	TP_fast_assign(tp_assign(policy, policy)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_sched_get_priority_min
 TRACE_EVENT(sys_sched_get_priority_min,
 	TP_PROTO(int policy),
 	TP_ARGS(policy),
@@ -164,6 +234,8 @@ TRACE_EVENT(sys_sched_get_priority_min,
 	TP_fast_assign(tp_assign(policy, policy)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_mlockall
 TRACE_EVENT(sys_mlockall,
 	TP_PROTO(int flags),
 	TP_ARGS(flags),
@@ -171,6 +243,8 @@ TRACE_EVENT(sys_mlockall,
 	TP_fast_assign(tp_assign(flags, flags)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_io_destroy
 TRACE_EVENT(sys_io_destroy,
 	TP_PROTO(aio_context_t ctx),
 	TP_ARGS(ctx),
@@ -178,6 +252,8 @@ TRACE_EVENT(sys_io_destroy,
 	TP_fast_assign(tp_assign(ctx, ctx)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_epoll_create
 TRACE_EVENT(sys_epoll_create,
 	TP_PROTO(int size),
 	TP_ARGS(size),
@@ -185,6 +261,8 @@ TRACE_EVENT(sys_epoll_create,
 	TP_fast_assign(tp_assign(size, size)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_timer_getoverrun
 TRACE_EVENT(sys_timer_getoverrun,
 	TP_PROTO(timer_t timer_id),
 	TP_ARGS(timer_id),
@@ -192,6 +270,8 @@ TRACE_EVENT(sys_timer_getoverrun,
 	TP_fast_assign(tp_assign(timer_id, timer_id)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_timer_delete
 TRACE_EVENT(sys_timer_delete,
 	TP_PROTO(timer_t timer_id),
 	TP_ARGS(timer_id),
@@ -199,6 +279,8 @@ TRACE_EVENT(sys_timer_delete,
 	TP_fast_assign(tp_assign(timer_id, timer_id)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_exit_group
 TRACE_EVENT(sys_exit_group,
 	TP_PROTO(int error_code),
 	TP_ARGS(error_code),
@@ -206,6 +288,8 @@ TRACE_EVENT(sys_exit_group,
 	TP_fast_assign(tp_assign(error_code, error_code)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_unshare
 TRACE_EVENT(sys_unshare,
 	TP_PROTO(unsigned long unshare_flags),
 	TP_ARGS(unshare_flags),
@@ -213,6 +297,8 @@ TRACE_EVENT(sys_unshare,
 	TP_fast_assign(tp_assign(unshare_flags, unshare_flags)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_eventfd
 TRACE_EVENT(sys_eventfd,
 	TP_PROTO(unsigned int count),
 	TP_ARGS(count),
@@ -220,6 +306,8 @@ TRACE_EVENT(sys_eventfd,
 	TP_fast_assign(tp_assign(count, count)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_epoll_create1
 TRACE_EVENT(sys_epoll_create1,
 	TP_PROTO(int flags),
 	TP_ARGS(flags),
@@ -227,6 +315,8 @@ TRACE_EVENT(sys_epoll_create1,
 	TP_fast_assign(tp_assign(flags, flags)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_inotify_init1
 TRACE_EVENT(sys_inotify_init1,
 	TP_PROTO(int flags),
 	TP_ARGS(flags),
@@ -234,6 +324,8 @@ TRACE_EVENT(sys_inotify_init1,
 	TP_fast_assign(tp_assign(flags, flags)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_syncfs
 TRACE_EVENT(sys_syncfs,
 	TP_PROTO(int fd),
 	TP_ARGS(fd),
@@ -241,6 +333,8 @@ TRACE_EVENT(sys_syncfs,
 	TP_fast_assign(tp_assign(fd, fd)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_munmap
 TRACE_EVENT(sys_munmap,
 	TP_PROTO(unsigned long addr, size_t len),
 	TP_ARGS(addr, len),
@@ -248,6 +342,8 @@ TRACE_EVENT(sys_munmap,
 	TP_fast_assign(tp_assign(addr, addr) tp_assign(len, len)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_dup2
 TRACE_EVENT(sys_dup2,
 	TP_PROTO(unsigned int oldfd, unsigned int newfd),
 	TP_ARGS(oldfd, newfd),
@@ -255,6 +351,8 @@ TRACE_EVENT(sys_dup2,
 	TP_fast_assign(tp_assign(oldfd, oldfd) tp_assign(newfd, newfd)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_shutdown
 TRACE_EVENT(sys_shutdown,
 	TP_PROTO(int fd, int how),
 	TP_ARGS(fd, how),
@@ -262,6 +360,8 @@ TRACE_EVENT(sys_shutdown,
 	TP_fast_assign(tp_assign(fd, fd) tp_assign(how, how)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_listen
 TRACE_EVENT(sys_listen,
 	TP_PROTO(int fd, int backlog),
 	TP_ARGS(fd, backlog),
@@ -269,6 +369,8 @@ TRACE_EVENT(sys_listen,
 	TP_fast_assign(tp_assign(fd, fd) tp_assign(backlog, backlog)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_kill
 TRACE_EVENT(sys_kill,
 	TP_PROTO(pid_t pid, int sig),
 	TP_ARGS(pid, sig),
@@ -276,6 +378,8 @@ TRACE_EVENT(sys_kill,
 	TP_fast_assign(tp_assign(pid, pid) tp_assign(sig, sig)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_msgget
 TRACE_EVENT(sys_msgget,
 	TP_PROTO(key_t key, int msgflg),
 	TP_ARGS(key, msgflg),
@@ -283,6 +387,8 @@ TRACE_EVENT(sys_msgget,
 	TP_fast_assign(tp_assign(key, key) tp_assign(msgflg, msgflg)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_flock
 TRACE_EVENT(sys_flock,
 	TP_PROTO(unsigned int fd, unsigned int cmd),
 	TP_ARGS(fd, cmd),
@@ -290,6 +396,8 @@ TRACE_EVENT(sys_flock,
 	TP_fast_assign(tp_assign(fd, fd) tp_assign(cmd, cmd)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_ftruncate
 TRACE_EVENT(sys_ftruncate,
 	TP_PROTO(unsigned int fd, unsigned long length),
 	TP_ARGS(fd, length),
@@ -297,6 +405,8 @@ TRACE_EVENT(sys_ftruncate,
 	TP_fast_assign(tp_assign(fd, fd) tp_assign(length, length)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_fchmod
 TRACE_EVENT(sys_fchmod,
 	TP_PROTO(unsigned int fd, mode_t mode),
 	TP_ARGS(fd, mode),
@@ -304,6 +414,8 @@ TRACE_EVENT(sys_fchmod,
 	TP_fast_assign(tp_assign(fd, fd) tp_assign(mode, mode)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_setpgid
 TRACE_EVENT(sys_setpgid,
 	TP_PROTO(pid_t pid, pid_t pgid),
 	TP_ARGS(pid, pgid),
@@ -311,6 +423,8 @@ TRACE_EVENT(sys_setpgid,
 	TP_fast_assign(tp_assign(pid, pid) tp_assign(pgid, pgid)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_setreuid
 TRACE_EVENT(sys_setreuid,
 	TP_PROTO(uid_t ruid, uid_t euid),
 	TP_ARGS(ruid, euid),
@@ -318,6 +432,8 @@ TRACE_EVENT(sys_setreuid,
 	TP_fast_assign(tp_assign(ruid, ruid) tp_assign(euid, euid)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_setregid
 TRACE_EVENT(sys_setregid,
 	TP_PROTO(gid_t rgid, gid_t egid),
 	TP_ARGS(rgid, egid),
@@ -325,6 +441,8 @@ TRACE_EVENT(sys_setregid,
 	TP_fast_assign(tp_assign(rgid, rgid) tp_assign(egid, egid)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_getpriority
 TRACE_EVENT(sys_getpriority,
 	TP_PROTO(int which, int who),
 	TP_ARGS(which, who),
@@ -332,6 +450,8 @@ TRACE_EVENT(sys_getpriority,
 	TP_fast_assign(tp_assign(which, which) tp_assign(who, who)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_mlock
 TRACE_EVENT(sys_mlock,
 	TP_PROTO(unsigned long start, size_t len),
 	TP_ARGS(start, len),
@@ -339,6 +459,8 @@ TRACE_EVENT(sys_mlock,
 	TP_fast_assign(tp_assign(start, start) tp_assign(len, len)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_munlock
 TRACE_EVENT(sys_munlock,
 	TP_PROTO(unsigned long start, size_t len),
 	TP_ARGS(start, len),
@@ -346,6 +468,8 @@ TRACE_EVENT(sys_munlock,
 	TP_fast_assign(tp_assign(start, start) tp_assign(len, len)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_tkill
 TRACE_EVENT(sys_tkill,
 	TP_PROTO(pid_t pid, int sig),
 	TP_ARGS(pid, sig),
@@ -353,6 +477,8 @@ TRACE_EVENT(sys_tkill,
 	TP_fast_assign(tp_assign(pid, pid) tp_assign(sig, sig)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_ioprio_get
 TRACE_EVENT(sys_ioprio_get,
 	TP_PROTO(int which, int who),
 	TP_ARGS(which, who),
@@ -360,6 +486,8 @@ TRACE_EVENT(sys_ioprio_get,
 	TP_fast_assign(tp_assign(which, which) tp_assign(who, who)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_inotify_rm_watch
 TRACE_EVENT(sys_inotify_rm_watch,
 	TP_PROTO(int fd, __s32 wd),
 	TP_ARGS(fd, wd),
@@ -367,6 +495,8 @@ TRACE_EVENT(sys_inotify_rm_watch,
 	TP_fast_assign(tp_assign(fd, fd) tp_assign(wd, wd)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_timerfd_create
 TRACE_EVENT(sys_timerfd_create,
 	TP_PROTO(int clockid, int flags),
 	TP_ARGS(clockid, flags),
@@ -374,6 +504,8 @@ TRACE_EVENT(sys_timerfd_create,
 	TP_fast_assign(tp_assign(clockid, clockid) tp_assign(flags, flags)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_eventfd2
 TRACE_EVENT(sys_eventfd2,
 	TP_PROTO(unsigned int count, int flags),
 	TP_ARGS(count, flags),
@@ -381,6 +513,8 @@ TRACE_EVENT(sys_eventfd2,
 	TP_fast_assign(tp_assign(count, count) tp_assign(flags, flags)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_setns
 TRACE_EVENT(sys_setns,
 	TP_PROTO(int fd, int nstype),
 	TP_ARGS(fd, nstype),
@@ -388,6 +522,8 @@ TRACE_EVENT(sys_setns,
 	TP_fast_assign(tp_assign(fd, fd) tp_assign(nstype, nstype)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_lseek
 TRACE_EVENT(sys_lseek,
 	TP_PROTO(unsigned int fd, off_t offset, unsigned int origin),
 	TP_ARGS(fd, offset, origin),
@@ -395,6 +531,8 @@ TRACE_EVENT(sys_lseek,
 	TP_fast_assign(tp_assign(fd, fd) tp_assign(offset, offset) tp_assign(origin, origin)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_mprotect
 TRACE_EVENT(sys_mprotect,
 	TP_PROTO(unsigned long start, size_t len, unsigned long prot),
 	TP_ARGS(start, len, prot),
@@ -402,6 +540,8 @@ TRACE_EVENT(sys_mprotect,
 	TP_fast_assign(tp_assign(start, start) tp_assign(len, len) tp_assign(prot, prot)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_ioctl
 TRACE_EVENT(sys_ioctl,
 	TP_PROTO(unsigned int fd, unsigned int cmd, unsigned long arg),
 	TP_ARGS(fd, cmd, arg),
@@ -409,6 +549,8 @@ TRACE_EVENT(sys_ioctl,
 	TP_fast_assign(tp_assign(fd, fd) tp_assign(cmd, cmd) tp_assign(arg, arg)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_msync
 TRACE_EVENT(sys_msync,
 	TP_PROTO(unsigned long start, size_t len, int flags),
 	TP_ARGS(start, len, flags),
@@ -416,6 +558,8 @@ TRACE_EVENT(sys_msync,
 	TP_fast_assign(tp_assign(start, start) tp_assign(len, len) tp_assign(flags, flags)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_madvise
 TRACE_EVENT(sys_madvise,
 	TP_PROTO(unsigned long start, size_t len_in, int behavior),
 	TP_ARGS(start, len_in, behavior),
@@ -423,6 +567,8 @@ TRACE_EVENT(sys_madvise,
 	TP_fast_assign(tp_assign(start, start) tp_assign(len_in, len_in) tp_assign(behavior, behavior)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_shmget
 TRACE_EVENT(sys_shmget,
 	TP_PROTO(key_t key, size_t size, int shmflg),
 	TP_ARGS(key, size, shmflg),
@@ -430,6 +576,8 @@ TRACE_EVENT(sys_shmget,
 	TP_fast_assign(tp_assign(key, key) tp_assign(size, size) tp_assign(shmflg, shmflg)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_socket
 TRACE_EVENT(sys_socket,
 	TP_PROTO(int family, int type, int protocol),
 	TP_ARGS(family, type, protocol),
@@ -437,6 +585,8 @@ TRACE_EVENT(sys_socket,
 	TP_fast_assign(tp_assign(family, family) tp_assign(type, type) tp_assign(protocol, protocol)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_semget
 TRACE_EVENT(sys_semget,
 	TP_PROTO(key_t key, int nsems, int semflg),
 	TP_ARGS(key, nsems, semflg),
@@ -444,6 +594,8 @@ TRACE_EVENT(sys_semget,
 	TP_fast_assign(tp_assign(key, key) tp_assign(nsems, nsems) tp_assign(semflg, semflg)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_fcntl
 TRACE_EVENT(sys_fcntl,
 	TP_PROTO(unsigned int fd, unsigned int cmd, unsigned long arg),
 	TP_ARGS(fd, cmd, arg),
@@ -451,6 +603,8 @@ TRACE_EVENT(sys_fcntl,
 	TP_fast_assign(tp_assign(fd, fd) tp_assign(cmd, cmd) tp_assign(arg, arg)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_fchown
 TRACE_EVENT(sys_fchown,
 	TP_PROTO(unsigned int fd, uid_t user, gid_t group),
 	TP_ARGS(fd, user, group),
@@ -458,6 +612,8 @@ TRACE_EVENT(sys_fchown,
 	TP_fast_assign(tp_assign(fd, fd) tp_assign(user, user) tp_assign(group, group)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_setresuid
 TRACE_EVENT(sys_setresuid,
 	TP_PROTO(uid_t ruid, uid_t euid, uid_t suid),
 	TP_ARGS(ruid, euid, suid),
@@ -465,6 +621,8 @@ TRACE_EVENT(sys_setresuid,
 	TP_fast_assign(tp_assign(ruid, ruid) tp_assign(euid, euid) tp_assign(suid, suid)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_setresgid
 TRACE_EVENT(sys_setresgid,
 	TP_PROTO(gid_t rgid, gid_t egid, gid_t sgid),
 	TP_ARGS(rgid, egid, sgid),
@@ -472,6 +630,8 @@ TRACE_EVENT(sys_setresgid,
 	TP_fast_assign(tp_assign(rgid, rgid) tp_assign(egid, egid) tp_assign(sgid, sgid)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_sysfs
 TRACE_EVENT(sys_sysfs,
 	TP_PROTO(int option, unsigned long arg1, unsigned long arg2),
 	TP_ARGS(option, arg1, arg2),
@@ -479,6 +639,8 @@ TRACE_EVENT(sys_sysfs,
 	TP_fast_assign(tp_assign(option, option) tp_assign(arg1, arg1) tp_assign(arg2, arg2)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_setpriority
 TRACE_EVENT(sys_setpriority,
 	TP_PROTO(int which, int who, int niceval),
 	TP_ARGS(which, who, niceval),
@@ -486,6 +648,8 @@ TRACE_EVENT(sys_setpriority,
 	TP_fast_assign(tp_assign(which, which) tp_assign(who, who) tp_assign(niceval, niceval)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_tgkill
 TRACE_EVENT(sys_tgkill,
 	TP_PROTO(pid_t tgid, pid_t pid, int sig),
 	TP_ARGS(tgid, pid, sig),
@@ -493,6 +657,8 @@ TRACE_EVENT(sys_tgkill,
 	TP_fast_assign(tp_assign(tgid, tgid) tp_assign(pid, pid) tp_assign(sig, sig)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_ioprio_set
 TRACE_EVENT(sys_ioprio_set,
 	TP_PROTO(int which, int who, int ioprio),
 	TP_ARGS(which, who, ioprio),
@@ -500,6 +666,8 @@ TRACE_EVENT(sys_ioprio_set,
 	TP_fast_assign(tp_assign(which, which) tp_assign(who, who) tp_assign(ioprio, ioprio)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_dup3
 TRACE_EVENT(sys_dup3,
 	TP_PROTO(unsigned int oldfd, unsigned int newfd, int flags),
 	TP_ARGS(oldfd, newfd, flags),
@@ -507,6 +675,8 @@ TRACE_EVENT(sys_dup3,
 	TP_fast_assign(tp_assign(oldfd, oldfd) tp_assign(newfd, newfd) tp_assign(flags, flags)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_ptrace
 TRACE_EVENT(sys_ptrace,
 	TP_PROTO(long request, long pid, unsigned long addr, unsigned long data),
 	TP_ARGS(request, pid, addr, data),
@@ -514,6 +684,8 @@ TRACE_EVENT(sys_ptrace,
 	TP_fast_assign(tp_assign(request, request) tp_assign(pid, pid) tp_assign(addr, addr) tp_assign(data, data)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_tee
 TRACE_EVENT(sys_tee,
 	TP_PROTO(int fdin, int fdout, size_t len, unsigned int flags),
 	TP_ARGS(fdin, fdout, len, flags),
@@ -521,6 +693,8 @@ TRACE_EVENT(sys_tee,
 	TP_fast_assign(tp_assign(fdin, fdin) tp_assign(fdout, fdout) tp_assign(len, len) tp_assign(flags, flags)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_mremap
 TRACE_EVENT(sys_mremap,
 	TP_PROTO(unsigned long addr, unsigned long old_len, unsigned long new_len, unsigned long flags, unsigned long new_addr),
 	TP_ARGS(addr, old_len, new_len, flags, new_addr),
@@ -528,6 +702,8 @@ TRACE_EVENT(sys_mremap,
 	TP_fast_assign(tp_assign(addr, addr) tp_assign(old_len, old_len) tp_assign(new_len, new_len) tp_assign(flags, flags) tp_assign(new_addr, new_addr)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_prctl
 TRACE_EVENT(sys_prctl,
 	TP_PROTO(int option, unsigned long arg2, unsigned long arg3, unsigned long arg4, unsigned long arg5),
 	TP_ARGS(option, arg2, arg3, arg4, arg5),
@@ -535,6 +711,8 @@ TRACE_EVENT(sys_prctl,
 	TP_fast_assign(tp_assign(option, option) tp_assign(arg2, arg2) tp_assign(arg3, arg3) tp_assign(arg4, arg4) tp_assign(arg5, arg5)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_remap_file_pages
 TRACE_EVENT(sys_remap_file_pages,
 	TP_PROTO(unsigned long start, unsigned long size, unsigned long prot, unsigned long pgoff, unsigned long flags),
 	TP_ARGS(start, size, prot, pgoff, flags),
@@ -542,6 +720,8 @@ TRACE_EVENT(sys_remap_file_pages,
 	TP_fast_assign(tp_assign(start, start) tp_assign(size, size) tp_assign(prot, prot) tp_assign(pgoff, pgoff) tp_assign(flags, flags)),
 	TP_printk()
 )
+#endif
+#ifndef OVERRIDE_sys_mmap
 TRACE_EVENT(sys_mmap,
 	TP_PROTO(unsigned long addr, unsigned long len, unsigned long prot, unsigned long flags, unsigned long fd, unsigned long off),
 	TP_ARGS(addr, len, prot, flags, fd, off),
@@ -549,6 +729,7 @@ TRACE_EVENT(sys_mmap,
 	TP_fast_assign(tp_assign(addr, addr) tp_assign(len, len) tp_assign(prot, prot) tp_assign(flags, flags) tp_assign(fd, fd) tp_assign(off, off)),
 	TP_printk()
 )
+#endif
 
 #endif /*  _TRACE_SYSCALLS_INTEGERS_H */
 
