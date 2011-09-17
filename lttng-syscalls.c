@@ -77,13 +77,11 @@ static struct trace_syscall_entry sc_table[] = {
 
 #undef CREATE_SYSCALL_TABLE
 
-static void syscall_entry_unknown(struct ltt_channel *chan,
+static void syscall_entry_unknown(struct ltt_event *event,
 	struct pt_regs *regs, unsigned int id)
 {
 	unsigned long args[UNKNOWN_SYSCALL_NRARGS];
-	struct ltt_event *event;
 
-	event = chan->sc_unknown;
 	syscall_get_arguments(current, regs, 0, UNKNOWN_SYSCALL_NRARGS, args);
 	__event_probe__sys_unknown(event, id, args);
 }
@@ -99,13 +97,17 @@ static void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 	struct ltt_channel *chan = __data;
 	struct ltt_event *event;
 
-	if (unlikely(is_compat_task() || id >= ARRAY_SIZE(sc_table))) {
-		syscall_entry_unknown(chan, regs, id);
+	if (unlikely(is_compat_task())) {
+		syscall_entry_unknown(chan->sc_compat_unknown, regs, id);
+		return;
+	}
+	if (unlikely(id >= ARRAY_SIZE(sc_table))) {
+		syscall_entry_unknown(chan->sc_unknown, regs, id);
 		return;
 	}
 	event = chan->sc_table[id];
 	if (unlikely(!event)) {
-		syscall_entry_unknown(chan, regs, id);
+		syscall_entry_unknown(chan->sc_unknown, regs, id);
 		return;
 	}
 	entry = &sc_table[id];
@@ -226,6 +228,22 @@ int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 		chan->sc_unknown = ltt_event_create(chan, &ev, filter,
 						    desc);
 		if (!chan->sc_unknown) {
+			return -EINVAL;
+		}
+	}
+
+	if (!chan->sc_compat_unknown) {
+		struct lttng_kernel_event ev;
+		const struct lttng_event_desc *desc =
+			&__event_desc___compat_sys_unknown;
+
+		memset(&ev, 0, sizeof(ev));
+		strncpy(ev.name, desc->name, LTTNG_SYM_NAME_LEN);
+		ev.name[LTTNG_SYM_NAME_LEN - 1] = '\0';
+		ev.instrumentation = LTTNG_KERNEL_NOOP;
+		chan->sc_compat_unknown = ltt_event_create(chan, &ev, filter,
+							   desc);
+		if (!chan->sc_compat_unknown) {
 			return -EINVAL;
 		}
 	}

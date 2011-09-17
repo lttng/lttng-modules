@@ -22,6 +22,19 @@ TRACE_EVENT(sys_unknown,
 	),
 	TP_printk()
 )
+TRACE_EVENT(compat_sys_unknown,
+	TP_PROTO(unsigned int id, unsigned long *args),
+	TP_ARGS(id, args),
+	TP_STRUCT__entry(
+		__field(unsigned int, id)
+		__array(unsigned long, args, UNKNOWN_SYSCALL_NRARGS)
+	),
+	TP_fast_assign(
+		tp_assign(id, id)
+		tp_memcpy(args, args, UNKNOWN_SYSCALL_NRARGS * sizeof(*args))
+	),
+	TP_printk()
+)
 /* 
  * This is going to hook on sys_exit in the kernel.
  * We change the name so we don't clash with the sys_exit syscall entry
