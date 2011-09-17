@@ -530,7 +530,7 @@ int _ltt_field_statedump(struct ltt_session *session,
 	switch (field->type.atype) {
 	case atype_integer:
 		ret = lttng_metadata_printf(session,
-			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } %s;\n",
+			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } _%s;\n",
 			field->type.u.basic.integer.size,
 			field->type.u.basic.integer.alignment,
 			field->type.u.basic.integer.signedness,
@@ -549,7 +549,7 @@ int _ltt_field_statedump(struct ltt_session *session,
 		break;
 	case atype_enum:
 		ret = lttng_metadata_printf(session,
-			"		%s %s;\n",
+			"		%s _%s;\n",
 			field->type.u.basic.enumeration.name,
 			field->name);
 		break;
@@ -559,7 +559,7 @@ int _ltt_field_statedump(struct ltt_session *session,
 
 		elem_type = &field->type.u.array.elem_type;
 		ret = lttng_metadata_printf(session,
-			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } %s[%u];\n",
+			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } _%s[%u];\n",
 			elem_type->u.basic.integer.size,
 			elem_type->u.basic.integer.alignment,
 			elem_type->u.basic.integer.signedness,
@@ -605,7 +605,7 @@ int _ltt_field_statedump(struct ltt_session *session,
 			return ret;
 
 		ret = lttng_metadata_printf(session,
-			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } %s[ __%s_length ];\n",
+			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } _%s[ __%s_length ];\n",
 			elem_type->u.basic.integer.size,
 			(unsigned int) elem_type->u.basic.integer.alignment,
 			elem_type->u.basic.integer.signedness,
@@ -628,7 +628,7 @@ int _ltt_field_statedump(struct ltt_session *session,
 	case atype_string:
 		/* Default encoding is UTF8 */
 		ret = lttng_metadata_printf(session,
-			"		string%s %s;\n",
+			"		string%s _%s;\n",
 			field->type.u.basic.string.encoding == lttng_encode_ASCII ?
 				" { encoding = ASCII; }" : "",
 			field->name);
