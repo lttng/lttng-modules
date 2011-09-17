@@ -35,8 +35,8 @@ static void syscall_entry_probe(void *__data, struct pt_regs *regs, long id);
 #define TP_MODULE_OVERRIDE
 
 #define TRACE_INCLUDE_PATH ../instrumentation/syscalls/headers
-
-#include "instrumentation/syscalls/headers/syscalls.h"
+#include "instrumentation/syscalls/headers/syscalls_integers.h"
+#include "instrumentation/syscalls/headers/syscalls_pointers.h"
 
 #undef TP_MODULE_OVERRIDE
 #undef TP_PROBE_CB
@@ -62,7 +62,8 @@ struct trace_syscall_entry {
 	},
 
 static struct trace_syscall_entry sc_table[] = {
-#include "instrumentation/syscalls/headers/syscalls.h"
+#include "instrumentation/syscalls/headers/syscalls_integers.h"
+#include "instrumentation/syscalls/headers/syscalls_pointers.h"
 };
 
 #undef CREATE_SYSCALL_TABLE

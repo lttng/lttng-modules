@@ -200,8 +200,6 @@ void trace_##_name(void *__data);
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
-#undef __type_integer
-
 /*
  * Stage 3 of the trace events.
  *
@@ -642,3 +640,7 @@ module_exit_eval(__lttng_events_exit__, TRACE_SYSTEM);
 #undef module_exit_eval
 #undef TP_ID1
 #undef TP_ID
+
+#undef TP_PROTO
+#undef TP_ARGS
+#undef TRACE_EVENT_FLAGS

@@ -2,10 +2,10 @@
 #ifndef CREATE_SYSCALL_TABLE
 
 #undef TRACE_SYSTEM
-#define TRACE_SYSTEM syscalls
+#define TRACE_SYSTEM syscalls_integers
 
-#if !defined(_TRACE_SYSCALLS_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_SYSCALLS_H
+#if !defined(_TRACE_SYSCALLS_INTEGERS_H) || defined(TRACE_HEADER_MULTI_READ)
+#define _TRACE_SYSCALLS_INTEGERS_H
 
 #include <linux/tracepoint.h>
 #include <linux/syscalls.h>
@@ -508,49 +508,49 @@ TRACE_EVENT(sys_dup3,
 	TP_printk()
 )
 TRACE_EVENT(sys_ptrace,
-	TP_PROTO(long request, long pid, unsigned long ptrace0, unsigned long ptrace1),
-	TP_ARGS(request, pid, ptrace0, ptrace1),
-	TP_STRUCT__entry(__field(long, request) __field(long, pid) __field(unsigned long, ptrace0) __field(unsigned long, ptrace1)),
-	TP_fast_assign(tp_assign(request, request) tp_assign(pid, pid) tp_assign(ptrace0, ptrace0) tp_assign(ptrace1, ptrace1)),
+	TP_PROTO(long request, long pid, unsigned long addr, unsigned long data),
+	TP_ARGS(request, pid, addr, data),
+	TP_STRUCT__entry(__field(long, request) __field(long, pid) __field(unsigned long, addr) __field(unsigned long, data)),
+	TP_fast_assign(tp_assign(request, request) tp_assign(pid, pid) tp_assign(addr, addr) tp_assign(data, data)),
 	TP_printk()
 )
 TRACE_EVENT(sys_tee,
-	TP_PROTO(int fdin, int fdout, size_t tee0, unsigned int tee1),
-	TP_ARGS(fdin, fdout, tee0, tee1),
-	TP_STRUCT__entry(__field(int, fdin) __field(int, fdout) __field(size_t, tee0) __field(unsigned int, tee1)),
-	TP_fast_assign(tp_assign(fdin, fdin) tp_assign(fdout, fdout) tp_assign(tee0, tee0) tp_assign(tee1, tee1)),
+	TP_PROTO(int fdin, int fdout, size_t len, unsigned int flags),
+	TP_ARGS(fdin, fdout, len, flags),
+	TP_STRUCT__entry(__field(int, fdin) __field(int, fdout) __field(size_t, len) __field(unsigned int, flags)),
+	TP_fast_assign(tp_assign(fdin, fdin) tp_assign(fdout, fdout) tp_assign(len, len) tp_assign(flags, flags)),
 	TP_printk()
 )
 TRACE_EVENT(sys_mremap,
-	TP_PROTO(unsigned long addr, unsigned long mremap0, unsigned long mremap1, unsigned long mremap2, unsigned long mremap3),
-	TP_ARGS(addr, mremap0, mremap1, mremap2, mremap3),
-	TP_STRUCT__entry(__field(unsigned long, addr) __field(unsigned long, mremap0) __field(unsigned long, mremap1) __field(unsigned long, mremap2) __field(unsigned long, mremap3)),
-	TP_fast_assign(tp_assign(addr, addr) tp_assign(mremap0, mremap0) tp_assign(mremap1, mremap1) tp_assign(mremap2, mremap2) tp_assign(mremap3, mremap3)),
+	TP_PROTO(unsigned long addr, unsigned long old_len, unsigned long new_len, unsigned long flags, unsigned long new_addr),
+	TP_ARGS(addr, old_len, new_len, flags, new_addr),
+	TP_STRUCT__entry(__field(unsigned long, addr) __field(unsigned long, old_len) __field(unsigned long, new_len) __field(unsigned long, flags) __field(unsigned long, new_addr)),
+	TP_fast_assign(tp_assign(addr, addr) tp_assign(old_len, old_len) tp_assign(new_len, new_len) tp_assign(flags, flags) tp_assign(new_addr, new_addr)),
 	TP_printk()
 )
 TRACE_EVENT(sys_prctl,
-	TP_PROTO(int option, unsigned long prctl0, unsigned long prctl1, unsigned long prctl2, unsigned long prctl3),
-	TP_ARGS(option, prctl0, prctl1, prctl2, prctl3),
-	TP_STRUCT__entry(__field(int, option) __field(unsigned long, prctl0) __field(unsigned long, prctl1) __field(unsigned long, prctl2) __field(unsigned long, prctl3)),
-	TP_fast_assign(tp_assign(option, option) tp_assign(prctl0, prctl0) tp_assign(prctl1, prctl1) tp_assign(prctl2, prctl2) tp_assign(prctl3, prctl3)),
+	TP_PROTO(int option, unsigned long arg2, unsigned long arg3, unsigned long arg4, unsigned long arg5),
+	TP_ARGS(option, arg2, arg3, arg4, arg5),
+	TP_STRUCT__entry(__field(int, option) __field(unsigned long, arg2) __field(unsigned long, arg3) __field(unsigned long, arg4) __field(unsigned long, arg5)),
+	TP_fast_assign(tp_assign(option, option) tp_assign(arg2, arg2) tp_assign(arg3, arg3) tp_assign(arg4, arg4) tp_assign(arg5, arg5)),
 	TP_printk()
 )
 TRACE_EVENT(sys_remap_file_pages,
-	TP_PROTO(unsigned long start, unsigned long remap_file_pages0, unsigned long remap_file_pages1, unsigned long remap_file_pages2, unsigned long remap_file_pages3),
-	TP_ARGS(start, remap_file_pages0, remap_file_pages1, remap_file_pages2, remap_file_pages3),
-	TP_STRUCT__entry(__field(unsigned long, start) __field(unsigned long, remap_file_pages0) __field(unsigned long, remap_file_pages1) __field(unsigned long, remap_file_pages2) __field(unsigned long, remap_file_pages3)),
-	TP_fast_assign(tp_assign(start, start) tp_assign(remap_file_pages0, remap_file_pages0) tp_assign(remap_file_pages1, remap_file_pages1) tp_assign(remap_file_pages2, remap_file_pages2) tp_assign(remap_file_pages3, remap_file_pages3)),
+	TP_PROTO(unsigned long start, unsigned long size, unsigned long prot, unsigned long pgoff, unsigned long flags),
+	TP_ARGS(start, size, prot, pgoff, flags),
+	TP_STRUCT__entry(__field(unsigned long, start) __field(unsigned long, size) __field(unsigned long, prot) __field(unsigned long, pgoff) __field(unsigned long, flags)),
+	TP_fast_assign(tp_assign(start, start) tp_assign(size, size) tp_assign(prot, prot) tp_assign(pgoff, pgoff) tp_assign(flags, flags)),
 	TP_printk()
 )
 TRACE_EVENT(sys_mmap,
-	TP_PROTO(unsigned long mmap0, unsigned long mmap1, unsigned long mmap2, unsigned long mmap3, unsigned long mmap4, unsigned long mmap5),
-	TP_ARGS(mmap0, mmap1, mmap2, mmap3, mmap4, mmap5),
-	TP_STRUCT__entry(__field(unsigned long, mmap0) __field(unsigned long, mmap1) __field(unsigned long, mmap2) __field(unsigned long, mmap3) __field(unsigned long, mmap4) __field(unsigned long, mmap5)),
-	TP_fast_assign(tp_assign(mmap0, mmap0) tp_assign(mmap1, mmap1) tp_assign(mmap2, 12) tp_assign(mmap3, mmap3) tp_assign(mmap4, mmap4) tp_assign(mmap5, mmap5)),
+	TP_PROTO(unsigned long addr, unsigned long len, unsigned long prot, unsigned long flags, unsigned long fd, unsigned long off),
+	TP_ARGS(addr, len, prot, flags, fd, off),
+	TP_STRUCT__entry(__field(unsigned long, addr) __field(unsigned long, len) __field(unsigned long, prot) __field(unsigned long, flags) __field(unsigned long, fd) __field(unsigned long, off)),
+	TP_fast_assign(tp_assign(addr, addr) tp_assign(len, len) tp_assign(prot, prot) tp_assign(flags, flags) tp_assign(fd, fd) tp_assign(off, off)),
 	TP_printk()
 )
 
-#endif /*  _TRACE_SYSCALLS_H */
+#endif /*  _TRACE_SYSCALLS_INTEGERS_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"
