@@ -244,7 +244,7 @@ TRACE_EVENT(sys_syncfs,
 TRACE_EVENT(sys_munmap,
 	TP_PROTO(unsigned long addr, size_t len),
 	TP_ARGS(addr, len),
-	TP_STRUCT__entry(__field(unsigned long, addr) __field(size_t, len)),
+	TP_STRUCT__entry(__field_hex(unsigned long, addr) __field(size_t, len)),
 	TP_fast_assign(tp_assign(addr, addr) tp_assign(len, len)),
 	TP_printk()
 )
@@ -510,7 +510,7 @@ TRACE_EVENT(sys_dup3,
 TRACE_EVENT(sys_ptrace,
 	TP_PROTO(long request, long pid, unsigned long addr, unsigned long data),
 	TP_ARGS(request, pid, addr, data),
-	TP_STRUCT__entry(__field(long, request) __field(long, pid) __field(unsigned long, addr) __field(unsigned long, data)),
+	TP_STRUCT__entry(__field(long, request) __field(long, pid) __field_hex(unsigned long, addr) __field(unsigned long, data)),
 	TP_fast_assign(tp_assign(request, request) tp_assign(pid, pid) tp_assign(addr, addr) tp_assign(data, data)),
 	TP_printk()
 )
@@ -524,7 +524,7 @@ TRACE_EVENT(sys_tee,
 TRACE_EVENT(sys_mremap,
 	TP_PROTO(unsigned long addr, unsigned long old_len, unsigned long new_len, unsigned long flags, unsigned long new_addr),
 	TP_ARGS(addr, old_len, new_len, flags, new_addr),
-	TP_STRUCT__entry(__field(unsigned long, addr) __field(unsigned long, old_len) __field(unsigned long, new_len) __field(unsigned long, flags) __field(unsigned long, new_addr)),
+	TP_STRUCT__entry(__field_hex(unsigned long, addr) __field(unsigned long, old_len) __field(unsigned long, new_len) __field(unsigned long, flags) __field_hex(unsigned long, new_addr)),
 	TP_fast_assign(tp_assign(addr, addr) tp_assign(old_len, old_len) tp_assign(new_len, new_len) tp_assign(flags, flags) tp_assign(new_addr, new_addr)),
 	TP_printk()
 )
@@ -545,7 +545,7 @@ TRACE_EVENT(sys_remap_file_pages,
 TRACE_EVENT(sys_mmap,
 	TP_PROTO(unsigned long addr, unsigned long len, unsigned long prot, unsigned long flags, unsigned long fd, unsigned long off),
 	TP_ARGS(addr, len, prot, flags, fd, off),
-	TP_STRUCT__entry(__field(unsigned long, addr) __field(unsigned long, len) __field(unsigned long, prot) __field(unsigned long, flags) __field(unsigned long, fd) __field(unsigned long, off)),
+	TP_STRUCT__entry(__field_hex(unsigned long, addr) __field(unsigned long, len) __field(unsigned long, prot) __field(unsigned long, flags) __field(unsigned long, fd) __field(unsigned long, off)),
 	TP_fast_assign(tp_assign(addr, addr) tp_assign(len, len) tp_assign(prot, prot) tp_assign(flags, flags) tp_assign(fd, fd) tp_assign(off, off)),
 	TP_printk()
 )
