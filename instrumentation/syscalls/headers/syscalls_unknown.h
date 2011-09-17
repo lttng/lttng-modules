@@ -28,13 +28,13 @@ TRACE_EVENT(sys_unknown,
  * event.
  */
 TRACE_EVENT(exit_syscall,
-	TP_PROTO(struct pt_regs *regs, long errno),
-	TP_ARGS(regs, errno),
+	TP_PROTO(struct pt_regs *regs, long ret),
+	TP_ARGS(regs, ret),
 	TP_STRUCT__entry(
-		__field(long, errno)
+		__field(long, ret)
 	),
 	TP_fast_assign(
-		tp_assign(errno, errno)
+		tp_assign(ret, ret)
 	),
 	TP_printk()
 )
