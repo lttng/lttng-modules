@@ -242,6 +242,7 @@ struct ltt_channel {
 	struct ltt_channel_ops *ops;
 	struct ltt_transport *transport;
 	struct ltt_event **sc_table;	/* for syscall tracing */
+	struct ltt_event *sc_unknown;	/* for unknown syscalls */
 	int header_type;		/* 0: unset, 1: compact, 2: large */
 	int metadata_dumped:1;
 };
