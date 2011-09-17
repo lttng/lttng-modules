@@ -39,6 +39,15 @@
 			     PARAMS(print))		       \
 	DEFINE_EVENT(name, name, PARAMS(proto), PARAMS(args))
 
+#undef TRACE_EVENT_NOARGS
+#define TRACE_EVENT_NOARGS(name, tstruct, assign, print)       \
+	DECLARE_EVENT_CLASS_NOARGS(name,		       \
+			     PARAMS(tstruct),		       \
+			     PARAMS(assign),		       \
+			     PARAMS(print))		       \
+	DEFINE_EVENT_NOARGS(name, name)
+
+
 #undef DEFINE_EVENT_PRINT
 #define DEFINE_EVENT_PRINT(template, name, proto, args, print)	\
 	DEFINE_EVENT(template, name, PARAMS(proto), PARAMS(args))
@@ -69,6 +78,10 @@
 #undef DEFINE_EVENT
 #define DEFINE_EVENT(_template, _name, _proto, _args)			\
 void trace_##_name(_proto);
+
+#undef DEFINE_EVENT_NOARGS
+#define DEFINE_EVENT_NOARGS(_template, _name)				\
+void trace_##_name(void *__data);
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
@@ -174,11 +187,16 @@ void trace_##_name(_proto);
 #undef TP_STRUCT__entry
 #define TP_STRUCT__entry(args...) args	/* Only one used in this phase */
 
-#undef DECLARE_EVENT_CLASS
-#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print) \
+#undef DECLARE_EVENT_CLASS_NOARGS
+#define DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print) \
 	static const struct lttng_event_field __event_fields___##_name[] = { \
 		_tstruct						     \
 	};
+
+#undef DECLARE_EVENT_CLASS
+#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print) \
+	DECLARE_EVENT_CLASS_NOARGS(_name, PARAMS(_tstruct), PARAMS(_assign), \
+			PARAMS(_print))
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
@@ -199,12 +217,16 @@ void trace_##_name(_proto);
 #define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
 static void __event_probe__##_name(void *__data, _proto);
 
+#undef DECLARE_EVENT_CLASS_NOARGS
+#define DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print)	      \
+static void __event_probe__##_name(void *__data);
+
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
 /*
- * Stage 4 of the trace events.
+ * Stage 3.9 of the trace events.
  *
- * Create an array of events.
+ * Create event descriptions.
  */
 
 /* Named field types must be defined in lttng-types.h */
@@ -215,20 +237,45 @@ static void __event_probe__##_name(void *__data, _proto);
 #define TP_PROBE_CB(_template)	&__event_probe__##_template
 #endif
 
+#undef DEFINE_EVENT_NOARGS
+#define DEFINE_EVENT_NOARGS(_template, _name)				\
+static const struct lttng_event_desc __event_desc___##_name = {		\
+	.fields = __event_fields___##_template,		     		\
+	.name = #_name,					     		\
+	.probe_callback = (void *) TP_PROBE_CB(_template),   		\
+	.nr_fields = ARRAY_SIZE(__event_fields___##_template),		\
+	.owner = THIS_MODULE,				     		\
+};
+
+#undef DEFINE_EVENT
+#define DEFINE_EVENT(_template, _name, _proto, _args)			\
+	DEFINE_EVENT_NOARGS(_template, _name)
+
+#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+
+
+/*
+ * Stage 4 of the trace events.
+ *
+ * Create an array of event description pointers.
+ */
+
+/* Named field types must be defined in lttng-types.h */
+
+#include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
+
+#undef DEFINE_EVENT_NOARGS
+#define DEFINE_EVENT_NOARGS(_template, _name)				       \
+		&__event_desc___##_name,
+
 #undef DEFINE_EVENT
 #define DEFINE_EVENT(_template, _name, _proto, _args)			       \
-		{							       \
-			.fields = __event_fields___##_template,		       \
-			.name = #_name,					       \
-			.probe_callback = (void *) TP_PROBE_CB(_template),     \
-			.nr_fields = ARRAY_SIZE(__event_fields___##_template), \
-			.owner = THIS_MODULE,				       \
-		},
+	DEFINE_EVENT_NOARGS(_template, _name)
 
 #define TP_ID1(_token, _system)	_token##_system
 #define TP_ID(_token, _system)	TP_ID1(_token, _system)
 
-static const struct lttng_event_desc TP_ID(__event_desc___, TRACE_SYSTEM)[] = {
+static const struct lttng_event_desc *TP_ID(__event_desc___, TRACE_SYSTEM)[] = {
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 };
 
@@ -513,6 +560,37 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 		return;							      \
 	__event_len = __event_get_size__##_name(__dynamic_len, _args);	      \
 	__event_align = __event_get_align__##_name(_args);		      \
+	lib_ring_buffer_ctx_init(&__ctx, __chan->chan, __event, __event_len,  \
+				 __event_align, -1);			      \
+	__ret = __chan->ops->event_reserve(&__ctx, __event->id);	      \
+	if (__ret < 0)							      \
+		return;							      \
+	/* Control code (field ordering) */				      \
+	_tstruct							      \
+	__chan->ops->event_commit(&__ctx);				      \
+	return;								      \
+	/* Copy code, steered by control code */			      \
+	_assign								      \
+}
+
+#undef DECLARE_EVENT_CLASS_NOARGS
+#define DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print)	      \
+static void __event_probe__##_name(void *__data)			      \
+{									      \
+	struct ltt_event *__event = __data;				      \
+	struct ltt_channel *__chan = __event->chan;			      \
+	struct lib_ring_buffer_ctx __ctx;				      \
+	size_t __event_len, __event_align;				      \
+	int __ret;							      \
+									      \
+	if (unlikely(!ACCESS_ONCE(__chan->session->active)))		      \
+		return;							      \
+	if (unlikely(!ACCESS_ONCE(__chan->enabled)))			      \
+		return;							      \
+	if (unlikely(!ACCESS_ONCE(__event->enabled)))			      \
+		return;							      \
+	__event_len = 0;						      \
+	__event_align = 1;						      \
 	lib_ring_buffer_ctx_init(&__ctx, __chan->chan, __event, __event_len,  \
 				 __event_align, -1);			      \
 	__ret = __chan->ops->event_reserve(&__ctx, __event->id);	      \

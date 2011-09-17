@@ -26,8 +26,8 @@ const struct lttng_event_desc *find_event(const char *name)
 
 	list_for_each_entry(probe_desc, &probe_list, head) {
 		for (i = 0; i < probe_desc->nr_events; i++) {
-			if (!strcmp(probe_desc->event_desc[i].name, name))
-				return &probe_desc->event_desc[i];
+			if (!strcmp(probe_desc->event_desc[i]->name, name))
+				return probe_desc->event_desc[i];
 		}
 	}
 	return NULL;
@@ -44,7 +44,7 @@ int ltt_probe_register(struct lttng_probe_desc *desc)
 	 * overhead becomes an issue.
 	 */
 	for (i = 0; i < desc->nr_events; i++) {
-		if (find_event(desc->event_desc[i].name)) {
+		if (find_event(desc->event_desc[i]->name)) {
 			ret = -EEXIST;
 			goto end;
 		}
@@ -96,7 +96,7 @@ void *tp_list_start(struct seq_file *m, loff_t *pos)
 	list_for_each_entry(probe_desc, &probe_list, head) {
 		for (i = 0; i < probe_desc->nr_events; i++) {
 			if (iter++ >= *pos)
-				return (void *) &probe_desc->event_desc[i];
+				return (void *) probe_desc->event_desc[i];
 		}
 	}
 	/* End of list */
@@ -113,7 +113,7 @@ void *tp_list_next(struct seq_file *m, void *p, loff_t *ppos)
 	list_for_each_entry(probe_desc, &probe_list, head) {
 		for (i = 0; i < probe_desc->nr_events; i++) {
 			if (iter++ >= *ppos)
-				return (void *) &probe_desc->event_desc[i];
+				return (void *) probe_desc->event_desc[i];
 		}
 	}
 	/* End of list */

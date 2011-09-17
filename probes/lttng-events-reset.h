@@ -71,8 +71,14 @@
 #undef DECLARE_EVENT_CLASS
 #define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)
 
+#undef DECLARE_EVENT_CLASS_NOARGS
+#define DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print)
+
 #undef DEFINE_EVENT
 #define DEFINE_EVENT(_template, _name, _proto, _args)
+
+#undef DEFINE_EVENT_NOARGS
+#define DEFINE_EVENT_NOARGS(_template, _name)
 
 #undef TRACE_EVENT_FLAGS
 #define TRACE_EVENT_FLAGS(name, value)

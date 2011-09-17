@@ -158,7 +158,7 @@ struct lttng_event_desc {
 };
 
 struct lttng_probe_desc {
-	const struct lttng_event_desc *event_desc;
+	const struct lttng_event_desc **event_desc;
 	unsigned int nr_events;
 	struct list_head head;			/* chain registered probes */
 };

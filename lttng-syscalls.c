@@ -18,6 +18,13 @@
 static void syscall_entry_probe(void *__data, struct pt_regs *regs, long id);
 
 /*
+ * Take care of NOARGS not supported by mainline.
+ */
+#define DECLARE_EVENT_CLASS_NOARGS(name, tstruct, assign, print)
+#define DEFINE_EVENT_NOARGS(template, name)
+#define TRACE_EVENT_NOARGS(name, struct, assign, print)
+
+/*
  * Create LTTng tracepoint probes.
  */
 #define LTTNG_PACKAGE_BUILD
@@ -38,7 +45,7 @@ static void syscall_entry_probe(void *__data, struct pt_regs *regs, long id);
 
 struct trace_syscall_entry {
 	void *func;
-	const struct lttng_event_desc *desc;	/* Set dynamically */
+	const struct lttng_event_desc *desc;
 	const struct lttng_event_field *fields;
 	unsigned int nrargs;
 };
@@ -48,11 +55,12 @@ static int sc_table_desc_filled;
 #define CREATE_SYSCALL_TABLE
 
 #undef TRACE_SYSCALL_TABLE
-#define TRACE_SYSCALL_TABLE(_name, _nr, _nrargs)		\
+#define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
 	[ _nr ] = {						\
-		.func = __event_probe__##_name,			\
+		.func = __event_probe__##_template,		\
 		.nrargs = (_nrargs),				\
-		.fields = __event_fields___##_name,		\
+		.fields = __event_fields___##_template,		\
+		.desc = &__event_desc___##_name,		\
 	},
 
 static struct trace_syscall_entry sc_table[] = {
@@ -163,47 +171,12 @@ static void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 	}
 }
 
-static const struct lttng_event_desc *find_syscall_desc(unsigned int id)
-{
-	unsigned int i;
-
-	for (i = 0; i < __probe_desc___syscalls.nr_events; i++) {
-		if (__probe_desc___syscalls.event_desc[i].fields
-				== sc_table[id].fields)
-			return &__probe_desc___syscalls.event_desc[i];
-	}
-	WARN_ON_ONCE(1);
-	return NULL;
-}
-
-static void fill_sc_table_desc(void)
-{
-	unsigned int i;
-
-	if (sc_table_desc_filled)
-		return;
-	/*
-	 * This is O(n^2), but rare. Eventually get the TRACE_EVENT code
-	 * to emit per-event symbols to skip this.
-	 */
-	for (i = 0; i < ARRAY_SIZE(sc_table); i++) {
-		const struct lttng_event_desc **desc = &sc_table[i].desc;
-
-		if (!sc_table[i].func)
-			continue;
-		(*desc) = find_syscall_desc(i);
-	}
-	sc_table_desc_filled = 1;
-}
-
-
 int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 {
 	unsigned int i;
 	int ret;
 
 	wrapper_vmalloc_sync_all();
-	fill_sc_table_desc();
 
 	if (!chan->sc_table) {
 		/* create syscall table mapping syscall to events */

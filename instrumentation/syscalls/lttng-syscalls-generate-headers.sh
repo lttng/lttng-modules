@@ -22,7 +22,7 @@ mv ${TMPFILE} ${SRCFILE}
 #Filter
 
 #select only syscalls we currently support
-#move non-pointers with arguments to a integer-only file.
+#move non-pointers with and without arguments to a integer-only file.
 CLASS=integers
 grep -v "\\*\|cap_user_header_t" ${SRCFILE} > ${TMPFILE}
 mv ${TMPFILE} ${SRCFILE}
@@ -31,12 +31,6 @@ mv ${TMPFILE} ${SRCFILE}
 # move all system calls using pointers to a separate file.
 #CLASS=pointers
 #grep "\\*\|cap_#user_header_t" ${SRCFILE} > ${TMPFILE}
-#mv ${TMPFILE} ${SRCFILE}
-
-#TODO
-#move those without arguments to a separate file.
-#CLASS=noargs
-#grep "^syscall [^ ]* nr [^ ]* nbargs 0 " ${SRCFILE} > ${TMPFILE}
 #mv ${TMPFILE} ${SRCFILE}
 
 HEADER=headers/${INPUTFILE}-${CLASS}.h
@@ -56,7 +50,24 @@ echo \
 #include <linux/syscalls.h>
 " >> ${HEADER}
 
-#TODO 0
+NRARGS=0
+
+echo \
+'DECLARE_EVENT_CLASS_NOARGS(syscalls_noargs,\n'\
+'	TP_STRUCT__entry(),\n'\
+'	TP_fast_assign(),\n'\
+'	TP_printk()\n'\
+')'\
+	>> ${HEADER}
+
+grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}
+sed 's/^syscall \([^ ]*\) nr \([^ ]*\) nbargs \([^ ]*\) '\
+'types: (\([^)]*\)) '\
+'args: (\([^)]*\))/'\
+'DEFINE_EVENT_NOARGS(syscalls_noargs, sys_\1)'\
+'/g'\
+	${TMPFILE} >> ${HEADER}
+
 
 # types: 4
 # args   5
@@ -165,7 +176,7 @@ sed 's/^syscall \([^ ]*\) nr \([^ ]*\) nbargs \([^ ]*\) '\
 # Macro for tracing syscall table
 
 rm -f ${TMPFILE}
-for NRARGS in $(seq 1 6); do
+for NRARGS in $(seq 0 6); do
 	grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} >> ${TMPFILE}
 done
 
@@ -179,8 +190,19 @@ echo \
 #else /* CREATE_SYSCALL_TABLE */
 " >> ${HEADER}
 
+
+NRARGS=0
+grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}
+
+#noargs
 sed 's/^syscall \([^ ]*\) nr \([^ ]*\) nbargs \([^ ]*\) .*$/'\
-'TRACE_SYSCALL_TABLE(sys_\1, \2, \3)/g'\
+'TRACE_SYSCALL_TABLE(syscalls_noargs, sys_\1, \2, \3)/g'\
+	${TMPFILE} >> ${HEADER}
+
+#others.
+grep -v "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}
+sed 's/^syscall \([^ ]*\) nr \([^ ]*\) nbargs \([^ ]*\) .*$/'\
+'TRACE_SYSCALL_TABLE(sys_\1, sys_\1, \2, \3)/g'\
 	${TMPFILE} >> ${HEADER}
 
 echo -n \
