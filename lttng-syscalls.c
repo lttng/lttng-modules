@@ -257,7 +257,8 @@ int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 	 * conflict with sys_exit syscall entry.
 	 */
 	ret = tracepoint_probe_register("sys_exit",
-			(void *) __event_probe__exit_syscall, chan);
+			(void *) __event_probe__exit_syscall,
+			chan->sc_unknown);
 	if (ret) {
 		WARN_ON_ONCE(tracepoint_probe_unregister("sys_enter",
 			(void *) syscall_entry_probe, chan));
@@ -275,7 +276,8 @@ int lttng_syscalls_unregister(struct ltt_channel *chan)
 	if (!chan->sc_table)
 		return 0;
 	ret = tracepoint_probe_unregister("sys_exit",
-			(void *) __event_probe__exit_syscall, chan);
+			(void *) __event_probe__exit_syscall,
+			chan->sc_unknown);
 	if (ret)
 		return ret;
 	ret = tracepoint_probe_unregister("sys_enter",
