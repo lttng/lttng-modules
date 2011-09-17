@@ -67,8 +67,6 @@ static struct trace_syscall_entry sc_table[] = {
 #include "instrumentation/syscalls/headers/syscalls_pointers.h"
 };
 
-static int sc_table_filled;
-
 #undef CREATE_SYSCALL_TABLE
 
 static void syscall_entry_unknown(struct ltt_channel *chan,
