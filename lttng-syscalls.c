@@ -29,18 +29,18 @@ static void syscall_entry_probe(void *__data, struct pt_regs *regs, long id);
  */
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
+#define TP_MODULE_OVERRIDE
+#define TRACE_INCLUDE_PATH ../instrumentation/syscalls/headers
 
 /* Hijack probe callback for system calls */
 #define TP_PROBE_CB(_template)		&syscall_entry_probe
-#define TP_MODULE_OVERRIDE
-
-#define TRACE_INCLUDE_PATH ../instrumentation/syscalls/headers
 #include "instrumentation/syscalls/headers/syscalls_integers.h"
 #include "instrumentation/syscalls/headers/syscalls_pointers.h"
+#undef TP_PROBE_CB
+
 #include "instrumentation/syscalls/headers/syscalls_unknown.h"
 
 #undef TP_MODULE_OVERRIDE
-#undef TP_PROBE_CB
 #undef LTTNG_PACKAGE_BUILD
 #undef CREATE_TRACE_POINTS
 
@@ -203,9 +203,9 @@ int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 
 	if (!chan->sc_unknown) {
 		struct lttng_kernel_event ev;
-
 		const struct lttng_event_desc *desc =
 			&__event_desc___sys_unknown;
+
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->name, LTTNG_SYM_NAME_LEN);
 		ev.name[LTTNG_SYM_NAME_LEN - 1] = '\0';
@@ -213,6 +213,22 @@ int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 		chan->sc_unknown = ltt_event_create(chan, &ev, filter,
 						    desc);
 		if (!chan->sc_unknown) {
+			return -EINVAL;
+		}
+	}
+
+	if (!chan->sc_exit) {
+		struct lttng_kernel_event ev;
+		const struct lttng_event_desc *desc =
+			&__event_desc___exit_syscall;
+
+		memset(&ev, 0, sizeof(ev));
+		strncpy(ev.name, desc->name, LTTNG_SYM_NAME_LEN);
+		ev.name[LTTNG_SYM_NAME_LEN - 1] = '\0';
+		ev.instrumentation = LTTNG_KERNEL_NOOP;
+		chan->sc_exit = ltt_event_create(chan, &ev, filter,
+						 desc);
+		if (!chan->sc_exit) {
 			return -EINVAL;
 		}
 	}
@@ -258,7 +274,7 @@ int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 	 */
 	ret = tracepoint_probe_register("sys_exit",
 			(void *) __event_probe__exit_syscall,
-			chan->sc_unknown);
+			chan->sc_exit);
 	if (ret) {
 		WARN_ON_ONCE(tracepoint_probe_unregister("sys_enter",
 			(void *) syscall_entry_probe, chan));
@@ -277,7 +293,7 @@ int lttng_syscalls_unregister(struct ltt_channel *chan)
 		return 0;
 	ret = tracepoint_probe_unregister("sys_exit",
 			(void *) __event_probe__exit_syscall,
-			chan->sc_unknown);
+			chan->sc_exit);
 	if (ret)
 		return ret;
 	ret = tracepoint_probe_unregister("sys_enter",
