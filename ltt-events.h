@@ -300,7 +300,7 @@ void ltt_event_put(const struct lttng_event_desc *desc);
 int ltt_probes_init(void);
 void ltt_probes_exit(void);
 
-#ifdef SYSCALL_DETAIL
+#ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
 int lttng_syscalls_register(struct ltt_channel *chan, void *filter);
 int lttng_syscalls_unregister(struct ltt_channel *chan);
 #else

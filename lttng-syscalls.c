@@ -37,6 +37,7 @@ static void syscall_entry_probe(void *__data, struct pt_regs *regs, long id);
 #define TRACE_INCLUDE_PATH ../instrumentation/syscalls/headers
 #include "instrumentation/syscalls/headers/syscalls_integers.h"
 #include "instrumentation/syscalls/headers/syscalls_pointers.h"
+#include "instrumentation/syscalls/headers/syscalls_unknown.h"
 
 #undef TP_MODULE_OVERRIDE
 #undef TP_PROBE_CB
@@ -65,6 +66,8 @@ static struct trace_syscall_entry sc_table[] = {
 #include "instrumentation/syscalls/headers/syscalls_integers.h"
 #include "instrumentation/syscalls/headers/syscalls_pointers.h"
 };
+
+static int sc_table_filled;
 
 #undef CREATE_SYSCALL_TABLE
 
@@ -170,12 +173,35 @@ static void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 	}
 }
 
+static void fill_sc_table(void)
+{
+	int i;
+
+	if (sc_table_filled) {
+		smp_rmb();	/* read flag before table */
+		return;
+	}
+
+	for (i = 0; i < ARRAY_SIZE(sc_table); i++) {
+		if (sc_table[i].func)
+			continue;
+		sc_table[i].func = __event_probe__sys_unknown;
+		sc_table[i].nrargs = UNKNOWN_SYSCALL_NRARGS;
+		sc_table[i].fields = __event_fields___sys_unknown;
+		sc_table[i].desc = &__event_desc___sys_unknown;
+	}
+	smp_wmb();	/* Fill sc table before set flag to 1 */
+	sc_table_filled = 1;
+}
+
 int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 {
 	unsigned int i;
 	int ret;
 
 	wrapper_vmalloc_sync_all();
+
+	fill_sc_table();
 
 	if (!chan->sc_table) {
 		/* create syscall table mapping syscall to events */
@@ -190,8 +216,7 @@ int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 		struct lttng_kernel_event ev;
 		const struct lttng_event_desc *desc = sc_table[i].desc;
 
-		if (!desc)
-			continue;
+		WARN_ON_ONCE(!desc);
 		/*
 		 * Skip those already populated by previous failed
 		 * register for this channel.
@@ -216,6 +241,18 @@ int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 	}
 	ret = tracepoint_probe_register("sys_enter",
 			(void *) syscall_entry_probe, chan);
+	if (ret)
+		return ret;
+	/*
+	 * We change the name of sys_exit tracepoint due to namespace
+	 * conflict with sys_exit syscall entry.
+	 */
+	ret = tracepoint_probe_register("sys_exit",
+			(void *) __event_probe__exit_syscall, chan);
+	if (ret) {
+		WARN_ON_ONCE(tracepoint_probe_unregister("sys_enter",
+			(void *) syscall_entry_probe, chan));
+	}
 	return ret;
 }
 
@@ -228,6 +265,10 @@ int lttng_syscalls_unregister(struct ltt_channel *chan)
 
 	if (!chan->sc_table)
 		return 0;
+	ret = tracepoint_probe_unregister("sys_exit",
+			(void *) __event_probe__exit_syscall, chan);
+	if (ret)
+		return ret;
 	ret = tracepoint_probe_unregister("sys_enter",
 			(void *) syscall_entry_probe, chan);
 	if (ret)
