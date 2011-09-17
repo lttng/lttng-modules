@@ -28,8 +28,8 @@ TRACE_EVENT(sys_unknown,
  * event.
  */
 TRACE_EVENT(exit_syscall,
-	TP_PROTO(long errno),
-	TP_ARGS(errno),
+	TP_PROTO(struct pt_regs *regs, long errno),
+	TP_ARGS(regs, errno),
 	TP_STRUCT__entry(
 		__field(long, errno)
 	),
