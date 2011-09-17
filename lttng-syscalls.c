@@ -10,10 +10,18 @@
 
 #include <linux/module.h>
 #include <linux/slab.h>
+#include <linux/compat.h>
 #include <asm/ptrace.h>
 #include <asm/syscall.h>
 
 #include "ltt-events.h"
+
+#ifndef CONFIG_COMPAT
+static inline int is_compat_task(void)
+{
+	return 0;
+}
+#endif
 
 static void syscall_entry_probe(void *__data, struct pt_regs *regs, long id);
 
@@ -80,13 +88,18 @@ static void syscall_entry_unknown(struct ltt_channel *chan,
 	__event_probe__sys_unknown(event, id, args);
 }
 
+/*
+ * Currently, given that the kernel syscall metadata extraction only
+ * considers native system calls (not 32-bit compability ones), we
+ * fall-back on the "unknown" system call tracing for 32-bit compat.
+ */
 static void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 {
 	struct trace_syscall_entry *entry;
 	struct ltt_channel *chan = __data;
 	struct ltt_event *event;
 
-	if (unlikely(id >= ARRAY_SIZE(sc_table))) {
+	if (unlikely(is_compat_task() || id >= ARRAY_SIZE(sc_table))) {
 		syscall_entry_unknown(chan, regs, id);
 		return;
 	}
