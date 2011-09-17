@@ -50,8 +50,6 @@ struct trace_syscall_entry {
 	unsigned int nrargs;
 };
 
-static int sc_table_desc_filled;
-
 #define CREATE_SYSCALL_TABLE
 
 #undef TRACE_SYSCALL_TABLE

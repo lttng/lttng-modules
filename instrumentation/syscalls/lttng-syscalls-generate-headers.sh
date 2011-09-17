@@ -2,10 +2,13 @@
 
 # Generate system call probe description macros from syscall metadata dump file.
 # example usage:
-# lttng-syscalls-generate-headers.sh 3.0.4 x86-64-syscalls-3.0.4
+#
+# lttng-syscalls-generate-headers.sh integers 3.0.4 x86-64-syscalls-3.0.4
+# lttng-syscalls-generate-headers.sh pointers 3.0.4 x86-64-syscalls-3.0.4
 
-INPUTDIR=$1
-INPUTFILE=$2
+CLASS=$1
+INPUTDIR=$2
+INPUTFILE=$3
 INPUT=${INPUTDIR}/${INPUTFILE}
 SRCFILE=gen.tmp.0
 TMPFILE=gen.tmp.1
@@ -21,17 +24,18 @@ mv ${TMPFILE} ${SRCFILE}
 
 #Filter
 
-#select only syscalls we currently support
-#move non-pointers with and without arguments to a integer-only file.
-CLASS=integers
-grep -v "\\*\|cap_user_header_t" ${SRCFILE} > ${TMPFILE}
-mv ${TMPFILE} ${SRCFILE}
+if [ "$CLASS" = integers ]; then
+	#select integers and no-args.
+	grep -v "\\*\|cap_user_header_t" ${SRCFILE} > ${TMPFILE}
+	mv ${TMPFILE} ${SRCFILE}
+fi
 
-#TODO
-# move all system calls using pointers to a separate file.
-#CLASS=pointers
-#grep "\\*\|cap_#user_header_t" ${SRCFILE} > ${TMPFILE}
-#mv ${TMPFILE} ${SRCFILE}
+
+if [ "$CLASS" = pointers ]; then
+	#select system calls using pointers.
+	grep "\\*\|cap_#user_header_t" ${SRCFILE} > ${TMPFILE}
+	mv ${TMPFILE} ${SRCFILE}
+fi
 
 HEADER=headers/${INPUTFILE}-${CLASS}.h
 
@@ -49,6 +53,8 @@ echo \
 #include <linux/tracepoint.h>
 #include <linux/syscalls.h>
 " >> ${HEADER}
+
+if [ "$CLASS" = integers ]; then
 
 NRARGS=0
 
@@ -68,6 +74,7 @@ sed 's/^syscall \([^ ]*\) nr \([^ ]*\) nbargs \([^ ]*\) '\
 '/g'\
 	${TMPFILE} >> ${HEADER}
 
+fi
 
 # types: 4
 # args   5
@@ -192,12 +199,14 @@ echo \
 
 
 NRARGS=0
-grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}
 
+if [ "$CLASS" = integers ]; then
 #noargs
+grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}
 sed 's/^syscall \([^ ]*\) nr \([^ ]*\) nbargs \([^ ]*\) .*$/'\
 'TRACE_SYSCALL_TABLE(syscalls_noargs, sys_\1, \2, \3)/g'\
 	${TMPFILE} >> ${HEADER}
+fi
 
 #others.
 grep -v "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}

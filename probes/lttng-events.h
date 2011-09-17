@@ -293,7 +293,7 @@ static const struct lttng_event_desc *TP_ID(__event_desc___, TRACE_SYSTEM)[] = {
 #define TP_ID(_token, _system)	TP_ID1(_token, _system)
 
 /* non-const because list head will be modified when registered. */
-static struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
+static __used struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 	.event_desc = TP_ID(__event_desc___, TRACE_SYSTEM),
 	.nr_events = ARRAY_SIZE(TP_ID(__event_desc___, TRACE_SYSTEM)),
 };
