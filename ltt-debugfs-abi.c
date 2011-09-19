@@ -544,7 +544,12 @@ int lttng_abi_create_event(struct file *channel_file,
 		/* The event holds a reference on the channel */
 		atomic_long_inc(&channel_file->f_count);
 		break;
-	case LTTNG_KERNEL_SYSCALLS:
+	case LTTNG_KERNEL_SYSCALL:
+		/*
+		 * Only all-syscall tracing supported for now.
+		 */
+		if (event_param.name[0] != '\0')
+			return -EINVAL;
 		ret = lttng_syscalls_register(channel, NULL);
 		if (ret)
 			goto fd_error;
