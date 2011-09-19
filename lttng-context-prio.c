@@ -13,6 +13,7 @@
 #include "ltt-events.h"
 #include "wrapper/ringbuffer/frontend_types.h"
 #include "wrapper/vmalloc.h"
+#include "wrapper/kallsyms.h"
 #include "ltt-tracer.h"
 
 static
@@ -20,7 +21,7 @@ int (*wrapper_task_prio_sym)(struct task_struct *t);
 
 int wrapper_task_prio_init(void)
 {
-	wrapper_task_prio_sym = (void *) kallsyms_lookup_name("task_prio");
+	wrapper_task_prio_sym = (void *) kallsyms_lookup_funcptr("task_prio");
 	if (!wrapper_task_prio_sym) {
 		printk(KERN_WARNING "LTTng: task_prio symbol lookup failed.\n");
 		return -EINVAL;

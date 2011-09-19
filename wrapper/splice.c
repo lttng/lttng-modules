@@ -13,6 +13,7 @@
 #include <linux/kallsyms.h>
 #include <linux/fs.h>
 #include <linux/splice.h>
+#include "kallsyms.h"
 
 static
 ssize_t (*splice_to_pipe_sym)(struct pipe_inode_info *pipe,
@@ -22,7 +23,7 @@ ssize_t wrapper_splice_to_pipe(struct pipe_inode_info *pipe,
 			       struct splice_pipe_desc *spd)
 {
 	if (!splice_to_pipe_sym)
-		splice_to_pipe_sym = (void *) kallsyms_lookup_name("splice_to_pipe");
+		splice_to_pipe_sym = (void *) kallsyms_lookup_funcptr("splice_to_pipe"); 
 	if (splice_to_pipe_sym) {
 		return splice_to_pipe_sym(pipe, spd);
 	} else {

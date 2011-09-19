@@ -14,13 +14,14 @@
 #ifdef CONFIG_KALLSYMS
 
 #include <linux/kallsyms.h>
+#include "kallsyms.h"
 
 static inline
 void wrapper_vmalloc_sync_all(void)
 {
 	void (*vmalloc_sync_all_sym)(void);
 
-	vmalloc_sync_all_sym = (void *) kallsyms_lookup_name("vmalloc_sync_all");
+	vmalloc_sync_all_sym = (void *) kallsyms_lookup_funcptr("vmalloc_sync_all");
 	if (vmalloc_sync_all_sym) {
 		vmalloc_sync_all_sym();
 	} else {

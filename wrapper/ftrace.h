@@ -16,6 +16,7 @@
 #ifdef CONFIG_KALLSYMS
 
 #include <linux/kallsyms.h>
+#include "kallsyms.h"
 
 static inline
 int wrapper_register_ftrace_function_probe(char *glob,
@@ -24,7 +25,7 @@ int wrapper_register_ftrace_function_probe(char *glob,
 	int (*register_ftrace_function_probe_sym)(char *glob,
 			struct ftrace_probe_ops *ops, void *data);
 
-	register_ftrace_function_probe_sym = (void *) kallsyms_lookup_name("register_ftrace_function_probe");
+	register_ftrace_function_probe_sym = (void *) kallsyms_lookup_funcptr("register_ftrace_function_probe");
 	if (register_ftrace_function_probe_sym) {
 		return register_ftrace_function_probe_sym(glob, ops, data);
 	} else {
@@ -40,7 +41,7 @@ void wrapper_unregister_ftrace_function_probe(char *glob,
 	void (*unregister_ftrace_function_probe_sym)(char *glob,
 			struct ftrace_probe_ops *ops, void *data);
 
-	unregister_ftrace_function_probe_sym = (void *) kallsyms_lookup_name("unregister_ftrace_function_probe");
+	unregister_ftrace_function_probe_sym = (void *) kallsyms_lookup_funcptr("unregister_ftrace_function_probe");
 	if (unregister_ftrace_function_probe_sym) {
 		unregister_ftrace_function_probe_sym(glob, ops, data);
 	} else {
