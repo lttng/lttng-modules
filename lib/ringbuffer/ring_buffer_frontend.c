@@ -1703,10 +1703,13 @@ int lib_ring_buffer_reserve_slow(struct lib_ring_buffer_ctx *ctx)
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_reserve_slow);
 
-void __init init_lib_ring_buffer_frontend(void)
+int __init init_lib_ring_buffer_frontend(void)
 {
 	int cpu;
 
 	for_each_possible_cpu(cpu)
 		spin_lock_init(&per_cpu(ring_buffer_nohz_lock, cpu));
+	return 0;
 }
+
+module_init(init_lib_ring_buffer_frontend);
