@@ -1362,8 +1362,8 @@ SC_TRACE_EVENT(sys_msgrcv,
 SC_TRACE_EVENT(sys_mount,
 	TP_PROTO(char * dev_name, char * dir_name, char * type, unsigned long flags, void * data),
 	TP_ARGS(dev_name, dir_name, type, flags, data),
-	TP_STRUCT__entry(__string(dev_name, dev_name) __string(dir_name, dir_name) __field_hex(char *, type) __field(unsigned long, flags) __field_hex(void *, data)),
-	TP_fast_assign(tp_copy_string_from_user(dev_name, dev_name) tp_copy_string_from_user(dir_name, dir_name) tp_assign(type, type) tp_assign(flags, flags) tp_assign(data, data)),
+	TP_STRUCT__entry(__string(dev_name, dev_name) __string(dir_name, dir_name) __string(type, type) __field(unsigned long, flags) __field_hex(void *, data)),
+	TP_fast_assign(tp_copy_string_from_user(dev_name, dev_name) tp_copy_string_from_user(dir_name, dir_name) tp_copy_string_from_user(type, type) tp_assign(flags, flags) tp_assign(data, data)),
 	TP_printk()
 )
 #endif

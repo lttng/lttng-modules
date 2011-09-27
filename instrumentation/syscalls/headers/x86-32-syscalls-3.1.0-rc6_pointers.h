@@ -1344,8 +1344,8 @@ SC_TRACE_EVENT(sys_kexec_load,
 SC_TRACE_EVENT(sys_request_key,
 	TP_PROTO(const char * _type, const char * _description, const char * _callout_info, key_serial_t destringid),
 	TP_ARGS(_type, _description, _callout_info, destringid),
-	TP_STRUCT__entry(__field_hex(const char *, _type) __field_hex(const char *, _description) __field_hex(const char *, _callout_info) __field(key_serial_t, destringid)),
-	TP_fast_assign(tp_assign(_type, _type) tp_assign(_description, _description) tp_assign(_callout_info, _callout_info) tp_assign(destringid, destringid)),
+	TP_STRUCT__entry(__string(_type, _type) __field_hex(const char *, _description) __field_hex(const char *, _callout_info) __field(key_serial_t, destringid)),
+	TP_fast_assign(tp_copy_string_from_user(_type, _type) tp_assign(_description, _description) tp_assign(_callout_info, _callout_info) tp_assign(destringid, destringid)),
 	TP_printk()
 )
 #endif
@@ -1461,8 +1461,8 @@ SC_TRACE_EVENT(sys_sendmmsg,
 SC_TRACE_EVENT(sys_mount,
 	TP_PROTO(char * dev_name, char * dir_name, char * type, unsigned long flags, void * data),
 	TP_ARGS(dev_name, dir_name, type, flags, data),
-	TP_STRUCT__entry(__string(dev_name, dev_name) __string(dir_name, dir_name) __field_hex(char *, type) __field(unsigned long, flags) __field_hex(void *, data)),
-	TP_fast_assign(tp_copy_string_from_user(dev_name, dev_name) tp_copy_string_from_user(dir_name, dir_name) tp_assign(type, type) tp_assign(flags, flags) tp_assign(data, data)),
+	TP_STRUCT__entry(__string(dev_name, dev_name) __string(dir_name, dir_name) __string(type, type) __field(unsigned long, flags) __field_hex(void *, data)),
+	TP_fast_assign(tp_copy_string_from_user(dev_name, dev_name) tp_copy_string_from_user(dir_name, dir_name) tp_copy_string_from_user(type, type) tp_assign(flags, flags) tp_assign(data, data)),
 	TP_printk()
 )
 #endif
@@ -1551,8 +1551,8 @@ SC_TRACE_EVENT(sys_waitid,
 SC_TRACE_EVENT(sys_add_key,
 	TP_PROTO(const char * _type, const char * _description, const void * _payload, size_t plen, key_serial_t ringid),
 	TP_ARGS(_type, _description, _payload, plen, ringid),
-	TP_STRUCT__entry(__field_hex(const char *, _type) __field_hex(const char *, _description) __field_hex(const void *, _payload) __field(size_t, plen) __field(key_serial_t, ringid)),
-	TP_fast_assign(tp_assign(_type, _type) tp_assign(_description, _description) tp_assign(_payload, _payload) tp_assign(plen, plen) tp_assign(ringid, ringid)),
+	TP_STRUCT__entry(__string(_type, _type) __field_hex(const char *, _description) __field_hex(const void *, _payload) __field(size_t, plen) __field(key_serial_t, ringid)),
+	TP_fast_assign(tp_copy_string_from_user(_type, _type) tp_assign(_description, _description) tp_assign(_payload, _payload) tp_assign(plen, plen) tp_assign(ringid, ringid)),
 	TP_printk()
 )
 #endif

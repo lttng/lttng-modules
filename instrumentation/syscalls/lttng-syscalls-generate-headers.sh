@@ -237,14 +237,15 @@ echo -n \
 #endif /* CREATE_SYSCALL_TABLE */
 " >> ${HEADER}
 
-#fields names: ...char * type with *name* or *file* or *path* or *root* or *put_old*
+#fields names: ...char * type with *name* or *file* or *path* or *root*
+# or *put_old* or *type*
 cp -f ${HEADER} ${TMPFILE}
 rm -f ${HEADER}
-perl -p -e 's/__field\(([^,)]*char \*), ([^\)]*)(name|file|path|root|put_old)([^\)]*)\)/__string($2$3$4, $2$3$4)/g'\
+perl -p -e 's/__field\(([^,)]*char \*), ([^\)]*)(name|file|path|root|put_old|type)([^\)]*)\)/__string($2$3$4, $2$3$4)/g'\
 	${TMPFILE} >> ${HEADER}
 cp -f ${HEADER} ${TMPFILE}
 rm -f ${HEADER}
-perl -p -e 's/tp_assign\(([^,)]*char \*), ([^,]*)(name|file|path|root|put_old)([^,]*), ([^\)]*)\)/tp_copy_string_from_user($2$3$4, $5)/g'\
+perl -p -e 's/tp_assign\(([^,)]*char \*), ([^,]*)(name|file|path|root|put_old|type)([^,]*), ([^\)]*)\)/tp_copy_string_from_user($2$3$4, $5)/g'\
 	${TMPFILE} >> ${HEADER}
 
 #prettify addresses heuristics.
