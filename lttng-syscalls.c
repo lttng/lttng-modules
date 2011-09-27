@@ -271,16 +271,18 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 	}
 }
 
+/* noinline to diminish caller stack size */
 static
 int fill_table(const struct trace_syscall_entry *table, size_t table_len,
 	struct ltt_event **chan_table, struct ltt_channel *chan, void *filter)
 {
+	const struct lttng_event_desc *desc;
 	unsigned int i;
 
 	/* Allocate events for each syscall, insert into table */
 	for (i = 0; i < table_len; i++) {
 		struct lttng_kernel_event ev;
-		const struct lttng_event_desc *desc = table[i].desc;
+		desc = table[i].desc;
 
 		if (!desc) {
 			/* Unknown syscall */
@@ -313,6 +315,7 @@ int fill_table(const struct trace_syscall_entry *table, size_t table_len,
 
 int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 {
+	struct lttng_kernel_event ev;
 	int ret;
 
 	wrapper_vmalloc_sync_all();
@@ -335,7 +338,6 @@ int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 	}
 #endif
 	if (!chan->sc_unknown) {
-		struct lttng_kernel_event ev;
 		const struct lttng_event_desc *desc =
 			&__event_desc___sys_unknown;
 
@@ -351,7 +353,6 @@ int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 	}
 
 	if (!chan->sc_compat_unknown) {
-		struct lttng_kernel_event ev;
 		const struct lttng_event_desc *desc =
 			&__event_desc___compat_sys_unknown;
 
@@ -367,7 +368,6 @@ int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 	}
 
 	if (!chan->sc_exit) {
-		struct lttng_kernel_event ev;
 		const struct lttng_event_desc *desc =
 			&__event_desc___exit_syscall;
 
