@@ -42,8 +42,8 @@ TRACE_EVENT(sys_shmdt,
 TRACE_EVENT(sys_chdir,
 	TP_PROTO(const char * filename),
 	TP_ARGS(filename),
-	TP_STRUCT__entry(__field_hex(const char *, filename)),
-	TP_fast_assign(tp_assign(filename, filename)),
+	TP_STRUCT__entry(__string(filename, filename)),
+	TP_fast_assign(tp_copy_string_from_user(filename, filename)),
 	TP_printk()
 )
 #endif
@@ -51,8 +51,8 @@ TRACE_EVENT(sys_chdir,
 TRACE_EVENT(sys_rmdir,
 	TP_PROTO(const char * pathname),
 	TP_ARGS(pathname),
-	TP_STRUCT__entry(__field_hex(const char *, pathname)),
-	TP_fast_assign(tp_assign(pathname, pathname)),
+	TP_STRUCT__entry(__string(pathname, pathname)),
+	TP_fast_assign(tp_copy_string_from_user(pathname, pathname)),
 	TP_printk()
 )
 #endif
@@ -60,8 +60,8 @@ TRACE_EVENT(sys_rmdir,
 TRACE_EVENT(sys_unlink,
 	TP_PROTO(const char * pathname),
 	TP_ARGS(pathname),
-	TP_STRUCT__entry(__field_hex(const char *, pathname)),
-	TP_fast_assign(tp_assign(pathname, pathname)),
+	TP_STRUCT__entry(__string(pathname, pathname)),
+	TP_fast_assign(tp_copy_string_from_user(pathname, pathname)),
 	TP_printk()
 )
 #endif
@@ -105,8 +105,8 @@ TRACE_EVENT(sys_adjtimex,
 TRACE_EVENT(sys_chroot,
 	TP_PROTO(const char * filename),
 	TP_ARGS(filename),
-	TP_STRUCT__entry(__field_hex(const char *, filename)),
-	TP_fast_assign(tp_assign(filename, filename)),
+	TP_STRUCT__entry(__string(filename, filename)),
+	TP_fast_assign(tp_copy_string_from_user(filename, filename)),
 	TP_printk()
 )
 #endif
@@ -150,8 +150,8 @@ TRACE_EVENT(sys_mq_unlink,
 TRACE_EVENT(sys_newstat,
 	TP_PROTO(const char * filename, struct stat * statbuf),
 	TP_ARGS(filename, statbuf),
-	TP_STRUCT__entry(__field_hex(const char *, filename) __field_hex(struct stat *, statbuf)),
-	TP_fast_assign(tp_assign(filename, filename) tp_assign(statbuf, statbuf)),
+	TP_STRUCT__entry(__string(filename, filename) __field_hex(struct stat *, statbuf)),
+	TP_fast_assign(tp_copy_string_from_user(filename, filename) tp_assign(statbuf, statbuf)),
 	TP_printk()
 )
 #endif
@@ -168,8 +168,8 @@ TRACE_EVENT(sys_newfstat,
 TRACE_EVENT(sys_newlstat,
 	TP_PROTO(const char * filename, struct stat * statbuf),
 	TP_ARGS(filename, statbuf),
-	TP_STRUCT__entry(__field_hex(const char *, filename) __field_hex(struct stat *, statbuf)),
-	TP_fast_assign(tp_assign(filename, filename) tp_assign(statbuf, statbuf)),
+	TP_STRUCT__entry(__string(filename, filename) __field_hex(struct stat *, statbuf)),
+	TP_fast_assign(tp_copy_string_from_user(filename, filename) tp_assign(statbuf, statbuf)),
 	TP_printk()
 )
 #endif
@@ -177,8 +177,8 @@ TRACE_EVENT(sys_newlstat,
 TRACE_EVENT(sys_access,
 	TP_PROTO(const char * filename, int mode),
 	TP_ARGS(filename, mode),
-	TP_STRUCT__entry(__field_hex(const char *, filename) __field(int, mode)),
-	TP_fast_assign(tp_assign(filename, filename) tp_assign(mode, mode)),
+	TP_STRUCT__entry(__string(filename, filename) __field(int, mode)),
+	TP_fast_assign(tp_copy_string_from_user(filename, filename) tp_assign(mode, mode)),
 	TP_printk()
 )
 #endif
@@ -231,8 +231,8 @@ TRACE_EVENT(sys_rename,
 TRACE_EVENT(sys_mkdir,
 	TP_PROTO(const char * pathname, int mode),
 	TP_ARGS(pathname, mode),
-	TP_STRUCT__entry(__field_hex(const char *, pathname) __field(int, mode)),
-	TP_fast_assign(tp_assign(pathname, pathname) tp_assign(mode, mode)),
+	TP_STRUCT__entry(__string(pathname, pathname) __field(int, mode)),
+	TP_fast_assign(tp_copy_string_from_user(pathname, pathname) tp_assign(mode, mode)),
 	TP_printk()
 )
 #endif
@@ -240,8 +240,8 @@ TRACE_EVENT(sys_mkdir,
 TRACE_EVENT(sys_creat,
 	TP_PROTO(const char * pathname, int mode),
 	TP_ARGS(pathname, mode),
-	TP_STRUCT__entry(__field_hex(const char *, pathname) __field(int, mode)),
-	TP_fast_assign(tp_assign(pathname, pathname) tp_assign(mode, mode)),
+	TP_STRUCT__entry(__string(pathname, pathname) __field(int, mode)),
+	TP_fast_assign(tp_copy_string_from_user(pathname, pathname) tp_assign(mode, mode)),
 	TP_printk()
 )
 #endif
@@ -267,8 +267,8 @@ TRACE_EVENT(sys_symlink,
 TRACE_EVENT(sys_chmod,
 	TP_PROTO(const char * filename, mode_t mode),
 	TP_ARGS(filename, mode),
-	TP_STRUCT__entry(__field_hex(const char *, filename) __field(mode_t, mode)),
-	TP_fast_assign(tp_assign(filename, filename) tp_assign(mode, mode)),
+	TP_STRUCT__entry(__string(filename, filename) __field(mode_t, mode)),
+	TP_fast_assign(tp_copy_string_from_user(filename, filename) tp_assign(mode, mode)),
 	TP_printk()
 )
 #endif
@@ -339,8 +339,8 @@ TRACE_EVENT(sys_rt_sigsuspend,
 TRACE_EVENT(sys_utime,
 	TP_PROTO(char * filename, struct utimbuf * times),
 	TP_ARGS(filename, times),
-	TP_STRUCT__entry(__field_hex(char *, filename) __field_hex(struct utimbuf *, times)),
-	TP_fast_assign(tp_assign(filename, filename) tp_assign(times, times)),
+	TP_STRUCT__entry(__string(filename, filename) __field_hex(struct utimbuf *, times)),
+	TP_fast_assign(tp_copy_string_from_user(filename, filename) tp_assign(times, times)),
 	TP_printk()
 )
 #endif
@@ -357,8 +357,8 @@ TRACE_EVENT(sys_ustat,
 TRACE_EVENT(sys_statfs,
 	TP_PROTO(const char * pathname, struct statfs * buf),
 	TP_ARGS(pathname, buf),
-	TP_STRUCT__entry(__field_hex(const char *, pathname) __field_hex(struct statfs *, buf)),
-	TP_fast_assign(tp_assign(pathname, pathname) tp_assign(buf, buf)),
+	TP_STRUCT__entry(__string(pathname, pathname) __field_hex(struct statfs *, buf)),
+	TP_fast_assign(tp_copy_string_from_user(pathname, pathname) tp_assign(buf, buf)),
 	TP_printk()
 )
 #endif
@@ -474,8 +474,8 @@ TRACE_EVENT(sys_delete_module,
 TRACE_EVENT(sys_removexattr,
 	TP_PROTO(const char * pathname, const char * name),
 	TP_ARGS(pathname, name),
-	TP_STRUCT__entry(__field_hex(const char *, pathname) __field_hex(const char *, name)),
-	TP_fast_assign(tp_assign(pathname, pathname) tp_assign(name, name)),
+	TP_STRUCT__entry(__string(pathname, pathname) __field_hex(const char *, name)),
+	TP_fast_assign(tp_copy_string_from_user(pathname, pathname) tp_assign(name, name)),
 	TP_printk()
 )
 #endif
@@ -483,8 +483,8 @@ TRACE_EVENT(sys_removexattr,
 TRACE_EVENT(sys_lremovexattr,
 	TP_PROTO(const char * pathname, const char * name),
 	TP_ARGS(pathname, name),
-	TP_STRUCT__entry(__field_hex(const char *, pathname) __field_hex(const char *, name)),
-	TP_fast_assign(tp_assign(pathname, pathname) tp_assign(name, name)),
+	TP_STRUCT__entry(__string(pathname, pathname) __field_hex(const char *, name)),
+	TP_fast_assign(tp_copy_string_from_user(pathname, pathname) tp_assign(name, name)),
 	TP_printk()
 )
 #endif
@@ -546,8 +546,8 @@ TRACE_EVENT(sys_clock_getres,
 TRACE_EVENT(sys_utimes,
 	TP_PROTO(char * filename, struct timeval * utimes),
 	TP_ARGS(filename, utimes),
-	TP_STRUCT__entry(__field_hex(char *, filename) __field_hex(struct timeval *, utimes)),
-	TP_fast_assign(tp_assign(filename, filename) tp_assign(utimes, utimes)),
+	TP_STRUCT__entry(__string(filename, filename) __field_hex(struct timeval *, utimes)),
+	TP_fast_assign(tp_copy_string_from_user(filename, filename) tp_assign(utimes, utimes)),
 	TP_printk()
 )
 #endif
@@ -618,8 +618,8 @@ TRACE_EVENT(sys_write,
 TRACE_EVENT(sys_open,
 	TP_PROTO(const char * filename, int flags, int mode),
 	TP_ARGS(filename, flags, mode),
-	TP_STRUCT__entry(__field_hex(const char *, filename) __field(int, flags) __field(int, mode)),
-	TP_fast_assign(tp_assign(filename, filename) tp_assign(flags, flags) tp_assign(mode, mode)),
+	TP_STRUCT__entry(__string(filename, filename) __field(int, flags) __field(int, mode)),
+	TP_fast_assign(tp_copy_string_from_user(filename, filename) tp_assign(flags, flags) tp_assign(mode, mode)),
 	TP_printk()
 )
 #endif
@@ -789,8 +789,8 @@ TRACE_EVENT(sys_readlink,
 TRACE_EVENT(sys_chown,
 	TP_PROTO(const char * filename, uid_t user, gid_t group),
 	TP_ARGS(filename, user, group),
-	TP_STRUCT__entry(__field_hex(const char *, filename) __field(uid_t, user) __field(gid_t, group)),
-	TP_fast_assign(tp_assign(filename, filename) tp_assign(user, user) tp_assign(group, group)),
+	TP_STRUCT__entry(__string(filename, filename) __field(uid_t, user) __field(gid_t, group)),
+	TP_fast_assign(tp_copy_string_from_user(filename, filename) tp_assign(user, user) tp_assign(group, group)),
 	TP_printk()
 )
 #endif
@@ -798,8 +798,8 @@ TRACE_EVENT(sys_chown,
 TRACE_EVENT(sys_lchown,
 	TP_PROTO(const char * filename, uid_t user, gid_t group),
 	TP_ARGS(filename, user, group),
-	TP_STRUCT__entry(__field_hex(const char *, filename) __field(uid_t, user) __field(gid_t, group)),
-	TP_fast_assign(tp_assign(filename, filename) tp_assign(user, user) tp_assign(group, group)),
+	TP_STRUCT__entry(__string(filename, filename) __field(uid_t, user) __field(gid_t, group)),
+	TP_fast_assign(tp_copy_string_from_user(filename, filename) tp_assign(user, user) tp_assign(group, group)),
 	TP_printk()
 )
 #endif
@@ -843,8 +843,8 @@ TRACE_EVENT(sys_rt_sigqueueinfo,
 TRACE_EVENT(sys_mknod,
 	TP_PROTO(const char * filename, int mode, unsigned dev),
 	TP_ARGS(filename, mode, dev),
-	TP_STRUCT__entry(__field_hex(const char *, filename) __field(int, mode) __field(unsigned, dev)),
-	TP_fast_assign(tp_assign(filename, filename) tp_assign(mode, mode) tp_assign(dev, dev)),
+	TP_STRUCT__entry(__string(filename, filename) __field(int, mode) __field(unsigned, dev)),
+	TP_fast_assign(tp_copy_string_from_user(filename, filename) tp_assign(mode, mode) tp_assign(dev, dev)),
 	TP_printk()
 )
 #endif
@@ -879,8 +879,8 @@ TRACE_EVENT(sys_nfsservctl,
 TRACE_EVENT(sys_listxattr,
 	TP_PROTO(const char * pathname, char * list, size_t size),
 	TP_ARGS(pathname, list, size),
-	TP_STRUCT__entry(__field_hex(const char *, pathname) __field_hex(char *, list) __field(size_t, size)),
-	TP_fast_assign(tp_assign(pathname, pathname) tp_assign(list, list) tp_assign(size, size)),
+	TP_STRUCT__entry(__string(pathname, pathname) __field_hex(char *, list) __field(size_t, size)),
+	TP_fast_assign(tp_copy_string_from_user(pathname, pathname) tp_assign(list, list) tp_assign(size, size)),
 	TP_printk()
 )
 #endif
@@ -888,8 +888,8 @@ TRACE_EVENT(sys_listxattr,
 TRACE_EVENT(sys_llistxattr,
 	TP_PROTO(const char * pathname, char * list, size_t size),
 	TP_ARGS(pathname, list, size),
-	TP_STRUCT__entry(__field_hex(const char *, pathname) __field_hex(char *, list) __field(size_t, size)),
-	TP_fast_assign(tp_assign(pathname, pathname) tp_assign(list, list) tp_assign(size, size)),
+	TP_STRUCT__entry(__string(pathname, pathname) __field_hex(char *, list) __field(size_t, size)),
+	TP_fast_assign(tp_copy_string_from_user(pathname, pathname) tp_assign(list, list) tp_assign(size, size)),
 	TP_printk()
 )
 #endif
@@ -969,8 +969,8 @@ TRACE_EVENT(sys_mq_getsetattr,
 TRACE_EVENT(sys_inotify_add_watch,
 	TP_PROTO(int fd, const char * pathname, u32 mask),
 	TP_ARGS(fd, pathname, mask),
-	TP_STRUCT__entry(__field(int, fd) __field_hex(const char *, pathname) __field(u32, mask)),
-	TP_fast_assign(tp_assign(fd, fd) tp_assign(pathname, pathname) tp_assign(mask, mask)),
+	TP_STRUCT__entry(__field(int, fd) __string(pathname, pathname) __field(u32, mask)),
+	TP_fast_assign(tp_assign(fd, fd) tp_copy_string_from_user(pathname, pathname) tp_assign(mask, mask)),
 	TP_printk()
 )
 #endif
@@ -978,8 +978,8 @@ TRACE_EVENT(sys_inotify_add_watch,
 TRACE_EVENT(sys_mkdirat,
 	TP_PROTO(int dfd, const char * pathname, int mode),
 	TP_ARGS(dfd, pathname, mode),
-	TP_STRUCT__entry(__field(int, dfd) __field_hex(const char *, pathname) __field(int, mode)),
-	TP_fast_assign(tp_assign(dfd, dfd) tp_assign(pathname, pathname) tp_assign(mode, mode)),
+	TP_STRUCT__entry(__field(int, dfd) __string(pathname, pathname) __field(int, mode)),
+	TP_fast_assign(tp_assign(dfd, dfd) tp_copy_string_from_user(pathname, pathname) tp_assign(mode, mode)),
 	TP_printk()
 )
 #endif
@@ -987,8 +987,8 @@ TRACE_EVENT(sys_mkdirat,
 TRACE_EVENT(sys_futimesat,
 	TP_PROTO(int dfd, const char * filename, struct timeval * utimes),
 	TP_ARGS(dfd, filename, utimes),
-	TP_STRUCT__entry(__field(int, dfd) __field_hex(const char *, filename) __field_hex(struct timeval *, utimes)),
-	TP_fast_assign(tp_assign(dfd, dfd) tp_assign(filename, filename) tp_assign(utimes, utimes)),
+	TP_STRUCT__entry(__field(int, dfd) __string(filename, filename) __field_hex(struct timeval *, utimes)),
+	TP_fast_assign(tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(utimes, utimes)),
 	TP_printk()
 )
 #endif
@@ -996,8 +996,8 @@ TRACE_EVENT(sys_futimesat,
 TRACE_EVENT(sys_unlinkat,
 	TP_PROTO(int dfd, const char * pathname, int flag),
 	TP_ARGS(dfd, pathname, flag),
-	TP_STRUCT__entry(__field(int, dfd) __field_hex(const char *, pathname) __field(int, flag)),
-	TP_fast_assign(tp_assign(dfd, dfd) tp_assign(pathname, pathname) tp_assign(flag, flag)),
+	TP_STRUCT__entry(__field(int, dfd) __string(pathname, pathname) __field(int, flag)),
+	TP_fast_assign(tp_assign(dfd, dfd) tp_copy_string_from_user(pathname, pathname) tp_assign(flag, flag)),
 	TP_printk()
 )
 #endif
@@ -1014,8 +1014,8 @@ TRACE_EVENT(sys_symlinkat,
 TRACE_EVENT(sys_fchmodat,
 	TP_PROTO(int dfd, const char * filename, mode_t mode),
 	TP_ARGS(dfd, filename, mode),
-	TP_STRUCT__entry(__field(int, dfd) __field_hex(const char *, filename) __field(mode_t, mode)),
-	TP_fast_assign(tp_assign(dfd, dfd) tp_assign(filename, filename) tp_assign(mode, mode)),
+	TP_STRUCT__entry(__field(int, dfd) __string(filename, filename) __field(mode_t, mode)),
+	TP_fast_assign(tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(mode, mode)),
 	TP_printk()
 )
 #endif
@@ -1023,8 +1023,8 @@ TRACE_EVENT(sys_fchmodat,
 TRACE_EVENT(sys_faccessat,
 	TP_PROTO(int dfd, const char * filename, int mode),
 	TP_ARGS(dfd, filename, mode),
-	TP_STRUCT__entry(__field(int, dfd) __field_hex(const char *, filename) __field(int, mode)),
-	TP_fast_assign(tp_assign(dfd, dfd) tp_assign(filename, filename) tp_assign(mode, mode)),
+	TP_STRUCT__entry(__field(int, dfd) __string(filename, filename) __field(int, mode)),
+	TP_fast_assign(tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(mode, mode)),
 	TP_printk()
 )
 #endif
@@ -1122,8 +1122,8 @@ TRACE_EVENT(sys_reboot,
 TRACE_EVENT(sys_getxattr,
 	TP_PROTO(const char * pathname, const char * name, void * value, size_t size),
 	TP_ARGS(pathname, name, value, size),
-	TP_STRUCT__entry(__field_hex(const char *, pathname) __field_hex(const char *, name) __field_hex(void *, value) __field(size_t, size)),
-	TP_fast_assign(tp_assign(pathname, pathname) tp_assign(name, name) tp_assign(value, value) tp_assign(size, size)),
+	TP_STRUCT__entry(__string(pathname, pathname) __field_hex(const char *, name) __field_hex(void *, value) __field(size_t, size)),
+	TP_fast_assign(tp_copy_string_from_user(pathname, pathname) tp_assign(name, name) tp_assign(value, value) tp_assign(size, size)),
 	TP_printk()
 )
 #endif
@@ -1131,8 +1131,8 @@ TRACE_EVENT(sys_getxattr,
 TRACE_EVENT(sys_lgetxattr,
 	TP_PROTO(const char * pathname, const char * name, void * value, size_t size),
 	TP_ARGS(pathname, name, value, size),
-	TP_STRUCT__entry(__field_hex(const char *, pathname) __field_hex(const char *, name) __field_hex(void *, value) __field(size_t, size)),
-	TP_fast_assign(tp_assign(pathname, pathname) tp_assign(name, name) tp_assign(value, value) tp_assign(size, size)),
+	TP_STRUCT__entry(__string(pathname, pathname) __field_hex(const char *, name) __field_hex(void *, value) __field(size_t, size)),
+	TP_fast_assign(tp_copy_string_from_user(pathname, pathname) tp_assign(name, name) tp_assign(value, value) tp_assign(size, size)),
 	TP_printk()
 )
 #endif
@@ -1212,8 +1212,8 @@ TRACE_EVENT(sys_kexec_load,
 TRACE_EVENT(sys_openat,
 	TP_PROTO(int dfd, const char * filename, int flags, int mode),
 	TP_ARGS(dfd, filename, flags, mode),
-	TP_STRUCT__entry(__field(int, dfd) __field_hex(const char *, filename) __field(int, flags) __field(int, mode)),
-	TP_fast_assign(tp_assign(dfd, dfd) tp_assign(filename, filename) tp_assign(flags, flags) tp_assign(mode, mode)),
+	TP_STRUCT__entry(__field(int, dfd) __string(filename, filename) __field(int, flags) __field(int, mode)),
+	TP_fast_assign(tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(flags, flags) tp_assign(mode, mode)),
 	TP_printk()
 )
 #endif
@@ -1221,8 +1221,8 @@ TRACE_EVENT(sys_openat,
 TRACE_EVENT(sys_mknodat,
 	TP_PROTO(int dfd, const char * filename, int mode, unsigned dev),
 	TP_ARGS(dfd, filename, mode, dev),
-	TP_STRUCT__entry(__field(int, dfd) __field_hex(const char *, filename) __field(int, mode) __field(unsigned, dev)),
-	TP_fast_assign(tp_assign(dfd, dfd) tp_assign(filename, filename) tp_assign(mode, mode) tp_assign(dev, dev)),
+	TP_STRUCT__entry(__field(int, dfd) __string(filename, filename) __field(int, mode) __field(unsigned, dev)),
+	TP_fast_assign(tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(mode, mode) tp_assign(dev, dev)),
 	TP_printk()
 )
 #endif
@@ -1230,8 +1230,8 @@ TRACE_EVENT(sys_mknodat,
 TRACE_EVENT(sys_newfstatat,
 	TP_PROTO(int dfd, const char * filename, struct stat * statbuf, int flag),
 	TP_ARGS(dfd, filename, statbuf, flag),
-	TP_STRUCT__entry(__field(int, dfd) __field_hex(const char *, filename) __field_hex(struct stat *, statbuf) __field(int, flag)),
-	TP_fast_assign(tp_assign(dfd, dfd) tp_assign(filename, filename) tp_assign(statbuf, statbuf) tp_assign(flag, flag)),
+	TP_STRUCT__entry(__field(int, dfd) __string(filename, filename) __field_hex(struct stat *, statbuf) __field(int, flag)),
+	TP_fast_assign(tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(statbuf, statbuf) tp_assign(flag, flag)),
 	TP_printk()
 )
 #endif
@@ -1248,8 +1248,8 @@ TRACE_EVENT(sys_renameat,
 TRACE_EVENT(sys_readlinkat,
 	TP_PROTO(int dfd, const char * pathname, char * buf, int bufsiz),
 	TP_ARGS(dfd, pathname, buf, bufsiz),
-	TP_STRUCT__entry(__field(int, dfd) __field_hex(const char *, pathname) __field_hex(char *, buf) __field(int, bufsiz)),
-	TP_fast_assign(tp_assign(dfd, dfd) tp_assign(pathname, pathname) tp_assign(buf, buf) tp_assign(bufsiz, bufsiz)),
+	TP_STRUCT__entry(__field(int, dfd) __string(pathname, pathname) __field_hex(char *, buf) __field(int, bufsiz)),
+	TP_fast_assign(tp_assign(dfd, dfd) tp_copy_string_from_user(pathname, pathname) tp_assign(buf, buf) tp_assign(bufsiz, bufsiz)),
 	TP_printk()
 )
 #endif
@@ -1266,8 +1266,8 @@ TRACE_EVENT(sys_vmsplice,
 TRACE_EVENT(sys_utimensat,
 	TP_PROTO(int dfd, const char * filename, struct timespec * utimes, int flags),
 	TP_ARGS(dfd, filename, utimes, flags),
-	TP_STRUCT__entry(__field(int, dfd) __field_hex(const char *, filename) __field_hex(struct timespec *, utimes) __field(int, flags)),
-	TP_fast_assign(tp_assign(dfd, dfd) tp_assign(filename, filename) tp_assign(utimes, utimes) tp_assign(flags, flags)),
+	TP_STRUCT__entry(__field(int, dfd) __string(filename, filename) __field_hex(struct timespec *, utimes) __field(int, flags)),
+	TP_fast_assign(tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(utimes, utimes) tp_assign(flags, flags)),
 	TP_printk()
 )
 #endif
@@ -1374,8 +1374,8 @@ TRACE_EVENT(sys_mount,
 TRACE_EVENT(sys_setxattr,
 	TP_PROTO(const char * pathname, const char * name, const void * value, size_t size, int flags),
 	TP_ARGS(pathname, name, value, size, flags),
-	TP_STRUCT__entry(__field_hex(const char *, pathname) __field_hex(const char *, name) __field_hex(const void *, value) __field(size_t, size) __field(int, flags)),
-	TP_fast_assign(tp_assign(pathname, pathname) tp_assign(name, name) tp_assign(value, value) tp_assign(size, size) tp_assign(flags, flags)),
+	TP_STRUCT__entry(__string(pathname, pathname) __field_hex(const char *, name) __field_hex(const void *, value) __field(size_t, size) __field(int, flags)),
+	TP_fast_assign(tp_copy_string_from_user(pathname, pathname) tp_assign(name, name) tp_assign(value, value) tp_assign(size, size) tp_assign(flags, flags)),
 	TP_printk()
 )
 #endif
@@ -1383,8 +1383,8 @@ TRACE_EVENT(sys_setxattr,
 TRACE_EVENT(sys_lsetxattr,
 	TP_PROTO(const char * pathname, const char * name, const void * value, size_t size, int flags),
 	TP_ARGS(pathname, name, value, size, flags),
-	TP_STRUCT__entry(__field_hex(const char *, pathname) __field_hex(const char *, name) __field_hex(const void *, value) __field(size_t, size) __field(int, flags)),
-	TP_fast_assign(tp_assign(pathname, pathname) tp_assign(name, name) tp_assign(value, value) tp_assign(size, size) tp_assign(flags, flags)),
+	TP_STRUCT__entry(__string(pathname, pathname) __field_hex(const char *, name) __field_hex(const void *, value) __field(size_t, size) __field(int, flags)),
+	TP_fast_assign(tp_copy_string_from_user(pathname, pathname) tp_assign(name, name) tp_assign(value, value) tp_assign(size, size) tp_assign(flags, flags)),
 	TP_printk()
 )
 #endif
@@ -1437,8 +1437,8 @@ TRACE_EVENT(sys_waitid,
 TRACE_EVENT(sys_fchownat,
 	TP_PROTO(int dfd, const char * filename, uid_t user, gid_t group, int flag),
 	TP_ARGS(dfd, filename, user, group, flag),
-	TP_STRUCT__entry(__field(int, dfd) __field_hex(const char *, filename) __field(uid_t, user) __field(gid_t, group) __field(int, flag)),
-	TP_fast_assign(tp_assign(dfd, dfd) tp_assign(filename, filename) tp_assign(user, user) tp_assign(group, group) tp_assign(flag, flag)),
+	TP_STRUCT__entry(__field(int, dfd) __string(filename, filename) __field(uid_t, user) __field(gid_t, group) __field(int, flag)),
+	TP_fast_assign(tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(user, user) tp_assign(group, group) tp_assign(flag, flag)),
 	TP_printk()
 )
 #endif

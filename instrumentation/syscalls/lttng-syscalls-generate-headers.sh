@@ -248,12 +248,23 @@ rm -f ${HEADER}
 perl -p -e 's/__field\(([^,)]*), ([^a,)]*addr|[^p,)]*ptr)([^),]*)\)/__field_hex($1, $2$3)/g'\
 	${TMPFILE} >> ${HEADER}
 
+#fields names: filename or pathname
+cp -f ${HEADER} ${TMPFILE}
+rm -f ${HEADER}
+perl -p -e 's/__field\(([^,)]*), (filename|pathname)\)/__string($2, $2)/g'\
+	${TMPFILE} >> ${HEADER}
+cp -f ${HEADER} ${TMPFILE}
+rm -f ${HEADER}
+perl -p -e 's/tp_assign\((filename|pathname), (filename|pathname)\)/tp_copy_string_from_user($1, $2)/g'\
+	${TMPFILE} >> ${HEADER}
+
 cp -f ${HEADER} ${TMPFILE}
 rm -f ${HEADER}
 
 #field types ending with '*'
 perl -p -e 's/__field\(([^,)]*\*), ([^),]*)\)/__field_hex($1, $2)/g'\
 	${TMPFILE} >> ${HEADER}
+
 
 rm -f ${INPUTFILE}.tmp
 rm -f ${TMPFILE}
