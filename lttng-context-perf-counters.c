@@ -15,6 +15,7 @@
 #include "ltt-events.h"
 #include "wrapper/ringbuffer/frontend_types.h"
 #include "wrapper/vmalloc.h"
+#include "wrapper/perf.h"
 #include "ltt-tracer.h"
 
 static
@@ -57,12 +58,21 @@ void perf_counter_record(struct lttng_ctx_field *field,
 	chan->ops->event_write(ctx, &value, sizeof(value));
 }
 
+#if defined(CONFIG_PERF_EVENTS) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,99))
+static
+void overflow_callback(struct perf_event *event,
+		       struct perf_sample_data *data,
+		       struct pt_regs *regs)
+{
+}
+#else
 static
 void overflow_callback(struct perf_event *event, int nmi,
 		       struct perf_sample_data *data,
 		       struct pt_regs *regs)
 {
 }
+#endif
 
 static
 void lttng_destroy_perf_counter_field(struct lttng_ctx_field *field)
@@ -114,7 +124,7 @@ int __cpuinit lttng_perf_counter_cpu_hp_callback(struct notifier_block *nb,
 	switch (action) {
 	case CPU_ONLINE:
 	case CPU_ONLINE_FROZEN:
-		pevent = perf_event_create_kernel_counter(attr,
+		pevent = wrapper_perf_event_create_kernel_counter(attr,
 				cpu, NULL, overflow_callback);
 		if (!pevent || IS_ERR(pevent))
 			return NOTIFY_BAD;
@@ -202,7 +212,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 
 	get_online_cpus();
 	for_each_online_cpu(cpu) {
-		events[cpu] = perf_event_create_kernel_counter(attr,
+		events[cpu] = wrapper_perf_event_create_kernel_counter(attr,
 					cpu, NULL, overflow_callback);
 		if (!events[cpu] || IS_ERR(events[cpu])) {
 			ret = -EINVAL;
