@@ -1,9 +1,9 @@
 /*
  * lttng-syscalls.c
  *
- * Copyright 2010 (c) - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+ * Copyright 2010-2011 (c) - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
- * LTTng sched probes.
+ * LTTng syscall probes.
  *
  * Dual LGPL v2.1/GPL v2 license.
  */
@@ -23,7 +23,7 @@ static inline int is_compat_task(void)
 }
 #endif
 
-static void syscall_entry_probe(void *__data, struct pt_regs *regs, long id);
+void syscall_entry_probe(void *__data, struct pt_regs *regs, long id);
 
 /*
  * Take care of NOARGS not supported by mainline.
@@ -52,13 +52,6 @@ static void syscall_entry_probe(void *__data, struct pt_regs *regs, long id);
 #undef LTTNG_PACKAGE_BUILD
 #undef CREATE_TRACE_POINTS
 
-struct trace_syscall_entry {
-	void *func;
-	const struct lttng_event_desc *desc;
-	const struct lttng_event_field *fields;
-	unsigned int nrargs;
-};
-
 #undef TRACE_SYSCALL_TABLE
 #define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
 	[ _nr ] = {						\
@@ -75,13 +68,13 @@ static const struct trace_syscall_entry sc_table[] = {
 #include "instrumentation/syscalls/headers/syscalls_pointers.h"
 };
 
-/* Create compatibility syscall table */
-static const struct trace_syscall_entry compat_sc_table[] = {
-#include "instrumentation/syscalls/headers/compat_syscalls_integers.h"
-#include "instrumentation/syscalls/headers/compat_syscalls_pointers.h"
-};
-
 #undef CREATE_SYSCALL_TABLE
+
+//extern const struct trace_syscall_entry compat_sc_table[];
+//extern const size_t compat_sc_table_len;
+//temp disable
+static const struct trace_syscall_entry compat_sc_table[];
+static const size_t compat_sc_table_len;
 
 static void syscall_entry_unknown(struct ltt_event *event,
 	struct pt_regs *regs, unsigned int id)
@@ -92,12 +85,7 @@ static void syscall_entry_unknown(struct ltt_event *event,
 	__event_probe__sys_unknown(event, id, args);
 }
 
-/*
- * Currently, given that the kernel syscall metadata extraction only
- * considers native system calls (not 32-bit compability ones), we
- * fall-back on the "unknown" system call tracing for 32-bit compat.
- */
-static void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
+void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 {
 	struct ltt_channel *chan = __data;
 	struct ltt_event *event, *unknown_event;
@@ -106,7 +94,7 @@ static void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 
 	if (unlikely(is_compat_task())) {
 		table = compat_sc_table;
-		table_len = ARRAY_SIZE(compat_sc_table);
+		table_len = compat_sc_table_len;
 		unknown_event = chan->sc_compat_unknown;
 	} else {
 		table = sc_table;
@@ -274,7 +262,7 @@ int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 	if (!chan->compat_sc_table) {
 		/* create syscall table mapping compat syscall to events */
 		chan->compat_sc_table = kzalloc(sizeof(struct ltt_event *)
-					* ARRAY_SIZE(compat_sc_table), GFP_KERNEL);
+					* compat_sc_table_len, GFP_KERNEL);
 		if (!chan->compat_sc_table)
 			return -ENOMEM;
 	}
@@ -332,7 +320,7 @@ int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 	if (ret)
 		return ret;
 #ifdef CONFIG_COMPAT
-	ret = fill_table(compat_sc_table, ARRAY_SIZE(compat_sc_table),
+	ret = fill_table(compat_sc_table, compat_sc_table_len,
 			chan->compat_sc_table, chan, filter);
 	if (ret)
 		return ret;

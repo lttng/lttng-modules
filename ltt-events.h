@@ -267,6 +267,13 @@ struct ltt_session {
 	int metadata_dumped:1;
 };
 
+struct trace_syscall_entry {
+	void *func;
+	const struct lttng_event_desc *desc;
+	const struct lttng_event_field *fields;
+	unsigned int nrargs;
+};
+
 struct ltt_session *ltt_session_create(void);
 int ltt_session_enable(struct ltt_session *session);
 int ltt_session_disable(struct ltt_session *session);
