@@ -22,6 +22,10 @@
 #error "You need to set CONFIG_FTRACE_SYSCALLS=y"
 #endif
 
+#ifndef CONFIG_KALLSYMS_ALL
+#error "You need to set CONFIG_KALLSYMS_ALL=y"
+#endif
+
 static struct syscall_metadata **__start_syscalls_metadata;
 static struct syscall_metadata **__stop_syscalls_metadata;
 
