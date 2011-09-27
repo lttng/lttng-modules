@@ -212,6 +212,8 @@ struct ltt_channel_ops {
 			    size_t len);
 	void (*event_write_from_user)(struct lib_ring_buffer_ctx *ctx,
 				      const void *src, size_t len);
+	void (*event_memset)(struct lib_ring_buffer_ctx *ctx,
+			     int c, size_t len);
 	/*
 	 * packet_avail_size returns the available size in the current
 	 * packet. Note that the size returned is only a hint, since it
