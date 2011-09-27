@@ -246,6 +246,7 @@ struct ltt_channel {
 	struct ltt_channel_ops *ops;
 	struct ltt_transport *transport;
 	struct ltt_event **sc_table;	/* for syscall tracing */
+	struct ltt_event **compat_sc_table;
 	struct ltt_event *sc_unknown;	/* for unknown syscalls */
 	struct ltt_event *sc_compat_unknown;
 	struct ltt_event *sc_exit;	/* for syscall exit */

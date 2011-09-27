@@ -59,8 +59,6 @@ struct trace_syscall_entry {
 	unsigned int nrargs;
 };
 
-#define CREATE_SYSCALL_TABLE
-
 #undef TRACE_SYSCALL_TABLE
 #define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
 	[ _nr ] = {						\
@@ -70,9 +68,17 @@ struct trace_syscall_entry {
 		.desc = &__event_desc___##_name,		\
 	},
 
-static struct trace_syscall_entry sc_table[] = {
+#define CREATE_SYSCALL_TABLE
+
+static const struct trace_syscall_entry sc_table[] = {
 #include "instrumentation/syscalls/headers/syscalls_integers.h"
 #include "instrumentation/syscalls/headers/syscalls_pointers.h"
+};
+
+/* Create compatibility syscall table */
+static const struct trace_syscall_entry compat_sc_table[] = {
+#include "instrumentation/syscalls/headers/compat_syscalls_integers.h"
+#include "instrumentation/syscalls/headers/compat_syscalls_pointers.h"
 };
 
 #undef CREATE_SYSCALL_TABLE
@@ -93,24 +99,33 @@ static void syscall_entry_unknown(struct ltt_event *event,
  */
 static void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 {
-	struct trace_syscall_entry *entry;
 	struct ltt_channel *chan = __data;
-	struct ltt_event *event;
+	struct ltt_event *event, *unknown_event;
+	const struct trace_syscall_entry *table, *entry;
+	size_t table_len;
 
 	if (unlikely(is_compat_task())) {
-		syscall_entry_unknown(chan->sc_compat_unknown, regs, id);
+		table = compat_sc_table;
+		table_len = ARRAY_SIZE(compat_sc_table);
+		unknown_event = chan->sc_compat_unknown;
+	} else {
+		table = sc_table;
+		table_len = ARRAY_SIZE(sc_table);
+		unknown_event = chan->sc_unknown;
+	}
+	if (unlikely(id >= table_len)) {
+		syscall_entry_unknown(unknown_event, regs, id);
 		return;
 	}
-	if (unlikely(id >= ARRAY_SIZE(sc_table))) {
-		syscall_entry_unknown(chan->sc_unknown, regs, id);
-		return;
-	}
-	event = chan->sc_table[id];
+	if (unlikely(is_compat_task()))
+		event = chan->compat_sc_table[id];
+	else
+		event = chan->sc_table[id];
 	if (unlikely(!event)) {
-		syscall_entry_unknown(chan->sc_unknown, regs, id);
+		syscall_entry_unknown(unknown_event, regs, id);
 		return;
 	}
-	entry = &sc_table[id];
+	entry = &table[id];
 	WARN_ON_ONCE(!entry);
 
 	switch (entry->nrargs) {
@@ -201,9 +216,48 @@ static void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 	}
 }
 
-int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
+static
+int fill_table(const struct trace_syscall_entry *table, size_t table_len,
+	struct ltt_event **chan_table, struct ltt_channel *chan, void *filter)
 {
 	unsigned int i;
+
+	/* Allocate events for each syscall, insert into table */
+	for (i = 0; i < table_len; i++) {
+		struct lttng_kernel_event ev;
+		const struct lttng_event_desc *desc = table[i].desc;
+
+		if (!desc) {
+			/* Unknown syscall */
+			continue;
+		}
+		/*
+		 * Skip those already populated by previous failed
+		 * register for this channel.
+		 */
+		if (chan_table[i])
+			continue;
+		memset(&ev, 0, sizeof(ev));
+		strncpy(ev.name, desc->name, LTTNG_SYM_NAME_LEN);
+		ev.name[LTTNG_SYM_NAME_LEN - 1] = '\0';
+		ev.instrumentation = LTTNG_KERNEL_NOOP;
+		chan_table[i] = ltt_event_create(chan, &ev, filter,
+						desc);
+		if (!chan_table[i]) {
+			/*
+			 * If something goes wrong in event registration
+			 * after the first one, we have no choice but to
+			 * leave the previous events in there, until
+			 * deleted by session teardown.
+			 */
+			return -EINVAL;
+		}
+	}
+	return 0;
+}
+
+int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
+{
 	int ret;
 
 	wrapper_vmalloc_sync_all();
@@ -216,6 +270,15 @@ int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 			return -ENOMEM;
 	}
 
+#ifdef CONFIG_COMPAT
+	if (!chan->compat_sc_table) {
+		/* create syscall table mapping compat syscall to events */
+		chan->compat_sc_table = kzalloc(sizeof(struct ltt_event *)
+					* ARRAY_SIZE(compat_sc_table), GFP_KERNEL);
+		if (!chan->compat_sc_table)
+			return -ENOMEM;
+	}
+#endif
 	if (!chan->sc_unknown) {
 		struct lttng_kernel_event ev;
 		const struct lttng_event_desc *desc =
@@ -264,37 +327,16 @@ int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 		}
 	}
 
-	/* Allocate events for each syscall, insert into table */
-	for (i = 0; i < ARRAY_SIZE(sc_table); i++) {
-		struct lttng_kernel_event ev;
-		const struct lttng_event_desc *desc = sc_table[i].desc;
-
-		if (!desc) {
-			/* Unknown syscall */
-			continue;
-		}
-		/*
-		 * Skip those already populated by previous failed
-		 * register for this channel.
-		 */
-		if (chan->sc_table[i])
-			continue;
-		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->name, LTTNG_SYM_NAME_LEN);
-		ev.name[LTTNG_SYM_NAME_LEN - 1] = '\0';
-		ev.instrumentation = LTTNG_KERNEL_NOOP;
-		chan->sc_table[i] = ltt_event_create(chan, &ev, filter,
-						     desc);
-		if (!chan->sc_table[i]) {
-			/*
-			 * If something goes wrong in event registration
-			 * after the first one, we have no choice but to
-			 * leave the previous events in there, until
-			 * deleted by session teardown.
-			 */
-			return -EINVAL;
-		}
-	}
+	ret = fill_table(sc_table, ARRAY_SIZE(sc_table),
+			chan->sc_table, chan, filter);
+	if (ret)
+		return ret;
+#ifdef CONFIG_COMPAT
+	ret = fill_table(compat_sc_table, ARRAY_SIZE(compat_sc_table),
+			chan->compat_sc_table, chan, filter);
+	if (ret)
+		return ret;
+#endif
 	ret = tracepoint_probe_register("sys_enter",
 			(void *) syscall_entry_probe, chan);
 	if (ret)
@@ -333,5 +375,8 @@ int lttng_syscalls_unregister(struct ltt_channel *chan)
 		return ret;
 	/* ltt_event destroy will be performed by ltt_session_destroy() */
 	kfree(chan->sc_table);
+#ifdef CONFIG_COMPAT
+	kfree(chan->compat_sc_table);
+#endif
 	return 0;
 }
