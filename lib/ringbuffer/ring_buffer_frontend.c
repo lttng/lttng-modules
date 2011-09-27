@@ -1713,3 +1713,9 @@ int __init init_lib_ring_buffer_frontend(void)
 }
 
 module_init(init_lib_ring_buffer_frontend);
+
+void __exit exit_lib_ring_buffer_frontend(void)
+{
+}
+
+module_exit(exit_lib_ring_buffer_frontend);
