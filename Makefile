@@ -23,7 +23,6 @@ ltt-relay-objs :=  ltt-events.o ltt-debugfs-abi.o \
 
 ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
 ltt-relay-objs += lttng-syscalls.o
-#ltt-relay-objs += lttng-compat-syscalls.o
 endif
 
 ifneq ($(CONFIG_PERF_EVENTS),)
