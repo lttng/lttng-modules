@@ -225,6 +225,13 @@ void ltt_event_write(struct lib_ring_buffer_ctx *ctx, const void *src,
 }
 
 static
+void ltt_event_write_from_user(struct lib_ring_buffer_ctx *ctx,
+			       const void __user *src, size_t len)
+{
+	lib_ring_buffer_copy_from_user(&client_config, ctx, src, len);
+}
+
+static
 size_t ltt_packet_avail_size(struct channel *chan)
 			     
 {
@@ -279,6 +286,7 @@ static struct ltt_transport ltt_relay_transport = {
 		.buffer_read_close = ltt_buffer_read_close,
 		.event_reserve = ltt_event_reserve,
 		.event_commit = ltt_event_commit,
+		.event_write_from_user = ltt_event_write_from_user,
 		.event_write = ltt_event_write,
 		.packet_avail_size = ltt_packet_avail_size,
 		.get_writer_buf_wait_queue = ltt_get_writer_buf_wait_queue,

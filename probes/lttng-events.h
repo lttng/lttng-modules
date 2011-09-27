@@ -510,6 +510,27 @@ __assign_##dest##_2:							\
 	__chan->ops->event_write(&__ctx, src,				\
 		sizeof(__typemap.dest) * __get_dynamic_array_len(dest));\
 	goto __end_field_##dest##_2;
+#undef tp_memcpy_from_user
+#define tp_memcpy_from_user(dest, src, len)				\
+	__assign_##dest:						\
+	if (0)								\
+		(void) __typemap.dest;					\
+	lib_ring_buffer_align_ctx(&__ctx, ltt_alignof(__typemap.dest));	\
+	__chan->ops->event_write_from_user(&__ctx, src, len);		\
+	goto __end_field_##dest;
+/*
+ * tp_copy_string_from_user "len" parameter is the length of the string
+ * excluding the final \0.
+ */
+#undef tp_copy_string_from_user
+#define tp_copy_string_from_user(dest, src, len)			\
+	__assign_##dest:						\
+	if (0)								\
+		(void) __typemap.dest;					\
+	lib_ring_buffer_align_ctx(&__ctx, ltt_alignof(__typemap.dest));	\
+	__chan->ops->event_write_from_user(&__ctx, src, len);		\
+	__chan->ops->event_memset(&__ctx, 0, 1);			\
+	goto __end_field_##dest;
 
 #undef tp_strcpy
 #define tp_strcpy(dest, src)						\

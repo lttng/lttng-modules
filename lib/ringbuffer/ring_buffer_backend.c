@@ -501,6 +501,107 @@ void _lib_ring_buffer_write(struct lib_ring_buffer_backend *bufb, size_t offset,
 }
 EXPORT_SYMBOL_GPL(_lib_ring_buffer_write);
 
+
+/**
+ * lib_ring_buffer_memset - write len bytes of c to a ring_buffer buffer.
+ * @bufb : buffer backend
+ * @offset : offset within the buffer
+ * @c : the byte to write
+ * @len : length to write
+ * @pagecpy : page size copied so far
+ */
+void _lib_ring_buffer_memset(struct lib_ring_buffer_backend *bufb,
+			     size_t offset,
+			     int c, size_t len, ssize_t pagecpy)
+{
+	struct channel_backend *chanb = &bufb->chan->backend;
+	const struct lib_ring_buffer_config *config = chanb->config;
+	size_t sbidx, index;
+	struct lib_ring_buffer_backend_pages *rpages;
+	unsigned long sb_bindex, id;
+
+	do {
+		len -= pagecpy;
+		offset += pagecpy;
+		sbidx = offset >> chanb->subbuf_size_order;
+		index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
+
+		/*
+		 * Underlying layer should never ask for writes across
+		 * subbuffers.
+		 */
+		CHAN_WARN_ON(chanb, offset >= chanb->buf_size);
+
+		pagecpy = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
+		id = bufb->buf_wsb[sbidx].id;
+		sb_bindex = subbuffer_id_get_index(config, id);
+		rpages = bufb->array[sb_bindex];
+		CHAN_WARN_ON(chanb, config->mode == RING_BUFFER_OVERWRITE
+			     && subbuffer_id_is_noref(config, id));
+		lib_ring_buffer_do_memset(rpages->p[index].virt
+					  + (offset & ~PAGE_MASK),
+					  c, pagecpy);
+	} while (unlikely(len != pagecpy));
+}
+EXPORT_SYMBOL_GPL(_lib_ring_buffer_memset);
+
+
+/**
+ * lib_ring_buffer_copy_from_user - write user data to a ring_buffer buffer.
+ * @bufb : buffer backend
+ * @offset : offset within the buffer
+ * @src : source address
+ * @len : length to write
+ * @pagecpy : page size copied so far
+ *
+ * This function deals with userspace pointers, it should never be called
+ * directly without having the src pointer checked with access_ok()
+ * previously.
+ */
+void _lib_ring_buffer_copy_from_user(struct lib_ring_buffer_backend *bufb,
+				      size_t offset,
+				      const void __user *src, size_t len,
+				      ssize_t pagecpy)
+{
+	struct channel_backend *chanb = &bufb->chan->backend;
+	const struct lib_ring_buffer_config *config = chanb->config;
+	size_t sbidx, index;
+	struct lib_ring_buffer_backend_pages *rpages;
+	unsigned long sb_bindex, id;
+	int ret;
+
+	do {
+		len -= pagecpy;
+		src += pagecpy;
+		offset += pagecpy;
+		sbidx = offset >> chanb->subbuf_size_order;
+		index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
+
+		/*
+		 * Underlying layer should never ask for writes across
+		 * subbuffers.
+		 */
+		CHAN_WARN_ON(chanb, offset >= chanb->buf_size);
+
+		pagecpy = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
+		id = bufb->buf_wsb[sbidx].id;
+		sb_bindex = subbuffer_id_get_index(config, id);
+		rpages = bufb->array[sb_bindex];
+		CHAN_WARN_ON(chanb, config->mode == RING_BUFFER_OVERWRITE
+				&& subbuffer_id_is_noref(config, id));
+		ret = lib_ring_buffer_do_copy_from_user(rpages->p[index].virt
+							+ (offset & ~PAGE_MASK),
+							src, pagecpy) != 0;
+		if (ret > 0) {
+			offset += (pagecpy - ret);
+			len -= (pagecpy - ret);
+			_lib_ring_buffer_memset(bufb, offset, 0, len, 0);
+			break; /* stop copy */
+		}
+	} while (unlikely(len != pagecpy));
+}
+EXPORT_SYMBOL_GPL(_lib_ring_buffer_copy_from_user);
+
 /**
  * lib_ring_buffer_read - read data from ring_buffer_buffer.
  * @bufb : buffer backend

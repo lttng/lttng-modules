@@ -15,6 +15,7 @@
 #include "../../wrapper/ringbuffer/backend_types.h"
 #include "../../wrapper/ringbuffer/frontend_types.h"
 #include <linux/string.h>
+#include <linux/uaccess.h>
 
 /* Ring buffer backend API presented to the frontend */
 
@@ -40,6 +41,12 @@ void lib_ring_buffer_backend_exit(void);
 extern void _lib_ring_buffer_write(struct lib_ring_buffer_backend *bufb,
 				   size_t offset, const void *src, size_t len,
 				   ssize_t pagecpy);
+extern void _lib_ring_buffer_memset(struct lib_ring_buffer_backend *bufb,
+				    size_t offset, int c, size_t len,
+				    ssize_t pagecpy);
+extern void _lib_ring_buffer_copy_from_user(struct lib_ring_buffer_backend *bufb,
+					    size_t offset, const void *src,
+					    size_t len, ssize_t pagecpy);
 
 /*
  * Subbuffer ID bits for overwrite mode. Need to fit within a single word to be
@@ -413,5 +420,30 @@ do {								\
 	else							\
 		inline_memcpy(dest, src, __len);		\
 } while (0)
+
+/*
+ * We use __copy_from_user to copy userspace data since we already
+ * did the access_ok for the whole range.
+ */
+static inline
+unsigned long lib_ring_buffer_do_copy_from_user(void *dest,
+						const void __user *src,
+						unsigned long len)
+{
+	return __copy_from_user(dest, src, len);
+}
+
+/*
+ * write len bytes to dest with c
+ */
+static inline
+void lib_ring_buffer_do_memset(char *dest, int c,
+	unsigned long len)
+{
+	unsigned long i;
+
+	for (i = 0; i < len; i++)
+		dest[i] = c;
+}
 
 #endif /* _LINUX_RING_BUFFER_BACKEND_INTERNAL_H */
