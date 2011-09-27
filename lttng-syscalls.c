@@ -73,7 +73,7 @@ static const struct trace_syscall_entry sc_table[] = {
 //extern const struct trace_syscall_entry compat_sc_table[];
 //extern const size_t compat_sc_table_len;
 //temp disable
-static const struct trace_syscall_entry compat_sc_table[];
+static const struct trace_syscall_entry compat_sc_table[] = { };
 static const size_t compat_sc_table_len;
 
 static void syscall_entry_unknown(struct ltt_event *event,
