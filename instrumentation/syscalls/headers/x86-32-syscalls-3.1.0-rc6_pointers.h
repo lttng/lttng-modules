@@ -1674,556 +1674,556 @@ SC_TRACE_EVENT(sys_epoll_pwait,
 
 #include "x86-32-syscalls-3.1.0-rc6_pointers_override.h"
 
-#ifndef OVERRIDE_sys_read
+#ifndef OVERRIDE_TABLE_sys_read
 TRACE_SYSCALL_TABLE(sys_read, sys_read, 3, 3)
 #endif
-#ifndef OVERRIDE_sys_write
+#ifndef OVERRIDE_TABLE_sys_write
 TRACE_SYSCALL_TABLE(sys_write, sys_write, 4, 3)
 #endif
-#ifndef OVERRIDE_sys_open
+#ifndef OVERRIDE_TABLE_sys_open
 TRACE_SYSCALL_TABLE(sys_open, sys_open, 5, 3)
 #endif
-#ifndef OVERRIDE_sys_waitpid
+#ifndef OVERRIDE_TABLE_sys_waitpid
 TRACE_SYSCALL_TABLE(sys_waitpid, sys_waitpid, 7, 3)
 #endif
-#ifndef OVERRIDE_sys_creat
+#ifndef OVERRIDE_TABLE_sys_creat
 TRACE_SYSCALL_TABLE(sys_creat, sys_creat, 8, 2)
 #endif
-#ifndef OVERRIDE_sys_link
+#ifndef OVERRIDE_TABLE_sys_link
 TRACE_SYSCALL_TABLE(sys_link, sys_link, 9, 2)
 #endif
-#ifndef OVERRIDE_sys_unlink
+#ifndef OVERRIDE_TABLE_sys_unlink
 TRACE_SYSCALL_TABLE(sys_unlink, sys_unlink, 10, 1)
 #endif
-#ifndef OVERRIDE_sys_chdir
+#ifndef OVERRIDE_TABLE_sys_chdir
 TRACE_SYSCALL_TABLE(sys_chdir, sys_chdir, 12, 1)
 #endif
-#ifndef OVERRIDE_sys_time
+#ifndef OVERRIDE_TABLE_sys_time
 TRACE_SYSCALL_TABLE(sys_time, sys_time, 13, 1)
 #endif
-#ifndef OVERRIDE_sys_mknod
+#ifndef OVERRIDE_TABLE_sys_mknod
 TRACE_SYSCALL_TABLE(sys_mknod, sys_mknod, 14, 3)
 #endif
-#ifndef OVERRIDE_sys_chmod
+#ifndef OVERRIDE_TABLE_sys_chmod
 TRACE_SYSCALL_TABLE(sys_chmod, sys_chmod, 15, 2)
 #endif
-#ifndef OVERRIDE_sys_lchown16
+#ifndef OVERRIDE_TABLE_sys_lchown16
 TRACE_SYSCALL_TABLE(sys_lchown16, sys_lchown16, 16, 3)
 #endif
-#ifndef OVERRIDE_sys_stat
+#ifndef OVERRIDE_TABLE_sys_stat
 TRACE_SYSCALL_TABLE(sys_stat, sys_stat, 18, 2)
 #endif
-#ifndef OVERRIDE_sys_mount
+#ifndef OVERRIDE_TABLE_sys_mount
 TRACE_SYSCALL_TABLE(sys_mount, sys_mount, 21, 5)
 #endif
-#ifndef OVERRIDE_sys_oldumount
+#ifndef OVERRIDE_TABLE_sys_oldumount
 TRACE_SYSCALL_TABLE(sys_oldumount, sys_oldumount, 22, 1)
 #endif
-#ifndef OVERRIDE_sys_stime
+#ifndef OVERRIDE_TABLE_sys_stime
 TRACE_SYSCALL_TABLE(sys_stime, sys_stime, 25, 1)
 #endif
-#ifndef OVERRIDE_sys_fstat
+#ifndef OVERRIDE_TABLE_sys_fstat
 TRACE_SYSCALL_TABLE(sys_fstat, sys_fstat, 28, 2)
 #endif
-#ifndef OVERRIDE_sys_utime
+#ifndef OVERRIDE_TABLE_sys_utime
 TRACE_SYSCALL_TABLE(sys_utime, sys_utime, 30, 2)
 #endif
-#ifndef OVERRIDE_sys_access
+#ifndef OVERRIDE_TABLE_sys_access
 TRACE_SYSCALL_TABLE(sys_access, sys_access, 33, 2)
 #endif
-#ifndef OVERRIDE_sys_rename
+#ifndef OVERRIDE_TABLE_sys_rename
 TRACE_SYSCALL_TABLE(sys_rename, sys_rename, 38, 2)
 #endif
-#ifndef OVERRIDE_sys_mkdir
+#ifndef OVERRIDE_TABLE_sys_mkdir
 TRACE_SYSCALL_TABLE(sys_mkdir, sys_mkdir, 39, 2)
 #endif
-#ifndef OVERRIDE_sys_rmdir
+#ifndef OVERRIDE_TABLE_sys_rmdir
 TRACE_SYSCALL_TABLE(sys_rmdir, sys_rmdir, 40, 1)
 #endif
-#ifndef OVERRIDE_sys_pipe
+#ifndef OVERRIDE_TABLE_sys_pipe
 TRACE_SYSCALL_TABLE(sys_pipe, sys_pipe, 42, 1)
 #endif
-#ifndef OVERRIDE_sys_times
+#ifndef OVERRIDE_TABLE_sys_times
 TRACE_SYSCALL_TABLE(sys_times, sys_times, 43, 1)
 #endif
-#ifndef OVERRIDE_sys_acct
+#ifndef OVERRIDE_TABLE_sys_acct
 TRACE_SYSCALL_TABLE(sys_acct, sys_acct, 51, 1)
 #endif
-#ifndef OVERRIDE_sys_umount
+#ifndef OVERRIDE_TABLE_sys_umount
 TRACE_SYSCALL_TABLE(sys_umount, sys_umount, 52, 2)
 #endif
-#ifndef OVERRIDE_sys_olduname
+#ifndef OVERRIDE_TABLE_sys_olduname
 TRACE_SYSCALL_TABLE(sys_olduname, sys_olduname, 59, 1)
 #endif
-#ifndef OVERRIDE_sys_chroot
+#ifndef OVERRIDE_TABLE_sys_chroot
 TRACE_SYSCALL_TABLE(sys_chroot, sys_chroot, 61, 1)
 #endif
-#ifndef OVERRIDE_sys_ustat
+#ifndef OVERRIDE_TABLE_sys_ustat
 TRACE_SYSCALL_TABLE(sys_ustat, sys_ustat, 62, 2)
 #endif
-#ifndef OVERRIDE_sys_sigpending
+#ifndef OVERRIDE_TABLE_sys_sigpending
 TRACE_SYSCALL_TABLE(sys_sigpending, sys_sigpending, 73, 1)
 #endif
-#ifndef OVERRIDE_sys_sethostname
+#ifndef OVERRIDE_TABLE_sys_sethostname
 TRACE_SYSCALL_TABLE(sys_sethostname, sys_sethostname, 74, 2)
 #endif
-#ifndef OVERRIDE_sys_setrlimit
+#ifndef OVERRIDE_TABLE_sys_setrlimit
 TRACE_SYSCALL_TABLE(sys_setrlimit, sys_setrlimit, 75, 2)
 #endif
-#ifndef OVERRIDE_sys_old_getrlimit
+#ifndef OVERRIDE_TABLE_sys_old_getrlimit
 TRACE_SYSCALL_TABLE(sys_old_getrlimit, sys_old_getrlimit, 76, 2)
 #endif
-#ifndef OVERRIDE_sys_getrusage
+#ifndef OVERRIDE_TABLE_sys_getrusage
 TRACE_SYSCALL_TABLE(sys_getrusage, sys_getrusage, 77, 2)
 #endif
-#ifndef OVERRIDE_sys_gettimeofday
+#ifndef OVERRIDE_TABLE_sys_gettimeofday
 TRACE_SYSCALL_TABLE(sys_gettimeofday, sys_gettimeofday, 78, 2)
 #endif
-#ifndef OVERRIDE_sys_settimeofday
+#ifndef OVERRIDE_TABLE_sys_settimeofday
 TRACE_SYSCALL_TABLE(sys_settimeofday, sys_settimeofday, 79, 2)
 #endif
-#ifndef OVERRIDE_sys_getgroups16
+#ifndef OVERRIDE_TABLE_sys_getgroups16
 TRACE_SYSCALL_TABLE(sys_getgroups16, sys_getgroups16, 80, 2)
 #endif
-#ifndef OVERRIDE_sys_setgroups16
+#ifndef OVERRIDE_TABLE_sys_setgroups16
 TRACE_SYSCALL_TABLE(sys_setgroups16, sys_setgroups16, 81, 2)
 #endif
-#ifndef OVERRIDE_sys_old_select
+#ifndef OVERRIDE_TABLE_sys_old_select
 TRACE_SYSCALL_TABLE(sys_old_select, sys_old_select, 82, 1)
 #endif
-#ifndef OVERRIDE_sys_symlink
+#ifndef OVERRIDE_TABLE_sys_symlink
 TRACE_SYSCALL_TABLE(sys_symlink, sys_symlink, 83, 2)
 #endif
-#ifndef OVERRIDE_sys_lstat
+#ifndef OVERRIDE_TABLE_sys_lstat
 TRACE_SYSCALL_TABLE(sys_lstat, sys_lstat, 84, 2)
 #endif
-#ifndef OVERRIDE_sys_readlink
+#ifndef OVERRIDE_TABLE_sys_readlink
 TRACE_SYSCALL_TABLE(sys_readlink, sys_readlink, 85, 3)
 #endif
-#ifndef OVERRIDE_sys_uselib
+#ifndef OVERRIDE_TABLE_sys_uselib
 TRACE_SYSCALL_TABLE(sys_uselib, sys_uselib, 86, 1)
 #endif
-#ifndef OVERRIDE_sys_swapon
+#ifndef OVERRIDE_TABLE_sys_swapon
 TRACE_SYSCALL_TABLE(sys_swapon, sys_swapon, 87, 2)
 #endif
-#ifndef OVERRIDE_sys_reboot
+#ifndef OVERRIDE_TABLE_sys_reboot
 TRACE_SYSCALL_TABLE(sys_reboot, sys_reboot, 88, 4)
 #endif
-#ifndef OVERRIDE_sys_old_readdir
+#ifndef OVERRIDE_TABLE_sys_old_readdir
 TRACE_SYSCALL_TABLE(sys_old_readdir, sys_old_readdir, 89, 3)
 #endif
-#ifndef OVERRIDE_sys_old_mmap
+#ifndef OVERRIDE_TABLE_sys_old_mmap
 TRACE_SYSCALL_TABLE(sys_old_mmap, sys_old_mmap, 90, 1)
 #endif
-#ifndef OVERRIDE_sys_truncate
+#ifndef OVERRIDE_TABLE_sys_truncate
 TRACE_SYSCALL_TABLE(sys_truncate, sys_truncate, 92, 2)
 #endif
-#ifndef OVERRIDE_sys_statfs
+#ifndef OVERRIDE_TABLE_sys_statfs
 TRACE_SYSCALL_TABLE(sys_statfs, sys_statfs, 99, 2)
 #endif
-#ifndef OVERRIDE_sys_fstatfs
+#ifndef OVERRIDE_TABLE_sys_fstatfs
 TRACE_SYSCALL_TABLE(sys_fstatfs, sys_fstatfs, 100, 2)
 #endif
-#ifndef OVERRIDE_sys_socketcall
+#ifndef OVERRIDE_TABLE_sys_socketcall
 TRACE_SYSCALL_TABLE(sys_socketcall, sys_socketcall, 102, 2)
 #endif
-#ifndef OVERRIDE_sys_syslog
+#ifndef OVERRIDE_TABLE_sys_syslog
 TRACE_SYSCALL_TABLE(sys_syslog, sys_syslog, 103, 3)
 #endif
-#ifndef OVERRIDE_sys_setitimer
+#ifndef OVERRIDE_TABLE_sys_setitimer
 TRACE_SYSCALL_TABLE(sys_setitimer, sys_setitimer, 104, 3)
 #endif
-#ifndef OVERRIDE_sys_getitimer
+#ifndef OVERRIDE_TABLE_sys_getitimer
 TRACE_SYSCALL_TABLE(sys_getitimer, sys_getitimer, 105, 2)
 #endif
-#ifndef OVERRIDE_sys_newstat
+#ifndef OVERRIDE_TABLE_sys_newstat
 TRACE_SYSCALL_TABLE(sys_newstat, sys_newstat, 106, 2)
 #endif
-#ifndef OVERRIDE_sys_newlstat
+#ifndef OVERRIDE_TABLE_sys_newlstat
 TRACE_SYSCALL_TABLE(sys_newlstat, sys_newlstat, 107, 2)
 #endif
-#ifndef OVERRIDE_sys_newfstat
+#ifndef OVERRIDE_TABLE_sys_newfstat
 TRACE_SYSCALL_TABLE(sys_newfstat, sys_newfstat, 108, 2)
 #endif
-#ifndef OVERRIDE_sys_uname
+#ifndef OVERRIDE_TABLE_sys_uname
 TRACE_SYSCALL_TABLE(sys_uname, sys_uname, 109, 1)
 #endif
-#ifndef OVERRIDE_sys_wait4
+#ifndef OVERRIDE_TABLE_sys_wait4
 TRACE_SYSCALL_TABLE(sys_wait4, sys_wait4, 114, 4)
 #endif
-#ifndef OVERRIDE_sys_swapoff
+#ifndef OVERRIDE_TABLE_sys_swapoff
 TRACE_SYSCALL_TABLE(sys_swapoff, sys_swapoff, 115, 1)
 #endif
-#ifndef OVERRIDE_sys_sysinfo
+#ifndef OVERRIDE_TABLE_sys_sysinfo
 TRACE_SYSCALL_TABLE(sys_sysinfo, sys_sysinfo, 116, 1)
 #endif
-#ifndef OVERRIDE_sys_ipc
+#ifndef OVERRIDE_TABLE_sys_ipc
 TRACE_SYSCALL_TABLE(sys_ipc, sys_ipc, 117, 6)
 #endif
-#ifndef OVERRIDE_sys_setdomainname
+#ifndef OVERRIDE_TABLE_sys_setdomainname
 TRACE_SYSCALL_TABLE(sys_setdomainname, sys_setdomainname, 121, 2)
 #endif
-#ifndef OVERRIDE_sys_newuname
+#ifndef OVERRIDE_TABLE_sys_newuname
 TRACE_SYSCALL_TABLE(sys_newuname, sys_newuname, 122, 1)
 #endif
-#ifndef OVERRIDE_sys_adjtimex
+#ifndef OVERRIDE_TABLE_sys_adjtimex
 TRACE_SYSCALL_TABLE(sys_adjtimex, sys_adjtimex, 124, 1)
 #endif
-#ifndef OVERRIDE_sys_sigprocmask
+#ifndef OVERRIDE_TABLE_sys_sigprocmask
 TRACE_SYSCALL_TABLE(sys_sigprocmask, sys_sigprocmask, 126, 3)
 #endif
-#ifndef OVERRIDE_sys_init_module
+#ifndef OVERRIDE_TABLE_sys_init_module
 TRACE_SYSCALL_TABLE(sys_init_module, sys_init_module, 128, 3)
 #endif
-#ifndef OVERRIDE_sys_delete_module
+#ifndef OVERRIDE_TABLE_sys_delete_module
 TRACE_SYSCALL_TABLE(sys_delete_module, sys_delete_module, 129, 2)
 #endif
-#ifndef OVERRIDE_sys_quotactl
+#ifndef OVERRIDE_TABLE_sys_quotactl
 TRACE_SYSCALL_TABLE(sys_quotactl, sys_quotactl, 131, 4)
 #endif
-#ifndef OVERRIDE_sys_llseek
+#ifndef OVERRIDE_TABLE_sys_llseek
 TRACE_SYSCALL_TABLE(sys_llseek, sys_llseek, 140, 5)
 #endif
-#ifndef OVERRIDE_sys_getdents
+#ifndef OVERRIDE_TABLE_sys_getdents
 TRACE_SYSCALL_TABLE(sys_getdents, sys_getdents, 141, 3)
 #endif
-#ifndef OVERRIDE_sys_select
+#ifndef OVERRIDE_TABLE_sys_select
 TRACE_SYSCALL_TABLE(sys_select, sys_select, 142, 5)
 #endif
-#ifndef OVERRIDE_sys_readv
+#ifndef OVERRIDE_TABLE_sys_readv
 TRACE_SYSCALL_TABLE(sys_readv, sys_readv, 145, 3)
 #endif
-#ifndef OVERRIDE_sys_writev
+#ifndef OVERRIDE_TABLE_sys_writev
 TRACE_SYSCALL_TABLE(sys_writev, sys_writev, 146, 3)
 #endif
-#ifndef OVERRIDE_sys_sysctl
+#ifndef OVERRIDE_TABLE_sys_sysctl
 TRACE_SYSCALL_TABLE(sys_sysctl, sys_sysctl, 149, 1)
 #endif
-#ifndef OVERRIDE_sys_sched_setparam
+#ifndef OVERRIDE_TABLE_sys_sched_setparam
 TRACE_SYSCALL_TABLE(sys_sched_setparam, sys_sched_setparam, 154, 2)
 #endif
-#ifndef OVERRIDE_sys_sched_getparam
+#ifndef OVERRIDE_TABLE_sys_sched_getparam
 TRACE_SYSCALL_TABLE(sys_sched_getparam, sys_sched_getparam, 155, 2)
 #endif
-#ifndef OVERRIDE_sys_sched_setscheduler
+#ifndef OVERRIDE_TABLE_sys_sched_setscheduler
 TRACE_SYSCALL_TABLE(sys_sched_setscheduler, sys_sched_setscheduler, 156, 3)
 #endif
-#ifndef OVERRIDE_sys_sched_rr_get_interval
+#ifndef OVERRIDE_TABLE_sys_sched_rr_get_interval
 TRACE_SYSCALL_TABLE(sys_sched_rr_get_interval, sys_sched_rr_get_interval, 161, 2)
 #endif
-#ifndef OVERRIDE_sys_nanosleep
+#ifndef OVERRIDE_TABLE_sys_nanosleep
 TRACE_SYSCALL_TABLE(sys_nanosleep, sys_nanosleep, 162, 2)
 #endif
-#ifndef OVERRIDE_sys_getresuid16
+#ifndef OVERRIDE_TABLE_sys_getresuid16
 TRACE_SYSCALL_TABLE(sys_getresuid16, sys_getresuid16, 165, 3)
 #endif
-#ifndef OVERRIDE_sys_poll
+#ifndef OVERRIDE_TABLE_sys_poll
 TRACE_SYSCALL_TABLE(sys_poll, sys_poll, 168, 3)
 #endif
-#ifndef OVERRIDE_sys_getresgid16
+#ifndef OVERRIDE_TABLE_sys_getresgid16
 TRACE_SYSCALL_TABLE(sys_getresgid16, sys_getresgid16, 171, 3)
 #endif
-#ifndef OVERRIDE_sys_rt_sigaction
+#ifndef OVERRIDE_TABLE_sys_rt_sigaction
 TRACE_SYSCALL_TABLE(sys_rt_sigaction, sys_rt_sigaction, 174, 4)
 #endif
-#ifndef OVERRIDE_sys_rt_sigprocmask
+#ifndef OVERRIDE_TABLE_sys_rt_sigprocmask
 TRACE_SYSCALL_TABLE(sys_rt_sigprocmask, sys_rt_sigprocmask, 175, 4)
 #endif
-#ifndef OVERRIDE_sys_rt_sigpending
+#ifndef OVERRIDE_TABLE_sys_rt_sigpending
 TRACE_SYSCALL_TABLE(sys_rt_sigpending, sys_rt_sigpending, 176, 2)
 #endif
-#ifndef OVERRIDE_sys_rt_sigtimedwait
+#ifndef OVERRIDE_TABLE_sys_rt_sigtimedwait
 TRACE_SYSCALL_TABLE(sys_rt_sigtimedwait, sys_rt_sigtimedwait, 177, 4)
 #endif
-#ifndef OVERRIDE_sys_rt_sigqueueinfo
+#ifndef OVERRIDE_TABLE_sys_rt_sigqueueinfo
 TRACE_SYSCALL_TABLE(sys_rt_sigqueueinfo, sys_rt_sigqueueinfo, 178, 3)
 #endif
-#ifndef OVERRIDE_sys_rt_sigsuspend
+#ifndef OVERRIDE_TABLE_sys_rt_sigsuspend
 TRACE_SYSCALL_TABLE(sys_rt_sigsuspend, sys_rt_sigsuspend, 179, 2)
 #endif
-#ifndef OVERRIDE_sys_chown16
+#ifndef OVERRIDE_TABLE_sys_chown16
 TRACE_SYSCALL_TABLE(sys_chown16, sys_chown16, 182, 3)
 #endif
-#ifndef OVERRIDE_sys_getcwd
+#ifndef OVERRIDE_TABLE_sys_getcwd
 TRACE_SYSCALL_TABLE(sys_getcwd, sys_getcwd, 183, 2)
 #endif
-#ifndef OVERRIDE_sys_sendfile
+#ifndef OVERRIDE_TABLE_sys_sendfile
 TRACE_SYSCALL_TABLE(sys_sendfile, sys_sendfile, 187, 4)
 #endif
-#ifndef OVERRIDE_sys_getrlimit
+#ifndef OVERRIDE_TABLE_sys_getrlimit
 TRACE_SYSCALL_TABLE(sys_getrlimit, sys_getrlimit, 191, 2)
 #endif
-#ifndef OVERRIDE_sys_stat64
+#ifndef OVERRIDE_TABLE_sys_stat64
 TRACE_SYSCALL_TABLE(sys_stat64, sys_stat64, 195, 2)
 #endif
-#ifndef OVERRIDE_sys_lstat64
+#ifndef OVERRIDE_TABLE_sys_lstat64
 TRACE_SYSCALL_TABLE(sys_lstat64, sys_lstat64, 196, 2)
 #endif
-#ifndef OVERRIDE_sys_fstat64
+#ifndef OVERRIDE_TABLE_sys_fstat64
 TRACE_SYSCALL_TABLE(sys_fstat64, sys_fstat64, 197, 2)
 #endif
-#ifndef OVERRIDE_sys_lchown
+#ifndef OVERRIDE_TABLE_sys_lchown
 TRACE_SYSCALL_TABLE(sys_lchown, sys_lchown, 198, 3)
 #endif
-#ifndef OVERRIDE_sys_getgroups
+#ifndef OVERRIDE_TABLE_sys_getgroups
 TRACE_SYSCALL_TABLE(sys_getgroups, sys_getgroups, 205, 2)
 #endif
-#ifndef OVERRIDE_sys_setgroups
+#ifndef OVERRIDE_TABLE_sys_setgroups
 TRACE_SYSCALL_TABLE(sys_setgroups, sys_setgroups, 206, 2)
 #endif
-#ifndef OVERRIDE_sys_getresuid
+#ifndef OVERRIDE_TABLE_sys_getresuid
 TRACE_SYSCALL_TABLE(sys_getresuid, sys_getresuid, 209, 3)
 #endif
-#ifndef OVERRIDE_sys_getresgid
+#ifndef OVERRIDE_TABLE_sys_getresgid
 TRACE_SYSCALL_TABLE(sys_getresgid, sys_getresgid, 211, 3)
 #endif
-#ifndef OVERRIDE_sys_chown
+#ifndef OVERRIDE_TABLE_sys_chown
 TRACE_SYSCALL_TABLE(sys_chown, sys_chown, 212, 3)
 #endif
-#ifndef OVERRIDE_sys_pivot_root
+#ifndef OVERRIDE_TABLE_sys_pivot_root
 TRACE_SYSCALL_TABLE(sys_pivot_root, sys_pivot_root, 217, 2)
 #endif
-#ifndef OVERRIDE_sys_mincore
+#ifndef OVERRIDE_TABLE_sys_mincore
 TRACE_SYSCALL_TABLE(sys_mincore, sys_mincore, 218, 3)
 #endif
-#ifndef OVERRIDE_sys_getdents64
+#ifndef OVERRIDE_TABLE_sys_getdents64
 TRACE_SYSCALL_TABLE(sys_getdents64, sys_getdents64, 220, 3)
 #endif
-#ifndef OVERRIDE_sys_setxattr
+#ifndef OVERRIDE_TABLE_sys_setxattr
 TRACE_SYSCALL_TABLE(sys_setxattr, sys_setxattr, 226, 5)
 #endif
-#ifndef OVERRIDE_sys_lsetxattr
+#ifndef OVERRIDE_TABLE_sys_lsetxattr
 TRACE_SYSCALL_TABLE(sys_lsetxattr, sys_lsetxattr, 227, 5)
 #endif
-#ifndef OVERRIDE_sys_fsetxattr
+#ifndef OVERRIDE_TABLE_sys_fsetxattr
 TRACE_SYSCALL_TABLE(sys_fsetxattr, sys_fsetxattr, 228, 5)
 #endif
-#ifndef OVERRIDE_sys_getxattr
+#ifndef OVERRIDE_TABLE_sys_getxattr
 TRACE_SYSCALL_TABLE(sys_getxattr, sys_getxattr, 229, 4)
 #endif
-#ifndef OVERRIDE_sys_lgetxattr
+#ifndef OVERRIDE_TABLE_sys_lgetxattr
 TRACE_SYSCALL_TABLE(sys_lgetxattr, sys_lgetxattr, 230, 4)
 #endif
-#ifndef OVERRIDE_sys_fgetxattr
+#ifndef OVERRIDE_TABLE_sys_fgetxattr
 TRACE_SYSCALL_TABLE(sys_fgetxattr, sys_fgetxattr, 231, 4)
 #endif
-#ifndef OVERRIDE_sys_listxattr
+#ifndef OVERRIDE_TABLE_sys_listxattr
 TRACE_SYSCALL_TABLE(sys_listxattr, sys_listxattr, 232, 3)
 #endif
-#ifndef OVERRIDE_sys_llistxattr
+#ifndef OVERRIDE_TABLE_sys_llistxattr
 TRACE_SYSCALL_TABLE(sys_llistxattr, sys_llistxattr, 233, 3)
 #endif
-#ifndef OVERRIDE_sys_flistxattr
+#ifndef OVERRIDE_TABLE_sys_flistxattr
 TRACE_SYSCALL_TABLE(sys_flistxattr, sys_flistxattr, 234, 3)
 #endif
-#ifndef OVERRIDE_sys_removexattr
+#ifndef OVERRIDE_TABLE_sys_removexattr
 TRACE_SYSCALL_TABLE(sys_removexattr, sys_removexattr, 235, 2)
 #endif
-#ifndef OVERRIDE_sys_lremovexattr
+#ifndef OVERRIDE_TABLE_sys_lremovexattr
 TRACE_SYSCALL_TABLE(sys_lremovexattr, sys_lremovexattr, 236, 2)
 #endif
-#ifndef OVERRIDE_sys_fremovexattr
+#ifndef OVERRIDE_TABLE_sys_fremovexattr
 TRACE_SYSCALL_TABLE(sys_fremovexattr, sys_fremovexattr, 237, 2)
 #endif
-#ifndef OVERRIDE_sys_sendfile64
+#ifndef OVERRIDE_TABLE_sys_sendfile64
 TRACE_SYSCALL_TABLE(sys_sendfile64, sys_sendfile64, 239, 4)
 #endif
-#ifndef OVERRIDE_sys_futex
+#ifndef OVERRIDE_TABLE_sys_futex
 TRACE_SYSCALL_TABLE(sys_futex, sys_futex, 240, 6)
 #endif
-#ifndef OVERRIDE_sys_sched_setaffinity
+#ifndef OVERRIDE_TABLE_sys_sched_setaffinity
 TRACE_SYSCALL_TABLE(sys_sched_setaffinity, sys_sched_setaffinity, 241, 3)
 #endif
-#ifndef OVERRIDE_sys_sched_getaffinity
+#ifndef OVERRIDE_TABLE_sys_sched_getaffinity
 TRACE_SYSCALL_TABLE(sys_sched_getaffinity, sys_sched_getaffinity, 242, 3)
 #endif
-#ifndef OVERRIDE_sys_io_setup
+#ifndef OVERRIDE_TABLE_sys_io_setup
 TRACE_SYSCALL_TABLE(sys_io_setup, sys_io_setup, 245, 2)
 #endif
-#ifndef OVERRIDE_sys_io_getevents
+#ifndef OVERRIDE_TABLE_sys_io_getevents
 TRACE_SYSCALL_TABLE(sys_io_getevents, sys_io_getevents, 247, 5)
 #endif
-#ifndef OVERRIDE_sys_io_submit
+#ifndef OVERRIDE_TABLE_sys_io_submit
 TRACE_SYSCALL_TABLE(sys_io_submit, sys_io_submit, 248, 3)
 #endif
-#ifndef OVERRIDE_sys_io_cancel
+#ifndef OVERRIDE_TABLE_sys_io_cancel
 TRACE_SYSCALL_TABLE(sys_io_cancel, sys_io_cancel, 249, 3)
 #endif
-#ifndef OVERRIDE_sys_epoll_ctl
+#ifndef OVERRIDE_TABLE_sys_epoll_ctl
 TRACE_SYSCALL_TABLE(sys_epoll_ctl, sys_epoll_ctl, 255, 4)
 #endif
-#ifndef OVERRIDE_sys_epoll_wait
+#ifndef OVERRIDE_TABLE_sys_epoll_wait
 TRACE_SYSCALL_TABLE(sys_epoll_wait, sys_epoll_wait, 256, 4)
 #endif
-#ifndef OVERRIDE_sys_set_tid_address
+#ifndef OVERRIDE_TABLE_sys_set_tid_address
 TRACE_SYSCALL_TABLE(sys_set_tid_address, sys_set_tid_address, 258, 1)
 #endif
-#ifndef OVERRIDE_sys_timer_create
+#ifndef OVERRIDE_TABLE_sys_timer_create
 TRACE_SYSCALL_TABLE(sys_timer_create, sys_timer_create, 259, 3)
 #endif
-#ifndef OVERRIDE_sys_timer_settime
+#ifndef OVERRIDE_TABLE_sys_timer_settime
 TRACE_SYSCALL_TABLE(sys_timer_settime, sys_timer_settime, 260, 4)
 #endif
-#ifndef OVERRIDE_sys_timer_gettime
+#ifndef OVERRIDE_TABLE_sys_timer_gettime
 TRACE_SYSCALL_TABLE(sys_timer_gettime, sys_timer_gettime, 261, 2)
 #endif
-#ifndef OVERRIDE_sys_clock_settime
+#ifndef OVERRIDE_TABLE_sys_clock_settime
 TRACE_SYSCALL_TABLE(sys_clock_settime, sys_clock_settime, 264, 2)
 #endif
-#ifndef OVERRIDE_sys_clock_gettime
+#ifndef OVERRIDE_TABLE_sys_clock_gettime
 TRACE_SYSCALL_TABLE(sys_clock_gettime, sys_clock_gettime, 265, 2)
 #endif
-#ifndef OVERRIDE_sys_clock_getres
+#ifndef OVERRIDE_TABLE_sys_clock_getres
 TRACE_SYSCALL_TABLE(sys_clock_getres, sys_clock_getres, 266, 2)
 #endif
-#ifndef OVERRIDE_sys_clock_nanosleep
+#ifndef OVERRIDE_TABLE_sys_clock_nanosleep
 TRACE_SYSCALL_TABLE(sys_clock_nanosleep, sys_clock_nanosleep, 267, 4)
 #endif
-#ifndef OVERRIDE_sys_statfs64
+#ifndef OVERRIDE_TABLE_sys_statfs64
 TRACE_SYSCALL_TABLE(sys_statfs64, sys_statfs64, 268, 3)
 #endif
-#ifndef OVERRIDE_sys_fstatfs64
+#ifndef OVERRIDE_TABLE_sys_fstatfs64
 TRACE_SYSCALL_TABLE(sys_fstatfs64, sys_fstatfs64, 269, 3)
 #endif
-#ifndef OVERRIDE_sys_utimes
+#ifndef OVERRIDE_TABLE_sys_utimes
 TRACE_SYSCALL_TABLE(sys_utimes, sys_utimes, 271, 2)
 #endif
-#ifndef OVERRIDE_sys_mq_open
+#ifndef OVERRIDE_TABLE_sys_mq_open
 TRACE_SYSCALL_TABLE(sys_mq_open, sys_mq_open, 277, 4)
 #endif
-#ifndef OVERRIDE_sys_mq_unlink
+#ifndef OVERRIDE_TABLE_sys_mq_unlink
 TRACE_SYSCALL_TABLE(sys_mq_unlink, sys_mq_unlink, 278, 1)
 #endif
-#ifndef OVERRIDE_sys_mq_timedsend
+#ifndef OVERRIDE_TABLE_sys_mq_timedsend
 TRACE_SYSCALL_TABLE(sys_mq_timedsend, sys_mq_timedsend, 279, 5)
 #endif
-#ifndef OVERRIDE_sys_mq_timedreceive
+#ifndef OVERRIDE_TABLE_sys_mq_timedreceive
 TRACE_SYSCALL_TABLE(sys_mq_timedreceive, sys_mq_timedreceive, 280, 5)
 #endif
-#ifndef OVERRIDE_sys_mq_notify
+#ifndef OVERRIDE_TABLE_sys_mq_notify
 TRACE_SYSCALL_TABLE(sys_mq_notify, sys_mq_notify, 281, 2)
 #endif
-#ifndef OVERRIDE_sys_mq_getsetattr
+#ifndef OVERRIDE_TABLE_sys_mq_getsetattr
 TRACE_SYSCALL_TABLE(sys_mq_getsetattr, sys_mq_getsetattr, 282, 3)
 #endif
-#ifndef OVERRIDE_sys_kexec_load
+#ifndef OVERRIDE_TABLE_sys_kexec_load
 TRACE_SYSCALL_TABLE(sys_kexec_load, sys_kexec_load, 283, 4)
 #endif
-#ifndef OVERRIDE_sys_waitid
+#ifndef OVERRIDE_TABLE_sys_waitid
 TRACE_SYSCALL_TABLE(sys_waitid, sys_waitid, 284, 5)
 #endif
-#ifndef OVERRIDE_sys_add_key
+#ifndef OVERRIDE_TABLE_sys_add_key
 TRACE_SYSCALL_TABLE(sys_add_key, sys_add_key, 286, 5)
 #endif
-#ifndef OVERRIDE_sys_request_key
+#ifndef OVERRIDE_TABLE_sys_request_key
 TRACE_SYSCALL_TABLE(sys_request_key, sys_request_key, 287, 4)
 #endif
-#ifndef OVERRIDE_sys_inotify_add_watch
+#ifndef OVERRIDE_TABLE_sys_inotify_add_watch
 TRACE_SYSCALL_TABLE(sys_inotify_add_watch, sys_inotify_add_watch, 292, 3)
 #endif
-#ifndef OVERRIDE_sys_openat
+#ifndef OVERRIDE_TABLE_sys_openat
 TRACE_SYSCALL_TABLE(sys_openat, sys_openat, 295, 4)
 #endif
-#ifndef OVERRIDE_sys_mkdirat
+#ifndef OVERRIDE_TABLE_sys_mkdirat
 TRACE_SYSCALL_TABLE(sys_mkdirat, sys_mkdirat, 296, 3)
 #endif
-#ifndef OVERRIDE_sys_mknodat
+#ifndef OVERRIDE_TABLE_sys_mknodat
 TRACE_SYSCALL_TABLE(sys_mknodat, sys_mknodat, 297, 4)
 #endif
-#ifndef OVERRIDE_sys_fchownat
+#ifndef OVERRIDE_TABLE_sys_fchownat
 TRACE_SYSCALL_TABLE(sys_fchownat, sys_fchownat, 298, 5)
 #endif
-#ifndef OVERRIDE_sys_futimesat
+#ifndef OVERRIDE_TABLE_sys_futimesat
 TRACE_SYSCALL_TABLE(sys_futimesat, sys_futimesat, 299, 3)
 #endif
-#ifndef OVERRIDE_sys_fstatat64
+#ifndef OVERRIDE_TABLE_sys_fstatat64
 TRACE_SYSCALL_TABLE(sys_fstatat64, sys_fstatat64, 300, 4)
 #endif
-#ifndef OVERRIDE_sys_unlinkat
+#ifndef OVERRIDE_TABLE_sys_unlinkat
 TRACE_SYSCALL_TABLE(sys_unlinkat, sys_unlinkat, 301, 3)
 #endif
-#ifndef OVERRIDE_sys_renameat
+#ifndef OVERRIDE_TABLE_sys_renameat
 TRACE_SYSCALL_TABLE(sys_renameat, sys_renameat, 302, 4)
 #endif
-#ifndef OVERRIDE_sys_linkat
+#ifndef OVERRIDE_TABLE_sys_linkat
 TRACE_SYSCALL_TABLE(sys_linkat, sys_linkat, 303, 5)
 #endif
-#ifndef OVERRIDE_sys_symlinkat
+#ifndef OVERRIDE_TABLE_sys_symlinkat
 TRACE_SYSCALL_TABLE(sys_symlinkat, sys_symlinkat, 304, 3)
 #endif
-#ifndef OVERRIDE_sys_readlinkat
+#ifndef OVERRIDE_TABLE_sys_readlinkat
 TRACE_SYSCALL_TABLE(sys_readlinkat, sys_readlinkat, 305, 4)
 #endif
-#ifndef OVERRIDE_sys_fchmodat
+#ifndef OVERRIDE_TABLE_sys_fchmodat
 TRACE_SYSCALL_TABLE(sys_fchmodat, sys_fchmodat, 306, 3)
 #endif
-#ifndef OVERRIDE_sys_faccessat
+#ifndef OVERRIDE_TABLE_sys_faccessat
 TRACE_SYSCALL_TABLE(sys_faccessat, sys_faccessat, 307, 3)
 #endif
-#ifndef OVERRIDE_sys_pselect6
+#ifndef OVERRIDE_TABLE_sys_pselect6
 TRACE_SYSCALL_TABLE(sys_pselect6, sys_pselect6, 308, 6)
 #endif
-#ifndef OVERRIDE_sys_ppoll
+#ifndef OVERRIDE_TABLE_sys_ppoll
 TRACE_SYSCALL_TABLE(sys_ppoll, sys_ppoll, 309, 5)
 #endif
-#ifndef OVERRIDE_sys_set_robust_list
+#ifndef OVERRIDE_TABLE_sys_set_robust_list
 TRACE_SYSCALL_TABLE(sys_set_robust_list, sys_set_robust_list, 311, 2)
 #endif
-#ifndef OVERRIDE_sys_get_robust_list
+#ifndef OVERRIDE_TABLE_sys_get_robust_list
 TRACE_SYSCALL_TABLE(sys_get_robust_list, sys_get_robust_list, 312, 3)
 #endif
-#ifndef OVERRIDE_sys_splice
+#ifndef OVERRIDE_TABLE_sys_splice
 TRACE_SYSCALL_TABLE(sys_splice, sys_splice, 313, 6)
 #endif
-#ifndef OVERRIDE_sys_vmsplice
+#ifndef OVERRIDE_TABLE_sys_vmsplice
 TRACE_SYSCALL_TABLE(sys_vmsplice, sys_vmsplice, 316, 4)
 #endif
-#ifndef OVERRIDE_sys_getcpu
+#ifndef OVERRIDE_TABLE_sys_getcpu
 TRACE_SYSCALL_TABLE(sys_getcpu, sys_getcpu, 318, 3)
 #endif
-#ifndef OVERRIDE_sys_epoll_pwait
+#ifndef OVERRIDE_TABLE_sys_epoll_pwait
 TRACE_SYSCALL_TABLE(sys_epoll_pwait, sys_epoll_pwait, 319, 6)
 #endif
-#ifndef OVERRIDE_sys_utimensat
+#ifndef OVERRIDE_TABLE_sys_utimensat
 TRACE_SYSCALL_TABLE(sys_utimensat, sys_utimensat, 320, 4)
 #endif
-#ifndef OVERRIDE_sys_signalfd
+#ifndef OVERRIDE_TABLE_sys_signalfd
 TRACE_SYSCALL_TABLE(sys_signalfd, sys_signalfd, 321, 3)
 #endif
-#ifndef OVERRIDE_sys_timerfd_settime
+#ifndef OVERRIDE_TABLE_sys_timerfd_settime
 TRACE_SYSCALL_TABLE(sys_timerfd_settime, sys_timerfd_settime, 325, 4)
 #endif
-#ifndef OVERRIDE_sys_timerfd_gettime
+#ifndef OVERRIDE_TABLE_sys_timerfd_gettime
 TRACE_SYSCALL_TABLE(sys_timerfd_gettime, sys_timerfd_gettime, 326, 2)
 #endif
-#ifndef OVERRIDE_sys_signalfd4
+#ifndef OVERRIDE_TABLE_sys_signalfd4
 TRACE_SYSCALL_TABLE(sys_signalfd4, sys_signalfd4, 327, 4)
 #endif
-#ifndef OVERRIDE_sys_pipe2
+#ifndef OVERRIDE_TABLE_sys_pipe2
 TRACE_SYSCALL_TABLE(sys_pipe2, sys_pipe2, 331, 2)
 #endif
-#ifndef OVERRIDE_sys_preadv
+#ifndef OVERRIDE_TABLE_sys_preadv
 TRACE_SYSCALL_TABLE(sys_preadv, sys_preadv, 333, 5)
 #endif
-#ifndef OVERRIDE_sys_pwritev
+#ifndef OVERRIDE_TABLE_sys_pwritev
 TRACE_SYSCALL_TABLE(sys_pwritev, sys_pwritev, 334, 5)
 #endif
-#ifndef OVERRIDE_sys_rt_tgsigqueueinfo
+#ifndef OVERRIDE_TABLE_sys_rt_tgsigqueueinfo
 TRACE_SYSCALL_TABLE(sys_rt_tgsigqueueinfo, sys_rt_tgsigqueueinfo, 335, 4)
 #endif
-#ifndef OVERRIDE_sys_perf_event_open
+#ifndef OVERRIDE_TABLE_sys_perf_event_open
 TRACE_SYSCALL_TABLE(sys_perf_event_open, sys_perf_event_open, 336, 5)
 #endif
-#ifndef OVERRIDE_sys_recvmmsg
+#ifndef OVERRIDE_TABLE_sys_recvmmsg
 TRACE_SYSCALL_TABLE(sys_recvmmsg, sys_recvmmsg, 337, 5)
 #endif
-#ifndef OVERRIDE_sys_prlimit64
+#ifndef OVERRIDE_TABLE_sys_prlimit64
 TRACE_SYSCALL_TABLE(sys_prlimit64, sys_prlimit64, 340, 4)
 #endif
-#ifndef OVERRIDE_sys_clock_adjtime
+#ifndef OVERRIDE_TABLE_sys_clock_adjtime
 TRACE_SYSCALL_TABLE(sys_clock_adjtime, sys_clock_adjtime, 343, 2)
 #endif
-#ifndef OVERRIDE_sys_sendmmsg
+#ifndef OVERRIDE_TABLE_sys_sendmmsg
 TRACE_SYSCALL_TABLE(sys_sendmmsg, sys_sendmmsg, 345, 4)
 #endif
 

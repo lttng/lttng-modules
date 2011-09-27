@@ -218,7 +218,7 @@ if [ "$CLASS" = integers ]; then
 #noargs
 grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}
 perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) .*$/'\
-'#ifndef OVERRIDE_sys_$1\n'\
+'#ifndef OVERRIDE_TABLE_sys_$1\n'\
 'TRACE_SYSCALL_TABLE\(syscalls_noargs, sys_$1, $2, $3\)\n'\
 '#endif/g'\
 	${TMPFILE} >> ${HEADER}
@@ -227,7 +227,7 @@ fi
 #others.
 grep -v "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}
 perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) .*$/'\
-'#ifndef OVERRIDE_sys_$1\n'\
+'#ifndef OVERRIDE_TABLE_sys_$1\n'\
 'TRACE_SYSCALL_TABLE(sys_$1, sys_$1, $2, $3)\n'\
 '#endif/g'\
 	${TMPFILE} >> ${HEADER}
