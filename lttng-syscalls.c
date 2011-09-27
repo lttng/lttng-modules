@@ -23,6 +23,7 @@ static inline int is_compat_task(void)
 }
 #endif
 
+static
 void syscall_entry_probe(void *__data, struct pt_regs *regs, long id);
 
 /*
@@ -40,17 +41,73 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id);
 #define TP_MODULE_OVERRIDE
 #define TRACE_INCLUDE_PATH ../instrumentation/syscalls/headers
 
-/* Hijack probe callback for system calls */
-#define TP_PROBE_CB(_template)		&syscall_entry_probe
-#include "instrumentation/syscalls/headers/syscalls_integers.h"
-#include "instrumentation/syscalls/headers/syscalls_pointers.h"
-#undef TP_PROBE_CB
+#define PARAMS(args...)	args
 
+/* Hijack probe callback for system calls */
+#undef TP_PROBE_CB
+#define TP_PROBE_CB(_template)		&syscall_entry_probe
+#define SC_TRACE_EVENT(_name, _proto, _args, _struct, _assign, _printk)	\
+	TRACE_EVENT(_name, PARAMS(_proto), PARAMS(_args),\
+		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
+#define SC_DECLARE_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk)	\
+	DECLARE_EVENT_CLASS_NOARGS(_name, PARAMS(_struct), PARAMS(_assign),\
+		PARAMS(_printk))
+#define SC_DEFINE_EVENT_NOARGS(_template, _name)			\
+	DEFINE_EVENT_NOARGS(_template, _name)
+#undef TRACE_SYSTEM
+#define TRACE_SYSTEM syscalls_integers
+#include "instrumentation/syscalls/headers/syscalls_integers.h"
+#undef TRACE_SYSTEM
+#define TRACE_SYSTEM syscalls_pointers
+#include "instrumentation/syscalls/headers/syscalls_pointers.h"
+#undef TRACE_SYSTEM
+#undef SC_TRACE_EVENT
+#undef SC_DECLARE_EVENT_CLASS_NOARGS
+#undef SC_DEFINE_EVENT_NOARGS
+
+#define TRACE_SYSTEM syscalls_unknown
 #include "instrumentation/syscalls/headers/syscalls_unknown.h"
+#undef TRACE_SYSTEM
+
+/* For compat syscalls */
+#undef _TRACE_SYSCALLS_integers_H
+#undef _TRACE_SYSCALLS_pointers_H
+
+/* Hijack probe callback for system calls */
+#undef TP_PROBE_CB
+#define TP_PROBE_CB(_template)		&syscall_entry_probe
+#define SC_TRACE_EVENT(_name, _proto, _args, _struct, _assign, _printk)	\
+	TRACE_EVENT(compat_##_name, PARAMS(_proto), PARAMS(_args),	\
+		PARAMS(_struct), PARAMS(_assign),			\
+		PARAMS(_printk))
+#define SC_DECLARE_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk) \
+	DECLARE_EVENT_CLASS_NOARGS(compat_##_name, PARAMS(_struct),	\
+		PARAMS(_assign), PARAMS(_printk))
+#define SC_DEFINE_EVENT_NOARGS(_template, _name)			\
+	DEFINE_EVENT_NOARGS(compat_##_template, compat_##_name)
+#define TRACE_SYSTEM compat_syscalls_integers
+#include "instrumentation/syscalls/headers/compat_syscalls_integers.h"
+#undef TRACE_SYSTEM
+#define TRACE_SYSTEM compat_syscalls_pointers
+#include "instrumentation/syscalls/headers/compat_syscalls_pointers.h"
+#undef TRACE_SYSTEM
+#undef SC_TRACE_EVENT
+#undef SC_DECLARE_EVENT_CLASS_NOARGS
+#undef SC_DEFINE_EVENT_NOARGS
+#undef TP_PROBE_CB
 
 #undef TP_MODULE_OVERRIDE
 #undef LTTNG_PACKAGE_BUILD
 #undef CREATE_TRACE_POINTS
+
+struct trace_syscall_entry {
+	void *func;
+	const struct lttng_event_desc *desc;
+	const struct lttng_event_field *fields;
+	unsigned int nrargs;
+};
+
+#define CREATE_SYSCALL_TABLE
 
 #undef TRACE_SYSCALL_TABLE
 #define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
@@ -61,20 +118,27 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id);
 		.desc = &__event_desc___##_name,		\
 	},
 
-#define CREATE_SYSCALL_TABLE
-
 static const struct trace_syscall_entry sc_table[] = {
 #include "instrumentation/syscalls/headers/syscalls_integers.h"
 #include "instrumentation/syscalls/headers/syscalls_pointers.h"
 };
 
-#undef CREATE_SYSCALL_TABLE
+#undef TRACE_SYSCALL_TABLE
+#define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
+	[ _nr ] = {						\
+		.func = __event_probe__##compat_##_template,	\
+		.nrargs = (_nrargs),				\
+		.fields = __event_fields___##compat_##_template,\
+		.desc = &__event_desc___##compat_##_name,	\
+	},
 
-//extern const struct trace_syscall_entry compat_sc_table[];
-//extern const size_t compat_sc_table_len;
-//temp disable
-static const struct trace_syscall_entry compat_sc_table[] = { };
-static const size_t compat_sc_table_len;
+/* Create compatibility syscall table */
+const struct trace_syscall_entry compat_sc_table[] = {
+#include "instrumentation/syscalls/headers/compat_syscalls_integers.h"
+#include "instrumentation/syscalls/headers/compat_syscalls_pointers.h"
+};
+
+#undef CREATE_SYSCALL_TABLE
 
 static void syscall_entry_unknown(struct ltt_event *event,
 	struct pt_regs *regs, unsigned int id)
@@ -82,7 +146,10 @@ static void syscall_entry_unknown(struct ltt_event *event,
 	unsigned long args[UNKNOWN_SYSCALL_NRARGS];
 
 	syscall_get_arguments(current, regs, 0, UNKNOWN_SYSCALL_NRARGS, args);
-	__event_probe__sys_unknown(event, id, args);
+	if (unlikely(is_compat_task()))
+		__event_probe__compat_sys_unknown(event, id, args);
+	else
+		__event_probe__sys_unknown(event, id, args);
 }
 
 void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
@@ -94,7 +161,7 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 
 	if (unlikely(is_compat_task())) {
 		table = compat_sc_table;
-		table_len = compat_sc_table_len;
+		table_len = ARRAY_SIZE(compat_sc_table);
 		unknown_event = chan->sc_compat_unknown;
 	} else {
 		table = sc_table;
@@ -262,7 +329,7 @@ int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 	if (!chan->compat_sc_table) {
 		/* create syscall table mapping compat syscall to events */
 		chan->compat_sc_table = kzalloc(sizeof(struct ltt_event *)
-					* compat_sc_table_len, GFP_KERNEL);
+					* ARRAY_SIZE(compat_sc_table), GFP_KERNEL);
 		if (!chan->compat_sc_table)
 			return -ENOMEM;
 	}
@@ -320,7 +387,7 @@ int lttng_syscalls_register(struct ltt_channel *chan, void *filter)
 	if (ret)
 		return ret;
 #ifdef CONFIG_COMPAT
-	ret = fill_table(compat_sc_table, compat_sc_table_len,
+	ret = fill_table(compat_sc_table, ARRAY_SIZE(compat_sc_table),
 			chan->compat_sc_table, chan, filter);
 	if (ret)
 		return ret;

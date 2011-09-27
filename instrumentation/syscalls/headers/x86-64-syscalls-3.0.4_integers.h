@@ -1,9 +1,6 @@
 /* THIS FILE IS AUTO-GENERATED. DO NOT EDIT */
 #ifndef CREATE_SYSCALL_TABLE
 
-#undef TRACE_SYSTEM
-#define TRACE_SYSTEM syscalls_integers
-
 #if !defined(_TRACE_SYSCALLS_INTEGERS_H) || defined(TRACE_HEADER_MULTI_READ)
 #define _TRACE_SYSCALLS_INTEGERS_H
 
@@ -11,61 +8,61 @@
 #include <linux/syscalls.h>
 #include "x86-64-syscalls-3.0.4_integers_override.h"
 
-DECLARE_EVENT_CLASS_NOARGS(syscalls_noargs,
+SC_DECLARE_EVENT_CLASS_NOARGS(syscalls_noargs,
 	TP_STRUCT__entry(),
 	TP_fast_assign(),
 	TP_printk()
 )
 #ifndef OVERRIDE_sys_sched_yield
-DEFINE_EVENT_NOARGS(syscalls_noargs, sys_sched_yield)
+SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sys_sched_yield)
 #endif
 #ifndef OVERRIDE_sys_pause
-DEFINE_EVENT_NOARGS(syscalls_noargs, sys_pause)
+SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sys_pause)
 #endif
 #ifndef OVERRIDE_sys_getpid
-DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getpid)
+SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getpid)
 #endif
 #ifndef OVERRIDE_sys_getuid
-DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getuid)
+SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getuid)
 #endif
 #ifndef OVERRIDE_sys_getgid
-DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getgid)
+SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getgid)
 #endif
 #ifndef OVERRIDE_sys_geteuid
-DEFINE_EVENT_NOARGS(syscalls_noargs, sys_geteuid)
+SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sys_geteuid)
 #endif
 #ifndef OVERRIDE_sys_getegid
-DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getegid)
+SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getegid)
 #endif
 #ifndef OVERRIDE_sys_getppid
-DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getppid)
+SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getppid)
 #endif
 #ifndef OVERRIDE_sys_getpgrp
-DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getpgrp)
+SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sys_getpgrp)
 #endif
 #ifndef OVERRIDE_sys_setsid
-DEFINE_EVENT_NOARGS(syscalls_noargs, sys_setsid)
+SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sys_setsid)
 #endif
 #ifndef OVERRIDE_sys_munlockall
-DEFINE_EVENT_NOARGS(syscalls_noargs, sys_munlockall)
+SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sys_munlockall)
 #endif
 #ifndef OVERRIDE_sys_vhangup
-DEFINE_EVENT_NOARGS(syscalls_noargs, sys_vhangup)
+SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sys_vhangup)
 #endif
 #ifndef OVERRIDE_sys_sync
-DEFINE_EVENT_NOARGS(syscalls_noargs, sys_sync)
+SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sys_sync)
 #endif
 #ifndef OVERRIDE_sys_gettid
-DEFINE_EVENT_NOARGS(syscalls_noargs, sys_gettid)
+SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sys_gettid)
 #endif
 #ifndef OVERRIDE_sys_restart_syscall
-DEFINE_EVENT_NOARGS(syscalls_noargs, sys_restart_syscall)
+SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sys_restart_syscall)
 #endif
 #ifndef OVERRIDE_sys_inotify_init
-DEFINE_EVENT_NOARGS(syscalls_noargs, sys_inotify_init)
+SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sys_inotify_init)
 #endif
 #ifndef OVERRIDE_sys_close
-TRACE_EVENT(sys_close,
+SC_TRACE_EVENT(sys_close,
 	TP_PROTO(unsigned int fd),
 	TP_ARGS(fd),
 	TP_STRUCT__entry(__field(unsigned int, fd)),
@@ -74,7 +71,7 @@ TRACE_EVENT(sys_close,
 )
 #endif
 #ifndef OVERRIDE_sys_brk
-TRACE_EVENT(sys_brk,
+SC_TRACE_EVENT(sys_brk,
 	TP_PROTO(unsigned long brk),
 	TP_ARGS(brk),
 	TP_STRUCT__entry(__field(unsigned long, brk)),
@@ -83,7 +80,7 @@ TRACE_EVENT(sys_brk,
 )
 #endif
 #ifndef OVERRIDE_sys_dup
-TRACE_EVENT(sys_dup,
+SC_TRACE_EVENT(sys_dup,
 	TP_PROTO(unsigned int fildes),
 	TP_ARGS(fildes),
 	TP_STRUCT__entry(__field(unsigned int, fildes)),
@@ -92,7 +89,7 @@ TRACE_EVENT(sys_dup,
 )
 #endif
 #ifndef OVERRIDE_sys_alarm
-TRACE_EVENT(sys_alarm,
+SC_TRACE_EVENT(sys_alarm,
 	TP_PROTO(unsigned int seconds),
 	TP_ARGS(seconds),
 	TP_STRUCT__entry(__field(unsigned int, seconds)),
@@ -101,7 +98,7 @@ TRACE_EVENT(sys_alarm,
 )
 #endif
 #ifndef OVERRIDE_sys_exit
-TRACE_EVENT(sys_exit,
+SC_TRACE_EVENT(sys_exit,
 	TP_PROTO(int error_code),
 	TP_ARGS(error_code),
 	TP_STRUCT__entry(__field(int, error_code)),
@@ -110,7 +107,7 @@ TRACE_EVENT(sys_exit,
 )
 #endif
 #ifndef OVERRIDE_sys_fsync
-TRACE_EVENT(sys_fsync,
+SC_TRACE_EVENT(sys_fsync,
 	TP_PROTO(unsigned int fd),
 	TP_ARGS(fd),
 	TP_STRUCT__entry(__field(unsigned int, fd)),
@@ -119,7 +116,7 @@ TRACE_EVENT(sys_fsync,
 )
 #endif
 #ifndef OVERRIDE_sys_fdatasync
-TRACE_EVENT(sys_fdatasync,
+SC_TRACE_EVENT(sys_fdatasync,
 	TP_PROTO(unsigned int fd),
 	TP_ARGS(fd),
 	TP_STRUCT__entry(__field(unsigned int, fd)),
@@ -128,7 +125,7 @@ TRACE_EVENT(sys_fdatasync,
 )
 #endif
 #ifndef OVERRIDE_sys_fchdir
-TRACE_EVENT(sys_fchdir,
+SC_TRACE_EVENT(sys_fchdir,
 	TP_PROTO(unsigned int fd),
 	TP_ARGS(fd),
 	TP_STRUCT__entry(__field(unsigned int, fd)),
@@ -137,7 +134,7 @@ TRACE_EVENT(sys_fchdir,
 )
 #endif
 #ifndef OVERRIDE_sys_umask
-TRACE_EVENT(sys_umask,
+SC_TRACE_EVENT(sys_umask,
 	TP_PROTO(int mask),
 	TP_ARGS(mask),
 	TP_STRUCT__entry(__field(int, mask)),
@@ -146,7 +143,7 @@ TRACE_EVENT(sys_umask,
 )
 #endif
 #ifndef OVERRIDE_sys_setuid
-TRACE_EVENT(sys_setuid,
+SC_TRACE_EVENT(sys_setuid,
 	TP_PROTO(uid_t uid),
 	TP_ARGS(uid),
 	TP_STRUCT__entry(__field(uid_t, uid)),
@@ -155,7 +152,7 @@ TRACE_EVENT(sys_setuid,
 )
 #endif
 #ifndef OVERRIDE_sys_setgid
-TRACE_EVENT(sys_setgid,
+SC_TRACE_EVENT(sys_setgid,
 	TP_PROTO(gid_t gid),
 	TP_ARGS(gid),
 	TP_STRUCT__entry(__field(gid_t, gid)),
@@ -164,7 +161,7 @@ TRACE_EVENT(sys_setgid,
 )
 #endif
 #ifndef OVERRIDE_sys_getpgid
-TRACE_EVENT(sys_getpgid,
+SC_TRACE_EVENT(sys_getpgid,
 	TP_PROTO(pid_t pid),
 	TP_ARGS(pid),
 	TP_STRUCT__entry(__field(pid_t, pid)),
@@ -173,7 +170,7 @@ TRACE_EVENT(sys_getpgid,
 )
 #endif
 #ifndef OVERRIDE_sys_setfsuid
-TRACE_EVENT(sys_setfsuid,
+SC_TRACE_EVENT(sys_setfsuid,
 	TP_PROTO(uid_t uid),
 	TP_ARGS(uid),
 	TP_STRUCT__entry(__field(uid_t, uid)),
@@ -182,7 +179,7 @@ TRACE_EVENT(sys_setfsuid,
 )
 #endif
 #ifndef OVERRIDE_sys_setfsgid
-TRACE_EVENT(sys_setfsgid,
+SC_TRACE_EVENT(sys_setfsgid,
 	TP_PROTO(gid_t gid),
 	TP_ARGS(gid),
 	TP_STRUCT__entry(__field(gid_t, gid)),
@@ -191,7 +188,7 @@ TRACE_EVENT(sys_setfsgid,
 )
 #endif
 #ifndef OVERRIDE_sys_getsid
-TRACE_EVENT(sys_getsid,
+SC_TRACE_EVENT(sys_getsid,
 	TP_PROTO(pid_t pid),
 	TP_ARGS(pid),
 	TP_STRUCT__entry(__field(pid_t, pid)),
@@ -200,7 +197,7 @@ TRACE_EVENT(sys_getsid,
 )
 #endif
 #ifndef OVERRIDE_sys_personality
-TRACE_EVENT(sys_personality,
+SC_TRACE_EVENT(sys_personality,
 	TP_PROTO(unsigned int personality),
 	TP_ARGS(personality),
 	TP_STRUCT__entry(__field(unsigned int, personality)),
@@ -209,7 +206,7 @@ TRACE_EVENT(sys_personality,
 )
 #endif
 #ifndef OVERRIDE_sys_sched_getscheduler
-TRACE_EVENT(sys_sched_getscheduler,
+SC_TRACE_EVENT(sys_sched_getscheduler,
 	TP_PROTO(pid_t pid),
 	TP_ARGS(pid),
 	TP_STRUCT__entry(__field(pid_t, pid)),
@@ -218,7 +215,7 @@ TRACE_EVENT(sys_sched_getscheduler,
 )
 #endif
 #ifndef OVERRIDE_sys_sched_get_priority_max
-TRACE_EVENT(sys_sched_get_priority_max,
+SC_TRACE_EVENT(sys_sched_get_priority_max,
 	TP_PROTO(int policy),
 	TP_ARGS(policy),
 	TP_STRUCT__entry(__field(int, policy)),
@@ -227,7 +224,7 @@ TRACE_EVENT(sys_sched_get_priority_max,
 )
 #endif
 #ifndef OVERRIDE_sys_sched_get_priority_min
-TRACE_EVENT(sys_sched_get_priority_min,
+SC_TRACE_EVENT(sys_sched_get_priority_min,
 	TP_PROTO(int policy),
 	TP_ARGS(policy),
 	TP_STRUCT__entry(__field(int, policy)),
@@ -236,7 +233,7 @@ TRACE_EVENT(sys_sched_get_priority_min,
 )
 #endif
 #ifndef OVERRIDE_sys_mlockall
-TRACE_EVENT(sys_mlockall,
+SC_TRACE_EVENT(sys_mlockall,
 	TP_PROTO(int flags),
 	TP_ARGS(flags),
 	TP_STRUCT__entry(__field(int, flags)),
@@ -245,7 +242,7 @@ TRACE_EVENT(sys_mlockall,
 )
 #endif
 #ifndef OVERRIDE_sys_io_destroy
-TRACE_EVENT(sys_io_destroy,
+SC_TRACE_EVENT(sys_io_destroy,
 	TP_PROTO(aio_context_t ctx),
 	TP_ARGS(ctx),
 	TP_STRUCT__entry(__field(aio_context_t, ctx)),
@@ -254,7 +251,7 @@ TRACE_EVENT(sys_io_destroy,
 )
 #endif
 #ifndef OVERRIDE_sys_epoll_create
-TRACE_EVENT(sys_epoll_create,
+SC_TRACE_EVENT(sys_epoll_create,
 	TP_PROTO(int size),
 	TP_ARGS(size),
 	TP_STRUCT__entry(__field(int, size)),
@@ -263,7 +260,7 @@ TRACE_EVENT(sys_epoll_create,
 )
 #endif
 #ifndef OVERRIDE_sys_timer_getoverrun
-TRACE_EVENT(sys_timer_getoverrun,
+SC_TRACE_EVENT(sys_timer_getoverrun,
 	TP_PROTO(timer_t timer_id),
 	TP_ARGS(timer_id),
 	TP_STRUCT__entry(__field(timer_t, timer_id)),
@@ -272,7 +269,7 @@ TRACE_EVENT(sys_timer_getoverrun,
 )
 #endif
 #ifndef OVERRIDE_sys_timer_delete
-TRACE_EVENT(sys_timer_delete,
+SC_TRACE_EVENT(sys_timer_delete,
 	TP_PROTO(timer_t timer_id),
 	TP_ARGS(timer_id),
 	TP_STRUCT__entry(__field(timer_t, timer_id)),
@@ -281,7 +278,7 @@ TRACE_EVENT(sys_timer_delete,
 )
 #endif
 #ifndef OVERRIDE_sys_exit_group
-TRACE_EVENT(sys_exit_group,
+SC_TRACE_EVENT(sys_exit_group,
 	TP_PROTO(int error_code),
 	TP_ARGS(error_code),
 	TP_STRUCT__entry(__field(int, error_code)),
@@ -290,7 +287,7 @@ TRACE_EVENT(sys_exit_group,
 )
 #endif
 #ifndef OVERRIDE_sys_unshare
-TRACE_EVENT(sys_unshare,
+SC_TRACE_EVENT(sys_unshare,
 	TP_PROTO(unsigned long unshare_flags),
 	TP_ARGS(unshare_flags),
 	TP_STRUCT__entry(__field(unsigned long, unshare_flags)),
@@ -299,7 +296,7 @@ TRACE_EVENT(sys_unshare,
 )
 #endif
 #ifndef OVERRIDE_sys_eventfd
-TRACE_EVENT(sys_eventfd,
+SC_TRACE_EVENT(sys_eventfd,
 	TP_PROTO(unsigned int count),
 	TP_ARGS(count),
 	TP_STRUCT__entry(__field(unsigned int, count)),
@@ -308,7 +305,7 @@ TRACE_EVENT(sys_eventfd,
 )
 #endif
 #ifndef OVERRIDE_sys_epoll_create1
-TRACE_EVENT(sys_epoll_create1,
+SC_TRACE_EVENT(sys_epoll_create1,
 	TP_PROTO(int flags),
 	TP_ARGS(flags),
 	TP_STRUCT__entry(__field(int, flags)),
@@ -317,7 +314,7 @@ TRACE_EVENT(sys_epoll_create1,
 )
 #endif
 #ifndef OVERRIDE_sys_inotify_init1
-TRACE_EVENT(sys_inotify_init1,
+SC_TRACE_EVENT(sys_inotify_init1,
 	TP_PROTO(int flags),
 	TP_ARGS(flags),
 	TP_STRUCT__entry(__field(int, flags)),
@@ -326,7 +323,7 @@ TRACE_EVENT(sys_inotify_init1,
 )
 #endif
 #ifndef OVERRIDE_sys_syncfs
-TRACE_EVENT(sys_syncfs,
+SC_TRACE_EVENT(sys_syncfs,
 	TP_PROTO(int fd),
 	TP_ARGS(fd),
 	TP_STRUCT__entry(__field(int, fd)),
@@ -335,7 +332,7 @@ TRACE_EVENT(sys_syncfs,
 )
 #endif
 #ifndef OVERRIDE_sys_munmap
-TRACE_EVENT(sys_munmap,
+SC_TRACE_EVENT(sys_munmap,
 	TP_PROTO(unsigned long addr, size_t len),
 	TP_ARGS(addr, len),
 	TP_STRUCT__entry(__field_hex(unsigned long, addr) __field(size_t, len)),
@@ -344,7 +341,7 @@ TRACE_EVENT(sys_munmap,
 )
 #endif
 #ifndef OVERRIDE_sys_dup2
-TRACE_EVENT(sys_dup2,
+SC_TRACE_EVENT(sys_dup2,
 	TP_PROTO(unsigned int oldfd, unsigned int newfd),
 	TP_ARGS(oldfd, newfd),
 	TP_STRUCT__entry(__field(unsigned int, oldfd) __field(unsigned int, newfd)),
@@ -353,7 +350,7 @@ TRACE_EVENT(sys_dup2,
 )
 #endif
 #ifndef OVERRIDE_sys_shutdown
-TRACE_EVENT(sys_shutdown,
+SC_TRACE_EVENT(sys_shutdown,
 	TP_PROTO(int fd, int how),
 	TP_ARGS(fd, how),
 	TP_STRUCT__entry(__field(int, fd) __field(int, how)),
@@ -362,7 +359,7 @@ TRACE_EVENT(sys_shutdown,
 )
 #endif
 #ifndef OVERRIDE_sys_listen
-TRACE_EVENT(sys_listen,
+SC_TRACE_EVENT(sys_listen,
 	TP_PROTO(int fd, int backlog),
 	TP_ARGS(fd, backlog),
 	TP_STRUCT__entry(__field(int, fd) __field(int, backlog)),
@@ -371,7 +368,7 @@ TRACE_EVENT(sys_listen,
 )
 #endif
 #ifndef OVERRIDE_sys_kill
-TRACE_EVENT(sys_kill,
+SC_TRACE_EVENT(sys_kill,
 	TP_PROTO(pid_t pid, int sig),
 	TP_ARGS(pid, sig),
 	TP_STRUCT__entry(__field(pid_t, pid) __field(int, sig)),
@@ -380,7 +377,7 @@ TRACE_EVENT(sys_kill,
 )
 #endif
 #ifndef OVERRIDE_sys_msgget
-TRACE_EVENT(sys_msgget,
+SC_TRACE_EVENT(sys_msgget,
 	TP_PROTO(key_t key, int msgflg),
 	TP_ARGS(key, msgflg),
 	TP_STRUCT__entry(__field(key_t, key) __field(int, msgflg)),
@@ -389,7 +386,7 @@ TRACE_EVENT(sys_msgget,
 )
 #endif
 #ifndef OVERRIDE_sys_flock
-TRACE_EVENT(sys_flock,
+SC_TRACE_EVENT(sys_flock,
 	TP_PROTO(unsigned int fd, unsigned int cmd),
 	TP_ARGS(fd, cmd),
 	TP_STRUCT__entry(__field(unsigned int, fd) __field(unsigned int, cmd)),
@@ -398,7 +395,7 @@ TRACE_EVENT(sys_flock,
 )
 #endif
 #ifndef OVERRIDE_sys_ftruncate
-TRACE_EVENT(sys_ftruncate,
+SC_TRACE_EVENT(sys_ftruncate,
 	TP_PROTO(unsigned int fd, unsigned long length),
 	TP_ARGS(fd, length),
 	TP_STRUCT__entry(__field(unsigned int, fd) __field(unsigned long, length)),
@@ -407,7 +404,7 @@ TRACE_EVENT(sys_ftruncate,
 )
 #endif
 #ifndef OVERRIDE_sys_fchmod
-TRACE_EVENT(sys_fchmod,
+SC_TRACE_EVENT(sys_fchmod,
 	TP_PROTO(unsigned int fd, mode_t mode),
 	TP_ARGS(fd, mode),
 	TP_STRUCT__entry(__field(unsigned int, fd) __field(mode_t, mode)),
@@ -416,7 +413,7 @@ TRACE_EVENT(sys_fchmod,
 )
 #endif
 #ifndef OVERRIDE_sys_setpgid
-TRACE_EVENT(sys_setpgid,
+SC_TRACE_EVENT(sys_setpgid,
 	TP_PROTO(pid_t pid, pid_t pgid),
 	TP_ARGS(pid, pgid),
 	TP_STRUCT__entry(__field(pid_t, pid) __field(pid_t, pgid)),
@@ -425,7 +422,7 @@ TRACE_EVENT(sys_setpgid,
 )
 #endif
 #ifndef OVERRIDE_sys_setreuid
-TRACE_EVENT(sys_setreuid,
+SC_TRACE_EVENT(sys_setreuid,
 	TP_PROTO(uid_t ruid, uid_t euid),
 	TP_ARGS(ruid, euid),
 	TP_STRUCT__entry(__field(uid_t, ruid) __field(uid_t, euid)),
@@ -434,7 +431,7 @@ TRACE_EVENT(sys_setreuid,
 )
 #endif
 #ifndef OVERRIDE_sys_setregid
-TRACE_EVENT(sys_setregid,
+SC_TRACE_EVENT(sys_setregid,
 	TP_PROTO(gid_t rgid, gid_t egid),
 	TP_ARGS(rgid, egid),
 	TP_STRUCT__entry(__field(gid_t, rgid) __field(gid_t, egid)),
@@ -443,7 +440,7 @@ TRACE_EVENT(sys_setregid,
 )
 #endif
 #ifndef OVERRIDE_sys_getpriority
-TRACE_EVENT(sys_getpriority,
+SC_TRACE_EVENT(sys_getpriority,
 	TP_PROTO(int which, int who),
 	TP_ARGS(which, who),
 	TP_STRUCT__entry(__field(int, which) __field(int, who)),
@@ -452,7 +449,7 @@ TRACE_EVENT(sys_getpriority,
 )
 #endif
 #ifndef OVERRIDE_sys_mlock
-TRACE_EVENT(sys_mlock,
+SC_TRACE_EVENT(sys_mlock,
 	TP_PROTO(unsigned long start, size_t len),
 	TP_ARGS(start, len),
 	TP_STRUCT__entry(__field(unsigned long, start) __field(size_t, len)),
@@ -461,7 +458,7 @@ TRACE_EVENT(sys_mlock,
 )
 #endif
 #ifndef OVERRIDE_sys_munlock
-TRACE_EVENT(sys_munlock,
+SC_TRACE_EVENT(sys_munlock,
 	TP_PROTO(unsigned long start, size_t len),
 	TP_ARGS(start, len),
 	TP_STRUCT__entry(__field(unsigned long, start) __field(size_t, len)),
@@ -470,7 +467,7 @@ TRACE_EVENT(sys_munlock,
 )
 #endif
 #ifndef OVERRIDE_sys_tkill
-TRACE_EVENT(sys_tkill,
+SC_TRACE_EVENT(sys_tkill,
 	TP_PROTO(pid_t pid, int sig),
 	TP_ARGS(pid, sig),
 	TP_STRUCT__entry(__field(pid_t, pid) __field(int, sig)),
@@ -479,7 +476,7 @@ TRACE_EVENT(sys_tkill,
 )
 #endif
 #ifndef OVERRIDE_sys_ioprio_get
-TRACE_EVENT(sys_ioprio_get,
+SC_TRACE_EVENT(sys_ioprio_get,
 	TP_PROTO(int which, int who),
 	TP_ARGS(which, who),
 	TP_STRUCT__entry(__field(int, which) __field(int, who)),
@@ -488,7 +485,7 @@ TRACE_EVENT(sys_ioprio_get,
 )
 #endif
 #ifndef OVERRIDE_sys_inotify_rm_watch
-TRACE_EVENT(sys_inotify_rm_watch,
+SC_TRACE_EVENT(sys_inotify_rm_watch,
 	TP_PROTO(int fd, __s32 wd),
 	TP_ARGS(fd, wd),
 	TP_STRUCT__entry(__field(int, fd) __field(__s32, wd)),
@@ -497,7 +494,7 @@ TRACE_EVENT(sys_inotify_rm_watch,
 )
 #endif
 #ifndef OVERRIDE_sys_timerfd_create
-TRACE_EVENT(sys_timerfd_create,
+SC_TRACE_EVENT(sys_timerfd_create,
 	TP_PROTO(int clockid, int flags),
 	TP_ARGS(clockid, flags),
 	TP_STRUCT__entry(__field(int, clockid) __field(int, flags)),
@@ -506,7 +503,7 @@ TRACE_EVENT(sys_timerfd_create,
 )
 #endif
 #ifndef OVERRIDE_sys_eventfd2
-TRACE_EVENT(sys_eventfd2,
+SC_TRACE_EVENT(sys_eventfd2,
 	TP_PROTO(unsigned int count, int flags),
 	TP_ARGS(count, flags),
 	TP_STRUCT__entry(__field(unsigned int, count) __field(int, flags)),
@@ -515,7 +512,7 @@ TRACE_EVENT(sys_eventfd2,
 )
 #endif
 #ifndef OVERRIDE_sys_setns
-TRACE_EVENT(sys_setns,
+SC_TRACE_EVENT(sys_setns,
 	TP_PROTO(int fd, int nstype),
 	TP_ARGS(fd, nstype),
 	TP_STRUCT__entry(__field(int, fd) __field(int, nstype)),
@@ -524,7 +521,7 @@ TRACE_EVENT(sys_setns,
 )
 #endif
 #ifndef OVERRIDE_sys_lseek
-TRACE_EVENT(sys_lseek,
+SC_TRACE_EVENT(sys_lseek,
 	TP_PROTO(unsigned int fd, off_t offset, unsigned int origin),
 	TP_ARGS(fd, offset, origin),
 	TP_STRUCT__entry(__field(unsigned int, fd) __field(off_t, offset) __field(unsigned int, origin)),
@@ -533,7 +530,7 @@ TRACE_EVENT(sys_lseek,
 )
 #endif
 #ifndef OVERRIDE_sys_mprotect
-TRACE_EVENT(sys_mprotect,
+SC_TRACE_EVENT(sys_mprotect,
 	TP_PROTO(unsigned long start, size_t len, unsigned long prot),
 	TP_ARGS(start, len, prot),
 	TP_STRUCT__entry(__field(unsigned long, start) __field(size_t, len) __field(unsigned long, prot)),
@@ -542,7 +539,7 @@ TRACE_EVENT(sys_mprotect,
 )
 #endif
 #ifndef OVERRIDE_sys_ioctl
-TRACE_EVENT(sys_ioctl,
+SC_TRACE_EVENT(sys_ioctl,
 	TP_PROTO(unsigned int fd, unsigned int cmd, unsigned long arg),
 	TP_ARGS(fd, cmd, arg),
 	TP_STRUCT__entry(__field(unsigned int, fd) __field(unsigned int, cmd) __field(unsigned long, arg)),
@@ -551,7 +548,7 @@ TRACE_EVENT(sys_ioctl,
 )
 #endif
 #ifndef OVERRIDE_sys_msync
-TRACE_EVENT(sys_msync,
+SC_TRACE_EVENT(sys_msync,
 	TP_PROTO(unsigned long start, size_t len, int flags),
 	TP_ARGS(start, len, flags),
 	TP_STRUCT__entry(__field(unsigned long, start) __field(size_t, len) __field(int, flags)),
@@ -560,7 +557,7 @@ TRACE_EVENT(sys_msync,
 )
 #endif
 #ifndef OVERRIDE_sys_madvise
-TRACE_EVENT(sys_madvise,
+SC_TRACE_EVENT(sys_madvise,
 	TP_PROTO(unsigned long start, size_t len_in, int behavior),
 	TP_ARGS(start, len_in, behavior),
 	TP_STRUCT__entry(__field(unsigned long, start) __field(size_t, len_in) __field(int, behavior)),
@@ -569,7 +566,7 @@ TRACE_EVENT(sys_madvise,
 )
 #endif
 #ifndef OVERRIDE_sys_shmget
-TRACE_EVENT(sys_shmget,
+SC_TRACE_EVENT(sys_shmget,
 	TP_PROTO(key_t key, size_t size, int shmflg),
 	TP_ARGS(key, size, shmflg),
 	TP_STRUCT__entry(__field(key_t, key) __field(size_t, size) __field(int, shmflg)),
@@ -578,7 +575,7 @@ TRACE_EVENT(sys_shmget,
 )
 #endif
 #ifndef OVERRIDE_sys_socket
-TRACE_EVENT(sys_socket,
+SC_TRACE_EVENT(sys_socket,
 	TP_PROTO(int family, int type, int protocol),
 	TP_ARGS(family, type, protocol),
 	TP_STRUCT__entry(__field(int, family) __field(int, type) __field(int, protocol)),
@@ -587,7 +584,7 @@ TRACE_EVENT(sys_socket,
 )
 #endif
 #ifndef OVERRIDE_sys_semget
-TRACE_EVENT(sys_semget,
+SC_TRACE_EVENT(sys_semget,
 	TP_PROTO(key_t key, int nsems, int semflg),
 	TP_ARGS(key, nsems, semflg),
 	TP_STRUCT__entry(__field(key_t, key) __field(int, nsems) __field(int, semflg)),
@@ -596,7 +593,7 @@ TRACE_EVENT(sys_semget,
 )
 #endif
 #ifndef OVERRIDE_sys_fcntl
-TRACE_EVENT(sys_fcntl,
+SC_TRACE_EVENT(sys_fcntl,
 	TP_PROTO(unsigned int fd, unsigned int cmd, unsigned long arg),
 	TP_ARGS(fd, cmd, arg),
 	TP_STRUCT__entry(__field(unsigned int, fd) __field(unsigned int, cmd) __field(unsigned long, arg)),
@@ -605,7 +602,7 @@ TRACE_EVENT(sys_fcntl,
 )
 #endif
 #ifndef OVERRIDE_sys_fchown
-TRACE_EVENT(sys_fchown,
+SC_TRACE_EVENT(sys_fchown,
 	TP_PROTO(unsigned int fd, uid_t user, gid_t group),
 	TP_ARGS(fd, user, group),
 	TP_STRUCT__entry(__field(unsigned int, fd) __field(uid_t, user) __field(gid_t, group)),
@@ -614,7 +611,7 @@ TRACE_EVENT(sys_fchown,
 )
 #endif
 #ifndef OVERRIDE_sys_setresuid
-TRACE_EVENT(sys_setresuid,
+SC_TRACE_EVENT(sys_setresuid,
 	TP_PROTO(uid_t ruid, uid_t euid, uid_t suid),
 	TP_ARGS(ruid, euid, suid),
 	TP_STRUCT__entry(__field(uid_t, ruid) __field(uid_t, euid) __field(uid_t, suid)),
@@ -623,7 +620,7 @@ TRACE_EVENT(sys_setresuid,
 )
 #endif
 #ifndef OVERRIDE_sys_setresgid
-TRACE_EVENT(sys_setresgid,
+SC_TRACE_EVENT(sys_setresgid,
 	TP_PROTO(gid_t rgid, gid_t egid, gid_t sgid),
 	TP_ARGS(rgid, egid, sgid),
 	TP_STRUCT__entry(__field(gid_t, rgid) __field(gid_t, egid) __field(gid_t, sgid)),
@@ -632,7 +629,7 @@ TRACE_EVENT(sys_setresgid,
 )
 #endif
 #ifndef OVERRIDE_sys_sysfs
-TRACE_EVENT(sys_sysfs,
+SC_TRACE_EVENT(sys_sysfs,
 	TP_PROTO(int option, unsigned long arg1, unsigned long arg2),
 	TP_ARGS(option, arg1, arg2),
 	TP_STRUCT__entry(__field(int, option) __field(unsigned long, arg1) __field(unsigned long, arg2)),
@@ -641,7 +638,7 @@ TRACE_EVENT(sys_sysfs,
 )
 #endif
 #ifndef OVERRIDE_sys_setpriority
-TRACE_EVENT(sys_setpriority,
+SC_TRACE_EVENT(sys_setpriority,
 	TP_PROTO(int which, int who, int niceval),
 	TP_ARGS(which, who, niceval),
 	TP_STRUCT__entry(__field(int, which) __field(int, who) __field(int, niceval)),
@@ -650,7 +647,7 @@ TRACE_EVENT(sys_setpriority,
 )
 #endif
 #ifndef OVERRIDE_sys_tgkill
-TRACE_EVENT(sys_tgkill,
+SC_TRACE_EVENT(sys_tgkill,
 	TP_PROTO(pid_t tgid, pid_t pid, int sig),
 	TP_ARGS(tgid, pid, sig),
 	TP_STRUCT__entry(__field(pid_t, tgid) __field(pid_t, pid) __field(int, sig)),
@@ -659,7 +656,7 @@ TRACE_EVENT(sys_tgkill,
 )
 #endif
 #ifndef OVERRIDE_sys_ioprio_set
-TRACE_EVENT(sys_ioprio_set,
+SC_TRACE_EVENT(sys_ioprio_set,
 	TP_PROTO(int which, int who, int ioprio),
 	TP_ARGS(which, who, ioprio),
 	TP_STRUCT__entry(__field(int, which) __field(int, who) __field(int, ioprio)),
@@ -668,7 +665,7 @@ TRACE_EVENT(sys_ioprio_set,
 )
 #endif
 #ifndef OVERRIDE_sys_dup3
-TRACE_EVENT(sys_dup3,
+SC_TRACE_EVENT(sys_dup3,
 	TP_PROTO(unsigned int oldfd, unsigned int newfd, int flags),
 	TP_ARGS(oldfd, newfd, flags),
 	TP_STRUCT__entry(__field(unsigned int, oldfd) __field(unsigned int, newfd) __field(int, flags)),
@@ -677,7 +674,7 @@ TRACE_EVENT(sys_dup3,
 )
 #endif
 #ifndef OVERRIDE_sys_ptrace
-TRACE_EVENT(sys_ptrace,
+SC_TRACE_EVENT(sys_ptrace,
 	TP_PROTO(long request, long pid, unsigned long addr, unsigned long data),
 	TP_ARGS(request, pid, addr, data),
 	TP_STRUCT__entry(__field(long, request) __field(long, pid) __field_hex(unsigned long, addr) __field(unsigned long, data)),
@@ -686,7 +683,7 @@ TRACE_EVENT(sys_ptrace,
 )
 #endif
 #ifndef OVERRIDE_sys_tee
-TRACE_EVENT(sys_tee,
+SC_TRACE_EVENT(sys_tee,
 	TP_PROTO(int fdin, int fdout, size_t len, unsigned int flags),
 	TP_ARGS(fdin, fdout, len, flags),
 	TP_STRUCT__entry(__field(int, fdin) __field(int, fdout) __field(size_t, len) __field(unsigned int, flags)),
@@ -695,7 +692,7 @@ TRACE_EVENT(sys_tee,
 )
 #endif
 #ifndef OVERRIDE_sys_mremap
-TRACE_EVENT(sys_mremap,
+SC_TRACE_EVENT(sys_mremap,
 	TP_PROTO(unsigned long addr, unsigned long old_len, unsigned long new_len, unsigned long flags, unsigned long new_addr),
 	TP_ARGS(addr, old_len, new_len, flags, new_addr),
 	TP_STRUCT__entry(__field_hex(unsigned long, addr) __field(unsigned long, old_len) __field(unsigned long, new_len) __field(unsigned long, flags) __field_hex(unsigned long, new_addr)),
@@ -704,7 +701,7 @@ TRACE_EVENT(sys_mremap,
 )
 #endif
 #ifndef OVERRIDE_sys_prctl
-TRACE_EVENT(sys_prctl,
+SC_TRACE_EVENT(sys_prctl,
 	TP_PROTO(int option, unsigned long arg2, unsigned long arg3, unsigned long arg4, unsigned long arg5),
 	TP_ARGS(option, arg2, arg3, arg4, arg5),
 	TP_STRUCT__entry(__field(int, option) __field(unsigned long, arg2) __field(unsigned long, arg3) __field(unsigned long, arg4) __field(unsigned long, arg5)),
@@ -713,7 +710,7 @@ TRACE_EVENT(sys_prctl,
 )
 #endif
 #ifndef OVERRIDE_sys_remap_file_pages
-TRACE_EVENT(sys_remap_file_pages,
+SC_TRACE_EVENT(sys_remap_file_pages,
 	TP_PROTO(unsigned long start, unsigned long size, unsigned long prot, unsigned long pgoff, unsigned long flags),
 	TP_ARGS(start, size, prot, pgoff, flags),
 	TP_STRUCT__entry(__field(unsigned long, start) __field(unsigned long, size) __field(unsigned long, prot) __field(unsigned long, pgoff) __field(unsigned long, flags)),
@@ -722,7 +719,7 @@ TRACE_EVENT(sys_remap_file_pages,
 )
 #endif
 #ifndef OVERRIDE_sys_mmap
-TRACE_EVENT(sys_mmap,
+SC_TRACE_EVENT(sys_mmap,
 	TP_PROTO(unsigned long addr, unsigned long len, unsigned long prot, unsigned long flags, unsigned long fd, unsigned long off),
 	TP_ARGS(addr, len, prot, flags, fd, off),
 	TP_STRUCT__entry(__field_hex(unsigned long, addr) __field(unsigned long, len) __field(unsigned long, prot) __field(unsigned long, flags) __field(unsigned long, fd) __field(unsigned long, off)),
