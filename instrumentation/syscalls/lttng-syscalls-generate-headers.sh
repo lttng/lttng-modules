@@ -93,7 +93,7 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 '	TP_PROTO($4 $5),\n'\
 '	TP_ARGS($5),\n'\
 '	TP_STRUCT__entry(__field($4, $5)),\n'\
-'	TP_fast_assign(tp_assign($5, $5)),\n'\
+'	TP_fast_assign(tp_assign($4, $5, $5)),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
@@ -112,7 +112,7 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 '	TP_PROTO($4 $6, $5 $7),\n'\
 '	TP_ARGS($6, $7),\n'\
 '	TP_STRUCT__entry(__field($4, $6) __field($5, $7)),\n'\
-'	TP_fast_assign(tp_assign($6, $6) tp_assign($7, $7)),\n'\
+'	TP_fast_assign(tp_assign($4, $6, $6) tp_assign($5, $7, $7)),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
@@ -131,7 +131,7 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 '	TP_PROTO($4 $7, $5 $8, $6 $9),\n'\
 '	TP_ARGS($7, $8, $9),\n'\
 '	TP_STRUCT__entry(__field($4, $7) __field($5, $8) __field($6, $9)),\n'\
-'	TP_fast_assign(tp_assign($7, $7) tp_assign($8, $8) tp_assign($9, $9)),\n'\
+'	TP_fast_assign(tp_assign($4, $7, $7) tp_assign($5, $8, $8) tp_assign($6, $9, $9)),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
@@ -151,7 +151,7 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 '	TP_PROTO($4 $8, $5 $9, $6 $10, $7 $11),\n'\
 '	TP_ARGS($8, $9, $10, $11),\n'\
 '	TP_STRUCT__entry(__field($4, $8) __field($5, $9) __field($6, $10) __field($7, $11)),\n'\
-'	TP_fast_assign(tp_assign($8, $8) tp_assign($9, $9) tp_assign($10, $10) tp_assign($11, $11)),\n'\
+'	TP_fast_assign(tp_assign($4, $8, $8) tp_assign($5, $9, $9) tp_assign($6, $10, $10) tp_assign($7, $11, $11)),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
@@ -170,7 +170,7 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 '	TP_PROTO($4 $9, $5 $10, $6 $11, $7 $12, $8 $13),\n'\
 '	TP_ARGS($9, $10, $11, $12, $13),\n'\
 '	TP_STRUCT__entry(__field($4, $9) __field($5, $10) __field($6, $11) __field($7, $12) __field($8, $13)),\n'\
-'	TP_fast_assign(tp_assign($9, $9) tp_assign($10, $10) tp_assign($11, $11) tp_assign($12, $12) tp_assign($13, $13)),\n'\
+'	TP_fast_assign(tp_assign($4, $9, $9) tp_assign($5, $10, $10) tp_assign($6, $11, $11) tp_assign($7, $12, $12) tp_assign($8, $13, $13)),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
@@ -190,7 +190,7 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 '	TP_PROTO($4 $10, $5 $11, $6 $12, $7 $13, $8 $14, $9 $15),\n'\
 '	TP_ARGS($10, $11, $12, $13, $14, $15),\n'\
 '	TP_STRUCT__entry(__field($4, $10) __field($5, $11) __field($6, $12) __field($7, $13) __field($8, $14) __field($9, $15)),\n'\
-'	TP_fast_assign(tp_assign($10, $10) tp_assign($11, $11) tp_assign($12, $12) tp_assign($13, $13) tp_assign($14, $14) tp_assign($15, $15)),\n'\
+'	TP_fast_assign(tp_assign($4, $10, $10) tp_assign($5, $11, $11) tp_assign($6, $12, $12) tp_assign($7, $13, $13) tp_assign($8, $14, $14) tp_assign($9, $15, $15)),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
@@ -240,31 +240,34 @@ echo -n \
 #endif /* CREATE_SYSCALL_TABLE */
 " >> ${HEADER}
 
+#fields names: ...char * type with *name* or *file* or *path* or *root* or *put_old*
+cp -f ${HEADER} ${TMPFILE}
+rm -f ${HEADER}
+perl -p -e 's/__field\(([^,)]*char \*), ([^\)]*)(name|file|path|root|put_old)([^\)]*)\)/__string($2$3$4, $2$3$4)/g'\
+	${TMPFILE} >> ${HEADER}
+cp -f ${HEADER} ${TMPFILE}
+rm -f ${HEADER}
+perl -p -e 's/tp_assign\(([^,)]*char \*), ([^,]*)(name|file|path|root|put_old)([^,]*), ([^\)]*)\)/tp_copy_string_from_user($2$3$4, $5)/g'\
+	${TMPFILE} >> ${HEADER}
+
 #prettify addresses heuristics.
-cp -f ${HEADER} ${TMPFILE}
-rm -f ${HEADER}
-
 #field names with addr or ptr
-perl -p -e 's/__field\(([^,)]*), ([^a,)]*addr|[^p,)]*ptr)([^),]*)\)/__field_hex($1, $2$3)/g'\
-	${TMPFILE} >> ${HEADER}
-
-#fields names: filename or pathname
 cp -f ${HEADER} ${TMPFILE}
 rm -f ${HEADER}
-perl -p -e 's/__field\(([^,)]*), (filename|pathname)\)/__string($2, $2)/g'\
+perl -p -e 's/__field\(([^,)]*), ([^,)]*addr|[^,)]*ptr)([^),]*)\)/__field_hex($1, $2$3)/g'\
 	${TMPFILE} >> ${HEADER}
-cp -f ${HEADER} ${TMPFILE}
-rm -f ${HEADER}
-perl -p -e 's/tp_assign\((filename|pathname), (filename|pathname)\)/tp_copy_string_from_user($1, $2)/g'\
-	${TMPFILE} >> ${HEADER}
-
-cp -f ${HEADER} ${TMPFILE}
-rm -f ${HEADER}
 
 #field types ending with '*'
+cp -f ${HEADER} ${TMPFILE}
+rm -f ${HEADER}
 perl -p -e 's/__field\(([^,)]*\*), ([^),]*)\)/__field_hex($1, $2)/g'\
 	${TMPFILE} >> ${HEADER}
 
+#strip the extra type information from tp_assign.
+cp -f ${HEADER} ${TMPFILE}
+rm -f ${HEADER}
+perl -p -e 's/tp_assign\(([^,)]*), ([^,]*), ([^\)]*)\)/tp_assign($2, $3)/g'\
+	${TMPFILE} >> ${HEADER}
 
 rm -f ${INPUTFILE}.tmp
 rm -f ${TMPFILE}
