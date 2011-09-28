@@ -329,7 +329,7 @@ void lttng_remove_context_field(struct lttng_ctx **ctx,
 				struct lttng_ctx_field *field);
 void lttng_destroy_context(struct lttng_ctx *ctx);
 int lttng_add_pid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_comm_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_procname_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_prio_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_nice_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_vpid_to_ctx(struct lttng_ctx **ctx);

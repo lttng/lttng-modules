@@ -182,8 +182,8 @@ long lttng_abi_add_context(struct file *file,
 				context_param.u.perf_counter.config,
 				context_param.u.perf_counter.name,
 				ctx);
-	case LTTNG_KERNEL_CONTEXT_COMM:
-		return lttng_add_comm_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_PROCNAME:
+		return lttng_add_procname_to_ctx(ctx);
 	default:
 		return -EINVAL;
 	}
