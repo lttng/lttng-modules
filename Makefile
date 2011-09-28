@@ -15,7 +15,7 @@ obj-m += ltt-ring-buffer-metadata-mmap-client.o
 obj-m += ltt-relay.o
 ltt-relay-objs :=  ltt-events.o ltt-debugfs-abi.o \
 			ltt-probes.o ltt-context.o \
-			lttng-context-pid.o lttng-context-comm.o \
+			lttng-context-pid.o lttng-context-procname.o \
 			lttng-context-prio.o lttng-context-nice.o \
 			lttng-context-vpid.o lttng-context-tid.o \
 			lttng-context-vtid.o lttng-context-ppid.o \
