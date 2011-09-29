@@ -188,6 +188,10 @@ void trace_##_name(void *__data);
 		},						\
 	},
 
+#undef __string_from_user
+#define __string_from_user(_item, _src)				\
+	__string(_item, _src)
+
 #undef TP_STRUCT__entry
 #define TP_STRUCT__entry(args...) args	/* Only one used in this phase */
 
@@ -336,6 +340,11 @@ static __used struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 #define __string(_item, _src)						       \
 	__event_len += __dynamic_len[__dynamic_len_idx++] = strlen(_src) + 1;
 
+/* strlen_user includes \0 */
+#undef __string_from_user
+#define __string_from_user(_item, _src)					       \
+	__event_len += __dynamic_len[__dynamic_len_idx++] = strlen_user(_src);
+
 #undef TP_PROTO
 #define TP_PROTO(args...) args
 
@@ -383,6 +392,9 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len, _proto) \
 #undef __string
 #define __string(_item, _src)
 
+#undef __string_from_user
+#define __string_from_user(_item, _src)
+
 #undef TP_PROTO
 #define TP_PROTO(args...) args
 
@@ -424,7 +436,11 @@ static inline size_t __event_get_align__##_name(_proto)			      \
 	_type	_item;
 
 #undef __string
-#define __string(_item, _src)	char _item;
+#define __string(_item, _src)			char _item;
+
+#undef __string_from_user
+#define __string_from_user(_item, _src)		\
+	__string(_item, _src)
 
 #undef TP_STRUCT__entry
 #define TP_STRUCT__entry(args...) args
@@ -472,6 +488,10 @@ __end_field_##_item##_2:
 #define __string(_item, _src)						\
 	goto __assign_##_item;						\
 __end_field_##_item:
+
+#undef __string_from_user
+#define __string_from_user(_item, _src)					\
+	__string(_item, _src)
 
 /*
  * Macros mapping tp_assign() to "=", tp_memcpy() to memcpy() and tp_strcpy() to
