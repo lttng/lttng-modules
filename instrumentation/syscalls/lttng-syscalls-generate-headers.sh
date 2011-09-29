@@ -241,7 +241,7 @@ echo -n \
 # or *put_old* or *type*
 cp -f ${HEADER} ${TMPFILE}
 rm -f ${HEADER}
-perl -p -e 's/__field\(([^,)]*char \*), ([^\)]*)(name|file|path|root|put_old|type)([^\)]*)\)/__string($2$3$4, $2$3$4)/g'\
+perl -p -e 's/__field\(([^,)]*char \*), ([^\)]*)(name|file|path|root|put_old|type)([^\)]*)\)/__string_from_user($2$3$4, $2$3$4)/g'\
 	${TMPFILE} >> ${HEADER}
 cp -f ${HEADER} ${TMPFILE}
 rm -f ${HEADER}
