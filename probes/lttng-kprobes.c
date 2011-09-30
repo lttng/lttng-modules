@@ -119,7 +119,7 @@ int lttng_kprobes_register(const char *name,
 			event->u.kprobe.symbol_name;
 	}
 	event->u.kprobe.kp.offset = offset;
-	event->u.kprobe.kp.addr = (void *) addr;
+	event->u.kprobe.kp.addr = (void *) (unsigned long) addr;
 
 	/*
 	 * Ensure the memory we just allocated don't trigger page faults.

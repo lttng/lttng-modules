@@ -193,7 +193,7 @@ int lttng_kretprobes_register(const char *name,
 			alloc_symbol;
 	}
 	lttng_krp->krp.kp.offset = offset;
-	lttng_krp->krp.kp.addr = (void *) addr;
+	lttng_krp->krp.kp.addr = (void *) (unsigned long) addr;
 
 	/* Allow probe handler to find event structures */
 	lttng_krp->event[EVENT_ENTRY] = event_entry;
