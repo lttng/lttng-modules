@@ -1,3 +1,7 @@
+2011-09-30 LTTng modules 2.0-pre10
+	* x86-32: override sys_mmap syscall instrumentation
+	* Fix cast warning
+
 2011-09-29 LTTng modules 2.0-pre9
 	* x86 32 syscalls: fix !CONFIG_UID16
 	* Use __string_from_user
