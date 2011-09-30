@@ -29,3 +29,10 @@
 #define OVERRIDE_TABLE_sys_setresgid16
 
 #endif
+
+#ifdef CREATE_SYSCALL_TABLE
+
+#define OVERRIDE_TABLE_sys_mmap
+TRACE_SYSCALL_TABLE(sys_mmap, sys_mmap, 90, 6)
+
+#endif
