@@ -19,7 +19,10 @@ endif
 
 ifneq ($(CONFIG_BLOCK),)
 ifneq ($(CONFIG_EVENT_TRACING),)	# need blk_cmd_buf_len
-obj-m += lttng-probe-block.o
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 \
+		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
+		echo "lttng-probe-block.o" ; fi;)
 endif
 endif
 
