@@ -1157,7 +1157,7 @@ void lib_ring_buffer_print_buffer_errors(struct lib_ring_buffer *buf,
 	write_offset = v_read(config, &buf->offset);
 	cons_offset = atomic_long_read(&buf->consumed);
 	if (write_offset != cons_offset)
-		printk(KERN_WARNING
+		printk(KERN_DEBUG
 		       "ring buffer %s, cpu %d: "
 		       "non-consumed data\n"
 		       "  [ %lu bytes written, %lu bytes read ]\n",
