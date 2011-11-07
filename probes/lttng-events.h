@@ -341,11 +341,13 @@ static __used struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 	__event_len += __dynamic_len[__dynamic_len_idx++] = strlen(_src) + 1;
 
 /*
- * strlen_user includes \0. If returns 0, it faulted.
+ * strlen_user includes \0. If returns 0, it faulted, so we set size to
+ * 1 (\0 only).
  */
 #undef __string_from_user
 #define __string_from_user(_item, _src)					       \
-	__event_len += __dynamic_len[__dynamic_len_idx++] = strlen_user(_src);
+	__event_len += __dynamic_len[__dynamic_len_idx++] =		       \
+		min_t(size_t, strlen_user(_src), 1);
 
 #undef TP_PROTO
 #define TP_PROTO(args...) args
@@ -543,9 +545,7 @@ __assign_##dest##_2:							\
 	goto __end_field_##dest;
 
 /*
- * If string length is zero, this means reading the string faulted, so
- * we simply put a \0. If string length is larger than 0, it is the
- * string length including the final \0.
+ * The string length including the final \0.
  */
 #undef tp_copy_string_from_user
 #define tp_copy_string_from_user(dest, src)				\
