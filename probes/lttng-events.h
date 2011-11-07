@@ -340,7 +340,9 @@ static __used struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 #define __string(_item, _src)						       \
 	__event_len += __dynamic_len[__dynamic_len_idx++] = strlen(_src) + 1;
 
-/* strlen_user includes \0 */
+/*
+ * strlen_user includes \0. If returns 0, it faulted.
+ */
 #undef __string_from_user
 #define __string_from_user(_item, _src)					       \
 	__event_len += __dynamic_len[__dynamic_len_idx++] = strlen_user(_src);
@@ -540,17 +542,28 @@ __assign_##dest##_2:							\
 	__chan->ops->event_write_from_user(&__ctx, src, len);		\
 	goto __end_field_##dest;
 
+/*
+ * If string length is zero, this means reading the string faulted, so
+ * we simply put a \0. If string length is larger than 0, it is the
+ * string length including the final \0.
+ */
 #undef tp_copy_string_from_user
 #define tp_copy_string_from_user(dest, src)				\
 	__assign_##dest:						\
-	if (0)								\
-		(void) __typemap.dest;					\
-	lib_ring_buffer_align_ctx(&__ctx, ltt_alignof(__typemap.dest));	\
-	__chan->ops->event_write_from_user(&__ctx, src,			\
-		__get_dynamic_array_len(dest) - 1);			\
-	__chan->ops->event_memset(&__ctx, 0, 1);			\
+	{								\
+		size_t __ustrlen;					\
+									\
+		if (0)							\
+			(void) __typemap.dest;				\
+		lib_ring_buffer_align_ctx(&__ctx, ltt_alignof(__typemap.dest));\
+		__ustrlen = __get_dynamic_array_len(dest);		\
+		if (likely(__ustrlen) > 1) {				\
+			__chan->ops->event_write_from_user(&__ctx, src,	\
+				__ustrlen - 1);				\
+		}							\
+		__chan->ops->event_memset(&__ctx, 0, 1);		\
+	}								\
 	goto __end_field_##dest;
-
 #undef tp_strcpy
 #define tp_strcpy(dest, src)						\
 	tp_memcpy(dest, src, __get_dynamic_array_len(dest))
