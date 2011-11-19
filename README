@@ -22,12 +22,14 @@ access to your full kernel source tree), and use:
 
 % make
 # make modules_install
+# depmod -a
 
 If you need to specify the target directory to the kernel you want to build
 against, use:
 
 % KERNELDIR=path_to_kernel_dir make
 # KERNELDIR=path_to_kernel_dir make modules_install
+# depmod -a kernel_version
 
 Use lttng-tools to control the tracer. LTTng tools should automatically load
 the kernel modules when needed. Use Babeltrace to print traces as a
