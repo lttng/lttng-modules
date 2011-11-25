@@ -734,6 +734,8 @@ ssize_t setup_trace_write(struct file *file, const char __user *user_buf,
 	if (IS_ERR_VALUE(err)) {
 		printk(KERN_ERR "setup_trace_write: "
 		       "_create_trace_control_dir failed: %d\n", err);
+		ltt_unlock_traces();
+		ltt_trace_destroy(trace_name);
 		goto err_create_trace_control_dir;
 	}
 
@@ -744,10 +746,9 @@ ssize_t setup_trace_write(struct file *file, const char __user *user_buf,
 	free_page((unsigned long)trace_name);
 	return count;
 
-err_create_trace_control_dir:
-	ltt_trace_destroy(trace_name);
 err_setup_trace:
 	ltt_unlock_traces();
+err_create_trace_control_dir:
 	mutex_unlock(&control_lock);
 err_get_tracename:
 err_copy_from_user:
