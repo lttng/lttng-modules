@@ -7,8 +7,9 @@
 #include <linux/tracepoint.h>
 #include <linux/syscalls.h>
 #include "x86-64-syscalls-3.0.4_pointers_override.h"
+#include "syscalls_pointers_override.h"
 
-#ifndef OVERRIDE_sys_pipe
+#ifndef OVERRIDE_64_sys_pipe
 SC_TRACE_EVENT(sys_pipe,
 	TP_PROTO(int * fildes),
 	TP_ARGS(fildes),
@@ -17,7 +18,7 @@ SC_TRACE_EVENT(sys_pipe,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_newuname
+#ifndef OVERRIDE_64_sys_newuname
 SC_TRACE_EVENT(sys_newuname,
 	TP_PROTO(struct new_utsname * name),
 	TP_ARGS(name),
@@ -26,7 +27,7 @@ SC_TRACE_EVENT(sys_newuname,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_shmdt
+#ifndef OVERRIDE_64_sys_shmdt
 SC_TRACE_EVENT(sys_shmdt,
 	TP_PROTO(char * shmaddr),
 	TP_ARGS(shmaddr),
@@ -35,7 +36,7 @@ SC_TRACE_EVENT(sys_shmdt,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_chdir
+#ifndef OVERRIDE_64_sys_chdir
 SC_TRACE_EVENT(sys_chdir,
 	TP_PROTO(const char * filename),
 	TP_ARGS(filename),
@@ -44,7 +45,7 @@ SC_TRACE_EVENT(sys_chdir,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_rmdir
+#ifndef OVERRIDE_64_sys_rmdir
 SC_TRACE_EVENT(sys_rmdir,
 	TP_PROTO(const char * pathname),
 	TP_ARGS(pathname),
@@ -53,7 +54,7 @@ SC_TRACE_EVENT(sys_rmdir,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_unlink
+#ifndef OVERRIDE_64_sys_unlink
 SC_TRACE_EVENT(sys_unlink,
 	TP_PROTO(const char * pathname),
 	TP_ARGS(pathname),
@@ -62,7 +63,7 @@ SC_TRACE_EVENT(sys_unlink,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_sysinfo
+#ifndef OVERRIDE_64_sys_sysinfo
 SC_TRACE_EVENT(sys_sysinfo,
 	TP_PROTO(struct sysinfo * info),
 	TP_ARGS(info),
@@ -71,7 +72,7 @@ SC_TRACE_EVENT(sys_sysinfo,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_times
+#ifndef OVERRIDE_64_sys_times
 SC_TRACE_EVENT(sys_times,
 	TP_PROTO(struct tms * tbuf),
 	TP_ARGS(tbuf),
@@ -80,7 +81,7 @@ SC_TRACE_EVENT(sys_times,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_sysctl
+#ifndef OVERRIDE_64_sys_sysctl
 SC_TRACE_EVENT(sys_sysctl,
 	TP_PROTO(struct __sysctl_args * args),
 	TP_ARGS(args),
@@ -89,7 +90,7 @@ SC_TRACE_EVENT(sys_sysctl,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_adjtimex
+#ifndef OVERRIDE_64_sys_adjtimex
 SC_TRACE_EVENT(sys_adjtimex,
 	TP_PROTO(struct timex * txc_p),
 	TP_ARGS(txc_p),
@@ -98,7 +99,7 @@ SC_TRACE_EVENT(sys_adjtimex,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_chroot
+#ifndef OVERRIDE_64_sys_chroot
 SC_TRACE_EVENT(sys_chroot,
 	TP_PROTO(const char * filename),
 	TP_ARGS(filename),
@@ -107,7 +108,7 @@ SC_TRACE_EVENT(sys_chroot,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_swapoff
+#ifndef OVERRIDE_64_sys_swapoff
 SC_TRACE_EVENT(sys_swapoff,
 	TP_PROTO(const char * specialfile),
 	TP_ARGS(specialfile),
@@ -116,7 +117,7 @@ SC_TRACE_EVENT(sys_swapoff,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_time
+#ifndef OVERRIDE_64_sys_time
 SC_TRACE_EVENT(sys_time,
 	TP_PROTO(time_t * tloc),
 	TP_ARGS(tloc),
@@ -125,7 +126,7 @@ SC_TRACE_EVENT(sys_time,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_set_tid_address
+#ifndef OVERRIDE_64_sys_set_tid_address
 SC_TRACE_EVENT(sys_set_tid_address,
 	TP_PROTO(int * tidptr),
 	TP_ARGS(tidptr),
@@ -134,7 +135,7 @@ SC_TRACE_EVENT(sys_set_tid_address,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_mq_unlink
+#ifndef OVERRIDE_64_sys_mq_unlink
 SC_TRACE_EVENT(sys_mq_unlink,
 	TP_PROTO(const char * u_name),
 	TP_ARGS(u_name),
@@ -143,7 +144,7 @@ SC_TRACE_EVENT(sys_mq_unlink,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_newstat
+#ifndef OVERRIDE_64_sys_newstat
 SC_TRACE_EVENT(sys_newstat,
 	TP_PROTO(const char * filename, struct stat * statbuf),
 	TP_ARGS(filename, statbuf),
@@ -152,7 +153,7 @@ SC_TRACE_EVENT(sys_newstat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_newfstat
+#ifndef OVERRIDE_64_sys_newfstat
 SC_TRACE_EVENT(sys_newfstat,
 	TP_PROTO(unsigned int fd, struct stat * statbuf),
 	TP_ARGS(fd, statbuf),
@@ -161,7 +162,7 @@ SC_TRACE_EVENT(sys_newfstat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_newlstat
+#ifndef OVERRIDE_64_sys_newlstat
 SC_TRACE_EVENT(sys_newlstat,
 	TP_PROTO(const char * filename, struct stat * statbuf),
 	TP_ARGS(filename, statbuf),
@@ -170,7 +171,7 @@ SC_TRACE_EVENT(sys_newlstat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_access
+#ifndef OVERRIDE_64_sys_access
 SC_TRACE_EVENT(sys_access,
 	TP_PROTO(const char * filename, int mode),
 	TP_ARGS(filename, mode),
@@ -179,7 +180,7 @@ SC_TRACE_EVENT(sys_access,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_nanosleep
+#ifndef OVERRIDE_64_sys_nanosleep
 SC_TRACE_EVENT(sys_nanosleep,
 	TP_PROTO(struct timespec * rqtp, struct timespec * rmtp),
 	TP_ARGS(rqtp, rmtp),
@@ -188,7 +189,7 @@ SC_TRACE_EVENT(sys_nanosleep,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_getitimer
+#ifndef OVERRIDE_64_sys_getitimer
 SC_TRACE_EVENT(sys_getitimer,
 	TP_PROTO(int which, struct itimerval * value),
 	TP_ARGS(which, value),
@@ -197,7 +198,7 @@ SC_TRACE_EVENT(sys_getitimer,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_truncate
+#ifndef OVERRIDE_64_sys_truncate
 SC_TRACE_EVENT(sys_truncate,
 	TP_PROTO(const char * path, long length),
 	TP_ARGS(path, length),
@@ -206,7 +207,7 @@ SC_TRACE_EVENT(sys_truncate,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_getcwd
+#ifndef OVERRIDE_64_sys_getcwd
 SC_TRACE_EVENT(sys_getcwd,
 	TP_PROTO(char * buf, unsigned long size),
 	TP_ARGS(buf, size),
@@ -215,7 +216,7 @@ SC_TRACE_EVENT(sys_getcwd,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_rename
+#ifndef OVERRIDE_64_sys_rename
 SC_TRACE_EVENT(sys_rename,
 	TP_PROTO(const char * oldname, const char * newname),
 	TP_ARGS(oldname, newname),
@@ -224,7 +225,7 @@ SC_TRACE_EVENT(sys_rename,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_mkdir
+#ifndef OVERRIDE_64_sys_mkdir
 SC_TRACE_EVENT(sys_mkdir,
 	TP_PROTO(const char * pathname, int mode),
 	TP_ARGS(pathname, mode),
@@ -233,7 +234,7 @@ SC_TRACE_EVENT(sys_mkdir,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_creat
+#ifndef OVERRIDE_64_sys_creat
 SC_TRACE_EVENT(sys_creat,
 	TP_PROTO(const char * pathname, int mode),
 	TP_ARGS(pathname, mode),
@@ -242,7 +243,7 @@ SC_TRACE_EVENT(sys_creat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_link
+#ifndef OVERRIDE_64_sys_link
 SC_TRACE_EVENT(sys_link,
 	TP_PROTO(const char * oldname, const char * newname),
 	TP_ARGS(oldname, newname),
@@ -251,7 +252,7 @@ SC_TRACE_EVENT(sys_link,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_symlink
+#ifndef OVERRIDE_64_sys_symlink
 SC_TRACE_EVENT(sys_symlink,
 	TP_PROTO(const char * oldname, const char * newname),
 	TP_ARGS(oldname, newname),
@@ -260,7 +261,7 @@ SC_TRACE_EVENT(sys_symlink,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_chmod
+#ifndef OVERRIDE_64_sys_chmod
 SC_TRACE_EVENT(sys_chmod,
 	TP_PROTO(const char * filename, mode_t mode),
 	TP_ARGS(filename, mode),
@@ -269,7 +270,7 @@ SC_TRACE_EVENT(sys_chmod,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_gettimeofday
+#ifndef OVERRIDE_64_sys_gettimeofday
 SC_TRACE_EVENT(sys_gettimeofday,
 	TP_PROTO(struct timeval * tv, struct timezone * tz),
 	TP_ARGS(tv, tz),
@@ -278,7 +279,7 @@ SC_TRACE_EVENT(sys_gettimeofday,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_getrlimit
+#ifndef OVERRIDE_64_sys_getrlimit
 SC_TRACE_EVENT(sys_getrlimit,
 	TP_PROTO(unsigned int resource, struct rlimit * rlim),
 	TP_ARGS(resource, rlim),
@@ -287,7 +288,7 @@ SC_TRACE_EVENT(sys_getrlimit,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_getrusage
+#ifndef OVERRIDE_64_sys_getrusage
 SC_TRACE_EVENT(sys_getrusage,
 	TP_PROTO(int who, struct rusage * ru),
 	TP_ARGS(who, ru),
@@ -296,7 +297,7 @@ SC_TRACE_EVENT(sys_getrusage,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_getgroups
+#ifndef OVERRIDE_64_sys_getgroups
 SC_TRACE_EVENT(sys_getgroups,
 	TP_PROTO(int gidsetsize, gid_t * grouplist),
 	TP_ARGS(gidsetsize, grouplist),
@@ -305,7 +306,7 @@ SC_TRACE_EVENT(sys_getgroups,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_setgroups
+#ifndef OVERRIDE_64_sys_setgroups
 SC_TRACE_EVENT(sys_setgroups,
 	TP_PROTO(int gidsetsize, gid_t * grouplist),
 	TP_ARGS(gidsetsize, grouplist),
@@ -314,7 +315,7 @@ SC_TRACE_EVENT(sys_setgroups,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_rt_sigpending
+#ifndef OVERRIDE_64_sys_rt_sigpending
 SC_TRACE_EVENT(sys_rt_sigpending,
 	TP_PROTO(sigset_t * set, size_t sigsetsize),
 	TP_ARGS(set, sigsetsize),
@@ -323,7 +324,7 @@ SC_TRACE_EVENT(sys_rt_sigpending,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_rt_sigsuspend
+#ifndef OVERRIDE_64_sys_rt_sigsuspend
 SC_TRACE_EVENT(sys_rt_sigsuspend,
 	TP_PROTO(sigset_t * unewset, size_t sigsetsize),
 	TP_ARGS(unewset, sigsetsize),
@@ -332,7 +333,7 @@ SC_TRACE_EVENT(sys_rt_sigsuspend,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_utime
+#ifndef OVERRIDE_64_sys_utime
 SC_TRACE_EVENT(sys_utime,
 	TP_PROTO(char * filename, struct utimbuf * times),
 	TP_ARGS(filename, times),
@@ -341,7 +342,7 @@ SC_TRACE_EVENT(sys_utime,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_ustat
+#ifndef OVERRIDE_64_sys_ustat
 SC_TRACE_EVENT(sys_ustat,
 	TP_PROTO(unsigned dev, struct ustat * ubuf),
 	TP_ARGS(dev, ubuf),
@@ -350,7 +351,7 @@ SC_TRACE_EVENT(sys_ustat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_statfs
+#ifndef OVERRIDE_64_sys_statfs
 SC_TRACE_EVENT(sys_statfs,
 	TP_PROTO(const char * pathname, struct statfs * buf),
 	TP_ARGS(pathname, buf),
@@ -359,7 +360,7 @@ SC_TRACE_EVENT(sys_statfs,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_fstatfs
+#ifndef OVERRIDE_64_sys_fstatfs
 SC_TRACE_EVENT(sys_fstatfs,
 	TP_PROTO(unsigned int fd, struct statfs * buf),
 	TP_ARGS(fd, buf),
@@ -368,7 +369,7 @@ SC_TRACE_EVENT(sys_fstatfs,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_sched_setparam
+#ifndef OVERRIDE_64_sys_sched_setparam
 SC_TRACE_EVENT(sys_sched_setparam,
 	TP_PROTO(pid_t pid, struct sched_param * param),
 	TP_ARGS(pid, param),
@@ -377,7 +378,7 @@ SC_TRACE_EVENT(sys_sched_setparam,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_sched_getparam
+#ifndef OVERRIDE_64_sys_sched_getparam
 SC_TRACE_EVENT(sys_sched_getparam,
 	TP_PROTO(pid_t pid, struct sched_param * param),
 	TP_ARGS(pid, param),
@@ -386,7 +387,7 @@ SC_TRACE_EVENT(sys_sched_getparam,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_sched_rr_get_interval
+#ifndef OVERRIDE_64_sys_sched_rr_get_interval
 SC_TRACE_EVENT(sys_sched_rr_get_interval,
 	TP_PROTO(pid_t pid, struct timespec * interval),
 	TP_ARGS(pid, interval),
@@ -395,7 +396,7 @@ SC_TRACE_EVENT(sys_sched_rr_get_interval,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_pivot_root
+#ifndef OVERRIDE_64_sys_pivot_root
 SC_TRACE_EVENT(sys_pivot_root,
 	TP_PROTO(const char * new_root, const char * put_old),
 	TP_ARGS(new_root, put_old),
@@ -404,7 +405,7 @@ SC_TRACE_EVENT(sys_pivot_root,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_setrlimit
+#ifndef OVERRIDE_64_sys_setrlimit
 SC_TRACE_EVENT(sys_setrlimit,
 	TP_PROTO(unsigned int resource, struct rlimit * rlim),
 	TP_ARGS(resource, rlim),
@@ -413,7 +414,7 @@ SC_TRACE_EVENT(sys_setrlimit,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_settimeofday
+#ifndef OVERRIDE_64_sys_settimeofday
 SC_TRACE_EVENT(sys_settimeofday,
 	TP_PROTO(struct timeval * tv, struct timezone * tz),
 	TP_ARGS(tv, tz),
@@ -422,7 +423,7 @@ SC_TRACE_EVENT(sys_settimeofday,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_umount
+#ifndef OVERRIDE_64_sys_umount
 SC_TRACE_EVENT(sys_umount,
 	TP_PROTO(char * name, int flags),
 	TP_ARGS(name, flags),
@@ -431,7 +432,7 @@ SC_TRACE_EVENT(sys_umount,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_swapon
+#ifndef OVERRIDE_64_sys_swapon
 SC_TRACE_EVENT(sys_swapon,
 	TP_PROTO(const char * specialfile, int swap_flags),
 	TP_ARGS(specialfile, swap_flags),
@@ -440,7 +441,7 @@ SC_TRACE_EVENT(sys_swapon,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_sethostname
+#ifndef OVERRIDE_64_sys_sethostname
 SC_TRACE_EVENT(sys_sethostname,
 	TP_PROTO(char * name, int len),
 	TP_ARGS(name, len),
@@ -449,7 +450,7 @@ SC_TRACE_EVENT(sys_sethostname,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_setdomainname
+#ifndef OVERRIDE_64_sys_setdomainname
 SC_TRACE_EVENT(sys_setdomainname,
 	TP_PROTO(char * name, int len),
 	TP_ARGS(name, len),
@@ -458,7 +459,7 @@ SC_TRACE_EVENT(sys_setdomainname,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_delete_module
+#ifndef OVERRIDE_64_sys_delete_module
 SC_TRACE_EVENT(sys_delete_module,
 	TP_PROTO(const char * name_user, unsigned int flags),
 	TP_ARGS(name_user, flags),
@@ -467,7 +468,7 @@ SC_TRACE_EVENT(sys_delete_module,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_removexattr
+#ifndef OVERRIDE_64_sys_removexattr
 SC_TRACE_EVENT(sys_removexattr,
 	TP_PROTO(const char * pathname, const char * name),
 	TP_ARGS(pathname, name),
@@ -476,7 +477,7 @@ SC_TRACE_EVENT(sys_removexattr,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_lremovexattr
+#ifndef OVERRIDE_64_sys_lremovexattr
 SC_TRACE_EVENT(sys_lremovexattr,
 	TP_PROTO(const char * pathname, const char * name),
 	TP_ARGS(pathname, name),
@@ -485,7 +486,7 @@ SC_TRACE_EVENT(sys_lremovexattr,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_fremovexattr
+#ifndef OVERRIDE_64_sys_fremovexattr
 SC_TRACE_EVENT(sys_fremovexattr,
 	TP_PROTO(int fd, const char * name),
 	TP_ARGS(fd, name),
@@ -494,7 +495,7 @@ SC_TRACE_EVENT(sys_fremovexattr,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_io_setup
+#ifndef OVERRIDE_64_sys_io_setup
 SC_TRACE_EVENT(sys_io_setup,
 	TP_PROTO(unsigned nr_events, aio_context_t * ctxp),
 	TP_ARGS(nr_events, ctxp),
@@ -503,7 +504,7 @@ SC_TRACE_EVENT(sys_io_setup,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_timer_gettime
+#ifndef OVERRIDE_64_sys_timer_gettime
 SC_TRACE_EVENT(sys_timer_gettime,
 	TP_PROTO(timer_t timer_id, struct itimerspec * setting),
 	TP_ARGS(timer_id, setting),
@@ -512,7 +513,7 @@ SC_TRACE_EVENT(sys_timer_gettime,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_clock_settime
+#ifndef OVERRIDE_64_sys_clock_settime
 SC_TRACE_EVENT(sys_clock_settime,
 	TP_PROTO(const clockid_t which_clock, const struct timespec * tp),
 	TP_ARGS(which_clock, tp),
@@ -521,7 +522,7 @@ SC_TRACE_EVENT(sys_clock_settime,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_clock_gettime
+#ifndef OVERRIDE_64_sys_clock_gettime
 SC_TRACE_EVENT(sys_clock_gettime,
 	TP_PROTO(const clockid_t which_clock, struct timespec * tp),
 	TP_ARGS(which_clock, tp),
@@ -530,7 +531,7 @@ SC_TRACE_EVENT(sys_clock_gettime,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_clock_getres
+#ifndef OVERRIDE_64_sys_clock_getres
 SC_TRACE_EVENT(sys_clock_getres,
 	TP_PROTO(const clockid_t which_clock, struct timespec * tp),
 	TP_ARGS(which_clock, tp),
@@ -539,7 +540,7 @@ SC_TRACE_EVENT(sys_clock_getres,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_utimes
+#ifndef OVERRIDE_64_sys_utimes
 SC_TRACE_EVENT(sys_utimes,
 	TP_PROTO(char * filename, struct timeval * utimes),
 	TP_ARGS(filename, utimes),
@@ -548,7 +549,7 @@ SC_TRACE_EVENT(sys_utimes,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_mq_notify
+#ifndef OVERRIDE_64_sys_mq_notify
 SC_TRACE_EVENT(sys_mq_notify,
 	TP_PROTO(mqd_t mqdes, const struct sigevent * u_notification),
 	TP_ARGS(mqdes, u_notification),
@@ -557,7 +558,7 @@ SC_TRACE_EVENT(sys_mq_notify,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_set_robust_list
+#ifndef OVERRIDE_64_sys_set_robust_list
 SC_TRACE_EVENT(sys_set_robust_list,
 	TP_PROTO(struct robust_list_head * head, size_t len),
 	TP_ARGS(head, len),
@@ -566,7 +567,7 @@ SC_TRACE_EVENT(sys_set_robust_list,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_timerfd_gettime
+#ifndef OVERRIDE_64_sys_timerfd_gettime
 SC_TRACE_EVENT(sys_timerfd_gettime,
 	TP_PROTO(int ufd, struct itimerspec * otmr),
 	TP_ARGS(ufd, otmr),
@@ -575,7 +576,7 @@ SC_TRACE_EVENT(sys_timerfd_gettime,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_pipe2
+#ifndef OVERRIDE_64_sys_pipe2
 SC_TRACE_EVENT(sys_pipe2,
 	TP_PROTO(int * fildes, int flags),
 	TP_ARGS(fildes, flags),
@@ -584,7 +585,7 @@ SC_TRACE_EVENT(sys_pipe2,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_clock_adjtime
+#ifndef OVERRIDE_64_sys_clock_adjtime
 SC_TRACE_EVENT(sys_clock_adjtime,
 	TP_PROTO(const clockid_t which_clock, struct timex * utx),
 	TP_ARGS(which_clock, utx),
@@ -593,7 +594,7 @@ SC_TRACE_EVENT(sys_clock_adjtime,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_read
+#ifndef OVERRIDE_64_sys_read
 SC_TRACE_EVENT(sys_read,
 	TP_PROTO(unsigned int fd, char * buf, size_t count),
 	TP_ARGS(fd, buf, count),
@@ -602,7 +603,7 @@ SC_TRACE_EVENT(sys_read,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_write
+#ifndef OVERRIDE_64_sys_write
 SC_TRACE_EVENT(sys_write,
 	TP_PROTO(unsigned int fd, const char * buf, size_t count),
 	TP_ARGS(fd, buf, count),
@@ -611,7 +612,7 @@ SC_TRACE_EVENT(sys_write,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_open
+#ifndef OVERRIDE_64_sys_open
 SC_TRACE_EVENT(sys_open,
 	TP_PROTO(const char * filename, int flags, int mode),
 	TP_ARGS(filename, flags, mode),
@@ -620,7 +621,7 @@ SC_TRACE_EVENT(sys_open,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_poll
+#ifndef OVERRIDE_64_sys_poll
 SC_TRACE_EVENT(sys_poll,
 	TP_PROTO(struct pollfd * ufds, unsigned int nfds, long timeout_msecs),
 	TP_ARGS(ufds, nfds, timeout_msecs),
@@ -629,7 +630,7 @@ SC_TRACE_EVENT(sys_poll,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_readv
+#ifndef OVERRIDE_64_sys_readv
 SC_TRACE_EVENT(sys_readv,
 	TP_PROTO(unsigned long fd, const struct iovec * vec, unsigned long vlen),
 	TP_ARGS(fd, vec, vlen),
@@ -638,7 +639,7 @@ SC_TRACE_EVENT(sys_readv,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_writev
+#ifndef OVERRIDE_64_sys_writev
 SC_TRACE_EVENT(sys_writev,
 	TP_PROTO(unsigned long fd, const struct iovec * vec, unsigned long vlen),
 	TP_ARGS(fd, vec, vlen),
@@ -647,7 +648,7 @@ SC_TRACE_EVENT(sys_writev,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_mincore
+#ifndef OVERRIDE_64_sys_mincore
 SC_TRACE_EVENT(sys_mincore,
 	TP_PROTO(unsigned long start, size_t len, unsigned char * vec),
 	TP_ARGS(start, len, vec),
@@ -656,7 +657,7 @@ SC_TRACE_EVENT(sys_mincore,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_shmat
+#ifndef OVERRIDE_64_sys_shmat
 SC_TRACE_EVENT(sys_shmat,
 	TP_PROTO(int shmid, char * shmaddr, int shmflg),
 	TP_ARGS(shmid, shmaddr, shmflg),
@@ -665,7 +666,7 @@ SC_TRACE_EVENT(sys_shmat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_shmctl
+#ifndef OVERRIDE_64_sys_shmctl
 SC_TRACE_EVENT(sys_shmctl,
 	TP_PROTO(int shmid, int cmd, struct shmid_ds * buf),
 	TP_ARGS(shmid, cmd, buf),
@@ -674,7 +675,7 @@ SC_TRACE_EVENT(sys_shmctl,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_setitimer
+#ifndef OVERRIDE_64_sys_setitimer
 SC_TRACE_EVENT(sys_setitimer,
 	TP_PROTO(int which, struct itimerval * value, struct itimerval * ovalue),
 	TP_ARGS(which, value, ovalue),
@@ -683,7 +684,7 @@ SC_TRACE_EVENT(sys_setitimer,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_connect
+#ifndef OVERRIDE_64_sys_connect
 SC_TRACE_EVENT(sys_connect,
 	TP_PROTO(int fd, struct sockaddr * uservaddr, int addrlen),
 	TP_ARGS(fd, uservaddr, addrlen),
@@ -692,7 +693,7 @@ SC_TRACE_EVENT(sys_connect,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_accept
+#ifndef OVERRIDE_64_sys_accept
 SC_TRACE_EVENT(sys_accept,
 	TP_PROTO(int fd, struct sockaddr * upeer_sockaddr, int * upeer_addrlen),
 	TP_ARGS(fd, upeer_sockaddr, upeer_addrlen),
@@ -701,7 +702,7 @@ SC_TRACE_EVENT(sys_accept,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_sendmsg
+#ifndef OVERRIDE_64_sys_sendmsg
 SC_TRACE_EVENT(sys_sendmsg,
 	TP_PROTO(int fd, struct msghdr * msg, unsigned flags),
 	TP_ARGS(fd, msg, flags),
@@ -710,7 +711,7 @@ SC_TRACE_EVENT(sys_sendmsg,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_recvmsg
+#ifndef OVERRIDE_64_sys_recvmsg
 SC_TRACE_EVENT(sys_recvmsg,
 	TP_PROTO(int fd, struct msghdr * msg, unsigned int flags),
 	TP_ARGS(fd, msg, flags),
@@ -719,7 +720,7 @@ SC_TRACE_EVENT(sys_recvmsg,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_bind
+#ifndef OVERRIDE_64_sys_bind
 SC_TRACE_EVENT(sys_bind,
 	TP_PROTO(int fd, struct sockaddr * umyaddr, int addrlen),
 	TP_ARGS(fd, umyaddr, addrlen),
@@ -728,7 +729,7 @@ SC_TRACE_EVENT(sys_bind,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_getsockname
+#ifndef OVERRIDE_64_sys_getsockname
 SC_TRACE_EVENT(sys_getsockname,
 	TP_PROTO(int fd, struct sockaddr * usockaddr, int * usockaddr_len),
 	TP_ARGS(fd, usockaddr, usockaddr_len),
@@ -737,7 +738,7 @@ SC_TRACE_EVENT(sys_getsockname,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_getpeername
+#ifndef OVERRIDE_64_sys_getpeername
 SC_TRACE_EVENT(sys_getpeername,
 	TP_PROTO(int fd, struct sockaddr * usockaddr, int * usockaddr_len),
 	TP_ARGS(fd, usockaddr, usockaddr_len),
@@ -746,7 +747,7 @@ SC_TRACE_EVENT(sys_getpeername,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_semop
+#ifndef OVERRIDE_64_sys_semop
 SC_TRACE_EVENT(sys_semop,
 	TP_PROTO(int semid, struct sembuf * tsops, unsigned nsops),
 	TP_ARGS(semid, tsops, nsops),
@@ -755,7 +756,7 @@ SC_TRACE_EVENT(sys_semop,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_msgctl
+#ifndef OVERRIDE_64_sys_msgctl
 SC_TRACE_EVENT(sys_msgctl,
 	TP_PROTO(int msqid, int cmd, struct msqid_ds * buf),
 	TP_ARGS(msqid, cmd, buf),
@@ -764,7 +765,7 @@ SC_TRACE_EVENT(sys_msgctl,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_getdents
+#ifndef OVERRIDE_64_sys_getdents
 SC_TRACE_EVENT(sys_getdents,
 	TP_PROTO(unsigned int fd, struct linux_dirent * dirent, unsigned int count),
 	TP_ARGS(fd, dirent, count),
@@ -773,7 +774,7 @@ SC_TRACE_EVENT(sys_getdents,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_readlink
+#ifndef OVERRIDE_64_sys_readlink
 SC_TRACE_EVENT(sys_readlink,
 	TP_PROTO(const char * path, char * buf, int bufsiz),
 	TP_ARGS(path, buf, bufsiz),
@@ -782,7 +783,7 @@ SC_TRACE_EVENT(sys_readlink,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_chown
+#ifndef OVERRIDE_64_sys_chown
 SC_TRACE_EVENT(sys_chown,
 	TP_PROTO(const char * filename, uid_t user, gid_t group),
 	TP_ARGS(filename, user, group),
@@ -791,7 +792,7 @@ SC_TRACE_EVENT(sys_chown,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_lchown
+#ifndef OVERRIDE_64_sys_lchown
 SC_TRACE_EVENT(sys_lchown,
 	TP_PROTO(const char * filename, uid_t user, gid_t group),
 	TP_ARGS(filename, user, group),
@@ -800,7 +801,7 @@ SC_TRACE_EVENT(sys_lchown,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_syslog
+#ifndef OVERRIDE_64_sys_syslog
 SC_TRACE_EVENT(sys_syslog,
 	TP_PROTO(int type, char * buf, int len),
 	TP_ARGS(type, buf, len),
@@ -809,7 +810,7 @@ SC_TRACE_EVENT(sys_syslog,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_getresuid
+#ifndef OVERRIDE_64_sys_getresuid
 SC_TRACE_EVENT(sys_getresuid,
 	TP_PROTO(uid_t * ruid, uid_t * euid, uid_t * suid),
 	TP_ARGS(ruid, euid, suid),
@@ -818,7 +819,7 @@ SC_TRACE_EVENT(sys_getresuid,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_getresgid
+#ifndef OVERRIDE_64_sys_getresgid
 SC_TRACE_EVENT(sys_getresgid,
 	TP_PROTO(gid_t * rgid, gid_t * egid, gid_t * sgid),
 	TP_ARGS(rgid, egid, sgid),
@@ -827,7 +828,7 @@ SC_TRACE_EVENT(sys_getresgid,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_rt_sigqueueinfo
+#ifndef OVERRIDE_64_sys_rt_sigqueueinfo
 SC_TRACE_EVENT(sys_rt_sigqueueinfo,
 	TP_PROTO(pid_t pid, int sig, siginfo_t * uinfo),
 	TP_ARGS(pid, sig, uinfo),
@@ -836,7 +837,7 @@ SC_TRACE_EVENT(sys_rt_sigqueueinfo,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_mknod
+#ifndef OVERRIDE_64_sys_mknod
 SC_TRACE_EVENT(sys_mknod,
 	TP_PROTO(const char * filename, int mode, unsigned dev),
 	TP_ARGS(filename, mode, dev),
@@ -845,7 +846,7 @@ SC_TRACE_EVENT(sys_mknod,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_sched_setscheduler
+#ifndef OVERRIDE_64_sys_sched_setscheduler
 SC_TRACE_EVENT(sys_sched_setscheduler,
 	TP_PROTO(pid_t pid, int policy, struct sched_param * param),
 	TP_ARGS(pid, policy, param),
@@ -854,7 +855,7 @@ SC_TRACE_EVENT(sys_sched_setscheduler,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_init_module
+#ifndef OVERRIDE_64_sys_init_module
 SC_TRACE_EVENT(sys_init_module,
 	TP_PROTO(void * umod, unsigned long len, const char * uargs),
 	TP_ARGS(umod, len, uargs),
@@ -863,7 +864,7 @@ SC_TRACE_EVENT(sys_init_module,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_nfsservctl
+#ifndef OVERRIDE_64_sys_nfsservctl
 SC_TRACE_EVENT(sys_nfsservctl,
 	TP_PROTO(int cmd, struct nfsctl_arg * arg, void * res),
 	TP_ARGS(cmd, arg, res),
@@ -872,7 +873,7 @@ SC_TRACE_EVENT(sys_nfsservctl,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_listxattr
+#ifndef OVERRIDE_64_sys_listxattr
 SC_TRACE_EVENT(sys_listxattr,
 	TP_PROTO(const char * pathname, char * list, size_t size),
 	TP_ARGS(pathname, list, size),
@@ -881,7 +882,7 @@ SC_TRACE_EVENT(sys_listxattr,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_llistxattr
+#ifndef OVERRIDE_64_sys_llistxattr
 SC_TRACE_EVENT(sys_llistxattr,
 	TP_PROTO(const char * pathname, char * list, size_t size),
 	TP_ARGS(pathname, list, size),
@@ -890,7 +891,7 @@ SC_TRACE_EVENT(sys_llistxattr,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_flistxattr
+#ifndef OVERRIDE_64_sys_flistxattr
 SC_TRACE_EVENT(sys_flistxattr,
 	TP_PROTO(int fd, char * list, size_t size),
 	TP_ARGS(fd, list, size),
@@ -899,7 +900,7 @@ SC_TRACE_EVENT(sys_flistxattr,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_sched_setaffinity
+#ifndef OVERRIDE_64_sys_sched_setaffinity
 SC_TRACE_EVENT(sys_sched_setaffinity,
 	TP_PROTO(pid_t pid, unsigned int len, unsigned long * user_mask_ptr),
 	TP_ARGS(pid, len, user_mask_ptr),
@@ -908,7 +909,7 @@ SC_TRACE_EVENT(sys_sched_setaffinity,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_sched_getaffinity
+#ifndef OVERRIDE_64_sys_sched_getaffinity
 SC_TRACE_EVENT(sys_sched_getaffinity,
 	TP_PROTO(pid_t pid, unsigned int len, unsigned long * user_mask_ptr),
 	TP_ARGS(pid, len, user_mask_ptr),
@@ -917,7 +918,7 @@ SC_TRACE_EVENT(sys_sched_getaffinity,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_io_submit
+#ifndef OVERRIDE_64_sys_io_submit
 SC_TRACE_EVENT(sys_io_submit,
 	TP_PROTO(aio_context_t ctx_id, long nr, struct iocb * * iocbpp),
 	TP_ARGS(ctx_id, nr, iocbpp),
@@ -926,7 +927,7 @@ SC_TRACE_EVENT(sys_io_submit,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_io_cancel
+#ifndef OVERRIDE_64_sys_io_cancel
 SC_TRACE_EVENT(sys_io_cancel,
 	TP_PROTO(aio_context_t ctx_id, struct iocb * iocb, struct io_event * result),
 	TP_ARGS(ctx_id, iocb, result),
@@ -935,7 +936,7 @@ SC_TRACE_EVENT(sys_io_cancel,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_getdents64
+#ifndef OVERRIDE_64_sys_getdents64
 SC_TRACE_EVENT(sys_getdents64,
 	TP_PROTO(unsigned int fd, struct linux_dirent64 * dirent, unsigned int count),
 	TP_ARGS(fd, dirent, count),
@@ -944,7 +945,7 @@ SC_TRACE_EVENT(sys_getdents64,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_timer_create
+#ifndef OVERRIDE_64_sys_timer_create
 SC_TRACE_EVENT(sys_timer_create,
 	TP_PROTO(const clockid_t which_clock, struct sigevent * timer_event_spec, timer_t * created_timer_id),
 	TP_ARGS(which_clock, timer_event_spec, created_timer_id),
@@ -953,7 +954,7 @@ SC_TRACE_EVENT(sys_timer_create,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_mq_getsetattr
+#ifndef OVERRIDE_64_sys_mq_getsetattr
 SC_TRACE_EVENT(sys_mq_getsetattr,
 	TP_PROTO(mqd_t mqdes, const struct mq_attr * u_mqstat, struct mq_attr * u_omqstat),
 	TP_ARGS(mqdes, u_mqstat, u_omqstat),
@@ -962,7 +963,7 @@ SC_TRACE_EVENT(sys_mq_getsetattr,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_inotify_add_watch
+#ifndef OVERRIDE_64_sys_inotify_add_watch
 SC_TRACE_EVENT(sys_inotify_add_watch,
 	TP_PROTO(int fd, const char * pathname, u32 mask),
 	TP_ARGS(fd, pathname, mask),
@@ -971,7 +972,7 @@ SC_TRACE_EVENT(sys_inotify_add_watch,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_mkdirat
+#ifndef OVERRIDE_64_sys_mkdirat
 SC_TRACE_EVENT(sys_mkdirat,
 	TP_PROTO(int dfd, const char * pathname, int mode),
 	TP_ARGS(dfd, pathname, mode),
@@ -980,7 +981,7 @@ SC_TRACE_EVENT(sys_mkdirat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_futimesat
+#ifndef OVERRIDE_64_sys_futimesat
 SC_TRACE_EVENT(sys_futimesat,
 	TP_PROTO(int dfd, const char * filename, struct timeval * utimes),
 	TP_ARGS(dfd, filename, utimes),
@@ -989,7 +990,7 @@ SC_TRACE_EVENT(sys_futimesat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_unlinkat
+#ifndef OVERRIDE_64_sys_unlinkat
 SC_TRACE_EVENT(sys_unlinkat,
 	TP_PROTO(int dfd, const char * pathname, int flag),
 	TP_ARGS(dfd, pathname, flag),
@@ -998,7 +999,7 @@ SC_TRACE_EVENT(sys_unlinkat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_symlinkat
+#ifndef OVERRIDE_64_sys_symlinkat
 SC_TRACE_EVENT(sys_symlinkat,
 	TP_PROTO(const char * oldname, int newdfd, const char * newname),
 	TP_ARGS(oldname, newdfd, newname),
@@ -1007,7 +1008,7 @@ SC_TRACE_EVENT(sys_symlinkat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_fchmodat
+#ifndef OVERRIDE_64_sys_fchmodat
 SC_TRACE_EVENT(sys_fchmodat,
 	TP_PROTO(int dfd, const char * filename, mode_t mode),
 	TP_ARGS(dfd, filename, mode),
@@ -1016,7 +1017,7 @@ SC_TRACE_EVENT(sys_fchmodat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_faccessat
+#ifndef OVERRIDE_64_sys_faccessat
 SC_TRACE_EVENT(sys_faccessat,
 	TP_PROTO(int dfd, const char * filename, int mode),
 	TP_ARGS(dfd, filename, mode),
@@ -1025,7 +1026,7 @@ SC_TRACE_EVENT(sys_faccessat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_get_robust_list
+#ifndef OVERRIDE_64_sys_get_robust_list
 SC_TRACE_EVENT(sys_get_robust_list,
 	TP_PROTO(int pid, struct robust_list_head * * head_ptr, size_t * len_ptr),
 	TP_ARGS(pid, head_ptr, len_ptr),
@@ -1034,7 +1035,7 @@ SC_TRACE_EVENT(sys_get_robust_list,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_signalfd
+#ifndef OVERRIDE_64_sys_signalfd
 SC_TRACE_EVENT(sys_signalfd,
 	TP_PROTO(int ufd, sigset_t * user_mask, size_t sizemask),
 	TP_ARGS(ufd, user_mask, sizemask),
@@ -1043,7 +1044,7 @@ SC_TRACE_EVENT(sys_signalfd,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_rt_sigaction
+#ifndef OVERRIDE_64_sys_rt_sigaction
 SC_TRACE_EVENT(sys_rt_sigaction,
 	TP_PROTO(int sig, const struct sigaction * act, struct sigaction * oact, size_t sigsetsize),
 	TP_ARGS(sig, act, oact, sigsetsize),
@@ -1052,7 +1053,7 @@ SC_TRACE_EVENT(sys_rt_sigaction,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_rt_sigprocmask
+#ifndef OVERRIDE_64_sys_rt_sigprocmask
 SC_TRACE_EVENT(sys_rt_sigprocmask,
 	TP_PROTO(int how, sigset_t * nset, sigset_t * oset, size_t sigsetsize),
 	TP_ARGS(how, nset, oset, sigsetsize),
@@ -1061,7 +1062,7 @@ SC_TRACE_EVENT(sys_rt_sigprocmask,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_sendfile64
+#ifndef OVERRIDE_64_sys_sendfile64
 SC_TRACE_EVENT(sys_sendfile64,
 	TP_PROTO(int out_fd, int in_fd, loff_t * offset, size_t count),
 	TP_ARGS(out_fd, in_fd, offset, count),
@@ -1070,7 +1071,7 @@ SC_TRACE_EVENT(sys_sendfile64,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_socketpair
+#ifndef OVERRIDE_64_sys_socketpair
 SC_TRACE_EVENT(sys_socketpair,
 	TP_PROTO(int family, int type, int protocol, int * usockvec),
 	TP_ARGS(family, type, protocol, usockvec),
@@ -1079,7 +1080,7 @@ SC_TRACE_EVENT(sys_socketpair,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_wait4
+#ifndef OVERRIDE_64_sys_wait4
 SC_TRACE_EVENT(sys_wait4,
 	TP_PROTO(pid_t upid, int * stat_addr, int options, struct rusage * ru),
 	TP_ARGS(upid, stat_addr, options, ru),
@@ -1088,7 +1089,7 @@ SC_TRACE_EVENT(sys_wait4,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_msgsnd
+#ifndef OVERRIDE_64_sys_msgsnd
 SC_TRACE_EVENT(sys_msgsnd,
 	TP_PROTO(int msqid, struct msgbuf * msgp, size_t msgsz, int msgflg),
 	TP_ARGS(msqid, msgp, msgsz, msgflg),
@@ -1097,7 +1098,7 @@ SC_TRACE_EVENT(sys_msgsnd,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_rt_sigtimedwait
+#ifndef OVERRIDE_64_sys_rt_sigtimedwait
 SC_TRACE_EVENT(sys_rt_sigtimedwait,
 	TP_PROTO(const sigset_t * uthese, siginfo_t * uinfo, const struct timespec * uts, size_t sigsetsize),
 	TP_ARGS(uthese, uinfo, uts, sigsetsize),
@@ -1106,7 +1107,7 @@ SC_TRACE_EVENT(sys_rt_sigtimedwait,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_reboot
+#ifndef OVERRIDE_64_sys_reboot
 SC_TRACE_EVENT(sys_reboot,
 	TP_PROTO(int magic1, int magic2, unsigned int cmd, void * arg),
 	TP_ARGS(magic1, magic2, cmd, arg),
@@ -1115,7 +1116,7 @@ SC_TRACE_EVENT(sys_reboot,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_getxattr
+#ifndef OVERRIDE_64_sys_getxattr
 SC_TRACE_EVENT(sys_getxattr,
 	TP_PROTO(const char * pathname, const char * name, void * value, size_t size),
 	TP_ARGS(pathname, name, value, size),
@@ -1124,7 +1125,7 @@ SC_TRACE_EVENT(sys_getxattr,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_lgetxattr
+#ifndef OVERRIDE_64_sys_lgetxattr
 SC_TRACE_EVENT(sys_lgetxattr,
 	TP_PROTO(const char * pathname, const char * name, void * value, size_t size),
 	TP_ARGS(pathname, name, value, size),
@@ -1133,7 +1134,7 @@ SC_TRACE_EVENT(sys_lgetxattr,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_fgetxattr
+#ifndef OVERRIDE_64_sys_fgetxattr
 SC_TRACE_EVENT(sys_fgetxattr,
 	TP_PROTO(int fd, const char * name, void * value, size_t size),
 	TP_ARGS(fd, name, value, size),
@@ -1142,7 +1143,7 @@ SC_TRACE_EVENT(sys_fgetxattr,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_semtimedop
+#ifndef OVERRIDE_64_sys_semtimedop
 SC_TRACE_EVENT(sys_semtimedop,
 	TP_PROTO(int semid, struct sembuf * tsops, unsigned nsops, const struct timespec * timeout),
 	TP_ARGS(semid, tsops, nsops, timeout),
@@ -1151,7 +1152,7 @@ SC_TRACE_EVENT(sys_semtimedop,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_timer_settime
+#ifndef OVERRIDE_64_sys_timer_settime
 SC_TRACE_EVENT(sys_timer_settime,
 	TP_PROTO(timer_t timer_id, int flags, const struct itimerspec * new_setting, struct itimerspec * old_setting),
 	TP_ARGS(timer_id, flags, new_setting, old_setting),
@@ -1160,7 +1161,7 @@ SC_TRACE_EVENT(sys_timer_settime,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_clock_nanosleep
+#ifndef OVERRIDE_64_sys_clock_nanosleep
 SC_TRACE_EVENT(sys_clock_nanosleep,
 	TP_PROTO(const clockid_t which_clock, int flags, const struct timespec * rqtp, struct timespec * rmtp),
 	TP_ARGS(which_clock, flags, rqtp, rmtp),
@@ -1169,7 +1170,7 @@ SC_TRACE_EVENT(sys_clock_nanosleep,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_epoll_wait
+#ifndef OVERRIDE_64_sys_epoll_wait
 SC_TRACE_EVENT(sys_epoll_wait,
 	TP_PROTO(int epfd, struct epoll_event * events, int maxevents, int timeout),
 	TP_ARGS(epfd, events, maxevents, timeout),
@@ -1178,7 +1179,7 @@ SC_TRACE_EVENT(sys_epoll_wait,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_epoll_ctl
+#ifndef OVERRIDE_64_sys_epoll_ctl
 SC_TRACE_EVENT(sys_epoll_ctl,
 	TP_PROTO(int epfd, int op, int fd, struct epoll_event * event),
 	TP_ARGS(epfd, op, fd, event),
@@ -1187,7 +1188,7 @@ SC_TRACE_EVENT(sys_epoll_ctl,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_mq_open
+#ifndef OVERRIDE_64_sys_mq_open
 SC_TRACE_EVENT(sys_mq_open,
 	TP_PROTO(const char * u_name, int oflag, mode_t mode, struct mq_attr * u_attr),
 	TP_ARGS(u_name, oflag, mode, u_attr),
@@ -1196,7 +1197,7 @@ SC_TRACE_EVENT(sys_mq_open,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_kexec_load
+#ifndef OVERRIDE_64_sys_kexec_load
 SC_TRACE_EVENT(sys_kexec_load,
 	TP_PROTO(unsigned long entry, unsigned long nr_segments, struct kexec_segment * segments, unsigned long flags),
 	TP_ARGS(entry, nr_segments, segments, flags),
@@ -1205,7 +1206,7 @@ SC_TRACE_EVENT(sys_kexec_load,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_openat
+#ifndef OVERRIDE_64_sys_openat
 SC_TRACE_EVENT(sys_openat,
 	TP_PROTO(int dfd, const char * filename, int flags, int mode),
 	TP_ARGS(dfd, filename, flags, mode),
@@ -1214,7 +1215,7 @@ SC_TRACE_EVENT(sys_openat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_mknodat
+#ifndef OVERRIDE_64_sys_mknodat
 SC_TRACE_EVENT(sys_mknodat,
 	TP_PROTO(int dfd, const char * filename, int mode, unsigned dev),
 	TP_ARGS(dfd, filename, mode, dev),
@@ -1223,7 +1224,7 @@ SC_TRACE_EVENT(sys_mknodat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_newfstatat
+#ifndef OVERRIDE_64_sys_newfstatat
 SC_TRACE_EVENT(sys_newfstatat,
 	TP_PROTO(int dfd, const char * filename, struct stat * statbuf, int flag),
 	TP_ARGS(dfd, filename, statbuf, flag),
@@ -1232,7 +1233,7 @@ SC_TRACE_EVENT(sys_newfstatat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_renameat
+#ifndef OVERRIDE_64_sys_renameat
 SC_TRACE_EVENT(sys_renameat,
 	TP_PROTO(int olddfd, const char * oldname, int newdfd, const char * newname),
 	TP_ARGS(olddfd, oldname, newdfd, newname),
@@ -1241,7 +1242,7 @@ SC_TRACE_EVENT(sys_renameat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_readlinkat
+#ifndef OVERRIDE_64_sys_readlinkat
 SC_TRACE_EVENT(sys_readlinkat,
 	TP_PROTO(int dfd, const char * pathname, char * buf, int bufsiz),
 	TP_ARGS(dfd, pathname, buf, bufsiz),
@@ -1250,7 +1251,7 @@ SC_TRACE_EVENT(sys_readlinkat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_vmsplice
+#ifndef OVERRIDE_64_sys_vmsplice
 SC_TRACE_EVENT(sys_vmsplice,
 	TP_PROTO(int fd, const struct iovec * iov, unsigned long nr_segs, unsigned int flags),
 	TP_ARGS(fd, iov, nr_segs, flags),
@@ -1259,7 +1260,7 @@ SC_TRACE_EVENT(sys_vmsplice,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_utimensat
+#ifndef OVERRIDE_64_sys_utimensat
 SC_TRACE_EVENT(sys_utimensat,
 	TP_PROTO(int dfd, const char * filename, struct timespec * utimes, int flags),
 	TP_ARGS(dfd, filename, utimes, flags),
@@ -1268,7 +1269,7 @@ SC_TRACE_EVENT(sys_utimensat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_timerfd_settime
+#ifndef OVERRIDE_64_sys_timerfd_settime
 SC_TRACE_EVENT(sys_timerfd_settime,
 	TP_PROTO(int ufd, int flags, const struct itimerspec * utmr, struct itimerspec * otmr),
 	TP_ARGS(ufd, flags, utmr, otmr),
@@ -1277,7 +1278,7 @@ SC_TRACE_EVENT(sys_timerfd_settime,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_accept4
+#ifndef OVERRIDE_64_sys_accept4
 SC_TRACE_EVENT(sys_accept4,
 	TP_PROTO(int fd, struct sockaddr * upeer_sockaddr, int * upeer_addrlen, int flags),
 	TP_ARGS(fd, upeer_sockaddr, upeer_addrlen, flags),
@@ -1286,7 +1287,7 @@ SC_TRACE_EVENT(sys_accept4,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_signalfd4
+#ifndef OVERRIDE_64_sys_signalfd4
 SC_TRACE_EVENT(sys_signalfd4,
 	TP_PROTO(int ufd, sigset_t * user_mask, size_t sizemask, int flags),
 	TP_ARGS(ufd, user_mask, sizemask, flags),
@@ -1295,7 +1296,7 @@ SC_TRACE_EVENT(sys_signalfd4,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_rt_tgsigqueueinfo
+#ifndef OVERRIDE_64_sys_rt_tgsigqueueinfo
 SC_TRACE_EVENT(sys_rt_tgsigqueueinfo,
 	TP_PROTO(pid_t tgid, pid_t pid, int sig, siginfo_t * uinfo),
 	TP_ARGS(tgid, pid, sig, uinfo),
@@ -1304,7 +1305,7 @@ SC_TRACE_EVENT(sys_rt_tgsigqueueinfo,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_prlimit64
+#ifndef OVERRIDE_64_sys_prlimit64
 SC_TRACE_EVENT(sys_prlimit64,
 	TP_PROTO(pid_t pid, unsigned int resource, const struct rlimit64 * new_rlim, struct rlimit64 * old_rlim),
 	TP_ARGS(pid, resource, new_rlim, old_rlim),
@@ -1313,7 +1314,7 @@ SC_TRACE_EVENT(sys_prlimit64,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_sendmmsg
+#ifndef OVERRIDE_64_sys_sendmmsg
 SC_TRACE_EVENT(sys_sendmmsg,
 	TP_PROTO(int fd, struct mmsghdr * mmsg, unsigned int vlen, unsigned int flags),
 	TP_ARGS(fd, mmsg, vlen, flags),
@@ -1322,7 +1323,7 @@ SC_TRACE_EVENT(sys_sendmmsg,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_select
+#ifndef OVERRIDE_64_sys_select
 SC_TRACE_EVENT(sys_select,
 	TP_PROTO(int n, fd_set * inp, fd_set * outp, fd_set * exp, struct timeval * tvp),
 	TP_ARGS(n, inp, outp, exp, tvp),
@@ -1331,7 +1332,7 @@ SC_TRACE_EVENT(sys_select,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_setsockopt
+#ifndef OVERRIDE_64_sys_setsockopt
 SC_TRACE_EVENT(sys_setsockopt,
 	TP_PROTO(int fd, int level, int optname, char * optval, int optlen),
 	TP_ARGS(fd, level, optname, optval, optlen),
@@ -1340,7 +1341,7 @@ SC_TRACE_EVENT(sys_setsockopt,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_getsockopt
+#ifndef OVERRIDE_64_sys_getsockopt
 SC_TRACE_EVENT(sys_getsockopt,
 	TP_PROTO(int fd, int level, int optname, char * optval, int * optlen),
 	TP_ARGS(fd, level, optname, optval, optlen),
@@ -1349,7 +1350,7 @@ SC_TRACE_EVENT(sys_getsockopt,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_msgrcv
+#ifndef OVERRIDE_64_sys_msgrcv
 SC_TRACE_EVENT(sys_msgrcv,
 	TP_PROTO(int msqid, struct msgbuf * msgp, size_t msgsz, long msgtyp, int msgflg),
 	TP_ARGS(msqid, msgp, msgsz, msgtyp, msgflg),
@@ -1358,7 +1359,7 @@ SC_TRACE_EVENT(sys_msgrcv,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_mount
+#ifndef OVERRIDE_64_sys_mount
 SC_TRACE_EVENT(sys_mount,
 	TP_PROTO(char * dev_name, char * dir_name, char * type, unsigned long flags, void * data),
 	TP_ARGS(dev_name, dir_name, type, flags, data),
@@ -1367,7 +1368,7 @@ SC_TRACE_EVENT(sys_mount,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_setxattr
+#ifndef OVERRIDE_64_sys_setxattr
 SC_TRACE_EVENT(sys_setxattr,
 	TP_PROTO(const char * pathname, const char * name, const void * value, size_t size, int flags),
 	TP_ARGS(pathname, name, value, size, flags),
@@ -1376,7 +1377,7 @@ SC_TRACE_EVENT(sys_setxattr,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_lsetxattr
+#ifndef OVERRIDE_64_sys_lsetxattr
 SC_TRACE_EVENT(sys_lsetxattr,
 	TP_PROTO(const char * pathname, const char * name, const void * value, size_t size, int flags),
 	TP_ARGS(pathname, name, value, size, flags),
@@ -1385,7 +1386,7 @@ SC_TRACE_EVENT(sys_lsetxattr,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_fsetxattr
+#ifndef OVERRIDE_64_sys_fsetxattr
 SC_TRACE_EVENT(sys_fsetxattr,
 	TP_PROTO(int fd, const char * name, const void * value, size_t size, int flags),
 	TP_ARGS(fd, name, value, size, flags),
@@ -1394,7 +1395,7 @@ SC_TRACE_EVENT(sys_fsetxattr,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_io_getevents
+#ifndef OVERRIDE_64_sys_io_getevents
 SC_TRACE_EVENT(sys_io_getevents,
 	TP_PROTO(aio_context_t ctx_id, long min_nr, long nr, struct io_event * events, struct timespec * timeout),
 	TP_ARGS(ctx_id, min_nr, nr, events, timeout),
@@ -1403,7 +1404,7 @@ SC_TRACE_EVENT(sys_io_getevents,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_mq_timedsend
+#ifndef OVERRIDE_64_sys_mq_timedsend
 SC_TRACE_EVENT(sys_mq_timedsend,
 	TP_PROTO(mqd_t mqdes, const char * u_msg_ptr, size_t msg_len, unsigned int msg_prio, const struct timespec * u_abs_timeout),
 	TP_ARGS(mqdes, u_msg_ptr, msg_len, msg_prio, u_abs_timeout),
@@ -1412,7 +1413,7 @@ SC_TRACE_EVENT(sys_mq_timedsend,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_mq_timedreceive
+#ifndef OVERRIDE_64_sys_mq_timedreceive
 SC_TRACE_EVENT(sys_mq_timedreceive,
 	TP_PROTO(mqd_t mqdes, char * u_msg_ptr, size_t msg_len, unsigned int * u_msg_prio, const struct timespec * u_abs_timeout),
 	TP_ARGS(mqdes, u_msg_ptr, msg_len, u_msg_prio, u_abs_timeout),
@@ -1421,7 +1422,7 @@ SC_TRACE_EVENT(sys_mq_timedreceive,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_waitid
+#ifndef OVERRIDE_64_sys_waitid
 SC_TRACE_EVENT(sys_waitid,
 	TP_PROTO(int which, pid_t upid, struct siginfo * infop, int options, struct rusage * ru),
 	TP_ARGS(which, upid, infop, options, ru),
@@ -1430,7 +1431,7 @@ SC_TRACE_EVENT(sys_waitid,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_fchownat
+#ifndef OVERRIDE_64_sys_fchownat
 SC_TRACE_EVENT(sys_fchownat,
 	TP_PROTO(int dfd, const char * filename, uid_t user, gid_t group, int flag),
 	TP_ARGS(dfd, filename, user, group, flag),
@@ -1439,7 +1440,7 @@ SC_TRACE_EVENT(sys_fchownat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_linkat
+#ifndef OVERRIDE_64_sys_linkat
 SC_TRACE_EVENT(sys_linkat,
 	TP_PROTO(int olddfd, const char * oldname, int newdfd, const char * newname, int flags),
 	TP_ARGS(olddfd, oldname, newdfd, newname, flags),
@@ -1448,7 +1449,7 @@ SC_TRACE_EVENT(sys_linkat,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_ppoll
+#ifndef OVERRIDE_64_sys_ppoll
 SC_TRACE_EVENT(sys_ppoll,
 	TP_PROTO(struct pollfd * ufds, unsigned int nfds, struct timespec * tsp, const sigset_t * sigmask, size_t sigsetsize),
 	TP_ARGS(ufds, nfds, tsp, sigmask, sigsetsize),
@@ -1457,7 +1458,7 @@ SC_TRACE_EVENT(sys_ppoll,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_preadv
+#ifndef OVERRIDE_64_sys_preadv
 SC_TRACE_EVENT(sys_preadv,
 	TP_PROTO(unsigned long fd, const struct iovec * vec, unsigned long vlen, unsigned long pos_l, unsigned long pos_h),
 	TP_ARGS(fd, vec, vlen, pos_l, pos_h),
@@ -1466,7 +1467,7 @@ SC_TRACE_EVENT(sys_preadv,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_pwritev
+#ifndef OVERRIDE_64_sys_pwritev
 SC_TRACE_EVENT(sys_pwritev,
 	TP_PROTO(unsigned long fd, const struct iovec * vec, unsigned long vlen, unsigned long pos_l, unsigned long pos_h),
 	TP_ARGS(fd, vec, vlen, pos_l, pos_h),
@@ -1475,7 +1476,7 @@ SC_TRACE_EVENT(sys_pwritev,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_perf_event_open
+#ifndef OVERRIDE_64_sys_perf_event_open
 SC_TRACE_EVENT(sys_perf_event_open,
 	TP_PROTO(struct perf_event_attr * attr_uptr, pid_t pid, int cpu, int group_fd, unsigned long flags),
 	TP_ARGS(attr_uptr, pid, cpu, group_fd, flags),
@@ -1484,7 +1485,7 @@ SC_TRACE_EVENT(sys_perf_event_open,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_recvmmsg
+#ifndef OVERRIDE_64_sys_recvmmsg
 SC_TRACE_EVENT(sys_recvmmsg,
 	TP_PROTO(int fd, struct mmsghdr * mmsg, unsigned int vlen, unsigned int flags, struct timespec * timeout),
 	TP_ARGS(fd, mmsg, vlen, flags, timeout),
@@ -1493,7 +1494,7 @@ SC_TRACE_EVENT(sys_recvmmsg,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_sendto
+#ifndef OVERRIDE_64_sys_sendto
 SC_TRACE_EVENT(sys_sendto,
 	TP_PROTO(int fd, void * buff, size_t len, unsigned flags, struct sockaddr * addr, int addr_len),
 	TP_ARGS(fd, buff, len, flags, addr, addr_len),
@@ -1502,7 +1503,7 @@ SC_TRACE_EVENT(sys_sendto,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_recvfrom
+#ifndef OVERRIDE_64_sys_recvfrom
 SC_TRACE_EVENT(sys_recvfrom,
 	TP_PROTO(int fd, void * ubuf, size_t size, unsigned flags, struct sockaddr * addr, int * addr_len),
 	TP_ARGS(fd, ubuf, size, flags, addr, addr_len),
@@ -1511,7 +1512,7 @@ SC_TRACE_EVENT(sys_recvfrom,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_futex
+#ifndef OVERRIDE_64_sys_futex
 SC_TRACE_EVENT(sys_futex,
 	TP_PROTO(u32 * uaddr, int op, u32 val, struct timespec * utime, u32 * uaddr2, u32 val3),
 	TP_ARGS(uaddr, op, val, utime, uaddr2, val3),
@@ -1520,7 +1521,7 @@ SC_TRACE_EVENT(sys_futex,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_pselect6
+#ifndef OVERRIDE_64_sys_pselect6
 SC_TRACE_EVENT(sys_pselect6,
 	TP_PROTO(int n, fd_set * inp, fd_set * outp, fd_set * exp, struct timespec * tsp, void * sig),
 	TP_ARGS(n, inp, outp, exp, tsp, sig),
@@ -1529,7 +1530,7 @@ SC_TRACE_EVENT(sys_pselect6,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_splice
+#ifndef OVERRIDE_64_sys_splice
 SC_TRACE_EVENT(sys_splice,
 	TP_PROTO(int fd_in, loff_t * off_in, int fd_out, loff_t * off_out, size_t len, unsigned int flags),
 	TP_ARGS(fd_in, off_in, fd_out, off_out, len, flags),
@@ -1538,7 +1539,7 @@ SC_TRACE_EVENT(sys_splice,
 	TP_printk()
 )
 #endif
-#ifndef OVERRIDE_sys_epoll_pwait
+#ifndef OVERRIDE_64_sys_epoll_pwait
 SC_TRACE_EVENT(sys_epoll_pwait,
 	TP_PROTO(int epfd, struct epoll_event * events, int maxevents, int timeout, const sigset_t * sigmask, size_t sigsetsize),
 	TP_ARGS(epfd, events, maxevents, timeout, sigmask, sigsetsize),
@@ -1556,518 +1557,519 @@ SC_TRACE_EVENT(sys_epoll_pwait,
 #else /* CREATE_SYSCALL_TABLE */
 
 #include "x86-64-syscalls-3.0.4_pointers_override.h"
+#include "syscalls_pointers_override.h"
 
-#ifndef OVERRIDE_TABLE_sys_read
+#ifndef OVERRIDE_TABLE_64_sys_read
 TRACE_SYSCALL_TABLE(sys_read, sys_read, 0, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_write
+#ifndef OVERRIDE_TABLE_64_sys_write
 TRACE_SYSCALL_TABLE(sys_write, sys_write, 1, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_open
+#ifndef OVERRIDE_TABLE_64_sys_open
 TRACE_SYSCALL_TABLE(sys_open, sys_open, 2, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_newstat
+#ifndef OVERRIDE_TABLE_64_sys_newstat
 TRACE_SYSCALL_TABLE(sys_newstat, sys_newstat, 4, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_newfstat
+#ifndef OVERRIDE_TABLE_64_sys_newfstat
 TRACE_SYSCALL_TABLE(sys_newfstat, sys_newfstat, 5, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_newlstat
+#ifndef OVERRIDE_TABLE_64_sys_newlstat
 TRACE_SYSCALL_TABLE(sys_newlstat, sys_newlstat, 6, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_poll
+#ifndef OVERRIDE_TABLE_64_sys_poll
 TRACE_SYSCALL_TABLE(sys_poll, sys_poll, 7, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_rt_sigaction
+#ifndef OVERRIDE_TABLE_64_sys_rt_sigaction
 TRACE_SYSCALL_TABLE(sys_rt_sigaction, sys_rt_sigaction, 13, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_rt_sigprocmask
+#ifndef OVERRIDE_TABLE_64_sys_rt_sigprocmask
 TRACE_SYSCALL_TABLE(sys_rt_sigprocmask, sys_rt_sigprocmask, 14, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_readv
+#ifndef OVERRIDE_TABLE_64_sys_readv
 TRACE_SYSCALL_TABLE(sys_readv, sys_readv, 19, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_writev
+#ifndef OVERRIDE_TABLE_64_sys_writev
 TRACE_SYSCALL_TABLE(sys_writev, sys_writev, 20, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_access
+#ifndef OVERRIDE_TABLE_64_sys_access
 TRACE_SYSCALL_TABLE(sys_access, sys_access, 21, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_pipe
+#ifndef OVERRIDE_TABLE_64_sys_pipe
 TRACE_SYSCALL_TABLE(sys_pipe, sys_pipe, 22, 1)
 #endif
-#ifndef OVERRIDE_TABLE_sys_select
+#ifndef OVERRIDE_TABLE_64_sys_select
 TRACE_SYSCALL_TABLE(sys_select, sys_select, 23, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_mincore
+#ifndef OVERRIDE_TABLE_64_sys_mincore
 TRACE_SYSCALL_TABLE(sys_mincore, sys_mincore, 27, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_shmat
+#ifndef OVERRIDE_TABLE_64_sys_shmat
 TRACE_SYSCALL_TABLE(sys_shmat, sys_shmat, 30, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_shmctl
+#ifndef OVERRIDE_TABLE_64_sys_shmctl
 TRACE_SYSCALL_TABLE(sys_shmctl, sys_shmctl, 31, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_nanosleep
+#ifndef OVERRIDE_TABLE_64_sys_nanosleep
 TRACE_SYSCALL_TABLE(sys_nanosleep, sys_nanosleep, 35, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_getitimer
+#ifndef OVERRIDE_TABLE_64_sys_getitimer
 TRACE_SYSCALL_TABLE(sys_getitimer, sys_getitimer, 36, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_setitimer
+#ifndef OVERRIDE_TABLE_64_sys_setitimer
 TRACE_SYSCALL_TABLE(sys_setitimer, sys_setitimer, 38, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_sendfile64
+#ifndef OVERRIDE_TABLE_64_sys_sendfile64
 TRACE_SYSCALL_TABLE(sys_sendfile64, sys_sendfile64, 40, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_connect
+#ifndef OVERRIDE_TABLE_64_sys_connect
 TRACE_SYSCALL_TABLE(sys_connect, sys_connect, 42, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_accept
+#ifndef OVERRIDE_TABLE_64_sys_accept
 TRACE_SYSCALL_TABLE(sys_accept, sys_accept, 43, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_sendto
+#ifndef OVERRIDE_TABLE_64_sys_sendto
 TRACE_SYSCALL_TABLE(sys_sendto, sys_sendto, 44, 6)
 #endif
-#ifndef OVERRIDE_TABLE_sys_recvfrom
+#ifndef OVERRIDE_TABLE_64_sys_recvfrom
 TRACE_SYSCALL_TABLE(sys_recvfrom, sys_recvfrom, 45, 6)
 #endif
-#ifndef OVERRIDE_TABLE_sys_sendmsg
+#ifndef OVERRIDE_TABLE_64_sys_sendmsg
 TRACE_SYSCALL_TABLE(sys_sendmsg, sys_sendmsg, 46, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_recvmsg
+#ifndef OVERRIDE_TABLE_64_sys_recvmsg
 TRACE_SYSCALL_TABLE(sys_recvmsg, sys_recvmsg, 47, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_bind
+#ifndef OVERRIDE_TABLE_64_sys_bind
 TRACE_SYSCALL_TABLE(sys_bind, sys_bind, 49, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_getsockname
+#ifndef OVERRIDE_TABLE_64_sys_getsockname
 TRACE_SYSCALL_TABLE(sys_getsockname, sys_getsockname, 51, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_getpeername
+#ifndef OVERRIDE_TABLE_64_sys_getpeername
 TRACE_SYSCALL_TABLE(sys_getpeername, sys_getpeername, 52, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_socketpair
+#ifndef OVERRIDE_TABLE_64_sys_socketpair
 TRACE_SYSCALL_TABLE(sys_socketpair, sys_socketpair, 53, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_setsockopt
+#ifndef OVERRIDE_TABLE_64_sys_setsockopt
 TRACE_SYSCALL_TABLE(sys_setsockopt, sys_setsockopt, 54, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_getsockopt
+#ifndef OVERRIDE_TABLE_64_sys_getsockopt
 TRACE_SYSCALL_TABLE(sys_getsockopt, sys_getsockopt, 55, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_wait4
+#ifndef OVERRIDE_TABLE_64_sys_wait4
 TRACE_SYSCALL_TABLE(sys_wait4, sys_wait4, 61, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_newuname
+#ifndef OVERRIDE_TABLE_64_sys_newuname
 TRACE_SYSCALL_TABLE(sys_newuname, sys_newuname, 63, 1)
 #endif
-#ifndef OVERRIDE_TABLE_sys_semop
+#ifndef OVERRIDE_TABLE_64_sys_semop
 TRACE_SYSCALL_TABLE(sys_semop, sys_semop, 65, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_shmdt
+#ifndef OVERRIDE_TABLE_64_sys_shmdt
 TRACE_SYSCALL_TABLE(sys_shmdt, sys_shmdt, 67, 1)
 #endif
-#ifndef OVERRIDE_TABLE_sys_msgsnd
+#ifndef OVERRIDE_TABLE_64_sys_msgsnd
 TRACE_SYSCALL_TABLE(sys_msgsnd, sys_msgsnd, 69, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_msgrcv
+#ifndef OVERRIDE_TABLE_64_sys_msgrcv
 TRACE_SYSCALL_TABLE(sys_msgrcv, sys_msgrcv, 70, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_msgctl
+#ifndef OVERRIDE_TABLE_64_sys_msgctl
 TRACE_SYSCALL_TABLE(sys_msgctl, sys_msgctl, 71, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_truncate
+#ifndef OVERRIDE_TABLE_64_sys_truncate
 TRACE_SYSCALL_TABLE(sys_truncate, sys_truncate, 76, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_getdents
+#ifndef OVERRIDE_TABLE_64_sys_getdents
 TRACE_SYSCALL_TABLE(sys_getdents, sys_getdents, 78, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_getcwd
+#ifndef OVERRIDE_TABLE_64_sys_getcwd
 TRACE_SYSCALL_TABLE(sys_getcwd, sys_getcwd, 79, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_chdir
+#ifndef OVERRIDE_TABLE_64_sys_chdir
 TRACE_SYSCALL_TABLE(sys_chdir, sys_chdir, 80, 1)
 #endif
-#ifndef OVERRIDE_TABLE_sys_rename
+#ifndef OVERRIDE_TABLE_64_sys_rename
 TRACE_SYSCALL_TABLE(sys_rename, sys_rename, 82, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_mkdir
+#ifndef OVERRIDE_TABLE_64_sys_mkdir
 TRACE_SYSCALL_TABLE(sys_mkdir, sys_mkdir, 83, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_rmdir
+#ifndef OVERRIDE_TABLE_64_sys_rmdir
 TRACE_SYSCALL_TABLE(sys_rmdir, sys_rmdir, 84, 1)
 #endif
-#ifndef OVERRIDE_TABLE_sys_creat
+#ifndef OVERRIDE_TABLE_64_sys_creat
 TRACE_SYSCALL_TABLE(sys_creat, sys_creat, 85, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_link
+#ifndef OVERRIDE_TABLE_64_sys_link
 TRACE_SYSCALL_TABLE(sys_link, sys_link, 86, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_unlink
+#ifndef OVERRIDE_TABLE_64_sys_unlink
 TRACE_SYSCALL_TABLE(sys_unlink, sys_unlink, 87, 1)
 #endif
-#ifndef OVERRIDE_TABLE_sys_symlink
+#ifndef OVERRIDE_TABLE_64_sys_symlink
 TRACE_SYSCALL_TABLE(sys_symlink, sys_symlink, 88, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_readlink
+#ifndef OVERRIDE_TABLE_64_sys_readlink
 TRACE_SYSCALL_TABLE(sys_readlink, sys_readlink, 89, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_chmod
+#ifndef OVERRIDE_TABLE_64_sys_chmod
 TRACE_SYSCALL_TABLE(sys_chmod, sys_chmod, 90, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_chown
+#ifndef OVERRIDE_TABLE_64_sys_chown
 TRACE_SYSCALL_TABLE(sys_chown, sys_chown, 92, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_lchown
+#ifndef OVERRIDE_TABLE_64_sys_lchown
 TRACE_SYSCALL_TABLE(sys_lchown, sys_lchown, 94, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_gettimeofday
+#ifndef OVERRIDE_TABLE_64_sys_gettimeofday
 TRACE_SYSCALL_TABLE(sys_gettimeofday, sys_gettimeofday, 96, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_getrlimit
+#ifndef OVERRIDE_TABLE_64_sys_getrlimit
 TRACE_SYSCALL_TABLE(sys_getrlimit, sys_getrlimit, 97, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_getrusage
+#ifndef OVERRIDE_TABLE_64_sys_getrusage
 TRACE_SYSCALL_TABLE(sys_getrusage, sys_getrusage, 98, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_sysinfo
+#ifndef OVERRIDE_TABLE_64_sys_sysinfo
 TRACE_SYSCALL_TABLE(sys_sysinfo, sys_sysinfo, 99, 1)
 #endif
-#ifndef OVERRIDE_TABLE_sys_times
+#ifndef OVERRIDE_TABLE_64_sys_times
 TRACE_SYSCALL_TABLE(sys_times, sys_times, 100, 1)
 #endif
-#ifndef OVERRIDE_TABLE_sys_syslog
+#ifndef OVERRIDE_TABLE_64_sys_syslog
 TRACE_SYSCALL_TABLE(sys_syslog, sys_syslog, 103, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_getgroups
+#ifndef OVERRIDE_TABLE_64_sys_getgroups
 TRACE_SYSCALL_TABLE(sys_getgroups, sys_getgroups, 115, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_setgroups
+#ifndef OVERRIDE_TABLE_64_sys_setgroups
 TRACE_SYSCALL_TABLE(sys_setgroups, sys_setgroups, 116, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_getresuid
+#ifndef OVERRIDE_TABLE_64_sys_getresuid
 TRACE_SYSCALL_TABLE(sys_getresuid, sys_getresuid, 118, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_getresgid
+#ifndef OVERRIDE_TABLE_64_sys_getresgid
 TRACE_SYSCALL_TABLE(sys_getresgid, sys_getresgid, 120, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_rt_sigpending
+#ifndef OVERRIDE_TABLE_64_sys_rt_sigpending
 TRACE_SYSCALL_TABLE(sys_rt_sigpending, sys_rt_sigpending, 127, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_rt_sigtimedwait
+#ifndef OVERRIDE_TABLE_64_sys_rt_sigtimedwait
 TRACE_SYSCALL_TABLE(sys_rt_sigtimedwait, sys_rt_sigtimedwait, 128, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_rt_sigqueueinfo
+#ifndef OVERRIDE_TABLE_64_sys_rt_sigqueueinfo
 TRACE_SYSCALL_TABLE(sys_rt_sigqueueinfo, sys_rt_sigqueueinfo, 129, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_rt_sigsuspend
+#ifndef OVERRIDE_TABLE_64_sys_rt_sigsuspend
 TRACE_SYSCALL_TABLE(sys_rt_sigsuspend, sys_rt_sigsuspend, 130, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_utime
+#ifndef OVERRIDE_TABLE_64_sys_utime
 TRACE_SYSCALL_TABLE(sys_utime, sys_utime, 132, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_mknod
+#ifndef OVERRIDE_TABLE_64_sys_mknod
 TRACE_SYSCALL_TABLE(sys_mknod, sys_mknod, 133, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_ustat
+#ifndef OVERRIDE_TABLE_64_sys_ustat
 TRACE_SYSCALL_TABLE(sys_ustat, sys_ustat, 136, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_statfs
+#ifndef OVERRIDE_TABLE_64_sys_statfs
 TRACE_SYSCALL_TABLE(sys_statfs, sys_statfs, 137, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_fstatfs
+#ifndef OVERRIDE_TABLE_64_sys_fstatfs
 TRACE_SYSCALL_TABLE(sys_fstatfs, sys_fstatfs, 138, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_sched_setparam
+#ifndef OVERRIDE_TABLE_64_sys_sched_setparam
 TRACE_SYSCALL_TABLE(sys_sched_setparam, sys_sched_setparam, 142, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_sched_getparam
+#ifndef OVERRIDE_TABLE_64_sys_sched_getparam
 TRACE_SYSCALL_TABLE(sys_sched_getparam, sys_sched_getparam, 143, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_sched_setscheduler
+#ifndef OVERRIDE_TABLE_64_sys_sched_setscheduler
 TRACE_SYSCALL_TABLE(sys_sched_setscheduler, sys_sched_setscheduler, 144, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_sched_rr_get_interval
+#ifndef OVERRIDE_TABLE_64_sys_sched_rr_get_interval
 TRACE_SYSCALL_TABLE(sys_sched_rr_get_interval, sys_sched_rr_get_interval, 148, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_pivot_root
+#ifndef OVERRIDE_TABLE_64_sys_pivot_root
 TRACE_SYSCALL_TABLE(sys_pivot_root, sys_pivot_root, 155, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_sysctl
+#ifndef OVERRIDE_TABLE_64_sys_sysctl
 TRACE_SYSCALL_TABLE(sys_sysctl, sys_sysctl, 156, 1)
 #endif
-#ifndef OVERRIDE_TABLE_sys_adjtimex
+#ifndef OVERRIDE_TABLE_64_sys_adjtimex
 TRACE_SYSCALL_TABLE(sys_adjtimex, sys_adjtimex, 159, 1)
 #endif
-#ifndef OVERRIDE_TABLE_sys_setrlimit
+#ifndef OVERRIDE_TABLE_64_sys_setrlimit
 TRACE_SYSCALL_TABLE(sys_setrlimit, sys_setrlimit, 160, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_chroot
+#ifndef OVERRIDE_TABLE_64_sys_chroot
 TRACE_SYSCALL_TABLE(sys_chroot, sys_chroot, 161, 1)
 #endif
-#ifndef OVERRIDE_TABLE_sys_settimeofday
+#ifndef OVERRIDE_TABLE_64_sys_settimeofday
 TRACE_SYSCALL_TABLE(sys_settimeofday, sys_settimeofday, 164, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_mount
+#ifndef OVERRIDE_TABLE_64_sys_mount
 TRACE_SYSCALL_TABLE(sys_mount, sys_mount, 165, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_umount
+#ifndef OVERRIDE_TABLE_64_sys_umount
 TRACE_SYSCALL_TABLE(sys_umount, sys_umount, 166, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_swapon
+#ifndef OVERRIDE_TABLE_64_sys_swapon
 TRACE_SYSCALL_TABLE(sys_swapon, sys_swapon, 167, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_swapoff
+#ifndef OVERRIDE_TABLE_64_sys_swapoff
 TRACE_SYSCALL_TABLE(sys_swapoff, sys_swapoff, 168, 1)
 #endif
-#ifndef OVERRIDE_TABLE_sys_reboot
+#ifndef OVERRIDE_TABLE_64_sys_reboot
 TRACE_SYSCALL_TABLE(sys_reboot, sys_reboot, 169, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_sethostname
+#ifndef OVERRIDE_TABLE_64_sys_sethostname
 TRACE_SYSCALL_TABLE(sys_sethostname, sys_sethostname, 170, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_setdomainname
+#ifndef OVERRIDE_TABLE_64_sys_setdomainname
 TRACE_SYSCALL_TABLE(sys_setdomainname, sys_setdomainname, 171, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_init_module
+#ifndef OVERRIDE_TABLE_64_sys_init_module
 TRACE_SYSCALL_TABLE(sys_init_module, sys_init_module, 175, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_delete_module
+#ifndef OVERRIDE_TABLE_64_sys_delete_module
 TRACE_SYSCALL_TABLE(sys_delete_module, sys_delete_module, 176, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_nfsservctl
+#ifndef OVERRIDE_TABLE_64_sys_nfsservctl
 TRACE_SYSCALL_TABLE(sys_nfsservctl, sys_nfsservctl, 180, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_setxattr
+#ifndef OVERRIDE_TABLE_64_sys_setxattr
 TRACE_SYSCALL_TABLE(sys_setxattr, sys_setxattr, 188, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_lsetxattr
+#ifndef OVERRIDE_TABLE_64_sys_lsetxattr
 TRACE_SYSCALL_TABLE(sys_lsetxattr, sys_lsetxattr, 189, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_fsetxattr
+#ifndef OVERRIDE_TABLE_64_sys_fsetxattr
 TRACE_SYSCALL_TABLE(sys_fsetxattr, sys_fsetxattr, 190, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_getxattr
+#ifndef OVERRIDE_TABLE_64_sys_getxattr
 TRACE_SYSCALL_TABLE(sys_getxattr, sys_getxattr, 191, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_lgetxattr
+#ifndef OVERRIDE_TABLE_64_sys_lgetxattr
 TRACE_SYSCALL_TABLE(sys_lgetxattr, sys_lgetxattr, 192, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_fgetxattr
+#ifndef OVERRIDE_TABLE_64_sys_fgetxattr
 TRACE_SYSCALL_TABLE(sys_fgetxattr, sys_fgetxattr, 193, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_listxattr
+#ifndef OVERRIDE_TABLE_64_sys_listxattr
 TRACE_SYSCALL_TABLE(sys_listxattr, sys_listxattr, 194, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_llistxattr
+#ifndef OVERRIDE_TABLE_64_sys_llistxattr
 TRACE_SYSCALL_TABLE(sys_llistxattr, sys_llistxattr, 195, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_flistxattr
+#ifndef OVERRIDE_TABLE_64_sys_flistxattr
 TRACE_SYSCALL_TABLE(sys_flistxattr, sys_flistxattr, 196, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_removexattr
+#ifndef OVERRIDE_TABLE_64_sys_removexattr
 TRACE_SYSCALL_TABLE(sys_removexattr, sys_removexattr, 197, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_lremovexattr
+#ifndef OVERRIDE_TABLE_64_sys_lremovexattr
 TRACE_SYSCALL_TABLE(sys_lremovexattr, sys_lremovexattr, 198, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_fremovexattr
+#ifndef OVERRIDE_TABLE_64_sys_fremovexattr
 TRACE_SYSCALL_TABLE(sys_fremovexattr, sys_fremovexattr, 199, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_time
+#ifndef OVERRIDE_TABLE_64_sys_time
 TRACE_SYSCALL_TABLE(sys_time, sys_time, 201, 1)
 #endif
-#ifndef OVERRIDE_TABLE_sys_futex
+#ifndef OVERRIDE_TABLE_64_sys_futex
 TRACE_SYSCALL_TABLE(sys_futex, sys_futex, 202, 6)
 #endif
-#ifndef OVERRIDE_TABLE_sys_sched_setaffinity
+#ifndef OVERRIDE_TABLE_64_sys_sched_setaffinity
 TRACE_SYSCALL_TABLE(sys_sched_setaffinity, sys_sched_setaffinity, 203, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_sched_getaffinity
+#ifndef OVERRIDE_TABLE_64_sys_sched_getaffinity
 TRACE_SYSCALL_TABLE(sys_sched_getaffinity, sys_sched_getaffinity, 204, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_io_setup
+#ifndef OVERRIDE_TABLE_64_sys_io_setup
 TRACE_SYSCALL_TABLE(sys_io_setup, sys_io_setup, 206, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_io_getevents
+#ifndef OVERRIDE_TABLE_64_sys_io_getevents
 TRACE_SYSCALL_TABLE(sys_io_getevents, sys_io_getevents, 208, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_io_submit
+#ifndef OVERRIDE_TABLE_64_sys_io_submit
 TRACE_SYSCALL_TABLE(sys_io_submit, sys_io_submit, 209, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_io_cancel
+#ifndef OVERRIDE_TABLE_64_sys_io_cancel
 TRACE_SYSCALL_TABLE(sys_io_cancel, sys_io_cancel, 210, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_getdents64
+#ifndef OVERRIDE_TABLE_64_sys_getdents64
 TRACE_SYSCALL_TABLE(sys_getdents64, sys_getdents64, 217, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_set_tid_address
+#ifndef OVERRIDE_TABLE_64_sys_set_tid_address
 TRACE_SYSCALL_TABLE(sys_set_tid_address, sys_set_tid_address, 218, 1)
 #endif
-#ifndef OVERRIDE_TABLE_sys_semtimedop
+#ifndef OVERRIDE_TABLE_64_sys_semtimedop
 TRACE_SYSCALL_TABLE(sys_semtimedop, sys_semtimedop, 220, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_timer_create
+#ifndef OVERRIDE_TABLE_64_sys_timer_create
 TRACE_SYSCALL_TABLE(sys_timer_create, sys_timer_create, 222, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_timer_settime
+#ifndef OVERRIDE_TABLE_64_sys_timer_settime
 TRACE_SYSCALL_TABLE(sys_timer_settime, sys_timer_settime, 223, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_timer_gettime
+#ifndef OVERRIDE_TABLE_64_sys_timer_gettime
 TRACE_SYSCALL_TABLE(sys_timer_gettime, sys_timer_gettime, 224, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_clock_settime
+#ifndef OVERRIDE_TABLE_64_sys_clock_settime
 TRACE_SYSCALL_TABLE(sys_clock_settime, sys_clock_settime, 227, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_clock_gettime
+#ifndef OVERRIDE_TABLE_64_sys_clock_gettime
 TRACE_SYSCALL_TABLE(sys_clock_gettime, sys_clock_gettime, 228, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_clock_getres
+#ifndef OVERRIDE_TABLE_64_sys_clock_getres
 TRACE_SYSCALL_TABLE(sys_clock_getres, sys_clock_getres, 229, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_clock_nanosleep
+#ifndef OVERRIDE_TABLE_64_sys_clock_nanosleep
 TRACE_SYSCALL_TABLE(sys_clock_nanosleep, sys_clock_nanosleep, 230, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_epoll_wait
+#ifndef OVERRIDE_TABLE_64_sys_epoll_wait
 TRACE_SYSCALL_TABLE(sys_epoll_wait, sys_epoll_wait, 232, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_epoll_ctl
+#ifndef OVERRIDE_TABLE_64_sys_epoll_ctl
 TRACE_SYSCALL_TABLE(sys_epoll_ctl, sys_epoll_ctl, 233, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_utimes
+#ifndef OVERRIDE_TABLE_64_sys_utimes
 TRACE_SYSCALL_TABLE(sys_utimes, sys_utimes, 235, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_mq_open
+#ifndef OVERRIDE_TABLE_64_sys_mq_open
 TRACE_SYSCALL_TABLE(sys_mq_open, sys_mq_open, 240, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_mq_unlink
+#ifndef OVERRIDE_TABLE_64_sys_mq_unlink
 TRACE_SYSCALL_TABLE(sys_mq_unlink, sys_mq_unlink, 241, 1)
 #endif
-#ifndef OVERRIDE_TABLE_sys_mq_timedsend
+#ifndef OVERRIDE_TABLE_64_sys_mq_timedsend
 TRACE_SYSCALL_TABLE(sys_mq_timedsend, sys_mq_timedsend, 242, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_mq_timedreceive
+#ifndef OVERRIDE_TABLE_64_sys_mq_timedreceive
 TRACE_SYSCALL_TABLE(sys_mq_timedreceive, sys_mq_timedreceive, 243, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_mq_notify
+#ifndef OVERRIDE_TABLE_64_sys_mq_notify
 TRACE_SYSCALL_TABLE(sys_mq_notify, sys_mq_notify, 244, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_mq_getsetattr
+#ifndef OVERRIDE_TABLE_64_sys_mq_getsetattr
 TRACE_SYSCALL_TABLE(sys_mq_getsetattr, sys_mq_getsetattr, 245, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_kexec_load
+#ifndef OVERRIDE_TABLE_64_sys_kexec_load
 TRACE_SYSCALL_TABLE(sys_kexec_load, sys_kexec_load, 246, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_waitid
+#ifndef OVERRIDE_TABLE_64_sys_waitid
 TRACE_SYSCALL_TABLE(sys_waitid, sys_waitid, 247, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_inotify_add_watch
+#ifndef OVERRIDE_TABLE_64_sys_inotify_add_watch
 TRACE_SYSCALL_TABLE(sys_inotify_add_watch, sys_inotify_add_watch, 254, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_openat
+#ifndef OVERRIDE_TABLE_64_sys_openat
 TRACE_SYSCALL_TABLE(sys_openat, sys_openat, 257, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_mkdirat
+#ifndef OVERRIDE_TABLE_64_sys_mkdirat
 TRACE_SYSCALL_TABLE(sys_mkdirat, sys_mkdirat, 258, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_mknodat
+#ifndef OVERRIDE_TABLE_64_sys_mknodat
 TRACE_SYSCALL_TABLE(sys_mknodat, sys_mknodat, 259, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_fchownat
+#ifndef OVERRIDE_TABLE_64_sys_fchownat
 TRACE_SYSCALL_TABLE(sys_fchownat, sys_fchownat, 260, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_futimesat
+#ifndef OVERRIDE_TABLE_64_sys_futimesat
 TRACE_SYSCALL_TABLE(sys_futimesat, sys_futimesat, 261, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_newfstatat
+#ifndef OVERRIDE_TABLE_64_sys_newfstatat
 TRACE_SYSCALL_TABLE(sys_newfstatat, sys_newfstatat, 262, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_unlinkat
+#ifndef OVERRIDE_TABLE_64_sys_unlinkat
 TRACE_SYSCALL_TABLE(sys_unlinkat, sys_unlinkat, 263, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_renameat
+#ifndef OVERRIDE_TABLE_64_sys_renameat
 TRACE_SYSCALL_TABLE(sys_renameat, sys_renameat, 264, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_linkat
+#ifndef OVERRIDE_TABLE_64_sys_linkat
 TRACE_SYSCALL_TABLE(sys_linkat, sys_linkat, 265, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_symlinkat
+#ifndef OVERRIDE_TABLE_64_sys_symlinkat
 TRACE_SYSCALL_TABLE(sys_symlinkat, sys_symlinkat, 266, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_readlinkat
+#ifndef OVERRIDE_TABLE_64_sys_readlinkat
 TRACE_SYSCALL_TABLE(sys_readlinkat, sys_readlinkat, 267, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_fchmodat
+#ifndef OVERRIDE_TABLE_64_sys_fchmodat
 TRACE_SYSCALL_TABLE(sys_fchmodat, sys_fchmodat, 268, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_faccessat
+#ifndef OVERRIDE_TABLE_64_sys_faccessat
 TRACE_SYSCALL_TABLE(sys_faccessat, sys_faccessat, 269, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_pselect6
+#ifndef OVERRIDE_TABLE_64_sys_pselect6
 TRACE_SYSCALL_TABLE(sys_pselect6, sys_pselect6, 270, 6)
 #endif
-#ifndef OVERRIDE_TABLE_sys_ppoll
+#ifndef OVERRIDE_TABLE_64_sys_ppoll
 TRACE_SYSCALL_TABLE(sys_ppoll, sys_ppoll, 271, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_set_robust_list
+#ifndef OVERRIDE_TABLE_64_sys_set_robust_list
 TRACE_SYSCALL_TABLE(sys_set_robust_list, sys_set_robust_list, 273, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_get_robust_list
+#ifndef OVERRIDE_TABLE_64_sys_get_robust_list
 TRACE_SYSCALL_TABLE(sys_get_robust_list, sys_get_robust_list, 274, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_splice
+#ifndef OVERRIDE_TABLE_64_sys_splice
 TRACE_SYSCALL_TABLE(sys_splice, sys_splice, 275, 6)
 #endif
-#ifndef OVERRIDE_TABLE_sys_vmsplice
+#ifndef OVERRIDE_TABLE_64_sys_vmsplice
 TRACE_SYSCALL_TABLE(sys_vmsplice, sys_vmsplice, 278, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_utimensat
+#ifndef OVERRIDE_TABLE_64_sys_utimensat
 TRACE_SYSCALL_TABLE(sys_utimensat, sys_utimensat, 280, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_epoll_pwait
+#ifndef OVERRIDE_TABLE_64_sys_epoll_pwait
 TRACE_SYSCALL_TABLE(sys_epoll_pwait, sys_epoll_pwait, 281, 6)
 #endif
-#ifndef OVERRIDE_TABLE_sys_signalfd
+#ifndef OVERRIDE_TABLE_64_sys_signalfd
 TRACE_SYSCALL_TABLE(sys_signalfd, sys_signalfd, 282, 3)
 #endif
-#ifndef OVERRIDE_TABLE_sys_timerfd_settime
+#ifndef OVERRIDE_TABLE_64_sys_timerfd_settime
 TRACE_SYSCALL_TABLE(sys_timerfd_settime, sys_timerfd_settime, 286, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_timerfd_gettime
+#ifndef OVERRIDE_TABLE_64_sys_timerfd_gettime
 TRACE_SYSCALL_TABLE(sys_timerfd_gettime, sys_timerfd_gettime, 287, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_accept4
+#ifndef OVERRIDE_TABLE_64_sys_accept4
 TRACE_SYSCALL_TABLE(sys_accept4, sys_accept4, 288, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_signalfd4
+#ifndef OVERRIDE_TABLE_64_sys_signalfd4
 TRACE_SYSCALL_TABLE(sys_signalfd4, sys_signalfd4, 289, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_pipe2
+#ifndef OVERRIDE_TABLE_64_sys_pipe2
 TRACE_SYSCALL_TABLE(sys_pipe2, sys_pipe2, 293, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_preadv
+#ifndef OVERRIDE_TABLE_64_sys_preadv
 TRACE_SYSCALL_TABLE(sys_preadv, sys_preadv, 295, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_pwritev
+#ifndef OVERRIDE_TABLE_64_sys_pwritev
 TRACE_SYSCALL_TABLE(sys_pwritev, sys_pwritev, 296, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_rt_tgsigqueueinfo
+#ifndef OVERRIDE_TABLE_64_sys_rt_tgsigqueueinfo
 TRACE_SYSCALL_TABLE(sys_rt_tgsigqueueinfo, sys_rt_tgsigqueueinfo, 297, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_perf_event_open
+#ifndef OVERRIDE_TABLE_64_sys_perf_event_open
 TRACE_SYSCALL_TABLE(sys_perf_event_open, sys_perf_event_open, 298, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_recvmmsg
+#ifndef OVERRIDE_TABLE_64_sys_recvmmsg
 TRACE_SYSCALL_TABLE(sys_recvmmsg, sys_recvmmsg, 299, 5)
 #endif
-#ifndef OVERRIDE_TABLE_sys_prlimit64
+#ifndef OVERRIDE_TABLE_64_sys_prlimit64
 TRACE_SYSCALL_TABLE(sys_prlimit64, sys_prlimit64, 302, 4)
 #endif
-#ifndef OVERRIDE_TABLE_sys_clock_adjtime
+#ifndef OVERRIDE_TABLE_64_sys_clock_adjtime
 TRACE_SYSCALL_TABLE(sys_clock_adjtime, sys_clock_adjtime, 305, 2)
 #endif
-#ifndef OVERRIDE_TABLE_sys_sendmmsg
+#ifndef OVERRIDE_TABLE_64_sys_sendmmsg
 TRACE_SYSCALL_TABLE(sys_sendmmsg, sys_sendmmsg, 307, 4)
 #endif
 

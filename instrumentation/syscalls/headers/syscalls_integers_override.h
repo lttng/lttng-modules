@@ -1,4 +1,5 @@
-#define OVERRIDE_sys_mmap
+#define OVERRIDE_32_sys_mmap
+#define OVERRIDE_64_sys_mmap
 
 #ifndef CREATE_SYSCALL_TABLE
 
