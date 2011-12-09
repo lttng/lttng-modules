@@ -11,6 +11,8 @@
  * Dual LGPL v2.1/GPL v2 license.
  */
 
+#include <linux/kallsyms.h>
+
 static inline
 unsigned long kallsyms_lookup_funcptr(const char *name)
 {
