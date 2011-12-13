@@ -1,3 +1,23 @@
+2011-12-13 LTTng modules 2.0-pre11
+	* Fix OOPS caused by reference of config pointer
+	* Gather detailed info from x86 64 32-bit compat syscall instrumentation
+	* lttng lib: ring buffer move null pointer check to open
+	* lttng lib: ring buffer remove duplicate null pointer
+	* lttng lib: ring buffer: remove stale null-pointer
+	* lttng wrapper: add missing include to kallsyms wrapper
+	* lttng: cleanup one-bit signed bitfields
+	* Add TODO file
+	* Update symbol name length max size to 256
+	* Fix last modifications to string_from_user operations
+	* Document that depmod needs to be executed by hand
+	* Fix strlen_user fault space reservation
+	* Fix tp_copy_string_from_user handling of faults
+	* Disable block layer tracing support for kernels < 2.6.38
+	* lttng context: perf counter, fix 32-bit vs 64-bit field size bug
+	* Update trace clock warning to match the current development plan
+	* ringbuffer: make ring buffer printk less verbose
+	* Makefile: do not run depmod manually
+
 2011-09-30 LTTng modules 2.0-pre10
 	* x86-32: override sys_mmap syscall instrumentation
 	* Fix cast warning
