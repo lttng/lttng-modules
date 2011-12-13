@@ -40,7 +40,7 @@
 ssize_t lib_ring_buffer_get_next_record(struct channel *chan,
 					struct lib_ring_buffer *buf)
 {
-	const struct lib_ring_buffer_config *config = chan->backend.config;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	struct lib_ring_buffer_iter *iter = &buf->iter;
 	int ret;
 
@@ -225,7 +225,7 @@ void lib_ring_buffer_wait_for_qs(const struct lib_ring_buffer_config *config,
 ssize_t channel_get_next_record(struct channel *chan,
 				struct lib_ring_buffer **ret_buf)
 {
-	const struct lib_ring_buffer_config *config = chan->backend.config;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	struct lib_ring_buffer *buf;
 	struct lttng_ptr_heap *heap;
 	ssize_t len;
@@ -333,7 +333,7 @@ void lib_ring_buffer_iterator_init(struct channel *chan, struct lib_ring_buffer 
 	}
 
 	/* Add to list of buffers without any current record */
-	if (chan->backend.config->alloc == RING_BUFFER_ALLOC_PER_CPU)
+	if (chan->backend.config.alloc == RING_BUFFER_ALLOC_PER_CPU)
 		list_add(&buf->iter.empty_node, &chan->iter.empty_head);
 }
 
@@ -347,7 +347,7 @@ int __cpuinit channel_iterator_cpu_hotplug(struct notifier_block *nb,
 	struct channel *chan = container_of(nb, struct channel,
 					    hp_iter_notifier);
 	struct lib_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
-	const struct lib_ring_buffer_config *config = chan->backend.config;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	if (!chan->hp_iter_enable)
 		return NOTIFY_DONE;
@@ -369,7 +369,7 @@ int __cpuinit channel_iterator_cpu_hotplug(struct notifier_block *nb,
 
 int channel_iterator_init(struct channel *chan)
 {
-	const struct lib_ring_buffer_config *config = chan->backend.config;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	struct lib_ring_buffer *buf;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
@@ -413,7 +413,7 @@ int channel_iterator_init(struct channel *chan)
 
 void channel_iterator_unregister_notifiers(struct channel *chan)
 {
-	const struct lib_ring_buffer_config *config = chan->backend.config;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
 		chan->hp_iter_enable = 0;
@@ -423,7 +423,7 @@ void channel_iterator_unregister_notifiers(struct channel *chan)
 
 void channel_iterator_free(struct channel *chan)
 {
-	const struct lib_ring_buffer_config *config = chan->backend.config;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
 		lttng_heap_free(&chan->iter.heap);
@@ -432,7 +432,7 @@ void channel_iterator_free(struct channel *chan)
 int lib_ring_buffer_iterator_open(struct lib_ring_buffer *buf)
 {
 	struct channel *chan = buf->backend.chan;
-	const struct lib_ring_buffer_config *config = chan->backend.config;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	CHAN_WARN_ON(chan, config->output != RING_BUFFER_ITERATOR);
 	return lib_ring_buffer_open_read(buf);
 }
@@ -451,7 +451,7 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_iterator_release);
 
 int channel_iterator_open(struct channel *chan)
 {
-	const struct lib_ring_buffer_config *config = chan->backend.config;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	struct lib_ring_buffer *buf;
 	int ret = 0, cpu;
 
@@ -484,7 +484,7 @@ EXPORT_SYMBOL_GPL(channel_iterator_open);
 
 void channel_iterator_release(struct channel *chan)
 {
-	const struct lib_ring_buffer_config *config = chan->backend.config;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	struct lib_ring_buffer *buf;
 	int cpu;
 
@@ -527,7 +527,7 @@ void lib_ring_buffer_iterator_reset(struct lib_ring_buffer *buf)
 
 void channel_iterator_reset(struct channel *chan)
 {
-	const struct lib_ring_buffer_config *config = chan->backend.config;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	struct lib_ring_buffer *buf;
 	int cpu;
 
@@ -558,7 +558,7 @@ ssize_t channel_ring_buffer_file_read(struct file *filp,
 				      struct lib_ring_buffer *buf,
 				      int fusionmerge)
 {
-	const struct lib_ring_buffer_config *config = chan->backend.config;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	size_t read_count = 0, read_offset;
 	ssize_t len;
 
@@ -706,7 +706,7 @@ ssize_t channel_file_read(struct file *filp,
 {
 	struct inode *inode = filp->f_dentry->d_inode;
 	struct channel *chan = inode->i_private;
-	const struct lib_ring_buffer_config *config = chan->backend.config;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
 		return channel_ring_buffer_file_read(filp, user_buf, count,

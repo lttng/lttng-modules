@@ -88,7 +88,7 @@ unsigned int lib_ring_buffer_poll(struct file *filp, poll_table *wait)
 	unsigned int mask = 0;
 	struct lib_ring_buffer *buf = filp->private_data;
 	struct channel *chan = buf->backend.chan;
-	const struct lib_ring_buffer_config *config = chan->backend.config;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	int finalized, disabled;
 
 	if (filp->f_mode & FMODE_READ) {
@@ -165,7 +165,7 @@ long lib_ring_buffer_ioctl(struct file *filp, unsigned int cmd, unsigned long ar
 {
 	struct lib_ring_buffer *buf = filp->private_data;
 	struct channel *chan = buf->backend.chan;
-	const struct lib_ring_buffer_config *config = chan->backend.config;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	if (lib_ring_buffer_channel_is_disabled(chan))
 		return -EIO;
@@ -262,7 +262,7 @@ long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
 {
 	struct lib_ring_buffer *buf = filp->private_data;
 	struct channel *chan = buf->backend.chan;
-	const struct lib_ring_buffer_config *config = chan->backend.config;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	if (lib_ring_buffer_channel_is_disabled(chan))
 		return -EIO;

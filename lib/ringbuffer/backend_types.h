@@ -72,7 +72,12 @@ struct channel_backend {
 	u64 start_tsc;			/* Channel creation TSC value */
 	void *priv;			/* Client-specific information */
 	struct notifier_block cpu_hp_notifier;	 /* CPU hotplug notifier */
-	const struct lib_ring_buffer_config *config; /* Ring buffer configuration */
+	/*
+	 * We need to copy config because the module containing the
+	 * source config can vanish before the last reference to this
+	 * channel's streams is released.
+	 */
+	struct lib_ring_buffer_config config; /* Ring buffer configuration */
 	cpumask_var_t cpumask;		/* Allocated per-cpu buffers cpumask */
 	char name[NAME_MAX];		/* Channel name */
 };
