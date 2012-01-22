@@ -9,7 +9,10 @@
 
 #include <linux/poll.h>
 
-#warning "poll_wait_set_exclusive() is defined as no-op. Thundering herd effect can be noticed with large number of consumer threads."
+/*
+ * Note: poll_wait_set_exclusive() is defined as no-op. Thundering herd
+ * effect can be noticed with large number of consumer threads.
+ */
 
 #define poll_wait_set_exclusive(poll_table)
 
