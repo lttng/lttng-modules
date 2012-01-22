@@ -11,10 +11,10 @@
 #include <linux/kprobes.h>
 #include <linux/slab.h>
 #include <linux/kref.h>
-#include "../ltt-events.h"
+#include "../lttng-events.h"
 #include "../wrapper/ringbuffer/frontend_types.h"
 #include "../wrapper/vmalloc.h"
-#include "../ltt-tracer.h"
+#include "../lttng-tracer.h"
 
 enum lttng_kretprobe_type {
 	EVENT_ENTRY = 0,
@@ -23,7 +23,7 @@ enum lttng_kretprobe_type {
 
 struct lttng_krp {
 	struct kretprobe krp;
-	struct ltt_event *event[2];	/* ENTRY and RETURN */
+	struct lttng_event *event[2];	/* ENTRY and RETURN */
 	struct kref kref_register;
 	struct kref kref_alloc;
 };
@@ -35,9 +35,9 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 {
 	struct lttng_krp *lttng_krp =
 		container_of(krpi->rp, struct lttng_krp, krp);
-	struct ltt_event *event =
+	struct lttng_event *event =
 		lttng_krp->event[type];
-	struct ltt_channel *chan = event->chan;
+	struct lttng_channel *chan = event->chan;
 	struct lib_ring_buffer_ctx ctx;
 	int ret;
 	struct {
@@ -56,11 +56,11 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 	payload.parent_ip = (unsigned long) krpi->ret_addr;
 
 	lib_ring_buffer_ctx_init(&ctx, chan->chan, event, sizeof(payload),
-				 ltt_alignof(payload), -1);
+				 lttng_alignof(payload), -1);
 	ret = chan->ops->event_reserve(&ctx, event->id);
 	if (ret < 0)
 		return 0;
-	lib_ring_buffer_align_ctx(&ctx, ltt_alignof(payload));
+	lib_ring_buffer_align_ctx(&ctx, lttng_alignof(payload));
 	chan->ops->event_write(&ctx, &payload, sizeof(payload));
 	chan->ops->event_commit(&ctx);
 	return 0;
@@ -84,7 +84,7 @@ int lttng_kretprobes_handler_return(struct kretprobe_instance *krpi,
  * Create event description
  */
 static
-int lttng_create_kprobe_event(const char *name, struct ltt_event *event,
+int lttng_create_kprobe_event(const char *name, struct lttng_event *event,
 			      enum lttng_kretprobe_type type)
 {
 	struct lttng_event_field *fields;
@@ -125,7 +125,7 @@ int lttng_create_kprobe_event(const char *name, struct ltt_event *event,
 	fields[0].name = "ip";
 	fields[0].type.atype = atype_integer;
 	fields[0].type.u.basic.integer.size = sizeof(unsigned long) * CHAR_BIT;
-	fields[0].type.u.basic.integer.alignment = ltt_alignof(unsigned long) * CHAR_BIT;
+	fields[0].type.u.basic.integer.alignment = lttng_alignof(unsigned long) * CHAR_BIT;
 	fields[0].type.u.basic.integer.signedness = is_signed_type(unsigned long);
 	fields[0].type.u.basic.integer.reverse_byte_order = 0;
 	fields[0].type.u.basic.integer.base = 16;
@@ -134,7 +134,7 @@ int lttng_create_kprobe_event(const char *name, struct ltt_event *event,
 	fields[1].name = "parent_ip";
 	fields[1].type.atype = atype_integer;
 	fields[1].type.u.basic.integer.size = sizeof(unsigned long) * CHAR_BIT;
-	fields[1].type.u.basic.integer.alignment = ltt_alignof(unsigned long) * CHAR_BIT;
+	fields[1].type.u.basic.integer.alignment = lttng_alignof(unsigned long) * CHAR_BIT;
 	fields[1].type.u.basic.integer.signedness = is_signed_type(unsigned long);
 	fields[1].type.u.basic.integer.reverse_byte_order = 0;
 	fields[1].type.u.basic.integer.base = 16;
@@ -156,8 +156,8 @@ int lttng_kretprobes_register(const char *name,
 			   const char *symbol_name,
 			   uint64_t offset,
 			   uint64_t addr,
-			   struct ltt_event *event_entry,
-			   struct ltt_event *event_return)
+			   struct lttng_event *event_entry,
+			   struct lttng_event *event_return)
 {
 	int ret;
 	struct lttng_krp *lttng_krp;
@@ -247,7 +247,7 @@ void _lttng_kretprobes_unregister_release(struct kref *kref)
 	unregister_kretprobe(&lttng_krp->krp);
 }
 
-void lttng_kretprobes_unregister(struct ltt_event *event)
+void lttng_kretprobes_unregister(struct lttng_event *event)
 {
 	kref_put(&event->u.kretprobe.lttng_krp->kref_register,
 		_lttng_kretprobes_unregister_release);
@@ -262,7 +262,7 @@ void _lttng_kretprobes_release(struct kref *kref)
 	kfree(lttng_krp->krp.kp.symbol_name);
 }
 
-void lttng_kretprobes_destroy_private(struct ltt_event *event)
+void lttng_kretprobes_destroy_private(struct lttng_event *event)
 {
 	kfree(event->desc->fields);
 	kfree(event->desc->name);

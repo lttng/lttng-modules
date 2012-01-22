@@ -1,10 +1,10 @@
-#ifndef _LTT_ENDIAN_H
-#define _LTT_ENDIAN_H
+#ifndef _LTTNG_ENDIAN_H
+#define _LTTNG_ENDIAN_H
 
 /*
- * ltt-endian.h
+ * lttng-endian.h
  *
- * Copyright 2010 (c) - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+ * Copyright 2010-2011 (c) - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
  * Dual LGPL v2.1/GPL v2 license.
  */
@@ -28,4 +28,4 @@
 # include <endian.h>
 #endif
 
-#endif /* _LTT_ENDIAN_H */
+#endif /* _LTTNG_ENDIAN_H */

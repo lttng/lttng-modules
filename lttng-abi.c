@@ -34,8 +34,8 @@
 #include "wrapper/ringbuffer/vfs.h"
 #include "wrapper/poll.h"
 #include "lttng-abi.h"
-#include "ltt-events.h"
-#include "ltt-tracer.h"
+#include "lttng-events.h"
+#include "lttng-tracer.h"
 
 /*
  * This is LTTng's own personal way to create a system call as an external
@@ -62,11 +62,11 @@ enum channel_type {
 static
 int lttng_abi_create_session(void)
 {
-	struct ltt_session *session;
+	struct lttng_session *session;
 	struct file *session_file;
 	int session_fd, ret;
 
-	session = ltt_session_create();
+	session = lttng_session_create();
 	if (!session)
 		return -ENOMEM;
 	session_fd = get_unused_fd();
@@ -88,7 +88,7 @@ int lttng_abi_create_session(void)
 file_error:
 	put_unused_fd(session_fd);
 fd_error:
-	ltt_session_destroy(session);
+	lttng_session_destroy(session);
 	return ret;
 }
 
@@ -147,7 +147,7 @@ long lttng_abi_tracer_version(struct file *file,
 static
 long lttng_abi_add_context(struct file *file,
 	struct lttng_kernel_context __user *ucontext_param,
-	struct lttng_ctx **ctx, struct ltt_session *session)
+	struct lttng_ctx **ctx, struct lttng_session *session)
 {
 	struct lttng_kernel_context context_param;
 
@@ -255,18 +255,18 @@ static const struct file_operations lttng_fops = {
 static
 void lttng_metadata_create_events(struct file *channel_file)
 {
-	struct ltt_channel *channel = channel_file->private_data;
+	struct lttng_channel *channel = channel_file->private_data;
 	static struct lttng_kernel_event metadata_params = {
 		.instrumentation = LTTNG_KERNEL_TRACEPOINT,
 		.name = "lttng_metadata",
 	};
-	struct ltt_event *event;
+	struct lttng_event *event;
 
 	/*
 	 * We tolerate no failure path after event creation. It will stay
 	 * invariant for the rest of the session.
 	 */
-	event = ltt_event_create(channel, &metadata_params, NULL, NULL);
+	event = lttng_event_create(channel, &metadata_params, NULL, NULL);
 	if (!event) {
 		goto create_error;
 	}
@@ -282,10 +282,10 @@ int lttng_abi_create_channel(struct file *session_file,
 			     struct lttng_kernel_channel __user *uchan_param,
 			     enum channel_type channel_type)
 {
-	struct ltt_session *session = session_file->private_data;
+	struct lttng_session *session = session_file->private_data;
 	const struct file_operations *fops = NULL;
 	const char *transport_name;
-	struct ltt_channel *chan;
+	struct lttng_channel *chan;
 	struct file *chan_file;
 	struct lttng_kernel_channel chan_param;
 	int chan_fd;
@@ -342,7 +342,7 @@ int lttng_abi_create_channel(struct file *session_file,
 	 * We tolerate no failure path after channel creation. It will stay
 	 * invariant for the rest of the session.
 	 */
-	chan = ltt_channel_create(session, transport_name, NULL,
+	chan = lttng_channel_create(session, transport_name, NULL,
 				  chan_param.subbuf_size,
 				  chan_param.num_subbuf,
 				  chan_param.switch_timer_interval,
@@ -394,7 +394,7 @@ fd_error:
 static
 long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	struct ltt_session *session = file->private_data;
+	struct lttng_session *session = file->private_data;
 
 	switch (cmd) {
 	case LTTNG_KERNEL_CHANNEL:
@@ -403,10 +403,10 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 				PER_CPU_CHANNEL);
 	case LTTNG_KERNEL_SESSION_START:
 	case LTTNG_KERNEL_ENABLE:
-		return ltt_session_enable(session);
+		return lttng_session_enable(session);
 	case LTTNG_KERNEL_SESSION_STOP:
 	case LTTNG_KERNEL_DISABLE:
-		return ltt_session_disable(session);
+		return lttng_session_disable(session);
 	case LTTNG_KERNEL_METADATA:
 		return lttng_abi_create_channel(file,
 				(struct lttng_kernel_channel __user *) arg,
@@ -427,10 +427,10 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 static
 int lttng_session_release(struct inode *inode, struct file *file)
 {
-	struct ltt_session *session = file->private_data;
+	struct lttng_session *session = file->private_data;
 
 	if (session)
-		ltt_session_destroy(session);
+		lttng_session_destroy(session);
 	return 0;
 }
 
@@ -446,7 +446,7 @@ static const struct file_operations lttng_session_fops = {
 static
 int lttng_abi_open_stream(struct file *channel_file)
 {
-	struct ltt_channel *channel = channel_file->private_data;
+	struct lttng_channel *channel = channel_file->private_data;
 	struct lib_ring_buffer *buf;
 	int stream_fd, ret;
 	struct file *stream_file;
@@ -492,8 +492,8 @@ static
 int lttng_abi_create_event(struct file *channel_file,
 			   struct lttng_kernel_event __user *uevent_param)
 {
-	struct ltt_channel *channel = channel_file->private_data;
-	struct ltt_event *event;
+	struct lttng_channel *channel = channel_file->private_data;
+	struct lttng_event *event;
 	struct lttng_kernel_event event_param;
 	int event_fd, ret;
 	struct file *event_file;
@@ -532,7 +532,7 @@ int lttng_abi_create_event(struct file *channel_file,
 		 * We tolerate no failure path after event creation. It
 		 * will stay invariant for the rest of the session.
 		 */
-		event = ltt_event_create(channel, &event_param, NULL, NULL);
+		event = lttng_event_create(channel, &event_param, NULL, NULL);
 		if (!event) {
 			ret = -EINVAL;
 			goto event_error;
@@ -589,7 +589,7 @@ fd_error:
 static
 long lttng_channel_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	struct ltt_channel *channel = file->private_data;
+	struct lttng_channel *channel = file->private_data;
 
 	switch (cmd) {
 	case LTTNG_KERNEL_STREAM:
@@ -601,9 +601,9 @@ long lttng_channel_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 				(struct lttng_kernel_context __user *) arg,
 				&channel->ctx, channel->session);
 	case LTTNG_KERNEL_ENABLE:
-		return ltt_channel_enable(channel);
+		return lttng_channel_enable(channel);
 	case LTTNG_KERNEL_DISABLE:
-		return ltt_channel_disable(channel);
+		return lttng_channel_disable(channel);
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -641,7 +641,7 @@ long lttng_metadata_ioctl(struct file *file, unsigned int cmd, unsigned long arg
  */
 unsigned int lttng_channel_poll(struct file *file, poll_table *wait)
 {
-	struct ltt_channel *channel = file->private_data;
+	struct lttng_channel *channel = file->private_data;
 	unsigned int mask = 0;
 
 	if (file->f_mode & FMODE_READ) {
@@ -664,7 +664,7 @@ unsigned int lttng_channel_poll(struct file *file, poll_table *wait)
 static
 int lttng_channel_release(struct inode *inode, struct file *file)
 {
-	struct ltt_channel *channel = file->private_data;
+	struct lttng_channel *channel = file->private_data;
 
 	if (channel)
 		fput(channel->session->file);
@@ -708,7 +708,7 @@ static const struct file_operations lttng_metadata_fops = {
 static
 long lttng_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	struct ltt_event *event = file->private_data;
+	struct lttng_event *event = file->private_data;
 
 	switch (cmd) {
 	case LTTNG_KERNEL_CONTEXT:
@@ -716,9 +716,9 @@ long lttng_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 				(struct lttng_kernel_context __user *) arg,
 				&event->ctx, event->chan->session);
 	case LTTNG_KERNEL_ENABLE:
-		return ltt_event_enable(event);
+		return lttng_event_enable(event);
 	case LTTNG_KERNEL_DISABLE:
-		return ltt_event_disable(event);
+		return lttng_event_disable(event);
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -727,7 +727,7 @@ long lttng_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 static
 int lttng_event_release(struct inode *inode, struct file *file)
 {
-	struct ltt_event *event = file->private_data;
+	struct lttng_event *event = file->private_data;
 
 	if (event)
 		fput(event->chan->file);

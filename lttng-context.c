@@ -1,5 +1,5 @@
 /*
- * ltt-context.c
+ * lttng-context.c
  *
  * Copyright 2011 (c) - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
@@ -13,8 +13,8 @@
 #include <linux/mutex.h>
 #include <linux/slab.h>
 #include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
-#include "ltt-events.h"
-#include "ltt-tracer.h"
+#include "lttng-events.h"
+#include "lttng-tracer.h"
 
 int lttng_find_context(struct lttng_ctx *ctx, const char *name)
 {

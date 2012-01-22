@@ -1,5 +1,5 @@
-#ifndef _LTT_WRAPPER_VMALLOC_H
-#define _LTT_WRAPPER_VMALLOC_H
+#ifndef _LTTNG_WRAPPER_VMALLOC_H
+#define _LTTNG_WRAPPER_VMALLOC_H
 
 /*
  * Copyright (C) 2011 Mathieu Desnoyers (mathieu.desnoyers@efficios.com)
@@ -46,4 +46,4 @@ void wrapper_vmalloc_sync_all(void)
 }
 #endif
 
-#endif /* _LTT_WRAPPER_VMALLOC_H */
+#endif /* _LTTNG_WRAPPER_VMALLOC_H */

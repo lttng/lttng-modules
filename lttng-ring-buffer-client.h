@@ -1,5 +1,5 @@
 /*
- * ltt-ring-buffer-client.h
+ * lttng-ring-buffer-client.h
  *
  * Copyright (C) 2010 - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
@@ -13,8 +13,8 @@
 #include "lib/bitfield.h"
 #include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "wrapper/trace-clock.h"
-#include "ltt-events.h"
-#include "ltt-tracer.h"
+#include "lttng-events.h"
+#include "lttng-tracer.h"
 #include "wrapper/ringbuffer/frontend_types.h"
 
 /*
@@ -78,7 +78,7 @@ size_t ctx_get_size(size_t offset, struct lttng_ctx *ctx)
 
 static inline
 void ctx_record(struct lib_ring_buffer_ctx *bufctx,
-		struct ltt_channel *chan,
+		struct lttng_channel *chan,
 		struct lttng_ctx *ctx)
 {
 	int i;
@@ -108,39 +108,39 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 				 size_t *pre_header_padding,
 				 struct lib_ring_buffer_ctx *ctx)
 {
-	struct ltt_channel *ltt_chan = channel_get_private(chan);
-	struct ltt_event *event = ctx->priv;
+	struct lttng_channel *lttng_chan = channel_get_private(chan);
+	struct lttng_event *event = ctx->priv;
 	size_t orig_offset = offset;
 	size_t padding;
 
-	switch (ltt_chan->header_type) {
+	switch (lttng_chan->header_type) {
 	case 1:	/* compact */
-		padding = lib_ring_buffer_align(offset, ltt_alignof(uint32_t));
+		padding = lib_ring_buffer_align(offset, lttng_alignof(uint32_t));
 		offset += padding;
-		if (!(ctx->rflags & (RING_BUFFER_RFLAG_FULL_TSC | LTT_RFLAG_EXTENDED))) {
+		if (!(ctx->rflags & (RING_BUFFER_RFLAG_FULL_TSC | LTTNG_RFLAG_EXTENDED))) {
 			offset += sizeof(uint32_t);	/* id and timestamp */
 		} else {
 			/* Minimum space taken by 5-bit id */
 			offset += sizeof(uint8_t);
 			/* Align extended struct on largest member */
-			offset += lib_ring_buffer_align(offset, ltt_alignof(uint64_t));
+			offset += lib_ring_buffer_align(offset, lttng_alignof(uint64_t));
 			offset += sizeof(uint32_t);	/* id */
-			offset += lib_ring_buffer_align(offset, ltt_alignof(uint64_t));
+			offset += lib_ring_buffer_align(offset, lttng_alignof(uint64_t));
 			offset += sizeof(uint64_t);	/* timestamp */
 		}
 		break;
 	case 2:	/* large */
-		padding = lib_ring_buffer_align(offset, ltt_alignof(uint16_t));
+		padding = lib_ring_buffer_align(offset, lttng_alignof(uint16_t));
 		offset += padding;
 		offset += sizeof(uint16_t);
-		if (!(ctx->rflags & (RING_BUFFER_RFLAG_FULL_TSC | LTT_RFLAG_EXTENDED))) {
-			offset += lib_ring_buffer_align(offset, ltt_alignof(uint32_t));
+		if (!(ctx->rflags & (RING_BUFFER_RFLAG_FULL_TSC | LTTNG_RFLAG_EXTENDED))) {
+			offset += lib_ring_buffer_align(offset, lttng_alignof(uint32_t));
 			offset += sizeof(uint32_t);	/* timestamp */
 		} else {
 			/* Align extended struct on largest member */
-			offset += lib_ring_buffer_align(offset, ltt_alignof(uint64_t));
+			offset += lib_ring_buffer_align(offset, lttng_alignof(uint64_t));
 			offset += sizeof(uint32_t);	/* id */
-			offset += lib_ring_buffer_align(offset, ltt_alignof(uint64_t));
+			offset += lib_ring_buffer_align(offset, lttng_alignof(uint64_t));
 			offset += sizeof(uint64_t);	/* timestamp */
 		}
 		break;
@@ -149,7 +149,7 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 		WARN_ON_ONCE(1);
 	}
 	offset += ctx_get_size(offset, event->ctx);
-	offset += ctx_get_size(offset, ltt_chan->ctx);
+	offset += ctx_get_size(offset, lttng_chan->ctx);
 
 	*pre_header_padding = padding;
 	return offset - orig_offset;
@@ -158,12 +158,12 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 #include "wrapper/ringbuffer/api.h"
 
 static
-void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
+void lttng_write_event_header_slow(const struct lib_ring_buffer_config *config,
 				 struct lib_ring_buffer_ctx *ctx,
 				 uint32_t event_id);
 
 /*
- * ltt_write_event_header
+ * lttng_write_event_header
  *
  * Writes the event header to the offset (already aligned on 32-bits).
  *
@@ -172,17 +172,17 @@ void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
  * @event_id: event ID
  */
 static __inline__
-void ltt_write_event_header(const struct lib_ring_buffer_config *config,
+void lttng_write_event_header(const struct lib_ring_buffer_config *config,
 			    struct lib_ring_buffer_ctx *ctx,
 			    uint32_t event_id)
 {
-	struct ltt_channel *ltt_chan = channel_get_private(ctx->chan);
-	struct ltt_event *event = ctx->priv;
+	struct lttng_channel *lttng_chan = channel_get_private(ctx->chan);
+	struct lttng_event *event = ctx->priv;
 
 	if (unlikely(ctx->rflags))
 		goto slow_path;
 
-	switch (ltt_chan->header_type) {
+	switch (lttng_chan->header_type) {
 	case 1:	/* compact */
 	{
 		uint32_t id_time = 0;
@@ -198,7 +198,7 @@ void ltt_write_event_header(const struct lib_ring_buffer_config *config,
 		uint16_t id = event_id;
 
 		lib_ring_buffer_write(config, ctx, &id, sizeof(id));
-		lib_ring_buffer_align_ctx(ctx, ltt_alignof(uint32_t));
+		lib_ring_buffer_align_ctx(ctx, lttng_alignof(uint32_t));
 		lib_ring_buffer_write(config, ctx, &timestamp, sizeof(timestamp));
 		break;
 	}
@@ -206,27 +206,27 @@ void ltt_write_event_header(const struct lib_ring_buffer_config *config,
 		WARN_ON_ONCE(1);
 	}
 
-	ctx_record(ctx, ltt_chan, ltt_chan->ctx);
-	ctx_record(ctx, ltt_chan, event->ctx);
+	ctx_record(ctx, lttng_chan, lttng_chan->ctx);
+	ctx_record(ctx, lttng_chan, event->ctx);
 	lib_ring_buffer_align_ctx(ctx, ctx->largest_align);
 
 	return;
 
 slow_path:
-	ltt_write_event_header_slow(config, ctx, event_id);
+	lttng_write_event_header_slow(config, ctx, event_id);
 }
 
 static
-void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
+void lttng_write_event_header_slow(const struct lib_ring_buffer_config *config,
 				 struct lib_ring_buffer_ctx *ctx,
 				 uint32_t event_id)
 {
-	struct ltt_channel *ltt_chan = channel_get_private(ctx->chan);
-	struct ltt_event *event = ctx->priv;
+	struct lttng_channel *lttng_chan = channel_get_private(ctx->chan);
+	struct lttng_event *event = ctx->priv;
 
-	switch (ltt_chan->header_type) {
+	switch (lttng_chan->header_type) {
 	case 1:	/* compact */
-		if (!(ctx->rflags & (RING_BUFFER_RFLAG_FULL_TSC | LTT_RFLAG_EXTENDED))) {
+		if (!(ctx->rflags & (RING_BUFFER_RFLAG_FULL_TSC | LTTNG_RFLAG_EXTENDED))) {
 			uint32_t id_time = 0;
 
 			bt_bitfield_write(&id_time, uint32_t, 0, 5, event_id);
@@ -239,20 +239,20 @@ void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 			bt_bitfield_write(&id, uint8_t, 0, 5, 31);
 			lib_ring_buffer_write(config, ctx, &id, sizeof(id));
 			/* Align extended struct on largest member */
-			lib_ring_buffer_align_ctx(ctx, ltt_alignof(uint64_t));
+			lib_ring_buffer_align_ctx(ctx, lttng_alignof(uint64_t));
 			lib_ring_buffer_write(config, ctx, &event_id, sizeof(event_id));
-			lib_ring_buffer_align_ctx(ctx, ltt_alignof(uint64_t));
+			lib_ring_buffer_align_ctx(ctx, lttng_alignof(uint64_t));
 			lib_ring_buffer_write(config, ctx, &timestamp, sizeof(timestamp));
 		}
 		break;
 	case 2:	/* large */
 	{
-		if (!(ctx->rflags & (RING_BUFFER_RFLAG_FULL_TSC | LTT_RFLAG_EXTENDED))) {
+		if (!(ctx->rflags & (RING_BUFFER_RFLAG_FULL_TSC | LTTNG_RFLAG_EXTENDED))) {
 			uint32_t timestamp = (uint32_t) ctx->tsc;
 			uint16_t id = event_id;
 
 			lib_ring_buffer_write(config, ctx, &id, sizeof(id));
-			lib_ring_buffer_align_ctx(ctx, ltt_alignof(uint32_t));
+			lib_ring_buffer_align_ctx(ctx, lttng_alignof(uint32_t));
 			lib_ring_buffer_write(config, ctx, &timestamp, sizeof(timestamp));
 		} else {
 			uint16_t id = 65535;
@@ -260,9 +260,9 @@ void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 
 			lib_ring_buffer_write(config, ctx, &id, sizeof(id));
 			/* Align extended struct on largest member */
-			lib_ring_buffer_align_ctx(ctx, ltt_alignof(uint64_t));
+			lib_ring_buffer_align_ctx(ctx, lttng_alignof(uint64_t));
 			lib_ring_buffer_write(config, ctx, &event_id, sizeof(event_id));
-			lib_ring_buffer_align_ctx(ctx, ltt_alignof(uint64_t));
+			lib_ring_buffer_align_ctx(ctx, lttng_alignof(uint64_t));
 			lib_ring_buffer_write(config, ctx, &timestamp, sizeof(timestamp));
 		}
 		break;
@@ -270,8 +270,8 @@ void ltt_write_event_header_slow(const struct lib_ring_buffer_config *config,
 	default:
 		WARN_ON_ONCE(1);
 	}
-	ctx_record(ctx, ltt_chan, ltt_chan->ctx);
-	ctx_record(ctx, ltt_chan, event->ctx);
+	ctx_record(ctx, lttng_chan, lttng_chan->ctx);
+	ctx_record(ctx, lttng_chan, event->ctx);
 	lib_ring_buffer_align_ctx(ctx, ctx->largest_align);
 }
 
@@ -312,12 +312,12 @@ static void client_buffer_begin(struct lib_ring_buffer *buf, u64 tsc,
 		(struct packet_header *)
 			lib_ring_buffer_offset_address(&buf->backend,
 				subbuf_idx * chan->backend.subbuf_size);
-	struct ltt_channel *ltt_chan = channel_get_private(chan);
-	struct ltt_session *session = ltt_chan->session;
+	struct lttng_channel *lttng_chan = channel_get_private(chan);
+	struct lttng_session *session = lttng_chan->session;
 
 	header->magic = CTF_MAGIC_NUMBER;
 	memcpy(header->uuid, session->uuid.b, sizeof(session->uuid));
-	header->stream_id = ltt_chan->id;
+	header->stream_id = lttng_chan->id;
 	header->ctx.timestamp_begin = tsc;
 	header->ctx.timestamp_end = 0;
 	header->ctx.events_discarded = 0;
@@ -381,24 +381,24 @@ static const struct lib_ring_buffer_config client_config = {
 
 static
 struct channel *_channel_create(const char *name,
-				struct ltt_channel *ltt_chan, void *buf_addr,
+				struct lttng_channel *lttng_chan, void *buf_addr,
 				size_t subbuf_size, size_t num_subbuf,
 				unsigned int switch_timer_interval,
 				unsigned int read_timer_interval)
 {
-	return channel_create(&client_config, name, ltt_chan, buf_addr,
+	return channel_create(&client_config, name, lttng_chan, buf_addr,
 			      subbuf_size, num_subbuf, switch_timer_interval,
 			      read_timer_interval);
 }
 
 static
-void ltt_channel_destroy(struct channel *chan)
+void lttng_channel_destroy(struct channel *chan)
 {
 	channel_destroy(chan);
 }
 
 static
-struct lib_ring_buffer *ltt_buffer_read_open(struct channel *chan)
+struct lib_ring_buffer *lttng_buffer_read_open(struct channel *chan)
 {
 	struct lib_ring_buffer *buf;
 	int cpu;
@@ -412,7 +412,7 @@ struct lib_ring_buffer *ltt_buffer_read_open(struct channel *chan)
 }
 
 static
-int ltt_buffer_has_read_closed_stream(struct channel *chan)
+int lttng_buffer_has_read_closed_stream(struct channel *chan)
 {
 	struct lib_ring_buffer *buf;
 	int cpu;
@@ -426,16 +426,16 @@ int ltt_buffer_has_read_closed_stream(struct channel *chan)
 }
 
 static
-void ltt_buffer_read_close(struct lib_ring_buffer *buf)
+void lttng_buffer_read_close(struct lib_ring_buffer *buf)
 {
 	lib_ring_buffer_release_read(buf);
 }
 
 static
-int ltt_event_reserve(struct lib_ring_buffer_ctx *ctx,
+int lttng_event_reserve(struct lib_ring_buffer_ctx *ctx,
 		      uint32_t event_id)
 {
-	struct ltt_channel *ltt_chan = channel_get_private(ctx->chan);
+	struct lttng_channel *lttng_chan = channel_get_private(ctx->chan);
 	int ret, cpu;
 
 	cpu = lib_ring_buffer_get_cpu(&client_config);
@@ -443,14 +443,14 @@ int ltt_event_reserve(struct lib_ring_buffer_ctx *ctx,
 		return -EPERM;
 	ctx->cpu = cpu;
 
-	switch (ltt_chan->header_type) {
+	switch (lttng_chan->header_type) {
 	case 1:	/* compact */
 		if (event_id > 30)
-			ctx->rflags |= LTT_RFLAG_EXTENDED;
+			ctx->rflags |= LTTNG_RFLAG_EXTENDED;
 		break;
 	case 2:	/* large */
 		if (event_id > 65534)
-			ctx->rflags |= LTT_RFLAG_EXTENDED;
+			ctx->rflags |= LTTNG_RFLAG_EXTENDED;
 		break;
 	default:
 		WARN_ON_ONCE(1);
@@ -459,7 +459,7 @@ int ltt_event_reserve(struct lib_ring_buffer_ctx *ctx,
 	ret = lib_ring_buffer_reserve(&client_config, ctx);
 	if (ret)
 		goto put;
-	ltt_write_event_header(&client_config, ctx, event_id);
+	lttng_write_event_header(&client_config, ctx, event_id);
 	return 0;
 put:
 	lib_ring_buffer_put_cpu(&client_config);
@@ -467,35 +467,35 @@ put:
 }
 
 static
-void ltt_event_commit(struct lib_ring_buffer_ctx *ctx)
+void lttng_event_commit(struct lib_ring_buffer_ctx *ctx)
 {
 	lib_ring_buffer_commit(&client_config, ctx);
 	lib_ring_buffer_put_cpu(&client_config);
 }
 
 static
-void ltt_event_write(struct lib_ring_buffer_ctx *ctx, const void *src,
+void lttng_event_write(struct lib_ring_buffer_ctx *ctx, const void *src,
 		     size_t len)
 {
 	lib_ring_buffer_write(&client_config, ctx, src, len);
 }
 
 static
-void ltt_event_write_from_user(struct lib_ring_buffer_ctx *ctx,
+void lttng_event_write_from_user(struct lib_ring_buffer_ctx *ctx,
 			       const void __user *src, size_t len)
 {
 	lib_ring_buffer_copy_from_user(&client_config, ctx, src, len);
 }
 
 static
-void ltt_event_memset(struct lib_ring_buffer_ctx *ctx,
+void lttng_event_memset(struct lib_ring_buffer_ctx *ctx,
 		int c, size_t len)
 {
 	lib_ring_buffer_memset(&client_config, ctx, c, len);
 }
 
 static
-wait_queue_head_t *ltt_get_writer_buf_wait_queue(struct channel *chan, int cpu)
+wait_queue_head_t *lttng_get_writer_buf_wait_queue(struct channel *chan, int cpu)
 {
 	struct lib_ring_buffer *buf = channel_get_ring_buffer(&client_config,
 					chan, cpu);
@@ -503,65 +503,65 @@ wait_queue_head_t *ltt_get_writer_buf_wait_queue(struct channel *chan, int cpu)
 }
 
 static
-wait_queue_head_t *ltt_get_hp_wait_queue(struct channel *chan)
+wait_queue_head_t *lttng_get_hp_wait_queue(struct channel *chan)
 {
 	return &chan->hp_wait;
 }
 
 static
-int ltt_is_finalized(struct channel *chan)
+int lttng_is_finalized(struct channel *chan)
 {
 	return lib_ring_buffer_channel_is_finalized(chan);
 }
 
 static
-int ltt_is_disabled(struct channel *chan)
+int lttng_is_disabled(struct channel *chan)
 {
 	return lib_ring_buffer_channel_is_disabled(chan);
 }
 
-static struct ltt_transport ltt_relay_transport = {
+static struct lttng_transport lttng_relay_transport = {
 	.name = "relay-" RING_BUFFER_MODE_TEMPLATE_STRING,
 	.owner = THIS_MODULE,
 	.ops = {
 		.channel_create = _channel_create,
-		.channel_destroy = ltt_channel_destroy,
-		.buffer_read_open = ltt_buffer_read_open,
+		.channel_destroy = lttng_channel_destroy,
+		.buffer_read_open = lttng_buffer_read_open,
 		.buffer_has_read_closed_stream =
-			ltt_buffer_has_read_closed_stream,
-		.buffer_read_close = ltt_buffer_read_close,
-		.event_reserve = ltt_event_reserve,
-		.event_commit = ltt_event_commit,
-		.event_write = ltt_event_write,
-		.event_write_from_user = ltt_event_write_from_user,
-		.event_memset = ltt_event_memset,
+			lttng_buffer_has_read_closed_stream,
+		.buffer_read_close = lttng_buffer_read_close,
+		.event_reserve = lttng_event_reserve,
+		.event_commit = lttng_event_commit,
+		.event_write = lttng_event_write,
+		.event_write_from_user = lttng_event_write_from_user,
+		.event_memset = lttng_event_memset,
 		.packet_avail_size = NULL,	/* Would be racy anyway */
-		.get_writer_buf_wait_queue = ltt_get_writer_buf_wait_queue,
-		.get_hp_wait_queue = ltt_get_hp_wait_queue,
-		.is_finalized = ltt_is_finalized,
-		.is_disabled = ltt_is_disabled,
+		.get_writer_buf_wait_queue = lttng_get_writer_buf_wait_queue,
+		.get_hp_wait_queue = lttng_get_hp_wait_queue,
+		.is_finalized = lttng_is_finalized,
+		.is_disabled = lttng_is_disabled,
 	},
 };
 
-static int __init ltt_ring_buffer_client_init(void)
+static int __init lttng_ring_buffer_client_init(void)
 {
 	/*
 	 * This vmalloc sync all also takes care of the lib ring buffer
 	 * vmalloc'd module pages when it is built as a module into LTTng.
 	 */
 	wrapper_vmalloc_sync_all();
-	ltt_transport_register(&ltt_relay_transport);
+	lttng_transport_register(&lttng_relay_transport);
 	return 0;
 }
 
-module_init(ltt_ring_buffer_client_init);
+module_init(lttng_ring_buffer_client_init);
 
-static void __exit ltt_ring_buffer_client_exit(void)
+static void __exit lttng_ring_buffer_client_exit(void)
 {
-	ltt_transport_unregister(&ltt_relay_transport);
+	lttng_transport_unregister(&lttng_relay_transport);
 }
 
-module_exit(ltt_ring_buffer_client_exit);
+module_exit(lttng_ring_buffer_client_exit);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers");

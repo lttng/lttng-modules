@@ -93,7 +93,7 @@ B) Features
 	   allow integration between NOHZ and LTTng would be to add
 	   support for such notifiers into NOHZ kernel infrastructure.
 
-	10) Turn drivers/staging/lttng/ltt-probes.c probe_list into a
+	10) Turn lttng-probes.c probe_list into a
 	    hash table. Turns O(n^2) trace systems registration (cost
 	    for n systems) into O(n). (O(1) per system)
 

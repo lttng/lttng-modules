@@ -5,16 +5,16 @@
 ifneq ($(KERNELRELEASE),)
 ifneq ($(CONFIG_TRACEPOINTS),)
 
-obj-m += ltt-ring-buffer-client-discard.o
-obj-m += ltt-ring-buffer-client-overwrite.o
-obj-m += ltt-ring-buffer-metadata-client.o
-obj-m += ltt-ring-buffer-client-mmap-discard.o
-obj-m += ltt-ring-buffer-client-mmap-overwrite.o
-obj-m += ltt-ring-buffer-metadata-mmap-client.o
+obj-m += lttng-ring-buffer-client-discard.o
+obj-m += lttng-ring-buffer-client-overwrite.o
+obj-m += lttng-ring-buffer-metadata-client.o
+obj-m += lttng-ring-buffer-client-mmap-discard.o
+obj-m += lttng-ring-buffer-client-mmap-overwrite.o
+obj-m += lttng-ring-buffer-metadata-mmap-client.o
 
-obj-m += ltt-relay.o
-ltt-relay-objs :=  ltt-events.o lttng-abi.o \
-			ltt-probes.o ltt-context.o \
+obj-m += lttng-tracer.o
+lttng-tracer-objs :=  lttng-events.o lttng-abi.o \
+			lttng-probes.o lttng-context.o \
 			lttng-context-pid.o lttng-context-procname.o \
 			lttng-context-prio.o lttng-context-nice.o \
 			lttng-context-vpid.o lttng-context-tid.o \
@@ -22,11 +22,11 @@ ltt-relay-objs :=  ltt-events.o lttng-abi.o \
 			lttng-context-vppid.o lttng-calibrate.o
 
 ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
-ltt-relay-objs += lttng-syscalls.o
+lttng-tracer-objs += lttng-syscalls.o
 endif
 
 ifneq ($(CONFIG_PERF_EVENTS),)
-ltt-relay-objs += $(shell \
+lttng-tracer-objs += $(shell \
 	if [ $(VERSION) -ge 3 \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 33 \) ] ; then \
 		echo "lttng-context-perf-counters.o" ; fi;)

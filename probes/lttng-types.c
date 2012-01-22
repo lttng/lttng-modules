@@ -11,7 +11,7 @@
 #include <linux/module.h>
 #include <linux/types.h>
 #include "../wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
-#include "../ltt-events.h"
+#include "../lttng-events.h"
 #include "lttng-types.h"
 #include <linux/hrtimer.h>
 

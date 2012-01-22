@@ -12,18 +12,18 @@
 #include <linux/perf_event.h>
 #include <linux/list.h>
 #include <linux/string.h>
-#include "ltt-events.h"
+#include "lttng-events.h"
 #include "wrapper/ringbuffer/frontend_types.h"
 #include "wrapper/vmalloc.h"
 #include "wrapper/perf.h"
-#include "ltt-tracer.h"
+#include "lttng-tracer.h"
 
 static
 size_t perf_counter_get_size(size_t offset)
 {
 	size_t size = 0;
 
-	size += lib_ring_buffer_align(offset, ltt_alignof(uint64_t));
+	size += lib_ring_buffer_align(offset, lttng_alignof(uint64_t));
 	size += sizeof(uint64_t);
 	return size;
 }
@@ -31,7 +31,7 @@ size_t perf_counter_get_size(size_t offset)
 static
 void perf_counter_record(struct lttng_ctx_field *field,
 			 struct lib_ring_buffer_ctx *ctx,
-			 struct ltt_channel *chan)
+			 struct lttng_channel *chan)
 {
 	struct perf_event *event;
 	uint64_t value;
@@ -54,7 +54,7 @@ void perf_counter_record(struct lttng_ctx_field *field,
 		 */
 		value = 0;
 	}
-	lib_ring_buffer_align_ctx(ctx, ltt_alignof(value));
+	lib_ring_buffer_align_ctx(ctx, lttng_alignof(value));
 	chan->ops->event_write(ctx, &value, sizeof(value));
 }
 
@@ -230,7 +230,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	field->event_field.name = name_alloc;
 	field->event_field.type.atype = atype_integer;
 	field->event_field.type.u.basic.integer.size = sizeof(uint64_t) * CHAR_BIT;
-	field->event_field.type.u.basic.integer.alignment = ltt_alignof(uint64_t) * CHAR_BIT;
+	field->event_field.type.u.basic.integer.alignment = lttng_alignof(uint64_t) * CHAR_BIT;
 	field->event_field.type.u.basic.integer.signedness = is_signed_type(uint64_t);
 	field->event_field.type.u.basic.integer.reverse_byte_order = 0;
 	field->event_field.type.u.basic.integer.base = 10;

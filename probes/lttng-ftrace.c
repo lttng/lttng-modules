@@ -20,17 +20,17 @@
 #include <linux/module.h>
 #include <linux/ftrace.h>
 #include <linux/slab.h>
-#include "../ltt-events.h"
+#include "../lttng-events.h"
 #include "../wrapper/ringbuffer/frontend_types.h"
 #include "../wrapper/ftrace.h"
 #include "../wrapper/vmalloc.h"
-#include "../ltt-tracer.h"
+#include "../lttng-tracer.h"
 
 static
 void lttng_ftrace_handler(unsigned long ip, unsigned long parent_ip, void **data)
 {
-	struct ltt_event *event = *data;
-	struct ltt_channel *chan = event->chan;
+	struct lttng_event *event = *data;
+	struct lttng_channel *chan = event->chan;
 	struct lib_ring_buffer_ctx ctx;
 	struct {
 		unsigned long ip;
@@ -46,13 +46,13 @@ void lttng_ftrace_handler(unsigned long ip, unsigned long parent_ip, void **data
 		return;
 
 	lib_ring_buffer_ctx_init(&ctx, chan->chan, event,
-				 sizeof(payload), ltt_alignof(payload), -1);
+				 sizeof(payload), lttng_alignof(payload), -1);
 	ret = chan->ops->event_reserve(&ctx, event->id);
 	if (ret < 0)
 		return;
 	payload.ip = ip;
 	payload.parent_ip = parent_ip;
-	lib_ring_buffer_align_ctx(&ctx, ltt_alignof(payload));
+	lib_ring_buffer_align_ctx(&ctx, lttng_alignof(payload));
 	chan->ops->event_write(&ctx, &payload, sizeof(payload));
 	chan->ops->event_commit(&ctx);
 	return;
@@ -62,7 +62,7 @@ void lttng_ftrace_handler(unsigned long ip, unsigned long parent_ip, void **data
  * Create event description
  */
 static
-int lttng_create_ftrace_event(const char *name, struct ltt_event *event)
+int lttng_create_ftrace_event(const char *name, struct lttng_event *event)
 {
 	struct lttng_event_field *fields;
 	struct lttng_event_desc *desc;
@@ -86,7 +86,7 @@ int lttng_create_ftrace_event(const char *name, struct ltt_event *event)
 	fields[0].name = "ip";
 	fields[0].type.atype = atype_integer;
 	fields[0].type.u.basic.integer.size = sizeof(unsigned long) * CHAR_BIT;
-	fields[0].type.u.basic.integer.alignment = ltt_alignof(unsigned long) * CHAR_BIT;
+	fields[0].type.u.basic.integer.alignment = lttng_alignof(unsigned long) * CHAR_BIT;
 	fields[0].type.u.basic.integer.signedness = is_signed_type(unsigned long);
 	fields[0].type.u.basic.integer.reverse_byte_order = 0;
 	fields[0].type.u.basic.integer.base = 16;
@@ -95,7 +95,7 @@ int lttng_create_ftrace_event(const char *name, struct ltt_event *event)
 	fields[1].name = "parent_ip";
 	fields[1].type.atype = atype_integer;
 	fields[1].type.u.basic.integer.size = sizeof(unsigned long) * CHAR_BIT;
-	fields[1].type.u.basic.integer.alignment = ltt_alignof(unsigned long) * CHAR_BIT;
+	fields[1].type.u.basic.integer.alignment = lttng_alignof(unsigned long) * CHAR_BIT;
 	fields[1].type.u.basic.integer.signedness = is_signed_type(unsigned long);
 	fields[1].type.u.basic.integer.reverse_byte_order = 0;
 	fields[1].type.u.basic.integer.base = 16;
@@ -120,7 +120,7 @@ struct ftrace_probe_ops lttng_ftrace_ops = {
 
 int lttng_ftrace_register(const char *name,
 			  const char *symbol_name,
-			  struct ltt_event *event)
+			  struct lttng_event *event)
 {
 	int ret;
 
@@ -151,14 +151,14 @@ error:
 }
 EXPORT_SYMBOL_GPL(lttng_ftrace_register);
 
-void lttng_ftrace_unregister(struct ltt_event *event)
+void lttng_ftrace_unregister(struct lttng_event *event)
 {
 	wrapper_unregister_ftrace_function_probe(event->u.ftrace.symbol_name,
 			&lttng_ftrace_ops, event);
 }
 EXPORT_SYMBOL_GPL(lttng_ftrace_unregister);
 
-void lttng_ftrace_destroy_private(struct ltt_event *event)
+void lttng_ftrace_destroy_private(struct lttng_event *event)
 {
 	kfree(event->u.ftrace.symbol_name);
 	kfree(event->desc->fields);

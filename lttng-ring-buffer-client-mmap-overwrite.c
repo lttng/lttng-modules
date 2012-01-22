@@ -1,5 +1,5 @@
 /*
- * ltt-ring-buffer-client-overwrite.c
+ * lttng-ring-buffer-client-overwrite.c
  *
  * Copyright (C) 2010 - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
@@ -9,12 +9,12 @@
  */
 
 #include <linux/module.h>
-#include "ltt-tracer.h"
+#include "lttng-tracer.h"
 
 #define RING_BUFFER_MODE_TEMPLATE		RING_BUFFER_OVERWRITE
 #define RING_BUFFER_MODE_TEMPLATE_STRING	"overwrite-mmap"
 #define RING_BUFFER_OUTPUT_TEMPLATE		RING_BUFFER_MMAP
-#include "ltt-ring-buffer-client.h"
+#include "lttng-ring-buffer-client.h"
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers");

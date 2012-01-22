@@ -1,5 +1,5 @@
-#ifndef _LTT_WRAPPER_KALLSYMS_H
-#define _LTT_WRAPPER_KALLSYMS_H
+#ifndef _LTTNG_WRAPPER_KALLSYMS_H
+#define _LTTNG_WRAPPER_KALLSYMS_H
 
 /*
  * Copyright (C) 2011 Avik Sil (avik.sil@linaro.org)
@@ -27,4 +27,4 @@ unsigned long kallsyms_lookup_funcptr(const char *name)
 #endif
 	return addr;
 }
-#endif /* _LTT_WRAPPER_KALLSYMS_H */
+#endif /* _LTTNG_WRAPPER_KALLSYMS_H */

@@ -1,5 +1,5 @@
-#ifndef _LTT_WRAPPER_SPLICE_H
-#define _LTT_WRAPPER_SPLICE_H
+#ifndef _LTTNG_WRAPPER_SPLICE_H
+#define _LTTNG_WRAPPER_SPLICE_H
 
 /*
  * Copyright (C) 2011 Mathieu Desnoyers (mathieu.desnoyers@efficios.com)
@@ -20,4 +20,4 @@ ssize_t wrapper_splice_to_pipe(struct pipe_inode_info *pipe,
 #define PIPE_DEF_BUFFERS 16
 #endif
 
-#endif /* _LTT_WRAPPER_SPLICE_H */
+#endif /* _LTTNG_WRAPPER_SPLICE_H */

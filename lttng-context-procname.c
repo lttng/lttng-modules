@@ -10,10 +10,10 @@
 #include <linux/module.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
-#include "ltt-events.h"
+#include "lttng-events.h"
 #include "wrapper/ringbuffer/frontend_types.h"
 #include "wrapper/vmalloc.h"
-#include "ltt-tracer.h"
+#include "lttng-tracer.h"
 
 static
 size_t procname_get_size(size_t offset)
@@ -33,7 +33,7 @@ size_t procname_get_size(size_t offset)
 static
 void procname_record(struct lttng_ctx_field *field,
 		 struct lib_ring_buffer_ctx *ctx,
-		 struct ltt_channel *chan)
+		 struct lttng_channel *chan)
 {
 	chan->ops->event_write(ctx, current->comm, sizeof(current->comm));
 }
@@ -53,7 +53,7 @@ int lttng_add_procname_to_ctx(struct lttng_ctx **ctx)
 	field->event_field.type.atype = atype_array;
 	field->event_field.type.u.array.elem_type.atype = atype_integer;
 	field->event_field.type.u.array.elem_type.u.basic.integer.size = sizeof(char) * CHAR_BIT;
-	field->event_field.type.u.array.elem_type.u.basic.integer.alignment = ltt_alignof(char) * CHAR_BIT;
+	field->event_field.type.u.array.elem_type.u.basic.integer.alignment = lttng_alignof(char) * CHAR_BIT;
 	field->event_field.type.u.array.elem_type.u.basic.integer.signedness = is_signed_type(char);
 	field->event_field.type.u.array.elem_type.u.basic.integer.reverse_byte_order = 0;
 	field->event_field.type.u.array.elem_type.u.basic.integer.base = 10;

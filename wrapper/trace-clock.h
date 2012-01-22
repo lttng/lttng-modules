@@ -7,8 +7,8 @@
  * Dual LGPL v2.1/GPL v2 license.
  */
 
-#ifndef _LTT_TRACE_CLOCK_H
-#define _LTT_TRACE_CLOCK_H
+#ifndef _LTTNG_TRACE_CLOCK_H
+#define _LTTNG_TRACE_CLOCK_H
 
 #ifdef CONFIG_HAVE_TRACE_CLOCK
 #include <linux/trace-clock.h>
@@ -74,4 +74,4 @@ static inline void put_trace_clock(void)
 
 #endif /* CONFIG_HAVE_TRACE_CLOCK */
 
-#endif /* _LTT_TRACE_CLOCK_H */
+#endif /* _LTTNG_TRACE_CLOCK_H */

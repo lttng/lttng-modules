@@ -17,9 +17,9 @@
 
 #include <linux/seq_file.h>
 #include "lttng.h"
-#include "../ltt-events.h"
-#include "../ltt-tracer.h"
-#include "../ltt-endian.h"
+#include "../lttng-events.h"
+#include "../lttng-tracer.h"
+#include "../lttng-endian.h"
 
 #endif /* _LTTNG_PROBES_LTTNG_TYPES_H */
 

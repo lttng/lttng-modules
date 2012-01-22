@@ -1,5 +1,5 @@
-#ifndef _LTT_WRAPPER_FTRACE_H
-#define _LTT_WRAPPER_FTRACE_H
+#ifndef _LTTNG_WRAPPER_FTRACE_H
+#define _LTTNG_WRAPPER_FTRACE_H
 
 /*
  * Copyright (C) 2011 Mathieu Desnoyers (mathieu.desnoyers@efficios.com)
@@ -67,4 +67,4 @@ void wrapper_unregister_ftrace_function_probe(char *glob,
 }
 #endif
 
-#endif /* _LTT_WRAPPER_FTRACE_H */
+#endif /* _LTTNG_WRAPPER_FTRACE_H */

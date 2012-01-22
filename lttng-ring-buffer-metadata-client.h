@@ -1,5 +1,5 @@
 /*
- * ltt-ring-buffer-client.h
+ * lttng-ring-buffer-client.h
  *
  * Copyright (C) 2010 - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
@@ -11,8 +11,8 @@
 #include <linux/module.h>
 #include <linux/types.h>
 #include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
-#include "ltt-events.h"
-#include "ltt-tracer.h"
+#include "lttng-events.h"
+#include "lttng-tracer.h"
 
 struct metadata_packet_header {
 	uint32_t magic;			/* 0x75D11D57 */
@@ -85,8 +85,8 @@ static void client_buffer_begin(struct lib_ring_buffer *buf, u64 tsc,
 		(struct metadata_packet_header *)
 			lib_ring_buffer_offset_address(&buf->backend,
 				subbuf_idx * chan->backend.subbuf_size);
-	struct ltt_channel *ltt_chan = channel_get_private(chan);
-	struct ltt_session *session = ltt_chan->session;
+	struct lttng_channel *lttng_chan = channel_get_private(chan);
+	struct lttng_session *session = lttng_chan->session;
 
 	header->magic = TSDL_MAGIC_NUMBER;
 	memcpy(header->uuid, session->uuid.b, sizeof(session->uuid));
@@ -158,24 +158,24 @@ static const struct lib_ring_buffer_config client_config = {
 
 static
 struct channel *_channel_create(const char *name,
-				struct ltt_channel *ltt_chan, void *buf_addr,
+				struct lttng_channel *lttng_chan, void *buf_addr,
 				size_t subbuf_size, size_t num_subbuf,
 				unsigned int switch_timer_interval,
 				unsigned int read_timer_interval)
 {
-	return channel_create(&client_config, name, ltt_chan, buf_addr,
+	return channel_create(&client_config, name, lttng_chan, buf_addr,
 			      subbuf_size, num_subbuf, switch_timer_interval,
 			      read_timer_interval);
 }
 
 static
-void ltt_channel_destroy(struct channel *chan)
+void lttng_channel_destroy(struct channel *chan)
 {
 	channel_destroy(chan);
 }
 
 static
-struct lib_ring_buffer *ltt_buffer_read_open(struct channel *chan)
+struct lib_ring_buffer *lttng_buffer_read_open(struct channel *chan)
 {
 	struct lib_ring_buffer *buf;
 
@@ -186,7 +186,7 @@ struct lib_ring_buffer *ltt_buffer_read_open(struct channel *chan)
 }
 
 static
-int ltt_buffer_has_read_closed_stream(struct channel *chan)
+int lttng_buffer_has_read_closed_stream(struct channel *chan)
 {
 	struct lib_ring_buffer *buf;
 	int cpu;
@@ -200,46 +200,46 @@ int ltt_buffer_has_read_closed_stream(struct channel *chan)
 }
 
 static
-void ltt_buffer_read_close(struct lib_ring_buffer *buf)
+void lttng_buffer_read_close(struct lib_ring_buffer *buf)
 {
 	lib_ring_buffer_release_read(buf);
 }
 
 static
-int ltt_event_reserve(struct lib_ring_buffer_ctx *ctx, uint32_t event_id)
+int lttng_event_reserve(struct lib_ring_buffer_ctx *ctx, uint32_t event_id)
 {
 	return lib_ring_buffer_reserve(&client_config, ctx);
 }
 
 static
-void ltt_event_commit(struct lib_ring_buffer_ctx *ctx)
+void lttng_event_commit(struct lib_ring_buffer_ctx *ctx)
 {
 	lib_ring_buffer_commit(&client_config, ctx);
 }
 
 static
-void ltt_event_write(struct lib_ring_buffer_ctx *ctx, const void *src,
+void lttng_event_write(struct lib_ring_buffer_ctx *ctx, const void *src,
 		     size_t len)
 {
 	lib_ring_buffer_write(&client_config, ctx, src, len);
 }
 
 static
-void ltt_event_write_from_user(struct lib_ring_buffer_ctx *ctx,
+void lttng_event_write_from_user(struct lib_ring_buffer_ctx *ctx,
 			       const void __user *src, size_t len)
 {
 	lib_ring_buffer_copy_from_user(&client_config, ctx, src, len);
 }
 
 static
-void ltt_event_memset(struct lib_ring_buffer_ctx *ctx,
+void lttng_event_memset(struct lib_ring_buffer_ctx *ctx,
 		int c, size_t len)
 {
 	lib_ring_buffer_memset(&client_config, ctx, c, len);
 }
 
 static
-size_t ltt_packet_avail_size(struct channel *chan)
+size_t lttng_packet_avail_size(struct channel *chan)
 			     
 {
 	unsigned long o_begin;
@@ -256,7 +256,7 @@ size_t ltt_packet_avail_size(struct channel *chan)
 }
 
 static
-wait_queue_head_t *ltt_get_writer_buf_wait_queue(struct channel *chan, int cpu)
+wait_queue_head_t *lttng_get_writer_buf_wait_queue(struct channel *chan, int cpu)
 {
 	struct lib_ring_buffer *buf = channel_get_ring_buffer(&client_config,
 					chan, cpu);
@@ -264,65 +264,65 @@ wait_queue_head_t *ltt_get_writer_buf_wait_queue(struct channel *chan, int cpu)
 }
 
 static
-wait_queue_head_t *ltt_get_hp_wait_queue(struct channel *chan)
+wait_queue_head_t *lttng_get_hp_wait_queue(struct channel *chan)
 {
 	return &chan->hp_wait;
 }
 
 static
-int ltt_is_finalized(struct channel *chan)
+int lttng_is_finalized(struct channel *chan)
 {
 	return lib_ring_buffer_channel_is_finalized(chan);
 }
 
 static
-int ltt_is_disabled(struct channel *chan)
+int lttng_is_disabled(struct channel *chan)
 {
 	return lib_ring_buffer_channel_is_disabled(chan);
 }
 
-static struct ltt_transport ltt_relay_transport = {
+static struct lttng_transport lttng_relay_transport = {
 	.name = "relay-" RING_BUFFER_MODE_TEMPLATE_STRING,
 	.owner = THIS_MODULE,
 	.ops = {
 		.channel_create = _channel_create,
-		.channel_destroy = ltt_channel_destroy,
-		.buffer_read_open = ltt_buffer_read_open,
+		.channel_destroy = lttng_channel_destroy,
+		.buffer_read_open = lttng_buffer_read_open,
 		.buffer_has_read_closed_stream =
-			ltt_buffer_has_read_closed_stream,
-		.buffer_read_close = ltt_buffer_read_close,
-		.event_reserve = ltt_event_reserve,
-		.event_commit = ltt_event_commit,
-		.event_write_from_user = ltt_event_write_from_user,
-		.event_memset = ltt_event_memset,
-		.event_write = ltt_event_write,
-		.packet_avail_size = ltt_packet_avail_size,
-		.get_writer_buf_wait_queue = ltt_get_writer_buf_wait_queue,
-		.get_hp_wait_queue = ltt_get_hp_wait_queue,
-		.is_finalized = ltt_is_finalized,
-		.is_disabled = ltt_is_disabled,
+			lttng_buffer_has_read_closed_stream,
+		.buffer_read_close = lttng_buffer_read_close,
+		.event_reserve = lttng_event_reserve,
+		.event_commit = lttng_event_commit,
+		.event_write_from_user = lttng_event_write_from_user,
+		.event_memset = lttng_event_memset,
+		.event_write = lttng_event_write,
+		.packet_avail_size = lttng_packet_avail_size,
+		.get_writer_buf_wait_queue = lttng_get_writer_buf_wait_queue,
+		.get_hp_wait_queue = lttng_get_hp_wait_queue,
+		.is_finalized = lttng_is_finalized,
+		.is_disabled = lttng_is_disabled,
 	},
 };
 
-static int __init ltt_ring_buffer_client_init(void)
+static int __init lttng_ring_buffer_client_init(void)
 {
 	/*
 	 * This vmalloc sync all also takes care of the lib ring buffer
 	 * vmalloc'd module pages when it is built as a module into LTTng.
 	 */
 	wrapper_vmalloc_sync_all();
-	ltt_transport_register(&ltt_relay_transport);
+	lttng_transport_register(&lttng_relay_transport);
 	return 0;
 }
 
-module_init(ltt_ring_buffer_client_init);
+module_init(lttng_ring_buffer_client_init);
 
-static void __exit ltt_ring_buffer_client_exit(void)
+static void __exit lttng_ring_buffer_client_exit(void)
 {
-	ltt_transport_unregister(&ltt_relay_transport);
+	lttng_transport_unregister(&lttng_relay_transport);
 }
 
-module_exit(ltt_ring_buffer_client_exit);
+module_exit(lttng_ring_buffer_client_exit);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers");

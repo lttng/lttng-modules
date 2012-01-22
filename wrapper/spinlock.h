@@ -1,5 +1,5 @@
-#ifndef _LTT_WRAPPER_SPINLOCK_H
-#define _LTT_WRAPPER_SPINLOCK_H
+#ifndef _LTTNG_WRAPPER_SPINLOCK_H
+#define _LTTNG_WRAPPER_SPINLOCK_H
 
 /*
  * Copyright (C) 2011 Mathieu Desnoyers (mathieu.desnoyers@efficios.com)
@@ -23,4 +23,4 @@
 
 
 #endif
-#endif /* _LTT_WRAPPER_SPINLOCK_H */
+#endif /* _LTTNG_WRAPPER_SPINLOCK_H */

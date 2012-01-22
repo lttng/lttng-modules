@@ -1,8 +1,8 @@
-#ifndef LTT_TRACER_CORE_H
-#define LTT_TRACER_CORE_H
+#ifndef LTTNG_TRACER_CORE_H
+#define LTTNG_TRACER_CORE_H
 
 /*
- * ltt-tracer-core.h
+ * lttng-tracer-core.h
  *
  * Copyright (C) 2005-2011 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
@@ -21,8 +21,8 @@
 
 #include "wrapper/ringbuffer/config.h"
 
-struct ltt_session;
-struct ltt_channel;
-struct ltt_event;
+struct lttng_session;
+struct lttng_channel;
+struct lttng_event;
 
-#endif /* LTT_TRACER_CORE_H */
+#endif /* LTTNG_TRACER_CORE_H */

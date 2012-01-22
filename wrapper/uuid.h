@@ -1,5 +1,5 @@
-#ifndef _LTT_WRAPPER_UUID_H
-#define _LTT_WRAPPER_UUID_H
+#ifndef _LTTNG_WRAPPER_UUID_H
+#define _LTTNG_WRAPPER_UUID_H
 
 /*
  * Copyright (C) 2011 Mathieu Desnoyers (mathieu.desnoyers@efficios.com)
@@ -26,4 +26,4 @@ void uuid_le_gen(uuid_le *u)
 }
 
 #endif
-#endif /* _LTT_WRAPPER_UUID_H */
+#endif /* _LTTNG_WRAPPER_UUID_H */

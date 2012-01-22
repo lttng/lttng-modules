@@ -1,5 +1,5 @@
-#ifndef _LTT_WRAPPER_PERF_H
-#define _LTT_WRAPPER_PERF_H
+#ifndef _LTTNG_WRAPPER_PERF_H
+#define _LTTNG_WRAPPER_PERF_H
 
 /*
  * Copyright (C) 2011 Mathieu Desnoyers (mathieu.desnoyers@efficios.com)
@@ -29,4 +29,4 @@ wrapper_perf_event_create_kernel_counter(struct perf_event_attr *attr,
 }
 #endif
 
-#endif /* _LTT_WRAPPER_PERF_H */
+#endif /* _LTTNG_WRAPPER_PERF_H */

@@ -12,8 +12,8 @@
 #include "lttng-types.h"
 #include "../wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "../wrapper/ringbuffer/frontend_types.h"
-#include "../ltt-events.h"
-#include "../ltt-tracer-core.h"
+#include "../lttng-events.h"
+#include "../lttng-tracer-core.h"
 
 /*
  * Macro declarations used for all stages.
@@ -319,19 +319,19 @@ static __used struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 
 #undef __field_full
 #define __field_full(_type, _item, _order, _base)			       \
-	__event_len += lib_ring_buffer_align(__event_len, ltt_alignof(_type)); \
+	__event_len += lib_ring_buffer_align(__event_len, lttng_alignof(_type)); \
 	__event_len += sizeof(_type);
 
 #undef __array_enc_ext
 #define __array_enc_ext(_type, _item, _length, _order, _base, _encoding)       \
-	__event_len += lib_ring_buffer_align(__event_len, ltt_alignof(_type)); \
+	__event_len += lib_ring_buffer_align(__event_len, lttng_alignof(_type)); \
 	__event_len += sizeof(_type) * (_length);
 
 #undef __dynamic_array_enc_ext
 #define __dynamic_array_enc_ext(_type, _item, _length, _order, _base, _encoding)\
-	__event_len += lib_ring_buffer_align(__event_len, ltt_alignof(u32));   \
+	__event_len += lib_ring_buffer_align(__event_len, lttng_alignof(u32));   \
 	__event_len += sizeof(u32);					       \
-	__event_len += lib_ring_buffer_align(__event_len, ltt_alignof(_type)); \
+	__event_len += lib_ring_buffer_align(__event_len, lttng_alignof(_type)); \
 	__dynamic_len[__dynamic_len_idx] = (_length);			       \
 	__event_len += sizeof(_type) * __dynamic_len[__dynamic_len_idx];       \
 	__dynamic_len_idx++;
@@ -382,16 +382,16 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len, _proto) \
 
 #undef __field_full
 #define __field_full(_type, _item, _order, _base)			  \
-	__event_align = max_t(size_t, __event_align, ltt_alignof(_type));
+	__event_align = max_t(size_t, __event_align, lttng_alignof(_type));
 
 #undef __array_enc_ext
 #define __array_enc_ext(_type, _item, _length, _order, _base, _encoding)  \
-	__event_align = max_t(size_t, __event_align, ltt_alignof(_type));
+	__event_align = max_t(size_t, __event_align, lttng_alignof(_type));
 
 #undef __dynamic_array_enc_ext
 #define __dynamic_array_enc_ext(_type, _item, _length, _order, _base, _encoding)\
-	__event_align = max_t(size_t, __event_align, ltt_alignof(u32));	  \
-	__event_align = max_t(size_t, __event_align, ltt_alignof(_type));
+	__event_align = max_t(size_t, __event_align, lttng_alignof(u32));	  \
+	__event_align = max_t(size_t, __event_align, lttng_alignof(_type));
 
 #undef __string
 #define __string(_item, _src)
@@ -506,7 +506,7 @@ __end_field_##_item:
 __assign_##dest:							\
 	{								\
 		__typeof__(__typemap.dest) __tmp = (src);		\
-		lib_ring_buffer_align_ctx(&__ctx, ltt_alignof(__tmp));	\
+		lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(__tmp));	\
 		__chan->ops->event_write(&__ctx, &__tmp, sizeof(__tmp));\
 	}								\
 	goto __end_field_##dest;
@@ -516,7 +516,7 @@ __assign_##dest:							\
 __assign_##dest:							\
 	if (0)								\
 		(void) __typemap.dest;					\
-	lib_ring_buffer_align_ctx(&__ctx, ltt_alignof(__typemap.dest));	\
+	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(__typemap.dest));	\
 	__chan->ops->event_write(&__ctx, src, len);			\
 	goto __end_field_##dest;
 
@@ -525,12 +525,12 @@ __assign_##dest:							\
 __assign_##dest##_1:							\
 	{								\
 		u32 __tmpl = __dynamic_len[__dynamic_len_idx];		\
-		lib_ring_buffer_align_ctx(&__ctx, ltt_alignof(u32));	\
+		lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(u32));	\
 		__chan->ops->event_write(&__ctx, &__tmpl, sizeof(u32));	\
 	}								\
 	goto __end_field_##dest##_1;					\
 __assign_##dest##_2:							\
-	lib_ring_buffer_align_ctx(&__ctx, ltt_alignof(__typemap.dest));	\
+	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(__typemap.dest));	\
 	__chan->ops->event_write(&__ctx, src,				\
 		sizeof(__typemap.dest) * __get_dynamic_array_len(dest));\
 	goto __end_field_##dest##_2;
@@ -540,7 +540,7 @@ __assign_##dest##_2:							\
 	__assign_##dest:						\
 	if (0)								\
 		(void) __typemap.dest;					\
-	lib_ring_buffer_align_ctx(&__ctx, ltt_alignof(__typemap.dest));	\
+	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(__typemap.dest));	\
 	__chan->ops->event_write_from_user(&__ctx, src, len);		\
 	goto __end_field_##dest;
 
@@ -555,7 +555,7 @@ __assign_##dest##_2:							\
 									\
 		if (0)							\
 			(void) __typemap.dest;				\
-		lib_ring_buffer_align_ctx(&__ctx, ltt_alignof(__typemap.dest));\
+		lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(__typemap.dest));\
 		__ustrlen = __get_dynamic_array_len(dest);		\
 		if (likely(__ustrlen > 1)) {				\
 			__chan->ops->event_write_from_user(&__ctx, src,	\
@@ -596,8 +596,8 @@ __assign_##dest##_2:							\
 #define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
 static void __event_probe__##_name(void *__data, _proto)		      \
 {									      \
-	struct ltt_event *__event = __data;				      \
-	struct ltt_channel *__chan = __event->chan;			      \
+	struct lttng_event *__event = __data;				      \
+	struct lttng_channel *__chan = __event->chan;			      \
 	struct lib_ring_buffer_ctx __ctx;				      \
 	size_t __event_len, __event_align;				      \
 	size_t __dynamic_len_idx = 0;					      \
@@ -632,8 +632,8 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 #define DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print)	      \
 static void __event_probe__##_name(void *__data)			      \
 {									      \
-	struct ltt_event *__event = __data;				      \
-	struct ltt_channel *__chan = __event->chan;			      \
+	struct lttng_event *__event = __data;				      \
+	struct lttng_channel *__chan = __event->chan;			      \
 	struct lib_ring_buffer_ctx __ctx;				      \
 	size_t __event_len, __event_align;				      \
 	int __ret;							      \
@@ -680,14 +680,14 @@ static void __event_probe__##_name(void *__data)			      \
 static int TP_ID(__lttng_events_init__, TRACE_SYSTEM)(void)
 {
 	wrapper_vmalloc_sync_all();
-	return ltt_probe_register(&TP_ID(__probe_desc___, TRACE_SYSTEM));
+	return lttng_probe_register(&TP_ID(__probe_desc___, TRACE_SYSTEM));
 }
 
 module_init_eval(__lttng_events_init__, TRACE_SYSTEM);
 
 static void TP_ID(__lttng_events_exit__, TRACE_SYSTEM)(void)
 {
-	ltt_probe_unregister(&TP_ID(__probe_desc___, TRACE_SYSTEM));
+	lttng_probe_unregister(&TP_ID(__probe_desc___, TRACE_SYSTEM));
 }
 
 module_exit_eval(__lttng_events_exit__, TRACE_SYSTEM);

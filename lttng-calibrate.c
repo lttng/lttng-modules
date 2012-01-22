@@ -9,7 +9,7 @@
  */
 
 #include "lttng-abi.h"
-#include "ltt-events.h"
+#include "lttng-events.h"
 
 noinline
 void lttng_calibrate_kretprobe(void)
