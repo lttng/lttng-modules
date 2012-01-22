@@ -10,14 +10,7 @@ TODO:
 
 A) Cleanup/Testing
 
-	1) Remove debugfs "lttng" file (keep only procfs "lttng" file).
-	   The rationale for this is that this file is needed for
-	   user-level tracing support (LTTng-UST 2.0) intended to be
-	   used on production system, and therefore should be present as
-	   part of a "usually mounted" filesystem rather than a debug
-	   filesystem.
-
-	2) Test lib ring buffer snapshot feature.
+	1) Test lib ring buffer snapshot feature.
 	   When working on the lttngtop project, Julien Desfossez
 	   reported that he needed to push the consumer position
 	   forward explicitely with lib_ring_buffer_put_next_subbuf.
