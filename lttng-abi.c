@@ -752,7 +752,7 @@ int __init lttng_abi_init(void)
 	lttng_proc_dentry = proc_create_data("lttng", S_IWUSR, NULL,
 					&lttng_fops, NULL);
 	
-	if (lttng_proc_dentry) {
+	if (!lttng_proc_dentry) {
 		printk(KERN_ERR "Error creating LTTng control file\n");
 		ret = -ENOMEM;
 		goto error;
