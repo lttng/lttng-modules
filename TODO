@@ -57,7 +57,6 @@ B) Features
 
 	3) Integrate the "statedump" module from LTTng 0.x into LTTng
 	   2.0.
-	     * Dependency: addition of "dynamic enumerations" type to CTF.
 	   See: http://git.lttng.org/?p=lttng-modules.git;a=shortlog;h=refs/heads/v0.19-stable
 	        ltt-statedump.c
 
