@@ -25,7 +25,6 @@
  */
 
 #include <linux/module.h>
-#include <linux/debugfs.h>
 #include <linux/proc_fs.h>
 #include <linux/anon_inodes.h>
 #include <linux/file.h>
@@ -40,10 +39,9 @@
 
 /*
  * This is LTTng's own personal way to create a system call as an external
- * module. We use ioctl() on /sys/kernel/debug/lttng.
+ * module. We use ioctl() on /proc/lttng.
  */
 
-static struct dentry *lttng_dentry;
 static struct proc_dir_entry *lttng_proc_dentry;
 static const struct file_operations lttng_fops;
 static const struct file_operations lttng_session_fops;
@@ -746,20 +744,15 @@ static const struct file_operations lttng_event_fops = {
 #endif
 };
 
-int __init ltt_debugfs_abi_init(void)
+int __init lttng_abi_init(void)
 {
 	int ret = 0;
 
 	wrapper_vmalloc_sync_all();
-	lttng_dentry = debugfs_create_file("lttng", S_IWUSR, NULL, NULL,
-					&lttng_fops);
-	if (IS_ERR(lttng_dentry))
-		lttng_dentry = NULL;
-
 	lttng_proc_dentry = proc_create_data("lttng", S_IWUSR, NULL,
 					&lttng_fops, NULL);
 	
-	if (!lttng_dentry && !lttng_proc_dentry) {
+	if (lttng_proc_dentry) {
 		printk(KERN_ERR "Error creating LTTng control file\n");
 		ret = -ENOMEM;
 		goto error;
@@ -768,10 +761,8 @@ error:
 	return ret;
 }
 
-void __exit ltt_debugfs_abi_exit(void)
+void __exit lttng_abi_exit(void)
 {
-	if (lttng_dentry)
-		debugfs_remove(lttng_dentry);
 	if (lttng_proc_dentry)
 		remove_proc_entry("lttng", NULL);
 }

@@ -298,8 +298,8 @@ void ltt_transport_register(struct ltt_transport *transport);
 void ltt_transport_unregister(struct ltt_transport *transport);
 
 void synchronize_trace(void);
-int ltt_debugfs_abi_init(void);
-void ltt_debugfs_abi_exit(void);
+int lttng_abi_init(void);
+void lttng_abi_exit(void);
 
 int ltt_probe_register(struct lttng_probe_desc *desc);
 void ltt_probe_unregister(struct lttng_probe_desc *desc);
