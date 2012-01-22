@@ -8,7 +8,7 @@
  * Dual LGPL v2.1/GPL v2 license.
  */
 
-#include "ltt-debugfs-abi.h"
+#include "lttng-abi.h"
 #include "ltt-events.h"
 
 noinline

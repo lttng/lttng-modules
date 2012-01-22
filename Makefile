@@ -13,7 +13,7 @@ obj-m += ltt-ring-buffer-client-mmap-overwrite.o
 obj-m += ltt-ring-buffer-metadata-mmap-client.o
 
 obj-m += ltt-relay.o
-ltt-relay-objs :=  ltt-events.o ltt-debugfs-abi.o \
+ltt-relay-objs :=  ltt-events.o lttng-abi.o \
 			ltt-probes.o ltt-context.o \
 			lttng-context-pid.o lttng-context-procname.o \
 			lttng-context-prio.o lttng-context-nice.o \

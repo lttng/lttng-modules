@@ -1,9 +1,9 @@
 /*
- * ltt-debugfs-abi.c
+ * lttng-abi.c
  *
- * Copyright 2010 (c) - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+ * Copyright 2010-2011 (c) - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
- * LTTng debugfs ABI
+ * LTTng ABI
  *
  * Mimic system calls for:
  * - session creation, returns a file descriptor or failure.
@@ -34,7 +34,7 @@
 #include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "wrapper/ringbuffer/vfs.h"
 #include "wrapper/poll.h"
-#include "ltt-debugfs-abi.h"
+#include "lttng-abi.h"
 #include "ltt-events.h"
 #include "ltt-tracer.h"
 

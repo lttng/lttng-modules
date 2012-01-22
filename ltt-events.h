@@ -14,7 +14,7 @@
 #include <linux/list.h>
 #include <linux/kprobes.h>
 #include "wrapper/uuid.h"
-#include "ltt-debugfs-abi.h"
+#include "lttng-abi.h"
 
 #undef is_signed_type
 #define is_signed_type(type)		(((type)(-1)) < 0)

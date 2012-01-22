@@ -1,8 +1,8 @@
-#ifndef _LTT_DEBUGFS_ABI_H
-#define _LTT_DEBUGFS_ABI_H
+#ifndef _LTTNG_ABI_H
+#define _LTTNG_ABI_H
 
 /*
- * ltt-debugfs-abi.h
+ * lttng-abi.h
  *
  * Copyright 2010 (c) - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
@@ -150,4 +150,4 @@ struct lttng_kernel_context {
 #define LTTNG_KERNEL_ENABLE			_IO(0xF6, 0x80)
 #define LTTNG_KERNEL_DISABLE			_IO(0xF6, 0x81)
 
-#endif /* _LTT_DEBUGFS_ABI_H */
+#endif /* _LTTNG_ABI_H */
