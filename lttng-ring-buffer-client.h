@@ -17,6 +17,9 @@
 #include "lttng-tracer.h"
 #include "wrapper/ringbuffer/frontend_types.h"
 
+#define LTTNG_COMPACT_EVENT_BITS	5
+#define LTTNG_COMPACT_TSC_BITS		27
+
 /*
  * Keep the natural field alignment for _each field_ within this structure if
  * you ever add/remove a field from this header. Packed attribute is not used
@@ -120,8 +123,8 @@ unsigned char record_header_size(const struct lib_ring_buffer_config *config,
 		if (!(ctx->rflags & (RING_BUFFER_RFLAG_FULL_TSC | LTTNG_RFLAG_EXTENDED))) {
 			offset += sizeof(uint32_t);	/* id and timestamp */
 		} else {
-			/* Minimum space taken by 5-bit id */
-			offset += sizeof(uint8_t);
+			/* Minimum space taken by LTTNG_COMPACT_EVENT_BITS id */
+			offset += (LTTNG_COMPACT_EVENT_BITS + CHAR_BIT - 1) / CHAR_BIT;
 			/* Align extended struct on largest member */
 			offset += lib_ring_buffer_align(offset, lttng_alignof(uint64_t));
 			offset += sizeof(uint32_t);	/* id */
@@ -187,8 +190,14 @@ void lttng_write_event_header(const struct lib_ring_buffer_config *config,
 	{
 		uint32_t id_time = 0;
 
-		bt_bitfield_write(&id_time, uint32_t, 0, 5, event_id);
-		bt_bitfield_write(&id_time, uint32_t, 5, 27, ctx->tsc);
+		bt_bitfield_write(&id_time, uint32_t,
+				0,
+				LTTNG_COMPACT_EVENT_BITS,
+				event_id);
+		bt_bitfield_write(&id_time, uint32_t,
+				LTTNG_COMPACT_EVENT_BITS,
+				LTTNG_COMPACT_TSC_BITS,
+				ctx->tsc);
 		lib_ring_buffer_write(config, ctx, &id_time, sizeof(id_time));
 		break;
 	}
@@ -229,14 +238,22 @@ void lttng_write_event_header_slow(const struct lib_ring_buffer_config *config,
 		if (!(ctx->rflags & (RING_BUFFER_RFLAG_FULL_TSC | LTTNG_RFLAG_EXTENDED))) {
 			uint32_t id_time = 0;
 
-			bt_bitfield_write(&id_time, uint32_t, 0, 5, event_id);
-			bt_bitfield_write(&id_time, uint32_t, 5, 27, ctx->tsc);
+			bt_bitfield_write(&id_time, uint32_t,
+					0,
+					LTTNG_COMPACT_EVENT_BITS,
+					event_id);
+			bt_bitfield_write(&id_time, uint32_t,
+					LTTNG_COMPACT_EVENT_BITS,
+					LTTNG_COMPACT_TSC_BITS, ctx->tsc);
 			lib_ring_buffer_write(config, ctx, &id_time, sizeof(id_time));
 		} else {
 			uint8_t id = 0;
 			uint64_t timestamp = ctx->tsc;
 
-			bt_bitfield_write(&id, uint8_t, 0, 5, 31);
+			bt_bitfield_write(&id, uint8_t,
+					0,
+					LTTNG_COMPACT_EVENT_BITS,
+					31);
 			lib_ring_buffer_write(config, ctx, &id, sizeof(id));
 			/* Align extended struct on largest member */
 			lib_ring_buffer_align_ctx(ctx, lttng_alignof(uint64_t));
@@ -368,7 +385,7 @@ static const struct lib_ring_buffer_config client_config = {
 	.cb.buffer_create = client_buffer_create,
 	.cb.buffer_finalize = client_buffer_finalize,
 
-	.tsc_bits = 32,
+	.tsc_bits = LTTNG_COMPACT_TSC_BITS,
 	.alloc = RING_BUFFER_ALLOC_PER_CPU,
 	.sync = RING_BUFFER_SYNC_PER_CPU,
 	.mode = RING_BUFFER_MODE_TEMPLATE,
