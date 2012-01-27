@@ -794,8 +794,8 @@ int _lttng_stream_packet_context_declare(struct lttng_session *session)
 {
 	return lttng_metadata_printf(session,
 		"struct packet_context {\n"
-		"	uint64_t timestamp_begin;\n"
-		"	uint64_t timestamp_end;\n"
+		"	uint64_clock_monotonic_t timestamp_begin;\n"
+		"	uint64_clock_monotonic_t timestamp_end;\n"
 		"	uint32_t events_discarded;\n"
 		"	uint32_t content_size;\n"
 		"	uint32_t packet_size;\n"
@@ -821,11 +821,11 @@ int _lttng_event_header_declare(struct lttng_session *session)
 	"	enum : uint5_t { compact = 0 ... 30, extended = 31 } id;\n"
 	"	variant <id> {\n"
 	"		struct {\n"
-	"			uint27_t timestamp;\n"
+	"			uint27_clock_monotonic_t timestamp;\n"
 	"		} compact;\n"
 	"		struct {\n"
 	"			uint32_t id;\n"
-	"			uint64_t timestamp;\n"
+	"			uint64_clock_monotonic_t timestamp;\n"
 	"		} extended;\n"
 	"	} v;\n"
 	"} align(%u);\n"
@@ -834,17 +834,44 @@ int _lttng_event_header_declare(struct lttng_session *session)
 	"	enum : uint16_t { compact = 0 ... 65534, extended = 65535 } id;\n"
 	"	variant <id> {\n"
 	"		struct {\n"
-	"			uint32_t timestamp;\n"
+	"			uint32_clock_monotonic_t timestamp;\n"
 	"		} compact;\n"
 	"		struct {\n"
 	"			uint32_t id;\n"
-	"			uint64_t timestamp;\n"
+	"			uint64_clock_monotonic_t timestamp;\n"
 	"		} extended;\n"
 	"	} v;\n"
 	"} align(%u);\n\n",
 	lttng_alignof(uint32_t) * CHAR_BIT,
 	lttng_alignof(uint16_t) * CHAR_BIT
 	);
+}
+
+ /*
+ * Approximation of NTP time of day to clock monotonic correlation,
+ * taken at start of trace.
+ * Yes, this is only an approximation. Yes, we can (and will) do better
+ * in future versions.
+ */
+static
+uint64_t measure_clock_offset(void)
+{
+	uint64_t offset, monotonic[2], realtime;
+	struct timespec rts = { 0, 0 };
+	unsigned long flags;
+
+	/* Disable interrupts to increase correlation precision. */
+	local_irq_save(flags);
+	monotonic[0] = trace_clock_read64();
+	getnstimeofday(&rts);      
+	monotonic[1] = trace_clock_read64();
+	local_irq_restore(flags);
+
+	offset = (monotonic[0] + monotonic[1]) >> 1;
+	realtime = rts.tv_sec * NSEC_PER_SEC;
+	realtime += rts.tv_nsec;
+	offset = realtime - offset;
+	return offset;
 }
 
 /*
@@ -906,6 +933,44 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 #else
 		"le"
 #endif
+		);
+	if (ret)
+		goto end;
+
+	ret = lttng_metadata_printf(session,
+		"clock {\n"
+		"	name = %s;\n"
+		"	uuid = %s;\n"
+		"	description = \"Monotonic Clock\";\n"
+		"	freq = %llu; /* Frequency, in Hz */\n"
+		"	/* clock value offset from Epoch is: offset * (1/freq) */\n"
+		"	offset = %llu;\n"
+		"};\n\n",
+		"monotonic",
+		trace_clock_uuid(),
+		(unsigned long long) trace_clock_freq(),
+		(unsigned long long) measure_clock_offset()
+		);
+	if (ret)
+		goto end;
+
+	ret = lttng_metadata_printf(session,
+		"typealias integer {\n"
+		"	size = 27; align = 1; signed = false;\n"
+		"	map = clock.monotonic.value;\n"
+		"} := uint27_clock_monotonic_t;\n"
+		"\n"
+		"typealias integer {\n"
+		"	size = 32; align = %u; signed = false;\n"
+		"	map = clock.monotonic.value;\n"
+		"} := uint32_clock_monotonic_t;\n"
+		"\n"
+		"typealias integer {\n"
+		"	size = 64; align = %u; signed = false;\n"
+		"	map = clock.monotonic.value;\n"
+		"} := uint64_clock_monotonic_t;\n\n",
+		lttng_alignof(uint32_t) * CHAR_BIT,
+		lttng_alignof(uint64_t) * CHAR_BIT
 		);
 	if (ret)
 		goto end;

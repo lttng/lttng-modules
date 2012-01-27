@@ -44,14 +44,14 @@ static inline u64 trace_clock_read64(void)
 	return (u64) trace_clock_monotonic_wrapper();
 }
 
-static inline u64 trace_clock_frequency(void)
+static inline u64 trace_clock_freq(void)
 {
-	return (u64)NSEC_PER_SEC;
+	return (u64) NSEC_PER_SEC;
 }
 
-static inline u32 trace_clock_freq_scale(void)
+static inline const char *trace_clock_uuid(void)
 {
-	return 1;
+	return "CLOCK_MONOTONIC";
 }
 
 static inline int get_trace_clock(void)
