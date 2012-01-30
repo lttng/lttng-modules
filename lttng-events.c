@@ -16,6 +16,7 @@
 #include <linux/jiffies.h>
 #include "wrapper/uuid.h"
 #include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
+#include "wrapper/random.h"
 #include "lttng-events.h"
 #include "lttng-tracer.h"
 
@@ -881,7 +882,7 @@ static
 int _lttng_session_metadata_statedump(struct lttng_session *session)
 {
 	unsigned char *uuid_c = session->uuid.b;
-	unsigned char uuid_s[37];
+	unsigned char uuid_s[37], clock_uuid_s[BOOT_ID_LEN];
 	struct lttng_channel *chan;
 	struct lttng_event *event;
 	int ret = 0;
@@ -939,15 +940,27 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 
 	ret = lttng_metadata_printf(session,
 		"clock {\n"
-		"	name = %s;\n"
-		"	uuid = %s;\n"
+		"	name = %s;\n",
+		"monotonic"
+		);
+	if (ret)
+		goto end;
+
+	if (!trace_clock_uuid(clock_uuid_s)) {
+		ret = lttng_metadata_printf(session,
+			"	uuid = %s;\n",
+			clock_uuid_s
+			);
+		if (ret)
+			goto end;
+	}
+
+	ret = lttng_metadata_printf(session,
 		"	description = \"Monotonic Clock\";\n"
 		"	freq = %llu; /* Frequency, in Hz */\n"
 		"	/* clock value offset from Epoch is: offset * (1/freq) */\n"
 		"	offset = %llu;\n"
 		"};\n\n",
-		"monotonic",
-		trace_clock_uuid(),
 		(unsigned long long) trace_clock_freq(),
 		(unsigned long long) measure_clock_offset()
 		);

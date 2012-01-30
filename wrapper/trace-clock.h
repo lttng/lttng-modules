@@ -18,6 +18,7 @@
 #include <linux/ktime.h>
 #include <linux/time.h>
 #include <linux/hrtimer.h>
+#include "random.h"
 
 static inline u64 trace_clock_monotonic_wrapper(void)
 {
@@ -49,9 +50,9 @@ static inline u64 trace_clock_freq(void)
 	return (u64) NSEC_PER_SEC;
 }
 
-static inline const char *trace_clock_uuid(void)
+static inline int trace_clock_uuid(char *uuid)
 {
-	return "CLOCK_MONOTONIC";
+	return wrapper_get_bootid(uuid);
 }
 
 static inline int get_trace_clock(void)

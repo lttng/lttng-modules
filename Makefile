@@ -19,7 +19,8 @@ lttng-tracer-objs :=  lttng-events.o lttng-abi.o \
 			lttng-context-prio.o lttng-context-nice.o \
 			lttng-context-vpid.o lttng-context-tid.o \
 			lttng-context-vtid.o lttng-context-ppid.o \
-			lttng-context-vppid.o lttng-calibrate.o
+			lttng-context-vppid.o lttng-calibrate.o \
+			wrapper/random.o
 
 ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
 lttng-tracer-objs += lttng-syscalls.o
