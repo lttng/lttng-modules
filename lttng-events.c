@@ -948,7 +948,7 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 
 	if (!trace_clock_uuid(clock_uuid_s)) {
 		ret = lttng_metadata_printf(session,
-			"	uuid = %s;\n",
+			"	uuid = \"%s\";\n",
 			clock_uuid_s
 			);
 		if (ret)
