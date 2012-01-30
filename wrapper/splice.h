@@ -4,7 +4,7 @@
 /*
  * Copyright (C) 2011 Mathieu Desnoyers (mathieu.desnoyers@efficios.com)
  *
- * wrapper around vmalloc_sync_all. Using KALLSYMS to get its address when
+ * wrapper around splice_to_pipe. Using KALLSYMS to get its address when
  * available, else we need to have a kernel that exports this function to GPL
  * modules.
  *
