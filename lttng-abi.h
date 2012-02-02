@@ -35,6 +35,7 @@ enum lttng_kernel_output {
 /*
  * LTTng DebugFS ABI structures.
  */
+#define LTTNG_KERNEL_CHANNEL_PADDING	LTTNG_KERNEL_SYM_NAME_LEN + 32
 struct lttng_kernel_channel {
 	int overwrite;				/* 1: overwrite, 0: discard */
 	uint64_t subbuf_size;			/* in bytes */
@@ -42,8 +43,10 @@ struct lttng_kernel_channel {
 	unsigned int switch_timer_interval;	/* usecs */
 	unsigned int read_timer_interval;	/* usecs */
 	enum lttng_kernel_output output;	/* splice, mmap */
+	char padding[LTTNG_KERNEL_CHANNEL_PADDING];
 };
 
+#define LTTNG_KERNEL_KRETPROBE_PADDING	LTTNG_KERNEL_SYM_NAME_LEN + 32
 struct lttng_kernel_kretprobe {
 	uint64_t addr;
 
@@ -54,6 +57,7 @@ struct lttng_kernel_kretprobe {
 /*
  * Either addr is used, or symbol_name and offset.
  */
+#define LTTNG_KERNEL_KPROBE_PADDING	LTTNG_KERNEL_SYM_NAME_LEN + 32
 struct lttng_kernel_kprobe {
 	uint64_t addr;
 
@@ -61,6 +65,7 @@ struct lttng_kernel_kprobe {
 	char symbol_name[LTTNG_KERNEL_SYM_NAME_LEN];
 };
 
+#define LTTNG_KERNEL_FUNCTION_TRACER_PADDING	LTTNG_KERNEL_SYM_NAME_LEN + 32
 struct lttng_kernel_function_tracer {
 	char symbol_name[LTTNG_KERNEL_SYM_NAME_LEN];
 };
@@ -68,14 +73,19 @@ struct lttng_kernel_function_tracer {
 /*
  * For syscall tracing, name = '\0' means "enable all".
  */
+#define LTTNG_KERNEL_EVENT_PADDING1	16
+#define LTTNG_KERNEL_EVENT_PADDING2	LTTNG_KERNEL_SYM_NAME_LEN + 32
 struct lttng_kernel_event {
 	char name[LTTNG_KERNEL_SYM_NAME_LEN];	/* event name */
 	enum lttng_kernel_instrumentation instrumentation;
+	char padding[LTTNG_KERNEL_EVENT_PADDING1];
+
 	/* Per instrumentation type configuration */
 	union {
 		struct lttng_kernel_kretprobe kretprobe;
 		struct lttng_kernel_kprobe kprobe;
 		struct lttng_kernel_function_tracer ftrace;
+		char padding[LTTNG_KERNEL_EVENT_PADDING2];
 	} u;
 };
 
@@ -112,10 +122,15 @@ struct lttng_kernel_perf_counter_ctx {
 	char name[LTTNG_KERNEL_SYM_NAME_LEN];
 };
 
+#define LTTNG_KERNEL_CONTEXT_PADDING1	16
+#define LTTNG_KERNEL_CONTEXT_PADDING2	LTTNG_KERNEL_SYM_NAME_LEN + 32
 struct lttng_kernel_context {
 	enum lttng_kernel_context_type ctx;
+	char padding[LTTNG_KERNEL_CONTEXT_PADDING1];
+
 	union {
 		struct lttng_kernel_perf_counter_ctx perf_counter;
+		char padding[LTTNG_KERNEL_CONTEXT_PADDING2];
 	} u;
 };
 
