@@ -25,9 +25,9 @@
 #include "lttng-tracer-core.h"
 #include "lttng-events.h"
 
-#define LTTNG_VERSION 0
+#define LTTNG_VERSION 1
 #define LTTNG_PATCHLEVEL 9
-#define LTTNG_SUBLEVEL 1
+#define LTTNG_SUBLEVEL 9
 
 #ifndef CHAR_BIT
 #define CHAR_BIT 8
