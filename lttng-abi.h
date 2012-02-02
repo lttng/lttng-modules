@@ -13,7 +13,7 @@
 
 #include <linux/fs.h>
 
-#define LTTNG_SYM_NAME_LEN	256
+#define LTTNG_KERNEL_SYM_NAME_LEN	256
 
 enum lttng_kernel_instrumentation {
 	LTTNG_KERNEL_TRACEPOINT	= 0,
@@ -35,7 +35,6 @@ enum lttng_kernel_output {
 /*
  * LTTng DebugFS ABI structures.
  */
-
 struct lttng_kernel_channel {
 	int overwrite;				/* 1: overwrite, 0: discard */
 	uint64_t subbuf_size;			/* in bytes */
@@ -49,7 +48,7 @@ struct lttng_kernel_kretprobe {
 	uint64_t addr;
 
 	uint64_t offset;
-	char symbol_name[LTTNG_SYM_NAME_LEN];
+	char symbol_name[LTTNG_KERNEL_SYM_NAME_LEN];
 };
 
 /*
@@ -59,18 +58,18 @@ struct lttng_kernel_kprobe {
 	uint64_t addr;
 
 	uint64_t offset;
-	char symbol_name[LTTNG_SYM_NAME_LEN];
+	char symbol_name[LTTNG_KERNEL_SYM_NAME_LEN];
 };
 
 struct lttng_kernel_function_tracer {
-	char symbol_name[LTTNG_SYM_NAME_LEN];
+	char symbol_name[LTTNG_KERNEL_SYM_NAME_LEN];
 };
 
 /*
  * For syscall tracing, name = '\0' means "enable all".
  */
 struct lttng_kernel_event {
-	char name[LTTNG_SYM_NAME_LEN];	/* event name */
+	char name[LTTNG_KERNEL_SYM_NAME_LEN];	/* event name */
 	enum lttng_kernel_instrumentation instrumentation;
 	/* Per instrumentation type configuration */
 	union {
@@ -110,7 +109,7 @@ enum lttng_kernel_context_type {
 struct lttng_kernel_perf_counter_ctx {
 	uint32_t type;
 	uint64_t config;
-	char name[LTTNG_SYM_NAME_LEN];
+	char name[LTTNG_KERNEL_SYM_NAME_LEN];
 };
 
 struct lttng_kernel_context {

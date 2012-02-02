@@ -175,7 +175,7 @@ long lttng_abi_add_context(struct file *file,
 	case LTTNG_KERNEL_CONTEXT_VPPID:
 		return lttng_add_vppid_to_ctx(ctx);
 	case LTTNG_KERNEL_CONTEXT_PERF_COUNTER:
-		context_param.u.perf_counter.name[LTTNG_SYM_NAME_LEN - 1] = '\0';
+		context_param.u.perf_counter.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		return lttng_add_perf_counter_to_ctx(context_param.u.perf_counter.type,
 				context_param.u.perf_counter.config,
 				context_param.u.perf_counter.name,
@@ -500,16 +500,16 @@ int lttng_abi_create_event(struct file *channel_file,
 
 	if (copy_from_user(&event_param, uevent_param, sizeof(event_param)))
 		return -EFAULT;
-	event_param.name[LTTNG_SYM_NAME_LEN - 1] = '\0';
+	event_param.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 	switch (event_param.instrumentation) {
 	case LTTNG_KERNEL_KRETPROBE:
-		event_param.u.kretprobe.symbol_name[LTTNG_SYM_NAME_LEN - 1] = '\0';
+		event_param.u.kretprobe.symbol_name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		break;
 	case LTTNG_KERNEL_KPROBE:
-		event_param.u.kprobe.symbol_name[LTTNG_SYM_NAME_LEN - 1] = '\0';
+		event_param.u.kprobe.symbol_name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		break;
 	case LTTNG_KERNEL_FUNCTION:
-		event_param.u.ftrace.symbol_name[LTTNG_SYM_NAME_LEN - 1] = '\0';
+		event_param.u.ftrace.symbol_name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		break;
 	default:
 		break;

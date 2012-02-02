@@ -295,8 +295,8 @@ int fill_table(const struct trace_syscall_entry *table, size_t table_len,
 		if (chan_table[i])
 			continue;
 		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->name, LTTNG_SYM_NAME_LEN);
-		ev.name[LTTNG_SYM_NAME_LEN - 1] = '\0';
+		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
+		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_NOOP;
 		chan_table[i] = lttng_event_create(chan, &ev, filter,
 						desc);
@@ -342,8 +342,8 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 			&__event_desc___sys_unknown;
 
 		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->name, LTTNG_SYM_NAME_LEN);
-		ev.name[LTTNG_SYM_NAME_LEN - 1] = '\0';
+		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
+		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_NOOP;
 		chan->sc_unknown = lttng_event_create(chan, &ev, filter,
 						    desc);
@@ -357,8 +357,8 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 			&__event_desc___compat_sys_unknown;
 
 		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->name, LTTNG_SYM_NAME_LEN);
-		ev.name[LTTNG_SYM_NAME_LEN - 1] = '\0';
+		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
+		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_NOOP;
 		chan->sc_compat_unknown = lttng_event_create(chan, &ev, filter,
 							   desc);
@@ -372,8 +372,8 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 			&__event_desc___exit_syscall;
 
 		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->name, LTTNG_SYM_NAME_LEN);
-		ev.name[LTTNG_SYM_NAME_LEN - 1] = '\0';
+		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
+		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_NOOP;
 		chan->sc_exit = lttng_event_create(chan, &ev, filter,
 						 desc);
