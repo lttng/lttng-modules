@@ -46,7 +46,6 @@ struct lttng_kernel_channel {
 	char padding[LTTNG_KERNEL_CHANNEL_PADDING];
 };
 
-#define LTTNG_KERNEL_KRETPROBE_PADDING	LTTNG_KERNEL_SYM_NAME_LEN + 32
 struct lttng_kernel_kretprobe {
 	uint64_t addr;
 
@@ -57,7 +56,6 @@ struct lttng_kernel_kretprobe {
 /*
  * Either addr is used, or symbol_name and offset.
  */
-#define LTTNG_KERNEL_KPROBE_PADDING	LTTNG_KERNEL_SYM_NAME_LEN + 32
 struct lttng_kernel_kprobe {
 	uint64_t addr;
 
@@ -65,7 +63,6 @@ struct lttng_kernel_kprobe {
 	char symbol_name[LTTNG_KERNEL_SYM_NAME_LEN];
 };
 
-#define LTTNG_KERNEL_FUNCTION_TRACER_PADDING	LTTNG_KERNEL_SYM_NAME_LEN + 32
 struct lttng_kernel_function_tracer {
 	char symbol_name[LTTNG_KERNEL_SYM_NAME_LEN];
 };
