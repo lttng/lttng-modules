@@ -1,3 +1,24 @@
+2012-02-02 LTTng modules 2.0-pre12
+	* Add x86 32/64 execve syscall instrumentation override
+	* Remove unused defines
+	* Add padding to ABI
+	* Use LTTNG_KERNEL_SYM_NAME_LEN
+	* Update version to 1.9.9
+	* Add missing double-quotes to clock uuid
+	* clock: read bootid as clock monotonic ID
+	* Fix comment
+	* Cleanup comment
+	* clock: output clock description in metadata
+	* Properly fix the timekeeping overflow detection
+	* Fix init bug
+	* rename lib-ring-buffer to lttng-lib-ring-buffer
+	* Remove #warning
+	* Mass rename: ltt_*/ltt-* to LTTNG_*/LTTNG-*
+	* Update TODO
+	* Update TODO
+	* Remove debugfs file (keep only proc file)
+	* Rename lttng-debugfs-abi files to lttng-abi
+
 2011-12-13 LTTng modules 2.0-pre11
 	* Fix OOPS caused by reference of config pointer
 	* Gather detailed info from x86 64 32-bit compat syscall instrumentation
