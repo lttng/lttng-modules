@@ -14,6 +14,7 @@
 #include <linux/sched.h>
 #include <linux/slab.h>
 #include <linux/jiffies.h>
+#include <linux/utsname.h>
 #include "wrapper/uuid.h"
 #include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "wrapper/random.h"
@@ -934,6 +935,21 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 #else
 		"le"
 #endif
+		);
+	if (ret)
+		goto end;
+
+	ret = lttng_metadata_printf(session,
+		"env {\n"
+		"	domain = \"%s\";\n"
+		"	sysname = \"%s\";\n"
+		"	release = \"%s\";\n"
+		"	version = \"%s\";\n"
+		"};\n\n",
+		"kernel",
+		utsname()->sysname,
+		utsname()->release,
+		utsname()->version
 		);
 	if (ret)
 		goto end;
