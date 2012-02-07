@@ -749,7 +749,7 @@ int __init lttng_abi_init(void)
 	int ret = 0;
 
 	wrapper_vmalloc_sync_all();
-	lttng_proc_dentry = proc_create_data("lttng", S_IWUSR, NULL,
+	lttng_proc_dentry = proc_create_data("lttng", S_IRUSR | S_IWUSR, NULL,
 					&lttng_fops, NULL);
 	
 	if (!lttng_proc_dentry) {
