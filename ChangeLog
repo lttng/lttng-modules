@@ -1,3 +1,8 @@
+2012-02-09 LTTng modules 2.0-pre13
+	* Update README
+	* environment: write sysname, release, version, domain to metadata
+	* Allow open /proc/lttng for read & write
+
 2012-02-02 LTTng modules 2.0-pre12
 	* Add x86 32/64 execve syscall instrumentation override
 	* Remove unused defines
