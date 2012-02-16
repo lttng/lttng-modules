@@ -10,6 +10,7 @@
 #define _TRACE_SIGNAL_DEF
 #include <linux/signal.h>
 #include <linux/sched.h>
+#undef TP_STORE_SIGINFO
 #define TP_STORE_SIGINFO(info)					\
 		tp_assign(errno,				\
 			(info == SEND_SIG_NOINFO || info == SEND_SIG_FORCED || info == SEND_SIG_PRIV) ? \
