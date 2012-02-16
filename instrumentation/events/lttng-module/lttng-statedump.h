@@ -5,11 +5,6 @@
 #define _TRACE_LTTNG_STATEDUMP_H
 
 #include <linux/tracepoint.h>
-#include <linux/netlink.h>
-#include <linux/inet.h>
-#include <linux/ip.h>
-#include <linux/netdevice.h>
-#include <linux/inetdevice.h>
 
 TRACE_EVENT(lttng_statedump_start,
 	TP_PROTO(struct lttng_session *session),

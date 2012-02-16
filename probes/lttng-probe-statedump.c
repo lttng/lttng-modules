@@ -10,6 +10,11 @@
 
 #include <linux/module.h>
 #include <linux/interrupt.h>
+#include <linux/netlink.h>
+#include <linux/inet.h>
+#include <linux/ip.h>
+#include <linux/netdevice.h>
+#include <linux/inetdevice.h>
 #include "../lttng-events.h"
 
 /*
