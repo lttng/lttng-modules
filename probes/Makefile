@@ -12,6 +12,7 @@ obj-m += lttng-probe-lttng.o
 
 obj-m += lttng-probe-sched.o
 obj-m += lttng-probe-irq.o
+obj-m += lttng-probe-signal.o
 
 obj-m += lttng-probe-statedump.o
 
