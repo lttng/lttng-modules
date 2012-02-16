@@ -1,3 +1,9 @@
+2012-02-16 LTTng modules 2.0-pre15
+	* Add timer instrumentation
+	* fix: need to undef mainline define
+	* fix: Include signal.h instead of irq.h for prototype match check
+	* Add signal instrumentation
+
 2012-02-16 LTTng modules 2.0-pre14
 	* syscall tracing: sys_getcpu
 	* Add sys_clone x86 instrumentation
