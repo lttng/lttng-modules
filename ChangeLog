@@ -1,3 +1,9 @@
+2012-02-16 LTTng modules 2.0-pre14
+	* syscall tracing: sys_getcpu
+	* Add sys_clone x86 instrumentation
+	* statedump: fix include circular dep
+	* Implement state dump
+
 2012-02-09 LTTng modules 2.0-pre13
 	* Update README
 	* environment: write sysname, release, version, domain to metadata
