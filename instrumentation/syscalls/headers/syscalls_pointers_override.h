@@ -15,4 +15,23 @@ SC_TRACE_EVENT(sys_execve,
 	TP_printk()
 )
 
+SC_TRACE_EVENT(sys_clone,
+	TP_PROTO(unsigned long clone_flags, unsigned long newsp,
+		void __user *parent_tid,
+		void __user *child_tid,
+		struct pt_regs *regs),
+	TP_ARGS(clone_flags, newsp, parent_tid, child_tid, regs),
+	TP_STRUCT__entry(
+		__field_hex(unsigned long, clone_flags)
+		__field_hex(unsigned long, newsp)
+		__field_hex(void *, parent_tid)
+		__field_hex(void *, child_tid)),
+	TP_fast_assign(
+		tp_assign(clone_flags, clone_flags)
+		tp_assign(newsp, newsp)
+		tp_assign(parent_tid, parent_tid)
+		tp_assign(child_tid, child_tid)),
+	TP_printk()
+)
+
 #endif /* CREATE_SYSCALL_TABLE */

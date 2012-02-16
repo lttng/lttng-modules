@@ -23,6 +23,8 @@
 
 #define OVERRIDE_TABLE_32_sys_execve
 TRACE_SYSCALL_TABLE(sys_execve, sys_execve, 11, 3)
+#define OVERRIDE_TABLE_32_sys_clone
+TRACE_SYSCALL_TABLE(sys_clone, sys_clone, 120, 5)
 
 #endif /* CREATE_SYSCALL_TABLE */
 
