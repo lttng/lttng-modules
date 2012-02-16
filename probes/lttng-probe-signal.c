@@ -14,7 +14,7 @@
  * Create the tracepoint static inlines from the kernel to validate that our
  * trace event macros match the kernel we run on.
  */
-#include <trace/events/irq.h>
+#include <trace/events/signal.h>
 
 /*
  * Create LTTng tracepoint probes.
