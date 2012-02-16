@@ -592,6 +592,17 @@ __assign_##dest##_2:							\
 #undef TP_fast_assign
 #define TP_fast_assign(args...) args
 
+/*
+ * For state dump, check that "session" argument (mandatory) matches the
+ * session this event belongs to. Ensures that we write state dump data only
+ * into the started session, not into all sessions.
+ */
+#ifdef TP_SESSION_CHECK
+#define _TP_SESSION_CHECK(session, csession)	(session == csession)
+#else /* TP_SESSION_CHECK */
+#define _TP_SESSION_CHECK(session, csession)	1
+#endif /* TP_SESSION_CHECK */
+
 #undef DECLARE_EVENT_CLASS
 #define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
 static void __event_probe__##_name(void *__data, _proto)		      \
@@ -605,8 +616,12 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	struct __event_typemap__##_name __typemap;			      \
 	int __ret;							      \
 									      \
-	if (0)								      \
+	if (0) {							      \
 		(void) __dynamic_len_idx;	/* don't warn if unused */    \
+		(void) __typemap;		/* don't warn if unused */    \
+	}								      \
+	if (!_TP_SESSION_CHECK(session, __chan->session))		      \
+		return;							      \
 	if (unlikely(!ACCESS_ONCE(__chan->session->active)))		      \
 		return;							      \
 	if (unlikely(!ACCESS_ONCE(__chan->enabled)))			      \
@@ -638,6 +653,8 @@ static void __event_probe__##_name(void *__data)			      \
 	size_t __event_len, __event_align;				      \
 	int __ret;							      \
 									      \
+	if (!_TP_SESSION_CHECK(session, __chan->session))		      \
+		return;							      \
 	if (unlikely(!ACCESS_ONCE(__chan->session->active)))		      \
 		return;							      \
 	if (unlikely(!ACCESS_ONCE(__chan->enabled)))			      \

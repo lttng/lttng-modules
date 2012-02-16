@@ -22,6 +22,9 @@ lttng-tracer-objs :=  lttng-events.o lttng-abi.o \
 			lttng-context-vppid.o lttng-calibrate.o \
 			wrapper/random.o
 
+obj-m += lttng-statedump.o
+lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o
+
 ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
 lttng-tracer-objs += lttng-syscalls.o
 endif

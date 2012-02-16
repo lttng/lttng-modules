@@ -353,6 +353,8 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 }
 #endif
 
+extern int lttng_statedump_start(struct lttng_session *session);
+
 #ifdef CONFIG_KPROBES
 int lttng_kprobes_register(const char *name,
 		const char *symbol_name,

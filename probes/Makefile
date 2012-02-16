@@ -13,6 +13,8 @@ obj-m += lttng-probe-lttng.o
 obj-m += lttng-probe-sched.o
 obj-m += lttng-probe-irq.o
 
+obj-m += lttng-probe-statedump.o
+
 ifneq ($(CONFIG_KVM),)
 obj-m += lttng-probe-kvm.o
 endif

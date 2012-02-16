@@ -113,6 +113,11 @@ int lttng_session_enable(struct lttng_session *session)
 	ACCESS_ONCE(session->active) = 1;
 	ACCESS_ONCE(session->been_active) = 1;
 	ret = _lttng_session_metadata_statedump(session);
+	if (ret) {
+		ACCESS_ONCE(session->active) = 0;
+		goto end;
+	}
+	ret = lttng_statedump_start(session);
 	if (ret)
 		ACCESS_ONCE(session->active) = 0;
 end:
