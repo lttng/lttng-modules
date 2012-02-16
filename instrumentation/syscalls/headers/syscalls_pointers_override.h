@@ -18,9 +18,8 @@ SC_TRACE_EVENT(sys_execve,
 SC_TRACE_EVENT(sys_clone,
 	TP_PROTO(unsigned long clone_flags, unsigned long newsp,
 		void __user *parent_tid,
-		void __user *child_tid,
-		struct pt_regs *regs),
-	TP_ARGS(clone_flags, newsp, parent_tid, child_tid, regs),
+		void __user *child_tid),
+	TP_ARGS(clone_flags, newsp, parent_tid, child_tid),
 	TP_STRUCT__entry(
 		__field_hex(unsigned long, clone_flags)
 		__field_hex(unsigned long, newsp)
@@ -31,6 +30,23 @@ SC_TRACE_EVENT(sys_clone,
 		tp_assign(newsp, newsp)
 		tp_assign(parent_tid, parent_tid)
 		tp_assign(child_tid, child_tid)),
+	TP_printk()
+)
+
+/* present in 32, missing in 64 due to old kernel headers */
+#define OVERRIDE_32_sys_getcpu
+#define OVERRIDE_64_sys_getcpu
+SC_TRACE_EVENT(sys_getcpu,
+	TP_PROTO(unsigned __user *cpup, unsigned __user *nodep, void *tcache),
+	TP_ARGS(cpup, nodep, tcache),
+	TP_STRUCT__entry(
+		__field_hex(unsigned *, cpup)
+		__field_hex(unsigned *, nodep)
+		__field_hex(void *, tcache)),
+	TP_fast_assign(
+		tp_assign(cpup, cpup)
+		tp_assign(nodep, nodep)
+		tp_assign(tcache, tcache)),
 	TP_printk()
 )
 
