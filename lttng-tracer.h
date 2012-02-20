@@ -25,9 +25,9 @@
 #include "lttng-tracer-core.h"
 #include "lttng-events.h"
 
-#define LTTNG_VERSION 1
-#define LTTNG_PATCHLEVEL 9
-#define LTTNG_SUBLEVEL 9
+#define LTTNG_MODULES_MAJOR_VERSION 2
+#define LTTNG_MODULES_MINOR_VERSION 0
+#define LTTNG_MODULES_PATCHLEVEL_VERSION 0
 
 #ifndef CHAR_BIT
 #define CHAR_BIT 8
@@ -50,10 +50,6 @@
 /* CTF specification version followed */
 #define CTF_SPEC_MAJOR			1
 #define CTF_SPEC_MINOR			8
-
-/* Tracer major/minor versions */
-#define CTF_VERSION_MAJOR		0
-#define CTF_VERSION_MINOR		1
 
 /*
  * Number of milliseconds to retry before failing metadata writes on buffer full

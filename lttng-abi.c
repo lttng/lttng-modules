@@ -135,9 +135,9 @@ long lttng_abi_tracer_version(struct file *file,
 {
 	struct lttng_kernel_tracer_version v;
 
-	v.version = LTTNG_VERSION;
-	v.patchlevel = LTTNG_PATCHLEVEL;
-	v.sublevel = LTTNG_SUBLEVEL;
+	v.major = LTTNG_MODULES_MAJOR_VERSION;
+	v.minor = LTTNG_MODULES_MINOR_VERSION;
+	v.patchlevel = LTTNG_MODULES_PATCHLEVEL_VERSION;
 
 	if (copy_to_user(uversion_param, &v, sizeof(v)))
 		return -EFAULT;

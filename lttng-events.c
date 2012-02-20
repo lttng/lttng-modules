@@ -932,8 +932,8 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 		lttng_alignof(uint16_t) * CHAR_BIT,
 		lttng_alignof(uint32_t) * CHAR_BIT,
 		lttng_alignof(uint64_t) * CHAR_BIT,
-		CTF_VERSION_MAJOR,
-		CTF_VERSION_MINOR,
+		CTF_SPEC_MAJOR,
+		CTF_SPEC_MINOR,
 		uuid_s,
 #ifdef __BIG_ENDIAN
 		"be"
@@ -946,15 +946,21 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 
 	ret = lttng_metadata_printf(session,
 		"env {\n"
-		"	domain = \"%s\";\n"
+		"	domain = \"kernel\";\n"
 		"	sysname = \"%s\";\n"
-		"	release = \"%s\";\n"
-		"	version = \"%s\";\n"
+		"	kernel_release = \"%s\";\n"
+		"	kernel_version = \"%s\";\n"
+		"	tracer_name = \"lttng-modules\";\n"
+		"	tracer_major = %d;\n"
+		"	tracer_minor = %d;\n"
+		"	tracer_patchlevel = %d;\n"
 		"};\n\n",
-		"kernel",
 		utsname()->sysname,
 		utsname()->release,
-		utsname()->version
+		utsname()->version,
+		LTTNG_MODULES_MAJOR_VERSION,
+		LTTNG_MODULES_MINOR_VERSION,
+		LTTNG_MODULES_PATCHLEVEL_VERSION
 		);
 	if (ret)
 		goto end;
