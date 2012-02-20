@@ -1,3 +1,7 @@
+2012-02-20 LTTng modules 2.0.0-rc1
+	* Standardize version across toolchain
+	* statedump: Use old macro name for kernel 2.6.38
+
 2012-02-16 LTTng modules 2.0-pre15
 	* Add timer instrumentation
 	* fix: need to undef mainline define
