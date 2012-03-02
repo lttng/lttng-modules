@@ -232,9 +232,9 @@ struct lttng_channel *lttng_channel_create(struct lttng_session *session,
 	 * headers. Therefore the "chan" information used as input
 	 * should be already accessible.
 	 */
-	chan->chan = transport->ops.channel_create("[lttng]", chan, buf_addr,
-			subbuf_size, num_subbuf, switch_timer_interval,
-			read_timer_interval);
+	chan->chan = transport->ops.channel_create(transport_name,
+			chan, buf_addr, subbuf_size, num_subbuf,
+			switch_timer_interval, read_timer_interval);
 	if (!chan->chan)
 		goto create_error;
 	chan->enabled = 1;
