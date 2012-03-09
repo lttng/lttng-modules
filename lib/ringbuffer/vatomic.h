@@ -1,12 +1,24 @@
-#ifndef _LINUX_RING_BUFFER_VATOMIC_H
-#define _LINUX_RING_BUFFER_VATOMIC_H
+#ifndef _LIB_RING_BUFFER_VATOMIC_H
+#define _LIB_RING_BUFFER_VATOMIC_H
 
 /*
- * linux/ringbuffer/vatomic.h
+ * lib/ringbuffer/vatomic.h
  *
- * Copyright (C) 2010 - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+ * Copyright (C) 2010-2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
- * Dual LGPL v2.1/GPL v2 license.
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; only
+ * version 2.1 of the License.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 #include <asm/atomic.h>
@@ -82,4 +94,4 @@ long v_cmpxchg(const struct lib_ring_buffer_config *config, union v_atomic *v_a,
 		return atomic_long_cmpxchg(&v_a->a, old, _new);
 }
 
-#endif /* _LINUX_RING_BUFFER_VATOMIC_H */
+#endif /* _LIB_RING_BUFFER_VATOMIC_H */
