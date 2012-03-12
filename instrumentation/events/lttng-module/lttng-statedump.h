@@ -92,7 +92,7 @@ TRACE_EVENT(lttng_statedump_file_descriptor,
 	),
 	TP_fast_assign(
 		tp_assign(pid, p->tgid)
-		tp_assign(fd, p->tgid)
+		tp_assign(fd, fd)
 		tp_strcpy(filename, filename)
 	),
 	TP_printk("")
