@@ -887,7 +887,7 @@ uint64_t measure_clock_offset(void)
 	local_irq_restore(flags);
 
 	offset = (monotonic[0] + monotonic[1]) >> 1;
-	realtime = rts.tv_sec * NSEC_PER_SEC;
+	realtime = (uint64_t) rts.tv_sec * NSEC_PER_SEC;
 	realtime += rts.tv_nsec;
 	offset = realtime - offset;
 	return offset;
