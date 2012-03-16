@@ -1,3 +1,9 @@
+2012-03-16 LTTng modules 2.0.0-rc3
+	* Fix clock offset 32-bit multiplication overflow
+	* Fix : wrong assign of fd in state dump
+	* License cleanup, ifdef namespace cleanup
+	* Fix: ensure power of 2 check handles 64-bit size_t entirely
+
 2012-03-02 LTTng modules 2.0.0-rc2
 	* Fix: dmesg printout should not print metadata warnings
 	* Fix: use transport name as channel name
