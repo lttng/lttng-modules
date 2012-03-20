@@ -42,9 +42,9 @@
 #define LTTNG_MODULES_MINOR_VERSION 0
 #define LTTNG_MODULES_PATCHLEVEL_VERSION 0
 
-#define LTTNG_VERSION_NAME		"TBD"
+#define LTTNG_VERSION_NAME		"Annedd'ale"
 #define LTTNG_VERSION_DESCRIPTION	\
-	"TBD"
+	"New type of beer, 100% from Quebec, flavored with sapin beaumier needles, with a touch of hops."
 
 #ifndef CHAR_BIT
 #define CHAR_BIT 8
