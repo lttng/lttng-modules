@@ -1,3 +1,6 @@
+2012-03-20 LTTng modules 2.0.0-rc4
+	* Update README and add version name place-holder
+
 2012-03-16 LTTng modules 2.0.0-rc3
 	* Fix clock offset 32-bit multiplication overflow
 	* Fix : wrong assign of fd in state dump
