@@ -29,10 +29,9 @@
 #include "lttng-events.h"
 
 #ifndef CONFIG_COMPAT
-static inline int is_compat_task(void)
-{
-	return 0;
-}
+# ifndef is_compat_task
+#  define is_compat_task()	(0)
+# endif
 #endif
 
 static
