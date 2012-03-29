@@ -1,4 +1,7 @@
-2012-03-20 lttng modules 2.0.0
+2012-03-29 LTTng modules 2.0.1
+	* Fix: is_compat_task !CONFIG_COMPAT compile error on kernels >= 3.3
+
+2012-03-20 LTTng modules 2.0.0
 	* First STABLE version
 	* Add version name
 
