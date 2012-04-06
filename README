@@ -1,7 +1,7 @@
 LTTng 2.0 modules
 
 Mathieu Desnoyers
-February 8, 2012
+April 6, 2012
 
 LTTng 2.0 kernel modules build against a vanilla or distribution kernel, without
 need for additional patches. Other features:
@@ -48,9 +48,42 @@ LTTng 0.x patchset, but the lttng-modules 2.0 replace the lttng-modules
 0.x, so both tracers cannot be installed at the same time for a given
 kernel version.
 
-LTTng-modules depends on having kallsyms enabled in the kernel it is
-built against. Ideally, if you want to have system call tracing, the
-"Trace Syscalls" feature should be enabled too. 
+
+* Kernel config options requied
+
+CONFIG_KALLSYMS: required
+  * See wrapper/ files. This is necessary until the few required missing
+    symbols are exported to GPL modules from mainline.
+CONFIG_HIGH_RES_TIMERS: required
+  * Needed for LTTng 2.0 clock source.
+CONFIG_TRACEPOINTS: required
+    kernel tracepoint instrumentation
+    * Enabled as side-effect of any of the perf/ftrace/blktrace
+      instrumentation features.
+
+
+* Kernel config options supported (optional)
+
+The following kernel configuration options will affect the features
+available from LTTng:
+
+
+CONFIG_HAVE_SYSCALL_TRACEPOINTS:
+            system call tracing
+               lttng enable-event -k --syscall
+               lttng enable-event -k -a
+CONFIG_PERF_EVENTS:
+            performance counters
+               lttng add-context -t perf:*
+CONFIG_EVENT_TRACING:
+            needed to allow block layer tracing
+CONFIG_KPROBES: 
+            Dynamic probe.
+               lttng enable-event -k --probe ...
+CONFIG_KRETPROBES:
+            Dynamic function entry/return probe.
+               lttng enable-event -k --function ...
+
 
 * Note about Perf PMU counters support
 
