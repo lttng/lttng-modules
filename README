@@ -49,7 +49,7 @@ LTTng 0.x patchset, but the lttng-modules 2.0 replace the lttng-modules
 kernel version.
 
 
-* Kernel config options requied
+* Kernel config options required
 
 CONFIG_KALLSYMS: required
   * See wrapper/ files. This is necessary until the few required missing
