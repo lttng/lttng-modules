@@ -51,6 +51,8 @@ kernel version.
 
 * Kernel config options required
 
+CONFIG_MODULES: required
+  * Kernel modules support.
 CONFIG_KALLSYMS: required
   * See wrapper/ files. This is necessary until the few required missing
     symbols are exported to GPL modules from mainline.
