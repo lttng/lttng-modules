@@ -1,3 +1,10 @@
+2012-04-18 LTTng modules 2.0.2
+	* Fix: generate header missing echo -e for escape chars
+	* Fix: add missing uaccess.h include (for ARM)
+	* README: Document that CONFIG_MODULES is required
+	* Fix: README typo
+	* Fix: document required and optional kernel config options in README
+
 2012-03-29 LTTng modules 2.0.1
 	* Fix: is_compat_task !CONFIG_COMPAT compile error on kernels >= 3.3
 
