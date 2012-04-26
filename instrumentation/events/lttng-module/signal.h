@@ -5,6 +5,7 @@
 #define _TRACE_SIGNAL_H
 
 #include <linux/tracepoint.h>
+#include <linux/version.h>
 
 #ifndef _TRACE_SIGNAL_DEF
 #define _TRACE_SIGNAL_DEF
@@ -34,6 +35,7 @@
  * SEND_SIG_NOINFO means that si_code is SI_USER, and SEND_SIG_PRIV
  * means that si_code is SI_KERNEL.
  */
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,4,0))
 TRACE_EVENT(signal_generate,
 
 	TP_PROTO(int sig, struct siginfo *info, struct task_struct *task),
@@ -59,6 +61,39 @@ TRACE_EVENT(signal_generate,
 		  __entry->sig, __entry->errno, __entry->code,
 		  __entry->comm, __entry->pid)
 )
+#else
+TRACE_EVENT(signal_generate,
+
+	TP_PROTO(int sig, struct siginfo *info, struct task_struct *task,
+			int group, int result),
+
+	TP_ARGS(sig, info, task, group, result),
+
+	TP_STRUCT__entry(
+		__field(	int,	sig			)
+		__field(	int,	errno			)
+		__field(	int,	code			)
+		__array(	char,	comm,	TASK_COMM_LEN	)
+		__field(	pid_t,	pid			)
+		__field(	int,	group			)
+		__field(	int,	result			)
+	),
+
+	TP_fast_assign(
+		tp_assign(sig, sig)
+		TP_STORE_SIGINFO(info)
+		tp_memcpy(comm, task->comm, TASK_COMM_LEN)
+		tp_assign(pid, task->pid)
+		tp_assign(group, group)
+		tp_assign(result, result)
+	),
+
+	TP_printk("sig=%d errno=%d code=%d comm=%s pid=%d grp=%d res=%d",
+		  __entry->sig, __entry->errno, __entry->code,
+		  __entry->comm, __entry->pid, __entry->group,
+		  __entry->result)
+)
+#endif
 
 /**
  * signal_deliver - called when a signal is delivered
