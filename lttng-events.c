@@ -292,7 +292,7 @@ struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 	int ret;
 
 	mutex_lock(&sessions_mutex);
-	if (chan->free_event_id == -1UL)
+	if (chan->free_event_id == -1U)
 		goto full;
 	/*
 	 * This is O(n^2) (for each event, the loop is called at event
