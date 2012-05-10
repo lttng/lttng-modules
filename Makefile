@@ -55,4 +55,6 @@ modules_install:
 clean:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
 
+%.i: %.c
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) $@
 endif
