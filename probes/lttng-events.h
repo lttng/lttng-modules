@@ -523,17 +523,27 @@ __assign_##dest:							\
 	}								\
 	goto __end_field_##dest;
 
-#undef tp_memcpy
-#define tp_memcpy(dest, src, len)					\
+/* fixed length array memcpy */
+#undef tp_memcpy_gen
+#define tp_memcpy_gen(write_ops, dest, src, len)			\
 __assign_##dest:							\
 	if (0)								\
 		(void) __typemap.dest;					\
 	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(__typemap.dest));	\
-	__chan->ops->event_write(&__ctx, src, len);			\
+	__chan->ops->write_ops(&__ctx, src, len);			\
 	goto __end_field_##dest;
 
-#undef tp_memcpy_dyn
-#define tp_memcpy_dyn(dest, src)					\
+#undef tp_memcpy
+#define tp_memcpy(dest, src, len)					\
+	tp_memcpy_gen(event_write, dest, src, len)
+
+#undef tp_memcpy_from_user
+#define tp_memcpy_from_user(dest, src, len)				\
+	tp_memcpy_gen(event_write_from_user, dest, src, len)
+
+/* variable length sequence memcpy */
+#undef tp_memcpy_dyn_gen
+#define tp_memcpy_dyn_gen(write_ops, dest, src)				\
 __assign_##dest##_1:							\
 	{								\
 		u32 __tmpl = __dynamic_len[__dynamic_len_idx];		\
@@ -543,18 +553,17 @@ __assign_##dest##_1:							\
 	goto __end_field_##dest##_1;					\
 __assign_##dest##_2:							\
 	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(__typemap.dest));	\
-	__chan->ops->event_write(&__ctx, src,				\
+	__chan->ops->write_ops(&__ctx, src,				\
 		sizeof(__typemap.dest) * __get_dynamic_array_len(dest));\
 	goto __end_field_##dest##_2;
 
-#undef tp_memcpy_from_user
-#define tp_memcpy_from_user(dest, src, len)				\
-	__assign_##dest:						\
-	if (0)								\
-		(void) __typemap.dest;					\
-	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(__typemap.dest));	\
-	__chan->ops->event_write_from_user(&__ctx, src, len);		\
-	goto __end_field_##dest;
+#undef tp_memcpy_dyn
+#define tp_memcpy_dyn(dest, src)					\
+	tp_memcpy_dyn_gen(event_write, dest, src)
+
+#undef tp_memcpy_dyn_from_user
+#define tp_memcpy_dyn_from_user(dest, src)				\
+	tp_memcpy_dyn_gen(event_write_from_user, dest, src)
 
 /*
  * The string length including the final \0.
