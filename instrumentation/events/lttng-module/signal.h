@@ -46,7 +46,7 @@ TRACE_EVENT(signal_generate,
 		__field(	int,	sig			)
 		__field(	int,	errno			)
 		__field(	int,	code			)
-		__array(	char,	comm,	TASK_COMM_LEN	)
+		__array_text(	char,	comm,	TASK_COMM_LEN	)
 		__field(	pid_t,	pid			)
 	),
 
@@ -73,7 +73,7 @@ TRACE_EVENT(signal_generate,
 		__field(	int,	sig			)
 		__field(	int,	errno			)
 		__field(	int,	code			)
-		__array(	char,	comm,	TASK_COMM_LEN	)
+		__array_text(	char,	comm,	TASK_COMM_LEN	)
 		__field(	pid_t,	pid			)
 		__field(	int,	group			)
 		__field(	int,	result			)
