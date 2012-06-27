@@ -1,3 +1,7 @@
+2012-06-27 LTTng modules 2.0.4
+	* LTTng: probe-statedump: add #include <linux/sched.h>
+	* fix: signal_generate event should print utf8 for comm field
+
 2012-06-01 LTTng modules 2.0.3
 	* Fix: free_event_id check should compare unsigned int with -1U
 	* Fix: update signal instrumentation for 3.4 kernel
