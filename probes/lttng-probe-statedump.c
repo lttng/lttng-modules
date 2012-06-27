@@ -27,6 +27,7 @@
 #include <linux/ip.h>
 #include <linux/netdevice.h>
 #include <linux/inetdevice.h>
+#include <linux/sched.h>
 #include "../lttng-events.h"
 
 /*
