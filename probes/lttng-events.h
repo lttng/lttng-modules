@@ -714,21 +714,23 @@ static void __event_probe__##_name(void *__data)			      \
 #define module_exit_eval1(_token, _system)	module_exit(_token##_system)
 #define module_exit_eval(_token, _system)	module_exit_eval1(_token, _system)
 
-#ifndef TP_MODULE_OVERRIDE
+#ifndef TP_MODULE_NOINIT
 static int TP_ID(__lttng_events_init__, TRACE_SYSTEM)(void)
 {
 	wrapper_vmalloc_sync_all();
 	return lttng_probe_register(&TP_ID(__probe_desc___, TRACE_SYSTEM));
 }
 
-module_init_eval(__lttng_events_init__, TRACE_SYSTEM);
-
 static void TP_ID(__lttng_events_exit__, TRACE_SYSTEM)(void)
 {
 	lttng_probe_unregister(&TP_ID(__probe_desc___, TRACE_SYSTEM));
 }
 
+#ifndef TP_MODULE_NOAUTOLOAD
+module_init_eval(__lttng_events_init__, TRACE_SYSTEM);
 module_exit_eval(__lttng_events_exit__, TRACE_SYSTEM);
+#endif
+
 #endif
 
 #undef module_init_eval

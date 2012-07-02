@@ -49,7 +49,7 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id);
  */
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TP_MODULE_OVERRIDE
+#define TP_MODULE_NOINIT
 #define TRACE_INCLUDE_PATH ../instrumentation/syscalls/headers
 
 #define PARAMS(args...)	args
@@ -107,7 +107,7 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id);
 #undef SC_DEFINE_EVENT_NOARGS
 #undef TP_PROBE_CB
 
-#undef TP_MODULE_OVERRIDE
+#undef TP_MODULE_NOINIT
 #undef LTTNG_PACKAGE_BUILD
 #undef CREATE_TRACE_POINTS
 
