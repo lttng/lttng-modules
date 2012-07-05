@@ -79,7 +79,7 @@ CONFIG_PERF_EVENTS:
                lttng add-context -t perf:*
 CONFIG_EVENT_TRACING:
             needed to allow block layer tracing
-CONFIG_KPROBES: 
+CONFIG_KPROBES:
             Dynamic probe.
                lttng enable-event -k --probe ...
 CONFIG_KRETPROBES:
