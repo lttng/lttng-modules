@@ -186,6 +186,12 @@ int lttng_enumerate_file_descriptors(struct lttng_session *session)
 	return 0;
 }
 
+#if 0
+/*
+ * FIXME: we cannot take a mmap_sem while in a RCU read-side critical section
+ * (scheduling in atomic). Normally, the tasklist lock protects this kind of
+ * iteration, but it is not exported to modules.
+ */
 static
 void lttng_enumerate_task_vm_maps(struct lttng_session *session,
 		struct task_struct *p)
@@ -226,6 +232,7 @@ int lttng_enumerate_vm_maps(struct lttng_session *session)
 	rcu_read_unlock();
 	return 0;
 }
+#endif
 
 #ifdef CONFIG_GENERIC_HARDIRQS
 
@@ -341,7 +348,7 @@ int do_lttng_statedump(struct lttng_session *session)
 	trace_lttng_statedump_start(session);
 	lttng_enumerate_process_states(session);
 	lttng_enumerate_file_descriptors(session);
-	lttng_enumerate_vm_maps(session);
+	/* FIXME lttng_enumerate_vm_maps(session); */
 	lttng_list_interrupts(session);
 	lttng_enumerate_network_ip_interface(session);
 
