@@ -559,7 +559,7 @@ EXPORT_SYMBOL_GPL(_lib_ring_buffer_memset);
 
 
 /**
- * lib_ring_buffer_copy_from_user - write user data to a ring_buffer buffer.
+ * lib_ring_buffer_copy_from_user_inatomic - write user data to a ring_buffer buffer.
  * @bufb : buffer backend
  * @offset : offset within the buffer
  * @src : source address
@@ -570,7 +570,7 @@ EXPORT_SYMBOL_GPL(_lib_ring_buffer_memset);
  * directly without having the src pointer checked with access_ok()
  * previously.
  */
-void _lib_ring_buffer_copy_from_user(struct lib_ring_buffer_backend *bufb,
+void _lib_ring_buffer_copy_from_user_inatomic(struct lib_ring_buffer_backend *bufb,
 				      size_t offset,
 				      const void __user *src, size_t len,
 				      ssize_t pagecpy)
@@ -601,7 +601,7 @@ void _lib_ring_buffer_copy_from_user(struct lib_ring_buffer_backend *bufb,
 		rpages = bufb->array[sb_bindex];
 		CHAN_WARN_ON(chanb, config->mode == RING_BUFFER_OVERWRITE
 				&& subbuffer_id_is_noref(config, id));
-		ret = lib_ring_buffer_do_copy_from_user(rpages->p[index].virt
+		ret = lib_ring_buffer_do_copy_from_user_inatomic(rpages->p[index].virt
 							+ (offset & ~PAGE_MASK),
 							src, pagecpy) != 0;
 		if (ret > 0) {
@@ -612,7 +612,7 @@ void _lib_ring_buffer_copy_from_user(struct lib_ring_buffer_backend *bufb,
 		}
 	} while (unlikely(len != pagecpy));
 }
-EXPORT_SYMBOL_GPL(_lib_ring_buffer_copy_from_user);
+EXPORT_SYMBOL_GPL(_lib_ring_buffer_copy_from_user_inatomic);
 
 /**
  * lib_ring_buffer_read - read data from ring_buffer_buffer.

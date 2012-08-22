@@ -34,6 +34,7 @@
 #include <linux/list.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
+#include <linux/uaccess.h>
 
 /* Internal helpers */
 #include "../../wrapper/ringbuffer/backend_internal.h"
@@ -161,7 +162,7 @@ void lib_ring_buffer_memset(const struct lib_ring_buffer_config *config,
 }
 
 /**
- * lib_ring_buffer_copy_from_user - write userspace data to a buffer backend
+ * lib_ring_buffer_copy_from_user_inatomic - write userspace data to a buffer backend
  * @config : ring buffer instance configuration
  * @ctx: ring buffer context. (input arguments only)
  * @src : userspace source pointer to copy from
@@ -170,10 +171,11 @@ void lib_ring_buffer_memset(const struct lib_ring_buffer_config *config,
  * This function copies "len" bytes of data from a userspace pointer to a
  * buffer backend, at the current context offset. This is more or less a buffer
  * backend-specific memcpy() operation. Calls the slow path
- * (_ring_buffer_write_from_user) if copy is crossing a page boundary.
+ * (_ring_buffer_write_from_user_inatomic) if copy is crossing a page boundary.
+ * Disable the page fault handler to ensure we never try to take the mmap_sem.
  */
 static inline
-void lib_ring_buffer_copy_from_user(const struct lib_ring_buffer_config *config,
+void lib_ring_buffer_copy_from_user_inatomic(const struct lib_ring_buffer_config *config,
 				    struct lib_ring_buffer_ctx *ctx,
 				    const void __user *src, size_t len)
 {
@@ -185,6 +187,7 @@ void lib_ring_buffer_copy_from_user(const struct lib_ring_buffer_config *config,
 	struct lib_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 	unsigned long ret;
+	mm_segment_t old_fs = get_fs();
 
 	offset &= chanb->buf_size - 1;
 	sbidx = offset >> chanb->subbuf_size_order;
@@ -197,11 +200,13 @@ void lib_ring_buffer_copy_from_user(const struct lib_ring_buffer_config *config,
 		     config->mode == RING_BUFFER_OVERWRITE
 		     && subbuffer_id_is_noref(config, id));
 
+	set_fs(KERNEL_DS);
+	pagefault_disable();
 	if (unlikely(!access_ok(VERIFY_READ, src, len)))
 		goto fill_buffer;
 
 	if (likely(pagecpy == len)) {
-		ret = lib_ring_buffer_do_copy_from_user(
+		ret = lib_ring_buffer_do_copy_from_user_inatomic(
 			rpages->p[index].virt + (offset & ~PAGE_MASK),
 			src, len);
 		if (unlikely(ret > 0)) {
@@ -210,13 +215,17 @@ void lib_ring_buffer_copy_from_user(const struct lib_ring_buffer_config *config,
 			goto fill_buffer;
 		}
 	} else {
-		_lib_ring_buffer_copy_from_user(bufb, offset, src, len, 0);
+		_lib_ring_buffer_copy_from_user_inatomic(bufb, offset, src, len, 0);
 	}
+	pagefault_enable();
+	set_fs(old_fs);
 	ctx->buf_offset += len;
 
 	return;
 
 fill_buffer:
+	pagefault_enable();
+	set_fs(old_fs);
 	/*
 	 * In the error path we call the slow path version to avoid
 	 * the pollution of static inline code.
