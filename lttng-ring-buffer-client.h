@@ -513,7 +513,7 @@ static
 void lttng_event_write_from_user(struct lib_ring_buffer_ctx *ctx,
 			       const void __user *src, size_t len)
 {
-	lib_ring_buffer_copy_from_user(&client_config, ctx, src, len);
+	lib_ring_buffer_copy_from_user_inatomic(&client_config, ctx, src, len);
 }
 
 static

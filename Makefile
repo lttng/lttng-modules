@@ -26,7 +26,7 @@ obj-m += lttng-statedump.o
 lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o
 
 ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
-lttng-tracer-objs += lttng-syscalls.o
+lttng-tracer-objs += lttng-syscalls.o probes/lttng-probe-user.o
 endif
 
 ifneq ($(CONFIG_PERF_EVENTS),)

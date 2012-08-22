@@ -22,6 +22,7 @@
 #include <linux/debugfs.h>
 #include "lttng.h"
 #include "lttng-types.h"
+#include "lttng-probe-user.h"
 #include "../wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "../wrapper/ringbuffer/frontend_types.h"
 #include "../lttng-events.h"
@@ -359,7 +360,7 @@ static __used struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 #undef __string_from_user
 #define __string_from_user(_item, _src)					       \
 	__event_len += __dynamic_len[__dynamic_len_idx++] =		       \
-		max_t(size_t, strlen_user(_src), 1);
+		max_t(size_t, lttng_strlen_user_inatomic(_src), 1);
 
 #undef TP_PROTO
 #define TP_PROTO(args...) args

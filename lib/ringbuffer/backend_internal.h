@@ -56,7 +56,7 @@ extern void _lib_ring_buffer_write(struct lib_ring_buffer_backend *bufb,
 extern void _lib_ring_buffer_memset(struct lib_ring_buffer_backend *bufb,
 				    size_t offset, int c, size_t len,
 				    ssize_t pagecpy);
-extern void _lib_ring_buffer_copy_from_user(struct lib_ring_buffer_backend *bufb,
+extern void _lib_ring_buffer_copy_from_user_inatomic(struct lib_ring_buffer_backend *bufb,
 					    size_t offset, const void *src,
 					    size_t len, ssize_t pagecpy);
 
@@ -434,15 +434,15 @@ do {								\
 } while (0)
 
 /*
- * We use __copy_from_user to copy userspace data since we already
+ * We use __copy_from_user_inatomic to copy userspace data since we already
  * did the access_ok for the whole range.
  */
 static inline
-unsigned long lib_ring_buffer_do_copy_from_user(void *dest,
+unsigned long lib_ring_buffer_do_copy_from_user_inatomic(void *dest,
 						const void __user *src,
 						unsigned long len)
 {
-	return __copy_from_user(dest, src, len);
+	return __copy_from_user_inatomic(dest, src, len);
 }
 
 /*
