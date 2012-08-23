@@ -290,6 +290,7 @@ void lttng_statedump_process_ns(struct lttng_session *session,
 		do {
 			trace_lttng_statedump_process_state(session,
 				p, type, mode, submode, status, pid_ns);
+			pid_ns = pid_ns->parent;
 		} while (pid_ns);
 	} else {
 		trace_lttng_statedump_process_state(session,
