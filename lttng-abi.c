@@ -195,6 +195,8 @@ long lttng_abi_add_context(struct file *file,
 				ctx);
 	case LTTNG_KERNEL_CONTEXT_PROCNAME:
 		return lttng_add_procname_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_HOSTNAME:
+		return lttng_add_hostname_to_ctx(ctx);
 	default:
 		return -EINVAL;
 	}
