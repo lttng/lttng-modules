@@ -5,6 +5,7 @@
 #define _TRACE_LTTNG_STATEDUMP_H
 
 #include <linux/tracepoint.h>
+#include <linux/nsproxy.h>
 
 TRACE_EVENT(lttng_statedump_start,
 	TP_PROTO(struct lttng_session *session),
@@ -46,9 +47,35 @@ TRACE_EVENT(lttng_statedump_process_state,
 	),
 	TP_fast_assign(
 		tp_assign(tid, p->pid)
-		tp_assign(vtid, !p->nsproxy ? 0 : task_pid_vnr(p))
+		tp_assign(vtid,
+			({
+				struct nsproxy *proxy;
+				pid_t ret = 0;
+
+				rcu_read_lock();
+				proxy = task_nsproxy(p);
+				if (proxy) {
+					ret = task_pid_nr_ns(p,
+						proxy->pid_ns);
+				}
+				rcu_read_unlock();
+				ret;
+			}))
 		tp_assign(pid, p->tgid)
-		tp_assign(vpid, !p->nsproxy ? 0 : task_tgid_vnr(p))
+		tp_assign(vpid,
+			({
+				 struct nsproxy *proxy;
+				 pid_t ret = 0;
+
+				 rcu_read_lock();
+				 proxy = task_nsproxy(p);
+				 if (proxy) {
+					 ret = task_tgid_nr_ns(p,
+						 proxy->pid_ns);
+				 }
+				 rcu_read_unlock();
+				 ret;
+			 }))
 		tp_assign(ppid,
 			({
 				pid_t ret;
@@ -61,14 +88,16 @@ TRACE_EVENT(lttng_statedump_process_state,
 		tp_assign(vppid,
 			({
 				struct task_struct *parent;
-				pid_t ret;
+				struct nsproxy *proxy;
+				pid_t ret = 0;
 
 				rcu_read_lock();
-				parent = rcu_dereference(current->real_parent);
-				if (!parent->nsproxy)
-					ret = 0;
-				else
-					ret = task_tgid_nr(parent);
+				parent = rcu_dereference(p->real_parent);
+				proxy = task_nsproxy(parent);
+				if (proxy) {
+					ret = task_tgid_nr_ns(parent,
+						proxy->pid_ns);
+				}
 				rcu_read_unlock();
 				ret;
 			}))
