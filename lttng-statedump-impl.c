@@ -273,6 +273,32 @@ void list_interrupts(struct lttng_session *session)
 #endif
 
 static
+void lttng_statedump_process_ns(struct lttng_session *session,
+		struct task_struct *p,
+		enum lttng_thread_type type,
+		enum lttng_execution_mode mode,
+		enum lttng_execution_submode submode,
+		enum lttng_process_status status)
+{
+	struct nsproxy *proxy;
+	struct pid_namespace *pid_ns;
+
+	rcu_read_lock();
+	proxy = task_nsproxy(p);
+	if (proxy) {
+		pid_ns = proxy->pid_ns;
+		do {
+			trace_lttng_statedump_process_state(session,
+				p, type, mode, submode, status, pid_ns);
+		} while (pid_ns);
+	} else {
+		trace_lttng_statedump_process_state(session,
+			p, type, mode, submode, status, NULL);
+	}
+	rcu_read_unlock();
+}
+
+static
 int lttng_enumerate_process_states(struct lttng_session *session)
 {
 	struct task_struct *g, *p;
@@ -321,7 +347,7 @@ int lttng_enumerate_process_states(struct lttng_session *session)
 				type = LTTNG_USER_THREAD;
 			else
 				type = LTTNG_KERNEL_THREAD;
-			trace_lttng_statedump_process_state(session,
+			lttng_statedump_process_ns(session,
 				p, type, mode, submode, status);
 			task_unlock(p);
 		} while_each_thread(g, p);
