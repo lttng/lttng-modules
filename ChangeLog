@@ -1,3 +1,8 @@
+2012-08-27 LTTng modules 2.0.5
+	* Fix: statedump: disable vm maps enumeration
+	* Fix: ensure userspace accesses are done with _inatomic
+	* Fix: vppid context should test for current nsproxy
+
 2012-06-27 LTTng modules 2.0.4
 	* LTTng: probe-statedump: add #include <linux/sched.h>
 	* fix: signal_generate event should print utf8 for comm field
