@@ -903,6 +903,7 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 	unsigned char uuid_s[37], clock_uuid_s[BOOT_ID_LEN];
 	struct lttng_channel *chan;
 	struct lttng_event *event;
+	char hostname[__NEW_UTS_LEN + 1];
 	int ret = 0;
 
 	if (!ACCESS_ONCE(session->active))
@@ -959,8 +960,14 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 	if (ret)
 		goto end;
 
+	rcu_read_lock();
+	memcpy(hostname, task_nsproxy(current)->uts_ns->name.nodename,
+		sizeof(hostname));
+	rcu_read_unlock();
+
 	ret = lttng_metadata_printf(session,
 		"env {\n"
+		"	hostname = \"%s\";\n"
 		"	domain = \"kernel\";\n"
 		"	sysname = \"%s\";\n"
 		"	kernel_release = \"%s\";\n"
@@ -970,6 +977,7 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 		"	tracer_minor = %d;\n"
 		"	tracer_patchlevel = %d;\n"
 		"};\n\n",
+		hostname,
 		utsname()->sysname,
 		utsname()->release,
 		utsname()->version,
