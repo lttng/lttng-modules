@@ -49,8 +49,11 @@ void hostname_record(struct lttng_ctx_field *field,
 	struct uts_namespace *ns;
 	char *hostname;
 
-	rcu_read_lock();
-	nsproxy = task_nsproxy(current);
+	/*
+	 * No need to take the RCU read-side lock to read current
+	 * nsproxy. (documented in nsproxy.h)
+	 */
+	nsproxy = current->nsproxy;
 	if (nsproxy) {
 		ns = nsproxy->uts_ns;
 		hostname = ns->name.nodename;
@@ -60,7 +63,6 @@ void hostname_record(struct lttng_ctx_field *field,
 		chan->ops->event_memset(ctx, 0,
 				LTTNG_HOSTNAME_CTX_LEN);
 	}
-	rcu_read_unlock();
 }
 
 int lttng_add_hostname_to_ctx(struct lttng_ctx **ctx)
