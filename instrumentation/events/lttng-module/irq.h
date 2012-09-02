@@ -89,6 +89,7 @@ TRACE_EVENT(irq_handler_exit,
 		  __entry->irq, __entry->ret ? "handled" : "unhandled")
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 DECLARE_EVENT_CLASS(softirq,
 
 	TP_PROTO(unsigned int vec_nr),
@@ -148,6 +149,70 @@ DEFINE_EVENT(softirq, softirq_raise,
 
 	TP_ARGS(vec_nr)
 )
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)) */
+DECLARE_EVENT_CLASS(softirq,
+
+	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
+
+	TP_ARGS(h, vec),
+
+	TP_STRUCT__entry(
+		__field(	unsigned int,	vec	)
+	),
+
+	TP_fast_assign(
+		tp_assign(vec, (int)(h - vec))
+	),
+
+	TP_printk("vec=%u [action=%s]", __entry->vec,
+		  show_softirq_name(__entry->vec))
+)
+
+/**
+ * softirq_entry - called immediately before the softirq handler
+ * @h: pointer to struct softirq_action
+ * @vec: pointer to first struct softirq_action in softirq_vec array
+ *
+ * When used in combination with the softirq_exit tracepoint
+ * we can determine the softirq handler runtine.
+ */
+DEFINE_EVENT(softirq, softirq_entry,
+
+	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
+
+	TP_ARGS(h, vec)
+)
+
+/**
+ * softirq_exit - called immediately after the softirq handler returns
+ * @h: pointer to struct softirq_action
+ * @vec: pointer to first struct softirq_action in softirq_vec array
+ *
+ * When used in combination with the softirq_entry tracepoint
+ * we can determine the softirq handler runtine.
+ */
+DEFINE_EVENT(softirq, softirq_exit,
+
+	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
+
+	TP_ARGS(h, vec)
+)
+
+/**
+ * softirq_raise - called immediately when a softirq is raised
+ * @h: pointer to struct softirq_action
+ * @vec: pointer to first struct softirq_action in softirq_vec array
+ *
+ * When used in combination with the softirq_entry tracepoint
+ * we can determine the softirq raise to run latency.
+ */
+DEFINE_EVENT(softirq, softirq_raise,
+
+	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
+
+	TP_ARGS(h, vec)
+)
+#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)) */
 
 #endif /*  _TRACE_IRQ_H */
 

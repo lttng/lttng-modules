@@ -9,10 +9,8 @@ ccflags-y += -I$(PWD)/probes
 obj-m += lttng-types.o
 
 obj-m += lttng-probe-lttng.o
-
 obj-m += lttng-probe-sched.o
 obj-m += lttng-probe-irq.o
-obj-m += lttng-probe-signal.o
 obj-m += lttng-probe-timer.o
 
 obj-m += lttng-probe-statedump.o
@@ -20,6 +18,11 @@ obj-m += lttng-probe-statedump.o
 ifneq ($(CONFIG_KVM),)
 obj-m += lttng-probe-kvm.o
 endif
+
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 \
+		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 35 \) ] ; then \
+		echo "lttng-probe-signal.o" ; fi;)
 
 ifneq ($(CONFIG_BLOCK),)
 ifneq ($(CONFIG_EVENT_TRACING),)	# need blk_cmd_buf_len

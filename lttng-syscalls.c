@@ -26,6 +26,7 @@
 #include <asm/ptrace.h>
 #include <asm/syscall.h>
 
+#include "wrapper/tracepoint.h"
 #include "lttng-events.h"
 
 #ifndef CONFIG_COMPAT
@@ -36,6 +37,16 @@
 
 static
 void syscall_entry_probe(void *__data, struct pt_regs *regs, long id);
+
+/*
+ * Forward declarations for old kernels.
+ */
+struct mmsghdr;
+struct rlimit64;
+struct oldold_utsname;
+struct old_utsname;
+struct sel_arg_struct;
+struct mmap_arg_struct;
 
 /*
  * Take care of NOARGS not supported by mainline.
@@ -403,7 +414,7 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 	if (ret)
 		return ret;
 #endif
-	ret = tracepoint_probe_register("sys_enter",
+	ret = kabi_2635_tracepoint_probe_register("sys_enter",
 			(void *) syscall_entry_probe, chan);
 	if (ret)
 		return ret;
@@ -411,11 +422,11 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 	 * We change the name of sys_exit tracepoint due to namespace
 	 * conflict with sys_exit syscall entry.
 	 */
-	ret = tracepoint_probe_register("sys_exit",
+	ret = kabi_2635_tracepoint_probe_register("sys_exit",
 			(void *) __event_probe__exit_syscall,
 			chan->sc_exit);
 	if (ret) {
-		WARN_ON_ONCE(tracepoint_probe_unregister("sys_enter",
+		WARN_ON_ONCE(kabi_2635_tracepoint_probe_unregister("sys_enter",
 			(void *) syscall_entry_probe, chan));
 	}
 	return ret;
@@ -430,12 +441,12 @@ int lttng_syscalls_unregister(struct lttng_channel *chan)
 
 	if (!chan->sc_table)
 		return 0;
-	ret = tracepoint_probe_unregister("sys_exit",
+	ret = kabi_2635_tracepoint_probe_unregister("sys_exit",
 			(void *) __event_probe__exit_syscall,
 			chan->sc_exit);
 	if (ret)
 		return ret;
-	ret = tracepoint_probe_unregister("sys_enter",
+	ret = kabi_2635_tracepoint_probe_unregister("sys_enter",
 			(void *) syscall_entry_probe, chan);
 	if (ret)
 		return ret;

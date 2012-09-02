@@ -1,8 +1,10 @@
-#ifndef _LTTNG_WRAPPER_SPINLOCK_H
-#define _LTTNG_WRAPPER_SPINLOCK_H
+#ifndef _LTTNG_WRAPPER_TRACEPOINT_H
+#define _LTTNG_WRAPPER_TRACEPOINT_H
 
 /*
- * wrapper/spinlock.h
+ * wrapper/tracepoint.h
+ *
+ * wrapper around DECLARE_EVENT_CLASS.
  *
  * Copyright (C) 2011-2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
@@ -22,26 +24,21 @@
  */
 
 #include <linux/version.h>
+#include <linux/tracepoint.h>
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,33))
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,35))
 
-#include <linux/string.h>
-
-#define raw_spin_lock_init(lock)					\
-	do {								\
-		raw_spinlock_t __lock = __RAW_SPIN_LOCK_UNLOCKED;	\
-		memcpy(lock, &__lock, sizeof(lock));			\
-	} while (0)
-
-#define raw_spin_is_locked(lock)	__raw_spin_is_locked(lock)
-
-#define wrapper_desc_spin_lock(lock)	spin_lock(lock)
-#define wrapper_desc_spin_unlock(lock)	spin_unlock(lock)
-
-#else
-
-#define wrapper_desc_spin_lock(lock)	raw_spin_lock(lock)
-#define wrapper_desc_spin_unlock(lock)	raw_spin_unlock(lock)
+#define DECLARE_EVENT_CLASS(name, proto, args, tstruct, assign, print)
 
 #endif
-#endif /* _LTTNG_WRAPPER_SPINLOCK_H */
+
+#ifndef HAVE_KABI_2635_TRACEPOINT
+
+#define kabi_2635_tracepoint_probe_register tracepoint_probe_register
+#define kabi_2635_tracepoint_probe_unregister tracepoint_probe_unregister
+#define kabi_2635_tracepoint_probe_register_noupdate tracepoint_probe_register_noupdate
+#define kabi_2635_tracepoint_probe_unregister_noupdate tracepoint_probe_unregister_noupdate
+
+#endif /* HAVE_KABI_2635_TRACEPOINT */
+
+#endif /* _LTTNG_WRAPPER_TRACEPOINT_H */

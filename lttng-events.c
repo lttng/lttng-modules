@@ -30,6 +30,7 @@
 #include "wrapper/uuid.h"
 #include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "wrapper/random.h"
+#include "wrapper/tracepoint.h"
 #include "lttng-events.h"
 #include "lttng-tracer.h"
 
@@ -316,7 +317,7 @@ struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 		event->desc = lttng_event_get(event_param->name);
 		if (!event->desc)
 			goto register_error;
-		ret = tracepoint_probe_register(event_param->name,
+		ret = kabi_2635_tracepoint_probe_register(event_param->name,
 				event->desc->probe_callback,
 				event);
 		if (ret)
@@ -420,7 +421,7 @@ int _lttng_event_unregister(struct lttng_event *event)
 
 	switch (event->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
-		ret = tracepoint_probe_unregister(event->desc->name,
+		ret = kabi_2635_tracepoint_probe_unregister(event->desc->name,
 						  event->desc->probe_callback,
 						  event);
 		if (ret)

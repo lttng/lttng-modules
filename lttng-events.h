@@ -23,6 +23,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <linux/version.h>
 #include <linux/list.h>
 #include <linux/kprobes.h>
 #include "wrapper/uuid.h"
@@ -320,7 +321,7 @@ void lttng_event_put(const struct lttng_event_desc *desc);
 int lttng_probes_init(void);
 void lttng_probes_exit(void);
 
-#ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
+#if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
 int lttng_syscalls_register(struct lttng_channel *chan, void *filter);
 int lttng_syscalls_unregister(struct lttng_channel *chan);
 #else

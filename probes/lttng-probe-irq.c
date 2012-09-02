@@ -22,6 +22,7 @@
 
 #include <linux/module.h>
 #include <linux/interrupt.h>
+#include "../wrapper/tracepoint.h"
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our

@@ -21,11 +21,13 @@
  */
 
 #include <linux/module.h>
+#include "../wrapper/tracepoint.h"
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
  * trace event macros match the kernel we run on.
  */
+
 #include <linux/sched.h>
 #include <trace/events/timer.h>
 

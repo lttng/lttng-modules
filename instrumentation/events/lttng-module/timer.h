@@ -10,6 +10,9 @@
 #define _TRACE_TIMER_DEF_
 #include <linux/hrtimer.h>
 #include <linux/timer.h>
+
+struct timer_list;
+
 #endif /* _TRACE_TIMER_DEF_ */
 
 DECLARE_EVENT_CLASS(timer_class,

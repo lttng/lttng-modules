@@ -48,6 +48,7 @@
 
 #include "lttng-events.h"
 #include "wrapper/irqdesc.h"
+#include "wrapper/spinlock.h"
 
 #ifdef CONFIG_GENERIC_HARDIRQS
 #include <linux/irq.h>
@@ -255,12 +256,12 @@ void lttng_list_interrupts(struct lttng_session *session)
 			irq_desc_get_chip(desc)->name ? : "unnamed_irq_chip";
 
 		local_irq_save(flags);
-		raw_spin_lock(&desc->lock);
+		wrapper_desc_spin_lock(&desc->lock);
 		for (action = desc->action; action; action = action->next) {
 			trace_lttng_statedump_interrupt(session,
 				irq, irq_chip_name, action);
 		}
-		raw_spin_unlock(&desc->lock);
+		wrapper_desc_spin_unlock(&desc->lock);
 		local_irq_restore(flags);
 	}
 #undef irq_to_desc

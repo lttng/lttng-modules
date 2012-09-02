@@ -74,9 +74,15 @@ TRACE_EVENT(sched_kthread_stop_ret,
  */
 DECLARE_EVENT_CLASS(sched_wakeup_template,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 	TP_PROTO(struct task_struct *p, int success),
 
 	TP_ARGS(p, success),
+#else
+	TP_PROTO(struct rq *rq, struct task_struct *p, int success),
+
+	TP_ARGS(rq, p, success),
+#endif
 
 	TP_STRUCT__entry(
 		__array_text(	char,	comm,	TASK_COMM_LEN	)
@@ -99,6 +105,8 @@ DECLARE_EVENT_CLASS(sched_wakeup_template,
 		  __entry->success, __entry->target_cpu)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
+
 DEFINE_EVENT(sched_wakeup_template, sched_wakeup,
 	     TP_PROTO(struct task_struct *p, int success),
 	     TP_ARGS(p, success))
@@ -110,15 +118,37 @@ DEFINE_EVENT(sched_wakeup_template, sched_wakeup_new,
 	     TP_PROTO(struct task_struct *p, int success),
 	     TP_ARGS(p, success))
 
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35)) */
+
+DEFINE_EVENT(sched_wakeup_template, sched_wakeup,
+	     TP_PROTO(struct rq *rq, struct task_struct *p, int success),
+	     TP_ARGS(rq, p, success))
+
+/*
+ * Tracepoint for waking up a new task:
+ */
+DEFINE_EVENT(sched_wakeup_template, sched_wakeup_new,
+	     TP_PROTO(struct rq *rq, struct task_struct *p, int success),
+	     TP_ARGS(rq, p, success))
+
+#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35)) */
+
 /*
  * Tracepoint for task switches, performed by the scheduler:
  */
 TRACE_EVENT(sched_switch,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 	TP_PROTO(struct task_struct *prev,
 		 struct task_struct *next),
 
 	TP_ARGS(prev, next),
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35)) */
+	TP_PROTO(struct rq *rq, struct task_struct *prev,
+		 struct task_struct *next),
+
+	TP_ARGS(rq, prev, next),
+#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35)) */
 
 	TP_STRUCT__entry(
 		__array_text(	char,	prev_comm,	TASK_COMM_LEN	)
@@ -220,9 +250,15 @@ DEFINE_EVENT(sched_process_template, sched_process_exit,
 /*
  * Tracepoint for waiting on task to unschedule:
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 DEFINE_EVENT(sched_process_template, sched_wait_task,
 	TP_PROTO(struct task_struct *p),
 	TP_ARGS(p))
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35)) */
+DEFINE_EVENT(sched_process_template, sched_wait_task,
+	TP_PROTO(struct rq *rq, struct task_struct *p),
+	TP_ARGS(rq, p))
+#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35)) */
 
 /*
  * Tracepoint for a waiting task:
