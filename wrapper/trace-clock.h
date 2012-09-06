@@ -46,7 +46,7 @@ static inline u64 trace_clock_monotonic_wrapper(void)
 		return (u64) -EIO;
 
 	ktime = ktime_get();
-	return (u64) ktime.tv64;
+	return ktime_to_ns(ktime);
 }
 
 static inline u32 trace_clock_read32(void)
