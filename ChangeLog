@@ -1,3 +1,37 @@
+2012-09-10 LTTng modules 2.1.0-rc1
+	* fix timestamps on architectures without CONFIG_KTIME_SCALAR
+	* Support for linux kernels 2.6.32 through 2.6.37
+	* Document limitation of vppid and ppid context wrt eventual RCU instrumentation
+	* Cleanup: no need to hold RCU read-side lock when reading current nsproxy
+	* Add env hostname information
+	* Fix: lttng_statedump_process_state for each PID NS has infinite loop
+	* lttng_statedump_process_state for each PID NS
+	* Support the hostname context
+	* Fix: statedump namespaced pid, tid and ppid
+	* Fix: statedump: disable vm maps enumeration
+	* Fix: ensure userspace accesses are done with _inatomic
+	* Fix: vppid context should test for current nsproxy
+	* Add MIPS system call support
+	* Change mode of lttng-syscalls-generate-headers.sh to 755
+	* cleanup: fix typo in syscall instrumentation header
+	* Cleanup: remove trailing whitespace in README
+	* trace event: introduce TP_MODULE_NOAUTOLOAD and TP_MODULE_NOINIT
+	* LTTng: probe-statedump: add #include <linux/sched.h>
+	* fix: signal_generate event should print utf8 for comm field
+	* Makes write operation a parameter for tp_memcpy macro
+	* Add coding style document
+	* Update instrumentation/events README file
+	* Add makefile target for preprocessor
+	* Fix: free_event_id check should compare unsigned int with -1U
+	* Use unsigned long type for events discarded counter
+	* Fix: update signal instrumentation for 3.4 kernel
+	* LTTng Modules ARM syscall instrumentation
+	* Fix: generate header missing echo -e for escape chars
+	* Fix: add missing uaccess.h include (for ARM)
+	* README: Document that CONFIG_MODULES is required
+	* Fix: README typo
+	* Fix: document required and optional kernel config options in README
+
 2012-03-29 LTTng modules 2.0.1
 	* Fix: is_compat_task !CONFIG_COMPAT compile error on kernels >= 3.3
 
