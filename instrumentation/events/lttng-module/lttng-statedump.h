@@ -67,10 +67,12 @@ TRACE_EVENT(lttng_statedump_process_state,
 				struct task_struct *parent;
 				pid_t ret = 0;
 
-				rcu_read_lock();
-				parent = rcu_dereference(p->real_parent);
-				ret = task_tgid_nr_ns(parent, pid_ns);
-				rcu_read_unlock();
+				if (pid_ns) {
+					rcu_read_lock();
+					parent = rcu_dereference(p->real_parent);
+					ret = task_tgid_nr_ns(parent, pid_ns);
+					rcu_read_unlock();
+				}
 				ret;
 			}))
 		tp_memcpy(name, p->comm, TASK_COMM_LEN)
