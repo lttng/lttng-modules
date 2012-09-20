@@ -55,7 +55,6 @@
 #include <linux/module.h>
 #include <linux/percpu.h>
 
-#include "../../lttng-tracer-core.h"
 #include "../../wrapper/ringbuffer/config.h"
 #include "../../wrapper/ringbuffer/backend.h"
 #include "../../wrapper/ringbuffer/frontend.h"

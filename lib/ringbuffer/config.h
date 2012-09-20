@@ -27,6 +27,7 @@
 #include <linux/types.h>
 #include <linux/percpu.h>
 #include "../align.h"
+#include "../../lttng-tracer-core.h"
 
 struct lib_ring_buffer;
 struct channel;
@@ -240,6 +241,10 @@ void lib_ring_buffer_ctx_init(struct lib_ring_buffer_ctx *ctx,
  */
 #define	RING_BUFFER_RFLAG_FULL_TSC		(1U << 0)
 #define RING_BUFFER_RFLAG_END			(1U << 1)
+
+#ifndef LTTNG_TRACER_CORE_H
+#error "lttng-tracer-core.h is needed for RING_BUFFER_ALIGN define"
+#endif
 
 /*
  * We need to define RING_BUFFER_ALIGN_ATTR so it is known early at
