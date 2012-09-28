@@ -60,13 +60,13 @@ struct packet_header {
 		/* Stream packet context */
 		uint64_t timestamp_begin;	/* Cycle count at subbuffer start */
 		uint64_t timestamp_end;		/* Cycle count at subbuffer end */
+		uint64_t content_size;		/* Size of data in subbuffer */
+		uint64_t packet_size;		/* Subbuffer size (include padding) */
 		unsigned long events_discarded;	/*
 						 * Events lost in this subbuffer since
 						 * the beginning of the trace.
 						 * (may overflow)
 						 */
-		uint32_t content_size;		/* Size of data in subbuffer */
-		uint32_t packet_size;		/* Subbuffer size (include padding) */
 		uint32_t cpu_id;		/* CPU id associated with stream */
 		uint8_t header_end;		/* End of header */
 	} ctx;
@@ -349,9 +349,9 @@ static void client_buffer_begin(struct lib_ring_buffer *buf, u64 tsc,
 	header->stream_id = lttng_chan->id;
 	header->ctx.timestamp_begin = tsc;
 	header->ctx.timestamp_end = 0;
+	header->ctx.content_size = ~0ULL; /* for debugging */
+	header->ctx.packet_size = ~0ULL;
 	header->ctx.events_discarded = 0;
-	header->ctx.content_size = 0xFFFFFFFF; /* for debugging */
-	header->ctx.packet_size = 0xFFFFFFFF;
 	header->ctx.cpu_id = buf->backend.cpu;
 }
 
