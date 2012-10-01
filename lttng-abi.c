@@ -47,6 +47,7 @@
 #include "wrapper/ringbuffer/vfs.h"
 #include "wrapper/poll.h"
 #include "lttng-abi.h"
+#include "lttng-abi-old.h"
 #include "lttng-events.h"
 #include "lttng-tracer.h"
 
@@ -143,34 +144,23 @@ fd_error:
 }
 
 static
-long lttng_abi_tracer_version(struct file *file, 
-	struct lttng_kernel_tracer_version __user *uversion_param)
+void lttng_abi_tracer_version(struct lttng_kernel_tracer_version *v)
 {
-	struct lttng_kernel_tracer_version v;
-
-	v.major = LTTNG_MODULES_MAJOR_VERSION;
-	v.minor = LTTNG_MODULES_MINOR_VERSION;
-	v.patchlevel = LTTNG_MODULES_PATCHLEVEL_VERSION;
-
-	if (copy_to_user(uversion_param, &v, sizeof(v)))
-		return -EFAULT;
-	return 0;
+	v->major = LTTNG_MODULES_MAJOR_VERSION;
+	v->minor = LTTNG_MODULES_MINOR_VERSION;
+	v->patchlevel = LTTNG_MODULES_PATCHLEVEL_VERSION;
 }
 
 static
 long lttng_abi_add_context(struct file *file,
-	struct lttng_kernel_context __user *ucontext_param,
+	struct lttng_kernel_context *context_param,
 	struct lttng_ctx **ctx, struct lttng_session *session)
 {
-	struct lttng_kernel_context context_param;
 
 	if (session->been_active)
 		return -EPERM;
 
-	if (copy_from_user(&context_param, ucontext_param, sizeof(context_param)))
-		return -EFAULT;
-
-	switch (context_param.ctx) {
+	switch (context_param->ctx) {
 	case LTTNG_KERNEL_CONTEXT_PID:
 		return lttng_add_pid_to_ctx(ctx);
 	case LTTNG_KERNEL_CONTEXT_PRIO:
@@ -188,10 +178,10 @@ long lttng_abi_add_context(struct file *file,
 	case LTTNG_KERNEL_CONTEXT_VPPID:
 		return lttng_add_vppid_to_ctx(ctx);
 	case LTTNG_KERNEL_CONTEXT_PERF_COUNTER:
-		context_param.u.perf_counter.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
-		return lttng_add_perf_counter_to_ctx(context_param.u.perf_counter.type,
-				context_param.u.perf_counter.config,
-				context_param.u.perf_counter.name,
+		context_param->u.perf_counter.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
+		return lttng_add_perf_counter_to_ctx(context_param->u.perf_counter.type,
+				context_param->u.perf_counter.config,
+				context_param->u.perf_counter.name,
 				ctx);
 	case LTTNG_KERNEL_CONTEXT_PROCNAME:
 		return lttng_add_procname_to_ctx(ctx);
@@ -225,16 +215,60 @@ static
 long lttng_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	switch (cmd) {
+	case LTTNG_KERNEL_OLD_SESSION:
 	case LTTNG_KERNEL_SESSION:
 		return lttng_abi_create_session();
+	case LTTNG_KERNEL_OLD_TRACER_VERSION:
+	{
+		struct lttng_kernel_tracer_version v;
+		struct lttng_kernel_old_tracer_version oldv;
+		struct lttng_kernel_old_tracer_version *uversion =
+			(struct lttng_kernel_old_tracer_version __user *) arg;
+
+		lttng_abi_tracer_version(&v);
+		oldv.major = v.major;
+		oldv.minor = v.minor;
+		oldv.patchlevel = v.patchlevel;
+
+		if (copy_to_user(uversion, &oldv, sizeof(oldv)))
+			return -EFAULT;
+		return 0;
+	}
 	case LTTNG_KERNEL_TRACER_VERSION:
-		return lttng_abi_tracer_version(file,
-				(struct lttng_kernel_tracer_version __user *) arg);
+	{
+		struct lttng_kernel_tracer_version version;
+		struct lttng_kernel_tracer_version *uversion =
+			(struct lttng_kernel_tracer_version __user *) arg;
+
+		lttng_abi_tracer_version(&version);
+		
+		if (copy_to_user(uversion, &version, sizeof(version)))
+			return -EFAULT;
+		return 0;
+	}
+	case LTTNG_KERNEL_OLD_TRACEPOINT_LIST:
 	case LTTNG_KERNEL_TRACEPOINT_LIST:
 		return lttng_abi_tracepoint_list();
+	case LTTNG_KERNEL_OLD_WAIT_QUIESCENT:
 	case LTTNG_KERNEL_WAIT_QUIESCENT:
 		synchronize_trace();
 		return 0;
+	case LTTNG_KERNEL_OLD_CALIBRATE:
+	{
+		struct lttng_kernel_old_calibrate __user *ucalibrate =
+			(struct lttng_kernel_old_calibrate __user *) arg;
+		struct lttng_kernel_old_calibrate old_calibrate;
+		struct lttng_kernel_calibrate calibrate;
+		int ret;
+
+		if (copy_from_user(&old_calibrate, ucalibrate, sizeof(old_calibrate)))
+			return -EFAULT;
+		calibrate.type = old_calibrate.type;
+		ret = lttng_calibrate(&calibrate);
+		if (copy_to_user(ucalibrate, &old_calibrate, sizeof(old_calibrate)))
+			return -EFAULT;
+		return ret;
+	}
 	case LTTNG_KERNEL_CALIBRATE:
 	{
 		struct lttng_kernel_calibrate __user *ucalibrate =
@@ -294,7 +328,7 @@ create_error:
 
 static
 int lttng_abi_create_channel(struct file *session_file,
-			     struct lttng_kernel_channel __user *uchan_param,
+			     struct lttng_kernel_channel *chan_param,
 			     enum channel_type channel_type)
 {
 	struct lttng_session *session = session_file->private_data;
@@ -302,12 +336,9 @@ int lttng_abi_create_channel(struct file *session_file,
 	const char *transport_name;
 	struct lttng_channel *chan;
 	struct file *chan_file;
-	struct lttng_kernel_channel chan_param;
 	int chan_fd;
 	int ret = 0;
 
-	if (copy_from_user(&chan_param, uchan_param, sizeof(chan_param)))
-		return -EFAULT;
 	chan_fd = get_unused_fd();
 	if (chan_fd < 0) {
 		ret = chan_fd;
@@ -331,20 +362,20 @@ int lttng_abi_create_channel(struct file *session_file,
 	}
 	switch (channel_type) {
 	case PER_CPU_CHANNEL:
-		if (chan_param.output == LTTNG_KERNEL_SPLICE) {
-			transport_name = chan_param.overwrite ?
+		if (chan_param->output == LTTNG_KERNEL_SPLICE) {
+			transport_name = chan_param->overwrite ?
 				"relay-overwrite" : "relay-discard";
-		} else if (chan_param.output == LTTNG_KERNEL_MMAP) {
-			transport_name = chan_param.overwrite ?
+		} else if (chan_param->output == LTTNG_KERNEL_MMAP) {
+			transport_name = chan_param->overwrite ?
 				"relay-overwrite-mmap" : "relay-discard-mmap";
 		} else {
 			return -EINVAL;
 		}
 		break;
 	case METADATA_CHANNEL:
-		if (chan_param.output == LTTNG_KERNEL_SPLICE)
+		if (chan_param->output == LTTNG_KERNEL_SPLICE)
 			transport_name = "relay-metadata";
-		else if (chan_param.output == LTTNG_KERNEL_MMAP)
+		else if (chan_param->output == LTTNG_KERNEL_MMAP)
 			transport_name = "relay-metadata-mmap";
 		else
 			return -EINVAL;
@@ -358,10 +389,10 @@ int lttng_abi_create_channel(struct file *session_file,
 	 * invariant for the rest of the session.
 	 */
 	chan = lttng_channel_create(session, transport_name, NULL,
-				  chan_param.subbuf_size,
-				  chan_param.num_subbuf,
-				  chan_param.switch_timer_interval,
-				  chan_param.read_timer_interval);
+				  chan_param->subbuf_size,
+				  chan_param->num_subbuf,
+				  chan_param->switch_timer_interval,
+				  chan_param->read_timer_interval);
 	if (!chan) {
 		ret = -EINVAL;
 		goto chan_error;
@@ -412,20 +443,76 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	struct lttng_session *session = file->private_data;
 
 	switch (cmd) {
-	case LTTNG_KERNEL_CHANNEL:
-		return lttng_abi_create_channel(file,
-				(struct lttng_kernel_channel __user *) arg,
+	case LTTNG_KERNEL_OLD_CHANNEL:
+	{
+		struct lttng_kernel_channel chan_param;
+		struct lttng_kernel_old_channel old_chan_param;
+
+		if (copy_from_user(&old_chan_param,
+				(struct lttng_kernel_old_channel __user *) arg,
+				sizeof(struct lttng_kernel_old_channel)))
+			return -EFAULT;
+		chan_param.overwrite = old_chan_param.overwrite;
+		chan_param.subbuf_size = old_chan_param.subbuf_size;
+		chan_param.num_subbuf = old_chan_param.num_subbuf;
+		chan_param.switch_timer_interval = old_chan_param.switch_timer_interval;
+		chan_param.read_timer_interval = old_chan_param.read_timer_interval;
+		chan_param.output = old_chan_param.output;
+
+		return lttng_abi_create_channel(file, &chan_param,
 				PER_CPU_CHANNEL);
+	}
+	case LTTNG_KERNEL_CHANNEL:
+	{
+		struct lttng_kernel_channel chan_param;
+
+		if (copy_from_user(&chan_param,
+				(struct lttng_kernel_channel __user *) arg,
+				sizeof(struct lttng_kernel_channel)))
+			return -EFAULT;
+		return lttng_abi_create_channel(file, &chan_param,
+				PER_CPU_CHANNEL);
+	}
+	case LTTNG_KERNEL_OLD_SESSION_START:
+	case LTTNG_KERNEL_OLD_ENABLE:
 	case LTTNG_KERNEL_SESSION_START:
 	case LTTNG_KERNEL_ENABLE:
 		return lttng_session_enable(session);
+	case LTTNG_KERNEL_OLD_SESSION_STOP:
+	case LTTNG_KERNEL_OLD_DISABLE:
 	case LTTNG_KERNEL_SESSION_STOP:
 	case LTTNG_KERNEL_DISABLE:
 		return lttng_session_disable(session);
-	case LTTNG_KERNEL_METADATA:
-		return lttng_abi_create_channel(file,
-				(struct lttng_kernel_channel __user *) arg,
+	case LTTNG_KERNEL_OLD_METADATA:
+	{
+		struct lttng_kernel_channel chan_param;
+		struct lttng_kernel_old_channel old_chan_param;
+
+		if (copy_from_user(&old_chan_param,
+				(struct lttng_kernel_old_channel __user *) arg,
+				sizeof(struct lttng_kernel_old_channel)))
+			return -EFAULT;
+		chan_param.overwrite = old_chan_param.overwrite;
+		chan_param.subbuf_size = old_chan_param.subbuf_size;
+		chan_param.num_subbuf = old_chan_param.num_subbuf;
+		chan_param.switch_timer_interval = old_chan_param.switch_timer_interval;
+		chan_param.read_timer_interval = old_chan_param.read_timer_interval;
+		chan_param.output = old_chan_param.output;
+
+		return lttng_abi_create_channel(file, &chan_param,
 				METADATA_CHANNEL);
+	}
+	case LTTNG_KERNEL_METADATA:
+	{
+		struct lttng_kernel_channel chan_param;
+
+		if (copy_from_user(&chan_param,
+					(struct lttng_kernel_channel __user *) arg,
+					sizeof(struct lttng_kernel_channel)))
+			return -EFAULT;
+		return lttng_abi_create_channel(file, &chan_param,
+				METADATA_CHANNEL);
+	}
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -505,31 +592,28 @@ fd_error:
 
 static
 int lttng_abi_create_event(struct file *channel_file,
-			   struct lttng_kernel_event __user *uevent_param)
+			   struct lttng_kernel_event *event_param)
 {
 	struct lttng_channel *channel = channel_file->private_data;
 	struct lttng_event *event;
-	struct lttng_kernel_event event_param;
 	int event_fd, ret;
 	struct file *event_file;
 
-	if (copy_from_user(&event_param, uevent_param, sizeof(event_param)))
-		return -EFAULT;
-	event_param.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
-	switch (event_param.instrumentation) {
+	event_param->name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
+	switch (event_param->instrumentation) {
 	case LTTNG_KERNEL_KRETPROBE:
-		event_param.u.kretprobe.symbol_name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
+		event_param->u.kretprobe.symbol_name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		break;
 	case LTTNG_KERNEL_KPROBE:
-		event_param.u.kprobe.symbol_name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
+		event_param->u.kprobe.symbol_name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		break;
 	case LTTNG_KERNEL_FUNCTION:
-		event_param.u.ftrace.symbol_name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
+		event_param->u.ftrace.symbol_name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		break;
 	default:
 		break;
 	}
-	switch (event_param.instrumentation) {
+	switch (event_param->instrumentation) {
 	default:
 		event_fd = get_unused_fd();
 		if (event_fd < 0) {
@@ -547,7 +631,7 @@ int lttng_abi_create_event(struct file *channel_file,
 		 * We tolerate no failure path after event creation. It
 		 * will stay invariant for the rest of the session.
 		 */
-		event = lttng_event_create(channel, &event_param, NULL, NULL);
+		event = lttng_event_create(channel, event_param, NULL, NULL);
 		if (!event) {
 			ret = -EINVAL;
 			goto event_error;
@@ -561,7 +645,7 @@ int lttng_abi_create_event(struct file *channel_file,
 		/*
 		 * Only all-syscall tracing supported for now.
 		 */
-		if (event_param.name[0] != '\0')
+		if (event_param->name[0] != '\0')
 			return -EINVAL;
 		ret = lttng_syscalls_register(channel, NULL);
 		if (ret)
@@ -607,21 +691,158 @@ long lttng_channel_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	struct lttng_channel *channel = file->private_data;
 
 	switch (cmd) {
+	case LTTNG_KERNEL_OLD_STREAM:
 	case LTTNG_KERNEL_STREAM:
 		return lttng_abi_open_stream(file);
+	case LTTNG_KERNEL_OLD_EVENT:
+	{
+		struct lttng_kernel_event *uevent_param;
+		struct lttng_kernel_old_event *old_uevent_param;
+		int ret;
+
+		uevent_param = kmalloc(sizeof(struct lttng_kernel_event),
+				GFP_KERNEL);
+		if (!uevent_param) {
+			ret = -ENOMEM;
+			goto old_event_end;
+		}
+		old_uevent_param = kmalloc(
+				sizeof(struct lttng_kernel_old_event),
+				GFP_KERNEL);
+		if (!old_uevent_param) {
+			ret = -ENOMEM;
+			goto old_event_error_free_param;
+		}
+		if (copy_from_user(old_uevent_param,
+				(struct lttng_kernel_old_event __user *) arg,
+				sizeof(struct lttng_kernel_old_event))) {
+			ret = -EFAULT;
+			goto old_event_error_free_old_param;
+		}
+
+		memcpy(uevent_param->name, old_uevent_param->name,
+				sizeof(uevent_param->name));
+		uevent_param->instrumentation =
+			old_uevent_param->instrumentation;
+
+		switch (old_uevent_param->instrumentation) {
+		case LTTNG_KERNEL_KPROBE:
+			uevent_param->u.kprobe.addr =
+				old_uevent_param->u.kprobe.addr;
+			uevent_param->u.kprobe.offset =
+				old_uevent_param->u.kprobe.offset;
+			memcpy(uevent_param->u.kprobe.symbol_name,
+				old_uevent_param->u.kprobe.symbol_name,
+				sizeof(uevent_param->u.kprobe.symbol_name));
+			break;
+		case LTTNG_KERNEL_KRETPROBE:
+			uevent_param->u.kretprobe.addr =
+				old_uevent_param->u.kretprobe.addr;
+			uevent_param->u.kretprobe.offset =
+				old_uevent_param->u.kretprobe.offset;
+			memcpy(uevent_param->u.kretprobe.symbol_name,
+				old_uevent_param->u.kretprobe.symbol_name,
+				sizeof(uevent_param->u.kretprobe.symbol_name));
+			break;
+		case LTTNG_KERNEL_FUNCTION:
+			memcpy(uevent_param->u.ftrace.symbol_name,
+					old_uevent_param->u.ftrace.symbol_name,
+					sizeof(uevent_param->u.ftrace.symbol_name));
+			break;
+		default:
+			break;
+		}
+		ret = lttng_abi_create_event(file, uevent_param);
+
+old_event_error_free_old_param:
+		kfree(old_uevent_param);
+old_event_error_free_param:
+		kfree(uevent_param);
+old_event_end:
+		return ret;
+	}
 	case LTTNG_KERNEL_EVENT:
-		return lttng_abi_create_event(file, (struct lttng_kernel_event __user *) arg);
-	case LTTNG_KERNEL_CONTEXT:
-		return lttng_abi_add_context(file,
-				(struct lttng_kernel_context __user *) arg,
+	{
+		struct lttng_kernel_event uevent_param;
+
+		if (copy_from_user(&uevent_param,
+				(struct lttng_kernel_event __user *) arg,
+				sizeof(uevent_param)))
+			return -EFAULT;
+		return lttng_abi_create_event(file, &uevent_param);
+	}
+	case LTTNG_KERNEL_OLD_CONTEXT:
+	{
+		struct lttng_kernel_context *ucontext_param;
+		struct lttng_kernel_old_context *old_ucontext_param;
+		int ret;
+
+		ucontext_param = kmalloc(sizeof(struct lttng_kernel_context),
+				GFP_KERNEL);
+		if (!ucontext_param) {
+			ret = -ENOMEM;
+			goto old_ctx_end;
+		}
+		old_ucontext_param = kmalloc(sizeof(struct lttng_kernel_old_context),
+				GFP_KERNEL);
+		if (!old_ucontext_param) {
+			ret = -ENOMEM;
+			goto old_ctx_error_free_param;
+		}
+
+		if (copy_from_user(old_ucontext_param,
+				(struct lttng_kernel_old_context __user *) arg,
+				sizeof(struct lttng_kernel_old_context))) {
+			ret = -EFAULT;
+			goto old_ctx_error_free_old_param;
+		}
+		ucontext_param->ctx = old_ucontext_param->ctx;
+		memcpy(ucontext_param->padding, old_ucontext_param->padding,
+				sizeof(ucontext_param->padding));
+		/* only type that uses the union */
+		if (old_ucontext_param->ctx == LTTNG_KERNEL_CONTEXT_PERF_COUNTER) {
+			ucontext_param->u.perf_counter.type =
+				old_ucontext_param->u.perf_counter.type;
+			ucontext_param->u.perf_counter.config =
+				old_ucontext_param->u.perf_counter.config;
+			memcpy(ucontext_param->u.perf_counter.name,
+				old_ucontext_param->u.perf_counter.name,
+				sizeof(ucontext_param->u.perf_counter.name));
+		}
+
+		ret = lttng_abi_add_context(file,
+				ucontext_param,
 				&channel->ctx, channel->session);
+
+old_ctx_error_free_old_param:
+		kfree(old_ucontext_param);
+old_ctx_error_free_param:
+		kfree(ucontext_param);
+old_ctx_end:
+		return ret;
+	}
+	case LTTNG_KERNEL_CONTEXT:
+	{
+		struct lttng_kernel_context ucontext_param;
+
+		if (copy_from_user(&ucontext_param,
+				(struct lttng_kernel_context __user *) arg,
+				sizeof(ucontext_param)))
+			return -EFAULT;
+		return lttng_abi_add_context(file,
+				&ucontext_param,
+				&channel->ctx, channel->session);
+	}
+	case LTTNG_KERNEL_OLD_ENABLE:
 	case LTTNG_KERNEL_ENABLE:
 		return lttng_channel_enable(channel);
+	case LTTNG_KERNEL_OLD_DISABLE:
 	case LTTNG_KERNEL_DISABLE:
 		return lttng_channel_disable(channel);
 	default:
 		return -ENOIOCTLCMD;
 	}
+
 }
 
 /**
@@ -641,6 +862,7 @@ static
 long lttng_metadata_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	switch (cmd) {
+	case LTTNG_KERNEL_OLD_STREAM:
 	case LTTNG_KERNEL_STREAM:
 		return lttng_abi_open_stream(file);
 	default:
@@ -726,12 +948,72 @@ long lttng_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	struct lttng_event *event = file->private_data;
 
 	switch (cmd) {
-	case LTTNG_KERNEL_CONTEXT:
-		return lttng_abi_add_context(file,
-				(struct lttng_kernel_context __user *) arg,
+	case LTTNG_KERNEL_OLD_CONTEXT:
+	{
+		struct lttng_kernel_context *ucontext_param;
+		struct lttng_kernel_old_context *old_ucontext_param;
+		int ret;
+
+		ucontext_param = kmalloc(sizeof(struct lttng_kernel_context),
+				GFP_KERNEL);
+		if (!ucontext_param) {
+			ret = -ENOMEM;
+			goto old_ctx_end;
+		}
+		old_ucontext_param = kmalloc(sizeof(struct lttng_kernel_old_context),
+				GFP_KERNEL);
+		if (!old_ucontext_param) {
+			ret = -ENOMEM;
+			goto old_ctx_error_free_param;
+		}
+
+		if (copy_from_user(old_ucontext_param,
+					(struct lttng_kernel_old_context __user *) arg,
+					sizeof(struct lttng_kernel_old_context))) {
+			ret = -EFAULT;
+			goto old_ctx_error_free_old_param;
+		}
+		ucontext_param->ctx = old_ucontext_param->ctx;
+		memcpy(ucontext_param->padding, old_ucontext_param->padding,
+				sizeof(ucontext_param->padding));
+		/* only type that uses the union */
+		if (old_ucontext_param->ctx == LTTNG_KERNEL_CONTEXT_PERF_COUNTER) {
+			ucontext_param->u.perf_counter.type =
+				old_ucontext_param->u.perf_counter.type;
+			ucontext_param->u.perf_counter.config =
+				old_ucontext_param->u.perf_counter.config;
+			memcpy(ucontext_param->u.perf_counter.name,
+					old_ucontext_param->u.perf_counter.name,
+					sizeof(ucontext_param->u.perf_counter.name));
+		}
+
+		ret = lttng_abi_add_context(file,
+				ucontext_param,
 				&event->ctx, event->chan->session);
+
+old_ctx_error_free_old_param:
+		kfree(old_ucontext_param);
+old_ctx_error_free_param:
+		kfree(ucontext_param);
+old_ctx_end:
+		return ret;
+	}
+	case LTTNG_KERNEL_CONTEXT:
+	{
+		struct lttng_kernel_context ucontext_param;
+
+		if (copy_from_user(&ucontext_param,
+					(struct lttng_kernel_context __user *) arg,
+					sizeof(ucontext_param)))
+			return -EFAULT;
+		return lttng_abi_add_context(file,
+				&ucontext_param,
+				&event->ctx, event->chan->session);
+	}
+	case LTTNG_KERNEL_OLD_ENABLE:
 	case LTTNG_KERNEL_ENABLE:
 		return lttng_event_enable(event);
+	case LTTNG_KERNEL_OLD_DISABLE:
 	case LTTNG_KERNEL_DISABLE:
 		return lttng_event_disable(event);
 	default:

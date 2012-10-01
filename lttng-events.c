@@ -33,6 +33,7 @@
 #include "wrapper/tracepoint.h"
 #include "lttng-events.h"
 #include "lttng-tracer.h"
+#include "lttng-abi-old.h"
 
 static LIST_HEAD(sessions);
 static LIST_HEAD(lttng_transport_list);

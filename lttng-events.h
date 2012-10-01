@@ -28,6 +28,7 @@
 #include <linux/kprobes.h>
 #include "wrapper/uuid.h"
 #include "lttng-abi.h"
+#include "lttng-abi-old.h"
 
 #undef is_signed_type
 #define is_signed_type(type)		(((type)(-1)) < 0)
@@ -301,6 +302,10 @@ struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 				   struct lttng_kernel_event *event_param,
 				   void *filter,
 				   const struct lttng_event_desc *internal_desc);
+struct lttng_event *lttng_event_compat_old_create(struct lttng_channel *chan,
+		struct lttng_kernel_old_event *old_event_param,
+		void *filter,
+		const struct lttng_event_desc *internal_desc);
 
 int lttng_channel_enable(struct lttng_channel *channel);
 int lttng_channel_disable(struct lttng_channel *channel);
@@ -312,7 +317,9 @@ void lttng_transport_unregister(struct lttng_transport *transport);
 
 void synchronize_trace(void);
 int lttng_abi_init(void);
+int lttng_abi_compat_old_init(void);
 void lttng_abi_exit(void);
+void lttng_abi_compat_old_exit(void);
 
 int lttng_probe_register(struct lttng_probe_desc *desc);
 void lttng_probe_unregister(struct lttng_probe_desc *desc);
