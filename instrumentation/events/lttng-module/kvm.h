@@ -2,11 +2,24 @@
 #define _TRACE_KVM_MAIN_H
 
 #include <linux/tracepoint.h>
+#include <linux/version.h>
 
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM kvm
 
 #define ERSN(x) { KVM_EXIT_##x, "KVM_EXIT_" #x }
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
+
+#define kvm_trace_exit_reason						\
+	ERSN(UNKNOWN), ERSN(EXCEPTION), ERSN(IO), ERSN(HYPERCALL),	\
+	ERSN(DEBUG), ERSN(HLT), ERSN(MMIO), ERSN(IRQ_WINDOW_OPEN),	\
+	ERSN(SHUTDOWN), ERSN(FAIL_ENTRY), ERSN(INTR), ERSN(SET_TPR),	\
+	ERSN(TPR_ACCESS), ERSN(S390_SIEIC), ERSN(S390_RESET), ERSN(DCR),\
+	ERSN(NMI), ERSN(INTERNAL_ERROR), ERSN(OSI), ERSN(PAPR_HCALL),	\
+	ERSN(S390_UCONTROL)
+
+#else
 
 #define kvm_trace_exit_reason						\
 	ERSN(UNKNOWN), ERSN(EXCEPTION), ERSN(IO), ERSN(HYPERCALL),	\
@@ -14,6 +27,8 @@
 	ERSN(SHUTDOWN), ERSN(FAIL_ENTRY), ERSN(INTR), ERSN(SET_TPR),	\
 	ERSN(TPR_ACCESS), ERSN(S390_SIEIC), ERSN(S390_RESET), ERSN(DCR),\
 	ERSN(NMI), ERSN(INTERNAL_ERROR), ERSN(OSI)
+
+#endif
 
 TRACE_EVENT(kvm_userspace_exit,
 	    TP_PROTO(__u32 reason, int errno),
