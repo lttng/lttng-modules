@@ -31,6 +31,7 @@
 
 #include "../../wrapper/ringbuffer/frontend.h"
 #include <linux/errno.h>
+#include <linux/prefetch.h>
 
 /**
  * lib_ring_buffer_get_cpu - Precedes ring buffer reserve/commit.
