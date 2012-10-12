@@ -313,6 +313,7 @@ TRACE_EVENT(sched_process_fork,
 		__entry->child_comm, __entry->child_tid)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 /*
  * Tracepoint for exec:
  */
@@ -338,6 +339,7 @@ TRACE_EVENT(sched_process_exec,
 	TP_printk("filename=%s pid=%d old_pid=%d", __get_str(filename),
 		  __entry->pid, __entry->old_pid)
 )
+#endif
 
 /*
  * XXX the below sched_stat tracepoints only apply to SCHED_OTHER/BATCH/IDLE
