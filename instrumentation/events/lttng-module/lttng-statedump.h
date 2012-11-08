@@ -150,12 +150,12 @@ TRACE_EVENT(lttng_statedump_interrupt,
 	TP_STRUCT__entry(
 		__field(unsigned int, irq)
 		__string(name, chip_name)
-		__string(action, action->name)
+		__string(action, action->name ? : "")
 	),
 	TP_fast_assign(
 		tp_assign(irq, irq)
 		tp_strcpy(name, chip_name)
-		tp_strcpy(action, action->name)
+		tp_strcpy(action, action->name ? : "")
 	),
 	TP_printk("")
 )
