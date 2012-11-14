@@ -19,8 +19,8 @@ TRACE_EVENT(udp_fail_queue_rcv_skb,
 	),
 
 	TP_fast_assign(
-		tp_assign(rc, rc);
-		tp_assign(lport, inet_sk(sk)->inet_num);
+		tp_assign(rc, rc)
+		tp_assign(lport, inet_sk(sk)->inet_num)
 	),
 
 	TP_printk("rc=%d port=%hu", __entry->rc, __entry->lport)

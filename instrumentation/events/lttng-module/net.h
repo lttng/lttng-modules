@@ -39,17 +39,17 @@ TRACE_EVENT(net_dev_xmit,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0))
 	TP_fast_assign(
-		tp_assign(skbaddr, skb);
-		tp_assign(len, skb_len);
-		tp_assign(rc, rc);
-		tp_strcpy(name, dev->name);
+		tp_assign(skbaddr, skb)
+		tp_assign(len, skb_len)
+		tp_assign(rc, rc)
+		tp_strcpy(name, dev->name)
 	),
 #else
 	TP_fast_assign(
-		tp_assign(skbaddr, skb);
-		tp_assign(len, skb->len);
-		tp_assign(rc, rc);
-		tp_strcpy(name, skb->dev->name);
+		tp_assign(skbaddr, skb)
+		tp_assign(len, skb->len)
+		tp_assign(rc, rc)
+		tp_strcpy(name, skb->dev->name)
 	),
 #endif
 
@@ -70,9 +70,9 @@ DECLARE_EVENT_CLASS(net_dev_template,
 	),
 
 	TP_fast_assign(
-		tp_assign(skbaddr, skb);
-		tp_assign(len, skb->len);
-		tp_strcpy(name, skb->dev->name);
+		tp_assign(skbaddr, skb)
+		tp_assign(len, skb->len)
+		tp_strcpy(name, skb->dev->name)
 	),
 
 	TP_printk("dev=%s skbaddr=%p len=%u",

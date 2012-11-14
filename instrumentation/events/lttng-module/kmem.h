@@ -23,11 +23,11 @@ DECLARE_EVENT_CLASS(kmem_alloc,
 	),
 
 	TP_fast_assign(
-		tp_assign(call_site, call_site);
-		tp_assign(ptr, ptr);
-		tp_assign(bytes_req, bytes_req);
-		tp_assign(bytes_alloc, bytes_alloc);
-		tp_assign(gfp_flags, gfp_flags);
+		tp_assign(call_site, call_site)
+		tp_assign(ptr, ptr)
+		tp_assign(bytes_req, bytes_req)
+		tp_assign(bytes_alloc, bytes_alloc)
+		tp_assign(gfp_flags, gfp_flags)
 	),
 
 	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s",
@@ -75,12 +75,12 @@ DECLARE_EVENT_CLASS(kmem_alloc_node,
 	),
 
 	TP_fast_assign(
-		tp_assign(call_site, call_site);
-		tp_assign(ptr, ptr);
-		tp_assign(bytes_req, bytes_req);
-		tp_assign(bytes_alloc, bytes_alloc);
-		tp_assign(gfp_flags, gfp_flags);
-		tp_assign(node, node);
+		tp_assign(call_site, call_site)
+		tp_assign(ptr, ptr)
+		tp_assign(bytes_req, bytes_req)
+		tp_assign(bytes_alloc, bytes_alloc)
+		tp_assign(gfp_flags, gfp_flags)
+		tp_assign(node, node)
 	),
 
 	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s node=%d",
@@ -122,8 +122,8 @@ DECLARE_EVENT_CLASS(kmem_free,
 	),
 
 	TP_fast_assign(
-		tp_assign(call_site, call_site);
-		tp_assign(ptr, ptr);
+		tp_assign(call_site, call_site)
+		tp_assign(ptr, ptr)
 	),
 
 	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
@@ -155,8 +155,8 @@ TRACE_EVENT(mm_page_free_direct,
 	),
 
 	TP_fast_assign(
-		tp_assign(page, page);
-		tp_assign(order, order);
+		tp_assign(page, page)
+		tp_assign(order, order)
 	),
 
 	TP_printk("page=%p pfn=%lu order=%d",
@@ -177,8 +177,8 @@ TRACE_EVENT(mm_pagevec_free,
 	),
 
 	TP_fast_assign(
-		tp_assign(page, page);
-		tp_assign(cold, cold);
+		tp_assign(page, page)
+		tp_assign(cold, cold)
 	),
 
 	TP_printk("page=%p pfn=%lu order=0 cold=%d",
@@ -202,10 +202,10 @@ TRACE_EVENT(mm_page_alloc,
 	),
 
 	TP_fast_assign(
-		tp_assign(page, page);
-		tp_assign(order, order);
-		tp_assign(gfp_flags, gfp_flags);
-		tp_assign(migratetype, migratetype);
+		tp_assign(page, page)
+		tp_assign(order, order)
+		tp_assign(gfp_flags, gfp_flags)
+		tp_assign(migratetype, migratetype)
 	),
 
 	TP_printk("page=%p pfn=%lu order=%d migratetype=%d gfp_flags=%s",
@@ -229,9 +229,9 @@ DECLARE_EVENT_CLASS(mm_page,
 	),
 
 	TP_fast_assign(
-		tp_assign(page, page);
-		tp_assign(order, order);
-		tp_assign(migratetype, migratetype);
+		tp_assign(page, page)
+		tp_assign(order, order)
+		tp_assign(migratetype, migratetype)
 	),
 
 	TP_printk("page=%p pfn=%lu order=%u migratetype=%d percpu_refill=%d",
@@ -279,11 +279,11 @@ TRACE_EVENT(mm_page_alloc_extfrag,
 	),
 
 	TP_fast_assign(
-		tp_assign(page, page);
-		tp_assign(alloc_order, alloc_order);
-		tp_assign(fallback_order, fallback_order);
-		tp_assign(alloc_migratetype, alloc_migratetype);
-		tp_assign(fallback_migratetype, fallback_migratetype);
+		tp_assign(page, page)
+		tp_assign(alloc_order, alloc_order)
+		tp_assign(fallback_order, fallback_order)
+		tp_assign(alloc_migratetype, alloc_migratetype)
+		tp_assign(fallback_migratetype, fallback_migratetype)
 	),
 
 	TP_printk("page=%p pfn=%lu alloc_order=%d fallback_order=%d pageblock_order=%d alloc_migratetype=%d fallback_migratetype=%d fragmenting=%d change_ownership=%d",

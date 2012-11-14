@@ -19,8 +19,8 @@ DECLARE_EVENT_CLASS(cpu,
 	),
 
 	TP_fast_assign(
-		tp_assign(state, state);
-		tp_assign(cpu_id, cpu_id);
+		tp_assign(state, state)
+		tp_assign(cpu_id, cpu_id)
 	),
 
 	TP_printk("state=%lu cpu_id=%lu", (unsigned long)__entry->state,
@@ -59,7 +59,7 @@ TRACE_EVENT(machine_suspend,
 	),
 
 	TP_fast_assign(
-		tp_assign(state, state);
+		tp_assign(state, state)
 	),
 
 	TP_printk("state=%lu", (unsigned long)__entry->state)
@@ -85,9 +85,9 @@ DECLARE_EVENT_CLASS(power,
 	),
 
 	TP_fast_assign(
-		tp_assign(type, type);
-		tp_assign(state, state);
-		tp_assign(cpu_id, cpu_id);
+		tp_assign(type, type)
+		tp_assign(state, state)
+		tp_assign(cpu_id, cpu_id)
 	),
 
 	TP_printk("type=%lu state=%lu cpu_id=%lu", (unsigned long)__entry->type,
@@ -119,7 +119,7 @@ TRACE_EVENT(power_end,
 	),
 
 	TP_fast_assign(
-		tp_assign(cpu_id, cpu_id);
+		tp_assign(cpu_id, cpu_id)
 	),
 
 	TP_printk("cpu_id=%lu", (unsigned long)__entry->cpu_id)
@@ -173,9 +173,9 @@ DECLARE_EVENT_CLASS(clock,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, name);
-		tp_assign(state, state);
-		tp_assign(cpu_id, cpu_id);
+		tp_strcpy(name, name)
+		tp_assign(state, state)
+		tp_assign(cpu_id, cpu_id)
 	),
 
 	TP_printk("%s state=%lu cpu_id=%lu", __get_str(name),
@@ -219,9 +219,9 @@ DECLARE_EVENT_CLASS(power_domain,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, name);
-		tp_assign(state, state);
-		tp_assign(cpu_id, cpu_id);
+		tp_strcpy(name, name)
+		tp_assign(state, state)
+		tp_assign(cpu_id, cpu_id)
 ),
 
 	TP_printk("%s state=%lu cpu_id=%lu", __get_str(name),

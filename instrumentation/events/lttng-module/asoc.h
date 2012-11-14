@@ -37,10 +37,10 @@ DECLARE_EVENT_CLASS(snd_soc_reg,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, codec->name);
-		tp_assign(id, codec->id);
-		tp_assign(reg, reg);
-		tp_assign(val, val);
+		tp_strcpy(name, codec->name)
+		tp_assign(id, codec->id)
+		tp_assign(reg, reg)
+		tp_assign(val, val)
 	),
 
 	TP_printk("codec=%s.%d reg=%x val=%x", __get_str(name),
@@ -82,10 +82,10 @@ DECLARE_EVENT_CLASS(snd_soc_preg,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, platform->name);
-		tp_assign(id, platform->id);
-		tp_assign(reg, reg);
-		tp_assign(val, val);
+		tp_strcpy(name, platform->name)
+		tp_assign(id, platform->id)
+		tp_assign(reg, reg)
+		tp_assign(val, val)
 	),
 
 	TP_printk("platform=%s.%d reg=%x val=%x", __get_str(name),
@@ -124,8 +124,8 @@ DECLARE_EVENT_CLASS(snd_soc_card,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, card->name);
-		tp_assign(val, val);
+		tp_strcpy(name, card->name)
+		tp_assign(val, val)
 	),
 
 	TP_printk("card=%s val=%d", __get_str(name), (int)__entry->val)
@@ -158,7 +158,7 @@ DECLARE_EVENT_CLASS(snd_soc_dapm_basic,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, card->name);
+		tp_strcpy(name, card->name)
 	),
 
 	TP_printk("card=%s", __get_str(name))
@@ -192,8 +192,8 @@ DECLARE_EVENT_CLASS(snd_soc_dapm_widget,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, w->name);
-		tp_assign(val, val);
+		tp_strcpy(name, w->name)
+		tp_assign(val, val)
 	),
 
 	TP_printk("widget=%s val=%d", __get_str(name),
@@ -239,10 +239,10 @@ TRACE_EVENT(snd_soc_dapm_walk_done,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, card->name);
-		tp_assign(power_checks, card->dapm_stats.power_checks);
-		tp_assign(path_checks, card->dapm_stats.path_checks);
-		tp_assign(neighbour_checks, card->dapm_stats.neighbour_checks);
+		tp_strcpy(name, card->name)
+		tp_assign(power_checks, card->dapm_stats.power_checks)
+		tp_assign(path_checks, card->dapm_stats.path_checks)
+		tp_assign(neighbour_checks, card->dapm_stats.neighbour_checks)
 	),
 
 	TP_printk("%s: checks %d power, %d path, %d neighbour",
@@ -262,7 +262,7 @@ TRACE_EVENT(snd_soc_jack_irq,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, name);
+		tp_strcpy(name, name)
 	),
 
 	TP_printk("%s", __get_str(name))
@@ -281,9 +281,9 @@ TRACE_EVENT(snd_soc_jack_report,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, jack->jack->name);
-		tp_assign(mask, mask);
-		tp_assign(val, val);
+		tp_strcpy(name, jack->jack->name)
+		tp_assign(mask, mask)
+		tp_assign(val, val)
 	),
 
 	TP_printk("jack=%s %x/%x", __get_str(name), (int)__entry->val,
@@ -302,8 +302,8 @@ TRACE_EVENT(snd_soc_jack_notify,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, jack->jack->name);
-		tp_assign(val, val);
+		tp_strcpy(name, jack->jack->name)
+		tp_assign(val, val)
 	),
 
 	TP_printk("jack=%s %x", __get_str(name), (int)__entry->val)
@@ -324,10 +324,10 @@ TRACE_EVENT(snd_soc_cache_sync,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, codec->name);
-		tp_strcpy(status, status);
-		tp_strcpy(type, type);
-		tp_assign(id, codec->id);
+		tp_strcpy(name, codec->name)
+		tp_strcpy(status, status)
+		tp_strcpy(type, type)
+		tp_assign(id, codec->id)
 	),
 
 	TP_printk("codec=%s.%d type=%s status=%s", __get_str(name),

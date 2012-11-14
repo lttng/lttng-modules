@@ -19,8 +19,8 @@ TRACE_EVENT(jbd_checkpoint,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev);
-		tp_assign(result, result);
+		tp_assign(dev, journal->j_fs_dev->bd_dev)
+		tp_assign(result, result)
 	),
 
 	TP_printk("dev %d,%d result %d",
@@ -43,11 +43,11 @@ DECLARE_EVENT_CLASS(jbd_commit,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev);
+		tp_assign(dev, journal->j_fs_dev->bd_dev)
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-		tp_assign(sync_commit, commit_transaction->t_synchronous_commit);
+		tp_assign(sync_commit, commit_transaction->t_synchronous_commit)
 #endif
-		tp_assign(transaction, commit_transaction->t_tid);
+		tp_assign(transaction, commit_transaction->t_tid)
 	),
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
@@ -104,11 +104,11 @@ TRACE_EVENT(jbd_drop_transaction,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev);
+		tp_assign(dev, journal->j_fs_dev->bd_dev)
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-		tp_assign(sync_commit, commit_transaction->t_synchronous_commit);
+		tp_assign(sync_commit, commit_transaction->t_synchronous_commit)
 #endif
-		tp_assign(transaction, commit_transaction->t_tid);
+		tp_assign(transaction, commit_transaction->t_tid)
 	),
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
@@ -137,12 +137,12 @@ TRACE_EVENT(jbd_end_commit,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev);
+		tp_assign(dev, journal->j_fs_dev->bd_dev)
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-		tp_assign(sync_commit, commit_transaction->t_synchronous_commit);
+		tp_assign(sync_commit, commit_transaction->t_synchronous_commit)
 #endif
-		tp_assign(transaction, commit_transaction->t_tid);
-		tp_assign(head, journal->j_tail_sequence);
+		tp_assign(transaction, commit_transaction->t_tid)
+		tp_assign(head, journal->j_tail_sequence)
 	),
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
@@ -170,11 +170,11 @@ TRACE_EVENT(jbd_do_submit_data,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev);
+		tp_assign(dev, journal->j_fs_dev->bd_dev)
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-		tp_assign(sync_commit, commit_transaction->t_synchronous_commit);
+		tp_assign(sync_commit, commit_transaction->t_synchronous_commit)
 #endif
-		tp_assign(transaction, commit_transaction->t_tid);
+		tp_assign(transaction, commit_transaction->t_tid)
 	),
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
@@ -204,11 +204,11 @@ TRACE_EVENT(jbd_cleanup_journal_tail,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev);
-		tp_assign(tail_sequence, journal->j_tail_sequence);
-		tp_assign(first_tid, first_tid);
-		tp_assign(block_nr, block_nr);
-		tp_assign(freed, freed);
+		tp_assign(dev, journal->j_fs_dev->bd_dev)
+		tp_assign(tail_sequence, journal->j_tail_sequence)
+		tp_assign(first_tid, first_tid)
+		tp_assign(block_nr, block_nr)
+		tp_assign(freed, freed)
 	),
 
 	TP_printk("dev %d,%d from %u to %u offset %lu freed %lu",
@@ -228,8 +228,8 @@ TRACE_EVENT(jbd_update_superblock_end,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev);
-		tp_assign(wait, wait);
+		tp_assign(dev, journal->j_fs_dev->bd_dev)
+		tp_assign(wait, wait)
 	),
 
 	TP_printk("dev %d,%d wait %d",

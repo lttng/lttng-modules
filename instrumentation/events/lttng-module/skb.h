@@ -24,9 +24,9 @@ TRACE_EVENT(kfree_skb,
 	),
 
 	TP_fast_assign(
-		tp_assign(skbaddr, skb);
-		tp_assign(location, location);
-		tp_assign(protocol, ntohs(skb->protocol));
+		tp_assign(skbaddr, skb)
+		tp_assign(location, location)
+		tp_assign(protocol, ntohs(skb->protocol))
 	),
 
 	TP_printk("skbaddr=%p protocol=%u location=%p",
@@ -44,7 +44,7 @@ TRACE_EVENT(consume_skb,
 	),
 
 	TP_fast_assign(
-		tp_assign(skbaddr, skb);
+		tp_assign(skbaddr, skb)
 	),
 
 	TP_printk("skbaddr=%p", __entry->skbaddr)
@@ -62,8 +62,8 @@ TRACE_EVENT(skb_copy_datagram_iovec,
 	),
 
 	TP_fast_assign(
-		tp_assign(skbaddr, skb);
-		tp_assign(len, len);
+		tp_assign(skbaddr, skb)
+		tp_assign(len, len)
 	),
 
 	TP_printk("skbaddr=%p len=%d", __entry->skbaddr, __entry->len)

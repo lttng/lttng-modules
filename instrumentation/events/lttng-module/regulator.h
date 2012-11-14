@@ -22,7 +22,7 @@ DECLARE_EVENT_CLASS(regulator_basic,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, name);
+		tp_strcpy(name, name)
 	),
 
 	TP_printk("name=%s", __get_str(name))
@@ -86,9 +86,9 @@ DECLARE_EVENT_CLASS(regulator_range,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, name);
-		tp_assign(min, min);
-		tp_assign(max, max);
+		tp_strcpy(name, name)
+		tp_assign(min, min)
+		tp_assign(max, max)
 	),
 
 	TP_printk("name=%s (%d-%d)", __get_str(name),
@@ -119,8 +119,8 @@ DECLARE_EVENT_CLASS(regulator_value,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, name);
-		tp_assign(val, val);
+		tp_strcpy(name, name)
+		tp_assign(val, val)
 	),
 
 	TP_printk("name=%s, val=%u", __get_str(name),

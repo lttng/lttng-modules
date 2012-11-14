@@ -40,8 +40,8 @@ TRACE_EVENT(module_load,
 	),
 
 	TP_fast_assign(
-		tp_assign(taints, mod->taints);
-		tp_strcpy(name, mod->name);
+		tp_assign(taints, mod->taints)
+		tp_strcpy(name, mod->name)
 	),
 
 	TP_printk("%s %s", __get_str(name), show_module_flags(__entry->taints))
@@ -58,7 +58,7 @@ TRACE_EVENT(module_free,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, mod->name);
+		tp_strcpy(name, mod->name)
 	),
 
 	TP_printk("%s", __get_str(name))
@@ -80,9 +80,9 @@ DECLARE_EVENT_CLASS(module_refcnt,
 	),
 
 	TP_fast_assign(
-		tp_assign(ip, ip);
-		tp_assign(refcnt, __this_cpu_read(mod->refptr->incs) + __this_cpu_read(mod->refptr->decs));
-		tp_strcpy(name, mod->name);
+		tp_assign(ip, ip)
+		tp_assign(refcnt, __this_cpu_read(mod->refptr->incs) + __this_cpu_read(mod->refptr->decs))
+		tp_strcpy(name, mod->name)
 	),
 
 	TP_printk("%s call_site=%pf refcnt=%d",
@@ -117,9 +117,9 @@ TRACE_EVENT(module_request,
 	),
 
 	TP_fast_assign(
-		tp_assign(ip, ip);
-		tp_assign(wait, wait);
-		tp_strcpy(name, name);
+		tp_assign(ip, ip)
+		tp_assign(wait, wait)
+		tp_strcpy(name, name)
 	),
 
 	TP_printk("%s wait=%d call_site=%pf",

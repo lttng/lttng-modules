@@ -22,8 +22,8 @@ TRACE_EVENT(napi_poll,
 	),
 
 	TP_fast_assign(
-		tp_assign(napi, napi);
-		tp_strcpy(dev_name, napi->dev ? napi->dev->name : NO_DEV);
+		tp_assign(napi, napi)
+		tp_strcpy(dev_name, napi->dev ? napi->dev->name : NO_DEV)
 	),
 
 	TP_printk("napi poll on napi struct %p for device %s",

@@ -222,16 +222,16 @@ TRACE_EVENT(scsi_dispatch_cmd_start,
 	),
 
 	TP_fast_assign(
-		tp_assign(host_no, cmd->device->host->host_no);
-		tp_assign(channel, cmd->device->channel);
-		tp_assign(id, cmd->device->id);
-		tp_assign(lun, cmd->device->lun);
-		tp_assign(opcode, cmd->cmnd[0]);
-		tp_assign(cmd_len, cmd->cmd_len);
-		tp_assign(data_sglen, scsi_sg_count(cmd));
-		tp_assign(prot_sglen, scsi_prot_sg_count(cmd));
-		tp_assign(prot_op, scsi_get_prot_op(cmd));
-		tp_memcpy_dyn(cmnd, cmd->cmnd);
+		tp_assign(host_no, cmd->device->host->host_no)
+		tp_assign(channel, cmd->device->channel)
+		tp_assign(id, cmd->device->id)
+		tp_assign(lun, cmd->device->lun)
+		tp_assign(opcode, cmd->cmnd[0])
+		tp_assign(cmd_len, cmd->cmd_len)
+		tp_assign(data_sglen, scsi_sg_count(cmd))
+		tp_assign(prot_sglen, scsi_prot_sg_count(cmd))
+		tp_assign(prot_op, scsi_get_prot_op(cmd))
+		tp_memcpy_dyn(cmnd, cmd->cmnd)
 	),
 
 	TP_printk("host_no=%u channel=%u id=%u lun=%u data_sgl=%u prot_sgl=%u" \
@@ -265,17 +265,17 @@ TRACE_EVENT(scsi_dispatch_cmd_error,
 	),
 
 	TP_fast_assign(
-		tp_assign(host_no, cmd->device->host->host_no);
-		tp_assign(channel, cmd->device->channel);
-		tp_assign(id, cmd->device->id);
-		tp_assign(lun, cmd->device->lun);
-		tp_assign(rtn, rtn);
-		tp_assign(opcode, cmd->cmnd[0]);
-		tp_assign(cmd_len, cmd->cmd_len);
-		tp_assign(data_sglen, scsi_sg_count(cmd));
-		tp_assign(prot_sglen, scsi_prot_sg_count(cmd));
-		tp_assign(prot_op, scsi_get_prot_op(cmd));
-		tp_memcpy_dyn(cmnd, cmd->cmnd);
+		tp_assign(host_no, cmd->device->host->host_no)
+		tp_assign(channel, cmd->device->channel)
+		tp_assign(id, cmd->device->id)
+		tp_assign(lun, cmd->device->lun)
+		tp_assign(rtn, rtn)
+		tp_assign(opcode, cmd->cmnd[0])
+		tp_assign(cmd_len, cmd->cmd_len)
+		tp_assign(data_sglen, scsi_sg_count(cmd))
+		tp_assign(prot_sglen, scsi_prot_sg_count(cmd))
+		tp_assign(prot_op, scsi_get_prot_op(cmd))
+		tp_memcpy_dyn(cmnd, cmd->cmnd)
 	),
 
 	TP_printk("host_no=%u channel=%u id=%u lun=%u data_sgl=%u prot_sgl=%u" \
@@ -310,17 +310,17 @@ DECLARE_EVENT_CLASS(scsi_cmd_done_timeout_template,
 	),
 
 	TP_fast_assign(
-		tp_assign(host_no, cmd->device->host->host_no);
-		tp_assign(channel, cmd->device->channel);
-		tp_assign(id, cmd->device->id);
-		tp_assign(lun, cmd->device->lun);
-		tp_assign(result, cmd->result);
-		tp_assign(opcode, cmd->cmnd[0]);
-		tp_assign(cmd_len, cmd->cmd_len);
-		tp_assign(data_sglen, scsi_sg_count(cmd));
-		tp_assign(prot_sglen, scsi_prot_sg_count(cmd));
-		tp_assign(prot_op, scsi_get_prot_op(cmd));
-		tp_memcpy_dyn(cmnd, cmd->cmnd);
+		tp_assign(host_no, cmd->device->host->host_no)
+		tp_assign(channel, cmd->device->channel)
+		tp_assign(id, cmd->device->id)
+		tp_assign(lun, cmd->device->lun)
+		tp_assign(result, cmd->result)
+		tp_assign(opcode, cmd->cmnd[0])
+		tp_assign(cmd_len, cmd->cmd_len)
+		tp_assign(data_sglen, scsi_sg_count(cmd))
+		tp_assign(prot_sglen, scsi_prot_sg_count(cmd))
+		tp_assign(prot_op, scsi_get_prot_op(cmd))
+		tp_memcpy_dyn(cmnd, cmd->cmnd)
 	),
 
 	TP_printk("host_no=%u channel=%u id=%u lun=%u data_sgl=%u " \
@@ -357,7 +357,7 @@ TRACE_EVENT(scsi_eh_wakeup,
 	),
 
 	TP_fast_assign(
-		tp_assign(host_no, shost->host_no);
+		tp_assign(host_no, shost->host_no)
 	),
 
 	TP_printk("host_no=%u", __entry->host_no)

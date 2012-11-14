@@ -20,9 +20,9 @@ TRACE_EVENT(sock_rcvqueue_full,
 	),
 
 	TP_fast_assign(
-		tp_assign(rmem_alloc, atomic_read(&sk->sk_rmem_alloc));
-		tp_assign(truesize, skb->truesize);
-		tp_assign(sk_rcvbuf, sk->sk_rcvbuf);
+		tp_assign(rmem_alloc, atomic_read(&sk->sk_rmem_alloc))
+		tp_assign(truesize, skb->truesize)
+		tp_assign(sk_rcvbuf, sk->sk_rcvbuf)
 	),
 
 	TP_printk("rmem_alloc=%d truesize=%u sk_rcvbuf=%d",
@@ -44,10 +44,10 @@ TRACE_EVENT(sock_exceed_buf_limit,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, prot->name);
-		tp_assign(sysctl_mem, prot->sysctl_mem);
-		tp_assign(allocated, allocated);
-		tp_assign(sysctl_rmem, prot->sysctl_rmem[0]);
+		tp_strcpy(name, prot->name)
+		tp_assign(sysctl_mem, prot->sysctl_mem)
+		tp_assign(allocated, allocated)
+		tp_assign(sysctl_rmem, prot->sysctl_rmem[0])
 		tp_assign(rmem_alloc, atomic_read(&sk->sk_rmem_alloc));
 	),
 

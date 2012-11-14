@@ -24,9 +24,9 @@ TRACE_EVENT(lock_acquire,
 	),
 
 	TP_fast_assign(
-		tp_assign(flags, (trylock ? 1 : 0) | (read ? 2 : 0));
-		tp_strcpy(name, lock->name);
-		tp_assign(lockdep_addr, lock);
+		tp_assign(flags, (trylock ? 1 : 0) | (read ? 2 : 0))
+		tp_strcpy(name, lock->name)
+		tp_assign(lockdep_addr, lock)
 	),
 
 	TP_printk("%p %s%s%s", __entry->lockdep_addr,
@@ -47,8 +47,8 @@ DECLARE_EVENT_CLASS(lock,
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, lock->name);
-		tp_assign(lockdep_addr, lock);
+		tp_strcpy(name, lock->name)
+		tp_assign(lockdep_addr, lock)
 	),
 
 	TP_printk("%p %s",  __entry->lockdep_addr, __get_str(name))

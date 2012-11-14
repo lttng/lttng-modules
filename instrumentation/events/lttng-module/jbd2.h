@@ -148,16 +148,16 @@ TRACE_EVENT(jbd2_run_stats,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, dev);
-		tp_assign(tid, tid);
-		tp_assign(wait, stats->rs_wait);
-		tp_assign(running, stats->rs_running);
-		tp_assign(locked, stats->rs_locked);
-		tp_assign(flushing, stats->rs_flushing);
-		tp_assign(logging, stats->rs_logging);
-		tp_assign(handle_count, stats->rs_handle_count);
-		tp_assign(blocks, stats->rs_blocks);
-		tp_assign(blocks_logged, stats->rs_blocks_logged);
+		tp_assign(dev, dev)
+		tp_assign(tid, tid)
+		tp_assign(wait, stats->rs_wait)
+		tp_assign(running, stats->rs_running)
+		tp_assign(locked, stats->rs_locked)
+		tp_assign(flushing, stats->rs_flushing)
+		tp_assign(logging, stats->rs_logging)
+		tp_assign(handle_count, stats->rs_handle_count)
+		tp_assign(blocks, stats->rs_blocks)
+		tp_assign(blocks_logged, stats->rs_blocks_logged)
 	),
 
 	TP_printk("dev %d,%d tid %lu wait %u running %u locked %u flushing %u "
@@ -188,12 +188,12 @@ TRACE_EVENT(jbd2_checkpoint_stats,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, dev);
-		tp_assign(tid, tid);
-		tp_assign(chp_time, stats->cs_chp_time);
-		tp_assign(forced_to_close, stats->cs_forced_to_close);
-		tp_assign(written, stats->cs_written);
-		tp_assign(dropped, stats->cs_dropped);
+		tp_assign(dev, dev)
+		tp_assign(tid, tid)
+		tp_assign(chp_time, stats->cs_chp_time)
+		tp_assign(forced_to_close, stats->cs_forced_to_close)
+		tp_assign(written, stats->cs_written)
+		tp_assign(dropped, stats->cs_dropped)
 	),
 
 	TP_printk("dev %d,%d tid %lu chp_time %u forced_to_close %u "
@@ -219,11 +219,11 @@ TRACE_EVENT(jbd2_cleanup_journal_tail,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev);
-		tp_assign(tail_sequence, journal->j_tail_sequence);
-		tp_assign(first_tid, first_tid);
-		tp_assign(block_nr, block_nr);
-		tp_assign(freed, freed);
+		tp_assign(dev, journal->j_fs_dev->bd_dev)
+		tp_assign(tail_sequence, journal->j_tail_sequence)
+		tp_assign(first_tid, first_tid)
+		tp_assign(block_nr, block_nr)
+		tp_assign(freed, freed)
 	),
 
 	TP_printk("dev %d,%d from %u to %u offset %lu freed %lu",

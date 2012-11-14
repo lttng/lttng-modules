@@ -15,7 +15,7 @@ TRACE_EVENT(mm_vmscan_kswapd_sleep,
 	),
 
 	TP_fast_assign(
-		tp_assign(nid, nid);
+		tp_assign(nid, nid)
 	),
 
 	TP_printk("nid=%d", __entry->nid)
@@ -33,8 +33,8 @@ TRACE_EVENT(mm_vmscan_kswapd_wake,
 	),
 
 	TP_fast_assign(
-		tp_assign(nid, nid);
-		tp_assign(order, order);
+		tp_assign(nid, nid)
+		tp_assign(order, order)
 	),
 
 	TP_printk("nid=%d order=%d", __entry->nid, __entry->order)
@@ -53,9 +53,9 @@ TRACE_EVENT(mm_vmscan_wakeup_kswapd,
 	),
 
 	TP_fast_assign(
-		tp_assign(nid, nid);
-		tp_assign(zid, zid);
-		tp_assign(order, order);
+		tp_assign(nid, nid)
+		tp_assign(zid, zid)
+		tp_assign(order, order)
 	),
 
 	TP_printk("nid=%d zid=%d order=%d",
@@ -77,9 +77,9 @@ DECLARE_EVENT_CLASS(mm_vmscan_direct_reclaim_begin_template,
 	),
 
 	TP_fast_assign(
-		tp_assign(order, order);
-		tp_assign(may_writepage, may_writepage);
-		tp_assign(gfp_flags, gfp_flags);
+		tp_assign(order, order)
+		tp_assign(may_writepage, may_writepage)
+		tp_assign(gfp_flags, gfp_flags)
 	),
 
 	TP_printk("order=%d may_writepage=%d gfp_flags=%s",
@@ -120,7 +120,7 @@ DECLARE_EVENT_CLASS(mm_vmscan_direct_reclaim_end_template,
 	),
 
 	TP_fast_assign(
-		tp_assign(nr_reclaimed, nr_reclaimed);
+		tp_assign(nr_reclaimed, nr_reclaimed)
 	),
 
 	TP_printk("nr_reclaimed=%lu", __entry->nr_reclaimed)
@@ -169,15 +169,15 @@ TRACE_EVENT(mm_shrink_slab_start,
 	),
 
 	TP_fast_assign(
-		tp_assign(shr,shr);
-		tp_assign(shrink, shr->shrink);
-		tp_assign(nr_objects_to_shrink, nr_objects_to_shrink);
-		tp_assign(gfp_flags, sc->gfp_mask);
-		tp_assign(pgs_scanned, pgs_scanned);
-		tp_assign(lru_pgs, lru_pgs);
-		tp_assign(cache_items, cache_items);
-		tp_assign(delta, delta);
-		tp_assign(total_scan, total_scan);
+		tp_assign(shr,shr)
+		tp_assign(shrink, shr->shrink)
+		tp_assign(nr_objects_to_shrink, nr_objects_to_shrink)
+		tp_assign(gfp_flags, sc->gfp_mask)
+		tp_assign(pgs_scanned, pgs_scanned)
+		tp_assign(lru_pgs, lru_pgs)
+		tp_assign(cache_items, cache_items)
+		tp_assign(delta, delta)
+		tp_assign(total_scan, total_scan)
 	),
 
 	TP_printk("%pF %p: objects to shrink %ld gfp_flags %s pgs_scanned %ld lru_pgs %ld cache items %ld delta %lld total_scan %ld",
@@ -208,12 +208,12 @@ TRACE_EVENT(mm_shrink_slab_end,
 	),
 
 	TP_fast_assign(
-		tp_assign(shr, shr);
-		tp_assign(shrink, shr->shrink);
-		tp_assign(unused_scan, unused_scan_cnt);
-		tp_assign(new_scan, new_scan_cnt);
-		tp_assign(retval, shrinker_retval);
-		tp_assign(total_scan, new_scan_cnt - unused_scan_cnt);
+		tp_assign(shr, shr)
+		tp_assign(shrink, shr->shrink)
+		tp_assign(unused_scan, unused_scan_cnt)
+		tp_assign(new_scan, new_scan_cnt)
+		tp_assign(retval, shrinker_retval)
+		tp_assign(total_scan, new_scan_cnt - unused_scan_cnt)
 	),
 
 	TP_printk("%pF %p: unused scan count %ld new scan count %ld total_scan %ld last shrinker return val %d",
@@ -262,16 +262,16 @@ DECLARE_EVENT_CLASS(mm_vmscan_lru_isolate_template,
 	),
 
 	TP_fast_assign(
-		tp_assign(order, order);
-		tp_assign(nr_requested, nr_requested);
-		tp_assign(nr_scanned, nr_scanned);
-		tp_assign(nr_taken, nr_taken);
-		tp_assign(nr_lumpy_taken, nr_lumpy_taken);
-		tp_assign(nr_lumpy_dirty, nr_lumpy_dirty);
-		tp_assign(nr_lumpy_failed, nr_lumpy_failed);
-		tp_assign(isolate_mode, isolate_mode);
+		tp_assign(order, order)
+		tp_assign(nr_requested, nr_requested)
+		tp_assign(nr_scanned, nr_scanned)
+		tp_assign(nr_taken, nr_taken)
+		tp_assign(nr_lumpy_taken, nr_lumpy_taken)
+		tp_assign(nr_lumpy_dirty, nr_lumpy_dirty)
+		tp_assign(nr_lumpy_failed, nr_lumpy_failed)
+		tp_assign(isolate_mode, isolate_mode)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
-		tp_assign(file, file);
+		tp_assign(file, file)
 #endif
 	),
 
@@ -364,8 +364,8 @@ TRACE_EVENT(mm_vmscan_writepage,
 	),
 
 	TP_fast_assign(
-		tp_assign(page, page);
-		tp_assign(reclaim_flags, reclaim_flags);
+		tp_assign(page, page)
+		tp_assign(reclaim_flags, reclaim_flags)
 	),
 
 	TP_printk("page=%p pfn=%lu flags=%s",
@@ -392,12 +392,12 @@ TRACE_EVENT(mm_vmscan_lru_shrink_inactive,
 	),
 
 	TP_fast_assign(
-		tp_assign(nid, nid);
-		tp_assign(zid, zid);
-		tp_assign(nr_scanned, nr_scanned);
-		tp_assign(nr_reclaimed, nr_reclaimed);
-		tp_assign(priority, priority);
-		tp_assign(reclaim_flags, reclaim_flags);
+		tp_assign(nid, nid)
+		tp_assign(zid, zid)
+		tp_assign(nr_scanned, nr_scanned)
+		tp_assign(nr_reclaimed, nr_reclaimed)
+		tp_assign(priority, priority)
+		tp_assign(reclaim_flags, reclaim_flags)
 	),
 
 	TP_printk("nid=%d zid=%d nr_scanned=%ld nr_reclaimed=%ld priority=%d flags=%s",
@@ -423,10 +423,10 @@ TRACE_EVENT(replace_swap_token,
 	),
 
 	TP_fast_assign(
-		tp_assign(old_mm, old_mm);
-		tp_assign(old_prio, old_mm ? old_mm->token_priority : 0);
-		tp_assign(new_mm, new_mm);
-		tp_assign(new_prio, new_mm->token_priority);
+		tp_assign(old_mm, old_mm)
+		tp_assign(old_prio, old_mm ? old_mm->token_priority : 0)
+		tp_assign(new_mm, new_mm)
+		tp_assign(new_prio, new_mm->token_priority)
 	),
 
 	TP_printk("old_token_mm=%p old_prio=%u new_token_mm=%p new_prio=%u",
@@ -444,7 +444,7 @@ DECLARE_EVENT_CLASS(put_swap_token_template,
 	),
 
 	TP_fast_assign(
-		tp_assign(swap_token_mm, swap_token_mm);
+		tp_assign(swap_token_mm, swap_token_mm)
 	),
 
 	TP_printk("token_mm=%p", __entry->swap_token_mm)
@@ -479,11 +479,11 @@ TRACE_EVENT_CONDITION(update_swap_token_priority,
 	),
 
 	TP_fast_assign(
-		tp_assign(mm, mm);
-		tp_assign(old_prio, old_prio);
-		tp_assign(new_prio, mm->token_priority);
-		tp_assign(swap_token_mm, swap_token_mm);
-		tp_assign(swap_token_prio, swap_token_mm ? swap_token_mm->token_priority : 0);
+		tp_assign(mm, mm)
+		tp_assign(old_prio, old_prio)
+		tp_assign(new_prio, mm->token_priority)
+		tp_assign(swap_token_mm, swap_token_mm)
+		tp_assign(swap_token_prio, swap_token_mm ? swap_token_mm->token_priority : 0)
 	),
 
 	TP_printk("mm=%p old_prio=%u new_prio=%u swap_token_mm=%p token_prio=%u",

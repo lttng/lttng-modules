@@ -27,12 +27,12 @@ TRACE_EVENT(ext3_free_inode,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, inode->i_sb->s_dev);
-		tp_assign(ino, inode->i_ino);
-		tp_assign(mode, inode->i_mode);
-		tp_assign(uid, inode->i_uid);
-		tp_assign(gid, inode->i_gid);
-		tp_assign(blocks, inode->i_blocks);
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(mode, inode->i_mode)
+		tp_assign(uid, inode->i_uid)
+		tp_assign(gid, inode->i_gid)
+		tp_assign(blocks, inode->i_blocks)
 	),
 
 	TP_printk("dev %d,%d ino %lu mode 0%o uid %u gid %u blocks %lu",
@@ -54,9 +54,9 @@ TRACE_EVENT(ext3_request_inode,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, dir->i_sb->s_dev);
-		tp_assign(dir, dir->i_ino);
-		tp_assign(mode, mode);
+		tp_assign(dev, dir->i_sb->s_dev)
+		tp_assign(dir, dir->i_ino)
+		tp_assign(mode, mode)
 	),
 
 	TP_printk("dev %d,%d dir %lu mode 0%o",
@@ -77,10 +77,10 @@ TRACE_EVENT(ext3_allocate_inode,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, inode->i_sb->s_dev);
-		tp_assign(ino, inode->i_ino);
-		tp_assign(dir, dir->i_ino);
-		tp_assign(mode, mode);
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(dir, dir->i_ino)
+		tp_assign(mode, mode)
 	),
 
 	TP_printk("dev %d,%d ino %lu dir %lu mode 0%o",
@@ -101,9 +101,9 @@ TRACE_EVENT(ext3_evict_inode,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, inode->i_sb->s_dev);
-		tp_assign(ino, inode->i_ino);
-		tp_assign(nlink, inode->i_nlink);
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(nlink, inode->i_nlink)
 	),
 
 	TP_printk("dev %d,%d ino %lu nlink %d",
@@ -123,9 +123,9 @@ TRACE_EVENT(ext3_drop_inode,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, inode->i_sb->s_dev);
-		tp_assign(ino, inode->i_ino);
-		tp_assign(drop, drop);
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(drop, drop)
 	),
 
 	TP_printk("dev %d,%d ino %lu drop %d",
@@ -145,9 +145,9 @@ TRACE_EVENT(ext3_mark_inode_dirty,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, inode->i_sb->s_dev);
-		tp_assign(ino, inode->i_ino);
-		tp_assign(ip, IP);
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(ip, IP)
 	),
 
 	TP_printk("dev %d,%d ino %lu caller %pF",
@@ -170,11 +170,11 @@ TRACE_EVENT(ext3_write_begin,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, inode->i_sb->s_dev);
-		tp_assign(ino, inode->i_ino);
-		tp_assign(pos, pos);
-		tp_assign(len, len);
-		tp_assign(flags, flags);
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(pos, pos)
+		tp_assign(len, len)
+		tp_assign(flags, flags)
 	),
 
 	TP_printk("dev %d,%d ino %lu pos %llu len %u flags %u",
@@ -199,11 +199,11 @@ DECLARE_EVENT_CLASS(ext3__write_end,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, inode->i_sb->s_dev);
-		tp_assign(ino, inode->i_ino);
-		tp_assign(pos, pos);
-		tp_assign(len, len);
-		tp_assign(copied, copied);
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(pos, pos)
+		tp_assign(len, len)
+		tp_assign(copied, copied)
 	),
 
 	TP_printk("dev %d,%d ino %lu pos %llu len %u copied %u",
@@ -250,9 +250,9 @@ DECLARE_EVENT_CLASS(ext3__page_op,
 	),
 
 	TP_fast_assign(
-		tp_assign(index, page->index);
-		tp_assign(ino, page->mapping->host->i_ino);
-		tp_assign(dev, page->mapping->host->i_sb->s_dev);
+		tp_assign(index, page->index)
+		tp_assign(ino, page->mapping->host->i_ino)
+		tp_assign(dev, page->mapping->host->i_sb->s_dev)
 	),
 
 	TP_printk("dev %d,%d ino %lu page_index %lu",
@@ -309,10 +309,10 @@ TRACE_EVENT(ext3_invalidatepage,
 	),
 
 	TP_fast_assign(
-		tp_assign(index, page->index);
-		tp_assign(offset, offset);
-		tp_assign(ino, page->mapping->host->i_ino);
-		tp_assign(dev, page->mapping->host->i_sb->s_dev);
+		tp_assign(index, page->index)
+		tp_assign(offset, offset)
+		tp_assign(ino, page->mapping->host->i_ino)
+		tp_assign(dev, page->mapping->host->i_sb->s_dev)
 	),
 
 	TP_printk("dev %d,%d ino %lu page_index %lu offset %lu",
@@ -335,9 +335,9 @@ TRACE_EVENT(ext3_discard_blocks,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, sb->s_dev);
-		tp_assign(blk, blk);
-		tp_assign(count, count);
+		tp_assign(dev, sb->s_dev)
+		tp_assign(blk, blk)
+		tp_assign(count, count)
 	),
 
 	TP_printk("dev %d,%d blk %lu count %lu",
@@ -359,10 +359,10 @@ TRACE_EVENT(ext3_request_blocks,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, inode->i_sb->s_dev);
-		tp_assign(ino, inode->i_ino);
-		tp_assign(count, count);
-		tp_assign(goal, goal);
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(count, count)
+		tp_assign(goal, goal)
 	),
 
 	TP_printk("dev %d,%d ino %lu count %lu goal %lu ",
@@ -386,11 +386,11 @@ TRACE_EVENT(ext3_allocate_blocks,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, inode->i_sb->s_dev);
-		tp_assign(ino, inode->i_ino);
-		tp_assign(block, block);
-		tp_assign(count, count);
-		tp_assign(goal, goal);
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(block, block)
+		tp_assign(count, count)
+		tp_assign(goal, goal)
 	),
 
 	TP_printk("dev %d,%d ino %lu count %lu block %lu goal %lu",
@@ -415,11 +415,11 @@ TRACE_EVENT(ext3_free_blocks,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, inode->i_sb->s_dev);
-		tp_assign(ino, inode->i_ino);
-		tp_assign(mode, inode->i_mode);
-		tp_assign(block, block);
-		tp_assign(count, count);
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(mode, inode->i_mode)
+		tp_assign(block, block)
+		tp_assign(count, count)
 	),
 
 	TP_printk("dev %d,%d ino %lu mode 0%o block %lu count %lu",
@@ -443,10 +443,10 @@ TRACE_EVENT(ext3_sync_file_enter,
 	TP_fast_assign(
 		dentry = file->f_path.dentry;
 
-		tp_assign(dev, dentry->d_inode->i_sb->s_dev);
-		tp_assign(ino, dentry->d_inode->i_ino);
-		tp_assign(datasync, datasync);
-		tp_assign(parent, dentry->d_parent->d_inode->i_ino);
+		tp_assign(dev, dentry->d_inode->i_sb->s_dev)
+		tp_assign(ino, dentry->d_inode->i_ino)
+		tp_assign(datasync, datasync)
+		tp_assign(parent, dentry->d_parent->d_inode->i_ino)
 	),
 
 	TP_printk("dev %d,%d ino %lu parent %ld datasync %d ",
@@ -467,9 +467,9 @@ TRACE_EVENT(ext3_sync_file_exit,
 	),
 
 	TP_fast_assign(
-		tp_assign(ret, ret);
-		tp_assign(ino, inode->i_ino);
-		tp_assign(dev, inode->i_sb->s_dev);
+		tp_assign(ret, ret)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(dev, inode->i_sb->s_dev)
 	),
 
 	TP_printk("dev %d,%d ino %lu ret %d",
@@ -490,8 +490,8 @@ TRACE_EVENT(ext3_sync_fs,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, sb->s_dev);
-		tp_assign(wait, wait);
+		tp_assign(dev, sb->s_dev)
+		tp_assign(wait, wait)
 	),
 
 	TP_printk("dev %d,%d wait %d",
@@ -512,9 +512,9 @@ TRACE_EVENT(ext3_rsv_window_add,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, sb->s_dev);
-		tp_assign(start, rsv_node->rsv_window._rsv_start);
-		tp_assign(end, rsv_node->rsv_window._rsv_end);
+		tp_assign(dev, sb->s_dev)
+		tp_assign(start, rsv_node->rsv_window._rsv_start)
+		tp_assign(end, rsv_node->rsv_window._rsv_end)
 	),
 
 	TP_printk("dev %d,%d start %lu end %lu",
@@ -536,10 +536,10 @@ TRACE_EVENT(ext3_discard_reservation,
 	),
 
 	TP_fast_assign(
-		tp_assign(start, rsv_node->rsv_window._rsv_start);
-		tp_assign(end, rsv_node->rsv_window._rsv_end);
-		tp_assign(ino, inode->i_ino);
-		tp_assign(dev, inode->i_sb->s_dev);
+		tp_assign(start, rsv_node->rsv_window._rsv_start)
+		tp_assign(end, rsv_node->rsv_window._rsv_end)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(dev, inode->i_sb->s_dev)
 	),
 
 	TP_printk("dev %d,%d ino %lu start %lu end %lu",
@@ -559,8 +559,8 @@ TRACE_EVENT(ext3_alloc_new_reservation,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, sb->s_dev);
-		tp_assign(goal, goal);
+		tp_assign(dev, sb->s_dev)
+		tp_assign(goal, goal)
 	),
 
 	TP_printk("dev %d,%d goal %lu",
@@ -582,10 +582,10 @@ TRACE_EVENT(ext3_reserved,
 	),
 
 	TP_fast_assign(
-		tp_assign(block, block);
-		tp_assign(start, rsv_node->rsv_window._rsv_start);
-		tp_assign(end, rsv_node->rsv_window._rsv_end);
-		tp_assign(dev, sb->s_dev);
+		tp_assign(block, block)
+		tp_assign(start, rsv_node->rsv_window._rsv_start)
+		tp_assign(end, rsv_node->rsv_window._rsv_end)
+		tp_assign(dev, sb->s_dev)
 	),
 
 	TP_printk("dev %d,%d block %lu, start %lu end %lu",
@@ -607,11 +607,11 @@ TRACE_EVENT(ext3_forget,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, inode->i_sb->s_dev);
-		tp_assign(ino, inode->i_ino);
-		tp_assign(mode, inode->i_mode);
-		tp_assign(is_metadata, is_metadata);
-		tp_assign(block, block);
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(mode, inode->i_mode)
+		tp_assign(is_metadata, is_metadata)
+		tp_assign(block, block)
 	),
 
 	TP_printk("dev %d,%d ino %lu mode 0%o is_metadata %d block %lu",
@@ -632,8 +632,8 @@ TRACE_EVENT(ext3_read_block_bitmap,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, sb->s_dev);
-		tp_assign(group, group);
+		tp_assign(dev, sb->s_dev)
+		tp_assign(group, group)
 	),
 
 	TP_printk("dev %d,%d group %u",
@@ -655,11 +655,11 @@ TRACE_EVENT(ext3_direct_IO_enter,
 	),
 
 	TP_fast_assign(
-		tp_assign(ino, inode->i_ino);
-		tp_assign(dev, inode->i_sb->s_dev);
-		tp_assign(pos, offset);
-		tp_assign(len, len);
-		tp_assign(rw, rw);
+		tp_assign(ino, inode->i_ino)
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(pos, offset)
+		tp_assign(len, len)
+		tp_assign(rw, rw)
 	),
 
 	TP_printk("dev %d,%d ino %lu pos %llu len %lu rw %d",
@@ -685,12 +685,12 @@ TRACE_EVENT(ext3_direct_IO_exit,
 	),
 
 	TP_fast_assign(
-		tp_assign(ino, inode->i_ino);
-		tp_assign(dev, inode->i_sb->s_dev);
-		tp_assign(pos, offset);
-		tp_assign(len, len);
-		tp_assign(rw, rw);
-		tp_assign(ret, ret);
+		tp_assign(ino, inode->i_ino)
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(pos, offset)
+		tp_assign(len, len)
+		tp_assign(rw, rw)
+		tp_assign(ret, ret)
 	),
 
 	TP_printk("dev %d,%d ino %lu pos %llu len %lu rw %d ret %d",
@@ -713,10 +713,10 @@ TRACE_EVENT(ext3_unlink_enter,
 	),
 
 	TP_fast_assign(
-		tp_assign(parent, parent->i_ino);
-		tp_assign(ino, dentry->d_inode->i_ino);
-		tp_assign(size, dentry->d_inode->i_size);
-		tp_assign(dev, dentry->d_inode->i_sb->s_dev);
+		tp_assign(parent, parent->i_ino)
+		tp_assign(ino, dentry->d_inode->i_ino)
+		tp_assign(size, dentry->d_inode->i_size)
+		tp_assign(dev, dentry->d_inode->i_sb->s_dev)
 	),
 
 	TP_printk("dev %d,%d ino %lu size %lld parent %ld",
@@ -738,9 +738,9 @@ TRACE_EVENT(ext3_unlink_exit,
 	),
 
 	TP_fast_assign(
-		tp_assign(ino, dentry->d_inode->i_ino);
-		tp_assign(dev, dentry->d_inode->i_sb->s_dev);
-		tp_assign(ret, ret);
+		tp_assign(ino, dentry->d_inode->i_ino)
+		tp_assign(dev, dentry->d_inode->i_sb->s_dev)
+		tp_assign(ret, ret)
 	),
 
 	TP_printk("dev %d,%d ino %lu ret %d",
@@ -761,9 +761,9 @@ DECLARE_EVENT_CLASS(ext3__truncate,
 	),
 
 	TP_fast_assign(
-		tp_assign(ino, inode->i_ino);
-		tp_assign(dev, inode->i_sb->s_dev);
-		tp_assign(blocks, inode->i_blocks);
+		tp_assign(ino, inode->i_ino)
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(blocks, inode->i_blocks)
 	),
 
 	TP_printk("dev %d,%d ino %lu blocks %lu",
@@ -800,11 +800,11 @@ TRACE_EVENT(ext3_get_blocks_enter,
 	),
 
 	TP_fast_assign(
-		tp_assign(ino, inode->i_ino);
-		tp_assign(dev, inode->i_sb->s_dev);
-		tp_assign(lblk, lblk);
-		tp_assign(len, len);
-		tp_assign(create, create);
+		tp_assign(ino, inode->i_ino)
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(lblk, lblk)
+		tp_assign(len, len)
+		tp_assign(create, create)
 	),
 
 	TP_printk("dev %d,%d ino %lu lblk %lu len %lu create %u",
@@ -829,12 +829,12 @@ TRACE_EVENT(ext3_get_blocks_exit,
 	),
 
 	TP_fast_assign(
-		tp_assign(ino, inode->i_ino);
-		tp_assign(dev, inode->i_sb->s_dev);
-		tp_assign(lblk, lblk);
-		tp_assign(pblk, pblk);
-		tp_assign(len, len);
-		tp_assign(ret, ret);
+		tp_assign(ino, inode->i_ino)
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(lblk, lblk)
+		tp_assign(pblk, pblk)
+		tp_assign(len, len)
+		tp_assign(ret, ret)
 	),
 
 	TP_printk("dev %d,%d ino %lu lblk %lu pblk %lu len %lu ret %d",
@@ -855,8 +855,8 @@ TRACE_EVENT(ext3_load_inode,
 	),
 
 	TP_fast_assign(
-		tp_assign(ino, inode->i_ino);
-		tp_assign(dev, inode->i_sb->s_dev);
+		tp_assign(ino, inode->i_ino)
+		tp_assign(dev, inode->i_sb->s_dev)
 	),
 
 	TP_printk("dev %d,%d ino %lu",

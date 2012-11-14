@@ -19,9 +19,9 @@ TRACE_EVENT(gpio_direction,
 	),
 
 	TP_fast_assign(
-		tp_assign(gpio, gpio);
-		tp_assign(in, in);
-		tp_assign(err, err);
+		tp_assign(gpio, gpio)
+		tp_assign(in, in)
+		tp_assign(err, err)
 	),
 
 	TP_printk("%u %3s (%d)", __entry->gpio,
@@ -41,9 +41,9 @@ TRACE_EVENT(gpio_value,
 	),
 
 	TP_fast_assign(
-		tp_assign(gpio, gpio);
-		tp_assign(get, get);
-		tp_assign(value, value);
+		tp_assign(gpio, gpio)
+		tp_assign(get, get)
+		tp_assign(value, value)
 	),
 
 	TP_printk("%u %3s %d", __entry->gpio,
