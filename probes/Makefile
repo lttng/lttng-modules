@@ -12,6 +12,9 @@ obj-m += lttng-probe-lttng.o
 obj-m += lttng-probe-sched.o
 obj-m += lttng-probe-irq.o
 obj-m += lttng-probe-timer.o
+obj-m += lttng-probe-kmem.o
+obj-m += lttng-probe-module.o
+obj-m += lttng-probe-power.o
 
 obj-m += lttng-probe-statedump.o
 
@@ -31,6 +34,75 @@ obj-m +=  $(shell \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
 		echo "lttng-probe-block.o" ; fi;)
 endif
+endif
+
+ifneq ($(CONFIG_NET),)
+obj-m += lttng-probe-net.o
+obj-m += lttng-probe-napi.o
+obj-m += lttng-probe-skb.o
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 1 ] ; then \
+		echo "lttng-probe-sock.o" ; fi;)
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 1 ] ; then \
+		echo "lttng-probe-udp.o" ; fi;)
+endif
+
+ifneq ($(CONFIG_SND_SOC),)
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 \
+		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
+		echo "lttng-probe-asoc.o" ; fi;)
+endif
+
+ifneq ($(CONFIG_EXT3_FS),)
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 1 ] ; then \
+		echo "lttng-probe-ext3.o" ; fi;)
+endif
+
+ifneq ($(CONFIG_GPIOLIB),)
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 ] ; then \
+		echo "lttng-probe-gpio.o" ; fi;)
+endif
+
+ifneq ($(CONFIG_JBD2),)
+obj-m += lttng-probe-jbd2.o
+endif
+
+ifneq ($(CONFIG_JBD),)
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 1 ] ; then \
+		echo "lttng-probe-jbd.o" ; fi;)
+endif
+
+ifneq ($(CONFIG_REGULATOR),)
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 \
+		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
+		echo "lttng-probe-regulator.o" ; fi;)
+endif
+
+ifneq ($(CONFIG_SCSI),)
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 ] ; then \
+		echo "lttng-probe-scsi.o" ; fi;)
+endif
+
+vmscan = $(shell \
+	if [ $(VERSION) -ge 3 ] ; then \
+		echo "lttng-probe-vmscan.o" ; fi;)
+ifneq ($(CONFIG_SWAP),)
+	obj-m += $(vmscan)
+else
+ifneq ($(CONFIG_CGROUP_MEM_RES_CTLR),)
+	obj-m += $(vmscan)
+endif
+endif
+
+ifneq ($(CONFIG_LOCKDEP),)
+obj-m += lttng-probe-lock.o
 endif
 
 ifneq ($(CONFIG_KPROBES),)
