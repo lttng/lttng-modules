@@ -12,7 +12,7 @@
 
 TRACE_EVENT(net_dev_xmit,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,40))
 	TP_PROTO(struct sk_buff *skb,
 		 int rc,
 		 struct net_device *dev,
@@ -30,14 +30,14 @@ TRACE_EVENT(net_dev_xmit,
 		__field(	void *,		skbaddr		)
 		__field(	unsigned int,	len		)
 		__field(	int,		rc		)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,40))
 		__string(	name,		dev->name	)
 #else
 		__string(	name,		skb->dev->name	)
 #endif
 	),
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,40))
 	TP_fast_assign(
 		tp_assign(skbaddr, skb)
 		tp_assign(len, skb_len)
