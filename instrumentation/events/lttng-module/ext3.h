@@ -6,12 +6,6 @@
 
 #include <linux/tracepoint.h>
 
-#ifndef _TRACE_EXT3_DEF
-#define _TRACE_EXT3_DEF
-static struct dentry *dentry;
-#endif
-
-
 TRACE_EVENT(ext3_free_inode,
 	TP_PROTO(struct inode *inode),
 
@@ -441,12 +435,10 @@ TRACE_EVENT(ext3_sync_file_enter,
 	),
 
 	TP_fast_assign(
-		dentry = file->f_path.dentry;
-
-		tp_assign(dev, dentry->d_inode->i_sb->s_dev)
-		tp_assign(ino, dentry->d_inode->i_ino)
+		tp_assign(dev, file->f_path.dentry->d_inode->i_sb->s_dev)
+		tp_assign(ino, file->f_path.dentry->d_inode->i_ino)
 		tp_assign(datasync, datasync)
-		tp_assign(parent, dentry->d_parent->d_inode->i_ino)
+		tp_assign(parent, file->f_path.dentry->d_parent->d_inode->i_ino)
 	),
 
 	TP_printk("dev %d,%d ino %lu parent %ld datasync %d ",
