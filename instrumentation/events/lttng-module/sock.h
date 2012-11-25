@@ -48,7 +48,7 @@ TRACE_EVENT(sock_exceed_buf_limit,
 		tp_assign(sysctl_mem, prot->sysctl_mem)
 		tp_assign(allocated, allocated)
 		tp_assign(sysctl_rmem, prot->sysctl_rmem[0])
-		tp_assign(rmem_alloc, atomic_read(&sk->sk_rmem_alloc));
+		tp_assign(rmem_alloc, atomic_read(&sk->sk_rmem_alloc))
 	),
 
 	TP_printk("proto:%s sysctl_mem=%ld,%ld,%ld allocated=%ld "

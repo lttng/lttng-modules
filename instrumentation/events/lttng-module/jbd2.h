@@ -25,8 +25,8 @@ TRACE_EVENT(jbd2_checkpoint,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev);
-		tp_assign(result, result);
+		tp_assign(dev, journal->j_fs_dev->bd_dev)
+		tp_assign(result, result)
 	),
 
 	TP_printk("dev %d,%d result %d",
@@ -46,9 +46,9 @@ DECLARE_EVENT_CLASS(jbd2_commit,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev);
-		tp_assign(sync_commit, commit_transaction->t_synchronous_commit);
-		tp_assign(transaction, commit_transaction->t_tid);
+		tp_assign(dev, journal->j_fs_dev->bd_dev)
+		tp_assign(sync_commit, commit_transaction->t_synchronous_commit)
+		tp_assign(transaction, commit_transaction->t_tid)
 	),
 
 	TP_printk("dev %d,%d transaction %d sync %d",
@@ -97,10 +97,10 @@ TRACE_EVENT(jbd2_end_commit,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev);
-		tp_assign(sync_commit, commit_transaction->t_synchronous_commit);
-		tp_assign(transaction, commit_transaction->t_tid);
-		tp_assign(head, journal->j_tail_sequence);
+		tp_assign(dev, journal->j_fs_dev->bd_dev)
+		tp_assign(sync_commit, commit_transaction->t_synchronous_commit)
+		tp_assign(transaction, commit_transaction->t_tid)
+		tp_assign(head, journal->j_tail_sequence)
 	),
 
 	TP_printk("dev %d,%d transaction %d sync %d head %d",
@@ -119,8 +119,8 @@ TRACE_EVENT(jbd2_submit_inode_data,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, inode->i_sb->s_dev);
-		tp_assign(ino, inode->i_ino);
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
 	),
 
 	TP_printk("dev %d,%d ino %lu",
