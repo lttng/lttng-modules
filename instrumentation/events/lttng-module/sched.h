@@ -326,18 +326,18 @@ TRACE_EVENT(sched_process_exec,
 
 	TP_STRUCT__entry(
 		__string(	filename,	bprm->filename	)
-		__field(	pid_t,		pid		)
-		__field(	pid_t,		old_pid		)
+		__field(	pid_t,		tid		)
+		__field(	pid_t,		old_tid		)
 	),
 
 	TP_fast_assign(
 		tp_strcpy(filename, bprm->filename)
-		tp_assign(pid, p->pid)
-		tp_assign(old_pid, old_pid)
+		tp_assign(tid, p->pid)
+		tp_assign(old_tid, old_pid)
 	),
 
-	TP_printk("filename=%s pid=%d old_pid=%d", __get_str(filename),
-		  __entry->pid, __entry->old_pid)
+	TP_printk("filename=%s tid=%d old_tid=%d", __get_str(filename),
+		  __entry->tid, __entry->old_tid)
 )
 #endif
 
