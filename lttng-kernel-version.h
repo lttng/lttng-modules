@@ -27,10 +27,10 @@
 
 /*
  * This macro checks if the kernel version is between the two specified
- * versions (inclusive).
+ * versions (lower limit inclusive, upper limit exclusive).
  */
 #define LTTNG_KERNEL_RANGE(a_low, b_low, c_low, a_high, b_high, c_high) \
 	(LINUX_VERSION_CODE >= KERNEL_VERSION(a_low, b_low, c_low) && \
-	 LINUX_VERSION_CODE <= KERNEL_VERSION(a_high, b_high, c_high))
+	 LINUX_VERSION_CODE < KERNEL_VERSION(a_high, b_high, c_high))
 
 #endif /* _LTTNG_KERNEL_VERSION_H */
