@@ -39,8 +39,8 @@
 #define CREATE_TRACE_POINTS
 #define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module
 
-#if (LINUX_VERSION_CODE <= KERNEL_VERSION(3,0,38)) || \
-	LTTNG_KERNEL_RANGE(3,1,0, 3,1,10)
+#if ((LINUX_VERSION_CODE <= KERNEL_VERSION(3,0,38)) || \
+	LTTNG_KERNEL_RANGE(3,1,0, 3,2,0))
 typedef int isolate_mode_t;
 #endif
 
