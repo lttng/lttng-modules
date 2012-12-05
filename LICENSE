@@ -20,7 +20,8 @@ instrumentation/events/lttng-modules/*.h
 
 * MIT-style license
 
-These files are licensed under an MIT-style license:
+These files are licensed under an MIT-style license. See mit-license.txt
+for details.
 
 lib/prio_heap/lttng_prio_heap.h
 lib/prio_heap/lttng_prio_heap.c
