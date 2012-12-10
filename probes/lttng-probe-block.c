@@ -29,6 +29,8 @@
  */
 #include <trace/events/block.h>
 
+#include "../wrapper/tracepoint.h"
+
 /*
  * Create LTTng tracepoint probes.
  */

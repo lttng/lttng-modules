@@ -8,6 +8,8 @@
 #include <linux/tracepoint.h>
 #include <linux/version.h>
 
+#define DAPM_DIRECT "(direct)"
+
 #ifndef _TRACE_ASOC_DEF
 #define _TRACE_ASOC_DEF
 struct snd_soc_jack;
@@ -248,6 +250,86 @@ TRACE_EVENT(snd_soc_dapm_walk_done,
 	TP_printk("%s: checks %d power, %d path, %d neighbour",
 		  __get_str(name), (int)__entry->power_checks,
 		  (int)__entry->path_checks, (int)__entry->neighbour_checks)
+)
+#endif
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+TRACE_EVENT(snd_soc_dapm_output_path,
+
+	TP_PROTO(struct snd_soc_dapm_widget *widget,
+		struct snd_soc_dapm_path *path),
+
+	TP_ARGS(widget, path),
+
+	TP_STRUCT__entry(
+		__string(	wname,	widget->name		)
+		__string(	pname,	path->name ? path->name : DAPM_DIRECT)
+		__string(	psname,	path->sink->name	)
+		__field(	int,	path_sink		)
+		__field(	int,	path_connect		)
+	),
+
+	TP_fast_assign(
+		tp_strcpy(wname, widget->name)
+		tp_strcpy(pname, path->name ? path->name : DAPM_DIRECT)
+		tp_strcpy(psname, path->sink->name)
+		tp_assign(path_connect, path->connect)
+		tp_assign(path_sink, (long)path->sink)
+	),
+
+	TP_printk("%c%s -> %s -> %s\n",
+		(int) __entry->path_sink &&
+		(int) __entry->path_connect ? '*' : ' ',
+		__get_str(wname), __get_str(pname), __get_str(psname))
+)
+
+TRACE_EVENT(snd_soc_dapm_input_path,
+
+	TP_PROTO(struct snd_soc_dapm_widget *widget,
+		struct snd_soc_dapm_path *path),
+
+	TP_ARGS(widget, path),
+
+	TP_STRUCT__entry(
+		__string(	wname,	widget->name		)
+		__string(	pname,	path->name ? path->name : DAPM_DIRECT)
+		__string(	psname,	path->source->name	)
+		__field(	int,	path_source		)
+		__field(	int,	path_connect		)
+	),
+
+	TP_fast_assign(
+		tp_strcpy(wname, widget->name)
+		tp_strcpy(pname, path->name ? path->name : DAPM_DIRECT)
+		tp_strcpy(psname, path->source->name)
+		tp_assign(path_connect, path->connect)
+		tp_assign(path_source, (long)path->source)
+	),
+
+	TP_printk("%c%s <- %s <- %s\n",
+		(int) __entry->path_source &&
+		(int) __entry->path_connect ? '*' : ' ',
+		__get_str(wname), __get_str(pname), __get_str(psname))
+)
+
+TRACE_EVENT(snd_soc_dapm_connected,
+
+	TP_PROTO(int paths, int stream),
+
+	TP_ARGS(paths, stream),
+
+	TP_STRUCT__entry(
+		__field(	int,	paths		)
+		__field(	int,	stream		)
+	),
+
+	TP_fast_assign(
+		tp_assign(paths, paths)
+		tp_assign(stream, stream)
+	),
+
+	TP_printk("%s: found %d paths\n",
+		__entry->stream ? "capture" : "playback", __entry->paths)
 )
 #endif
 

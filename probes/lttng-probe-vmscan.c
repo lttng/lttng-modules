@@ -22,7 +22,6 @@
  */
 
 #include <linux/module.h>
-#include <linux/version.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
@@ -39,13 +38,8 @@
 #define CREATE_TRACE_POINTS
 #define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module
 
-#if ((LINUX_VERSION_CODE <= KERNEL_VERSION(3,0,38)) || \
-	LTTNG_KERNEL_RANGE(3,1,0, 3,2,0))
-typedef int isolate_mode_t;
-#endif
-
 #include "../instrumentation/events/lttng-module/vmscan.h"
 
 MODULE_LICENSE("GPL and additional rights");
-MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com> and Paul Woegerer <paul_woegerer@mentor.com>");
+MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com>, Paul Woegerer <paul_woegerer@mentor.com>, and Andrew Gabbasov <andrew_gabbasov@mentor.com>");
 MODULE_DESCRIPTION("LTTng vmscan probes");

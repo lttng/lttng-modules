@@ -135,6 +135,7 @@ TRACE_EVENT(signal_deliver,
 		  __entry->sa_handler, __entry->sa_flags)
 )
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,4,0))
 DECLARE_EVENT_CLASS(signal_queue_overflow,
 
 	TP_PROTO(int sig, int group, struct siginfo *info),
@@ -193,6 +194,7 @@ DEFINE_EVENT(signal_queue_overflow, signal_lose_info,
 
 	TP_ARGS(sig, group, info)
 )
+#endif
 
 #endif /* _TRACE_SIGNAL_H */
 

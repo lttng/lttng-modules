@@ -21,7 +21,6 @@
  */
 
 #include <linux/module.h>
-#include "../wrapper/tracepoint.h"
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
@@ -30,6 +29,8 @@
 
 #include <linux/sched.h>
 #include <trace/events/timer.h>
+
+#include "../wrapper/tracepoint.h"
 
 /*
  * Create LTTng tracepoint probes.

@@ -22,7 +22,6 @@
  */
 
 #include <linux/module.h>
-#include <linux/version.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
@@ -40,5 +39,5 @@
 #include "../instrumentation/events/lttng-module/jbd.h"
 
 MODULE_LICENSE("GPL and additional rights");
-MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com> and Paul Woegerer <paul_woegerer@mentor.com>");
+MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com>, Paul Woegerer <paul_woegerer@mentor.com>, and Andrew Gabbasov <andrew_gabbasov@mentor.com>");
 MODULE_DESCRIPTION("LTTng jbd probes");

@@ -27,20 +27,16 @@
 #include <linux/version.h>
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-/*
- * Since 3.4 the is no linux/ext3_fs_i.h anymore. Instead we have to use
- * ext3.h from fs/ext3/ext3.h (which also includes trace/events/ext3.h)
- */
-#include "../instrumentation/events/mainline/fs_ext3.h"
+#include <../fs/ext3/ext3.h>
 #else
 #include <linux/ext3_fs_i.h>
+#endif
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
  * trace event macros match the kernel we run on.
  */
 #include <trace/events/ext3.h>
-#endif
 
 /*
  * Create LTTng tracepoint probes.
@@ -52,5 +48,5 @@
 #include "../instrumentation/events/lttng-module/ext3.h"
 
 MODULE_LICENSE("GPL and additional rights");
-MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com> and Paul Woegerer <paul_woegerer@mentor.com>");
+MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com>, Paul Woegerer <paul_woegerer@mentor.com>, and Andrew Gabbasov <andrew_gabbasov@mentor.com>");
 MODULE_DESCRIPTION("LTTng ext3 probes");

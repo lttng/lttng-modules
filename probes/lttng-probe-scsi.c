@@ -40,5 +40,5 @@
 #include "../instrumentation/events/lttng-module/scsi.h"
 
 MODULE_LICENSE("GPL and additional rights");
-MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com>");
+MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com> and Andrew Gabbasov <andrew_gabbasov@mentor.com>");
 MODULE_DESCRIPTION("LTTng scsi probes");

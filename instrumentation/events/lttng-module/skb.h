@@ -7,6 +7,7 @@
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
 #include <linux/tracepoint.h>
+#include <linux/version.h>
 
 /*
  * Tracepoint for free an sk_buff:
@@ -33,6 +34,7 @@ TRACE_EVENT(kfree_skb,
 		__entry->skbaddr, __entry->protocol, __entry->location)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 TRACE_EVENT(consume_skb,
 
 	TP_PROTO(struct sk_buff *skb),
@@ -49,7 +51,9 @@ TRACE_EVENT(consume_skb,
 
 	TP_printk("skbaddr=%p", __entry->skbaddr)
 )
+#endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
 TRACE_EVENT(skb_copy_datagram_iovec,
 
 	TP_PROTO(const struct sk_buff *skb, int len),
@@ -68,6 +72,7 @@ TRACE_EVENT(skb_copy_datagram_iovec,
 
 	TP_printk("skbaddr=%p len=%d", __entry->skbaddr, __entry->len)
 )
+#endif
 
 #endif /* _TRACE_SKB_H */
 

@@ -4,6 +4,47 @@
 #if !defined(_TRACE_VMSCAN_H) || defined(TRACE_HEADER_MULTI_READ)
 #define _TRACE_VMSCAN_H
 
+#include <linux/types.h>
+#include <linux/tracepoint.h>
+#include <linux/mm.h>
+#include <linux/memcontrol.h>
+#include <trace/events/gfpflags.h>
+#include <linux/version.h>
+
+#ifndef _TRACE_VMSCAN_DEF
+#define _TRACE_VMSCAN_DEF
+#define RECLAIM_WB_ANON		0x0001u
+#define RECLAIM_WB_FILE		0x0002u
+#define RECLAIM_WB_MIXED	0x0010u
+#define RECLAIM_WB_SYNC		0x0004u /* Unused, all reclaim async */
+#define RECLAIM_WB_ASYNC	0x0008u
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
+#define show_reclaim_flags(flags)				\
+	(flags) ? __print_flags(flags, "|",			\
+		{RECLAIM_WB_ANON,	"RECLAIM_WB_ANON"},	\
+		{RECLAIM_WB_FILE,	"RECLAIM_WB_FILE"},	\
+		{RECLAIM_WB_MIXED,	"RECLAIM_WB_MIXED"},	\
+		{RECLAIM_WB_SYNC,	"RECLAIM_WB_SYNC"},	\
+		{RECLAIM_WB_ASYNC,	"RECLAIM_WB_ASYNC"}	\
+		) : "RECLAIM_WB_NONE"
+#else
+#define show_reclaim_flags(flags)				\
+	(flags) ? __print_flags(flags, "|",			\
+		{RECLAIM_WB_ANON,	"RECLAIM_WB_ANON"},	\
+		{RECLAIM_WB_FILE,	"RECLAIM_WB_FILE"},	\
+		{RECLAIM_WB_SYNC,	"RECLAIM_WB_SYNC"},	\
+		{RECLAIM_WB_ASYNC,	"RECLAIM_WB_ASYNC"}	\
+		) : "RECLAIM_WB_NONE"
+#endif
+
+#if ((LINUX_VERSION_CODE <= KERNEL_VERSION(3,0,38)) || \
+	LTTNG_KERNEL_RANGE(3,1,0, 3,2,0))
+typedef int isolate_mode_t;
+#endif
+
+#endif
+
 TRACE_EVENT(mm_vmscan_kswapd_sleep,
 
 	TP_PROTO(int nid),
@@ -147,6 +188,7 @@ DEFINE_EVENT(mm_vmscan_direct_reclaim_end_template, mm_vmscan_memcg_softlimit_re
 	TP_ARGS(nr_reclaimed)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
 TRACE_EVENT(mm_shrink_slab_start,
 	TP_PROTO(struct shrinker *shr, struct shrink_control *sc,
 		long nr_objects_to_shrink, unsigned long pgs_scanned,
@@ -224,6 +266,7 @@ TRACE_EVENT(mm_shrink_slab_end,
 		__entry->total_scan,
 		__entry->retval)
 )
+#endif
 
 DECLARE_EVENT_CLASS(mm_vmscan_lru_isolate_template,
 
@@ -231,30 +274,41 @@ DECLARE_EVENT_CLASS(mm_vmscan_lru_isolate_template,
 		unsigned long nr_requested,
 		unsigned long nr_scanned,
 		unsigned long nr_taken,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
 		unsigned long nr_lumpy_taken,
 		unsigned long nr_lumpy_dirty,
 		unsigned long nr_lumpy_failed,
+#endif
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
-		isolate_mode_t isolate_mode),
+		isolate_mode_t isolate_mode
 #else
 		isolate_mode_t isolate_mode,
-		int file),
+		int file
 #endif
+	),
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
-	TP_ARGS(order, nr_requested, nr_scanned, nr_taken, nr_lumpy_taken, nr_lumpy_dirty, nr_lumpy_failed, isolate_mode),
-#else
-	TP_ARGS(order, nr_requested, nr_scanned, nr_taken, nr_lumpy_taken, nr_lumpy_dirty, nr_lumpy_failed, isolate_mode, file),
+	TP_ARGS(order, nr_requested, nr_scanned, nr_taken,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
+		nr_lumpy_taken, nr_lumpy_dirty, nr_lumpy_failed,
 #endif
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
+		isolate_mode
+#else
+		isolate_mode, file
+#endif
+	),
+
 
 	TP_STRUCT__entry(
 		__field(int, order)
 		__field(unsigned long, nr_requested)
 		__field(unsigned long, nr_scanned)
 		__field(unsigned long, nr_taken)
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
 		__field(unsigned long, nr_lumpy_taken)
 		__field(unsigned long, nr_lumpy_dirty)
 		__field(unsigned long, nr_lumpy_failed)
+#endif
 		__field(isolate_mode_t, isolate_mode)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
 		__field(int, file)
@@ -266,9 +320,11 @@ DECLARE_EVENT_CLASS(mm_vmscan_lru_isolate_template,
 		tp_assign(nr_requested, nr_requested)
 		tp_assign(nr_scanned, nr_scanned)
 		tp_assign(nr_taken, nr_taken)
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
 		tp_assign(nr_lumpy_taken, nr_lumpy_taken)
 		tp_assign(nr_lumpy_dirty, nr_lumpy_dirty)
 		tp_assign(nr_lumpy_failed, nr_lumpy_failed)
+#endif
 		tp_assign(isolate_mode, isolate_mode)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
 		tp_assign(file, file)
@@ -277,9 +333,6 @@ DECLARE_EVENT_CLASS(mm_vmscan_lru_isolate_template,
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
 	TP_printk("isolate_mode=%d order=%d nr_requested=%lu nr_scanned=%lu nr_taken=%lu contig_taken=%lu contig_dirty=%lu contig_failed=%lu",
-#else
-	TP_printk("isolate_mode=%d order=%d nr_requested=%lu nr_scanned=%lu nr_taken=%lu contig_taken=%lu contig_dirty=%lu contig_failed=%lu file=%d",
-#endif
 		__entry->isolate_mode,
 		__entry->order,
 		__entry->nr_requested,
@@ -287,10 +340,25 @@ DECLARE_EVENT_CLASS(mm_vmscan_lru_isolate_template,
 		__entry->nr_taken,
 		__entry->nr_lumpy_taken,
 		__entry->nr_lumpy_dirty,
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
 		__entry->nr_lumpy_failed)
-#else
+#elif (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
+	TP_printk("isolate_mode=%d order=%d nr_requested=%lu nr_scanned=%lu nr_taken=%lu contig_taken=%lu contig_dirty=%lu contig_failed=%lu file=%d",
+		__entry->isolate_mode,
+		__entry->order,
+		__entry->nr_requested,
+		__entry->nr_scanned,
+		__entry->nr_taken,
+		__entry->nr_lumpy_taken,
+		__entry->nr_lumpy_dirty,
 		__entry->nr_lumpy_failed,
+		__entry->file)
+#else
+	TP_printk("isolate_mode=%d order=%d nr_requested=%lu nr_scanned=%lu nr_taken=%lu file=%d",
+		__entry->isolate_mode,
+		__entry->order,
+		__entry->nr_requested,
+		__entry->nr_scanned,
+		__entry->nr_taken,
 		__entry->file)
 #endif
 )
@@ -307,19 +375,23 @@ DEFINE_EVENT(mm_vmscan_lru_isolate_template, mm_vmscan_lru_isolate,
 		unsigned long nr_lumpy_failed,
 #endif
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
-		isolate_mode_t isolate_mode),
+		isolate_mode_t isolate_mode
 #else
 		isolate_mode_t isolate_mode,
-		int file),
+		int file
 #endif
+	),
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
-	TP_ARGS(order, nr_requested, nr_scanned, nr_taken, nr_lumpy_taken, nr_lumpy_dirty, nr_lumpy_failed, isolate_mode)
-#elif (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-	TP_ARGS(order, nr_requested, nr_scanned, nr_taken, nr_lumpy_taken, nr_lumpy_dirty, nr_lumpy_failed, isolate_mode, file)
-#else
-	TP_ARGS(order, nr_requested, nr_scanned, nr_taken, isolate_mode, file)
+	TP_ARGS(order, nr_requested, nr_scanned, nr_taken,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
+		nr_lumpy_taken, nr_lumpy_dirty, nr_lumpy_failed,
 #endif
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
+		isolate_mode
+#else
+		isolate_mode, file
+#endif
+	)
 
 )
 
@@ -335,20 +407,23 @@ DEFINE_EVENT(mm_vmscan_lru_isolate_template, mm_vmscan_memcg_isolate,
 		unsigned long nr_lumpy_failed,
 #endif
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
-		isolate_mode_t isolate_mode),
+		isolate_mode_t isolate_mode
 #else
 		isolate_mode_t isolate_mode,
-		int file),
+		int file
 #endif
+	),
 
+	TP_ARGS(order, nr_requested, nr_scanned, nr_taken,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
+		nr_lumpy_taken, nr_lumpy_dirty, nr_lumpy_failed,
+#endif
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
-	TP_ARGS(order, nr_requested, nr_scanned, nr_taken, nr_lumpy_taken, nr_lumpy_dirty, nr_lumpy_failed, isolate_mode)
-#elif (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-	TP_ARGS(order, nr_requested, nr_scanned, nr_taken, nr_lumpy_taken, nr_lumpy_dirty, nr_lumpy_failed, isolate_mode, file)
+		isolate_mode
 #else
-	TP_ARGS(order, nr_requested, nr_scanned, nr_taken, isolate_mode, file)
+		isolate_mode, file
 #endif
-
+	)
 )
 
 TRACE_EVENT(mm_vmscan_writepage,
@@ -374,6 +449,7 @@ TRACE_EVENT(mm_vmscan_writepage,
 		show_reclaim_flags(__entry->reclaim_flags))
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 TRACE_EVENT(mm_vmscan_lru_shrink_inactive,
 
 	TP_PROTO(int nid, int zid,
@@ -406,9 +482,9 @@ TRACE_EVENT(mm_vmscan_lru_shrink_inactive,
 		__entry->priority,
 		show_reclaim_flags(__entry->reclaim_flags))
 )
+#endif
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-
 TRACE_EVENT(replace_swap_token,
 	TP_PROTO(struct mm_struct *old_mm,
 		 struct mm_struct *new_mm),
@@ -490,7 +566,6 @@ TRACE_EVENT_CONDITION(update_swap_token_priority,
 		  __entry->mm, __entry->old_prio, __entry->new_prio,
 		  __entry->swap_token_mm, __entry->swap_token_prio)
 )
-
 #endif
 
 #endif /* _TRACE_VMSCAN_H */

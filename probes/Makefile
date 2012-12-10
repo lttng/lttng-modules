@@ -24,22 +24,22 @@ endif
 
 obj-m +=  $(shell \
 	if [ $(VERSION) -ge 3 \
-		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 35 \) ] ; then \
+		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 33 \) ] ; then \
 		echo "lttng-probe-signal.o" ; fi;)
 
 ifneq ($(CONFIG_BLOCK),)
 ifneq ($(CONFIG_EVENT_TRACING),)	# need blk_cmd_buf_len
-obj-m +=  $(shell \
-	if [ $(VERSION) -ge 3 \
-		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
-		echo "lttng-probe-block.o" ; fi;)
+obj-m += lttng-probe-block.o
 endif
 endif
 
 ifneq ($(CONFIG_NET),)
-obj-m += lttng-probe-net.o
 obj-m += lttng-probe-napi.o
 obj-m += lttng-probe-skb.o
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 \
+		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 37 \) ] ; then \
+		echo "lttng-probe-net.o" ; fi;)
 obj-m +=  $(shell \
 	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 1 ] ; then \
 		echo "lttng-probe-sock.o" ; fi;)
@@ -56,9 +56,22 @@ obj-m +=  $(shell \
 endif
 
 ifneq ($(CONFIG_EXT3_FS),)
-obj-m +=  $(shell \
+ext3_dep = $(srctree)/fs/ext3/*.h
+ext3_dep_check = $(wildcard $(ext3_dep))
+ext3 = $(shell \
 	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 1 ] ; then \
-		echo "lttng-probe-ext3.o" ; fi;)
+		if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 4 -a \
+			-z "$(ext3_dep_check)" ] ; then \
+			echo "warn" ; \
+			exit ; \
+		fi; \
+		echo "lttng-probe-ext3.o" ; \
+	fi;)
+ifeq ($(ext3),warn)
+$(warning Files $(ext3_dep) not found. Probe "ext3" is disabled. Use full kernel source tree to enable it.)
+ext3 =
+endif
+obj-m += $(ext3)
 endif
 
 ifneq ($(CONFIG_GPIOLIB),)
@@ -86,12 +99,14 @@ endif
 
 ifneq ($(CONFIG_SCSI),)
 obj-m +=  $(shell \
-	if [ $(VERSION) -ge 3 ] ; then \
+	if [ $(VERSION) -ge 3 \
+		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 35 \) ] ; then \
 		echo "lttng-probe-scsi.o" ; fi;)
 endif
 
 vmscan = $(shell \
-	if [ $(VERSION) -ge 3 ] ; then \
+	if [ $(VERSION) -ge 3 \
+		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 36 \) ] ; then \
 		echo "lttng-probe-vmscan.o" ; fi;)
 ifneq ($(CONFIG_SWAP),)
 	obj-m += $(vmscan)
@@ -101,9 +116,11 @@ ifneq ($(CONFIG_CGROUP_MEM_RES_CTLR),)
 endif
 endif
 
-ifneq ($(CONFIG_LOCKDEP),)
-obj-m += lttng-probe-lock.o
-endif
+# lock probe does not work, so disabling it for now
+#ifneq ($(CONFIG_LOCKDEP),)
+#obj-m += lttng-probe-lock.o
+#endif
+
 
 ifneq ($(CONFIG_KPROBES),)
 obj-m += lttng-kprobes.o

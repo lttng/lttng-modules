@@ -22,12 +22,19 @@
  */
 
 #include <linux/module.h>
+#include <linux/version.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
  * trace event macros match the kernel we run on.
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
 #include <trace/events/lock.h>
+#else
+#include <trace/events/lockdep.h>
+#endif
+
+#include "../wrapper/tracepoint.h"
 
 /*
  * Create LTTng tracepoint probes.
@@ -39,5 +46,5 @@
 #include "../instrumentation/events/lttng-module/lock.h"
 
 MODULE_LICENSE("GPL and additional rights");
-MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com>");
+MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com> and Andrew Gabbasov <andrew_gabbasov@mentor.com>");
 MODULE_DESCRIPTION("LTTng lock probes");

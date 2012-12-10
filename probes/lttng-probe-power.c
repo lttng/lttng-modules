@@ -29,6 +29,8 @@
  */
 #include <trace/events/power.h>
 
+#include "../wrapper/tracepoint.h"
+
 /*
  * Create LTTng tracepoint probes.
  */
@@ -39,5 +41,5 @@
 #include "../instrumentation/events/lttng-module/power.h"
 
 MODULE_LICENSE("GPL and additional rights");
-MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com>");
+MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com> and Andrew Gabbasov <andrew_gabbasov@mentor.com>");
 MODULE_DESCRIPTION("LTTng power probes");

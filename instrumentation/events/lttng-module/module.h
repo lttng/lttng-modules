@@ -15,6 +15,7 @@
 #define _TRACE_MODULE_H
 
 #include <linux/tracepoint.h>
+#include <linux/version.h>
 
 #ifdef CONFIG_MODULES
 
@@ -69,9 +70,15 @@ TRACE_EVENT(module_free,
 
 DECLARE_EVENT_CLASS(module_refcnt,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 	TP_PROTO(struct module *mod, unsigned long ip),
 
 	TP_ARGS(mod, ip),
+#else
+	TP_PROTO(struct module *mod, unsigned long ip, int refcnt),
+
+	TP_ARGS(mod, ip, refcnt),
+#endif
 
 	TP_STRUCT__entry(
 		__field(	unsigned long,	ip		)
@@ -81,7 +88,11 @@ DECLARE_EVENT_CLASS(module_refcnt,
 
 	TP_fast_assign(
 		tp_assign(ip, ip)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 		tp_assign(refcnt, __this_cpu_read(mod->refptr->incs) + __this_cpu_read(mod->refptr->decs))
+#else
+		tp_assign(refcnt, refcnt)
+#endif
 		tp_strcpy(name, mod->name)
 	),
 
@@ -91,16 +102,28 @@ DECLARE_EVENT_CLASS(module_refcnt,
 
 DEFINE_EVENT(module_refcnt, module_get,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 	TP_PROTO(struct module *mod, unsigned long ip),
 
 	TP_ARGS(mod, ip)
+#else
+	TP_PROTO(struct module *mod, unsigned long ip, int refcnt),
+
+	TP_ARGS(mod, ip, refcnt)
+#endif
 )
 
 DEFINE_EVENT(module_refcnt, module_put,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 	TP_PROTO(struct module *mod, unsigned long ip),
 
 	TP_ARGS(mod, ip)
+#else
+	TP_PROTO(struct module *mod, unsigned long ip, int refcnt),
+
+	TP_ARGS(mod, ip, refcnt)
+#endif
 )
 #endif /* CONFIG_MODULE_UNLOAD */
 

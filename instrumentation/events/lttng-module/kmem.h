@@ -4,6 +4,13 @@
 #if !defined(_TRACE_KMEM_H) || defined(TRACE_HEADER_MULTI_READ)
 #define _TRACE_KMEM_H
 
+#include <linux/types.h>
+#include <linux/tracepoint.h>
+#include <linux/version.h>
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
+#include <trace/events/gfpflags.h>
+#endif
+
 DECLARE_EVENT_CLASS(kmem_alloc,
 
 	TP_PROTO(unsigned long call_site,
@@ -143,7 +150,12 @@ DEFINE_EVENT(kmem_free, kmem_cache_free,
 	TP_ARGS(call_site, ptr)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+TRACE_EVENT(mm_page_free,
+#else
 TRACE_EVENT(mm_page_free_direct,
+#endif
 
 	TP_PROTO(struct page *page, unsigned int order),
 
@@ -165,7 +177,11 @@ TRACE_EVENT(mm_page_free_direct,
 			__entry->order)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+TRACE_EVENT(mm_page_free_batched,
+#else
 TRACE_EVENT(mm_pagevec_free,
+#endif
 
 	TP_PROTO(struct page *page, int cold),
 
@@ -210,7 +226,7 @@ TRACE_EVENT(mm_page_alloc,
 
 	TP_printk("page=%p pfn=%lu order=%d migratetype=%d gfp_flags=%s",
 		__entry->page,
-		page_to_pfn(__entry->page),
+		__entry->page ? page_to_pfn(__entry->page) : 0,
 		__entry->order,
 		__entry->migratetype,
 		show_gfp_flags(__entry->gfp_flags))
@@ -236,7 +252,7 @@ DECLARE_EVENT_CLASS(mm_page,
 
 	TP_printk("page=%p pfn=%lu order=%u migratetype=%d percpu_refill=%d",
 		__entry->page,
-		page_to_pfn(__entry->page),
+		__entry->page ? page_to_pfn(__entry->page) : 0,
 		__entry->order,
 		__entry->migratetype,
 		__entry->order == 0)
@@ -251,7 +267,11 @@ DEFINE_EVENT(mm_page, mm_page_alloc_zone_locked,
 
 DEFINE_EVENT_PRINT(mm_page, mm_page_pcpu_drain,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
 	TP_PROTO(struct page *page, unsigned int order, int migratetype),
+#else
+	TP_PROTO(struct page *page, int order, int migratetype),
+#endif
 
 	TP_ARGS(page, order, migratetype),
 
@@ -297,6 +317,7 @@ TRACE_EVENT(mm_page_alloc_extfrag,
 		__entry->fallback_order < pageblock_order,
 		__entry->alloc_migratetype == __entry->fallback_migratetype)
 )
+#endif
 
 #endif /* _TRACE_KMEM_H */
 

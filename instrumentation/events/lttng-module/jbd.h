@@ -6,6 +6,7 @@
 
 #include <linux/jbd.h>
 #include <linux/tracepoint.h>
+#include <linux/version.h>
 
 TRACE_EVENT(jbd_checkpoint,
 
@@ -217,6 +218,26 @@ TRACE_EVENT(jbd_cleanup_journal_tail,
 		  __entry->block_nr, __entry->freed)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+TRACE_EVENT(journal_write_superblock,
+	TP_PROTO(journal_t *journal, int write_op),
+
+	TP_ARGS(journal, write_op),
+
+	TP_STRUCT__entry(
+		__field(	dev_t,	dev			)
+		__field(	int,	write_op		)
+	),
+
+	TP_fast_assign(
+		tp_assign(dev, journal->j_fs_dev->bd_dev)
+		tp_assign(write_op, write_op)
+	),
+
+	TP_printk("dev %d,%d write_op %x", MAJOR(__entry->dev),
+		  MINOR(__entry->dev), __entry->write_op)
+)
+#else
 TRACE_EVENT(jbd_update_superblock_end,
 	TP_PROTO(journal_t *journal, int wait),
 
@@ -236,6 +257,7 @@ TRACE_EVENT(jbd_update_superblock_end,
 		  MAJOR(__entry->dev), MINOR(__entry->dev),
 		   __entry->wait)
 )
+#endif
 
 #endif /* _TRACE_JBD_H */
 

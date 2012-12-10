@@ -6,7 +6,9 @@
 
 #include <linux/ktime.h>
 #include <linux/tracepoint.h>
+#include <linux/version.h>
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
 DECLARE_EVENT_CLASS(cpu,
 
 	TP_PROTO(unsigned int state, unsigned int cpu_id),
@@ -64,8 +66,50 @@ TRACE_EVENT(machine_suspend,
 
 	TP_printk("state=%lu", (unsigned long)__entry->state)
 )
+#endif
 
-/* This code will be removed after deprecation time exceeded (2.6.41) */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+DECLARE_EVENT_CLASS(wakeup_source,
+
+	TP_PROTO(const char *name, unsigned int state),
+
+	TP_ARGS(name, state),
+
+	TP_STRUCT__entry(
+		__string(       name,           name            )
+		__field(        u64,            state           )
+	),
+
+	TP_fast_assign(
+		tp_strcpy(name, name)
+		tp_assign(state, state)
+	),
+
+	TP_printk("%s state=0x%lx", __get_str(name),
+		(unsigned long)__entry->state)
+)
+
+DEFINE_EVENT(wakeup_source, wakeup_source_activate,
+
+	TP_PROTO(const char *name, unsigned int state),
+
+	TP_ARGS(name, state)
+)
+
+DEFINE_EVENT(wakeup_source, wakeup_source_deactivate,
+
+	TP_PROTO(const char *name, unsigned int state),
+
+	TP_ARGS(name, state)
+)
+#endif
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,38))
+#undef CONFIG_EVENT_POWER_TRACING_DEPRECATED
+#define CONFIG_EVENT_POWER_TRACING_DEPRECATED
+#define _PWR_EVENT_AVOID_DOUBLE_DEFINING_DEPRECATED
+#endif
+
 #ifdef CONFIG_EVENT_POWER_TRACING_DEPRECATED
 
 /*
@@ -74,56 +118,100 @@ TRACE_EVENT(machine_suspend,
  */
 DECLARE_EVENT_CLASS(power,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 	TP_PROTO(unsigned int type, unsigned int state, unsigned int cpu_id),
 
 	TP_ARGS(type, state, cpu_id),
+#else
+	TP_PROTO(unsigned int type, unsigned int state),
+
+	TP_ARGS(type, state),
+#endif
 
 	TP_STRUCT__entry(
 		__field(	u64,		type		)
 		__field(	u64,		state		)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 		__field(	u64,		cpu_id		)
+#endif
 	),
 
 	TP_fast_assign(
 		tp_assign(type, type)
 		tp_assign(state, state)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 		tp_assign(cpu_id, cpu_id)
+#endif
 	),
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 	TP_printk("type=%lu state=%lu cpu_id=%lu", (unsigned long)__entry->type,
 		(unsigned long)__entry->state, (unsigned long)__entry->cpu_id)
+#else
+	TP_printk("type=%lu state=%lu", (unsigned long)__entry->type,
+		(unsigned long)__entry->state)
+#endif
 )
 
 DEFINE_EVENT(power, power_start,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 	TP_PROTO(unsigned int type, unsigned int state, unsigned int cpu_id),
 
 	TP_ARGS(type, state, cpu_id)
+#else
+	TP_PROTO(unsigned int type, unsigned int state),
+
+	TP_ARGS(type, state)
+#endif
 )
 
 DEFINE_EVENT(power, power_frequency,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 	TP_PROTO(unsigned int type, unsigned int state, unsigned int cpu_id),
 
 	TP_ARGS(type, state, cpu_id)
+#else
+	TP_PROTO(unsigned int type, unsigned int state),
+
+	TP_ARGS(type, state)
+#endif
 )
 
 TRACE_EVENT(power_end,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 	TP_PROTO(unsigned int cpu_id),
 
 	TP_ARGS(cpu_id),
+#else
+	TP_PROTO(int dummy),
+
+	TP_ARGS(dummy),
+#endif
 
 	TP_STRUCT__entry(
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 		__field(	u64,		cpu_id		)
+#else
+		__field(	u64,		dummy		)
+#endif
 	),
 
 	TP_fast_assign(
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 		tp_assign(cpu_id, cpu_id)
+#else
+		tp_assign(dummy, 0xffff)
+#endif
 	),
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 	TP_printk("cpu_id=%lu", (unsigned long)__entry->cpu_id)
-
+#else
+	TP_printk("dummy=%lu", (unsigned long)__entry->dummy)
+#endif
 )
 
 /* Deprecated dummy functions must be protected against multi-declartion */
@@ -151,11 +239,16 @@ enum {
    events get removed */
 static inline void trace_power_start(u64 type, u64 state, u64 cpuid) {};
 static inline void trace_power_end(u64 cpuid) {};
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
+static inline void trace_power_start_rcuidle(u64 type, u64 state, u64 cpuid) {};
+static inline void trace_power_end_rcuidle(u64 cpuid) {};
+#endif
 static inline void trace_power_frequency(u64 type, u64 state, u64 cpuid) {};
 #endif /* _PWR_EVENT_AVOID_DOUBLE_DEFINING_DEPRECATED */
 
 #endif /* CONFIG_EVENT_POWER_TRACING_DEPRECATED */
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 /*
  * The clock events are used for clock enable/disable and for
  *  clock rate change
@@ -234,6 +327,8 @@ DEFINE_EVENT(power_domain, power_domain_target,
 
 	TP_ARGS(name, state, cpu_id)
 )
+#endif
+
 #endif /* _TRACE_POWER_H */
 
 /* This part must be outside protection */

@@ -22,13 +22,14 @@
 
 #include <linux/module.h>
 #include <linux/interrupt.h>
-#include "../wrapper/tracepoint.h"
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
  * trace event macros match the kernel we run on.
  */
 #include <trace/events/irq.h>
+
+#include "../wrapper/tracepoint.h"
 
 /*
  * Create LTTng tracepoint probes.

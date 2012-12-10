@@ -5,6 +5,7 @@
 #define _TRACE_EXT3_H
 
 #include <linux/tracepoint.h>
+#include <linux/version.h>
 
 TRACE_EVENT(ext3_free_inode,
 	TP_PROTO(struct inode *inode),
@@ -24,8 +25,13 @@ TRACE_EVENT(ext3_free_inode,
 		tp_assign(dev, inode->i_sb->s_dev)
 		tp_assign(ino, inode->i_ino)
 		tp_assign(mode, inode->i_mode)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+		tp_assign(uid, i_uid_read(inode))
+		tp_assign(gid, i_gid_read(inode))
+#else
 		tp_assign(uid, inode->i_uid)
 		tp_assign(gid, inode->i_gid)
+#endif
 		tp_assign(blocks, inode->i_blocks)
 	),
 

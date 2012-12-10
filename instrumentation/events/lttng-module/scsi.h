@@ -8,6 +8,7 @@
 #include <scsi/scsi_host.h>
 #include <linux/tracepoint.h>
 #include <linux/trace_seq.h>
+#include <linux/version.h>
 
 #ifndef _TRACE_SCSI_DEF
 #define _TRACE_SCSI_DEF
@@ -187,6 +188,7 @@
 		scsi_statusbyte_name(SAM_STAT_ACA_ACTIVE),	\
 		scsi_statusbyte_name(SAM_STAT_TASK_ABORTED))
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 #define scsi_prot_op_name(result)	{ result, #result }
 #define show_prot_op_name(val)					\
 	__print_symbolic(val,					\
@@ -197,6 +199,7 @@
 		scsi_prot_op_name(SCSI_PROT_WRITE_INSERT),	\
 		scsi_prot_op_name(SCSI_PROT_READ_PASS),		\
 		scsi_prot_op_name(SCSI_PROT_WRITE_PASS))
+#endif
 
 const char *scsi_trace_parse_cdb(struct trace_seq*, unsigned char*, int);
 #define __parse_cdb(cdb, len) scsi_trace_parse_cdb(p, cdb, len)
@@ -217,7 +220,9 @@ TRACE_EVENT(scsi_dispatch_cmd_start,
 		__field( unsigned int,	cmd_len )
 		__field( unsigned int,	data_sglen )
 		__field( unsigned int,	prot_sglen )
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 		__field( unsigned char,	prot_op )
+#endif
 		__dynamic_array_hex(unsigned char,	cmnd, cmd->cmd_len)
 	),
 
@@ -230,15 +235,24 @@ TRACE_EVENT(scsi_dispatch_cmd_start,
 		tp_assign(cmd_len, cmd->cmd_len)
 		tp_assign(data_sglen, scsi_sg_count(cmd))
 		tp_assign(prot_sglen, scsi_prot_sg_count(cmd))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 		tp_assign(prot_op, scsi_get_prot_op(cmd))
+#endif
 		tp_memcpy_dyn(cmnd, cmd->cmnd)
 	),
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 	TP_printk("host_no=%u channel=%u id=%u lun=%u data_sgl=%u prot_sgl=%u" \
 		  " prot_op=%s cmnd=(%s %s raw=%s)",
+#else
+	TP_printk("host_no=%u channel=%u id=%u lun=%u data_sgl=%u prot_sgl=%u" \
+		  " cmnd=(%s %s raw=%s)",
+#endif
 		  __entry->host_no, __entry->channel, __entry->id,
 		  __entry->lun, __entry->data_sglen, __entry->prot_sglen,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 		  show_prot_op_name(__entry->prot_op),
+#endif
 		  show_opcode_name(__entry->opcode),
 		  __parse_cdb(__get_dynamic_array(cmnd), __entry->cmd_len),
 		  __print_hex(__get_dynamic_array(cmnd), __entry->cmd_len))
@@ -260,7 +274,9 @@ TRACE_EVENT(scsi_dispatch_cmd_error,
 		__field( unsigned int,	cmd_len )
 		__field( unsigned int,	data_sglen )
 		__field( unsigned int,	prot_sglen )
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 		__field( unsigned char,	prot_op )
+#endif
 		__dynamic_array_hex(unsigned char,	cmnd, cmd->cmd_len)
 	),
 
@@ -274,15 +290,24 @@ TRACE_EVENT(scsi_dispatch_cmd_error,
 		tp_assign(cmd_len, cmd->cmd_len)
 		tp_assign(data_sglen, scsi_sg_count(cmd))
 		tp_assign(prot_sglen, scsi_prot_sg_count(cmd))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 		tp_assign(prot_op, scsi_get_prot_op(cmd))
+#endif
 		tp_memcpy_dyn(cmnd, cmd->cmnd)
 	),
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 	TP_printk("host_no=%u channel=%u id=%u lun=%u data_sgl=%u prot_sgl=%u" \
 		  " prot_op=%s cmnd=(%s %s raw=%s) rtn=%d",
+#else
+	TP_printk("host_no=%u channel=%u id=%u lun=%u data_sgl=%u prot_sgl=%u" \
+		  " cmnd=(%s %s raw=%s) rtn=%d",
+#endif
 		  __entry->host_no, __entry->channel, __entry->id,
 		  __entry->lun, __entry->data_sglen, __entry->prot_sglen,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 		  show_prot_op_name(__entry->prot_op),
+#endif
 		  show_opcode_name(__entry->opcode),
 		  __parse_cdb(__get_dynamic_array(cmnd), __entry->cmd_len),
 		  __print_hex(__get_dynamic_array(cmnd), __entry->cmd_len),
@@ -305,7 +330,9 @@ DECLARE_EVENT_CLASS(scsi_cmd_done_timeout_template,
 		__field( unsigned int,	cmd_len )
 		__field( unsigned int,	data_sglen )
 		__field( unsigned int,	prot_sglen )
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 		__field( unsigned char,	prot_op )
+#endif
 		__dynamic_array_hex(unsigned char,	cmnd, cmd->cmd_len)
 	),
 
@@ -319,16 +346,26 @@ DECLARE_EVENT_CLASS(scsi_cmd_done_timeout_template,
 		tp_assign(cmd_len, cmd->cmd_len)
 		tp_assign(data_sglen, scsi_sg_count(cmd))
 		tp_assign(prot_sglen, scsi_prot_sg_count(cmd))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 		tp_assign(prot_op, scsi_get_prot_op(cmd))
+#endif
 		tp_memcpy_dyn(cmnd, cmd->cmnd)
 	),
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 	TP_printk("host_no=%u channel=%u id=%u lun=%u data_sgl=%u " \
 		  "prot_sgl=%u prot_op=%s cmnd=(%s %s raw=%s) result=(driver=" \
 		  "%s host=%s message=%s status=%s)",
+#else
+	TP_printk("host_no=%u channel=%u id=%u lun=%u data_sgl=%u " \
+		  "prot_sgl=%u cmnd=(%s %s raw=%s) result=(driver=%s host=%s " \
+		  "message=%s status=%s)",
+#endif
 		  __entry->host_no, __entry->channel, __entry->id,
 		  __entry->lun, __entry->data_sglen, __entry->prot_sglen,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 		  show_prot_op_name(__entry->prot_op),
+#endif
 		  show_opcode_name(__entry->opcode),
 		  __parse_cdb(__get_dynamic_array(cmnd), __entry->cmd_len),
 		  __print_hex(__get_dynamic_array(cmnd), __entry->cmd_len),

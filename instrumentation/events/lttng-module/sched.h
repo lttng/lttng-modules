@@ -6,9 +6,13 @@
 
 #include <linux/sched.h>
 #include <linux/tracepoint.h>
+#include <linux/binfmts.h>
+#include <linux/version.h>
 
 #ifndef _TRACE_SCHED_DEF_
 #define _TRACE_SCHED_DEF_
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 
 static inline long __trace_sched_switch_state(struct task_struct *p)
 {
@@ -19,11 +23,17 @@ static inline long __trace_sched_switch_state(struct task_struct *p)
 	 * For all intents and purposes a preempted task is a running task.
 	 */
 	if (task_thread_info(p)->preempt_count & PREEMPT_ACTIVE)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+		state = TASK_RUNNING | TASK_STATE_MAX;
+#else
 		state = TASK_RUNNING;
+#endif
 #endif
 
 	return state;
 }
+
+#endif
 
 #endif /* _TRACE_SCHED_DEF_ */
 
@@ -89,7 +99,9 @@ DECLARE_EVENT_CLASS(sched_wakeup_template,
 		__field(	pid_t,	tid			)
 		__field(	int,	prio			)
 		__field(	int,	success			)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
 		__field(	int,	target_cpu		)
+#endif
 	),
 
 	TP_fast_assign(
@@ -97,12 +109,25 @@ DECLARE_EVENT_CLASS(sched_wakeup_template,
 		tp_assign(tid, p->pid)
 		tp_assign(prio, p->prio)
 		tp_assign(success, success)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
 		tp_assign(target_cpu, task_cpu(p))
+#endif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
+	)
+	TP_perf_assign(
+		__perf_task(p)
+#endif
 	),
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
 	TP_printk("comm=%s tid=%d prio=%d success=%d target_cpu=%03d",
 		  __entry->comm, __entry->tid, __entry->prio,
 		  __entry->success, __entry->target_cpu)
+#else
+	TP_printk("comm=%s tid=%d prio=%d success=%d",
+		  __entry->comm, __entry->tid, __entry->prio,
+		  __entry->success)
+#endif
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
@@ -164,12 +189,27 @@ TRACE_EVENT(sched_switch,
 		tp_memcpy(next_comm, next->comm, TASK_COMM_LEN)
 		tp_assign(prev_tid, prev->pid)
 		tp_assign(prev_prio, prev->prio - MAX_RT_PRIO)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 		tp_assign(prev_state, __trace_sched_switch_state(prev))
+#else
+		tp_assign(prev_state, prev->state)
+#endif
 		tp_memcpy(prev_comm, prev->comm, TASK_COMM_LEN)
 		tp_assign(next_tid, next->pid)
 		tp_assign(next_prio, next->prio - MAX_RT_PRIO)
 	),
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+	TP_printk("prev_comm=%s prev_tid=%d prev_prio=%d prev_state=%s%s ==> next_comm=%s next_tid=%d next_prio=%d",
+		__entry->prev_comm, __entry->prev_tid, __entry->prev_prio,
+		__entry->prev_state & (TASK_STATE_MAX-1) ?
+		  __print_flags(__entry->prev_state & (TASK_STATE_MAX-1), "|",
+				{ 1, "S"} , { 2, "D" }, { 4, "T" }, { 8, "t" },
+				{ 16, "Z" }, { 32, "X" }, { 64, "x" },
+				{ 128, "W" }) : "R",
+		__entry->prev_state & TASK_STATE_MAX ? "+" : "",
+		__entry->next_comm, __entry->next_tid, __entry->next_prio)
+#else
 	TP_printk("prev_comm=%s prev_tid=%d prev_prio=%d prev_state=%s ==> next_comm=%s next_tid=%d next_prio=%d",
 		__entry->prev_comm, __entry->prev_tid, __entry->prev_prio,
 		__entry->prev_state ?
@@ -178,6 +218,7 @@ TRACE_EVENT(sched_switch,
 				{ 16, "Z" }, { 32, "X" }, { 64, "x" },
 				{ 128, "W" }) : "R",
 		__entry->next_comm, __entry->next_tid, __entry->next_prio)
+#endif
 )
 
 /*
@@ -313,6 +354,33 @@ TRACE_EVENT(sched_process_fork,
 		__entry->child_comm, __entry->child_tid)
 )
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,33))
+/*
+ * Tracepoint for sending a signal:
+ */
+TRACE_EVENT(sched_signal_send,
+
+	TP_PROTO(int sig, struct task_struct *p),
+
+	TP_ARGS(sig, p),
+
+	TP_STRUCT__entry(
+		__field(	int,	sig			)
+		__array(	char,	comm,	TASK_COMM_LEN	)
+		__field(	pid_t,	pid			)
+	),
+
+	TP_fast_assign(
+		tp_memcpy(comm, p->comm, TASK_COMM_LEN)
+		tp_assign(pid, p->pid)
+		tp_assign(sig, sig)
+	),
+
+	TP_printk("sig=%d comm=%s pid=%d",
+		__entry->sig, __entry->comm, __entry->pid)
+)
+#endif
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 /*
  * Tracepoint for exec:
@@ -341,6 +409,7 @@ TRACE_EVENT(sched_process_exec,
 )
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
 /*
  * XXX the below sched_stat tracepoints only apply to SCHED_OTHER/BATCH/IDLE
  *     adding sched_stat support to SCHED_FIFO/RR would be welcome.
@@ -396,6 +465,15 @@ DEFINE_EVENT(sched_stat_template, sched_stat_iowait,
 	     TP_PROTO(struct task_struct *tsk, u64 delay),
 	     TP_ARGS(tsk, delay))
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+/*
+ * Tracepoint for accounting blocked time (time the task is in uninterruptible).
+ */
+DEFINE_EVENT(sched_stat_template, sched_stat_blocked,
+	     TP_PROTO(struct task_struct *tsk, u64 delay),
+	     TP_ARGS(tsk, delay))
+#endif
+
 /*
  * Tracepoint for accounting runtime (time the task is executing
  * on a CPU).
@@ -421,6 +499,9 @@ TRACE_EVENT(sched_stat_runtime,
 	)
 	TP_perf_assign(
 		__perf_count(runtime)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
+		__perf_task(tsk)
+#endif
 	),
 
 	TP_printk("comm=%s tid=%d runtime=%Lu [ns] vruntime=%Lu [ns]",
@@ -428,7 +509,9 @@ TRACE_EVENT(sched_stat_runtime,
 			(unsigned long long)__entry->runtime,
 			(unsigned long long)__entry->vruntime)
 )
+#endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 /*
  * Tracepoint for showing priority inheritance modifying a tasks
  * priority.
@@ -457,6 +540,7 @@ TRACE_EVENT(sched_pi_setprio,
 			__entry->comm, __entry->tid,
 			__entry->oldprio, __entry->newprio)
 )
+#endif
 
 #endif /* _TRACE_SCHED_H */
 

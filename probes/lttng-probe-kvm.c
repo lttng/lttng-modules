@@ -29,6 +29,8 @@
  */
 #include <trace/events/kvm.h>
 
+#include "../wrapper/tracepoint.h"
+
 /*
  * Create LTTng tracepoint probes.
  */
