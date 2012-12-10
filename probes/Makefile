@@ -121,6 +121,79 @@ endif
 #obj-m += lttng-probe-lock.o
 #endif
 
+ifneq ($(CONFIG_BTRFS_FS),)
+btrfs_dep = $(srctree)/fs/btrfs/*.h
+btrfs = $(shell \
+	if [ $(VERSION) -ge 3 \
+		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 39 \) ] ; then \
+		echo "lttng-probe-btrfs.o" ; fi;)
+ifneq ($(btrfs),)
+ifeq ($(wildcard $(btrfs_dep)),)
+$(warning Files $(btrfs_dep) not found. Probe "btrfs" is disabled. Use full kernel source tree to enable it.)
+btrfs =
+endif
+endif
+obj-m += $(btrfs)
+endif
+
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 \
+		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
+		echo "lttng-probe-compaction.o" ; fi;)
+
+ifneq ($(CONFIG_EXT4_FS),)
+ext4_dep = $(srctree)/fs/ext4/*.h
+ext4 = lttng-probe-ext4.o
+ifeq ($(wildcard $(ext4_dep)),)
+$(warning Files $(ext4_dep) not found. Probe "ext4" is disabled. Use full kernel source tree to enable it.)
+ext4 =
+endif
+obj-m += $(ext4)
+endif
+
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 4 ] ; then \
+		echo "lttng-probe-printk.o" ; fi;)
+ifneq ($(CONFIG_FRAME_WARN),0)
+CFLAGS_lttng-probe-printk.o += -Wframe-larger-than=2200
+endif
+
+obj-m +=  $(shell \
+	if [ \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 6 \) \
+		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 5 -a $(SUBLEVEL) -ge 2 \) \
+		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 4 -a $(SUBLEVEL) -ge 9 \) \
+		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 0 -a $(SUBLEVEL) -ge 41 \) ] ; then \
+		echo "lttng-probe-random.o" ; fi;)
+
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 2 ] ; then \
+		echo "lttng-probe-rcu.o" ; fi;)
+
+ifneq ($(CONFIG_REGMAP),)
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 2 ] ; then \
+		echo "lttng-probe-regmap.o" ; fi;)
+endif
+
+ifneq ($(CONFIG_PM_RUNTIME),)
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 2 ] ; then \
+		echo "lttng-probe-rpm.o" ; fi;)
+endif
+
+ifneq ($(CONFIG_SUNRPC),)
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 4 ] ; then \
+		echo "lttng-probe-sunrpc.o" ; fi;)
+endif
+
+obj-m += lttng-probe-workqueue.o
+
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 \
+		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 36 \) ] ; then \
+		echo "lttng-probe-writeback.o" ; fi;)
+
 
 ifneq ($(CONFIG_KPROBES),)
 obj-m += lttng-kprobes.o
