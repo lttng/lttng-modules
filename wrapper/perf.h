@@ -34,7 +34,7 @@ wrapper_perf_event_create_kernel_counter(struct perf_event_attr *attr,
 }
 #else /* defined(CONFIG_PERF_EVENTS) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,99)) */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 static inline struct perf_event *
 wrapper_perf_event_create_kernel_counter(struct perf_event_attr *attr,
 				int cpu,
@@ -43,7 +43,7 @@ wrapper_perf_event_create_kernel_counter(struct perf_event_attr *attr,
 {
 	return perf_event_create_kernel_counter(attr, cpu, task, callback);
 }
-#else /* (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36)) */
+#else /* (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)) */
 static inline struct perf_event *
 wrapper_perf_event_create_kernel_counter(struct perf_event_attr *attr,
 				int cpu,
@@ -60,8 +60,11 @@ wrapper_perf_event_create_kernel_counter(struct perf_event_attr *attr,
 	return perf_event_create_kernel_counter(attr, cpu, pid, callback);
 }
 
+#endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)) */
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,36))
 #define local64_read(l)		atomic64_read(l)
-#endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36)) */
+#endif
 
 #endif /* defined(CONFIG_PERF_EVENTS) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,99)) */
 
