@@ -10,9 +10,10 @@ Date:   Sat Sep 1 17:45:09 2012 -0700
     Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 
 ---
- include/linux/tracepoint.h |  141 ++++++++++++++++++++++++++++++++++----------
- kernel/tracepoint.c        |  144 ++++++++++++++++++++++++++++++++-------------
- 2 files changed, 215 insertions(+), 70 deletions(-)
+ include/linux/tracepoint.h             |  141 +++++++++++++++++++++++++-------
+ kernel/tracepoint.c                    |  144 ++++++++++++++++++++++++---------
+ samples/tracepoints/tp-samples-trace.h |    4 +-
+ 3 files changed, 216 insertions(+), 73 deletions(-)
 
 Index: linux/include/linux/tracepoint.h
 ===================================================================
@@ -539,3 +540,16 @@ Index: linux/kernel/tracepoint.c
  EXPORT_SYMBOL_GPL(tracepoint_probe_unregister_noupdate);
  
  /**
+Index: linux/samples/tracepoints/tp-samples-trace.h
+===================================================================
+--- linux.orig/samples/tracepoints/tp-samples-trace.h
++++ linux/samples/tracepoints/tp-samples-trace.h
+@@ -7,7 +7,5 @@
+ DECLARE_TRACE(subsys_event,
+ 	TP_PROTO(struct inode *inode, struct file *file),
+ 	TP_ARGS(inode, file));
+-DECLARE_TRACE(subsys_eventb,
+-	TP_PROTO(void),
+-	TP_ARGS());
++DECLARE_TRACE_NOARGS(subsys_eventb);
+ #endif
