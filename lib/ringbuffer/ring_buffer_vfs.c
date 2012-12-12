@@ -331,7 +331,7 @@ long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
 		data_size = lib_ring_buffer_get_read_data_size(config, buf);
 		if (data_size > UINT_MAX)
 			return -EFBIG;
-		return put_ulong(data_size, arg);
+		return compat_put_ulong(data_size, arg);
 	}
 	case RING_BUFFER_COMPAT_GET_PADDED_SUBBUF_SIZE:
 	{
@@ -341,12 +341,12 @@ long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
 		size = PAGE_ALIGN(size);
 		if (size > UINT_MAX)
 			return -EFBIG;
-		return put_ulong(size, arg);
+		return compat_put_ulong(size, arg);
 	}
 	case RING_BUFFER_COMPAT_GET_MAX_SUBBUF_SIZE:
 		if (chan->backend.subbuf_size > UINT_MAX)
 			return -EFBIG;
-		return put_ulong(chan->backend.subbuf_size, arg);
+		return compat_put_ulong(chan->backend.subbuf_size, arg);
 	case RING_BUFFER_COMPAT_GET_MMAP_LEN:
 	{
 		unsigned long mmap_buf_len;
@@ -358,7 +358,7 @@ long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
 			mmap_buf_len += chan->backend.subbuf_size;
 		if (mmap_buf_len > UINT_MAX)
 			return -EFBIG;
-		return put_ulong(mmap_buf_len, arg);
+		return compat_put_ulong(mmap_buf_len, arg);
 	}
 	case RING_BUFFER_COMPAT_GET_MMAP_READ_OFFSET:
 	{
@@ -371,7 +371,7 @@ long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
 		read_offset = buf->backend.array[sb_bindex]->mmap_offset;
 		if (read_offset > UINT_MAX)
 			return -EINVAL;
-		return put_ulong(read_offset, arg);
+		return compat_put_ulong(read_offset, arg);
 	}
 	case RING_BUFFER_COMPAT_FLUSH:
 		lib_ring_buffer_switch_slow(buf, SWITCH_ACTIVE);
