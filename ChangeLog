@@ -1,3 +1,22 @@
+2012-12-20 (13th Baktun) LTTng modules 2.1.0
+	* put_ulong calls in lib_ring_buffer_compat_ioctl() should be compat
+	* wrapper/perf.h: Fix kernel version condition
+	* Fix possible kernel build errors with linux-patches
+	* Add missing MIT license text to 3 files under this license
+	* Check if interrupt action name is not null in statedump
+	* Fix exec instrumentation: only for kernels 3.4.0 and higher
+	* Add TRACE_EVENT(sched_process_exec) to sched.h
+	* lib/ringbuffer/frontend_api.h: Include linux/prefetch.h.
+	* Fix warning with 3.6.0 kernel
+	* ABI with support for compat 32/64 bits
+	* Perform calculation on bit size in 64-bit
+	* Use uint64_t for packet header content size and packet size
+	* Fix: compat layer only on supported architectures
+	* Fix ring buffer 32/64 bits compat
+	* Fix cleanup: move lttng-tracer-core.h include to lib ringbuffer config.h
+	* Fix ring_buffer_frontend.c: missing include lttng-tracer-core.h
+	* Fix: statedump missing check for NULL namespace
+
 2012-09-10 LTTng modules 2.1.0-rc1
 	* fix timestamps on architectures without CONFIG_KTIME_SCALAR
 	* Support for linux kernels 2.6.32 through 2.6.37
