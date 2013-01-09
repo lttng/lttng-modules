@@ -397,7 +397,7 @@ int do_lttng_statedump(struct lttng_session *session)
 		schedule_delayed_work_on(cpu, &cpu_work[cpu], 0);
 	}
 	/* Wait for all threads to run */
-	wait_event(statedump_wq, (atomic_read(&kernel_threads_to_run) != 0));
+	__wait_event(statedump_wq, (atomic_read(&kernel_threads_to_run) == 0));
 	put_online_cpus();
 	/* Our work is done */
 	printk(KERN_DEBUG "LTT state dump end\n");
