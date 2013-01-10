@@ -39,7 +39,7 @@ struct extent_state;
 		{ BTRFS_SHARED_BLOCK_REF_KEY, 	"SHARED_BLOCK_REF" },	\
 		{ BTRFS_SHARED_DATA_REF_KEY, 	"SHARED_DATA_REF" })
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,40))
 #define __show_root_type(obj)						\
 	__print_symbolic_u64(obj,					\
 		{ BTRFS_ROOT_TREE_OBJECTID, 	"ROOT_TREE"	},	\
@@ -166,7 +166,7 @@ DEFINE_EVENT(btrfs__inode, btrfs_inode_evict,
 	TP_ARGS(inode)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,40))
 #define __show_map_type(type)						\
 	__print_symbolic_u64(type,					\
 		{ EXTENT_MAP_LAST_BYTE, "LAST_BYTE" 	},		\

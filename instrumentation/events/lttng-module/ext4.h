@@ -305,7 +305,7 @@ DEFINE_EVENT(ext4__write_end, ext4_da_write_end,
 	TP_ARGS(inode, pos, len, copied)
 )
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,0,0))
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,40))
 TRACE_EVENT(ext4_writepage,
 	TP_PROTO(struct inode *inode, struct page *page),
 
@@ -581,7 +581,7 @@ DECLARE_EVENT_CLASS(ext4__page_op,
 		  (unsigned long) __entry->index)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,40))
 DEFINE_EVENT(ext4__page_op, ext4_writepage,
 
 	TP_PROTO(struct page *page),
@@ -702,7 +702,7 @@ DEFINE_EVENT(ext4__mb_new_pa, ext4_mb_new_group_pa,
 
 TRACE_EVENT(ext4_mb_release_inode_pa,
 	TP_PROTO(
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,0,0))
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,40))
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 		 struct super_block *sb,
 		 struct inode *inode,
@@ -716,7 +716,7 @@ TRACE_EVENT(ext4_mb_release_inode_pa,
 		 struct ext4_prealloc_space *pa,
 		 unsigned long long block, unsigned int count),
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,40))
 	TP_ARGS(pa, block, count),
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 	TP_ARGS(sb, inode, pa, block, count),
@@ -735,7 +735,7 @@ TRACE_EVENT(ext4_mb_release_inode_pa,
 	),
 
 	TP_fast_assign(
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,40))
 		tp_assign(dev, pa->pa_inode->i_sb->s_dev)
 		tp_assign(ino, pa->pa_inode->i_ino)
 #else
@@ -762,7 +762,7 @@ TRACE_EVENT(ext4_mb_release_inode_pa,
 
 TRACE_EVENT(ext4_mb_release_group_pa,
 
-#if (LTTNG_KERNEL_RANGE(3,0,0, 3,3,0))
+#if (LTTNG_KERNEL_RANGE(2,6,40, 3,3,0))
 	TP_PROTO(struct ext4_prealloc_space *pa),
 
 	TP_ARGS(pa),
@@ -794,7 +794,7 @@ TRACE_EVENT(ext4_mb_release_group_pa,
 	),
 
 	TP_fast_assign(
-#if (LTTNG_KERNEL_RANGE(3,0,0, 3,3,0))
+#if (LTTNG_KERNEL_RANGE(2,6,40, 3,3,0))
 		tp_assign(dev, pa->pa_inode->i_sb->s_dev)
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 		tp_assign(dev, sb->s_dev)
