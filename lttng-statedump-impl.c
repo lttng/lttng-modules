@@ -49,6 +49,7 @@
 #include "lttng-events.h"
 #include "wrapper/irqdesc.h"
 #include "wrapper/spinlock.h"
+#include "wrapper/fdtable.h"
 
 #ifdef CONFIG_GENERIC_HARDIRQS
 #include <linux/irq.h>
@@ -59,6 +60,12 @@
 #define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module
 #define TRACE_INCLUDE_FILE lttng-statedump
 #include "instrumentation/events/lttng-module/lttng-statedump.h"
+
+struct lttng_fd_ctx {
+	char *page;
+	struct lttng_session *session;
+	struct task_struct *p;
+};
 
 /*
  * Protected by the trace lock.
@@ -141,34 +148,35 @@ int lttng_enumerate_network_ip_interface(struct lttng_session *session)
 }
 #endif /* CONFIG_INET */
 
+static
+int lttng_dump_one_fd(const void *p, struct file *file, unsigned int fd)
+{
+	const struct lttng_fd_ctx *ctx = p;
+	const char *s = d_path(&file->f_path, ctx->page, PAGE_SIZE);
+
+	if (IS_ERR(s)) {
+		struct dentry *dentry = file->f_path.dentry;
+
+		/* Make sure we give at least some info */
+		spin_lock(&dentry->d_lock);
+		trace_lttng_statedump_file_descriptor(ctx->session, ctx->p, fd,
+			dentry->d_name.name);
+		spin_unlock(&dentry->d_lock);
+		goto end;
+	}
+	trace_lttng_statedump_file_descriptor(ctx->session, ctx->p, fd, s);
+end:
+	return 0;
+}
 
 static
 void lttng_enumerate_task_fd(struct lttng_session *session,
 		struct task_struct *p, char *tmp)
 {
-	struct fdtable *fdt;
-	struct file *filp;
-	unsigned int i;
-	const unsigned char *path;
+	struct lttng_fd_ctx ctx = { .page = tmp, .session = session, .p = p };
 
 	task_lock(p);
-	if (!p->files)
-		goto unlock_task;
-	spin_lock(&p->files->file_lock);
-	fdt = files_fdtable(p->files);
-	for (i = 0; i < fdt->max_fds; i++) {
-		filp = fcheck_files(p->files, i);
-		if (!filp)
-			continue;
-		path = d_path(&filp->f_path, tmp, PAGE_SIZE);
-		/* Make sure we give at least some info */
-		trace_lttng_statedump_file_descriptor(session, p, i,
-			IS_ERR(path) ?
-				filp->f_dentry->d_name.name :
-				path);
-	}
-	spin_unlock(&p->files->file_lock);
-unlock_task:
+	lttng_iterate_fd(p->files, 0, lttng_dump_one_fd, &ctx);
 	task_unlock(p);
 }
 

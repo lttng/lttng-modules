@@ -23,7 +23,8 @@ lttng-tracer-objs :=  lttng-events.o lttng-abi.o \
 			lttng-context-hostname.o wrapper/random.o
 
 obj-m += lttng-statedump.o
-lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o
+lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o \
+			wrapper/fdtable.o
 
 ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
 lttng-tracer-objs += lttng-syscalls.o probes/lttng-probe-user.o
