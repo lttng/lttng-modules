@@ -36,12 +36,12 @@ long lttng_strlen_user_inatomic(const char *addr)
 	pagefault_disable();
 	for (;;) {
 		char v;
-		long ret;
+		unsigned long ret;
 
 		ret = __copy_from_user_inatomic(&v,
 			(__force const char __user *)(addr),
 			sizeof(v));
-		if (unlikely(ret == -EFAULT))
+		if (unlikely(ret > 0))
 			break;
 		count++;
 		if (unlikely(!v))
