@@ -1,3 +1,10 @@
+2013-02-14 LTTng modules 2.1.1
+	* Fix: statedump: missing locking, use lttng_iterate_fd
+	* Implement lttng_iterate_fd wrapper
+	* Fix check in lttng_strlen_user_inatomic
+	* Fix: statedump hang/too early completion due to logic error
+	* Fix: statedump hang due to incorrect wait/wakeup use
+
 2012-12-20 (13th Baktun) LTTng modules 2.1.0
 	* put_ulong calls in lib_ring_buffer_compat_ioctl() should be compat
 	* wrapper/perf.h: Fix kernel version condition
