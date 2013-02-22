@@ -327,7 +327,12 @@ TRACE_EVENT(sched_process_wait,
 )
 
 /*
- * Tracepoint for do_fork:
+ * Tracepoint for do_fork.
+ * Saving both TID and PID information, especially for the child, allows
+ * trace analyzers to distinguish between creation of a new process and
+ * creation of a new thread. Newly created processes will have child_tid
+ * == child_pid, while creation of a thread yields to child_tid !=
+ * child_pid.
  */
 TRACE_EVENT(sched_process_fork,
 
@@ -338,15 +343,19 @@ TRACE_EVENT(sched_process_fork,
 	TP_STRUCT__entry(
 		__array_text(	char,	parent_comm,	TASK_COMM_LEN	)
 		__field(	pid_t,	parent_tid			)
+		__field(	pid_t,	parent_pid			)
 		__array_text(	char,	child_comm,	TASK_COMM_LEN	)
 		__field(	pid_t,	child_tid			)
+		__field(	pid_t,	child_pid			)
 	),
 
 	TP_fast_assign(
 		tp_memcpy(parent_comm, parent->comm, TASK_COMM_LEN)
 		tp_assign(parent_tid, parent->pid)
+		tp_assign(parent_pid, parent->tgid)
 		tp_memcpy(child_comm, child->comm, TASK_COMM_LEN)
 		tp_assign(child_tid, child->pid)
+		tp_assign(child_pid, child->tgid)
 	),
 
 	TP_printk("comm=%s tid=%d child_comm=%s child_tid=%d",
