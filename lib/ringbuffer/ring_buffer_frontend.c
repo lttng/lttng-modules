@@ -1424,6 +1424,19 @@ int lib_ring_buffer_try_switch_slow(enum switch_mode mode,
 	 */
 	if (mode == SWITCH_FLUSH || off > 0) {
 		if (unlikely(off == 0)) {
+                        /*
+			 * A final flush that encounters an empty
+			 * sub-buffer cannot switch buffer if a
+			 * reader is located within this sub-buffer.
+			 * Anyway, the purpose of final flushing of a
+			 * sub-buffer at offset 0 is to handle the case
+			 * of entirely empty stream.
+			 */
+			if (unlikely(subbuf_trunc(offsets->begin, chan)
+					- subbuf_trunc((unsigned long)
+						atomic_long_read(&buf->consumed), chan)
+					>= chan->backend.buf_size))
+				return -1;
 			/*
 			 * The client does not save any header information.
 			 * Don't switch empty subbuffer on finalize, because it
