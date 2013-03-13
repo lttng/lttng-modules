@@ -77,7 +77,7 @@ int lttng_add_ppid_to_ctx(struct lttng_ctx **ctx)
 	field->event_field.type.atype = atype_integer;
 	field->event_field.type.u.basic.integer.size = sizeof(pid_t) * CHAR_BIT;
 	field->event_field.type.u.basic.integer.alignment = lttng_alignof(pid_t) * CHAR_BIT;
-	field->event_field.type.u.basic.integer.signedness = is_signed_type(pid_t);
+	field->event_field.type.u.basic.integer.signedness = lttng_is_signed_type(pid_t);
 	field->event_field.type.u.basic.integer.reverse_byte_order = 0;
 	field->event_field.type.u.basic.integer.base = 10;
 	field->event_field.type.u.basic.integer.encoding = lttng_encode_none;
