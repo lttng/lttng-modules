@@ -1850,6 +1850,54 @@ DEFINE_EVENT(ext4__map_blocks_enter, ext4_ind_map_blocks_enter,
 	TP_ARGS(inode, lblk, len, flags)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+
+DECLARE_EVENT_CLASS(ext4__map_blocks_exit,
+	TP_PROTO(struct inode *inode, struct ext4_map_blocks *map, int ret),
+
+	TP_ARGS(inode, map, ret),
+
+	TP_STRUCT__entry(
+		__field(	dev_t,		dev		)
+		__field(	ino_t,		ino		)
+		__field(	ext4_fsblk_t,	pblk		)
+		__field(	ext4_lblk_t,	lblk		)
+		__field(	unsigned int,	len		)
+		__field(	unsigned int,	flags		)
+		__field(	int,		ret		)
+	),
+
+	TP_fast_assign(
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(pblk, map->m_pblk)
+		tp_assign(lblk, map->m_lblk)
+		tp_assign(len, map->m_len)
+		tp_assign(flags, map->m_flags)
+		tp_assign(ret, ret)
+	),
+
+	TP_printk("dev %d,%d ino %lu lblk %u pblk %llu len %u flags %x ret %d",
+		  MAJOR(__entry->dev), MINOR(__entry->dev),
+		  (unsigned long) __entry->ino,
+		  __entry->lblk, __entry->pblk,
+		  __entry->len, __entry->flags, __entry->ret)
+)
+
+DEFINE_EVENT(ext4__map_blocks_exit, ext4_ext_map_blocks_exit,
+	TP_PROTO(struct inode *inode, struct ext4_map_blocks *map, int ret),
+
+	TP_ARGS(inode, map, ret)
+)
+
+DEFINE_EVENT(ext4__map_blocks_exit, ext4_ind_map_blocks_exit,
+	TP_PROTO(struct inode *inode, struct ext4_map_blocks *map, int ret),
+
+	TP_ARGS(inode, map, ret)
+)
+
+#else	/* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)) */
+
 DECLARE_EVENT_CLASS(ext4__map_blocks_exit,
 	TP_PROTO(struct inode *inode, ext4_lblk_t lblk,
 		 ext4_fsblk_t pblk, unsigned int len, int ret),
@@ -1894,6 +1942,8 @@ DEFINE_EVENT(ext4__map_blocks_exit, ext4_ind_map_blocks_exit,
 
 	TP_ARGS(inode, lblk, pblk, len, ret)
 )
+
+#endif	/* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)) */
 
 TRACE_EVENT(ext4_ext_load_extent,
 	TP_PROTO(struct inode *inode, ext4_lblk_t lblk, ext4_fsblk_t pblk),
@@ -2015,11 +2065,19 @@ DEFINE_EVENT(ext4__trim, ext4_trim_all_free,
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+
 TRACE_EVENT(ext4_ext_handle_uninitialized_extents,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+	TP_PROTO(struct inode *inode, struct ext4_map_blocks *map, int flags,
+		 unsigned int allocated, ext4_fsblk_t newblock),
+
+	TP_ARGS(inode, map, flags, allocated, newblock),
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)) */
 	TP_PROTO(struct inode *inode, struct ext4_map_blocks *map,
 		 unsigned int allocated, ext4_fsblk_t newblock),
 
 	TP_ARGS(inode, map, allocated, newblock),
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)) */
 
 	TP_STRUCT__entry(
 		__field(	dev_t,		dev		)
@@ -2035,7 +2093,11 @@ TRACE_EVENT(ext4_ext_handle_uninitialized_extents,
 	TP_fast_assign(
 		tp_assign(dev, inode->i_sb->s_dev)
 		tp_assign(ino, inode->i_ino)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+		tp_assign(flags, flags)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)) */
 		tp_assign(flags, map->m_flags)
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)) */
 		tp_assign(lblk, map->m_lblk)
 		tp_assign(pblk, map->m_pblk)
 		tp_assign(len, map->m_len)

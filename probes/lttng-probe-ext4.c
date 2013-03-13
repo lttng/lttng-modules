@@ -25,6 +25,7 @@
 #include <linux/fs.h>
 #include <../fs/ext4/ext4.h>
 #include <../fs/ext4/mballoc.h>
+#include <../fs/ext4/ext4_extents.h>
 #include <linux/dcache.h>
 
 /*
