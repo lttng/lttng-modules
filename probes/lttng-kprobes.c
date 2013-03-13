@@ -85,7 +85,7 @@ int lttng_create_kprobe_event(const char *name, struct lttng_event *event)
 	field->type.atype = atype_integer;
 	field->type.u.basic.integer.size = sizeof(unsigned long) * CHAR_BIT;
 	field->type.u.basic.integer.alignment = lttng_alignof(unsigned long) * CHAR_BIT;
-	field->type.u.basic.integer.signedness = is_signed_type(unsigned long);
+	field->type.u.basic.integer.signedness = lttng_is_signed_type(unsigned long);
 	field->type.u.basic.integer.reverse_byte_order = 0;
 	field->type.u.basic.integer.base = 16;
 	field->type.u.basic.integer.encoding = lttng_encode_none;

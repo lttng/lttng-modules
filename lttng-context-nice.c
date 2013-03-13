@@ -65,7 +65,7 @@ int lttng_add_nice_to_ctx(struct lttng_ctx **ctx)
 	field->event_field.type.atype = atype_integer;
 	field->event_field.type.u.basic.integer.size = sizeof(int) * CHAR_BIT;
 	field->event_field.type.u.basic.integer.alignment = lttng_alignof(int) * CHAR_BIT;
-	field->event_field.type.u.basic.integer.signedness = is_signed_type(int);
+	field->event_field.type.u.basic.integer.signedness = lttng_is_signed_type(int);
 	field->event_field.type.u.basic.integer.reverse_byte_order = 0;
 	field->event_field.type.u.basic.integer.base = 10;
 	field->event_field.type.u.basic.integer.encoding = lttng_encode_none;

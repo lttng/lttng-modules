@@ -30,8 +30,7 @@
 #include "lttng-abi.h"
 #include "lttng-abi-old.h"
 
-#undef is_signed_type
-#define is_signed_type(type)		(((type)(-1)) < 0)
+#define lttng_is_signed_type(type)	(((type)(-1)) < 0)
 
 struct lttng_channel;
 struct lttng_session;
@@ -71,7 +70,7 @@ struct lttng_enum_entry {
 		{						\
 		  .size = sizeof(_type) * CHAR_BIT,		\
 		  .alignment = lttng_alignof(_type) * CHAR_BIT,	\
-		  .signedness = is_signed_type(_type),		\
+		  .signedness = lttng_is_signed_type(_type),	\
 		  .reverse_byte_order = _byte_order != __BYTE_ORDER,	\
 		  .base = _base,				\
 		  .encoding = lttng_encode_##_encoding,		\
