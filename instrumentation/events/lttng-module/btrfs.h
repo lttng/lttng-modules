@@ -67,9 +67,16 @@ struct extent_state;
 		{ BTRFS_DATA_RELOC_TREE_OBJECTID, "DATA_RELOC_TREE" })
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+#define show_root_type(obj)						\
+	obj, ((obj >= BTRFS_DATA_RELOC_TREE_OBJECTID) ||		\
+	      (obj >= BTRFS_ROOT_TREE_OBJECTID &&			\
+	       obj <= BTRFS_CSUM_TREE_OBJECTID)) ? __show_root_type(obj) : "-"
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)) */
 #define show_root_type(obj)						\
 	obj, ((obj >= BTRFS_DATA_RELOC_TREE_OBJECTID) ||		\
 	      (obj <= BTRFS_CSUM_TREE_OBJECTID )) ? __show_root_type(obj) : "-"
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)) */
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
 
