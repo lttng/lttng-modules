@@ -8,6 +8,9 @@
 #include <linux/tracepoint.h>
 #include <linux/binfmts.h>
 #include <linux/version.h>
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+#include <linux/sched/rt.h>
+#endif
 
 #ifndef _TRACE_SCHED_DEF_
 #define _TRACE_SCHED_DEF_
