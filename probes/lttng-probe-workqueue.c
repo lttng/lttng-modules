@@ -25,6 +25,7 @@
 #include <linux/idr.h>
 
 struct cpu_workqueue_struct;
+struct pool_workqueue;
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
