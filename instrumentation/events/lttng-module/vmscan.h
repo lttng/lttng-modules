@@ -529,7 +529,7 @@ DECLARE_EVENT_CLASS(mm_vmscan_put_swap_token_template,
 	TP_printk("token_mm=%p", __entry->swap_token_mm)
 )
 
-DEFINE_EVENT_MAP(put_swap_token_template, put_swap_token,
+DEFINE_EVENT_MAP(mm_vmscan_put_swap_token_template, put_swap_token,
 
 	mm_vmscan_put_swap_token,
 
@@ -537,7 +537,7 @@ DEFINE_EVENT_MAP(put_swap_token_template, put_swap_token,
 	TP_ARGS(swap_token_mm)
 )
 
-DEFINE_EVENT_CONDITION_MAP(put_swap_token_template, disable_swap_token,
+DEFINE_EVENT_CONDITION_MAP(mm_vmscan_put_swap_token_template, disable_swap_token,
 
 	mm_vmscan_disable_swap_token,
 
