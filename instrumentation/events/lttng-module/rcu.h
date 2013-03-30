@@ -604,22 +604,45 @@ TRACE_EVENT(rcu_batch_end,
  */
 TRACE_EVENT(rcu_torture_read,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+	TP_PROTO(char *rcutorturename, struct rcu_head *rhp,
+		 unsigned long secs, unsigned long c_old, unsigned long c),
+
+	TP_ARGS(rcutorturename, rhp, secs, c_old, c),
+#else
 	TP_PROTO(char *rcutorturename, struct rcu_head *rhp),
 
 	TP_ARGS(rcutorturename, rhp),
+#endif
 
 	TP_STRUCT__entry(
 		__string(rcutorturename, rcutorturename)
 		__field(struct rcu_head *, rhp)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+		__field(unsigned long, secs)
+		__field(unsigned long, c_old)
+		__field(unsigned long, c)
+#endif
 	),
 
 	TP_fast_assign(
 		tp_strcpy(rcutorturename, rcutorturename)
 		tp_assign(rhp, rhp)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+		tp_assign(secs, secs)
+		tp_assign(c_old, c_old)
+		tp_assign(c, c)
+#endif
 	),
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+	TP_printk("%s torture read %p %luus c: %lu %lu",
+		  __entry->rcutorturename, __entry->rhp,
+		  __entry->secs, __entry->c_old, __entry->c)
+#else
 	TP_printk("%s torture read %p",
 		  __get_str(rcutorturename), __entry->rhp)
+#endif
 )
 #endif
 
@@ -707,7 +730,10 @@ TRACE_EVENT(rcu_barrier,
 #else
 #define trace_rcu_batch_end(rcuname, callbacks_invoked) do { } while (0)
 #endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+#define trace_rcu_torture_read(rcutorturename, rhp, secs, c_old, c) \
+	do { } while (0)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
 #define trace_rcu_torture_read(rcutorturename, rhp) do { } while (0)
 #endif
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
