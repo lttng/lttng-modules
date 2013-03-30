@@ -39,12 +39,12 @@
 #include "lttng-events.h"
 
 #define LTTNG_MODULES_MAJOR_VERSION 2
-#define LTTNG_MODULES_MINOR_VERSION 1
+#define LTTNG_MODULES_MINOR_VERSION 2
 #define LTTNG_MODULES_PATCHLEVEL_VERSION 0
 
-#define LTTNG_VERSION_NAME		"Basse Messe"
+#define LTTNG_VERSION_NAME		"Cuda"
 #define LTTNG_VERSION_DESCRIPTION	\
-	"Light coloured German ale whose style was named after the city Cologne (Koln) where it was first brewed. It is a rather simple beer with lightly fruity aromas and a delicate hoppy fragrance. The beer has a pronounced malty taste with a subtle bitter aftertaste"
+	"Brewed at the Benelux microbrewery, this IPA has huge floral, citric and resinous hop aroma, simply an amazing nose. The flavor is very fresh with a light caramel malting touch completing a strong body. Huge amounts of hops, lots of grapefruit, lemon and oranges. This is an outstanding IPA!"
 
 #ifndef CHAR_BIT
 #define CHAR_BIT 8

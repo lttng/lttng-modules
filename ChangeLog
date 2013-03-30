@@ -1,3 +1,58 @@
+2013-03-29 LTTng modules 2.2.0-rc1
+	* Update README
+	* Fix: vmscan instrumentation build
+	* writeback instrumentation: remove duplicated structures
+	* block: update instrumentation to 3.9 rc kernel
+	* rcu: update to 3.9 rc kernel instrumentation
+	* workqueue instrumentation: remove duplicated structures
+	* Rename odd event names
+	* Introduce API to remap event names exposed by LTTng
+	* lttng-module: sched.h: Fix compilation on 3.9 kernel
+	* Fix Linux 3.8 btrfs probe warning
+	* Fix Linux 3.8 ext4 probe support
+	* Fix 3.8 kernel support: namespace lttng_is_signed_type()
+	* Fix: don't flush-final for offset 0 if reader is on sub-buffer
+	* instrumentation sched: add missing fork pid info
+	* Fix check in lttng_strlen_user_inatomic
+	* instrumentation: sync with Linux commit a1ce392
+	* Fix: statedump: missing locking, use lttng_iterate_fd
+	* Implement lttng_iterate_fd wrapper
+	* Instrumentation cleanup: kmem events should print hex pointers
+	* Fix compilation of ext4 and btrfs tracepoints on 2.6.40 kernels
+	* Fix: statedump hang/too early completion due to logic error
+	* Fix: statedump hang due to incorrect wait/wakeup use
+	* put_ulong calls in lib_ring_buffer_compat_ioctl() should be compat
+	* wrapper/perf.h: Fix kernel version condition
+	* Add new kernel probes instrumentation
+	* Update kernel probes to more detailed match to kernel versions
+	* Fix possible kernel build errors with linux-patches
+	* Add missing MIT license text to 3 files under this license
+	* Update sites using kernel version checking macro to new range
+	* Make upper bound of kernel version checking macro exclusive
+	* sock instrumentation: fix fields to get referenced values
+	* ext3 instrumentation: fix of assignment code conversion
+	* sched instrumentation: rename "pid" fields in sched_process_exec
+	* Remove remaining semicolons in TP_fast_assign blocks
+	* Fix compilation for 3.0 kernels that are named 2.6.40
+	* Fix compilation for 3.0 branch (>= 3.0.39)
+	* Add kernel version checking macro
+	* Remove semicolons in TP_fast_assign blocks
+	* Add ifdefs to net probe to support Linux 2.6.39
+	* Add kernel probes for supplementary subsystems
+	* Check if interrupt action name is not null in statedump
+	* Fix exec instrumentation: only for kernels 3.4.0 and higher
+	* Add TRACE_EVENT(sched_process_exec) to sched.h
+	* lib/ringbuffer/frontend_api.h: Include linux/prefetch.h.
+	* Fix warning with 3.6.0 kernel
+	* ABI with support for compat 32/64 bits
+	* Perform calculation on bit size in 64-bit
+	* Use uint64_t for packet header content size and packet size
+	* Fix: compat layer only on supported architectures
+	* Fix ring buffer 32/64 bits compat
+	* Fix cleanup: move lttng-tracer-core.h include to lib ringbuffer config.h
+	* Fix ring_buffer_frontend.c: missing include lttng-tracer-core.h
+	* Fix: statedump missing check for NULL namespace
+
 2012-09-10 LTTng modules 2.1.0-rc1
 	* fix timestamps on architectures without CONFIG_KTIME_SCALAR
 	* Support for linux kernels 2.6.32 through 2.6.37
