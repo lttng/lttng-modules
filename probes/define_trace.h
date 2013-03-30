@@ -53,6 +53,37 @@
  */
 #include <linux/module.h>
 
+#undef TRACE_EVENT_MAP
+#define TRACE_EVENT_MAP(name, map, proto, args, tstruct, assign, print)	\
+	DEFINE_TRACE(name)
+
+#undef TRACE_EVENT_CONDITION_MAP
+#define TRACE_EVENT_CONDITION_MAP(name, map, proto, args, cond, tstruct, assign, print) \
+	TRACE_EVENT(name,						\
+		PARAMS(proto),						\
+		PARAMS(args),						\
+		PARAMS(tstruct),					\
+		PARAMS(assign),						\
+		PARAMS(print))
+
+#undef TRACE_EVENT_FN_MAP
+#define TRACE_EVENT_FN_MAP(name, map, proto, args, tstruct,		\
+		assign, print, reg, unreg)			\
+	DEFINE_TRACE_FN(name, reg, unreg)
+
+#undef DEFINE_EVENT_MAP
+#define DEFINE_EVENT_MAP(template, name, map, proto, args) \
+	DEFINE_TRACE(name)
+
+#undef DEFINE_EVENT_PRINT_MAP
+#define DEFINE_EVENT_PRINT_MAP(template, name, map, proto, args, print)	\
+	DEFINE_TRACE(name)
+
+#undef DEFINE_EVENT_CONDITION_MAP
+#define DEFINE_EVENT_CONDITION_MAP(template, name, map, proto, args, cond) \
+	DEFINE_EVENT(template, name, PARAMS(proto), PARAMS(args))
+
+
 #undef TRACE_EVENT
 #define TRACE_EVENT(name, proto, args, tstruct, assign, print)	\
 	DEFINE_TRACE(name)
@@ -120,10 +151,16 @@
 #undef TRACE_EVENT
 #undef TRACE_EVENT_FN
 #undef TRACE_EVENT_CONDITION
-#undef DECLARE_EVENT_CLASS
 #undef DEFINE_EVENT
 #undef DEFINE_EVENT_PRINT
 #undef DEFINE_EVENT_CONDITION
+#undef TRACE_EVENT_MAP
+#undef TRACE_EVENT_FN_MAP
+#undef TRACE_EVENT_CONDITION_MAP
+#undef DECLARE_EVENT_CLASS
+#undef DEFINE_EVENT_MAP
+#undef DEFINE_EVENT_PRINT_MAP
+#undef DEFINE_EVENT_CONDITION_MAP
 #undef TRACE_HEADER_MULTI_READ
 
 /* Only undef what we defined in this file */

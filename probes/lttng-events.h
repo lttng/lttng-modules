@@ -33,6 +33,48 @@
  */
 
 /*
+ * LTTng name mapping macros. LTTng remaps some of the kernel events to
+ * enforce name-spacing.
+ */
+#undef TRACE_EVENT_MAP
+#define TRACE_EVENT_MAP(name, map, proto, args, tstruct, assign, print)	\
+	DECLARE_EVENT_CLASS(map,					\
+			     PARAMS(proto),				\
+			     PARAMS(args),				\
+			     PARAMS(tstruct),				\
+			     PARAMS(assign),				\
+			     PARAMS(print))				\
+	DEFINE_EVENT_MAP(map, name, map, PARAMS(proto), PARAMS(args))
+
+#undef TRACE_EVENT_MAP_NOARGS
+#define TRACE_EVENT_MAP_NOARGS(name, map, tstruct, assign, print)	\
+	DECLARE_EVENT_CLASS_NOARGS(map,					\
+			     PARAMS(tstruct),				\
+			     PARAMS(assign),				\
+			     PARAMS(print))				\
+	DEFINE_EVENT_MAP_NOARGS(map, name, map)
+
+#undef DEFINE_EVENT_PRINT_MAP
+#define DEFINE_EVENT_PRINT_MAP(template, name, map, proto, args, print)	\
+	DEFINE_EVENT_MAP(template, name, map, PARAMS(proto), PARAMS(args))
+
+/* Callbacks are meaningless to LTTng. */
+#undef TRACE_EVENT_FN_MAP
+#define TRACE_EVENT_FN_MAP(name, map, proto, args, tstruct,		\
+		assign, print, reg, unreg)				\
+	TRACE_EVENT_MAP(name, map, PARAMS(proto), PARAMS(args),		\
+		PARAMS(tstruct), PARAMS(assign), PARAMS(print))		\
+
+#undef TRACE_EVENT_CONDITION_MAP
+#define TRACE_EVENT_CONDITION_MAP(name, map, proto, args, cond, tstruct, assign, print) \
+	TRACE_EVENT_MAP(name, map,					\
+		PARAMS(proto),						\
+		PARAMS(args),						\
+		PARAMS(tstruct),					\
+		PARAMS(assign),						\
+		PARAMS(print))
+
+/*
  * DECLARE_EVENT_CLASS can be used to add a generic function
  * handlers for events. That is, if all events have the same
  * parameters and just have distinct trace points.
@@ -43,34 +85,50 @@
  */
 
 #undef TRACE_EVENT
-#define TRACE_EVENT(name, proto, args, tstruct, assign, print) \
-	DECLARE_EVENT_CLASS(name,			       \
-			     PARAMS(proto),		       \
-			     PARAMS(args),		       \
-			     PARAMS(tstruct),		       \
-			     PARAMS(assign),		       \
-			     PARAMS(print))		       \
-	DEFINE_EVENT(name, name, PARAMS(proto), PARAMS(args))
+#define TRACE_EVENT(name, proto, args, tstruct, assign, print)	\
+	TRACE_EVENT_MAP(name, name,				\
+			PARAMS(proto),				\
+			PARAMS(args),				\
+			PARAMS(tstruct),			\
+			PARAMS(assign),				\
+			PARAMS(print))
 
 #undef TRACE_EVENT_NOARGS
-#define TRACE_EVENT_NOARGS(name, tstruct, assign, print)       \
-	DECLARE_EVENT_CLASS_NOARGS(name,		       \
-			     PARAMS(tstruct),		       \
-			     PARAMS(assign),		       \
-			     PARAMS(print))		       \
-	DEFINE_EVENT_NOARGS(name, name)
-
+#define TRACE_EVENT_NOARGS(name, tstruct, assign, print)	\
+	TRACE_EVENT_MAP_NOARGS(name, name,			\
+			PARAMS(tstruct),			\
+			PARAMS(assign),				\
+			PARAMS(print))
 
 #undef DEFINE_EVENT_PRINT
 #define DEFINE_EVENT_PRINT(template, name, proto, args, print)	\
-	DEFINE_EVENT(template, name, PARAMS(proto), PARAMS(args))
+	DEFINE_EVENT_PRINT_MAP(template, name, name,		\
+			PARAMS(proto), PARAMS(args), PARAMS(print_))
 
-/* Callbacks are meaningless to LTTng. */
 #undef TRACE_EVENT_FN
 #define TRACE_EVENT_FN(name, proto, args, tstruct,			\
 		assign, print, reg, unreg)				\
-	TRACE_EVENT(name, PARAMS(proto), PARAMS(args),			\
-		PARAMS(tstruct), PARAMS(assign), PARAMS(print))		\
+	TRACE_EVENT_FN_MAP(name, name, PARAMS(proto), PARAMS(args),	\
+		PARAMS(tstruct), PARAMS(assign), PARAMS(print),		\
+		PARAMS(reg), PARAMS(unreg))				\
+
+#undef DEFINE_EVENT
+#define DEFINE_EVENT(template, name, proto, args)			\
+	DEFINE_EVENT_MAP(template, name, name, PARAMS(proto), PARAMS(args))
+
+#undef DEFINE_EVENT_NOARGS
+#define DEFINE_EVENT_NOARGS(template, name)				\
+	DEFINE_EVENT_MAP_NOARGS(template, name, name)
+
+#undef TRACE_EVENT_CONDITION
+#define TRACE_EVENT_CONDITION(name, proto, args, cond, tstruct, assign, print) \
+	TRACE_EVENT_CONDITION_MAP(name, name,				\
+		PARAMS(proto),						\
+		PARAMS(args),						\
+		PARAMS(cond),						\
+		PARAMS(tstruct),					\
+		PARAMS(assign),						\
+		PARAMS(print))
 
 /*
  * Stage 1 of the trace events.
@@ -88,12 +146,12 @@
 #undef TP_ARGS
 #define TP_ARGS(args...) args
 
-#undef DEFINE_EVENT
-#define DEFINE_EVENT(_template, _name, _proto, _args)			\
+#undef DEFINE_EVENT_MAP
+#define DEFINE_EVENT_MAP(_template, _name, _map, _proto, _args)		\
 void trace_##_name(_proto);
 
-#undef DEFINE_EVENT_NOARGS
-#define DEFINE_EVENT_NOARGS(_template, _name)				\
+#undef DEFINE_EVENT_MAP_NOARGS
+#define DEFINE_EVENT_MAP_NOARGS(_template, _name, _map)			\
 void trace_##_name(void *__data);
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
@@ -256,19 +314,19 @@ static void __event_probe__##_name(void *__data);
 #define TP_PROBE_CB(_template)	&__event_probe__##_template
 #endif
 
-#undef DEFINE_EVENT_NOARGS
-#define DEFINE_EVENT_NOARGS(_template, _name)				\
-static const struct lttng_event_desc __event_desc___##_name = {		\
+#undef DEFINE_EVENT_MAP_NOARGS
+#define DEFINE_EVENT_MAP_NOARGS(_template, _name, _map)			\
+static const struct lttng_event_desc __event_desc___##_map = {		\
 	.fields = __event_fields___##_template,		     		\
-	.name = #_name,					     		\
+	.name = #_map,					     		\
 	.probe_callback = (void *) TP_PROBE_CB(_template),   		\
 	.nr_fields = ARRAY_SIZE(__event_fields___##_template),		\
 	.owner = THIS_MODULE,				     		\
 };
 
-#undef DEFINE_EVENT
-#define DEFINE_EVENT(_template, _name, _proto, _args)			\
-	DEFINE_EVENT_NOARGS(_template, _name)
+#undef DEFINE_EVENT_MAP
+#define DEFINE_EVENT_MAP(_template, _name, _map, _proto, _args)		\
+	DEFINE_EVENT_MAP_NOARGS(_template, _name, _map)
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
@@ -283,13 +341,13 @@ static const struct lttng_event_desc __event_desc___##_name = {		\
 
 #include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
 
-#undef DEFINE_EVENT_NOARGS
-#define DEFINE_EVENT_NOARGS(_template, _name)				       \
-		&__event_desc___##_name,
+#undef DEFINE_EVENT_MAP_NOARGS
+#define DEFINE_EVENT_MAP_NOARGS(_template, _name, _map)			       \
+		&__event_desc___##_map,
 
-#undef DEFINE_EVENT
-#define DEFINE_EVENT(_template, _name, _proto, _args)			       \
-	DEFINE_EVENT_NOARGS(_template, _name)
+#undef DEFINE_EVENT_MAP
+#define DEFINE_EVENT_MAP(_template, _name, _map, _proto, _args)		       \
+	DEFINE_EVENT_MAP_NOARGS(_template, _name, _map)
 
 #define TP_ID1(_token, _system)	_token##_system
 #define TP_ID(_token, _system)	TP_ID1(_token, _system)

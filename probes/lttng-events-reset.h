@@ -86,11 +86,11 @@
 #undef DECLARE_EVENT_CLASS_NOARGS
 #define DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print)
 
-#undef DEFINE_EVENT
-#define DEFINE_EVENT(_template, _name, _proto, _args)
+#undef DEFINE_EVENT_MAP
+#define DEFINE_EVENT_MAP(_template, _name, _map, _proto, _args)
 
-#undef DEFINE_EVENT_NOARGS
-#define DEFINE_EVENT_NOARGS(_template, _name)
+#undef DEFINE_EVENT_MAP_NOARGS
+#define DEFINE_EVENT_MAP_NOARGS(_template, _name, _map)
 
 #undef TRACE_EVENT_FLAGS
 #define TRACE_EVENT_FLAGS(name, value)
