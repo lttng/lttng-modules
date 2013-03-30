@@ -799,7 +799,9 @@ DEFINE_EVENT(btrfs__reserved_extent,  btrfs_reserved_extent_free,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
-TRACE_EVENT(find_free_extent,
+TRACE_EVENT_MAP(find_free_extent,
+
+	btrfs_find_free_extent,
 
 	TP_PROTO(struct btrfs_root *root, u64 num_bytes, u64 empty_size,
 		 u64 data),
@@ -963,7 +965,9 @@ TRACE_EVENT(btrfs_setup_cluster,
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-TRACE_EVENT(alloc_extent_state,
+TRACE_EVENT_MAP(alloc_extent_state,
+
+	btrfs_alloc_extent_state,
 
 	TP_PROTO(struct extent_state *state, gfp_t mask, unsigned long IP),
 
@@ -985,7 +989,9 @@ TRACE_EVENT(alloc_extent_state,
 		  show_gfp_flags(__entry->mask), (void *)__entry->ip)
 )
 
-TRACE_EVENT(free_extent_state,
+TRACE_EVENT_MAP(free_extent_state,
+
+	btrfs_free_extent_state,
 
 	TP_PROTO(struct extent_state *state, unsigned long IP),
 

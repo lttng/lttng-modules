@@ -485,7 +485,10 @@ TRACE_EVENT(mm_vmscan_lru_shrink_inactive,
 #endif
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-TRACE_EVENT(replace_swap_token,
+TRACE_EVENT_MAP(replace_swap_token,
+
+	mm_vmscan_replace_swap_token,
+
 	TP_PROTO(struct mm_struct *old_mm,
 		 struct mm_struct *new_mm),
 
@@ -510,7 +513,7 @@ TRACE_EVENT(replace_swap_token,
 		  __entry->new_mm, __entry->new_prio)
 )
 
-DECLARE_EVENT_CLASS(put_swap_token_template,
+DECLARE_EVENT_CLASS(mm_vmscan_put_swap_token_template,
 	TP_PROTO(struct mm_struct *swap_token_mm),
 
 	TP_ARGS(swap_token_mm),
@@ -526,18 +529,27 @@ DECLARE_EVENT_CLASS(put_swap_token_template,
 	TP_printk("token_mm=%p", __entry->swap_token_mm)
 )
 
-DEFINE_EVENT(put_swap_token_template, put_swap_token,
+DEFINE_EVENT_MAP(put_swap_token_template, put_swap_token,
+
+	mm_vmscan_put_swap_token,
+
 	TP_PROTO(struct mm_struct *swap_token_mm),
 	TP_ARGS(swap_token_mm)
 )
 
-DEFINE_EVENT_CONDITION(put_swap_token_template, disable_swap_token,
+DEFINE_EVENT_CONDITION_MAP(put_swap_token_template, disable_swap_token,
+
+	mm_vmscan_disable_swap_token,
+
 	TP_PROTO(struct mm_struct *swap_token_mm),
 	TP_ARGS(swap_token_mm),
 	TP_CONDITION(swap_token_mm != NULL)
 )
 
-TRACE_EVENT_CONDITION(update_swap_token_priority,
+TRACE_EVENT_CONDITION_MAP(update_swap_token_priority,
+
+	mm_vmscan_update_swap_token_priority,
+
 	TP_PROTO(struct mm_struct *mm,
 		 unsigned int old_prio,
 		 struct mm_struct *swap_token_mm),

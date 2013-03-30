@@ -219,7 +219,10 @@ TRACE_EVENT(jbd_cleanup_journal_tail,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
-TRACE_EVENT(journal_write_superblock,
+TRACE_EVENT_MAP(journal_write_superblock,
+
+	jbd_journal_write_superblock,
+
 	TP_PROTO(journal_t *journal, int write_op),
 
 	TP_ARGS(journal, write_op),

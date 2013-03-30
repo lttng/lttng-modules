@@ -45,7 +45,9 @@ DECLARE_EVENT_CLASS(kmem_alloc,
 		show_gfp_flags(__entry->gfp_flags))
 )
 
-DEFINE_EVENT(kmem_alloc, kmalloc,
+DEFINE_EVENT_MAP(kmem_alloc, kmalloc,
+
+	kmem_kmalloc,
 
 	TP_PROTO(unsigned long call_site, const void *ptr,
 		 size_t bytes_req, size_t bytes_alloc, gfp_t gfp_flags),
@@ -99,7 +101,9 @@ DECLARE_EVENT_CLASS(kmem_alloc_node,
 		__entry->node)
 )
 
-DEFINE_EVENT(kmem_alloc_node, kmalloc_node,
+DEFINE_EVENT_MAP(kmem_alloc_node, kmalloc_node,
+
+	kmem_kmalloc_node,
 
 	TP_PROTO(unsigned long call_site, const void *ptr,
 		 size_t bytes_req, size_t bytes_alloc,
@@ -136,7 +140,9 @@ DECLARE_EVENT_CLASS(kmem_free,
 	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
 )
 
-DEFINE_EVENT(kmem_free, kfree,
+DEFINE_EVENT_MAP(kmem_free, kfree,
+
+	kmem_kfree,
 
 	TP_PROTO(unsigned long call_site, const void *ptr),
 

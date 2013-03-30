@@ -12,7 +12,9 @@
 /*
  * Tracepoint for free an sk_buff:
  */
-TRACE_EVENT(kfree_skb,
+TRACE_EVENT_MAP(kfree_skb,
+
+	skb_kfree,
 
 	TP_PROTO(struct sk_buff *skb, void *location),
 
@@ -35,7 +37,9 @@ TRACE_EVENT(kfree_skb,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
-TRACE_EVENT(consume_skb,
+TRACE_EVENT_MAP(consume_skb,
+
+	skb_consume,
 
 	TP_PROTO(struct sk_buff *skb),
 

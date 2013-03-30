@@ -163,6 +163,11 @@ DEFINE_EVENT(writeback_class, name, \
 	TP_PROTO(struct backing_dev_info *bdi), \
 	TP_ARGS(bdi))
 
+#define DEFINE_WRITEBACK_EVENT_MAP(name, map) \
+DEFINE_EVENT_MAP(writeback_class, name, map, \
+	TP_PROTO(struct backing_dev_info *bdi), \
+	TP_ARGS(bdi))
+
 DEFINE_WRITEBACK_EVENT(writeback_nowork)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
 DEFINE_WRITEBACK_EVENT(writeback_wake_background)
@@ -174,10 +179,12 @@ DEFINE_WRITEBACK_EVENT(writeback_bdi_unregister)
 DEFINE_WRITEBACK_EVENT(writeback_thread_start)
 DEFINE_WRITEBACK_EVENT(writeback_thread_stop)
 #if (LTTNG_KERNEL_RANGE(3,1,0, 3,2,0))
-DEFINE_WRITEBACK_EVENT(balance_dirty_start)
-DEFINE_WRITEBACK_EVENT(balance_dirty_wait)
+DEFINE_WRITEBACK_EVENT_MAP(balance_dirty_start, writeback_balance_dirty_start)
+DEFINE_WRITEBACK_EVENT_MAP(balance_dirty_wait, writeback_balance_dirty_wait)
 
-TRACE_EVENT(balance_dirty_written,
+TRACE_EVENT_MAP(balance_dirty_written,
+
+	writeback_balance_dirty_written,
 
 	TP_PROTO(struct backing_dev_info *bdi, int written),
 
@@ -200,7 +207,7 @@ TRACE_EVENT(balance_dirty_written,
 )
 #endif
 
-DECLARE_EVENT_CLASS(wbc_class,
+DECLARE_EVENT_CLASS(writeback_wbc_class,
 	TP_PROTO(struct writeback_control *wbc, struct backing_dev_info *bdi),
 	TP_ARGS(wbc, bdi),
 	TP_STRUCT__entry(
@@ -261,19 +268,20 @@ DECLARE_EVENT_CLASS(wbc_class,
 		__entry->range_end)
 )
 
-#define DEFINE_WBC_EVENT(name) \
-DEFINE_EVENT(wbc_class, name, \
+#undef DEFINE_WBC_EVENT
+#define DEFINE_WBC_EVENT(name, map) \
+DEFINE_EVENT_MAP(writeback_wbc_class, name, map, \
 	TP_PROTO(struct writeback_control *wbc, struct backing_dev_info *bdi), \
 	TP_ARGS(wbc, bdi))
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,1,0))
-DEFINE_WBC_EVENT(wbc_writeback_start)
-DEFINE_WBC_EVENT(wbc_writeback_written)
-DEFINE_WBC_EVENT(wbc_writeback_wait)
-DEFINE_WBC_EVENT(wbc_balance_dirty_start)
-DEFINE_WBC_EVENT(wbc_balance_dirty_written)
-DEFINE_WBC_EVENT(wbc_balance_dirty_wait)
+DEFINE_WBC_EVENT(wbc_writeback_start, writeback_wbc_writeback_start)
+DEFINE_WBC_EVENT(wbc_writeback_written, writeback_wbc_writeback_written)
+DEFINE_WBC_EVENT(wbc_writeback_wait, writeback_wbc_writeback_wait)
+DEFINE_WBC_EVENT(wbc_balance_dirty_start, writeback_wbc_balance_dirty_start)
+DEFINE_WBC_EVENT(wbc_balance_dirty_written, writeback_wbc_balance_dirty_written)
+DEFINE_WBC_EVENT(wbc_balance_dirty_wait, writeback_wbc_balance_dirty_wait)
 #endif
-DEFINE_WBC_EVENT(wbc_writepage)
+DEFINE_WBC_EVENT(wbc_writepage, writeback_wbc_writepage)
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
 TRACE_EVENT(writeback_queue_io,
@@ -333,7 +341,9 @@ TRACE_EVENT(writeback_queue_io,
 #endif
 )
 
-TRACE_EVENT(global_dirty_state,
+TRACE_EVENT_MAP(global_dirty_state,
+
+	writeback_global_dirty_state,
 
 	TP_PROTO(unsigned long background_thresh,
 		 unsigned long dirty_thresh
@@ -384,7 +394,9 @@ TRACE_EVENT(global_dirty_state,
 
 #define KBps(x)			((x) << (PAGE_SHIFT - 10))
 
-TRACE_EVENT(bdi_dirty_ratelimit,
+TRACE_EVENT_MAP(bdi_dirty_ratelimit,
+
+	writeback_bdi_dirty_ratelimit,
 
 	TP_PROTO(struct backing_dev_info *bdi,
 		 unsigned long dirty_rate,
@@ -427,7 +439,9 @@ TRACE_EVENT(bdi_dirty_ratelimit,
 	)
 )
 
-TRACE_EVENT(balance_dirty_pages,
+TRACE_EVENT_MAP(balance_dirty_pages,
+
+	writeback_balance_dirty_pages,
 
 	TP_PROTO(struct backing_dev_info *bdi,
 		 unsigned long thresh,
