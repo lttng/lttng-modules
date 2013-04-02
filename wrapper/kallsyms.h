@@ -42,4 +42,10 @@ unsigned long kallsyms_lookup_funcptr(const char *name)
 #endif
 	return addr;
 }
+
+static inline
+unsigned long kallsyms_lookup_dataptr(const char *name)
+{
+	return kallsyms_lookup_name(name);
+}
 #endif /* _LTTNG_WRAPPER_KALLSYMS_H */

@@ -32,27 +32,12 @@
 #include <trace/events/writeback.h>
 
 #include "../lttng-kernel-version.h"
+#include "../wrapper/writeback.h"
 
 /* #if <check version number if global_dirty_limit will be exported> */
-#ifdef CONFIG_KALLSYMS
-#include "../wrapper/kallsyms.h"
 
-static unsigned long *wrapper_global_dirty_limit_sym = 0;
-static inline
-unsigned long wrapper_global_dirty_limit(void)
-{
-	if (!wrapper_global_dirty_limit_sym)
-		wrapper_global_dirty_limit_sym =
-			(void *)kallsyms_lookup_funcptr("global_dirty_limit");
-	if (wrapper_global_dirty_limit_sym)
-		return *wrapper_global_dirty_limit_sym;
-	else {
-		printk(KERN_WARNING "LTTng: global_dirty_limit symbol lookup failed.\n");
-		return 0;
-	}
-}
 #define global_dirty_limit wrapper_global_dirty_limit()
-#endif
+
 /* #endif <check version number> */
 
 /*

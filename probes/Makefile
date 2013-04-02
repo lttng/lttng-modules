@@ -189,10 +189,12 @@ endif
 
 obj-m += lttng-probe-workqueue.o
 
+ifneq ($(CONFIG_KALLSYMS_ALL),)
 obj-m +=  $(shell \
 	if [ $(VERSION) -ge 3 \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 36 \) ] ; then \
 		echo "lttng-probe-writeback.o" ; fi;)
+endif
 
 
 ifneq ($(CONFIG_KPROBES),)
