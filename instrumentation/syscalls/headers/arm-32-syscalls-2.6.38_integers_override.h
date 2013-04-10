@@ -53,7 +53,7 @@ SC_TRACE_EVENT(sys_set_tls,
 #else	/* CREATE_SYSCALL_TABLE */
 
 #define OVVERRIDE_TABLE_32_sys_mmap
-TRACE_SYSCALL_TABLE(sys_mmap, sys_mmap, 90, 6) 
+TRACE_SYSCALL_TABLE(sys_mmap, sys_mmap, 90, 6)
 
 #define OVERRIDE_TABLE_32_sys_arm_fadvise64_64
 TRACE_SYSCALL_TABLE(sys_arm_fadvise64_64, sys_arm_fadvise64_64, 270, 4)
