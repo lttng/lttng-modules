@@ -2,7 +2,6 @@
 
 #define OVERRIDE_TABLE_32_sys_arm_fadvise64_64
 #define OVERRIDE_TABLE_32_sys_sync_file_range2
-#define OVERRIDE_TABLE_32_sys_set_tls
 
 #ifndef CREATE_SYSCALL_TABLE
 
@@ -38,18 +37,6 @@ SC_TRACE_EVENT(sys_sync_file_range2,
 	TP_printk()
 )
 
-SC_TRACE_EVENT(sys_set_tls,
-	TP_PROTO(unsigned int tid, unsigned long tls),
-	TP_ARGS(tid, tls),
-	TP_STRUCT__entry(
-		__field(unsigned int, tid)
-		__field_hex(unsigned int, tls)),
-	TP_fast_assign(
-		tp_assign(tid, tid)
-		tp_assign(tls, tls)),
-	TP_printk()
-)
-
 #else	/* CREATE_SYSCALL_TABLE */
 
 #define OVVERRIDE_TABLE_32_sys_mmap
@@ -59,9 +46,6 @@ TRACE_SYSCALL_TABLE(sys_mmap, sys_mmap, 90, 6)
 TRACE_SYSCALL_TABLE(sys_arm_fadvise64_64, sys_arm_fadvise64_64, 270, 4)
 #define OVERRIDE_TABLE_32_sys_sync_file_range2
 TRACE_SYSCALL_TABLE(sys_sync_file_range2, sys_sync_file_range2, 341, 4)
-#define OVERRIDE_TABLE_32_sys_set_tls
-TRACE_SYSCALL_TABLE(sys_set_tls, sys_set_tls, 0xf0005, 2)
-
 
 #endif /* CREATE_SYSCALL_TABLE */
 
