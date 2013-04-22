@@ -28,21 +28,21 @@ lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o \
 
 ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
 lttng-tracer-objs += lttng-syscalls.o probes/lttng-probe-user.o
-endif
+endif # CONFIG_HAVE_SYSCALL_TRACEPOINTS
 
 ifneq ($(CONFIG_PERF_EVENTS),)
 lttng-tracer-objs += $(shell \
 	if [ $(VERSION) -ge 3 \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 34 \) ] ; then \
 		echo "lttng-context-perf-counters.o" ; fi;)
-endif
+endif # CONFIG_PERF_EVENTS
 
 obj-m += probes/
 obj-m += lib/
 
-endif
+endif # CONFIG_TRACEPOINTS
 
-else
+else # KERNELRELEASE
 	KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 	PWD := $(shell pwd)
 	CFLAGS = $(EXTCFLAGS)
@@ -58,4 +58,4 @@ clean:
 
 %.i: %.c
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) $@
-endif
+endif # KERNELRELEASE
