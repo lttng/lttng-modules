@@ -3,13 +3,6 @@
 #
 
 ifneq ($(KERNELRELEASE),)
-
-ifeq ($(CONFIG_TRACEPOINTS),)
-
-$(error You need to enable CONFIG_TRACEPOINTS in kernel!)
-
-endif #CONFIG_TRACEPOINTS
-
 ifneq ($(CONFIG_TRACEPOINTS),)
 
 obj-m += lttng-ring-buffer-client-discard.o
