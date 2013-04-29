@@ -313,11 +313,7 @@ TRACE_EVENT(block_bio_bounce,
  */
 TRACE_EVENT(block_bio_complete,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-	TP_PROTO(struct bio *bio, int error),
-
-	TP_ARGS(bio, error),
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
 	TP_PROTO(struct request_queue *q, struct bio *bio, int error),
 
 	TP_ARGS(q, bio, error),
