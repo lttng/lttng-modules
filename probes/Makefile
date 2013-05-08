@@ -8,7 +8,6 @@ ifneq ($(CONFIG_TRACEPOINTS),)
 ccflags-y += -I$(PWD)/probes
 obj-m += lttng-types.o
 
-obj-m += lttng-probe-lttng.o
 obj-m += lttng-probe-sched.o
 obj-m += lttng-probe-irq.o
 obj-m += lttng-probe-timer.o
