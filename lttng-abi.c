@@ -296,36 +296,6 @@ static const struct file_operations lttng_fops = {
 #endif
 };
 
-/*
- * We tolerate no failure in this function (if one happens, we print a dmesg
- * error, but cannot return any error, because the channel information is
- * invariant.
- */
-static
-void lttng_metadata_create_events(struct file *channel_file)
-{
-	struct lttng_channel *channel = channel_file->private_data;
-	static struct lttng_kernel_event metadata_params = {
-		.instrumentation = LTTNG_KERNEL_TRACEPOINT,
-		.name = "lttng_metadata",
-	};
-	struct lttng_event *event;
-
-	/*
-	 * We tolerate no failure path after event creation. It will stay
-	 * invariant for the rest of the session.
-	 */
-	event = lttng_event_create(channel, &metadata_params, NULL, NULL);
-	if (!event) {
-		goto create_error;
-	}
-	return;
-
-create_error:
-	WARN_ON(1);
-	return;		/* not allowed to return error */
-}
-
 static
 int lttng_abi_create_channel(struct file *session_file,
 			     struct lttng_kernel_channel *chan_param,
@@ -402,7 +372,6 @@ int lttng_abi_create_channel(struct file *session_file,
 	fd_install(chan_fd, chan_file);
 	if (channel_type == METADATA_CHANNEL) {
 		session->metadata = chan;
-		lttng_metadata_create_events(chan_file);
 	}
 
 	/* The channel created holds a reference on the session */
