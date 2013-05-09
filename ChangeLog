@@ -1,3 +1,14 @@
+2013-05-09 LTTng modules 2.2.0-rc2
+	* Remove useless lttng_metadata probe
+	* Fix: warning kvm_trace_exit_reason redefined for 3.9 kernel
+	* Fix: 3.9.0 block layer instrumentation build
+	* Revert "Stop build if CONFIG_TRACEPOINTS is not set"
+	* Stop build if CONFIG_TRACEPOINTS is not set
+	* Add comments to endifs.
+	* Fix: remove ARM set_tls system call override
+	* Cleanup: arm sys_mmap whitespace
+	* Clean up using global_dirty_limit wrapper for writeback probe
+
 2013-03-29 LTTng modules 2.2.0-rc1
 	* Update README
 	* Fix: vmscan instrumentation build
