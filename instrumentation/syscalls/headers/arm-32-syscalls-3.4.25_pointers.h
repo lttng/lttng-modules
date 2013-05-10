@@ -6,7 +6,7 @@
 
 #include <linux/tracepoint.h>
 #include <linux/syscalls.h>
-#include "arm-32-syscalls-2.6.38_pointers_override.h"
+#include "arm-32-syscalls-3.4.25_pointers_override.h"
 #include "syscalls_pointers_override.h"
 
 #ifndef OVERRIDE_32_sys_unlink
@@ -54,6 +54,15 @@ SC_TRACE_EVENT(sys_times,
 	TP_printk()
 )
 #endif
+#ifndef OVERRIDE_32_sys_acct
+SC_TRACE_EVENT(sys_acct,
+	TP_PROTO(const char * name),
+	TP_ARGS(name),
+	TP_STRUCT__entry(__string_from_user(name, name)),
+	TP_fast_assign(tp_copy_string_from_user(name, name)),
+	TP_printk()
+)
+#endif
 #ifndef OVERRIDE_32_sys_chroot
 SC_TRACE_EVENT(sys_chroot,
 	TP_PROTO(const char * filename),
@@ -78,6 +87,15 @@ SC_TRACE_EVENT(sys_uselib,
 	TP_ARGS(library),
 	TP_STRUCT__entry(__field_hex(const char *, library)),
 	TP_fast_assign(tp_assign(library, library)),
+	TP_printk()
+)
+#endif
+#ifndef OVERRIDE_32_sys_swapoff
+SC_TRACE_EVENT(sys_swapoff,
+	TP_PROTO(const char * specialfile),
+	TP_ARGS(specialfile),
+	TP_STRUCT__entry(__string_from_user(specialfile, specialfile)),
+	TP_fast_assign(tp_copy_string_from_user(specialfile, specialfile)),
 	TP_printk()
 )
 #endif
@@ -146,9 +164,9 @@ SC_TRACE_EVENT(sys_shmdt,
 #endif
 #ifndef OVERRIDE_32_sys_creat
 SC_TRACE_EVENT(sys_creat,
-	TP_PROTO(const char * pathname, int mode),
+	TP_PROTO(const char * pathname, umode_t mode),
 	TP_ARGS(pathname, mode),
-	TP_STRUCT__entry(__string_from_user(pathname, pathname) __field(int, mode)),
+	TP_STRUCT__entry(__string_from_user(pathname, pathname) __field(umode_t, mode)),
 	TP_fast_assign(tp_copy_string_from_user(pathname, pathname) tp_assign(mode, mode)),
 	TP_printk()
 )
@@ -164,9 +182,9 @@ SC_TRACE_EVENT(sys_link,
 #endif
 #ifndef OVERRIDE_32_sys_chmod
 SC_TRACE_EVENT(sys_chmod,
-	TP_PROTO(const char * filename, mode_t mode),
+	TP_PROTO(const char * filename, umode_t mode),
 	TP_ARGS(filename, mode),
-	TP_STRUCT__entry(__string_from_user(filename, filename) __field(mode_t, mode)),
+	TP_STRUCT__entry(__string_from_user(filename, filename) __field(umode_t, mode)),
 	TP_fast_assign(tp_copy_string_from_user(filename, filename) tp_assign(mode, mode)),
 	TP_printk()
 )
@@ -191,9 +209,9 @@ SC_TRACE_EVENT(sys_rename,
 #endif
 #ifndef OVERRIDE_32_sys_mkdir
 SC_TRACE_EVENT(sys_mkdir,
-	TP_PROTO(const char * pathname, int mode),
+	TP_PROTO(const char * pathname, umode_t mode),
 	TP_ARGS(pathname, mode),
-	TP_STRUCT__entry(__string_from_user(pathname, pathname) __field(int, mode)),
+	TP_STRUCT__entry(__string_from_user(pathname, pathname) __field(umode_t, mode)),
 	TP_fast_assign(tp_copy_string_from_user(pathname, pathname) tp_assign(mode, mode)),
 	TP_printk()
 )
@@ -285,6 +303,15 @@ SC_TRACE_EVENT(sys_symlink,
 	TP_ARGS(oldname, newname),
 	TP_STRUCT__entry(__string_from_user(oldname, oldname) __string_from_user(newname, newname)),
 	TP_fast_assign(tp_copy_string_from_user(oldname, oldname) tp_copy_string_from_user(newname, newname)),
+	TP_printk()
+)
+#endif
+#ifndef OVERRIDE_32_sys_swapon
+SC_TRACE_EVENT(sys_swapon,
+	TP_PROTO(const char * specialfile, int swap_flags),
+	TP_ARGS(specialfile, swap_flags),
+	TP_STRUCT__entry(__string_from_user(specialfile, specialfile) __field(int, swap_flags)),
+	TP_fast_assign(tp_copy_string_from_user(specialfile, specialfile) tp_assign(swap_flags, swap_flags)),
 	TP_printk()
 )
 #endif
@@ -612,6 +639,15 @@ SC_TRACE_EVENT(sys_pipe2,
 	TP_printk()
 )
 #endif
+#ifndef OVERRIDE_32_sys_clock_adjtime
+SC_TRACE_EVENT(sys_clock_adjtime,
+	TP_PROTO(const clockid_t which_clock, struct timex * utx),
+	TP_ARGS(which_clock, utx),
+	TP_STRUCT__entry(__field(const clockid_t, which_clock) __field_hex(struct timex *, utx)),
+	TP_fast_assign(tp_assign(which_clock, which_clock) tp_assign(utx, utx)),
+	TP_printk()
+)
+#endif
 #ifndef OVERRIDE_32_sys_read
 SC_TRACE_EVENT(sys_read,
 	TP_PROTO(unsigned int fd, char * buf, size_t count),
@@ -632,18 +668,18 @@ SC_TRACE_EVENT(sys_write,
 #endif
 #ifndef OVERRIDE_32_sys_open
 SC_TRACE_EVENT(sys_open,
-	TP_PROTO(const char * filename, int flags, int mode),
+	TP_PROTO(const char * filename, int flags, umode_t mode),
 	TP_ARGS(filename, flags, mode),
-	TP_STRUCT__entry(__string_from_user(filename, filename) __field(int, flags) __field(int, mode)),
+	TP_STRUCT__entry(__string_from_user(filename, filename) __field(int, flags) __field(umode_t, mode)),
 	TP_fast_assign(tp_copy_string_from_user(filename, filename) tp_assign(flags, flags) tp_assign(mode, mode)),
 	TP_printk()
 )
 #endif
 #ifndef OVERRIDE_32_sys_mknod
 SC_TRACE_EVENT(sys_mknod,
-	TP_PROTO(const char * filename, int mode, unsigned dev),
+	TP_PROTO(const char * filename, umode_t mode, unsigned dev),
 	TP_ARGS(filename, mode, dev),
-	TP_STRUCT__entry(__string_from_user(filename, filename) __field(int, mode) __field(unsigned, dev)),
+	TP_STRUCT__entry(__string_from_user(filename, filename) __field(umode_t, mode) __field(unsigned, dev)),
 	TP_fast_assign(tp_copy_string_from_user(filename, filename) tp_assign(mode, mode) tp_assign(dev, dev)),
 	TP_printk()
 )
@@ -686,10 +722,10 @@ SC_TRACE_EVENT(sys_setitimer,
 #endif
 #ifndef OVERRIDE_32_sys_sigprocmask
 SC_TRACE_EVENT(sys_sigprocmask,
-	TP_PROTO(int how, old_sigset_t * set, old_sigset_t * oset),
-	TP_ARGS(how, set, oset),
-	TP_STRUCT__entry(__field(int, how) __field_hex(old_sigset_t *, set) __field_hex(old_sigset_t *, oset)),
-	TP_fast_assign(tp_assign(how, how) tp_assign(set, set) tp_assign(oset, oset)),
+	TP_PROTO(int how, old_sigset_t * nset, old_sigset_t * oset),
+	TP_ARGS(how, nset, oset),
+	TP_STRUCT__entry(__field(int, how) __field_hex(old_sigset_t *, nset) __field_hex(old_sigset_t *, oset)),
+	TP_fast_assign(tp_assign(how, how) tp_assign(nset, nset) tp_assign(oset, oset)),
 	TP_printk()
 )
 #endif
@@ -749,9 +785,9 @@ SC_TRACE_EVENT(sys_getresuid16,
 #endif
 #ifndef OVERRIDE_32_sys_poll
 SC_TRACE_EVENT(sys_poll,
-	TP_PROTO(struct pollfd * ufds, unsigned int nfds, long timeout_msecs),
+	TP_PROTO(struct pollfd * ufds, unsigned int nfds, int timeout_msecs),
 	TP_ARGS(ufds, nfds, timeout_msecs),
-	TP_STRUCT__entry(__field_hex(struct pollfd *, ufds) __field(unsigned int, nfds) __field(long, timeout_msecs)),
+	TP_STRUCT__entry(__field_hex(struct pollfd *, ufds) __field(unsigned int, nfds) __field(int, timeout_msecs)),
 	TP_fast_assign(tp_assign(ufds, ufds) tp_assign(nfds, nfds) tp_assign(timeout_msecs, timeout_msecs)),
 	TP_printk()
 )
@@ -1028,9 +1064,9 @@ SC_TRACE_EVENT(sys_inotify_add_watch,
 #endif
 #ifndef OVERRIDE_32_sys_mkdirat
 SC_TRACE_EVENT(sys_mkdirat,
-	TP_PROTO(int dfd, const char * pathname, int mode),
+	TP_PROTO(int dfd, const char * pathname, umode_t mode),
 	TP_ARGS(dfd, pathname, mode),
-	TP_STRUCT__entry(__field(int, dfd) __string_from_user(pathname, pathname) __field(int, mode)),
+	TP_STRUCT__entry(__field(int, dfd) __string_from_user(pathname, pathname) __field(umode_t, mode)),
 	TP_fast_assign(tp_assign(dfd, dfd) tp_copy_string_from_user(pathname, pathname) tp_assign(mode, mode)),
 	TP_printk()
 )
@@ -1064,9 +1100,9 @@ SC_TRACE_EVENT(sys_symlinkat,
 #endif
 #ifndef OVERRIDE_32_sys_fchmodat
 SC_TRACE_EVENT(sys_fchmodat,
-	TP_PROTO(int dfd, const char * filename, mode_t mode),
+	TP_PROTO(int dfd, const char * filename, umode_t mode),
 	TP_ARGS(dfd, filename, mode),
-	TP_STRUCT__entry(__field(int, dfd) __string_from_user(filename, filename) __field(mode_t, mode)),
+	TP_STRUCT__entry(__field(int, dfd) __string_from_user(filename, filename) __field(umode_t, mode)),
 	TP_fast_assign(tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(mode, mode)),
 	TP_printk()
 )
@@ -1107,6 +1143,15 @@ SC_TRACE_EVENT(sys_signalfd,
 	TP_printk()
 )
 #endif
+#ifndef OVERRIDE_32_sys_open_by_handle_at
+SC_TRACE_EVENT(sys_open_by_handle_at,
+	TP_PROTO(int mountdirfd, struct file_handle * handle, int flags),
+	TP_ARGS(mountdirfd, handle, flags),
+	TP_STRUCT__entry(__field(int, mountdirfd) __field_hex(struct file_handle *, handle) __field(int, flags)),
+	TP_fast_assign(tp_assign(mountdirfd, mountdirfd) tp_assign(handle, handle) tp_assign(flags, flags)),
+	TP_printk()
+)
+#endif
 #ifndef OVERRIDE_32_sys_reboot
 SC_TRACE_EVENT(sys_reboot,
 	TP_PROTO(int magic1, int magic2, unsigned int cmd, void * arg),
@@ -1125,6 +1170,15 @@ SC_TRACE_EVENT(sys_wait4,
 	TP_printk()
 )
 #endif
+#ifndef OVERRIDE_32_sys_quotactl
+SC_TRACE_EVENT(sys_quotactl,
+	TP_PROTO(unsigned int cmd, const char * special, qid_t id, void * addr),
+	TP_ARGS(cmd, special, id, addr),
+	TP_STRUCT__entry(__field(unsigned int, cmd) __field_hex(const char *, special) __field(qid_t, id) __field_hex(void *, addr)),
+	TP_fast_assign(tp_assign(cmd, cmd) tp_assign(special, special) tp_assign(id, id) tp_assign(addr, addr)),
+	TP_printk()
+)
+#endif
 #ifndef OVERRIDE_32_sys_rt_sigaction
 SC_TRACE_EVENT(sys_rt_sigaction,
 	TP_PROTO(int sig, const struct sigaction * act, struct sigaction * oact, size_t sigsetsize),
@@ -1136,10 +1190,10 @@ SC_TRACE_EVENT(sys_rt_sigaction,
 #endif
 #ifndef OVERRIDE_32_sys_rt_sigprocmask
 SC_TRACE_EVENT(sys_rt_sigprocmask,
-	TP_PROTO(int how, sigset_t * set, sigset_t * oset, size_t sigsetsize),
-	TP_ARGS(how, set, oset, sigsetsize),
-	TP_STRUCT__entry(__field(int, how) __field_hex(sigset_t *, set) __field_hex(sigset_t *, oset) __field(size_t, sigsetsize)),
-	TP_fast_assign(tp_assign(how, how) tp_assign(set, set) tp_assign(oset, oset) tp_assign(sigsetsize, sigsetsize)),
+	TP_PROTO(int how, sigset_t * nset, sigset_t * oset, size_t sigsetsize),
+	TP_ARGS(how, nset, oset, sigsetsize),
+	TP_STRUCT__entry(__field(int, how) __field_hex(sigset_t *, nset) __field_hex(sigset_t *, oset) __field(size_t, sigsetsize)),
+	TP_fast_assign(tp_assign(how, how) tp_assign(nset, nset) tp_assign(oset, oset) tp_assign(sigsetsize, sigsetsize)),
 	TP_printk()
 )
 #endif
@@ -1235,9 +1289,9 @@ SC_TRACE_EVENT(sys_clock_nanosleep,
 #endif
 #ifndef OVERRIDE_32_sys_mq_open
 SC_TRACE_EVENT(sys_mq_open,
-	TP_PROTO(const char * u_name, int oflag, mode_t mode, struct mq_attr * u_attr),
+	TP_PROTO(const char * u_name, int oflag, umode_t mode, struct mq_attr * u_attr),
 	TP_ARGS(u_name, oflag, mode, u_attr),
-	TP_STRUCT__entry(__string_from_user(u_name, u_name) __field(int, oflag) __field(mode_t, mode) __field_hex(struct mq_attr *, u_attr)),
+	TP_STRUCT__entry(__string_from_user(u_name, u_name) __field(int, oflag) __field(umode_t, mode) __field_hex(struct mq_attr *, u_attr)),
 	TP_fast_assign(tp_copy_string_from_user(u_name, u_name) tp_assign(oflag, oflag) tp_assign(mode, mode) tp_assign(u_attr, u_attr)),
 	TP_printk()
 )
@@ -1289,18 +1343,18 @@ SC_TRACE_EVENT(sys_semtimedop,
 #endif
 #ifndef OVERRIDE_32_sys_openat
 SC_TRACE_EVENT(sys_openat,
-	TP_PROTO(int dfd, const char * filename, int flags, int mode),
+	TP_PROTO(int dfd, const char * filename, int flags, umode_t mode),
 	TP_ARGS(dfd, filename, flags, mode),
-	TP_STRUCT__entry(__field(int, dfd) __string_from_user(filename, filename) __field(int, flags) __field(int, mode)),
+	TP_STRUCT__entry(__field(int, dfd) __string_from_user(filename, filename) __field(int, flags) __field(umode_t, mode)),
 	TP_fast_assign(tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(flags, flags) tp_assign(mode, mode)),
 	TP_printk()
 )
 #endif
 #ifndef OVERRIDE_32_sys_mknodat
 SC_TRACE_EVENT(sys_mknodat,
-	TP_PROTO(int dfd, const char * filename, int mode, unsigned dev),
+	TP_PROTO(int dfd, const char * filename, umode_t mode, unsigned dev),
 	TP_ARGS(dfd, filename, mode, dev),
-	TP_STRUCT__entry(__field(int, dfd) __string_from_user(filename, filename) __field(int, mode) __field(unsigned, dev)),
+	TP_STRUCT__entry(__field(int, dfd) __string_from_user(filename, filename) __field(umode_t, mode) __field(unsigned, dev)),
 	TP_fast_assign(tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(mode, mode) tp_assign(dev, dev)),
 	TP_printk()
 )
@@ -1392,6 +1446,15 @@ SC_TRACE_EVENT(sys_prlimit64,
 	TP_ARGS(pid, resource, new_rlim, old_rlim),
 	TP_STRUCT__entry(__field(pid_t, pid) __field(unsigned int, resource) __field_hex(const struct rlimit64 *, new_rlim) __field_hex(struct rlimit64 *, old_rlim)),
 	TP_fast_assign(tp_assign(pid, pid) tp_assign(resource, resource) tp_assign(new_rlim, new_rlim) tp_assign(old_rlim, old_rlim)),
+	TP_printk()
+)
+#endif
+#ifndef OVERRIDE_32_sys_sendmmsg
+SC_TRACE_EVENT(sys_sendmmsg,
+	TP_PROTO(int fd, struct mmsghdr * mmsg, unsigned int vlen, unsigned int flags),
+	TP_ARGS(fd, mmsg, vlen, flags),
+	TP_STRUCT__entry(__field(int, fd) __field_hex(struct mmsghdr *, mmsg) __field(unsigned int, vlen) __field(unsigned int, flags)),
+	TP_fast_assign(tp_assign(fd, fd) tp_assign(mmsg, mmsg) tp_assign(vlen, vlen) tp_assign(flags, flags)),
 	TP_printk()
 )
 #endif
@@ -1566,12 +1629,30 @@ SC_TRACE_EVENT(sys_pwritev,
 	TP_printk()
 )
 #endif
+#ifndef OVERRIDE_32_sys_perf_event_open
+SC_TRACE_EVENT(sys_perf_event_open,
+	TP_PROTO(struct perf_event_attr * attr_uptr, pid_t pid, int cpu, int group_fd, unsigned long flags),
+	TP_ARGS(attr_uptr, pid, cpu, group_fd, flags),
+	TP_STRUCT__entry(__field_hex(struct perf_event_attr *, attr_uptr) __field(pid_t, pid) __field(int, cpu) __field(int, group_fd) __field(unsigned long, flags)),
+	TP_fast_assign(tp_assign(attr_uptr, attr_uptr) tp_assign(pid, pid) tp_assign(cpu, cpu) tp_assign(group_fd, group_fd) tp_assign(flags, flags)),
+	TP_printk()
+)
+#endif
 #ifndef OVERRIDE_32_sys_recvmmsg
 SC_TRACE_EVENT(sys_recvmmsg,
 	TP_PROTO(int fd, struct mmsghdr * mmsg, unsigned int vlen, unsigned int flags, struct timespec * timeout),
 	TP_ARGS(fd, mmsg, vlen, flags, timeout),
 	TP_STRUCT__entry(__field(int, fd) __field_hex(struct mmsghdr *, mmsg) __field(unsigned int, vlen) __field(unsigned int, flags) __field_hex(struct timespec *, timeout)),
 	TP_fast_assign(tp_assign(fd, fd) tp_assign(mmsg, mmsg) tp_assign(vlen, vlen) tp_assign(flags, flags) tp_assign(timeout, timeout)),
+	TP_printk()
+)
+#endif
+#ifndef OVERRIDE_32_sys_name_to_handle_at
+SC_TRACE_EVENT(sys_name_to_handle_at,
+	TP_PROTO(int dfd, const char * name, struct file_handle * handle, int * mnt_id, int flag),
+	TP_ARGS(dfd, name, handle, mnt_id, flag),
+	TP_STRUCT__entry(__field(int, dfd) __string_from_user(name, name) __field_hex(struct file_handle *, handle) __field_hex(int *, mnt_id) __field(int, flag)),
+	TP_fast_assign(tp_assign(dfd, dfd) tp_copy_string_from_user(name, name) tp_assign(handle, handle) tp_assign(mnt_id, mnt_id) tp_assign(flag, flag)),
 	TP_printk()
 )
 #endif
@@ -1629,6 +1710,24 @@ SC_TRACE_EVENT(sys_epoll_pwait,
 	TP_printk()
 )
 #endif
+#ifndef OVERRIDE_32_sys_process_vm_readv
+SC_TRACE_EVENT(sys_process_vm_readv,
+	TP_PROTO(pid_t pid, const struct iovec * lvec, unsigned long liovcnt, const struct iovec * rvec, unsigned long riovcnt, unsigned long flags),
+	TP_ARGS(pid, lvec, liovcnt, rvec, riovcnt, flags),
+	TP_STRUCT__entry(__field(pid_t, pid) __field_hex(const struct iovec *, lvec) __field(unsigned long, liovcnt) __field_hex(const struct iovec *, rvec) __field(unsigned long, riovcnt) __field(unsigned long, flags)),
+	TP_fast_assign(tp_assign(pid, pid) tp_assign(lvec, lvec) tp_assign(liovcnt, liovcnt) tp_assign(rvec, rvec) tp_assign(riovcnt, riovcnt) tp_assign(flags, flags)),
+	TP_printk()
+)
+#endif
+#ifndef OVERRIDE_32_sys_process_vm_writev
+SC_TRACE_EVENT(sys_process_vm_writev,
+	TP_PROTO(pid_t pid, const struct iovec * lvec, unsigned long liovcnt, const struct iovec * rvec, unsigned long riovcnt, unsigned long flags),
+	TP_ARGS(pid, lvec, liovcnt, rvec, riovcnt, flags),
+	TP_STRUCT__entry(__field(pid_t, pid) __field_hex(const struct iovec *, lvec) __field(unsigned long, liovcnt) __field_hex(const struct iovec *, rvec) __field(unsigned long, riovcnt) __field(unsigned long, flags)),
+	TP_fast_assign(tp_assign(pid, pid) tp_assign(lvec, lvec) tp_assign(liovcnt, liovcnt) tp_assign(rvec, rvec) tp_assign(riovcnt, riovcnt) tp_assign(flags, flags)),
+	TP_printk()
+)
+#endif
 
 #endif /*  _TRACE_SYSCALLS_POINTERS_H */
 
@@ -1637,7 +1736,7 @@ SC_TRACE_EVENT(sys_epoll_pwait,
 
 #else /* CREATE_SYSCALL_TABLE */
 
-#include "arm-32-syscalls-2.6.38_pointers_override.h"
+#include "arm-32-syscalls-3.4.25_pointers_override.h"
 #include "syscalls_pointers_override.h"
 
 #ifndef OVERRIDE_TABLE_32_sys_read
@@ -1691,6 +1790,9 @@ TRACE_SYSCALL_TABLE(sys_pipe, sys_pipe, 42, 1)
 #ifndef OVERRIDE_TABLE_32_sys_times
 TRACE_SYSCALL_TABLE(sys_times, sys_times, 43, 1)
 #endif
+#ifndef OVERRIDE_TABLE_32_sys_acct
+TRACE_SYSCALL_TABLE(sys_acct, sys_acct, 51, 1)
+#endif
 #ifndef OVERRIDE_TABLE_32_sys_umount
 TRACE_SYSCALL_TABLE(sys_umount, sys_umount, 52, 2)
 #endif
@@ -1733,6 +1835,9 @@ TRACE_SYSCALL_TABLE(sys_readlink, sys_readlink, 85, 3)
 #ifndef OVERRIDE_TABLE_32_sys_uselib
 TRACE_SYSCALL_TABLE(sys_uselib, sys_uselib, 86, 1)
 #endif
+#ifndef OVERRIDE_TABLE_32_sys_swapon
+TRACE_SYSCALL_TABLE(sys_swapon, sys_swapon, 87, 2)
+#endif
 #ifndef OVERRIDE_TABLE_32_sys_reboot
 TRACE_SYSCALL_TABLE(sys_reboot, sys_reboot, 88, 4)
 #endif
@@ -1766,6 +1871,9 @@ TRACE_SYSCALL_TABLE(sys_newfstat, sys_newfstat, 108, 2)
 #ifndef OVERRIDE_TABLE_32_sys_wait4
 TRACE_SYSCALL_TABLE(sys_wait4, sys_wait4, 114, 4)
 #endif
+#ifndef OVERRIDE_TABLE_32_sys_swapoff
+TRACE_SYSCALL_TABLE(sys_swapoff, sys_swapoff, 115, 1)
+#endif
 #ifndef OVERRIDE_TABLE_32_sys_sysinfo
 TRACE_SYSCALL_TABLE(sys_sysinfo, sys_sysinfo, 116, 1)
 #endif
@@ -1786,6 +1894,9 @@ TRACE_SYSCALL_TABLE(sys_init_module, sys_init_module, 128, 3)
 #endif
 #ifndef OVERRIDE_TABLE_32_sys_delete_module
 TRACE_SYSCALL_TABLE(sys_delete_module, sys_delete_module, 129, 2)
+#endif
+#ifndef OVERRIDE_TABLE_32_sys_quotactl
+TRACE_SYSCALL_TABLE(sys_quotactl, sys_quotactl, 131, 4)
 #endif
 #ifndef OVERRIDE_TABLE_32_sys_llseek
 TRACE_SYSCALL_TABLE(sys_llseek, sys_llseek, 140, 5)
@@ -2171,6 +2282,9 @@ TRACE_SYSCALL_TABLE(sys_pwritev, sys_pwritev, 362, 5)
 #ifndef OVERRIDE_TABLE_32_sys_rt_tgsigqueueinfo
 TRACE_SYSCALL_TABLE(sys_rt_tgsigqueueinfo, sys_rt_tgsigqueueinfo, 363, 4)
 #endif
+#ifndef OVERRIDE_TABLE_32_sys_perf_event_open
+TRACE_SYSCALL_TABLE(sys_perf_event_open, sys_perf_event_open, 364, 5)
+#endif
 #ifndef OVERRIDE_TABLE_32_sys_recvmmsg
 TRACE_SYSCALL_TABLE(sys_recvmmsg, sys_recvmmsg, 365, 5)
 #endif
@@ -2179,6 +2293,24 @@ TRACE_SYSCALL_TABLE(sys_accept4, sys_accept4, 366, 4)
 #endif
 #ifndef OVERRIDE_TABLE_32_sys_prlimit64
 TRACE_SYSCALL_TABLE(sys_prlimit64, sys_prlimit64, 369, 4)
+#endif
+#ifndef OVERRIDE_TABLE_32_sys_name_to_handle_at
+TRACE_SYSCALL_TABLE(sys_name_to_handle_at, sys_name_to_handle_at, 370, 5)
+#endif
+#ifndef OVERRIDE_TABLE_32_sys_open_by_handle_at
+TRACE_SYSCALL_TABLE(sys_open_by_handle_at, sys_open_by_handle_at, 371, 3)
+#endif
+#ifndef OVERRIDE_TABLE_32_sys_clock_adjtime
+TRACE_SYSCALL_TABLE(sys_clock_adjtime, sys_clock_adjtime, 372, 2)
+#endif
+#ifndef OVERRIDE_TABLE_32_sys_sendmmsg
+TRACE_SYSCALL_TABLE(sys_sendmmsg, sys_sendmmsg, 374, 4)
+#endif
+#ifndef OVERRIDE_TABLE_32_sys_process_vm_readv
+TRACE_SYSCALL_TABLE(sys_process_vm_readv, sys_process_vm_readv, 376, 6)
+#endif
+#ifndef OVERRIDE_TABLE_32_sys_process_vm_writev
+TRACE_SYSCALL_TABLE(sys_process_vm_writev, sys_process_vm_writev, 377, 6)
 #endif
 
 #endif /* CREATE_SYSCALL_TABLE */

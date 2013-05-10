@@ -6,7 +6,7 @@
 
 #include <linux/tracepoint.h>
 #include <linux/syscalls.h>
-#include "arm-32-syscalls-2.6.38_integers_override.h"
+#include "arm-32-syscalls-3.4.25_integers_override.h"
 #include "syscalls_integers_override.h"
 
 SC_DECLARE_EVENT_CLASS_NOARGS(syscalls_noargs,
@@ -371,6 +371,15 @@ SC_TRACE_EVENT(sys_inotify_init1,
 	TP_printk()
 )
 #endif
+#ifndef OVERRIDE_32_sys_syncfs
+SC_TRACE_EVENT(sys_syncfs,
+	TP_PROTO(int fd),
+	TP_ARGS(fd),
+	TP_STRUCT__entry(__field(int, fd)),
+	TP_fast_assign(tp_assign(fd, fd)),
+	TP_printk()
+)
+#endif
 #ifndef OVERRIDE_32_sys_kill
 SC_TRACE_EVENT(sys_kill,
 	TP_PROTO(pid_t pid, int sig),
@@ -436,9 +445,9 @@ SC_TRACE_EVENT(sys_ftruncate,
 #endif
 #ifndef OVERRIDE_32_sys_fchmod
 SC_TRACE_EVENT(sys_fchmod,
-	TP_PROTO(unsigned int fd, mode_t mode),
+	TP_PROTO(unsigned int fd, umode_t mode),
 	TP_ARGS(fd, mode),
-	TP_STRUCT__entry(__field(unsigned int, fd) __field(mode_t, mode)),
+	TP_STRUCT__entry(__field(unsigned int, fd) __field(umode_t, mode)),
 	TP_fast_assign(tp_assign(fd, fd) tp_assign(mode, mode)),
 	TP_printk()
 )
@@ -575,6 +584,24 @@ SC_TRACE_EVENT(sys_eventfd2,
 	TP_ARGS(count, flags),
 	TP_STRUCT__entry(__field(unsigned int, count) __field(int, flags)),
 	TP_fast_assign(tp_assign(count, count) tp_assign(flags, flags)),
+	TP_printk()
+)
+#endif
+#ifndef OVERRIDE_32_sys_fanotify_init
+SC_TRACE_EVENT(sys_fanotify_init,
+	TP_PROTO(unsigned int flags, unsigned int event_f_flags),
+	TP_ARGS(flags, event_f_flags),
+	TP_STRUCT__entry(__field(unsigned int, flags) __field(unsigned int, event_f_flags)),
+	TP_fast_assign(tp_assign(flags, flags) tp_assign(event_f_flags, event_f_flags)),
+	TP_printk()
+)
+#endif
+#ifndef OVERRIDE_32_sys_setns
+SC_TRACE_EVENT(sys_setns,
+	TP_PROTO(int fd, int nstype),
+	TP_ARGS(fd, nstype),
+	TP_STRUCT__entry(__field(int, fd) __field(int, nstype)),
+	TP_fast_assign(tp_assign(fd, fd) tp_assign(nstype, nstype)),
 	TP_printk()
 )
 #endif
@@ -829,7 +856,7 @@ SC_TRACE_EVENT(sys_keyctl,
 
 #else /* CREATE_SYSCALL_TABLE */
 
-#include "arm-32-syscalls-2.6.38_integers_override.h"
+#include "arm-32-syscalls-3.4.25_integers_override.h"
 #include "syscalls_integers_override.h"
 
 #ifndef OVERRIDE_TABLE_32_sys_restart_syscall
@@ -1140,6 +1167,15 @@ TRACE_SYSCALL_TABLE(sys_dup3, sys_dup3, 358, 3)
 #endif
 #ifndef OVERRIDE_TABLE_32_sys_inotify_init1
 TRACE_SYSCALL_TABLE(sys_inotify_init1, sys_inotify_init1, 360, 1)
+#endif
+#ifndef OVERRIDE_TABLE_32_sys_fanotify_init
+TRACE_SYSCALL_TABLE(sys_fanotify_init, sys_fanotify_init, 367, 2)
+#endif
+#ifndef OVERRIDE_TABLE_32_sys_syncfs
+TRACE_SYSCALL_TABLE(sys_syncfs, sys_syncfs, 373, 1)
+#endif
+#ifndef OVERRIDE_TABLE_32_sys_setns
+TRACE_SYSCALL_TABLE(sys_setns, sys_setns, 375, 2)
 #endif
 
 #endif /* CREATE_SYSCALL_TABLE */

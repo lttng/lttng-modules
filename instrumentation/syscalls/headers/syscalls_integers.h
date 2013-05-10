@@ -7,5 +7,5 @@
 #endif
 
 #ifdef CONFIG_ARM
-#include "arm-32-syscalls-2.6.38_integers.h"
+#include "arm-32-syscalls-3.4.25_integers.h"
 #endif
