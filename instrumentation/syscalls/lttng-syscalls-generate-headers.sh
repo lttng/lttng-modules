@@ -59,7 +59,7 @@ if [ "$CLASS" = integers ]; then
 
 NRARGS=0
 
-echo -e \
+printf \
 'SC_DECLARE_EVENT_CLASS_NOARGS(syscalls_noargs,\n'\
 '	TP_STRUCT__entry(),\n'\
 '	TP_fast_assign(),\n'\
