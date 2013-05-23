@@ -351,7 +351,7 @@ void lib_ring_buffer_iterator_init(struct channel *chan, struct lib_ring_buffer 
 
 #ifdef CONFIG_HOTPLUG_CPU
 static
-int __cpuinit channel_iterator_cpu_hotplug(struct notifier_block *nb,
+int channel_iterator_cpu_hotplug(struct notifier_block *nb,
 					   unsigned long action,
 					   void *hcpu)
 {
