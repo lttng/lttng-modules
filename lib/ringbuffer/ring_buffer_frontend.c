@@ -402,7 +402,7 @@ static void lib_ring_buffer_stop_read_timer(struct lib_ring_buffer *buf)
  *	Returns the success/failure of the operation. (%NOTIFY_OK, %NOTIFY_BAD)
  */
 static
-int __cpuinit lib_ring_buffer_cpu_hp_callback(struct notifier_block *nb,
+int lib_ring_buffer_cpu_hp_callback(struct notifier_block *nb,
 					      unsigned long action,
 					      void *hcpu)
 {

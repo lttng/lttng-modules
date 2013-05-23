@@ -253,7 +253,7 @@ void channel_backend_reset(struct channel_backend *chanb)
  *	Returns the success/failure of the operation. (%NOTIFY_OK, %NOTIFY_BAD)
  */
 static
-int __cpuinit lib_ring_buffer_cpu_hp_callback(struct notifier_block *nb,
+int lib_ring_buffer_cpu_hp_callback(struct notifier_block *nb,
 					      unsigned long action,
 					      void *hcpu)
 {
