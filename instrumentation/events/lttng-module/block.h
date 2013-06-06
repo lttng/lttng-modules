@@ -365,7 +365,7 @@ DECLARE_EVENT_CLASS(block_bio,
 	),
 
 	TP_fast_assign(
-		tp_assign(dev, bio->bi_bdev->bd_dev)
+		tp_assign(dev, bio->bi_bdev ? bio->bi_bdev->bd_dev : 0)
 		tp_assign(sector, bio->bi_sector)
 		tp_assign(nr_sector, bio->bi_size >> 9)
 		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_size)
