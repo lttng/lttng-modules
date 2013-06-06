@@ -592,6 +592,7 @@ err:
 	return ret;
 }
 
+#ifdef CONFIG_COMPAT
 static
 long lttng_metadata_ring_buffer_compat_ioctl(struct file *filp,
 		unsigned int cmd, unsigned long arg)
@@ -619,6 +620,7 @@ long lttng_metadata_ring_buffer_compat_ioctl(struct file *filp,
 err:
 	return ret;
 }
+#endif
 
 static
 int lttng_metadata_ring_buffer_open(struct inode *inode, struct file *file)
