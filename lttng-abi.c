@@ -45,6 +45,8 @@
 #include <linux/slab.h>
 #include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "wrapper/ringbuffer/vfs.h"
+#include "wrapper/ringbuffer/backend.h"
+#include "wrapper/ringbuffer/frontend.h"
 #include "wrapper/poll.h"
 #include "lttng-abi.h"
 #include "lttng-abi-old.h"
@@ -67,11 +69,6 @@ static const struct file_operations lttng_event_fops;
  * Teardown management: opened file descriptors keep a refcount on the module,
  * so it can only exit when all file descriptors are closed.
  */
-
-enum channel_type {
-	PER_CPU_CHANNEL,
-	METADATA_CHANNEL,
-};
 
 static
 int lttng_abi_create_session(void)
@@ -362,7 +359,8 @@ int lttng_abi_create_channel(struct file *session_file,
 				  chan_param->subbuf_size,
 				  chan_param->num_subbuf,
 				  chan_param->switch_timer_interval,
-				  chan_param->read_timer_interval);
+				  chan_param->read_timer_interval,
+				  channel_type);
 	if (!chan) {
 		ret = -EINVAL;
 		goto chan_error;
@@ -370,11 +368,6 @@ int lttng_abi_create_channel(struct file *session_file,
 	chan->file = chan_file;
 	chan_file->private_data = chan;
 	fd_install(chan_fd, chan_file);
-	if (channel_type == METADATA_CHANNEL) {
-		session->metadata = chan;
-	}
-
-	/* The channel created holds a reference on the session */
 	atomic_long_inc(&session_file->f_count);
 
 	return chan_fd;
@@ -514,26 +507,191 @@ static const struct file_operations lttng_session_fops = {
 #endif
 };
 
+/**
+ *	lttng_metadata_ring_buffer_poll - LTTng ring buffer poll file operation
+ *	@filp: the file
+ *	@wait: poll table
+ *
+ *	Handles the poll operations for the metadata channels.
+ */
 static
-int lttng_abi_open_stream(struct file *channel_file)
+unsigned int lttng_metadata_ring_buffer_poll(struct file *filp,
+		poll_table *wait)
 {
-	struct lttng_channel *channel = channel_file->private_data;
-	struct lib_ring_buffer *buf;
+	struct lttng_metadata_stream *stream = filp->private_data;
+	struct lib_ring_buffer *buf = stream->priv;
+	int finalized;
+	unsigned int mask = 0;
+
+	if (filp->f_mode & FMODE_READ) {
+		poll_wait_set_exclusive(wait);
+		poll_wait(filp, &stream->read_wait, wait);
+
+		finalized = stream->finalized;
+
+		/*
+		 * lib_ring_buffer_is_finalized() contains a smp_rmb()
+		 * ordering finalized load before offsets loads.
+		 */
+		WARN_ON(atomic_long_read(&buf->active_readers) != 1);
+
+		if (finalized)
+			mask |= POLLHUP;
+
+		if (stream->metadata_cache->metadata_written >
+				stream->metadata_cache_read)
+			mask |= POLLIN;
+	}
+
+	return mask;
+}
+
+static
+int lttng_metadata_ring_buffer_ioctl_get_subbuf(struct file *filp,
+		unsigned int cmd, unsigned long arg)
+{
+	struct lttng_metadata_stream *stream = filp->private_data;
+	struct lib_ring_buffer *buf = stream->priv;
+	struct channel *chan = buf->backend.chan;
+	struct lttng_channel *lttng_chan = channel_get_private(chan);
+	int ret;
+
+	ret = lttng_metadata_output_channel(lttng_chan, stream);
+	if (ret > 0) {
+		lib_ring_buffer_switch_slow(buf, SWITCH_ACTIVE);
+		ret = 0;
+	}
+	return ret;
+}
+
+static
+long lttng_metadata_ring_buffer_ioctl(struct file *filp,
+		unsigned int cmd, unsigned long arg)
+{
+	int ret;
+	struct lttng_metadata_stream *stream = filp->private_data;
+	struct lib_ring_buffer *buf = stream->priv;
+
+	switch (cmd) {
+	case RING_BUFFER_GET_SUBBUF:
+	case RING_BUFFER_GET_NEXT_SUBBUF:
+	{
+		ret = lttng_metadata_ring_buffer_ioctl_get_subbuf(filp,
+				cmd, arg);
+		if (ret < 0)
+			goto err;
+		break;
+	}
+	default:
+		break;
+	}
+	/* Performing lib ring buffer ioctl after our own. */
+	return lib_ring_buffer_ioctl(filp, cmd, arg, buf);
+
+err:
+	return ret;
+}
+
+static
+long lttng_metadata_ring_buffer_compat_ioctl(struct file *filp,
+		unsigned int cmd, unsigned long arg)
+{
+	int ret;
+	struct lttng_metadata_stream *stream = filp->private_data;
+	struct lib_ring_buffer *buf = stream->priv;
+
+	switch (cmd) {
+	case RING_BUFFER_GET_SUBBUF:
+	case RING_BUFFER_GET_NEXT_SUBBUF:
+	{
+		ret = lttng_metadata_ring_buffer_ioctl_get_subbuf(filp,
+				cmd, arg);
+		if (ret < 0)
+			goto err;
+		break;
+	}
+	default:
+		break;
+	}
+	/* Performing lib ring buffer ioctl after our own. */
+	return lib_ring_buffer_compat_ioctl(filp, cmd, arg, buf);
+
+err:
+	return ret;
+}
+
+static
+int lttng_metadata_ring_buffer_open(struct inode *inode, struct file *file)
+{
+	struct lttng_metadata_stream *stream = inode->i_private;
+	struct lib_ring_buffer *buf = stream->priv;
+
+	file->private_data = buf;
+	return lib_ring_buffer_open(inode, file, buf);
+}
+
+static
+int lttng_metadata_ring_buffer_release(struct inode *inode, struct file *file)
+{
+	struct lttng_metadata_stream *stream = file->private_data;
+	struct lib_ring_buffer *buf = stream->priv;
+
+	kref_put(&stream->metadata_cache->refcount, metadata_cache_destroy);
+
+	return lib_ring_buffer_release(inode, file, buf);
+}
+
+static
+ssize_t lttng_metadata_ring_buffer_splice_read(struct file *in, loff_t *ppos,
+		struct pipe_inode_info *pipe, size_t len,
+		unsigned int flags)
+{
+	struct lttng_metadata_stream *stream = in->private_data;
+	struct lib_ring_buffer *buf = stream->priv;
+
+	return lib_ring_buffer_splice_read(in, ppos, pipe, len,
+			flags, buf);
+}
+
+static
+int lttng_metadata_ring_buffer_mmap(struct file *filp,
+		struct vm_area_struct *vma)
+{
+	struct lttng_metadata_stream *stream = filp->private_data;
+	struct lib_ring_buffer *buf = stream->priv;
+
+	return lib_ring_buffer_mmap(filp, vma, buf);
+}
+
+static
+const struct file_operations lttng_metadata_ring_buffer_file_operations = {
+	.owner = THIS_MODULE,
+	.open = lttng_metadata_ring_buffer_open,
+	.release = lttng_metadata_ring_buffer_release,
+	.poll = lttng_metadata_ring_buffer_poll,
+	.splice_read = lttng_metadata_ring_buffer_splice_read,
+	.mmap = lttng_metadata_ring_buffer_mmap,
+	.unlocked_ioctl = lttng_metadata_ring_buffer_ioctl,
+	.llseek = vfs_lib_ring_buffer_no_llseek,
+#ifdef CONFIG_COMPAT
+	.compat_ioctl = lttng_metadata_ring_buffer_compat_ioctl,
+#endif
+};
+
+static
+int lttng_abi_create_stream_fd(struct file *channel_file, void *stream_priv,
+		const struct file_operations *fops)
+{
 	int stream_fd, ret;
 	struct file *stream_file;
-
-	buf = channel->ops->buffer_read_open(channel->chan);
-	if (!buf)
-		return -ENOENT;
 
 	stream_fd = get_unused_fd();
 	if (stream_fd < 0) {
 		ret = stream_fd;
 		goto fd_error;
 	}
-	stream_file = anon_inode_getfile("[lttng_stream]",
-					 &lib_ring_buffer_file_operations,
-					 buf, O_RDWR);
+	stream_file = anon_inode_getfile("[lttng_stream]", fops,
+			stream_priv, O_RDWR);
 	if (IS_ERR(stream_file)) {
 		ret = PTR_ERR(stream_file);
 		goto file_error;
@@ -554,6 +712,67 @@ int lttng_abi_open_stream(struct file *channel_file)
 
 file_error:
 	put_unused_fd(stream_fd);
+fd_error:
+	return ret;
+}
+
+static
+int lttng_abi_open_stream(struct file *channel_file)
+{
+	struct lttng_channel *channel = channel_file->private_data;
+	struct lib_ring_buffer *buf;
+	int ret;
+	void *stream_priv;
+
+	buf = channel->ops->buffer_read_open(channel->chan);
+	if (!buf)
+		return -ENOENT;
+
+	stream_priv = buf;
+	ret = lttng_abi_create_stream_fd(channel_file, stream_priv,
+			&lib_ring_buffer_file_operations);
+	if (ret < 0)
+		goto fd_error;
+
+	return ret;
+
+fd_error:
+	channel->ops->buffer_read_close(buf);
+	return ret;
+}
+
+static
+int lttng_abi_open_metadata_stream(struct file *channel_file)
+{
+	struct lttng_channel *channel = channel_file->private_data;
+	struct lttng_session *session = channel->session;
+	struct lib_ring_buffer *buf;
+	int ret;
+	struct lttng_metadata_stream *metadata_stream;
+	void *stream_priv;
+
+	buf = channel->ops->buffer_read_open(channel->chan);
+	if (!buf)
+		return -ENOENT;
+
+	metadata_stream = kzalloc(sizeof(struct lttng_metadata_stream),
+			GFP_KERNEL);
+	if (!metadata_stream)
+		return -ENOMEM;
+	metadata_stream->metadata_cache = session->metadata_cache;
+	init_waitqueue_head(&metadata_stream->read_wait);
+	metadata_stream->priv = buf;
+	stream_priv = metadata_stream;
+	ret = lttng_abi_create_stream_fd(channel_file, stream_priv,
+			&lttng_metadata_ring_buffer_file_operations);
+	if (ret < 0)
+		goto fd_error;
+
+	kref_get(&session->metadata_cache->refcount);
+	list_add(&metadata_stream->list,
+		&session->metadata_cache->metadata_stream);
+	return ret;
+
 fd_error:
 	channel->ops->buffer_read_close(buf);
 	return ret;
@@ -833,7 +1052,7 @@ long lttng_metadata_ioctl(struct file *file, unsigned int cmd, unsigned long arg
 	switch (cmd) {
 	case LTTNG_KERNEL_OLD_STREAM:
 	case LTTNG_KERNEL_STREAM:
-		return lttng_abi_open_stream(file);
+		return lttng_abi_open_metadata_stream(file);
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -877,6 +1096,19 @@ int lttng_channel_release(struct inode *inode, struct file *file)
 	return 0;
 }
 
+static
+int lttng_metadata_channel_release(struct inode *inode, struct file *file)
+{
+	struct lttng_channel *channel = file->private_data;
+
+	if (channel) {
+		lttng_metadata_channel_destroy(channel);
+		fput(channel->session->file);
+	}
+
+	return 0;
+}
+
 static const struct file_operations lttng_channel_fops = {
 	.owner = THIS_MODULE,
 	.release = lttng_channel_release,
@@ -889,7 +1121,7 @@ static const struct file_operations lttng_channel_fops = {
 
 static const struct file_operations lttng_metadata_fops = {
 	.owner = THIS_MODULE,
-	.release = lttng_channel_release,
+	.release = lttng_metadata_channel_release,
 	.unlocked_ioctl = lttng_metadata_ioctl,
 #ifdef CONFIG_COMPAT
 	.compat_ioctl = lttng_metadata_ioctl,

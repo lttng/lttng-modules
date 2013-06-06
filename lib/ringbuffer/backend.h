@@ -263,9 +263,4 @@ unsigned long lib_ring_buffer_get_records_unread(
 	return records_unread;
 }
 
-ssize_t lib_ring_buffer_file_splice_read(struct file *in, loff_t *ppos,
-					 struct pipe_inode_info *pipe,
-					 size_t len, unsigned int flags);
-loff_t lib_ring_buffer_no_llseek(struct file *file, loff_t offset, int origin);
-
 #endif /* _LIB_RING_BUFFER_BACKEND_H */

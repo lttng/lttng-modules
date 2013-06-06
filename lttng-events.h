@@ -26,6 +26,7 @@
 #include <linux/version.h>
 #include <linux/list.h>
 #include <linux/kprobes.h>
+#include <linux/kref.h>
 #include "wrapper/uuid.h"
 #include "lttng-abi.h"
 #include "lttng-abi-old.h"
@@ -34,6 +35,7 @@
 
 struct lttng_channel;
 struct lttng_session;
+struct lttng_metadata_cache;
 struct lib_ring_buffer_ctx;
 struct perf_event;
 struct perf_event_attr;
@@ -56,6 +58,11 @@ enum lttng_string_encodings {
 	lttng_encode_UTF8 = 1,
 	lttng_encode_ASCII = 2,
 	NR_STRING_ENCODINGS,
+};
+
+enum channel_type {
+	PER_CPU_CHANNEL,
+	METADATA_CHANNEL,
 };
 
 struct lttng_enum_entry {
@@ -264,39 +271,60 @@ struct lttng_channel {
 	struct lttng_event *sc_compat_unknown;
 	struct lttng_event *sc_exit;	/* for syscall exit */
 	int header_type;		/* 0: unset, 1: compact, 2: large */
+	enum channel_type channel_type;
 	unsigned int metadata_dumped:1;
+};
+
+struct lttng_metadata_stream {
+	void *priv;			/* Ring buffer private data */
+	struct lttng_metadata_cache *metadata_cache;
+	unsigned int metadata_cache_read; /* Bytes read from the cache */
+	int finalized;			/* Has channel been finalized */
+	wait_queue_head_t read_wait;	/* Reader buffer-level wait queue */
+	struct list_head list;		/* Stream list */
 };
 
 struct lttng_session {
 	int active;			/* Is trace session active ? */
 	int been_active;		/* Has trace session been active ? */
 	struct file *file;		/* File associated to session */
-	struct lttng_channel *metadata;	/* Metadata channel */
 	struct list_head chan;		/* Channel list head */
 	struct list_head events;	/* Event list head */
 	struct list_head list;		/* Session list */
 	unsigned int free_chan_id;	/* Next chan ID to allocate */
 	uuid_le uuid;			/* Trace session unique ID */
+	struct lttng_metadata_cache *metadata_cache;
 	unsigned int metadata_dumped:1;
+};
+
+struct lttng_metadata_cache {
+	char *data;			/* Metadata cache */
+	unsigned int cache_alloc;	/* Metadata allocated size (bytes) */
+	unsigned int metadata_written;	/* Number of bytes written in metadata cache */
+	struct kref refcount;		/* Metadata cache usage */
+	struct list_head metadata_stream;	/* Metadata stream list */
 };
 
 struct lttng_session *lttng_session_create(void);
 int lttng_session_enable(struct lttng_session *session);
 int lttng_session_disable(struct lttng_session *session);
 void lttng_session_destroy(struct lttng_session *session);
+void metadata_cache_destroy(struct kref *kref);
 
 struct lttng_channel *lttng_channel_create(struct lttng_session *session,
 				       const char *transport_name,
 				       void *buf_addr,
 				       size_t subbuf_size, size_t num_subbuf,
 				       unsigned int switch_timer_interval,
-				       unsigned int read_timer_interval);
+				       unsigned int read_timer_interval,
+				       enum channel_type channel_type);
 struct lttng_channel *lttng_global_channel_create(struct lttng_session *session,
 				       int overwrite, void *buf_addr,
 				       size_t subbuf_size, size_t num_subbuf,
 				       unsigned int switch_timer_interval,
 				       unsigned int read_timer_interval);
 
+void lttng_metadata_channel_destroy(struct lttng_channel *chan);
 struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 				   struct lttng_kernel_event *event_param,
 				   void *filter,
@@ -326,6 +354,9 @@ const struct lttng_event_desc *lttng_event_get(const char *name);
 void lttng_event_put(const struct lttng_event_desc *desc);
 int lttng_probes_init(void);
 void lttng_probes_exit(void);
+
+int lttng_metadata_output_channel(struct lttng_channel *chan,
+		struct lttng_metadata_stream *stream);
 
 #if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
 int lttng_syscalls_register(struct lttng_channel *chan, void *filter);

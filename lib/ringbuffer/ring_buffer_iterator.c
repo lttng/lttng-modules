@@ -796,7 +796,7 @@ const struct file_operations channel_payload_file_operations = {
 	.open = channel_file_open,
 	.release = channel_file_release,
 	.read = channel_file_read,
-	.llseek = lib_ring_buffer_no_llseek,
+	.llseek = vfs_lib_ring_buffer_no_llseek,
 };
 EXPORT_SYMBOL_GPL(channel_payload_file_operations);
 
@@ -805,6 +805,6 @@ const struct file_operations lib_ring_buffer_payload_file_operations = {
 	.open = lib_ring_buffer_file_open,
 	.release = lib_ring_buffer_file_release,
 	.read = lib_ring_buffer_file_read,
-	.llseek = lib_ring_buffer_no_llseek,
+	.llseek = vfs_lib_ring_buffer_no_llseek,
 };
 EXPORT_SYMBOL_GPL(lib_ring_buffer_payload_file_operations);
