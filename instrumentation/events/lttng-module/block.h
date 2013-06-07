@@ -8,6 +8,9 @@
 #include <linux/blkdev.h>
 #include <linux/tracepoint.h>
 #include <linux/trace_seq.h>
+#include <linux/version.h>
+
+#define RWBS_LEN	8
 
 #ifndef _TRACE_BLOCK_DEF_
 #define _TRACE_BLOCK_DEF_
@@ -19,22 +22,44 @@ enum {
 	RWBS_FLAG_DISCARD	= (1 << 1),
 	RWBS_FLAG_READ		= (1 << 2),
 	RWBS_FLAG_RAHEAD	= (1 << 3),
-	RWBS_FLAG_SYNC		= (1 << 4),
-	RWBS_FLAG_META		= (1 << 5),
-	RWBS_FLAG_SECURE	= (1 << 6),
+	RWBS_FLAG_BARRIER	= (1 << 4),
+	RWBS_FLAG_SYNC		= (1 << 5),
+	RWBS_FLAG_META		= (1 << 6),
+	RWBS_FLAG_SECURE	= (1 << 7),
+	RWBS_FLAG_FLUSH		= (1 << 8),
+	RWBS_FLAG_FUA		= (1 << 9),
 };
 
 #endif /* _TRACE_BLOCK_DEF_ */
 
 #define __print_rwbs_flags(rwbs)		\
 	__print_flags(rwbs, "",			\
+		{ RWBS_FLAG_FLUSH, "F" },	\
 		{ RWBS_FLAG_WRITE, "W" },	\
 		{ RWBS_FLAG_DISCARD, "D" },	\
 		{ RWBS_FLAG_READ, "R" },	\
+		{ RWBS_FLAG_FUA, "F" },		\
 		{ RWBS_FLAG_RAHEAD, "A" },	\
+		{ RWBS_FLAG_BARRIER, "B" },	\
 		{ RWBS_FLAG_SYNC, "S" },	\
 		{ RWBS_FLAG_META, "M" },	\
 		{ RWBS_FLAG_SECURE, "E" })
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
+
+#define blk_fill_rwbs(rwbs, rw, bytes)					      \
+		tp_assign(rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :	      \
+			( (rw) & REQ_DISCARD ? RWBS_FLAG_DISCARD :	      \
+			( (bytes) ? RWBS_FLAG_READ :			      \
+			( 0 ))))					      \
+			| ((rw) & REQ_RAHEAD ? RWBS_FLAG_RAHEAD : 0)	      \
+			| ((rw) & REQ_SYNC ? RWBS_FLAG_SYNC : 0)	      \
+			| ((rw) & REQ_META ? RWBS_FLAG_META : 0)	      \
+			| ((rw) & REQ_SECURE ? RWBS_FLAG_SECURE : 0)	      \
+			| ((rw) & REQ_FLUSH ? RWBS_FLAG_FLUSH : 0)	      \
+			| ((rw) & REQ_FUA ? RWBS_FLAG_FUA : 0))
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 
 #define blk_fill_rwbs(rwbs, rw, bytes)					      \
 		tp_assign(rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :	      \
@@ -45,6 +70,33 @@ enum {
 			| ((rw) & REQ_SYNC ? RWBS_FLAG_SYNC : 0)	      \
 			| ((rw) & REQ_META ? RWBS_FLAG_META : 0)	      \
 			| ((rw) & REQ_SECURE ? RWBS_FLAG_SECURE : 0))
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
+
+#define blk_fill_rwbs(rwbs, rw, bytes)					      \
+		tp_assign(rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :	      \
+			( (rw) & REQ_DISCARD ? RWBS_FLAG_DISCARD :	      \
+			( (bytes) ? RWBS_FLAG_READ :			      \
+			( 0 ))))					      \
+			| ((rw) & REQ_RAHEAD ? RWBS_FLAG_RAHEAD : 0)	      \
+			| ((rw) & REQ_HARDBARRIER ? RWBS_FLAG_BARRIER : 0)    \
+			| ((rw) & REQ_SYNC ? RWBS_FLAG_SYNC : 0)	      \
+			| ((rw) & REQ_META ? RWBS_FLAG_META : 0)	      \
+			| ((rw) & REQ_SECURE ? RWBS_FLAG_SECURE : 0))
+
+#else
+
+#define blk_fill_rwbs(rwbs, rw, bytes)					      \
+		tp_assign(rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :	      \
+			( (rw) & (1 << BIO_RW_DISCARD) ? RWBS_FLAG_DISCARD :  \
+			( (bytes) ? RWBS_FLAG_READ :			      \
+			( 0 ))))					      \
+			| ((rw) & (1 << BIO_RW_AHEAD) ? RWBS_FLAG_RAHEAD : 0) \
+			| ((rw) & (1 << BIO_RW_SYNCIO) ? RWBS_FLAG_SYNC : 0)  \
+			| ((rw) & (1 << BIO_RW_META) ? RWBS_FLAG_META : 0)    \
+			| ((rw) & (1 << BIO_RW_BARRIER) ? RWBS_FLAG_BARRIER : 0))
+
+#endif
 
 DECLARE_EVENT_CLASS(block_rq_with_error,
 
@@ -261,9 +313,15 @@ TRACE_EVENT(block_bio_bounce,
  */
 TRACE_EVENT(block_bio_complete,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
 	TP_PROTO(struct request_queue *q, struct bio *bio, int error),
 
 	TP_ARGS(q, bio, error),
+#else
+	TP_PROTO(struct request_queue *q, struct bio *bio),
+
+	TP_ARGS(q, bio),
+#endif
 
 	TP_STRUCT__entry(
 		__field( dev_t,		dev		)
@@ -277,7 +335,11 @@ TRACE_EVENT(block_bio_complete,
 		tp_assign(dev, bio->bi_bdev->bd_dev)
 		tp_assign(sector, bio->bi_sector)
 		tp_assign(nr_sector, bio->bi_size >> 9)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
 		tp_assign(error, error)
+#else
+		tp_assign(error, 0)
+#endif
 		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_size)
 	),
 
@@ -452,9 +514,15 @@ TRACE_EVENT(block_plug,
 
 DECLARE_EVENT_CLASS(block_unplug,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 	TP_PROTO(struct request_queue *q, unsigned int depth, bool explicit),
 
 	TP_ARGS(q, depth, explicit),
+#else
+	TP_PROTO(struct request_queue *q),
+
+	TP_ARGS(q),
+#endif
 
 	TP_STRUCT__entry(
 		__field( int,		nr_rq			)
@@ -462,12 +530,32 @@ DECLARE_EVENT_CLASS(block_unplug,
 	),
 
 	TP_fast_assign(
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 		tp_assign(nr_rq, depth)
+#else
+		tp_assign(nr_rq, q->rq.count[READ] + q->rq.count[WRITE])
+#endif
 		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
 	),
 
 	TP_printk("[%s] %d", __entry->comm, __entry->nr_rq)
 )
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,39))
+/**
+ * block_unplug_timer - timed release of operations requests in queue to device driver
+ * @q: request queue to unplug
+ *
+ * Unplug the request queue @q because a timer expired and allow block
+ * operation requests to be sent to the device driver.
+ */
+DEFINE_EVENT(block_unplug, block_unplug_timer,
+
+	TP_PROTO(struct request_queue *q),
+
+	TP_ARGS(q)
+)
+#endif
 
 /**
  * block_unplug - release of operations requests in request queue
@@ -478,11 +566,21 @@ DECLARE_EVENT_CLASS(block_unplug,
  * Unplug request queue @q because device driver is scheduled to work
  * on elements in the request queue.
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 DEFINE_EVENT(block_unplug, block_unplug,
+#else
+DEFINE_EVENT(block_unplug, block_unplug_io,
+#endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 	TP_PROTO(struct request_queue *q, unsigned int depth, bool explicit),
 
 	TP_ARGS(q, depth, explicit)
+#else
+	TP_PROTO(struct request_queue *q),
+
+	TP_ARGS(q)
+#endif
 )
 
 /**
@@ -537,7 +635,11 @@ TRACE_EVENT(block_split,
  * An operation for a logical device has been mapped to the
  * raw block device.
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
 TRACE_EVENT(block_bio_remap,
+#else
+TRACE_EVENT(block_remap,
+#endif
 
 	TP_PROTO(struct request_queue *q, struct bio *bio, dev_t dev,
 		 sector_t from),
@@ -571,6 +673,7 @@ TRACE_EVENT(block_bio_remap,
 		  (unsigned long long)__entry->old_sector)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
 /**
  * block_rq_remap - map request for a block operation request
  * @q: queue holding the operation
@@ -615,6 +718,7 @@ TRACE_EVENT(block_rq_remap,
 		  MAJOR(__entry->old_dev), MINOR(__entry->old_dev),
 		  (unsigned long long)__entry->old_sector)
 )
+#endif
 
 #undef __print_rwbs_flags
 #undef blk_fill_rwbs
