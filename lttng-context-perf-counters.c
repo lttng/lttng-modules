@@ -25,6 +25,7 @@
 #include <linux/perf_event.h>
 #include <linux/list.h>
 #include <linux/string.h>
+#include <linux/cpu.h>
 #include "lttng-events.h"
 #include "wrapper/ringbuffer/frontend_types.h"
 #include "wrapper/vmalloc.h"
