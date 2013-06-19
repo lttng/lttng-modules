@@ -1,3 +1,15 @@
+2013-06-18 LTTng modules 2.1.2
+	* Fix build and load against linux-2.6.33.x
+	* fix block instrumentation probe signature mismatch for 3.9.x kernels
+	* fix: block instrumentation: NULL pointer dereference
+	* Fix: 3.9.0 block layer instrumentation build
+	* block: update instrumentation to 3.9 rc kernel
+	* Backport block-related changes from "Update kernel probes to more detailed match to kernel versions"
+	* Fix: warning kvm_trace_exit_reason redefined for 3.9 kernel
+	* Fix 3.8 kernel support: namespace lttng_is_signed_type()
+	* lttng-module: sched.h: Fix compilation on 3.9 kernel
+	* Fix: don't flush-final for offset 0 if reader is on sub-buffer
+
 2013-02-14 LTTng modules 2.1.1
 	* Fix: statedump: missing locking, use lttng_iterate_fd
 	* Implement lttng_iterate_fd wrapper
