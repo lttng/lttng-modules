@@ -45,8 +45,8 @@ architectures, but expect build issues with kernels older than 2.6.36.
 The clock source currently used is the standard gettimeofday (slower,
 less scalable and less precise than the LTTng 0.x clocks).  Support for
 LTTng 0.x clocks will be added back soon into LTTng 2.0.  Please note
-that lttng-modules 2.0 can build on a Linux kernel patched with the
-LTTng 0.x patchset, but the lttng-modules 2.0 replace the lttng-modules
+that lttng-modules 2.x can build on a Linux kernel patched with the
+LTTng 0.x patchset, but the lttng-modules 2.x replace the lttng-modules
 0.x, so both tracers cannot be installed at the same time for a given
 kernel version.
 
@@ -59,7 +59,7 @@ CONFIG_KALLSYMS: required
   * See wrapper/ files. This is necessary until the few required missing
     symbols are exported to GPL modules from mainline.
 CONFIG_HIGH_RES_TIMERS: required
-  * Needed for LTTng 2.0 clock source.
+  * Needed for LTTng 2.x clock source.
 CONFIG_TRACEPOINTS: required
     kernel tracepoint instrumentation
     * Enabled as side-effect of any of the perf/ftrace/blktrace
