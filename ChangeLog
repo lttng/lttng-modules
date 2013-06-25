@@ -1,4 +1,7 @@
-2013-03-29 LTTng modules 2.2.0-rc3
+2013-06-25 LTTng modules 2.2.0
+	* Update README
+
+2013-06-18 LTTng modules 2.2.0-rc3
 	* Fix CPU hotplug section mismatches
 	* Fix build and load against linux-2.6.33.x
 	* fix block instrumentation probe signature mismatch for 3.9.x kernels
