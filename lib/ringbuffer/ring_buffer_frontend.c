@@ -927,6 +927,13 @@ int lib_ring_buffer_get_subbuf(struct lib_ring_buffer *buf,
 	int ret;
 	int finalized;
 
+	if (buf->get_subbuf) {
+		/*
+		 * Reader is trying to get a subbuffer twice.
+		 */
+		CHAN_WARN_ON(chan, 1);
+		return -EBUSY;
+	}
 retry:
 	finalized = ACCESS_ONCE(buf->finalized);
 	/*
