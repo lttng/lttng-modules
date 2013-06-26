@@ -563,6 +563,8 @@ int lttng_metadata_output_channel(struct lttng_channel *chan,
 
 	len = stream->metadata_cache->metadata_written -
 		stream->metadata_cache_read;
+	if (!len)
+		return 0;
 	reserve_len = min_t(size_t,
 			chan->ops->packet_avail_size(chan->chan),
 			len);
