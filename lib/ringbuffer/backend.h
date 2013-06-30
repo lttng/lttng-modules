@@ -96,6 +96,8 @@ void lib_ring_buffer_write(const struct lib_ring_buffer_config *config,
 	struct lib_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 
+	if (unlikely(!len))
+		return;
 	offset &= chanb->buf_size - 1;
 	sbidx = offset >> chanb->subbuf_size_order;
 	index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
@@ -142,6 +144,8 @@ void lib_ring_buffer_memset(const struct lib_ring_buffer_config *config,
 	struct lib_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 
+	if (unlikely(!len))
+		return;
 	offset &= chanb->buf_size - 1;
 	sbidx = offset >> chanb->subbuf_size_order;
 	index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
@@ -189,6 +193,8 @@ void lib_ring_buffer_copy_from_user_inatomic(const struct lib_ring_buffer_config
 	unsigned long ret;
 	mm_segment_t old_fs = get_fs();
 
+	if (unlikely(!len))
+		return;
 	offset &= chanb->buf_size - 1;
 	sbidx = offset >> chanb->subbuf_size_order;
 	index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
