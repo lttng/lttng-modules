@@ -1480,6 +1480,48 @@ void lib_ring_buffer_switch_slow(struct lib_ring_buffer *buf, enum switch_mode m
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_switch_slow);
 
+static void remote_switch(void *info)
+{
+	struct lib_ring_buffer *buf = info;
+
+	lib_ring_buffer_switch_slow(buf, SWITCH_ACTIVE);
+}
+
+void lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf)
+{
+	struct channel *chan = buf->backend.chan;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
+	int ret;
+
+	/*
+	 * With global synchronization we don't need to use the IPI scheme.
+	 */
+	if (config->sync == RING_BUFFER_SYNC_GLOBAL) {
+		lib_ring_buffer_switch_slow(buf, SWITCH_ACTIVE);
+		return;
+	}
+
+	/*
+	 * Taking lock on CPU hotplug to ensure two things: first, that the
+	 * target cpu is not taken concurrently offline while we are within
+	 * smp_call_function_single() (I don't trust that get_cpu() on the
+	 * _local_ CPU actually inhibit CPU hotplug for the _remote_ CPU (to be
+	 * confirmed)). Secondly, if it happens that the CPU is not online, our
+	 * own call to lib_ring_buffer_switch_slow() needs to be protected from
+	 * CPU hotplug handlers, which can also perform a remote subbuffer
+	 * switch.
+	 */
+	get_online_cpus();
+	ret = smp_call_function_single(buf->backend.cpu,
+				 remote_switch, buf, 1);
+	if (ret) {
+		/* Remote CPU is offline, do it ourself. */
+		lib_ring_buffer_switch_slow(buf, SWITCH_ACTIVE);
+	}
+	put_online_cpus();
+}
+EXPORT_SYMBOL_GPL(lib_ring_buffer_switch_remote);
+
 /*
  * Returns :
  * 0 if ok

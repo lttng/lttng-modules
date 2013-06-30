@@ -156,6 +156,9 @@ extern
 void lib_ring_buffer_switch_slow(struct lib_ring_buffer *buf,
 				 enum switch_mode mode);
 
+extern
+void lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf);
+
 /* Buffer write helpers */
 
 static inline
