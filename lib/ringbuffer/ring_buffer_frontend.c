@@ -1384,7 +1384,7 @@ int lib_ring_buffer_try_switch_slow(enum switch_mode mode,
 				    u64 *tsc)
 {
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
-	unsigned long off;
+	unsigned long off, reserve_commit_diff;
 
 	offsets->begin = v_read(config, &buf->offset);
 	offsets->old = offsets->begin;
@@ -1409,36 +1409,68 @@ int lib_ring_buffer_try_switch_slow(enum switch_mode mode,
 	 * (records and header timestamps) are visible to the reader. This is
 	 * required for quiescence guarantees for the fusion merge.
 	 */
-	if (mode == SWITCH_FLUSH || off > 0) {
-		if (unlikely(off == 0)) {
-                        /*
-			 * A final flush that encounters an empty
-			 * sub-buffer cannot switch buffer if a
-			 * reader is located within this sub-buffer.
-			 * Anyway, the purpose of final flushing of a
-			 * sub-buffer at offset 0 is to handle the case
-			 * of entirely empty stream.
-			 */
-			if (unlikely(subbuf_trunc(offsets->begin, chan)
-					- subbuf_trunc((unsigned long)
-						atomic_long_read(&buf->consumed), chan)
-					>= chan->backend.buf_size))
-				return -1;
-			/*
-			 * The client does not save any header information.
-			 * Don't switch empty subbuffer on finalize, because it
-			 * is invalid to deliver a completely empty subbuffer.
-			 */
-			if (!config->cb.subbuffer_header_size())
-				return -1;
-			/*
-			 * Need to write the subbuffer start header on finalize.
-			 */
-			offsets->switch_old_start = 1;
-		}
-		offsets->begin = subbuf_align(offsets->begin, chan);
-	} else
+	if (mode != SWITCH_FLUSH && !off)
 		return -1;	/* we do not have to switch : buffer is empty */
+
+	if (unlikely(off == 0)) {
+		unsigned long sb_index, commit_count;
+
+		/*
+		 * We are performing a SWITCH_FLUSH. At this stage, there are no
+		 * concurrent writes into the buffer.
+		 *
+		 * The client does not save any header information.  Don't
+		 * switch empty subbuffer on finalize, because it is invalid to
+		 * deliver a completely empty subbuffer.
+		 */
+		if (!config->cb.subbuffer_header_size())
+			return -1;
+
+		/* Test new buffer integrity */
+		sb_index = subbuf_index(offsets->begin, chan);
+		commit_count = v_read(config,
+				&buf->commit_cold[sb_index].cc_sb);
+		reserve_commit_diff =
+		  (buf_trunc(offsets->begin, chan)
+		   >> chan->backend.num_subbuf_order)
+		  - (commit_count & chan->commit_count_mask);
+		if (likely(reserve_commit_diff == 0)) {
+			/* Next subbuffer not being written to. */
+			if (unlikely(config->mode != RING_BUFFER_OVERWRITE &&
+				subbuf_trunc(offsets->begin, chan)
+				 - subbuf_trunc((unsigned long)
+				     atomic_long_read(&buf->consumed), chan)
+				>= chan->backend.buf_size)) {
+				/*
+				 * We do not overwrite non consumed buffers
+				 * and we are full : don't switch.
+				 */
+				return -1;
+			} else {
+				/*
+				 * Next subbuffer not being written to, and we
+				 * are either in overwrite mode or the buffer is
+				 * not full. It's safe to write in this new
+				 * subbuffer.
+				 */
+			}
+		} else {
+			/*
+			 * Next subbuffer reserve offset does not match the
+			 * commit offset. Don't perform switch in
+			 * producer-consumer and overwrite mode.  Caused by
+			 * either a writer OOPS or too many nested writes over a
+			 * reserve/commit pair.
+			 */
+			return -1;
+		}
+
+		/*
+		 * Need to write the subbuffer start header on finalize.
+		 */
+		offsets->switch_old_start = 1;
+	}
+	offsets->begin = subbuf_align(offsets->begin, chan);
 	/* Note: old points to the next subbuf at offset 0 */
 	offsets->end = offsets->begin;
 	return 0;
