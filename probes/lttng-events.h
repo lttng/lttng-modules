@@ -744,6 +744,11 @@ __assign_##dest##_3:							\
 #define _TP_SESSION_CHECK(session, csession)	1
 #endif /* TP_SESSION_CHECK */
 
+/*
+ * __dynamic_len array length is twice the number of fields due to
+ * __dynamic_array_enc_ext_2() and tp_memcpy_dyn_2(), which are the
+ * worse case, needing 2 entries per field.
+ */
 #undef DECLARE_EVENT_CLASS
 #define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
 static void __event_probe__##_name(void *__data, _proto)		      \
@@ -753,7 +758,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	struct lib_ring_buffer_ctx __ctx;				      \
 	size_t __event_len, __event_align;				      \
 	size_t __dynamic_len_idx = 0;					      \
-	size_t __dynamic_len[ARRAY_SIZE(__event_fields___##_name)];	      \
+	size_t __dynamic_len[2 * ARRAY_SIZE(__event_fields___##_name)];	      \
 	struct __event_typemap__##_name __typemap;			      \
 	int __ret;							      \
 									      \
