@@ -1,5 +1,5 @@
 #ifdef CONFIG_X86_64
-#include "x86-64-syscalls-3.0.4_pointers.h"
+#include "x86-64-syscalls-3.10.0-rc7_pointers.h"
 #endif
 
 #ifdef CONFIG_X86_32
