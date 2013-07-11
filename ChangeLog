@@ -1,3 +1,13 @@
+2013-07-11 LTTng modules 2.2.1
+	* Fix: double length of __dynamic_len array
+	* Fix printk instrumentation
+	* Introduce __dynamic_array_enc_ext_2() and tp_memcpy_dyn_2()
+	* Fix: ring buffer: get_subbuf() checks should be performed on "consumed" 
+	* Fix: SWITCH_FLUSH new sub-buffer checks
+	* Fix: ring buffer: handle concurrent update in nested buffer wrap around 
+	* Fix: handle writes of length 0
+	* Fix: ring buffer: RING_BUFFER_FLUSH ioctl buffer corruption
+
 2013-06-25 LTTng modules 2.2.0
 	* Update README
 
