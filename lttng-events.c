@@ -561,8 +561,16 @@ int lttng_metadata_output_channel(struct lttng_channel *chan,
 	int ret = 0;
 	size_t len, reserve_len;
 
+	/*
+	 * Ensure we support mutiple get_next / put sequences followed
+	 * by put_next.
+	 */
+	WARN_ON(stream->metadata_in < stream->metadata_out);
+	if (stream->metadata_in != stream->metadata_out)
+		return 0;
+
 	len = stream->metadata_cache->metadata_written -
-		stream->metadata_cache_read;
+		stream->metadata_in;
 	if (!len)
 		return 0;
 	reserve_len = min_t(size_t,
@@ -579,10 +587,10 @@ int lttng_metadata_output_channel(struct lttng_channel *chan,
 		goto end;
 	}
 	chan->ops->event_write(&ctx,
-			stream->metadata_cache->data + stream->metadata_cache_read,
+			stream->metadata_cache->data + stream->metadata_in,
 			reserve_len);
 	chan->ops->event_commit(&ctx);
-	stream->metadata_cache_read += reserve_len;
+	stream->metadata_in += reserve_len;
 	ret = reserve_len;
 
 end:

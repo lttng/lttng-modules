@@ -278,7 +278,8 @@ struct lttng_channel {
 struct lttng_metadata_stream {
 	void *priv;			/* Ring buffer private data */
 	struct lttng_metadata_cache *metadata_cache;
-	unsigned int metadata_cache_read; /* Bytes read from the cache */
+	unsigned int metadata_in;	/* Bytes read from the cache */
+	unsigned int metadata_out;	/* Bytes consumed from stream */
 	int finalized;			/* Has channel been finalized */
 	wait_queue_head_t read_wait;	/* Reader buffer-level wait queue */
 	struct list_head list;		/* Stream list */

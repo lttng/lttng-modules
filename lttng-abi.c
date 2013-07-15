@@ -539,7 +539,7 @@ unsigned int lttng_metadata_ring_buffer_poll(struct file *filp,
 			mask |= POLLHUP;
 
 		if (stream->metadata_cache->metadata_written >
-				stream->metadata_cache_read)
+				stream->metadata_out)
 			mask |= POLLIN;
 	}
 
@@ -547,7 +547,7 @@ unsigned int lttng_metadata_ring_buffer_poll(struct file *filp,
 }
 
 static
-int lttng_metadata_ring_buffer_ioctl_get_subbuf(struct file *filp,
+int lttng_metadata_ring_buffer_ioctl_get_next_subbuf(struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
 	struct lttng_metadata_stream *stream = filp->private_data;
@@ -565,6 +565,15 @@ int lttng_metadata_ring_buffer_ioctl_get_subbuf(struct file *filp,
 }
 
 static
+void lttng_metadata_ring_buffer_ioctl_put_next_subbuf(struct file *filp,
+		unsigned int cmd, unsigned long arg)
+{
+	struct lttng_metadata_stream *stream = filp->private_data;
+
+	stream->metadata_out = stream->metadata_in;
+}
+
+static
 long lttng_metadata_ring_buffer_ioctl(struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
@@ -573,21 +582,41 @@ long lttng_metadata_ring_buffer_ioctl(struct file *filp,
 	struct lib_ring_buffer *buf = stream->priv;
 
 	switch (cmd) {
-	case RING_BUFFER_GET_SUBBUF:
 	case RING_BUFFER_GET_NEXT_SUBBUF:
 	{
-		ret = lttng_metadata_ring_buffer_ioctl_get_subbuf(filp,
+		ret = lttng_metadata_ring_buffer_ioctl_get_next_subbuf(filp,
 				cmd, arg);
 		if (ret < 0)
 			goto err;
 		break;
 	}
+	case RING_BUFFER_GET_SUBBUF:
+	{
+		/*
+		 * Random access is not allowed for metadata channel.
+		 */
+		return -ENOSYS;
+	}
 	default:
 		break;
 	}
-	/* Performing lib ring buffer ioctl after our own. */
-	return lib_ring_buffer_ioctl(filp, cmd, arg, buf);
+	/* PUT_SUBBUF is the one from lib ring buffer, unmodified. */
 
+	/* Performing lib ring buffer ioctl after our own. */
+	ret = lib_ring_buffer_ioctl(filp, cmd, arg, buf);
+	if (ret < 0)
+		goto err;
+
+	switch (cmd) {
+	case RING_BUFFER_PUT_NEXT_SUBBUF:
+	{
+		lttng_metadata_ring_buffer_ioctl_put_next_subbuf(filp,
+				cmd, arg);
+		break;
+	}
+	default:
+		break;
+	}
 err:
 	return ret;
 }
@@ -602,21 +631,41 @@ long lttng_metadata_ring_buffer_compat_ioctl(struct file *filp,
 	struct lib_ring_buffer *buf = stream->priv;
 
 	switch (cmd) {
-	case RING_BUFFER_GET_SUBBUF:
 	case RING_BUFFER_GET_NEXT_SUBBUF:
 	{
-		ret = lttng_metadata_ring_buffer_ioctl_get_subbuf(filp,
+		ret = lttng_metadata_ring_buffer_ioctl_get_next_subbuf(filp,
 				cmd, arg);
 		if (ret < 0)
 			goto err;
 		break;
 	}
+	case RING_BUFFER_GET_SUBBUF:
+	{
+		/*
+		 * Random access is not allowed for metadata channel.
+		 */
+		return -ENOSYS;
+	}
 	default:
 		break;
 	}
-	/* Performing lib ring buffer ioctl after our own. */
-	return lib_ring_buffer_compat_ioctl(filp, cmd, arg, buf);
+	/* PUT_SUBBUF is the one from lib ring buffer, unmodified. */
 
+	/* Performing lib ring buffer ioctl after our own. */
+	ret = lib_ring_buffer_compat_ioctl(filp, cmd, arg, buf);
+	if (ret < 0)
+		goto err;
+
+	switch (cmd) {
+	case RING_BUFFER_PUT_NEXT_SUBBUF:
+	{
+		lttng_metadata_ring_buffer_ioctl_put_next_subbuf(filp,
+				cmd, arg);
+		break;
+	}
+	default:
+		break;
+	}
 err:
 	return ret;
 }
