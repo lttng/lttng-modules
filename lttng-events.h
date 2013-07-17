@@ -217,6 +217,8 @@ struct lttng_ctx_field {
 		struct lttng_perf_counter_field *perf_counter;
 	} u;
 	void (*destroy)(struct lttng_ctx_field *field);
+	/* private data to keep state between get_size and record */
+	void *private;
 };
 
 struct lttng_ctx {
@@ -705,6 +707,9 @@ int lttng_add_migratable_to_ctx(struct lttng_ctx **ctx)
 	return -ENOSYS;
 }
 #endif
+
+int lttng_add_callstack_to_ctx(struct lttng_ctx **ctx, int type);
+
 #if defined(CONFIG_PERF_EVENTS) && (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
 int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  uint64_t config,
