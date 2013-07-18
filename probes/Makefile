@@ -18,22 +18,18 @@ obj-m += lttng-probe-power.o
 obj-m += lttng-probe-statedump.o
 
 ifneq ($(CONFIG_KVM),)
-kvm = lttng-probe-kvm.o
+obj-m += lttng-probe-kvm.o
 ifneq ($(CONFIG_X86),)
 kvm_dep = $(srctree)/virt/kvm/iodev.h
-kvm_x86 = lttng-probe-kvm-x86.o
-kvm_x86_mmu = lttng-probe-kvm-x86-mmu.o
-kvm_path = $(srctree)/virt/kvm
-ifeq ($(wildcard $(kvm_dep)),)
-$(warning Files $(kvm_dep) not found. Probe "kvm" x86-specific is disabled. Use full kernel source tree to enable it.)
-kvm_x86 =
-kvm_path =
+ifneq ($(wildcard $(kvm_dep)),)
+CFLAGS_lttng-probe-kvm-x86.o += -I$(srctree)/virt/kvm
+CFLAGS_lttng-probe-kvm-x86-mmu.o += -I$(srctree)/virt/kvm
+obj-m += lttng-probe-kvm-x86.o
+obj-m += lttng-probe-kvm-x86-mmu.o
+else
+$(warning File $(kvm_dep) not found. Probe "kvm" x86-specific is disabled. Use full kernel source tree to enable it.)
 endif
-obj-m += $(kvm_x86)
-obj-m += $(kvm_x86_mmu)
-ccflags-y += -I$(kvm_path)
 endif
-obj-m += $(kvm)
 endif
 
 obj-m +=  $(shell \
