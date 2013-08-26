@@ -686,8 +686,11 @@ int lttng_metadata_ring_buffer_release(struct inode *inode, struct file *file)
 {
 	struct lttng_metadata_stream *stream = file->private_data;
 	struct lib_ring_buffer *buf = stream->priv;
+	struct channel *chan = buf->backend.chan;
+	struct lttng_channel *lttng_chan = channel_get_private(chan);
 
 	kref_put(&stream->metadata_cache->refcount, metadata_cache_destroy);
+	fput(lttng_chan->file);
 
 	return lib_ring_buffer_release(inode, file, buf);
 }
@@ -819,6 +822,7 @@ int lttng_abi_open_metadata_stream(struct file *channel_file)
 	if (ret < 0)
 		goto fd_error;
 
+	atomic_long_inc(&channel_file->f_count);
 	kref_get(&session->metadata_cache->refcount);
 	list_add(&metadata_stream->list,
 		&session->metadata_cache->metadata_stream);
