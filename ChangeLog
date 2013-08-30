@@ -1,3 +1,7 @@
+2013-08-30 LTTng modules 2.3.0-rc2
+	* Fix: metadata lttng channel refcount
+	* README: lttng-modules incompatible with lttng 0.x patchset
+
 2013-07-17 LTTng modules 2.3.0-rc1
 	* Fix: kvm x86 probes side-effect
 	* Fix: allow get/put subbuf in loop for metadata stream
