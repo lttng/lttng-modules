@@ -1,3 +1,12 @@
+2013-09-03 LTTng modules 2.3.0
+	* Fix: metadata stream should not reference session
+	* Fix: btrfs: support 3.11 Linux kernel
+	* statedump: remove KERN_DEBUG messages
+	* Fix: ext4: add missing tracepoints for 3.11 kernel
+	* Fix: ext4: Linux 3.11 support
+	* Fix: ext3: 3.11 Linux support
+	* Fix: statedump nsproxy 3.11 Linux support
+
 2013-08-30 LTTng modules 2.3.0-rc2
 	* Fix: metadata lttng channel refcount
 	* README: lttng-modules incompatible with lttng 0.x patchset
