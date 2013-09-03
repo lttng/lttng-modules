@@ -41,6 +41,10 @@ static int compat_put_ulong(compat_ulong_t val, unsigned long arg)
 }
 #endif
 
+/*
+ * This is not used by anonymous file descriptors. This code is left
+ * there if we ever want to implement an inode with open() operation.
+ */
 int lib_ring_buffer_open(struct inode *inode, struct file *file,
 		struct lib_ring_buffer *buf)
 {

@@ -554,8 +554,8 @@ void _lttng_event_destroy(struct lttng_event *event)
  * remaining space left in packet and write, since mutual exclusion
  * protects us from concurrent writes.
  */
-int lttng_metadata_output_channel(struct lttng_channel *chan,
-		struct lttng_metadata_stream *stream)
+int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
+		struct channel *chan)
 {
 	struct lib_ring_buffer_ctx ctx;
 	int ret = 0;
@@ -574,22 +574,22 @@ int lttng_metadata_output_channel(struct lttng_channel *chan,
 	if (!len)
 		return 0;
 	reserve_len = min_t(size_t,
-			chan->ops->packet_avail_size(chan->chan),
+			stream->transport->ops.packet_avail_size(chan),
 			len);
-	lib_ring_buffer_ctx_init(&ctx, chan->chan, NULL, reserve_len,
+	lib_ring_buffer_ctx_init(&ctx, chan, NULL, reserve_len,
 			sizeof(char), -1);
 	/*
 	 * If reservation failed, return an error to the caller.
 	 */
-	ret = chan->ops->event_reserve(&ctx, 0);
+	ret = stream->transport->ops.event_reserve(&ctx, 0);
 	if (ret != 0) {
 		printk(KERN_WARNING "LTTng: Metadata event reservation failed\n");
 		goto end;
 	}
-	chan->ops->event_write(&ctx,
+	stream->transport->ops.event_write(&ctx,
 			stream->metadata_cache->data + stream->metadata_in,
 			reserve_len);
-	chan->ops->event_commit(&ctx);
+	stream->transport->ops.event_commit(&ctx);
 	stream->metadata_in += reserve_len;
 	ret = reserve_len;
 

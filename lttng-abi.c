@@ -553,10 +553,9 @@ int lttng_metadata_ring_buffer_ioctl_get_next_subbuf(struct file *filp,
 	struct lttng_metadata_stream *stream = filp->private_data;
 	struct lib_ring_buffer *buf = stream->priv;
 	struct channel *chan = buf->backend.chan;
-	struct lttng_channel *lttng_chan = channel_get_private(chan);
 	int ret;
 
-	ret = lttng_metadata_output_channel(lttng_chan, stream);
+	ret = lttng_metadata_output_channel(stream, chan);
 	if (ret > 0) {
 		lib_ring_buffer_switch_slow(buf, SWITCH_ACTIVE);
 		ret = 0;
@@ -671,6 +670,10 @@ err:
 }
 #endif
 
+/*
+ * This is not used by anonymous file descriptors. This code is left
+ * there if we ever want to implement an inode with open() operation.
+ */
 static
 int lttng_metadata_ring_buffer_open(struct inode *inode, struct file *file)
 {
@@ -678,6 +681,14 @@ int lttng_metadata_ring_buffer_open(struct inode *inode, struct file *file)
 	struct lib_ring_buffer *buf = stream->priv;
 
 	file->private_data = buf;
+	/*
+	 * Since life-time of metadata cache differs from that of
+	 * session, we need to keep our own reference on the transport.
+	 */
+	if (!try_module_get(stream->transport->owner)) {
+		printk(KERN_WARNING "LTT : Can't lock transport module.\n");
+		return -EBUSY;
+	}
 	return lib_ring_buffer_open(inode, file, buf);
 }
 
@@ -686,12 +697,9 @@ int lttng_metadata_ring_buffer_release(struct inode *inode, struct file *file)
 {
 	struct lttng_metadata_stream *stream = file->private_data;
 	struct lib_ring_buffer *buf = stream->priv;
-	struct channel *chan = buf->backend.chan;
-	struct lttng_channel *lttng_chan = channel_get_private(chan);
 
 	kref_put(&stream->metadata_cache->refcount, metadata_cache_destroy);
-	fput(lttng_chan->file);
-
+	module_put(stream->transport->owner);
 	return lib_ring_buffer_release(inode, file, buf);
 }
 
@@ -811,24 +819,41 @@ int lttng_abi_open_metadata_stream(struct file *channel_file)
 
 	metadata_stream = kzalloc(sizeof(struct lttng_metadata_stream),
 			GFP_KERNEL);
-	if (!metadata_stream)
-		return -ENOMEM;
+	if (!metadata_stream) {
+		ret = -ENOMEM;
+		goto nomem;
+	}
 	metadata_stream->metadata_cache = session->metadata_cache;
 	init_waitqueue_head(&metadata_stream->read_wait);
 	metadata_stream->priv = buf;
 	stream_priv = metadata_stream;
+	metadata_stream->transport = channel->transport;
+
+	/*
+	 * Since life-time of metadata cache differs from that of
+	 * session, we need to keep our own reference on the transport.
+	 */
+	if (!try_module_get(metadata_stream->transport->owner)) {
+		printk(KERN_WARNING "LTT : Can't lock transport module.\n");
+		ret = -EINVAL;
+		goto notransport;
+	}
+
 	ret = lttng_abi_create_stream_fd(channel_file, stream_priv,
 			&lttng_metadata_ring_buffer_file_operations);
 	if (ret < 0)
 		goto fd_error;
 
-	atomic_long_inc(&channel_file->f_count);
 	kref_get(&session->metadata_cache->refcount);
 	list_add(&metadata_stream->list,
 		&session->metadata_cache->metadata_stream);
 	return ret;
 
 fd_error:
+	module_put(metadata_stream->transport->owner);
+notransport:
+	kfree(metadata_stream);
+nomem:
 	channel->ops->buffer_read_close(buf);
 	return ret;
 }

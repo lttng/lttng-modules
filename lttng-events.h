@@ -283,6 +283,7 @@ struct lttng_metadata_stream {
 	int finalized;			/* Has channel been finalized */
 	wait_queue_head_t read_wait;	/* Reader buffer-level wait queue */
 	struct list_head list;		/* Stream list */
+	struct lttng_transport *transport;
 };
 
 struct lttng_session {
@@ -356,8 +357,8 @@ void lttng_event_put(const struct lttng_event_desc *desc);
 int lttng_probes_init(void);
 void lttng_probes_exit(void);
 
-int lttng_metadata_output_channel(struct lttng_channel *chan,
-		struct lttng_metadata_stream *stream);
+int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
+		struct channel *chan);
 
 #if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
 int lttng_syscalls_register(struct lttng_channel *chan, void *filter);
