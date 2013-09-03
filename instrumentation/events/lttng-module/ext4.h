@@ -498,6 +498,37 @@ TRACE_EVENT(ext4_da_write_pages,
 
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+
+TRACE_EVENT(ext4_da_write_pages_extent,
+	TP_PROTO(struct inode *inode, struct ext4_map_blocks *map),
+
+	TP_ARGS(inode, map),
+
+	TP_STRUCT__entry(
+		__field(	dev_t,	dev			)
+		__field(	ino_t,	ino			)
+		__field(	__u64,	lblk			)
+		__field(	__u32,	len			)
+		__field(	__u32,	flags			)
+	),
+
+	TP_fast_assign(
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(lblk, map->m_lblk)
+		tp_assign(len, map->m_len)
+		tp_assign(flags, map->m_flags)
+	),
+
+	TP_printk("dev %d,%d ino %lu lblk %llu len %u flags %s",
+		  MAJOR(__entry->dev), MINOR(__entry->dev),
+		  (unsigned long) __entry->ino, __entry->lblk, __entry->len,
+		  show_mflags(__entry->flags))
+)
+
+#endif
+
 TRACE_EVENT(ext4_da_writepages_result,
 	TP_PROTO(struct inode *inode, struct writeback_control *wbc,
 			int ret, int pages_written),
@@ -1722,6 +1753,35 @@ TRACE_EVENT(ext4_fallocate_exit,
 		  __entry->pos, __entry->blocks,
 		  __entry->ret)
 )
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+
+TRACE_EVENT(ext4_punch_hole,
+	TP_PROTO(struct inode *inode, loff_t offset, loff_t len),
+
+	TP_ARGS(inode, offset, len),
+
+	TP_STRUCT__entry(
+		__field(	dev_t,	dev			)
+		__field(	ino_t,	ino			)
+		__field(	loff_t,	offset			)
+		__field(	loff_t, len			)
+	),
+
+	TP_fast_assign(
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(offset, offset)
+		tp_assign(len, len)
+	),
+
+	TP_printk("dev %d,%d ino %lu offset %lld len %lld",
+		  MAJOR(__entry->dev), MINOR(__entry->dev),
+		  (unsigned long) __entry->ino,
+		  __entry->offset, __entry->len)
+)
+
+#endif
 
 TRACE_EVENT(ext4_unlink_enter,
 	TP_PROTO(struct inode *parent, struct dentry *dentry),
