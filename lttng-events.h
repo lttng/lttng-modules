@@ -39,6 +39,7 @@ struct lttng_metadata_cache;
 struct lib_ring_buffer_ctx;
 struct perf_event;
 struct perf_event_attr;
+struct lib_ring_buffer_config;
 
 /* Type description */
 
@@ -244,6 +245,24 @@ struct lttng_channel_ops {
 	wait_queue_head_t *(*get_hp_wait_queue)(struct channel *chan);
 	int (*is_finalized)(struct channel *chan);
 	int (*is_disabled)(struct channel *chan);
+	int (*timestamp_begin) (const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *timestamp_begin);
+	int (*timestamp_end) (const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *timestamp_end);
+	int (*events_discarded) (const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *events_discarded);
+	int (*content_size) (const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *content_size);
+	int (*packet_size) (const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *packet_size);
+	int (*stream_id) (const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *stream_id);
 };
 
 struct lttng_transport {

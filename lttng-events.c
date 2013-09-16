@@ -285,6 +285,7 @@ struct lttng_channel *lttng_channel_create(struct lttng_session *session,
 		goto nomem;
 	chan->session = session;
 	chan->id = session->free_chan_id++;
+	chan->ops = &transport->ops;
 	/*
 	 * Note: the channel creation op already writes into the packet
 	 * headers. Therefore the "chan" information used as input
@@ -296,7 +297,6 @@ struct lttng_channel *lttng_channel_create(struct lttng_session *session,
 	if (!chan->chan)
 		goto create_error;
 	chan->enabled = 1;
-	chan->ops = &transport->ops;
 	chan->transport = transport;
 	chan->channel_type = channel_type;
 	list_add(&chan->list, &session->chan);

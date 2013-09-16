@@ -52,6 +52,7 @@
 #include "lttng-abi-old.h"
 #include "lttng-events.h"
 #include "lttng-tracer.h"
+#include "lib/ringbuffer/frontend_types.h"
 
 /*
  * This is LTTng's own personal way to create a system call as an external
@@ -1323,25 +1324,186 @@ static const struct file_operations lttng_event_fops = {
 #endif
 };
 
+static int put_u64(uint64_t val, unsigned long arg)
+{
+	return put_user(val, (uint64_t __user *) arg);
+}
+
 static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
+	struct lib_ring_buffer *buf = filp->private_data;
+	struct channel *chan = buf->backend.chan;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
+	struct lttng_channel *lttng_chan = channel_get_private(chan);
+	int ret;
+
+	if (atomic_read(&chan->record_disabled))
+		return -EIO;
+
 	switch (cmd) {
-		default:
-			return lib_ring_buffer_file_operations.unlocked_ioctl(filp,
-					cmd, arg);
+	case LTTNG_RING_BUFFER_GET_TIMESTAMP_BEGIN:
+	{
+		uint64_t ts;
+
+		if (!lttng_chan->ops)
+			goto error;
+		ret = lttng_chan->ops->timestamp_begin(config, buf, &ts);
+		if (ret < 0)
+			goto error;
+		return put_u64(ts, arg);
 	}
+	case LTTNG_RING_BUFFER_GET_TIMESTAMP_END:
+	{
+		uint64_t ts;
+
+		if (!lttng_chan->ops)
+			goto error;
+		ret = lttng_chan->ops->timestamp_end(config, buf, &ts);
+		if (ret < 0)
+			goto error;
+		return put_u64(ts, arg);
+	}
+	case LTTNG_RING_BUFFER_GET_EVENTS_DISCARDED:
+	{
+		uint64_t ed;
+
+		if (!lttng_chan->ops)
+			goto error;
+		ret = lttng_chan->ops->events_discarded(config, buf, &ed);
+		if (ret < 0)
+			goto error;
+		return put_u64(ed, arg);
+	}
+	case LTTNG_RING_BUFFER_GET_CONTENT_SIZE:
+	{
+		uint64_t cs;
+
+		if (!lttng_chan->ops)
+			goto error;
+		ret = lttng_chan->ops->content_size(config, buf, &cs);
+		if (ret < 0)
+			goto error;
+		return put_u64(cs, arg);
+	}
+	case LTTNG_RING_BUFFER_GET_PACKET_SIZE:
+	{
+		uint64_t ps;
+
+		if (!lttng_chan->ops)
+			goto error;
+		ret = lttng_chan->ops->packet_size(config, buf, &ps);
+		if (ret < 0)
+			goto error;
+		return put_u64(ps, arg);
+	}
+	case LTTNG_RING_BUFFER_GET_STREAM_ID:
+	{
+		uint64_t si;
+
+		if (!lttng_chan->ops)
+			goto error;
+		ret = lttng_chan->ops->stream_id(config, buf, &si);
+		if (ret < 0)
+			goto error;
+		return put_u64(si, arg);
+	}
+	default:
+		return lib_ring_buffer_file_operations.unlocked_ioctl(filp,
+				cmd, arg);
+	}
+
+error:
+	return -ENOSYS;
 }
 
 #ifdef CONFIG_COMPAT
 static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
+	struct lib_ring_buffer *buf = filp->private_data;
+	struct channel *chan = buf->backend.chan;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
+	struct lttng_channel *lttng_chan = channel_get_private(chan);
+	int ret;
+
+	if (atomic_read(&chan->record_disabled))
+		return -EIO;
+
 	switch (cmd) {
-		default:
-			return lib_ring_buffer_file_operations.compat_ioctl(filp,
-					cmd, arg);
+	case LTTNG_RING_BUFFER_COMPAT_GET_TIMESTAMP_BEGIN:
+	{
+		uint64_t ts;
+
+		if (!lttng_chan->ops)
+			goto error;
+		ret = lttng_chan->ops->timestamp_begin(config, buf, &ts);
+		if (ret < 0)
+			goto error;
+		return put_u64(ts, arg);
 	}
+	case LTTNG_RING_BUFFER_COMPAT_GET_TIMESTAMP_END:
+	{
+		uint64_t ts;
+
+		if (!lttng_chan->ops)
+			goto error;
+		ret = lttng_chan->ops->timestamp_end(config, buf, &ts);
+		if (ret < 0)
+			goto error;
+		return put_u64(ts, arg);
+	}
+	case LTTNG_RING_BUFFER_COMPAT_GET_EVENTS_DISCARDED:
+	{
+		uint64_t ed;
+
+		if (!lttng_chan->ops)
+			goto error;
+		ret = lttng_chan->ops->events_discarded(config, buf, &ed);
+		if (ret < 0)
+			goto error;
+		return put_u64(ed, arg);
+	}
+	case LTTNG_RING_BUFFER_COMPAT_GET_CONTENT_SIZE:
+	{
+		uint64_t cs;
+
+		if (!lttng_chan->ops)
+			goto error;
+		ret = lttng_chan->ops->content_size(config, buf, &cs);
+		if (ret < 0)
+			goto error;
+		return put_u64(cs, arg);
+	}
+	case LTTNG_RING_BUFFER_COMPAT_GET_PACKET_SIZE:
+	{
+		uint64_t ps;
+
+		if (!lttng_chan->ops)
+			goto error;
+		ret = lttng_chan->ops->packet_size(config, buf, &ps);
+		if (ret < 0)
+			goto error;
+		return put_u64(ps, arg);
+	}
+	case LTTNG_RING_BUFFER_COMPAT_GET_STREAM_ID:
+	{
+		uint64_t si;
+
+		if (!lttng_chan->ops)
+			goto error;
+		ret = lttng_chan->ops->stream_id(config, buf, &si);
+		if (ret < 0)
+			goto error;
+		return put_u64(si, arg);
+	}
+	default:
+		return lib_ring_buffer_file_operations.compat_ioctl(filp,
+				cmd, arg);
+	}
+
+error:
+	return -ENOSYS;
 }
 #endif /* CONFIG_COMPAT */
 
