@@ -64,6 +64,7 @@ static const struct file_operations lttng_session_fops;
 static const struct file_operations lttng_channel_fops;
 static const struct file_operations lttng_metadata_fops;
 static const struct file_operations lttng_event_fops;
+static struct file_operations lttng_stream_ring_buffer_file_operations;
 
 /*
  * Teardown management: opened file descriptors keep a refcount on the module,
@@ -792,7 +793,7 @@ int lttng_abi_open_stream(struct file *channel_file)
 
 	stream_priv = buf;
 	ret = lttng_abi_create_stream_fd(channel_file, stream_priv,
-			&lib_ring_buffer_file_operations);
+			&lttng_stream_ring_buffer_file_operations);
 	if (ret < 0)
 		goto fd_error;
 
@@ -1322,6 +1323,51 @@ static const struct file_operations lttng_event_fops = {
 #endif
 };
 
+static long lttng_stream_ring_buffer_ioctl(struct file *filp,
+		unsigned int cmd, unsigned long arg)
+{
+	switch (cmd) {
+		default:
+			return lib_ring_buffer_file_operations.unlocked_ioctl(filp,
+					cmd, arg);
+	}
+}
+
+#ifdef CONFIG_COMPAT
+static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
+		unsigned int cmd, unsigned long arg)
+{
+	switch (cmd) {
+		default:
+			return lib_ring_buffer_file_operations.compat_ioctl(filp,
+					cmd, arg);
+	}
+}
+#endif /* CONFIG_COMPAT */
+
+static void lttng_stream_override_ring_buffer_fops(void)
+{
+	lttng_stream_ring_buffer_file_operations.owner = THIS_MODULE;
+	lttng_stream_ring_buffer_file_operations.open =
+		lib_ring_buffer_file_operations.open;
+	lttng_stream_ring_buffer_file_operations.release =
+		lib_ring_buffer_file_operations.release;
+	lttng_stream_ring_buffer_file_operations.poll =
+		lib_ring_buffer_file_operations.poll;
+	lttng_stream_ring_buffer_file_operations.splice_read =
+		lib_ring_buffer_file_operations.splice_read;
+	lttng_stream_ring_buffer_file_operations.mmap =
+		lib_ring_buffer_file_operations.mmap;
+	lttng_stream_ring_buffer_file_operations.unlocked_ioctl =
+		lttng_stream_ring_buffer_ioctl;
+	lttng_stream_ring_buffer_file_operations.llseek =
+		lib_ring_buffer_file_operations.llseek;
+#ifdef CONFIG_COMPAT
+	lttng_stream_ring_buffer_file_operations.compat_ioctl =
+		lttng_stream_ring_buffer_compat_ioctl;
+#endif
+}
+
 int __init lttng_abi_init(void)
 {
 	int ret = 0;
@@ -1335,6 +1381,8 @@ int __init lttng_abi_init(void)
 		ret = -ENOMEM;
 		goto error;
 	}
+	lttng_stream_override_ring_buffer_fops();
+
 error:
 	return ret;
 }
