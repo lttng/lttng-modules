@@ -168,6 +168,13 @@ static int client_events_discarded(const struct lib_ring_buffer_config *config,
 	return -ENOSYS;
 }
 
+static int client_current_timestamp(const struct lib_ring_buffer_config *config,
+		struct lib_ring_buffer *bufb,
+		uint64_t *ts)
+{
+	return -ENOSYS;
+}
+
 static int client_content_size(const struct lib_ring_buffer_config *config,
 			struct lib_ring_buffer *bufb,
 			uint64_t *content_size)
@@ -222,6 +229,7 @@ struct channel *_channel_create(const char *name,
 	lttng_chan->ops->content_size = client_content_size;
 	lttng_chan->ops->packet_size = client_packet_size;
 	lttng_chan->ops->stream_id = client_stream_id;
+	lttng_chan->ops->current_timestamp = client_current_timestamp;
 
 	return channel_create(&client_config, name, lttng_chan, buf_addr,
 			      subbuf_size, num_subbuf, switch_timer_interval,

@@ -1408,6 +1408,17 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 			goto error;
 		return put_u64(si, arg);
 	}
+	case LTTNG_RING_BUFFER_GET_CURRENT_TIMESTAMP:
+	{
+		uint64_t ts;
+
+		if (!lttng_chan->ops)
+			goto error;
+		ret = lttng_chan->ops->current_timestamp(config, buf, &ts);
+		if (ret < 0)
+			goto error;
+		return put_u64(ts, arg);
+	}
 	default:
 		return lib_ring_buffer_file_operations.unlocked_ioctl(filp,
 				cmd, arg);
@@ -1496,6 +1507,17 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 		if (ret < 0)
 			goto error;
 		return put_u64(si, arg);
+	}
+	case LTTNG_RING_BUFFER_GET_CURRENT_TIMESTAMP:
+	{
+		uint64_t ts;
+
+		if (!lttng_chan->ops)
+			goto error;
+		ret = lttng_chan->ops->current_timestamp(config, buf, &ts);
+		if (ret < 0)
+			goto error;
+		return put_u64(ts, arg);
 	}
 	default:
 		return lib_ring_buffer_file_operations.compat_ioctl(filp,

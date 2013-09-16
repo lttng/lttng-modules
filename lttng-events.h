@@ -263,6 +263,9 @@ struct lttng_channel_ops {
 	int (*stream_id) (const struct lib_ring_buffer_config *config,
 			struct lib_ring_buffer *bufb,
 			uint64_t *stream_id);
+	int (*current_timestamp) (const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *ts);
 };
 
 struct lttng_transport {
