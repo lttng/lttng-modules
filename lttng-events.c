@@ -553,6 +553,8 @@ void _lttng_event_destroy(struct lttng_event *event)
  * sessions_mutex), so we can do racy operations such as looking for
  * remaining space left in packet and write, since mutual exclusion
  * protects us from concurrent writes.
+ * Returns the number of bytes written in the channel, 0 if no data
+ * was written and a negative value on error.
  */
 int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 		struct channel *chan)

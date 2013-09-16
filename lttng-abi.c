@@ -549,23 +549,6 @@ unsigned int lttng_metadata_ring_buffer_poll(struct file *filp,
 }
 
 static
-int lttng_metadata_ring_buffer_ioctl_get_next_subbuf(struct file *filp,
-		unsigned int cmd, unsigned long arg)
-{
-	struct lttng_metadata_stream *stream = filp->private_data;
-	struct lib_ring_buffer *buf = stream->priv;
-	struct channel *chan = buf->backend.chan;
-	int ret;
-
-	ret = lttng_metadata_output_channel(stream, chan);
-	if (ret > 0) {
-		lib_ring_buffer_switch_slow(buf, SWITCH_ACTIVE);
-		ret = 0;
-	}
-	return ret;
-}
-
-static
 void lttng_metadata_ring_buffer_ioctl_put_next_subbuf(struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
@@ -585,9 +568,15 @@ long lttng_metadata_ring_buffer_ioctl(struct file *filp,
 	switch (cmd) {
 	case RING_BUFFER_GET_NEXT_SUBBUF:
 	{
-		ret = lttng_metadata_ring_buffer_ioctl_get_next_subbuf(filp,
-				cmd, arg);
-		if (ret < 0)
+		struct lttng_metadata_stream *stream = filp->private_data;
+		struct lib_ring_buffer *buf = stream->priv;
+		struct channel *chan = buf->backend.chan;
+
+		ret = lttng_metadata_output_channel(stream, chan);
+		if (ret > 0) {
+			lib_ring_buffer_switch_slow(buf, SWITCH_ACTIVE);
+			ret = 0;
+		} else if (ret < 0)
 			goto err;
 		break;
 	}
@@ -597,6 +586,21 @@ long lttng_metadata_ring_buffer_ioctl(struct file *filp,
 		 * Random access is not allowed for metadata channel.
 		 */
 		return -ENOSYS;
+	}
+	case RING_BUFFER_FLUSH:
+	{
+		struct lttng_metadata_stream *stream = filp->private_data;
+		struct lib_ring_buffer *buf = stream->priv;
+		struct channel *chan = buf->backend.chan;
+
+		/*
+		 * Before doing the actual ring buffer flush, write up to one
+		 * packet of metadata in the ring buffer.
+		 */
+		ret = lttng_metadata_output_channel(stream, chan);
+		if (ret < 0)
+			goto err;
+		break;
 	}
 	default:
 		break;
@@ -634,9 +638,15 @@ long lttng_metadata_ring_buffer_compat_ioctl(struct file *filp,
 	switch (cmd) {
 	case RING_BUFFER_GET_NEXT_SUBBUF:
 	{
-		ret = lttng_metadata_ring_buffer_ioctl_get_next_subbuf(filp,
-				cmd, arg);
-		if (ret < 0)
+		struct lttng_metadata_stream *stream = filp->private_data;
+		struct lib_ring_buffer *buf = stream->priv;
+		struct channel *chan = buf->backend.chan;
+
+		ret = lttng_metadata_output_channel(stream, chan);
+		if (ret > 0) {
+			lib_ring_buffer_switch_slow(buf, SWITCH_ACTIVE);
+			ret = 0;
+		} else if (ret < 0)
 			goto err;
 		break;
 	}
