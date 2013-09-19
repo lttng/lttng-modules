@@ -33,10 +33,11 @@
 #include <linux/time.h>
 #include <linux/hrtimer.h>
 #include <linux/version.h>
+#include "../lttng-kernel-version.h"
 #include "random.h"
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
-#error "Linux kernels 3.10 and 3.11 introduce a deadlock in the timekeeping subsystem. See http://lkml.kernel.org/r/1378943457-27314-1-git-send-email-john.stultz@linaro.org for details. Awaiting patch merge into Linux master, stable-3.10 and stable-3.11 for fine-grained kernel version blacklisting."
+#if LTTNG_KERNEL_RANGE(3,10,0, 3,10,13) || LTTNG_KERNEL_RANGE(3,11,0, 3,11,2)
+#error "Linux kernels 3.10 and 3.11 introduce a deadlock in the timekeeping subsystem. Fixed by commit 7bd36014460f793c19e7d6c94dab67b0afcfcb7f \"timekeeping: Fix HRTICK related deadlock from ntp lock changes\" in Linux."
 #endif
 
 static inline u64 trace_clock_monotonic_wrapper(void)
