@@ -1,3 +1,7 @@
+2013-09-20 LTTng modules 2.3.1
+	* LTTng trace-clock: shrink kernel blacklist
+	* Blacklist Linux kernels 3.10+
+
 2013-09-03 LTTng modules 2.3.0
 	* Fix: metadata stream should not reference session
 	* Fix: btrfs: support 3.11 Linux kernel
