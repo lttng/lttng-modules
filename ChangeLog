@@ -1,3 +1,8 @@
+2013-09-28 LTTng modules 2.2.2
+	* Blacklist kernels 3.10.13 and 3.11.2
+	* LTTng trace-clock: shrink kernel blacklist
+	* Blacklist Linux kernels 3.10+
+
 2013-07-11 LTTng modules 2.2.1
 	* Fix: double length of __dynamic_len array
 	* Fix printk instrumentation
