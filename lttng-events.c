@@ -31,6 +31,7 @@
 #include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "wrapper/random.h"
 #include "wrapper/tracepoint.h"
+#include "lttng-kernel-version.h"
 #include "lttng-events.h"
 #include "lttng-tracer.h"
 #include "lttng-abi-old.h"
@@ -60,9 +61,15 @@ void _lttng_metadata_channel_hangup(struct lttng_metadata_stream *stream);
 void synchronize_trace(void)
 {
 	synchronize_sched();
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
+#ifdef CONFIG_PREEMPT_RT_FULL
+	synchronize_rcu();
+#endif
+#else /* (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0)) */
 #ifdef CONFIG_PREEMPT_RT
 	synchronize_rcu();
 #endif
+#endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0)) */
 }
 
 struct lttng_session *lttng_session_create(void)
