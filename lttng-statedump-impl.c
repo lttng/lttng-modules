@@ -277,7 +277,7 @@ void lttng_list_interrupts(struct lttng_session *session)
 }
 #else
 static inline
-void list_interrupts(struct lttng_session *session)
+void lttng_list_interrupts(struct lttng_session *session)
 {
 }
 #endif
