@@ -1,3 +1,13 @@
+2013-11-12 LTTng modules 2.3.3
+	* Update ext4 instrumentation to Linux 3.12
+	* Update RCU instrumentation to Linux 3.12
+	* Update btrfs instrumentation to 3.12 kernel
+	* Update vmscan instrumentation to Linux 3.12
+	* update: kmem instrumentation 3.12 kernel support
+	* lttng-statedump-impl: Use generic hard irqs for Linux >= 3.12
+	* lttng-statedump-impl: Fix lttng_list_interrupts for empty implementation
+	* Import fix from LTSI: 3.4+ RT kernels use CONFIG_PREEMPT_RT_FULL
+
 2013-09-28 LTTng modules 2.3.2
 	* Blacklist kernels 3.10.13 and 3.11.2
 
