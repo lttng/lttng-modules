@@ -1,3 +1,7 @@
+2013-11-12 LTTng modules 2.2.3
+	* lttng-statedump-impl: Fix lttng_list_interrupts for empty implementation
+	* Import fix from LTSI: 3.4+ RT kernels use CONFIG_PREEMPT_RT_FULL
+
 2013-09-28 LTTng modules 2.2.2
 	* Blacklist kernels 3.10.13 and 3.11.2
 	* LTTng trace-clock: shrink kernel blacklist
