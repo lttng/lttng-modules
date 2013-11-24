@@ -35,6 +35,7 @@
 #include <asm/local.h>
 
 #include "wrapper/trace-clock.h"
+#include "wrapper/compiler.h"
 #include "lttng-tracer-core.h"
 #include "lttng-events.h"
 
