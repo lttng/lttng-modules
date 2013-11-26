@@ -466,6 +466,7 @@ struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 		break;
 	default:
 		WARN_ON_ONCE(1);
+		goto register_error;
 	}
 	ret = _lttng_event_metadata_statedump(chan->session, chan, event);
 	if (ret)
