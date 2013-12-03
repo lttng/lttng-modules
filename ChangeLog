@@ -1,3 +1,9 @@
+2013-12-03 LTTng modules 2.3.4
+	* Fix: handle unknown event type parameter
+	* Fix: eliminate timestamp overlap between packets
+	* gcc blacklist: only apply when building with gcc
+	* Blacklist ARM gcc 4.8.0, 4.8.1, 4.8.2
+
 2013-11-12 LTTng modules 2.3.3
 	* Update ext4 instrumentation to Linux 3.12
 	* Update RCU instrumentation to Linux 3.12
