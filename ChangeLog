@@ -1,3 +1,11 @@
+2013-12-10 LTTng modules 2.4.0-rc2
+	* Fix: client_packet_header() uses wrong packet
+	* Cleanup: fix typo in ring buffer backend comment
+	* Fix: handle unknown event type parameter
+	* Fix: eliminate timestamp overlap between packets
+	* gcc blacklist: only apply when building with gcc
+	* Blacklist ARM gcc 4.8.0, 4.8.1, 4.8.2
+
 2013-11-15 LTTng modules 2.4.0-rc1
 	* Update ext4 instrumentation to Linux 3.12
 	* Update RCU instrumentation to Linux 3.12
