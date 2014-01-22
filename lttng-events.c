@@ -368,7 +368,7 @@ struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 
 	mutex_lock(&sessions_mutex);
 	if (chan->free_event_id == -1U) {
-		event = ERR_PTR(-EMFILE);
+		ret = -EMFILE;
 		goto full;
 	}
 	/*
@@ -377,13 +377,13 @@ struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 	 */
 	list_for_each_entry(event, &chan->session->events, list) {
 		if (!strcmp(event->desc->name, event_param->name)) {
-			event = ERR_PTR(-EEXIST);
+			ret = -EEXIST;
 			goto exist;
 		}
 	}
 	event = kmem_cache_zalloc(event_cache, GFP_KERNEL);
 	if (!event) {
-		event = ERR_PTR(-ENOMEM);
+		ret = -ENOMEM;
 		goto cache_error;
 	}
 	event->chan = chan;
@@ -397,14 +397,14 @@ struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 	case LTTNG_KERNEL_TRACEPOINT:
 		event->desc = lttng_event_get(event_param->name);
 		if (!event->desc) {
-			event = ERR_PTR(-ENOENT);
+			ret = -ENOENT;
 			goto register_error;
 		}
 		ret = kabi_2635_tracepoint_probe_register(event_param->name,
 				event->desc->probe_callback,
 				event);
 		if (ret) {
-			event = ERR_PTR(-EINVAL);
+			ret = -EINVAL;
 			goto register_error;
 		}
 		break;
@@ -415,7 +415,7 @@ struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 				event_param->u.kprobe.addr,
 				event);
 		if (ret) {
-			event = ERR_PTR(-EINVAL);
+			ret = -EINVAL;
 			goto register_error;
 		}
 		ret = try_module_get(event->desc->owner);
@@ -429,7 +429,7 @@ struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 		event_return =
 			kmem_cache_zalloc(event_cache, GFP_KERNEL);
 		if (!event_return) {
-			event = ERR_PTR(-ENOMEM);
+			ret = -ENOMEM;
 			goto register_error;
 		}
 		event_return->chan = chan;
@@ -448,7 +448,7 @@ struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 				event, event_return);
 		if (ret) {
 			kmem_cache_free(event_cache, event_return);
-			event = ERR_PTR(-EINVAL);
+			ret = -EINVAL;
 			goto register_error;
 		}
 		/* Take 2 refs on the module: one per event. */
@@ -463,7 +463,6 @@ struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 			kmem_cache_free(event_cache, event_return);
 			module_put(event->desc->owner);
 			module_put(event->desc->owner);
-			event = ERR_PTR(ret);
 			goto statedump_error;
 		}
 		list_add(&event_return->list, &chan->session->events);
@@ -474,7 +473,6 @@ struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 				event_param->u.ftrace.symbol_name,
 				event);
 		if (ret) {
-			event = ERR_PTR(ret);
 			goto register_error;
 		}
 		ret = try_module_get(event->desc->owner);
@@ -483,19 +481,18 @@ struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 	case LTTNG_KERNEL_NOOP:
 		event->desc = internal_desc;
 		if (!event->desc) {
-			event = ERR_PTR(-EINVAL);
+			ret = -EINVAL;
 			goto register_error;
 		}
 		break;
 	default:
 		WARN_ON_ONCE(1);
-		event = ERR_PTR(-EINVAL);
+		ret = -EINVAL;
 		goto register_error;
 	}
 	ret = _lttng_event_metadata_statedump(chan->session, chan, event);
 	WARN_ON_ONCE(ret > 0);
 	if (ret) {
-		event = ERR_PTR(ret);
 		goto statedump_error;
 	}
 	list_add(&event->list, &chan->session->events);
@@ -510,7 +507,7 @@ cache_error:
 exist:
 full:
 	mutex_unlock(&sessions_mutex);
-	return event;
+	return ERR_PTR(ret);
 }
 
 /*
