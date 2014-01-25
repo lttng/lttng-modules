@@ -519,7 +519,7 @@ int _lttng_event_unregister(struct lttng_event *event)
 
 	switch (event->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
-		ret = kabi_2635_tracepoint_probe_unregister(event->desc->name,
+		ret = kabi_2635_tracepoint_probe_unregister(event->desc->kname,
 						  event->desc->probe_callback,
 						  event);
 		if (ret)
