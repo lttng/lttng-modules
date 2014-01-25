@@ -1378,7 +1378,7 @@ void lib_ring_buffer_switch_new_end(struct lib_ring_buffer *buf,
 	v_add(config, padding_size, &buf->commit_hot[endidx].cc);
 	commit_count = v_read(config, &buf->commit_hot[endidx].cc);
 	lib_ring_buffer_check_deliver(config, buf, chan, offsets->end - 1,
-				  commit_count, endidx);
+				  commit_count, endidx, tsc);
 	lib_ring_buffer_write_commit_counter(config, buf, chan, endidx,
 					     offsets->end, commit_count,
 					     padding_size);
