@@ -325,7 +325,7 @@ struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 		event->desc = lttng_event_get(event_param->name);
 		if (!event->desc)
 			goto register_error;
-		ret = kabi_2635_tracepoint_probe_register(event_param->name,
+		ret = kabi_2635_tracepoint_probe_register(event->desc->kname,
 				event->desc->probe_callback,
 				event);
 		if (ret)
