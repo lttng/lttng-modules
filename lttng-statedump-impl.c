@@ -52,6 +52,7 @@
 #include "wrapper/fdtable.h"
 #include "wrapper/nsproxy.h"
 #include "wrapper/irq.h"
+#include "wrapper/tracepoint.h"
 
 #ifdef CONFIG_LTTNG_HAS_LIST_IRQ
 #include <linux/irq.h>
@@ -421,6 +422,14 @@ int lttng_statedump_start(struct lttng_session *session)
 	return do_lttng_statedump(session);
 }
 EXPORT_SYMBOL_GPL(lttng_statedump_start);
+
+static
+int __init lttng_statedump_init(void)
+{
+	return wrapper_lttng_fixup_sig(THIS_MODULE);
+}
+
+module_init(lttng_statedump_init);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Jean-Hugues Deschenes");
