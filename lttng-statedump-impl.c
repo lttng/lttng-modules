@@ -431,6 +431,13 @@ int __init lttng_statedump_init(void)
 
 module_init(lttng_statedump_init);
 
+static
+void __exit lttng_statedump_exit(void)
+{
+}
+
+module_exit(lttng_statedump_exit);
+
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Jean-Hugues Deschenes");
 MODULE_DESCRIPTION("Linux Trace Toolkit Next Generation Statedump");
