@@ -585,6 +585,9 @@ static void channel_unregister_notifiers(struct channel *chan)
 
 static void channel_free(struct channel *chan)
 {
+	if (chan->backend.release_priv_ops) {
+		chan->backend.release_priv_ops(chan->backend.priv_ops);
+	}
 	channel_iterator_free(chan);
 	channel_backend_free(&chan->backend);
 	kfree(chan);

@@ -1347,7 +1347,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	struct lib_ring_buffer *buf = filp->private_data;
 	struct channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
-	struct lttng_channel *lttng_chan = channel_get_private(chan);
+	const struct lttng_channel_ops *ops = chan->backend.priv_ops;
 	int ret;
 
 	if (atomic_read(&chan->record_disabled))
@@ -1358,9 +1358,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	{
 		uint64_t ts;
 
-		if (!lttng_chan->ops)
-			goto error;
-		ret = lttng_chan->ops->timestamp_begin(config, buf, &ts);
+		ret = ops->timestamp_begin(config, buf, &ts);
 		if (ret < 0)
 			goto error;
 		return put_u64(ts, arg);
@@ -1369,9 +1367,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	{
 		uint64_t ts;
 
-		if (!lttng_chan->ops)
-			goto error;
-		ret = lttng_chan->ops->timestamp_end(config, buf, &ts);
+		ret = ops->timestamp_end(config, buf, &ts);
 		if (ret < 0)
 			goto error;
 		return put_u64(ts, arg);
@@ -1380,9 +1376,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	{
 		uint64_t ed;
 
-		if (!lttng_chan->ops)
-			goto error;
-		ret = lttng_chan->ops->events_discarded(config, buf, &ed);
+		ret = ops->events_discarded(config, buf, &ed);
 		if (ret < 0)
 			goto error;
 		return put_u64(ed, arg);
@@ -1391,9 +1385,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	{
 		uint64_t cs;
 
-		if (!lttng_chan->ops)
-			goto error;
-		ret = lttng_chan->ops->content_size(config, buf, &cs);
+		ret = ops->content_size(config, buf, &cs);
 		if (ret < 0)
 			goto error;
 		return put_u64(cs, arg);
@@ -1402,9 +1394,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	{
 		uint64_t ps;
 
-		if (!lttng_chan->ops)
-			goto error;
-		ret = lttng_chan->ops->packet_size(config, buf, &ps);
+		ret = ops->packet_size(config, buf, &ps);
 		if (ret < 0)
 			goto error;
 		return put_u64(ps, arg);
@@ -1413,9 +1403,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	{
 		uint64_t si;
 
-		if (!lttng_chan->ops)
-			goto error;
-		ret = lttng_chan->ops->stream_id(config, buf, &si);
+		ret = ops->stream_id(config, buf, &si);
 		if (ret < 0)
 			goto error;
 		return put_u64(si, arg);
@@ -1424,9 +1412,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	{
 		uint64_t ts;
 
-		if (!lttng_chan->ops)
-			goto error;
-		ret = lttng_chan->ops->current_timestamp(config, buf, &ts);
+		ret = ops->current_timestamp(config, buf, &ts);
 		if (ret < 0)
 			goto error;
 		return put_u64(ts, arg);
@@ -1447,7 +1433,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	struct lib_ring_buffer *buf = filp->private_data;
 	struct channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
-	struct lttng_channel *lttng_chan = channel_get_private(chan);
+	const struct lttng_channel_ops *ops = chan->backend.priv_ops;
 	int ret;
 
 	if (atomic_read(&chan->record_disabled))
@@ -1458,9 +1444,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		uint64_t ts;
 
-		if (!lttng_chan->ops)
-			goto error;
-		ret = lttng_chan->ops->timestamp_begin(config, buf, &ts);
+		ret = ops->timestamp_begin(config, buf, &ts);
 		if (ret < 0)
 			goto error;
 		return put_u64(ts, arg);
@@ -1469,9 +1453,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		uint64_t ts;
 
-		if (!lttng_chan->ops)
-			goto error;
-		ret = lttng_chan->ops->timestamp_end(config, buf, &ts);
+		ret = ops->timestamp_end(config, buf, &ts);
 		if (ret < 0)
 			goto error;
 		return put_u64(ts, arg);
@@ -1480,9 +1462,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		uint64_t ed;
 
-		if (!lttng_chan->ops)
-			goto error;
-		ret = lttng_chan->ops->events_discarded(config, buf, &ed);
+		ret = ops->events_discarded(config, buf, &ed);
 		if (ret < 0)
 			goto error;
 		return put_u64(ed, arg);
@@ -1491,9 +1471,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		uint64_t cs;
 
-		if (!lttng_chan->ops)
-			goto error;
-		ret = lttng_chan->ops->content_size(config, buf, &cs);
+		ret = ops->content_size(config, buf, &cs);
 		if (ret < 0)
 			goto error;
 		return put_u64(cs, arg);
@@ -1502,9 +1480,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		uint64_t ps;
 
-		if (!lttng_chan->ops)
-			goto error;
-		ret = lttng_chan->ops->packet_size(config, buf, &ps);
+		ret = ops->packet_size(config, buf, &ps);
 		if (ret < 0)
 			goto error;
 		return put_u64(ps, arg);
@@ -1513,9 +1489,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		uint64_t si;
 
-		if (!lttng_chan->ops)
-			goto error;
-		ret = lttng_chan->ops->stream_id(config, buf, &si);
+		ret = ops->stream_id(config, buf, &si);
 		if (ret < 0)
 			goto error;
 		return put_u64(si, arg);
@@ -1524,9 +1498,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		uint64_t ts;
 
-		if (!lttng_chan->ops)
-			goto error;
-		ret = lttng_chan->ops->current_timestamp(config, buf, &ts);
+		ret = ops->current_timestamp(config, buf, &ts);
 		if (ret < 0)
 			goto error;
 		return put_u64(ts, arg);

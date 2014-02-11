@@ -83,6 +83,8 @@ struct channel_backend {
 	unsigned long num_subbuf;	/* Number of sub-buffers for writer */
 	u64 start_tsc;			/* Channel creation TSC value */
 	void *priv;			/* Client-specific information */
+	void *priv_ops;			/* Client-specific ops pointer */
+	void (*release_priv_ops)(void *priv_ops);
 	struct notifier_block cpu_hp_notifier;	 /* CPU hotplug notifier */
 	/*
 	 * We need to copy config because the module containing the

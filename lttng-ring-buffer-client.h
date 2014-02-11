@@ -32,6 +32,8 @@
 #define LTTNG_COMPACT_EVENT_BITS	5
 #define LTTNG_COMPACT_TSC_BITS		27
 
+static struct lttng_transport lttng_relay_transport;
+
 /*
  * Keep the natural field alignment for _each field_ within this structure if
  * you ever add/remove a field from this header. Packed attribute is not used
@@ -487,21 +489,46 @@ static const struct lib_ring_buffer_config client_config = {
 };
 
 static
-struct channel *_channel_create(const char *name,
-				struct lttng_channel *lttng_chan, void *buf_addr,
-				size_t subbuf_size, size_t num_subbuf,
-				unsigned int switch_timer_interval,
-				unsigned int read_timer_interval)
+void release_priv_ops(void *priv_ops)
 {
-	return channel_create(&client_config, name, lttng_chan, buf_addr,
-			      subbuf_size, num_subbuf, switch_timer_interval,
-			      read_timer_interval);
+	module_put(THIS_MODULE);
 }
 
 static
 void lttng_channel_destroy(struct channel *chan)
 {
 	channel_destroy(chan);
+}
+
+static
+struct channel *_channel_create(const char *name,
+				struct lttng_channel *lttng_chan, void *buf_addr,
+				size_t subbuf_size, size_t num_subbuf,
+				unsigned int switch_timer_interval,
+				unsigned int read_timer_interval)
+{
+	struct channel *chan;
+
+	chan = channel_create(&client_config, name, lttng_chan, buf_addr,
+			      subbuf_size, num_subbuf, switch_timer_interval,
+			      read_timer_interval);
+	if (chan) {
+		/*
+		 * Ensure this module is not unloaded before we finish
+		 * using lttng_relay_transport.ops.
+		 */
+		if (!try_module_get(THIS_MODULE)) {
+			printk(KERN_WARNING "LTT : Can't lock transport module.\n");
+			goto error;
+		}
+		chan->backend.priv_ops = &lttng_relay_transport.ops;
+		chan->backend.release_priv_ops = release_priv_ops;
+	}
+	return chan;
+
+error:
+	lttng_channel_destroy(chan);
+	return NULL;
 }
 
 static
