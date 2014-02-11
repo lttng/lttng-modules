@@ -493,14 +493,6 @@ struct channel *_channel_create(const char *name,
 				unsigned int switch_timer_interval,
 				unsigned int read_timer_interval)
 {
-	lttng_chan->ops->timestamp_begin = client_timestamp_begin;
-	lttng_chan->ops->timestamp_end = client_timestamp_end;
-	lttng_chan->ops->events_discarded = client_events_discarded;
-	lttng_chan->ops->content_size = client_content_size;
-	lttng_chan->ops->packet_size = client_packet_size;
-	lttng_chan->ops->stream_id = client_stream_id;
-	lttng_chan->ops->current_timestamp = client_current_timestamp;
-
 	return channel_create(&client_config, name, lttng_chan, buf_addr,
 			      subbuf_size, num_subbuf, switch_timer_interval,
 			      read_timer_interval);
@@ -655,6 +647,13 @@ static struct lttng_transport lttng_relay_transport = {
 		.get_hp_wait_queue = lttng_get_hp_wait_queue,
 		.is_finalized = lttng_is_finalized,
 		.is_disabled = lttng_is_disabled,
+		.timestamp_begin = client_timestamp_begin,
+		.timestamp_end = client_timestamp_end,
+		.events_discarded = client_events_discarded,
+		.content_size = client_content_size,
+		.packet_size = client_packet_size,
+		.stream_id = client_stream_id,
+		.current_timestamp = client_current_timestamp,
 	},
 };
 
