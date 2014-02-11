@@ -25,6 +25,7 @@
 
 #include <linux/version.h>
 #include <linux/tracepoint.h>
+#include <linux/module.h>
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,35))
 
@@ -40,5 +41,56 @@
 #define kabi_2635_tracepoint_probe_unregister_noupdate tracepoint_probe_unregister_noupdate
 
 #endif /* HAVE_KABI_2635_TRACEPOINT */
+
+#ifdef CONFIG_MODULE_SIG
+
+#include <linux/kallsyms.h>
+#include "kallsyms.h"
+
+static inline
+int wrapper_tracepoint_module_notify(struct notifier_block *nb,
+		unsigned long val, struct module *mod)
+{
+	int (*tracepoint_module_notify_sym)(struct notifier_block *nb,
+			unsigned long val, struct module *mod);
+
+	tracepoint_module_notify_sym =
+		(void *) kallsyms_lookup_funcptr("tracepoint_module_notify");
+	if (tracepoint_module_notify_sym) {
+		return tracepoint_module_notify_sym(nb, val, mod);
+	} else {
+		printk(KERN_WARNING "LTTng: tracepoint_module_notify symbol lookup failed.\n");
+		return -ENOSYS;
+	}
+}
+
+static inline
+int wrapper_lttng_fixup_sig(struct module *mod)
+{
+	int ret = 0;
+
+	/*
+	 * This is for module.c confusing force loaded modules with
+	 * unsigned modules.
+	 */
+	if (!THIS_MODULE->sig_ok &&
+			THIS_MODULE->taints & (1U << TAINT_FORCED_MODULE)) {
+		THIS_MODULE->taints &= ~(1U << TAINT_FORCED_MODULE);
+		ret = wrapper_tracepoint_module_notify(NULL,
+				MODULE_STATE_COMING, mod);
+		THIS_MODULE->taints |= (1U << TAINT_FORCED_MODULE);
+	}
+	return ret;
+}
+
+#else /* CONFIG_MODULE_SIG */
+
+static inline
+int wrapper_lttng_fixup_sig(struct module *mod)
+{
+	return 0;
+}
+
+#endif /* #else CONFIG_MODULE_SIG */
 
 #endif /* _LTTNG_WRAPPER_TRACEPOINT_H */
