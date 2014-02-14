@@ -1,3 +1,9 @@
+2014-02-14 LTTng modules 2.4.0-rc4
+	* Fix: use after free in ring buffer clients
+	* Fix: Add statedump exit so module is not permanent
+	* Cleanup: move callback init to static initialization
+	* Fix: OOT lttng-statedump tracepoints not visible with signed kernels
+
 2014-01-29 LTTng modules 2.4.0-rc3
 	* Fix: tracepoint event name mapping at unregister
 	* Fix: tracepoint name remapping
