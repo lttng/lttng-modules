@@ -1261,7 +1261,13 @@ static int __init lttng_events_init(void)
 	ret = lttng_abi_init();
 	if (ret)
 		goto error_abi;
+	ret = lttng_logger_init();
+	if (ret)
+		goto error_logger;
 	return 0;
+
+error_logger:
+	lttng_abi_exit();
 error_abi:
 	kmem_cache_destroy(event_cache);
 	return ret;
@@ -1273,6 +1279,7 @@ static void __exit lttng_events_exit(void)
 {
 	struct lttng_session *session, *tmpsession;
 
+	lttng_logger_exit();
 	lttng_abi_exit();
 	list_for_each_entry_safe(session, tmpsession, &sessions, list)
 		lttng_session_destroy(session);

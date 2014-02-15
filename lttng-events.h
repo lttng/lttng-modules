@@ -429,6 +429,9 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 }
 #endif
 
+int lttng_logger_init(void);
+void lttng_logger_exit(void);
+
 extern int lttng_statedump_start(struct lttng_session *session);
 
 #ifdef CONFIG_KPROBES
