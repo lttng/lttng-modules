@@ -4,7 +4,9 @@
 #include <linux/tracepoint.h>
 #include <asm/vmx.h>
 #include <asm/svm.h>
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
 #include <asm/clocksource.h>
+#endif
 #include <linux/version.h>
 #include <../arch/x86/kvm/lapic.h>
 #include <../arch/x86/kvm/kvm_cache_regs.h>
@@ -714,13 +716,23 @@ TRACE_EVENT(kvm_emulate_insn,
 		),
 
 	TP_fast_assign(
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,1,0))
+		tp_assign(rip, vcpu->arch.emulate_ctxt.decode.fetch.start)
+		tp_assign(csbase, kvm_x86_ops->get_segment_base(vcpu, VCPU_SREG_CS))
+		tp_assign(len, vcpu->arch.emulate_ctxt.decode.eip
+			       - vcpu->arch.emulate_ctxt.decode.fetch.start)
+		tp_memcpy(insn,
+		       vcpu->arch.emulate_ctxt.decode.fetch.data,
+		       15)
+#else
 		tp_assign(rip, vcpu->arch.emulate_ctxt.fetch.start)
-	  tp_assign(csbase, kvm_x86_ops->get_segment_base(vcpu, VCPU_SREG_CS))
+		tp_assign(csbase, kvm_x86_ops->get_segment_base(vcpu, VCPU_SREG_CS))
 		tp_assign(len, vcpu->arch.emulate_ctxt._eip
 			       - vcpu->arch.emulate_ctxt.fetch.start)
 		tp_memcpy(insn,
 		       vcpu->arch.emulate_ctxt.fetch.data,
 		       15)
+#endif
 		tp_assign(flags, kei_decode_mode(vcpu->arch.emulate_ctxt.mode))
 		tp_assign(failed, failed)
 		),
@@ -784,6 +796,7 @@ TRACE_EVENT(kvm_write_tsc_offset,
 )
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
 #ifdef CONFIG_X86_64
 
 #define host_clocks					\
@@ -844,6 +857,7 @@ TRACE_EVENT(kvm_track_tsc,
 )
 
 #endif /* CONFIG_X86_64 */
+#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0) */
 
 #endif /* _TRACE_KVM_H */
 
