@@ -1,3 +1,9 @@
+2014-02-28 (Public Sleeping Day) LTTng modules 2.4.0
+	* Fix: load state dump even if work-around lookup fails
+	* Cleanup: fix comment
+	* Fix: correctly version kvm events to build against v3.0 kernel
+	* Add extraversion (e.g. -rc4) to lttng-tracer modinfo
+
 2014-02-14 LTTng modules 2.4.0-rc4
 	* Fix: use after free in ring buffer clients
 	* Fix: Add statedump exit so module is not permanent
