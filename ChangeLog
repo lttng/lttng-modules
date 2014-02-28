@@ -1,3 +1,16 @@
+2014-02-28 LTTng modules 2.2.4
+	* Fix: load state dump even if work-around lookup fails
+	* Fix: Add statedump exit so module is not permanent
+	* Fix: OOT lttng-statedump tracepoints not visible with signed kernels
+	* Fix: tracepoint event name mapping at unregister
+	* Fix: ring buffer check deliver compile fix
+	* Fix: tracepoint name remapping
+	* Fix: quote event name in metadata
+	* Fix: handle unknown event type parameter
+	* Fix: eliminate timestamp overlap between packets
+	* gcc blacklist: only apply when building with gcc
+	* Blacklist ARM gcc 4.8.0, 4.8.1, 4.8.2
+
 2013-11-12 LTTng modules 2.2.3
 	* lttng-statedump-impl: Fix lttng_list_interrupts for empty implementation
 	* Import fix from LTSI: 3.4+ RT kernels use CONFIG_PREEMPT_RT_FULL
