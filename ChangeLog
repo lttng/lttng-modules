@@ -1,3 +1,17 @@
+2014-02-28 LTTng modules 2.3.5
+	* Fix: load state dump even if work-around lookup fails
+	* Cleanup: fix comment
+	* Fix: correctly version kvm events to build against v3.0 kernel
+	* Fix: Add statedump exit so module is not permanent
+	* Fix: OOT lttng-statedump tracepoints not visible with signed kernels
+	* Fix: tracepoint event name mapping at unregister
+	* Fix: tracepoint name remapping
+	* Fix: enable event error path memory corruption
+	* Update kvm instrumentation to Linux 3.13
+	* Update sched instrumentation to Linux 3.13
+	* Fix: provide more precise error report for enable event
+	* Fix: quote event name in metadata
+
 2013-12-03 LTTng modules 2.3.4
 	* Fix: handle unknown event type parameter
 	* Fix: eliminate timestamp overlap between packets
