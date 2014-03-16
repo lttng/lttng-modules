@@ -13,3 +13,7 @@
 #ifdef CONFIG_PPC
 #include "powerpc-32-syscalls-3.0.34_integers.h"
 #endif
+
+#ifdef CONFIG_CPU_MIPS32
+#include "mips-32-syscalls-3.13.0_integers.h"
+#endif
