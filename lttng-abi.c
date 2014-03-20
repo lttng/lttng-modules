@@ -1555,7 +1555,8 @@ error:
 	return ret;
 }
 
-void __exit lttng_abi_exit(void)
+/* No __exit annotation because used by init error path too. */
+void lttng_abi_exit(void)
 {
 	if (lttng_proc_dentry)
 		remove_proc_entry("lttng", NULL);
