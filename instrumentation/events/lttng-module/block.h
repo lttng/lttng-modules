@@ -810,7 +810,7 @@ TRACE_EVENT(block_split,
 		tp_assign(dev, bio->bi_bdev->bd_dev)
 		tp_assign(sector, bio->bi_sector)
 		tp_assign(new_sector, new_sector)
-		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_iter.bi_size)
+		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_size)
 		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 	),
