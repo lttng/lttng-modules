@@ -339,12 +339,21 @@ TRACE_EVENT(block_bio_bounce,
 	),
 
 	TP_fast_assign(
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+		tp_assign(dev, bio->bi_bdev ?
+					  bio->bi_bdev->bd_dev : 0)
+		tp_assign(sector, bio->bi_iter.bi_sector)
+		tp_assign(nr_sector, bio_sectors(bio))
+		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_iter.bi_size)
+		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		tp_assign(dev, bio->bi_bdev ?
 					  bio->bi_bdev->bd_dev : 0)
 		tp_assign(sector, bio->bi_sector)
 		tp_assign(nr_sector, bio->bi_size >> 9)
 		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_size)
 		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 	),
 
 	TP_printk("%d,%d %s %llu + %u [%s]",
@@ -384,6 +393,13 @@ TRACE_EVENT(block_bio_complete,
 	),
 
 	TP_fast_assign(
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+		tp_assign(dev, bio->bi_bdev->bd_dev)
+		tp_assign(sector, bio->bi_iter.bi_sector)
+		tp_assign(nr_sector, bio_sectors(bio))
+		tp_assign(error, error)
+		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_iter.bi_size)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		tp_assign(dev, bio->bi_bdev->bd_dev)
 		tp_assign(sector, bio->bi_sector)
 		tp_assign(nr_sector, bio->bi_size >> 9)
@@ -393,6 +409,7 @@ TRACE_EVENT(block_bio_complete,
 		tp_assign(error, 0)
 #endif
 		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_size)
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 	),
 
 	TP_printk("%d,%d %s %llu + %u [%d]",
@@ -418,11 +435,19 @@ DECLARE_EVENT_CLASS(block_bio_merge,
 	),
 
 	TP_fast_assign(
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+		tp_assign(dev, bio->bi_bdev->bd_dev)
+		tp_assign(sector, bio->bi_iter.bi_sector)
+		tp_assign(nr_sector, bio_sectors(bio))
+		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_iter.bi_size)
+		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		tp_assign(dev, bio->bi_bdev->bd_dev)
 		tp_assign(sector, bio->bi_sector)
 		tp_assign(nr_sector, bio->bi_size >> 9)
 		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_size)
 		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 	),
 
 	TP_printk("%d,%d %s %llu + %u [%s]",
@@ -484,11 +509,19 @@ TRACE_EVENT(block_bio_queue,
 	),
 
 	TP_fast_assign(
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+		tp_assign(dev, bio->bi_bdev->bd_dev)
+		tp_assign(sector, bio->bi_iter.bi_sector)
+		tp_assign(nr_sector, bio_sectors(bio))
+		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_iter.bi_size)
+		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		tp_assign(dev, bio->bi_bdev->bd_dev)
 		tp_assign(sector, bio->bi_sector)
 		tp_assign(nr_sector, bio->bi_size >> 9)
 		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_size)
 		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 	),
 
 	TP_printk("%d,%d %s %llu + %u [%s]",
@@ -586,12 +619,21 @@ DECLARE_EVENT_CLASS(block_get_rq,
         ),
 
 	TP_fast_assign(
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+		tp_assign(dev, bio ? bio->bi_bdev->bd_dev : 0)
+		tp_assign(sector, bio ? bio->bi_iter.bi_sector : 0)
+		tp_assign(nr_sector, bio ? bio_sectors(bio) : 0)
+		blk_fill_rwbs(rwbs, bio ? bio->bi_rw : 0,
+			      bio ? bio_sectors(bio) : 0)
+		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		tp_assign(dev, bio ? bio->bi_bdev->bd_dev : 0)
 		tp_assign(sector, bio ? bio->bi_sector : 0)
 		tp_assign(nr_sector, bio ? bio->bi_size >> 9 : 0)
 		blk_fill_rwbs(rwbs, bio ? bio->bi_rw : 0,
 			      bio ? bio->bi_size >> 9 : 0)
 		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
         ),
 
 	TP_printk("%d,%d %s %llu + %u [%s]",
@@ -758,11 +800,19 @@ TRACE_EVENT(block_split,
 	),
 
 	TP_fast_assign(
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+		tp_assign(dev, bio->bi_bdev->bd_dev)
+		tp_assign(sector, bio->bi_iter.bi_sector)
+		tp_assign(new_sector, new_sector)
+		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_iter.bi_size)
+		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		tp_assign(dev, bio->bi_bdev->bd_dev)
 		tp_assign(sector, bio->bi_sector)
 		tp_assign(new_sector, new_sector)
-		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_size)
+		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_iter.bi_size)
 		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 	),
 
 	TP_printk("%d,%d %s %llu / %llu [%s]",
@@ -804,12 +854,21 @@ TRACE_EVENT(block_remap,
 	),
 
 	TP_fast_assign(
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+		tp_assign(dev, bio->bi_bdev->bd_dev)
+		tp_assign(sector, bio->bi_iter.bi_sector)
+		tp_assign(nr_sector, bio_sectors(bio))
+		tp_assign(old_dev, dev)
+		tp_assign(old_sector, from)
+		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_iter.bi_size)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		tp_assign(dev, bio->bi_bdev->bd_dev)
 		tp_assign(sector, bio->bi_sector)
 		tp_assign(nr_sector, bio->bi_size >> 9)
 		tp_assign(old_dev, dev)
 		tp_assign(old_sector, from)
 		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_size)
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 	),
 
 	TP_printk("%d,%d %s %llu + %u <- (%d,%d) %llu",
