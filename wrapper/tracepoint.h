@@ -37,10 +37,33 @@
 
 #define kabi_2635_tracepoint_probe_register tracepoint_probe_register
 #define kabi_2635_tracepoint_probe_unregister tracepoint_probe_unregister
-#define kabi_2635_tracepoint_probe_register_noupdate tracepoint_probe_register_noupdate
-#define kabi_2635_tracepoint_probe_unregister_noupdate tracepoint_probe_unregister_noupdate
 
 #endif /* HAVE_KABI_2635_TRACEPOINT */
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
+
+#include "../lttng-tracepoint.h"
+
+#define lttng_wrapper_tracepoint_probe_register lttng_tracepoint_probe_register
+#define lttng_wrapper_tracepoint_probe_unregister lttng_tracepoint_probe_unregister
+
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
+
+#define lttng_wrapper_tracepoint_probe_register kabi_2635_tracepoint_probe_register
+#define lttng_wrapper_tracepoint_probe_unregister kabi_2635_tracepoint_probe_unregister
+
+static inline
+int lttng_tracepoint_init(void)
+{
+	return 0;
+}
+
+static inline
+void lttng_tracepoint_exit(void)
+{
+}
+
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
 
 #ifdef CONFIG_MODULE_SIG
 

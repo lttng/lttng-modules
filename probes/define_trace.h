@@ -54,8 +54,7 @@
 #include <linux/module.h>
 
 #undef TRACE_EVENT_MAP
-#define TRACE_EVENT_MAP(name, map, proto, args, tstruct, assign, print)	\
-	DEFINE_TRACE(name)
+#define TRACE_EVENT_MAP(name, map, proto, args, tstruct, assign, print)
 
 #undef TRACE_EVENT_CONDITION_MAP
 #define TRACE_EVENT_CONDITION_MAP(name, map, proto, args, cond, tstruct, assign, print) \
@@ -68,16 +67,13 @@
 
 #undef TRACE_EVENT_FN_MAP
 #define TRACE_EVENT_FN_MAP(name, map, proto, args, tstruct,		\
-		assign, print, reg, unreg)			\
-	DEFINE_TRACE_FN(name, reg, unreg)
+		assign, print, reg, unreg)
 
 #undef DEFINE_EVENT_MAP
-#define DEFINE_EVENT_MAP(template, name, map, proto, args) \
-	DEFINE_TRACE(name)
+#define DEFINE_EVENT_MAP(template, name, map, proto, args)
 
 #undef DEFINE_EVENT_PRINT_MAP
-#define DEFINE_EVENT_PRINT_MAP(template, name, map, proto, args, print)	\
-	DEFINE_TRACE(name)
+#define DEFINE_EVENT_PRINT_MAP(template, name, map, proto, args, print)
 
 #undef DEFINE_EVENT_CONDITION_MAP
 #define DEFINE_EVENT_CONDITION_MAP(template, name, map, proto, args, cond) \
@@ -85,8 +81,7 @@
 
 
 #undef TRACE_EVENT
-#define TRACE_EVENT(name, proto, args, tstruct, assign, print)	\
-	DEFINE_TRACE(name)
+#define TRACE_EVENT(name, proto, args, tstruct, assign, print)
 
 #undef TRACE_EVENT_CONDITION
 #define TRACE_EVENT_CONDITION(name, proto, args, cond, tstruct, assign, print) \
@@ -99,24 +94,20 @@
 
 #undef TRACE_EVENT_FN
 #define TRACE_EVENT_FN(name, proto, args, tstruct,		\
-		assign, print, reg, unreg)			\
-	DEFINE_TRACE_FN(name, reg, unreg)
+		assign, print, reg, unreg)
 
 #undef DEFINE_EVENT
-#define DEFINE_EVENT(template, name, proto, args) \
-	DEFINE_TRACE(name)
+#define DEFINE_EVENT(template, name, proto, args)
 
 #undef DEFINE_EVENT_PRINT
-#define DEFINE_EVENT_PRINT(template, name, proto, args, print)	\
-	DEFINE_TRACE(name)
+#define DEFINE_EVENT_PRINT(template, name, proto, args, print)
 
 #undef DEFINE_EVENT_CONDITION
 #define DEFINE_EVENT_CONDITION(template, name, proto, args, cond) \
 	DEFINE_EVENT(template, name, PARAMS(proto), PARAMS(args))
 
 #undef DECLARE_TRACE
-#define DECLARE_TRACE(name, proto, args)	\
-	DEFINE_TRACE(name)
+#define DECLARE_TRACE(name, proto, args)
 
 #undef TRACE_INCLUDE
 #undef __TRACE_INCLUDE

@@ -65,6 +65,13 @@
 #define TRACE_INCLUDE_FILE lttng-statedump
 #include "instrumentation/events/lttng-module/lttng-statedump.h"
 
+DEFINE_TRACE(lttng_statedump_end);
+DEFINE_TRACE(lttng_statedump_interrupt);
+DEFINE_TRACE(lttng_statedump_file_descriptor);
+DEFINE_TRACE(lttng_statedump_start);
+DEFINE_TRACE(lttng_statedump_process_state);
+DEFINE_TRACE(lttng_statedump_network_interface);
+
 struct lttng_fd_ctx {
 	char *page;
 	struct lttng_session *session;

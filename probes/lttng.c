@@ -43,6 +43,8 @@
 #define LTTNG_LOGGER_COUNT_MAX	1024
 #define LTTNG_LOGGER_FILE	"lttng-logger"
 
+DEFINE_TRACE(lttng_logger);
+
 static struct proc_dir_entry *lttng_logger_dentry;
 
 /**
