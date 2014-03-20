@@ -306,7 +306,22 @@ TRACE_EVENT(btrfs_get_extent,
 		  __entry->refs, __entry->compress_type)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+
+#define show_ordered_flags(flags)					   \
+	__print_flags(flags, "|",					   \
+		{ (1 << BTRFS_ORDERED_IO_DONE), 	"IO_DONE" 	}, \
+		{ (1 << BTRFS_ORDERED_COMPLETE), 	"COMPLETE" 	}, \
+		{ (1 << BTRFS_ORDERED_NOCOW), 		"NOCOW" 	}, \
+		{ (1 << BTRFS_ORDERED_COMPRESSED), 	"COMPRESSED" 	}, \
+		{ (1 << BTRFS_ORDERED_PREALLOC), 	"PREALLOC" 	}, \
+		{ (1 << BTRFS_ORDERED_DIRECT),	 	"DIRECT" 	}, \
+		{ (1 << BTRFS_ORDERED_IOERR), 		"IOERR" 	}, \
+		{ (1 << BTRFS_ORDERED_UPDATED_ISIZE), 	"UPDATED_ISIZE"	}, \
+		{ (1 << BTRFS_ORDERED_LOGGED_CSUM), 	"LOGGED_CSUM"	}, \
+		{ (1 << BTRFS_ORDERED_TRUNCATED), 	"TRUNCATED"	})
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
 
 #define show_ordered_flags(flags)					\
 	__print_symbolic(flags,						\
