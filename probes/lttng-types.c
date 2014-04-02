@@ -26,6 +26,7 @@
 #include "../lttng-events.h"
 #include "lttng-types.h"
 #include <linux/hrtimer.h>
+#include "../lttng-tracer.h"
 
 #define STAGE_EXPORT_ENUMS
 #include "lttng-types.h"
@@ -59,3 +60,7 @@ module_exit(lttng_types_exit);
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");
 MODULE_DESCRIPTION("LTTng types");
+MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
+	__stringify(LTTNG_MODULES_MINOR_VERSION) "."
+	__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION)
+	LTTNG_MODULES_EXTRAVERSION);

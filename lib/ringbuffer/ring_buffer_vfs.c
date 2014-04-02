@@ -28,6 +28,7 @@
 #include "../../wrapper/ringbuffer/frontend.h"
 #include "../../wrapper/ringbuffer/vfs.h"
 #include "../../wrapper/poll.h"
+#include "../../lttng-tracer.h"
 
 static int put_ulong(unsigned long val, unsigned long arg)
 {
@@ -448,3 +449,7 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_file_operations);
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers");
 MODULE_DESCRIPTION("Ring Buffer Library VFS");
+MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
+	__stringify(LTTNG_MODULES_MINOR_VERSION) "."
+	__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION)
+	LTTNG_MODULES_EXTRAVERSION);
