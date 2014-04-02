@@ -25,6 +25,7 @@
 #include <linux/fs.h>
 #include <linux/dcache.h>
 #include <linux/version.h>
+#include "../lttng-tracer.h"
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 #include <../fs/ext3/ext3.h>
@@ -50,3 +51,7 @@
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com>, Paul Woegerer <paul_woegerer@mentor.com>, and Andrew Gabbasov <andrew_gabbasov@mentor.com>");
 MODULE_DESCRIPTION("LTTng ext3 probes");
+MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
+	__stringify(LTTNG_MODULES_MINOR_VERSION) "."
+	__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION)
+	LTTNG_MODULES_EXTRAVERSION);

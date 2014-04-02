@@ -27,6 +27,7 @@
 #include <../fs/ext4/mballoc.h>
 #include <../fs/ext4/ext4_extents.h>
 #include <linux/dcache.h>
+#include "../lttng-tracer.h"
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
@@ -49,3 +50,7 @@
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Andrew Gabbasov <andrew_gabbasov@mentor.com>");
 MODULE_DESCRIPTION("LTTng ext4 probes");
+MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
+	__stringify(LTTNG_MODULES_MINOR_VERSION) "."
+	__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION)
+	LTTNG_MODULES_EXTRAVERSION);

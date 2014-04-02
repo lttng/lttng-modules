@@ -23,6 +23,7 @@
 
 #include <linux/module.h>
 #include <scsi/scsi_device.h>
+#include "../lttng-tracer.h"
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
@@ -42,3 +43,7 @@
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com> and Andrew Gabbasov <andrew_gabbasov@mentor.com>");
 MODULE_DESCRIPTION("LTTng scsi probes");
+MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
+	__stringify(LTTNG_MODULES_MINOR_VERSION) "."
+	__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION)
+	LTTNG_MODULES_EXTRAVERSION);

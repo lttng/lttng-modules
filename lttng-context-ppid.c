@@ -91,3 +91,7 @@ EXPORT_SYMBOL_GPL(lttng_add_ppid_to_ctx);
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers");
 MODULE_DESCRIPTION("Linux Trace Toolkit PPID Context");
+MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
+	__stringify(LTTNG_MODULES_MINOR_VERSION) "."
+	__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION)
+	LTTNG_MODULES_EXTRAVERSION);

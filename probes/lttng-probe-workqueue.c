@@ -23,6 +23,7 @@
 
 #include <linux/module.h>
 #include <linux/idr.h>
+#include "../lttng-tracer.h"
 
 struct cpu_workqueue_struct;
 struct pool_workqueue;
@@ -47,3 +48,7 @@ struct pool_workqueue;
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Andrew Gabbasov <andrew_gabbasov@mentor.com>");
 MODULE_DESCRIPTION("LTTng workqueue probes");
+MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
+	__stringify(LTTNG_MODULES_MINOR_VERSION) "."
+	__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION)
+	LTTNG_MODULES_EXTRAVERSION);

@@ -47,6 +47,7 @@
 #include <linux/mutex.h>
 
 #include "lttng-events.h"
+#include "lttng-tracer.h"
 #include "wrapper/irqdesc.h"
 #include "wrapper/spinlock.h"
 #include "wrapper/fdtable.h"
@@ -448,3 +449,7 @@ module_exit(lttng_statedump_exit);
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Jean-Hugues Deschenes");
 MODULE_DESCRIPTION("Linux Trace Toolkit Next Generation Statedump");
+MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
+	__stringify(LTTNG_MODULES_MINOR_VERSION) "."
+	__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION)
+	LTTNG_MODULES_EXTRAVERSION);

@@ -175,3 +175,7 @@ EXPORT_SYMBOL_GPL(lttng_kprobes_destroy_private);
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers");
 MODULE_DESCRIPTION("Linux Trace Toolkit Kprobes Support");
+MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
+	__stringify(LTTNG_MODULES_MINOR_VERSION) "."
+	__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION)
+	LTTNG_MODULES_EXTRAVERSION);
