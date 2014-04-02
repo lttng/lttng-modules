@@ -54,7 +54,11 @@ TRACE_EVENT(rcu_utilization,
  */
 TRACE_EVENT(rcu_grace_period,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, unsigned long gpnum, const char *gpevent),
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 	TP_PROTO(char *rcuname, unsigned long gpnum, char *gpevent),
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
 	TP_ARGS(rcuname, gpnum, gpevent),
 
@@ -83,8 +87,13 @@ TRACE_EVENT(rcu_grace_period,
  */
 TRACE_EVENT(rcu_grace_period_init,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, unsigned long gpnum, u8 level,
+		 int grplo, int grphi, unsigned long qsmask),
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 	TP_PROTO(char *rcuname, unsigned long gpnum, u8 level,
 		 int grplo, int grphi, unsigned long qsmask),
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
 	TP_ARGS(rcuname, gpnum, level, grplo, grphi, qsmask),
 
@@ -119,7 +128,11 @@ TRACE_EVENT(rcu_grace_period_init,
  */
 TRACE_EVENT(rcu_preempt_task,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, int pid, unsigned long gpnum),
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 	TP_PROTO(char *rcuname, int pid, unsigned long gpnum),
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
 	TP_ARGS(rcuname, pid, gpnum),
 
@@ -146,7 +159,11 @@ TRACE_EVENT(rcu_preempt_task,
  */
 TRACE_EVENT(rcu_unlock_preempted_task,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, unsigned long gpnum, int pid),
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 	TP_PROTO(char *rcuname, unsigned long gpnum, int pid),
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
 	TP_ARGS(rcuname, gpnum, pid),
 
@@ -175,9 +192,15 @@ TRACE_EVENT(rcu_unlock_preempted_task,
  */
 TRACE_EVENT(rcu_quiescent_state_report,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, unsigned long gpnum,
+		 unsigned long mask, unsigned long qsmask,
+		 u8 level, int grplo, int grphi, int gp_tasks),
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 	TP_PROTO(char *rcuname, unsigned long gpnum,
 		 unsigned long mask, unsigned long qsmask,
 		 u8 level, int grplo, int grphi, int gp_tasks),
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
 	TP_ARGS(rcuname, gpnum, mask, qsmask, level, grplo, grphi, gp_tasks),
 
@@ -219,7 +242,11 @@ TRACE_EVENT(rcu_quiescent_state_report,
  */
 TRACE_EVENT(rcu_fqs,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, unsigned long gpnum, int cpu, const char *qsevent),
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 	TP_PROTO(char *rcuname, unsigned long gpnum, int cpu, char *qsevent),
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
 	TP_ARGS(rcuname, gpnum, cpu, qsevent),
 
@@ -259,7 +286,12 @@ TRACE_EVENT(rcu_fqs,
  */
 TRACE_EVENT(rcu_dyntick,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *polarity, long long oldnesting, long long newnesting),
+
+	TP_ARGS(polarity, oldnesting, newnesting),
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
 	TP_PROTO(char *polarity, long long oldnesting, long long newnesting),
 
 	TP_ARGS(polarity, oldnesting, newnesting),
@@ -318,7 +350,11 @@ TRACE_EVENT(rcu_dyntick,
  */
 TRACE_EVENT(rcu_prep_idle,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *reason),
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 	TP_PROTO(char *reason),
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
 	TP_ARGS(reason),
 
@@ -343,7 +379,12 @@ TRACE_EVENT(rcu_prep_idle,
  */
 TRACE_EVENT(rcu_callback,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, struct rcu_head *rhp, long qlen_lazy,
+		 long qlen),
+
+	TP_ARGS(rcuname, rhp, qlen_lazy, qlen),
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 	TP_PROTO(char *rcuname, struct rcu_head *rhp, long qlen_lazy,
 		 long qlen),
 
@@ -395,7 +436,13 @@ TRACE_EVENT(rcu_callback,
  */
 TRACE_EVENT(rcu_kfree_callback,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, struct rcu_head *rhp, unsigned long offset,
+		 long qlen_lazy, long qlen),
+
+	TP_ARGS(rcuname, rhp, offset, qlen_lazy, qlen),
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 	TP_PROTO(char *rcuname, struct rcu_head *rhp, unsigned long offset,
 		 long qlen_lazy, long qlen),
 
@@ -447,7 +494,11 @@ TRACE_EVENT(rcu_kfree_callback,
  */
 TRACE_EVENT(rcu_batch_start,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, long qlen_lazy, long qlen, long blimit),
+
+	TP_ARGS(rcuname, qlen_lazy, qlen, blimit),
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
 	TP_PROTO(char *rcuname, long qlen_lazy, long qlen, long blimit),
 
 	TP_ARGS(rcuname, qlen_lazy, qlen, blimit),
@@ -504,7 +555,11 @@ TRACE_EVENT(rcu_batch_start,
  */
 TRACE_EVENT(rcu_invoke_callback,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, struct rcu_head *rhp),
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 	TP_PROTO(char *rcuname, struct rcu_head *rhp),
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
 	TP_ARGS(rcuname, rhp),
 
@@ -533,7 +588,11 @@ TRACE_EVENT(rcu_invoke_callback,
  */
 TRACE_EVENT(rcu_invoke_kfree_callback,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, struct rcu_head *rhp, unsigned long offset),
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 	TP_PROTO(char *rcuname, struct rcu_head *rhp, unsigned long offset),
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
 	TP_ARGS(rcuname, rhp, offset),
 
@@ -566,7 +625,17 @@ TRACE_EVENT(rcu_invoke_kfree_callback,
  */
 TRACE_EVENT(rcu_batch_end,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0))
+	TP_PROTO(const char *rcuname, int callbacks_invoked,
+		 char cb, char nr, char iit, char risk),
+
+	TP_ARGS(rcuname, callbacks_invoked, cb, nr, iit, risk),
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, int callbacks_invoked,
+		 bool cb, bool nr, bool iit, bool risk),
+
+	TP_ARGS(rcuname, callbacks_invoked, cb, nr, iit, risk),
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
 	TP_PROTO(char *rcuname, int callbacks_invoked,
 		 bool cb, bool nr, bool iit, bool risk),
 
@@ -580,7 +649,12 @@ TRACE_EVENT(rcu_batch_end,
 	TP_STRUCT__entry(
 		__string(rcuname, rcuname)
 		__field(int, callbacks_invoked)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0))
+		__field(char, cb)
+		__field(char, nr)
+		__field(char, iit)
+		__field(char, risk)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
 		__field(bool, cb)
 		__field(bool, nr)
 		__field(bool, iit)
@@ -620,7 +694,12 @@ TRACE_EVENT(rcu_batch_end,
  */
 TRACE_EVENT(rcu_torture_read,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcutorturename, struct rcu_head *rhp,
+		 unsigned long secs, unsigned long c_old, unsigned long c),
+
+	TP_ARGS(rcutorturename, rhp, secs, c_old, c),
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
 	TP_PROTO(char *rcutorturename, struct rcu_head *rhp,
 		 unsigned long secs, unsigned long c_old, unsigned long c),
 
@@ -682,7 +761,11 @@ TRACE_EVENT(rcu_torture_read,
  */
 TRACE_EVENT(rcu_barrier,
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, const char *s, int cpu, int cnt, unsigned long done),
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 	TP_PROTO(char *rcuname, char *s, int cpu, int cnt, unsigned long done),
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
 	TP_ARGS(rcuname, s, cpu, cnt, done),
 
