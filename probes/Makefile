@@ -197,6 +197,12 @@ obj-m +=  $(shell \
 		echo "lttng-probe-sunrpc.o" ; fi;)
 endif
 
+ifneq ($(CONFIG_VIDEO_V4L2),)
+obj-m += $(shell \
+	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 14 ] ; then \
+		echo "lttng-probe-v4l2.o" ; fi;)
+endif
+
 obj-m += lttng-probe-workqueue.o
 
 ifneq ($(CONFIG_KALLSYMS_ALL),)
