@@ -1,3 +1,11 @@
+2014-04-08 LTTng modules 2.4.1
+	* Fix: rcu instrumentation: add const qualifier to char pointers
+	* Fix: add missing module version information
+	* Fix: block instrumentation: < 3.14 don't have bi_iter
+	* Fix: update btrfs instrumentation to kernel 3.14
+	* Fix: update block layer instrumentation to kernel 3.14
+	* Fix file permissions for lttng-statedump-impl.c
+
 2014-02-28 (Public Sleeping Day) LTTng modules 2.4.0
 	* Fix: load state dump even if work-around lookup fails
 	* Cleanup: fix comment
