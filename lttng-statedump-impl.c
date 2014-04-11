@@ -79,6 +79,7 @@ struct lttng_fd_ctx {
 	char *page;
 	struct lttng_session *session;
 	struct task_struct *p;
+	struct fdtable *fdt;
 };
 
 /*
@@ -209,18 +210,27 @@ int lttng_dump_one_fd(const void *p, struct file *file, unsigned int fd)
 {
 	const struct lttng_fd_ctx *ctx = p;
 	const char *s = d_path(&file->f_path, ctx->page, PAGE_SIZE);
+	unsigned int flags = file->f_flags;
 
+	/*
+	 * We don't expose kernel internal flags, only userspace-visible
+	 * flags.
+	 */
+	flags &= ~FMODE_NONOTIFY;
+	if (test_bit(fd, ctx->fdt->close_on_exec))
+		flags |= O_CLOEXEC;
 	if (IS_ERR(s)) {
 		struct dentry *dentry = file->f_path.dentry;
 
 		/* Make sure we give at least some info */
 		spin_lock(&dentry->d_lock);
 		trace_lttng_statedump_file_descriptor(ctx->session, ctx->p, fd,
-			dentry->d_name.name);
+			dentry->d_name.name, flags, file->f_mode);
 		spin_unlock(&dentry->d_lock);
 		goto end;
 	}
-	trace_lttng_statedump_file_descriptor(ctx->session, ctx->p, fd, s);
+	trace_lttng_statedump_file_descriptor(ctx->session, ctx->p, fd, s,
+		flags, file->f_mode);
 end:
 	return 0;
 }
@@ -232,6 +242,7 @@ void lttng_enumerate_task_fd(struct lttng_session *session,
 	struct lttng_fd_ctx ctx = { .page = tmp, .session = session, .p = p };
 
 	task_lock(p);
+	ctx.fdt = files_fdtable(p->files);
 	lttng_iterate_fd(p->files, 0, lttng_dump_one_fd, &ctx);
 	task_unlock(p);
 }

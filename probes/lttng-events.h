@@ -186,6 +186,10 @@ void trace_##_name(void *__data);
 #define __field_hex(_type, _item)				\
 	__field_full(_type, _item, __BYTE_ORDER, 16)
 
+#undef __field_oct
+#define __field_oct(_type, _item)				\
+	__field_full(_type, _item, __BYTE_ORDER, 8)
+
 #undef __field_network
 #define __field_network(_type, _item)				\
 	__field_full(_type, _item, __BIG_ENDIAN, 10)

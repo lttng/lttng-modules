@@ -88,16 +88,21 @@ TRACE_EVENT(lttng_statedump_process_state,
 
 TRACE_EVENT(lttng_statedump_file_descriptor,
 	TP_PROTO(struct lttng_session *session,
-		struct task_struct *p, int fd, const char *filename),
-	TP_ARGS(session, p, fd, filename),
+		struct task_struct *p, int fd, const char *filename,
+		unsigned int flags, fmode_t fmode),
+	TP_ARGS(session, p, fd, filename, flags, fmode),
 	TP_STRUCT__entry(
 		__field(pid_t, pid)
 		__field(int, fd)
+		__field_oct(unsigned int, flags)
+		__field_hex(fmode_t, fmode)
 		__string(filename, filename)
 	),
 	TP_fast_assign(
 		tp_assign(pid, p->tgid)
 		tp_assign(fd, fd)
+		tp_assign(flags, flags)
+		tp_assign(fmode, fmode)
 		tp_strcpy(filename, filename)
 	),
 	TP_printk("")
