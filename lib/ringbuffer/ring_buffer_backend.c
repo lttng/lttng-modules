@@ -478,7 +478,7 @@ void channel_backend_free(struct channel_backend *chanb)
  * @pagecpy : page size copied so far
  */
 void _lib_ring_buffer_write(struct lib_ring_buffer_backend *bufb, size_t offset,
-			    const void *src, size_t len, ssize_t pagecpy)
+			    const void *src, size_t len, size_t pagecpy)
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
 	const struct lib_ring_buffer_config *config = &chanb->config;
@@ -524,7 +524,7 @@ EXPORT_SYMBOL_GPL(_lib_ring_buffer_write);
  */
 void _lib_ring_buffer_memset(struct lib_ring_buffer_backend *bufb,
 			     size_t offset,
-			     int c, size_t len, ssize_t pagecpy)
+			     int c, size_t len, size_t pagecpy)
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
 	const struct lib_ring_buffer_config *config = &chanb->config;
@@ -654,7 +654,7 @@ EXPORT_SYMBOL_GPL(_lib_ring_buffer_strcpy);
 void _lib_ring_buffer_copy_from_user_inatomic(struct lib_ring_buffer_backend *bufb,
 				      size_t offset,
 				      const void __user *src, size_t len,
-				      ssize_t pagecpy)
+				      size_t pagecpy)
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
 	const struct lib_ring_buffer_config *config = &chanb->config;
@@ -795,8 +795,7 @@ size_t lib_ring_buffer_read(struct lib_ring_buffer_backend *bufb, size_t offset,
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
 	const struct lib_ring_buffer_config *config = &chanb->config;
-	size_t index;
-	ssize_t pagecpy, orig_len;
+	size_t index, pagecpy, orig_len;
 	struct lib_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 

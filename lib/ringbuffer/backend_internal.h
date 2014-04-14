@@ -52,16 +52,16 @@ void lib_ring_buffer_backend_exit(void);
 
 extern void _lib_ring_buffer_write(struct lib_ring_buffer_backend *bufb,
 				   size_t offset, const void *src, size_t len,
-				   ssize_t pagecpy);
+				   size_t pagecpy);
 extern void _lib_ring_buffer_memset(struct lib_ring_buffer_backend *bufb,
 				    size_t offset, int c, size_t len,
-				    ssize_t pagecpy);
+				    size_t pagecpy);
 extern void _lib_ring_buffer_strcpy(struct lib_ring_buffer_backend *bufb,
 				   size_t offset, const char *src, size_t len,
 				   size_t pagecpy, int pad);
 extern void _lib_ring_buffer_copy_from_user_inatomic(struct lib_ring_buffer_backend *bufb,
 					    size_t offset, const void *src,
-					    size_t len, ssize_t pagecpy);
+					    size_t len, size_t pagecpy);
 extern void _lib_ring_buffer_strcpy_from_user_inatomic(struct lib_ring_buffer_backend *bufb,
 		size_t offset, const char __user *src, size_t len,
 		size_t pagecpy, int pad);

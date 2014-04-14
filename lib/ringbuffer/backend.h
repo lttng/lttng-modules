@@ -90,9 +90,8 @@ void lib_ring_buffer_write(const struct lib_ring_buffer_config *config,
 {
 	struct lib_ring_buffer_backend *bufb = &ctx->buf->backend;
 	struct channel_backend *chanb = &ctx->chan->backend;
-	size_t sbidx, index;
+	size_t sbidx, index, pagecpy;
 	size_t offset = ctx->buf_offset;
-	ssize_t pagecpy;
 	struct lib_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 
@@ -138,9 +137,8 @@ void lib_ring_buffer_memset(const struct lib_ring_buffer_config *config,
 
 	struct lib_ring_buffer_backend *bufb = &ctx->buf->backend;
 	struct channel_backend *chanb = &ctx->chan->backend;
-	size_t sbidx, index;
+	size_t sbidx, index, pagecpy;
 	size_t offset = ctx->buf_offset;
-	ssize_t pagecpy;
 	struct lib_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 
@@ -306,9 +304,8 @@ void lib_ring_buffer_copy_from_user_inatomic(const struct lib_ring_buffer_config
 {
 	struct lib_ring_buffer_backend *bufb = &ctx->buf->backend;
 	struct channel_backend *chanb = &ctx->chan->backend;
-	size_t sbidx, index;
+	size_t sbidx, index, pagecpy;
 	size_t offset = ctx->buf_offset;
-	ssize_t pagecpy;
 	struct lib_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 	unsigned long ret;
