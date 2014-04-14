@@ -557,6 +557,87 @@ void _lib_ring_buffer_memset(struct lib_ring_buffer_backend *bufb,
 }
 EXPORT_SYMBOL_GPL(_lib_ring_buffer_memset);
 
+/**
+ * lib_ring_buffer_strcpy - write string data to a ring_buffer buffer.
+ * @bufb : buffer backend
+ * @offset : offset within the buffer
+ * @src : source address
+ * @len : length to write
+ * @pagecpy : page size copied so far
+ * @pad : character to use for padding
+ */
+void _lib_ring_buffer_strcpy(struct lib_ring_buffer_backend *bufb,
+			size_t offset, const char *src, size_t len,
+			size_t pagecpy, int pad)
+{
+	struct channel_backend *chanb = &bufb->chan->backend;
+	const struct lib_ring_buffer_config *config = &chanb->config;
+	size_t sbidx, index;
+	struct lib_ring_buffer_backend_pages *rpages;
+	unsigned long sb_bindex, id;
+	int src_terminated = 0;
+
+	CHAN_WARN_ON(chanb, !len);
+	offset += pagecpy;
+	do {
+		len -= pagecpy;
+		if (!src_terminated)
+			src += pagecpy;
+		sbidx = offset >> chanb->subbuf_size_order;
+		index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
+
+		/*
+		 * Underlying layer should never ask for writes across
+		 * subbuffers.
+		 */
+		CHAN_WARN_ON(chanb, offset >= chanb->buf_size);
+
+		pagecpy = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
+		id = bufb->buf_wsb[sbidx].id;
+		sb_bindex = subbuffer_id_get_index(config, id);
+		rpages = bufb->array[sb_bindex];
+		CHAN_WARN_ON(chanb, config->mode == RING_BUFFER_OVERWRITE
+			     && subbuffer_id_is_noref(config, id));
+
+		if (likely(!src_terminated)) {
+			size_t count, to_copy;
+
+			to_copy = pagecpy;
+			if (pagecpy == len)
+				to_copy--;	/* Final '\0' */
+			count = lib_ring_buffer_do_strcpy(config,
+					rpages->p[index].virt
+						+ (offset & ~PAGE_MASK),
+					src, to_copy);
+			offset += count;
+			/* Padding */
+			if (unlikely(count < to_copy)) {
+				size_t pad_len = to_copy - count;
+
+				/* Next pages will have padding */
+				src_terminated = 1;
+				lib_ring_buffer_do_memset(rpages->p[index].virt
+						+ (offset & ~PAGE_MASK),
+					pad, pad_len);
+				offset += pad_len;
+			}
+		} else {
+			size_t pad_len;
+
+			pad_len = pagecpy;
+			if (pagecpy == len)
+				pad_len--;	/* Final '\0' */
+			lib_ring_buffer_do_memset(rpages->p[index].virt
+					+ (offset & ~PAGE_MASK),
+				pad, pad_len);
+			offset += pad_len;
+		}
+	} while (unlikely(len != pagecpy));
+	/* Ending '\0' */
+	lib_ring_buffer_do_memset(rpages->p[index].virt + (offset & ~PAGE_MASK),
+			'\0', 1);
+}
+EXPORT_SYMBOL_GPL(_lib_ring_buffer_strcpy);
 
 /**
  * lib_ring_buffer_copy_from_user_inatomic - write user data to a ring_buffer buffer.
@@ -613,6 +694,91 @@ void _lib_ring_buffer_copy_from_user_inatomic(struct lib_ring_buffer_backend *bu
 	} while (unlikely(len != pagecpy));
 }
 EXPORT_SYMBOL_GPL(_lib_ring_buffer_copy_from_user_inatomic);
+
+/**
+ * lib_ring_buffer_strcpy_from_user_inatomic - write userspace string data to a ring_buffer buffer.
+ * @bufb : buffer backend
+ * @offset : offset within the buffer
+ * @src : source address
+ * @len : length to write
+ * @pagecpy : page size copied so far
+ * @pad : character to use for padding
+ *
+ * This function deals with userspace pointers, it should never be called
+ * directly without having the src pointer checked with access_ok()
+ * previously.
+ */
+void _lib_ring_buffer_strcpy_from_user_inatomic(struct lib_ring_buffer_backend *bufb,
+		size_t offset, const char __user *src, size_t len,
+		size_t pagecpy, int pad)
+{
+	struct channel_backend *chanb = &bufb->chan->backend;
+	const struct lib_ring_buffer_config *config = &chanb->config;
+	size_t sbidx, index;
+	struct lib_ring_buffer_backend_pages *rpages;
+	unsigned long sb_bindex, id;
+	int src_terminated = 0;
+
+	offset += pagecpy;
+	do {
+		len -= pagecpy;
+		if (!src_terminated)
+			src += pagecpy;
+		sbidx = offset >> chanb->subbuf_size_order;
+		index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
+
+		/*
+		 * Underlying layer should never ask for writes across
+		 * subbuffers.
+		 */
+		CHAN_WARN_ON(chanb, offset >= chanb->buf_size);
+
+		pagecpy = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
+		id = bufb->buf_wsb[sbidx].id;
+		sb_bindex = subbuffer_id_get_index(config, id);
+		rpages = bufb->array[sb_bindex];
+		CHAN_WARN_ON(chanb, config->mode == RING_BUFFER_OVERWRITE
+				&& subbuffer_id_is_noref(config, id));
+
+		if (likely(!src_terminated)) {
+			size_t count, to_copy;
+
+			to_copy = pagecpy;
+			if (pagecpy == len)
+				to_copy--;	/* Final '\0' */
+			count = lib_ring_buffer_do_strcpy_from_user_inatomic(config,
+					rpages->p[index].virt
+						+ (offset & ~PAGE_MASK),
+					src, to_copy);
+			offset += count;
+			/* Padding */
+			if (unlikely(count < to_copy)) {
+				size_t pad_len = to_copy - count;
+
+				/* Next pages will have padding */
+				src_terminated = 1;
+				lib_ring_buffer_do_memset(rpages->p[index].virt
+						+ (offset & ~PAGE_MASK),
+					pad, pad_len);
+				offset += pad_len;
+			}
+		} else {
+			size_t pad_len;
+
+			pad_len = pagecpy;
+			if (pagecpy == len)
+				pad_len--;	/* Final '\0' */
+			lib_ring_buffer_do_memset(rpages->p[index].virt
+					+ (offset & ~PAGE_MASK),
+				pad, pad_len);
+			offset += pad_len;
+		}
+	} while (unlikely(len != pagecpy));
+	/* Ending '\0' */
+	lib_ring_buffer_do_memset(rpages->p[index].virt + (offset & ~PAGE_MASK),
+			'\0', 1);
+}
+EXPORT_SYMBOL_GPL(_lib_ring_buffer_strcpy_from_user_inatomic);
 
 /**
  * lib_ring_buffer_read - read data from ring_buffer_buffer.
