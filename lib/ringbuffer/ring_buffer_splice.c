@@ -25,6 +25,7 @@
 
 #include <linux/module.h>
 #include <linux/fs.h>
+#include <linux/version.h>
 
 #include "../../wrapper/splice.h"
 #include "../../wrapper/ringbuffer/backend.h"
@@ -56,8 +57,10 @@ static void lib_ring_buffer_pipe_buf_release(struct pipe_inode_info *pipe,
 
 static const struct pipe_buf_operations ring_buffer_pipe_buf_ops = {
 	.can_merge = 0,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
 	.map = generic_pipe_buf_map,
 	.unmap = generic_pipe_buf_unmap,
+#endif
 	.confirm = generic_pipe_buf_confirm,
 	.release = lib_ring_buffer_pipe_buf_release,
 	.steal = generic_pipe_buf_steal,
