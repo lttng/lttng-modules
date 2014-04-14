@@ -165,6 +165,127 @@ void lib_ring_buffer_memset(const struct lib_ring_buffer_config *config,
 	ctx->buf_offset += len;
 }
 
+/*
+ * Copy up to @len string bytes from @src to @dest. Stop whenever a NULL
+ * terminating character is found in @src. Returns the number of bytes
+ * copied. Does *not* terminate @dest with NULL terminating character.
+ */
+static inline
+size_t lib_ring_buffer_do_strcpy(const struct lib_ring_buffer_config *config,
+		char *dest, const char *src, size_t len)
+{
+	size_t count;
+
+	for (count = 0; count < len; count++) {
+		char c;
+
+		/*
+		 * Only read source character once, in case it is
+		 * modified concurrently.
+		 */
+		c = ACCESS_ONCE(src[count]);
+		if (!c)
+			break;
+		lib_ring_buffer_do_copy(config, &dest[count], &c, 1);
+	}
+	return count;
+}
+
+/*
+ * Copy up to @len string bytes from @src to @dest. Stop whenever a NULL
+ * terminating character is found in @src, or when a fault occurs.
+ * Returns the number of bytes copied. Does *not* terminate @dest with
+ * NULL terminating character.
+ *
+ * This function deals with userspace pointers, it should never be called
+ * directly without having the src pointer checked with access_ok()
+ * previously.
+ */
+static inline
+size_t lib_ring_buffer_do_strcpy_from_user_inatomic(const struct lib_ring_buffer_config *config,
+		char *dest, const char __user *src, size_t len)
+{
+	size_t count;
+
+	for (count = 0; count < len; count++) {
+		int ret;
+		char c;
+
+		ret = __get_user(c, &src[count]);
+		if (ret || !c)
+			break;
+		lib_ring_buffer_do_copy(config, &dest[count], &c, 1);
+	}
+	return count;
+}
+
+/**
+ * lib_ring_buffer_strcpy - write string data to a buffer backend
+ * @config : ring buffer instance configuration
+ * @ctx: ring buffer context. (input arguments only)
+ * @src : source pointer to copy from
+ * @len : length of data to copy
+ * @pad : character to use for padding
+ *
+ * This function copies @len - 1 bytes of string data from a source
+ * pointer to a buffer backend, followed by a terminating '\0'
+ * character, at the current context offset. This is more or less a
+ * buffer backend-specific strncpy() operation. If a terminating '\0'
+ * character is found in @src before @len - 1 characters are copied, pad
+ * the buffer with @pad characters (e.g. '#'). Calls the slow path
+ * (_ring_buffer_strcpy) if copy is crossing a page boundary.
+ */
+static inline
+void lib_ring_buffer_strcpy(const struct lib_ring_buffer_config *config,
+			   struct lib_ring_buffer_ctx *ctx,
+			   const char *src, size_t len, int pad)
+{
+	struct lib_ring_buffer_backend *bufb = &ctx->buf->backend;
+	struct channel_backend *chanb = &ctx->chan->backend;
+	size_t sbidx, index, pagecpy;
+	size_t offset = ctx->buf_offset;
+	struct lib_ring_buffer_backend_pages *rpages;
+	unsigned long sb_bindex, id;
+
+	if (unlikely(!len))
+		return;
+	offset &= chanb->buf_size - 1;
+	sbidx = offset >> chanb->subbuf_size_order;
+	index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
+	pagecpy = min_t(size_t, len, (-offset) & ~PAGE_MASK);
+	id = bufb->buf_wsb[sbidx].id;
+	sb_bindex = subbuffer_id_get_index(config, id);
+	rpages = bufb->array[sb_bindex];
+	CHAN_WARN_ON(ctx->chan,
+		     config->mode == RING_BUFFER_OVERWRITE
+		     && subbuffer_id_is_noref(config, id));
+	if (likely(pagecpy == len)) {
+		size_t count;
+
+		count = lib_ring_buffer_do_strcpy(config,
+					rpages->p[index].virt
+					    + (offset & ~PAGE_MASK),
+					src, len - 1);
+		offset += count;
+		/* Padding */
+		if (unlikely(count < len - 1)) {
+			size_t pad_len = len - 1 - count;
+
+			lib_ring_buffer_do_memset(rpages->p[index].virt
+						+ (offset & ~PAGE_MASK),
+					pad, pad_len);
+			offset += pad_len;
+		}
+		/* Ending '\0' */
+		lib_ring_buffer_do_memset(rpages->p[index].virt
+					+ (offset & ~PAGE_MASK),
+				'\0', 1);
+	} else {
+		_lib_ring_buffer_strcpy(bufb, offset, src, len, 0, pad);
+	}
+	ctx->buf_offset += len;
+}
+
 /**
  * lib_ring_buffer_copy_from_user_inatomic - write userspace data to a buffer backend
  * @config : ring buffer instance configuration
@@ -237,6 +358,98 @@ fill_buffer:
 	 * the pollution of static inline code.
 	 */
 	_lib_ring_buffer_memset(bufb, offset, 0, len, 0);
+}
+
+/**
+ * lib_ring_buffer_strcpy_from_user_inatomic - write userspace string data to a buffer backend
+ * @config : ring buffer instance configuration
+ * @ctx: ring buffer context (input arguments only)
+ * @src : userspace source pointer to copy from
+ * @len : length of data to copy
+ * @pad : character to use for padding
+ *
+ * This function copies @len - 1 bytes of string data from a userspace
+ * source pointer to a buffer backend, followed by a terminating '\0'
+ * character, at the current context offset. This is more or less a
+ * buffer backend-specific strncpy() operation. If a terminating '\0'
+ * character is found in @src before @len - 1 characters are copied, pad
+ * the buffer with @pad characters (e.g. '#'). Calls the slow path
+ * (_ring_buffer_strcpy_from_user_inatomic) if copy is crossing a page
+ * boundary. Disable the page fault handler to ensure we never try to
+ * take the mmap_sem.
+ */
+static inline
+void lib_ring_buffer_strcpy_from_user_inatomic(const struct lib_ring_buffer_config *config,
+		struct lib_ring_buffer_ctx *ctx,
+		const void __user *src, size_t len, int pad)
+{
+	struct lib_ring_buffer_backend *bufb = &ctx->buf->backend;
+	struct channel_backend *chanb = &ctx->chan->backend;
+	size_t sbidx, index, pagecpy;
+	size_t offset = ctx->buf_offset;
+	struct lib_ring_buffer_backend_pages *rpages;
+	unsigned long sb_bindex, id;
+	mm_segment_t old_fs = get_fs();
+
+	if (unlikely(!len))
+		return;
+	offset &= chanb->buf_size - 1;
+	sbidx = offset >> chanb->subbuf_size_order;
+	index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
+	pagecpy = min_t(size_t, len, (-offset) & ~PAGE_MASK);
+	id = bufb->buf_wsb[sbidx].id;
+	sb_bindex = subbuffer_id_get_index(config, id);
+	rpages = bufb->array[sb_bindex];
+	CHAN_WARN_ON(ctx->chan,
+		     config->mode == RING_BUFFER_OVERWRITE
+		     && subbuffer_id_is_noref(config, id));
+
+	set_fs(KERNEL_DS);
+	pagefault_disable();
+	if (unlikely(!access_ok(VERIFY_READ, src, len)))
+		goto fill_buffer;
+
+	if (likely(pagecpy == len)) {
+		size_t count;
+
+		count = lib_ring_buffer_do_strcpy_from_user_inatomic(config,
+					rpages->p[index].virt
+					    + (offset & ~PAGE_MASK),
+					src, len - 1);
+		offset += count;
+		/* Padding */
+		if (unlikely(count < len - 1)) {
+			size_t pad_len = len - 1 - count;
+
+			lib_ring_buffer_do_memset(rpages->p[index].virt
+						+ (offset & ~PAGE_MASK),
+					pad, pad_len);
+			offset += pad_len;
+		}
+		/* Ending '\0' */
+		lib_ring_buffer_do_memset(rpages->p[index].virt
+					+ (offset & ~PAGE_MASK),
+				'\0', 1);
+	} else {
+		_lib_ring_buffer_strcpy_from_user_inatomic(bufb, offset, src,
+					len, 0, pad);
+	}
+	pagefault_enable();
+	set_fs(old_fs);
+	ctx->buf_offset += len;
+
+	return;
+
+fill_buffer:
+	pagefault_enable();
+	set_fs(old_fs);
+	/*
+	 * In the error path we call the slow path version to avoid
+	 * the pollution of static inline code.
+	 */
+	_lib_ring_buffer_memset(bufb, offset, pad, len - 1, 0);
+	offset += len - 1;
+	_lib_ring_buffer_memset(bufb, offset, '\0', 1, 0);
 }
 
 /*

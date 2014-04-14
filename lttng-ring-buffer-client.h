@@ -629,6 +629,21 @@ void lttng_event_memset(struct lib_ring_buffer_ctx *ctx,
 }
 
 static
+void lttng_event_strcpy(struct lib_ring_buffer_ctx *ctx, const char *src,
+		size_t len)
+{
+	lib_ring_buffer_strcpy(&client_config, ctx, src, len, '#');
+}
+
+static
+void lttng_event_strcpy_from_user(struct lib_ring_buffer_ctx *ctx,
+		const char __user *src, size_t len)
+{
+	lib_ring_buffer_strcpy_from_user_inatomic(&client_config, ctx, src,
+			len, '#');
+}
+
+static
 wait_queue_head_t *lttng_get_writer_buf_wait_queue(struct channel *chan, int cpu)
 {
 	struct lib_ring_buffer *buf = channel_get_ring_buffer(&client_config,
@@ -669,6 +684,8 @@ static struct lttng_transport lttng_relay_transport = {
 		.event_write = lttng_event_write,
 		.event_write_from_user = lttng_event_write_from_user,
 		.event_memset = lttng_event_memset,
+		.event_strcpy = lttng_event_strcpy,
+		.event_strcpy_from_user = lttng_event_strcpy_from_user,
 		.packet_avail_size = NULL,	/* Would be racy anyway */
 		.get_writer_buf_wait_queue = lttng_get_writer_buf_wait_queue,
 		.get_hp_wait_queue = lttng_get_hp_wait_queue,

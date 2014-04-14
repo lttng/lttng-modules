@@ -326,6 +326,13 @@ void lttng_event_memset(struct lib_ring_buffer_ctx *ctx,
 }
 
 static
+void lttng_event_strcpy(struct lib_ring_buffer_ctx *ctx, const char *src,
+		size_t len)
+{
+	lib_ring_buffer_strcpy(&client_config, ctx, src, len, '#');
+}
+
+static
 size_t lttng_packet_avail_size(struct channel *chan)
 			     
 {
@@ -383,6 +390,7 @@ static struct lttng_transport lttng_relay_transport = {
 		.event_write_from_user = lttng_event_write_from_user,
 		.event_memset = lttng_event_memset,
 		.event_write = lttng_event_write,
+		.event_strcpy = lttng_event_strcpy,
 		.packet_avail_size = lttng_packet_avail_size,
 		.get_writer_buf_wait_queue = lttng_get_writer_buf_wait_queue,
 		.get_hp_wait_queue = lttng_get_hp_wait_queue,
