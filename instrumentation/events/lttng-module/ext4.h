@@ -1698,33 +1698,6 @@ TRACE_EVENT(ext4_direct_IO_exit,
 		  __entry->rw, __entry->ret)
 )
 
-TRACE_EVENT(ext4_fallocate_enter,
-	TP_PROTO(struct inode *inode, loff_t offset, loff_t len, int mode),
-
-	TP_ARGS(inode, offset, len, mode),
-
-	TP_STRUCT__entry(
-		__field(	dev_t,	dev			)
-		__field(	ino_t,	ino			)
-		__field(	loff_t,	pos			)
-		__field(	loff_t,	len			)
-		__field(	int,	mode			)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, inode->i_sb->s_dev)
-		tp_assign(ino, inode->i_ino)
-		tp_assign(pos, offset)
-		tp_assign(len, len)
-		tp_assign(mode, mode)
-	),
-
-	TP_printk("dev %d,%d ino %lu pos %lld len %lld mode %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  (unsigned long) __entry->ino, __entry->pos,
-		  __entry->len, __entry->mode)
-)
-
 TRACE_EVENT(ext4_fallocate_exit,
 	TP_PROTO(struct inode *inode, loff_t offset,
 		 unsigned int max_blocks, int ret),
@@ -1754,6 +1727,86 @@ TRACE_EVENT(ext4_fallocate_exit,
 		  __entry->ret)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
+
+DECLARE_EVENT_CLASS(ext4__fallocate_mode,
+	TP_PROTO(struct inode *inode, loff_t offset, loff_t len, int mode),
+
+	TP_ARGS(inode, offset, len, mode),
+
+	TP_STRUCT__entry(
+		__field(	dev_t,	dev			)
+		__field(	ino_t,	ino			)
+		__field(	loff_t,	offset			)
+		__field(	loff_t, len			)
+		__field(	int,	mode			)
+	),
+
+	TP_fast_assign(
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(offset, offset)
+		tp_assign(len, len)
+		tp_assign(mode, mode)
+	),
+
+	TP_printk("dev %d,%d ino %lu offset %lld len %lld mode %s",
+		  MAJOR(__entry->dev), MINOR(__entry->dev),
+		  (unsigned long) __entry->ino,
+		  __entry->offset, __entry->len,
+		  show_falloc_mode(__entry->mode))
+)
+
+DEFINE_EVENT(ext4__fallocate_mode, ext4_fallocate_enter,
+
+	TP_PROTO(struct inode *inode, loff_t offset, loff_t len, int mode),
+
+	TP_ARGS(inode, offset, len, mode)
+)
+
+DEFINE_EVENT(ext4__fallocate_mode, ext4_punch_hole,
+
+	TP_PROTO(struct inode *inode, loff_t offset, loff_t len, int mode),
+
+	TP_ARGS(inode, offset, len, mode)
+)
+
+DEFINE_EVENT(ext4__fallocate_mode, ext4_zero_range,
+
+	TP_PROTO(struct inode *inode, loff_t offset, loff_t len, int mode),
+
+	TP_ARGS(inode, offset, len, mode)
+)
+
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
+
+TRACE_EVENT(ext4_fallocate_enter,
+	TP_PROTO(struct inode *inode, loff_t offset, loff_t len, int mode),
+
+	TP_ARGS(inode, offset, len, mode),
+
+	TP_STRUCT__entry(
+		__field(	dev_t,	dev			)
+		__field(	ino_t,	ino			)
+		__field(	loff_t,	pos			)
+		__field(	loff_t,	len			)
+		__field(	int,	mode			)
+	),
+
+	TP_fast_assign(
+		tp_assign(dev, inode->i_sb->s_dev)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(pos, offset)
+		tp_assign(len, len)
+		tp_assign(mode, mode)
+	),
+
+	TP_printk("dev %d,%d ino %lu pos %lld len %lld mode %d",
+		  MAJOR(__entry->dev), MINOR(__entry->dev),
+		  (unsigned long) __entry->ino, __entry->pos,
+		  __entry->len, __entry->mode)
+)
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
 
 TRACE_EVENT(ext4_punch_hole,
@@ -1781,7 +1834,9 @@ TRACE_EVENT(ext4_punch_hole,
 		  __entry->offset, __entry->len)
 )
 
-#endif
+#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
+
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
 
 TRACE_EVENT(ext4_unlink_enter,
 	TP_PROTO(struct inode *parent, struct dentry *dentry),
