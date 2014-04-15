@@ -7,6 +7,7 @@
 #include <linux/tracepoint.h>
 #include <linux/nsproxy.h>
 #include <linux/pid_namespace.h>
+#include <linux/types.h>
 
 TRACE_EVENT(lttng_statedump_start,
 	TP_PROTO(struct lttng_session *session),
@@ -137,6 +138,21 @@ TRACE_EVENT(lttng_statedump_network_interface,
 	TP_fast_assign(
 		tp_strcpy(name, dev->name)
 		tp_assign(address_ipv4, ifa ? ifa->ifa_address : 0U)
+	),
+	TP_printk("")
+)
+
+TRACE_EVENT(lttng_statedump_block_device,
+	TP_PROTO(struct lttng_session *session,
+		dev_t dev, const char *diskname),
+	TP_ARGS(session, dev, diskname),
+	TP_STRUCT__entry(
+		__field(dev_t, dev)
+		__string(diskname, diskname)
+	),
+	TP_fast_assign(
+		tp_assign(dev, dev)
+		tp_strcpy(diskname, diskname)
 	),
 	TP_printk("")
 )

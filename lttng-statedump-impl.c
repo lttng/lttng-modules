@@ -45,6 +45,7 @@
 #include <linux/swap.h>
 #include <linux/wait.h>
 #include <linux/mutex.h>
+#include <linux/device.h>
 
 #include "lttng-events.h"
 #include "lttng-tracer.h"
@@ -54,6 +55,7 @@
 #include "wrapper/nsproxy.h"
 #include "wrapper/irq.h"
 #include "wrapper/tracepoint.h"
+#include "wrapper/genhd.h"
 
 #ifdef CONFIG_LTTNG_HAS_LIST_IRQ
 #include <linux/irq.h>
@@ -65,6 +67,7 @@
 #define TRACE_INCLUDE_FILE lttng-statedump
 #include "instrumentation/events/lttng-module/lttng-statedump.h"
 
+DEFINE_TRACE(lttng_statedump_block_device);
 DEFINE_TRACE(lttng_statedump_end);
 DEFINE_TRACE(lttng_statedump_interrupt);
 DEFINE_TRACE(lttng_statedump_file_descriptor);
@@ -115,7 +118,49 @@ enum lttng_process_status {
 	LTTNG_DEAD = 7,
 };
 
+static
+int lttng_enumerate_block_devices(struct lttng_session *session)
+{
+	struct class *ptr_block_class;
+	struct device_type *ptr_disk_type;
+	struct class_dev_iter iter;
+	struct device *dev;
+
+	ptr_block_class = wrapper_get_block_class();
+	if (!ptr_block_class)
+		return -ENOSYS;
+	ptr_disk_type = wrapper_get_disk_type();
+	if (!ptr_disk_type) {
+		return -ENOSYS;
+	}
+	class_dev_iter_init(&iter, ptr_block_class, NULL, ptr_disk_type);
+	while ((dev = class_dev_iter_next(&iter))) {
+		struct disk_part_iter piter;
+		struct gendisk *disk = dev_to_disk(dev);
+		struct hd_struct *part;
+
+		disk_part_iter_init(&piter, disk, DISK_PITER_INCL_PART0);
+		while ((part = disk_part_iter_next(&piter))) {
+			char name_buf[BDEVNAME_SIZE];
+			char *p;
+
+			p = wrapper_disk_name(disk, part->partno, name_buf);
+			if (!p) {
+				disk_part_iter_exit(&piter);
+				class_dev_iter_exit(&iter);
+				return -ENOSYS;
+			}
+			trace_lttng_statedump_block_device(session,
+					part_devt(part), name_buf);
+		}
+		disk_part_iter_exit(&piter);
+	}
+	class_dev_iter_exit(&iter);
+	return 0;
+}
+
 #ifdef CONFIG_INET
+
 static
 void lttng_enumerate_device(struct lttng_session *session,
 		struct net_device *dev)
@@ -397,6 +442,7 @@ int do_lttng_statedump(struct lttng_session *session)
 	/* FIXME lttng_enumerate_vm_maps(session); */
 	lttng_list_interrupts(session);
 	lttng_enumerate_network_ip_interface(session);
+	lttng_enumerate_block_devices(session);
 
 	/* TODO lttng_dump_idt_table(session); */
 	/* TODO lttng_dump_softirq_vec(session); */

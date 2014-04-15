@@ -83,6 +83,8 @@ CONFIG_KPROBES:
 CONFIG_KRETPROBES:
             Dynamic function entry/return probe.
                lttng enable-event -k --function ...
+CONFIG_KALLSYMS_ALL:
+            State dump of mapping between block device number and name.
 
 
 * Note about Perf PMU counters support
