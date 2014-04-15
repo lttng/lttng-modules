@@ -1261,8 +1261,8 @@ void lib_ring_buffer_switch_old_start(struct lib_ring_buffer *buf,
 	lib_ring_buffer_check_deliver(config, buf, chan, offsets->old,
 				      commit_count, oldidx, tsc);
 	lib_ring_buffer_write_commit_counter(config, buf, chan, oldidx,
-					     offsets->old, commit_count,
-					     config->cb.subbuffer_header_size());
+			offsets->old + config->cb.subbuffer_header_size(),
+			commit_count);
 }
 
 /*
@@ -1305,8 +1305,7 @@ void lib_ring_buffer_switch_old_end(struct lib_ring_buffer *buf,
 	lib_ring_buffer_check_deliver(config, buf, chan, offsets->old - 1,
 				      commit_count, oldidx, tsc);
 	lib_ring_buffer_write_commit_counter(config, buf, chan, oldidx,
-					     offsets->old, commit_count,
-					     padding_size);
+			offsets->old + padding_size, commit_count);
 }
 
 /*
@@ -1348,8 +1347,8 @@ void lib_ring_buffer_switch_new_start(struct lib_ring_buffer *buf,
 	lib_ring_buffer_check_deliver(config, buf, chan, offsets->begin,
 				      commit_count, beginidx, tsc);
 	lib_ring_buffer_write_commit_counter(config, buf, chan, beginidx,
-					     offsets->begin, commit_count,
-					     config->cb.subbuffer_header_size());
+			offsets->begin + config->cb.subbuffer_header_size(),
+			commit_count);
 }
 
 /*
