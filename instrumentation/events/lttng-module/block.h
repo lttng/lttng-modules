@@ -221,6 +221,57 @@ DEFINE_EVENT(block_rq_with_error, block_rq_requeue,
 	TP_ARGS(q, rq)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
+
+/**
+ * block_rq_complete - block IO operation completed by device driver
+ * @q: queue containing the block operation request
+ * @rq: block operations request
+ * @nr_bytes: number of completed bytes
+ *
+ * The block_rq_complete tracepoint event indicates that some portion
+ * of operation request has been completed by the device driver.  If
+ * the @rq->bio is %NULL, then there is absolutely no additional work to
+ * do for the request. If @rq->bio is non-NULL then there is
+ * additional work required to complete the request.
+ */
+TRACE_EVENT(block_rq_complete,
+
+	TP_PROTO(struct request_queue *q, struct request *rq,
+		 unsigned int nr_bytes),
+
+	TP_ARGS(q, rq, nr_bytes),
+
+	TP_STRUCT__entry(
+		__field(  dev_t,	dev			)
+		__field(  sector_t,	sector			)
+		__field(  unsigned int,	nr_sector		)
+		__field(  int,		errors			)
+		__field(  unsigned int,	rwbs			)
+		__dynamic_array_hex( unsigned char,	cmd,
+			(rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
+				rq->cmd_len : 0)
+	),
+
+	TP_fast_assign(
+		tp_assign(dev, rq->rq_disk ? disk_devt(rq->rq_disk) : 0)
+		tp_assign(sector, blk_rq_pos(rq))
+		tp_assign(nr_sector, nr_bytes >> 9)
+		tp_assign(errors, rq->errors)
+		blk_fill_rwbs(rwbs, rq->cmd_flags, nr_bytes)
+		tp_memcpy_dyn(cmd, (rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
+					rq->cmd : NULL)
+	),
+
+	TP_printk("%d,%d %s (%s) %llu + %u [%d]",
+		  MAJOR(__entry->dev), MINOR(__entry->dev),
+		  __entry->rwbs, __get_str(cmd),
+		  (unsigned long long)__entry->sector,
+		  __entry->nr_sector, __entry->errors)
+)
+
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
+
 /**
  * block_rq_complete - block IO operation completed by device driver
  * @q: queue containing the block operation request
@@ -238,6 +289,8 @@ DEFINE_EVENT(block_rq_with_error, block_rq_complete,
 
 	TP_ARGS(q, rq)
 )
+
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
 
 DECLARE_EVENT_CLASS(block_rq,
 
