@@ -221,7 +221,8 @@ DEFINE_EVENT(block_rq_with_error, block_rq_requeue,
 	TP_ARGS(q, rq)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)	\
+	|| LTTNG_KERNEL_RANGE(3,2,58, 3,3,0))
 
 /**
  * block_rq_complete - block IO operation completed by device driver
