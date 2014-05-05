@@ -558,8 +558,8 @@ TRACE_EVENT(block_bio_queue,
 		__field( dev_t,		dev			)
 		__field( sector_t,	sector			)
 		__field( unsigned int,	nr_sector		)
-		__array( char,		rwbs,	RWBS_LEN	)
-		__array( char,		comm,	TASK_COMM_LEN	)
+		__field( unsigned int,	rwbs			)
+		__array_text( char,		comm,	TASK_COMM_LEN	)
 	),
 
 	TP_fast_assign(
