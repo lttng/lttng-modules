@@ -19,6 +19,21 @@ SRCFILE=gen.tmp.0
 TMPFILE=gen.tmp.1
 HEADER=headers/${INPUTFILE}_${CLASS}.h
 
+if [ x"$INPUTDIR" = x"" ]; then
+	echo "Error: Please specify input directory as second argument"
+	exit 1
+fi
+
+if [ x"$INPUTFILE" = x"" ]; then
+	echo "Error: Please specify input file as third argument"
+	exit 1
+fi
+
+if [ x"$BITNESS" != x"32" ] && [ x"$BITNESS" != x"64" ]; then
+	echo "Error: Please specify bitness as fourth argument (\"32\" or \"64\")"
+	exit 1
+fi
+
 cp ${INPUT} ${SRCFILE}
 
 #Cleanup
@@ -45,6 +60,12 @@ if [ "$CLASS" = pointers ]; then
 	mv ${TMPFILE} ${SRCFILE}
 fi
 
+if [ x"$CLASSCAP" = x"" ]; then
+	echo "Error: Please specify \"integers\" or \"pointers\" as first argument"
+	rm -f ${SRCFILE}
+	exit 1
+fi
+
 echo "/* THIS FILE IS AUTO-GENERATED. DO NOT EDIT */" > ${HEADER}
 
 echo \
@@ -68,7 +89,7 @@ printf \
 '	TP_STRUCT__entry(),\n'\
 '	TP_fast_assign(),\n'\
 '	TP_printk()\n'\
-')'\
+')\n'\
 	>> ${HEADER}
 
 grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}
@@ -200,11 +221,6 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 	${TMPFILE} >> ${HEADER}
 
 # Macro for tracing syscall table
-
-rm -f ${TMPFILE}
-for NRARGS in $(seq 0 6); do
-	grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} >> ${TMPFILE}
-done
 
 echo \
 "

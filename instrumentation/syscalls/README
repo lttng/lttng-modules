@@ -10,9 +10,25 @@ is expected). See the dmesg output for system call metadata.
 
 2) Generate system call TRACE_EVENT().
 
-Take the dmesg metadata and feed it to lttng-syscalls-generate-headers.sh, e.g.,
-from the instrumentation/syscalls directory. See the script header for
-usage example. It should be run for both the integers and pointers types.
+Take the dmesg metadata and feed it to lttng-syscalls-generate-headers.sh
+(do not include the ending SUCCESS line), e.g., from the
+instrumentation/syscalls directory. See the script header for usage example.
+It should be run for both the integers and pointers types.
 
 After these are created, we just need to follow the new system call additions,
 no need to regenerate the whole thing, since system calls are only appended to.
+
+3) Override headers
+
+You need to provide override headers (even if they don't contain
+overrides) for each architecture. Those are meant to contain manual
+overrides for specific system calls for cases where the script do not
+generate the correct typing for specific system calls.
+
+4) Integrating the new architecture, updating architecture header
+
+Edit instrumentation/syscalls/headers/syscalls_integers.h and
+syscalls_pointers.h. Add the new architecture
+(e.g. CONFIG_X86_64) to the newly-generated headers
+(e.g. changing the current x86-64-syscalls-3.10.0-rc7_<CLASS>.h into
+x86-64-syscalls-3.13.7_<CLASS>.h), then rebuild lttng-modules.
