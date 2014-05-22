@@ -287,4 +287,3 @@ syscall sys_getcpu nr 309 nbargs 3 types: (unsigned *, unsigned *, struct getcpu
 syscall sys_process_vm_readv nr 310 nbargs 6 types: (pid_t, const struct iovec *, unsigned long, const struct iovec *, unsigned long, unsigned long) args: (pid, lvec, liovcnt, rvec, riovcnt, flags)
 syscall sys_process_vm_writev nr 311 nbargs 6 types: (pid_t, const struct iovec *, unsigned long, const struct iovec *, unsigned long, unsigned long) args: (pid, lvec, liovcnt, rvec, riovcnt, flags)
 syscall sys_finit_module nr 313 nbargs 3 types: (int, const char *, int) args: (fd, uargs, flags)
-SUCCESS
