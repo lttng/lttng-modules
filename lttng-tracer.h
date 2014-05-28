@@ -40,13 +40,13 @@
 #include "lttng-events.h"
 
 #define LTTNG_MODULES_MAJOR_VERSION 2
-#define LTTNG_MODULES_MINOR_VERSION 4
+#define LTTNG_MODULES_MINOR_VERSION 5
 #define LTTNG_MODULES_PATCHLEVEL_VERSION 0
-#define LTTNG_MODULES_EXTRAVERSION ""
+#define LTTNG_MODULES_EXTRAVERSION "-rc1"
 
-#define LTTNG_VERSION_NAME		"Époque Opaque"
+#define LTTNG_VERSION_NAME		"Fumisterie"
 #define LTTNG_VERSION_DESCRIPTION	\
-	"The Époque Opaque is a black IPA from Trou du Diable brewery. The nose is eerily reminiscent of the coffee crisp candy from of our childhood. These strong mocha accents are present on the palate, which are quickly subdued by Japanese and Australian hops leading to a final state of satisfaction enjoyable for any fan of bitter beer."
+	"The Fumisterie is a beer whose style is at the confluence of English and German ales. On the palate, it is full-bodied, malty and slightly caramelized. The organic hemp seeds incorporated during the brewing gives it a unique and original taste. The hop flavour comes through delicately in the after taste."
 
 #ifndef CHAR_BIT
 #define CHAR_BIT 8

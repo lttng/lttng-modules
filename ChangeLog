@@ -1,3 +1,33 @@
+2014-05-28 (International Hamburger Day) LTTng modules 2.5.0-rc1
+	* Add TID field to some block_* events
+	* Fix: refuse overwrite mode buffers with less than two subbuffers
+	* Fix: lttng modules system call generation script
+	* Dump FD flags and mode on state dump
+	* Fix: incorrect rwbs field type in block_bio_queue
+	* Fix: blktrace instrumentation for v3.2.58+ stable branch
+	* Fix: pass proper args when writing commit counter
+	* Cleanup: lib ringbuffer: pagecpy has unsigned semantic
+	* Fix: allow racy tracepoint string input from kernel and userspace
+	* Statedump event for block devices
+	* Fix: update v4l2 instrumentation to 3.15 kernel
+	* Fix: ext4 update instrumentation to 3.15 kernel
+	* Fix: update block instrumentation to 3.15 kernel
+	* Fix: module instrumentation: update to 3.15 kernel
+	* Adapt to 3.15 tracepoint API
+	* Kernel 3.15 don't define map unmap for pipe
+	* Fix: add missing module version in v4l2 probe
+	* Add V4L2 instrumentation
+	* Fix: rcu instrumentation: add const qualifier to char pointers
+	* Fix: add missing module version information
+	* Use kernel 3.13 syscall tables for MIPS32
+	* Add MIPS32 syscalls extracted from a 3.13 kernel
+	* Fix: block instrumentation: < 3.14 don't have bi_iter
+	* Fix: update btrfs instrumentation to kernel 3.14
+	* Fix: update block layer instrumentation to kernel 3.14
+	* Fix: remove __exit annotation
+	* Fix file permissions for lttng-statedump-impl.c
+	* LTTng logger ABI
+
 2014-02-28 (Public Sleeping Day) LTTng modules 2.4.0
 	* Fix: load state dump even if work-around lookup fails
 	* Cleanup: fix comment
