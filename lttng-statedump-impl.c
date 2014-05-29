@@ -140,6 +140,14 @@ int lttng_enumerate_block_devices(struct lttng_session *session)
 		struct gendisk *disk = dev_to_disk(dev);
 		struct hd_struct *part;
 
+		/*
+		 * Don't show empty devices or things that have been
+		 * suppressed
+		 */
+		if (get_capacity(disk) == 0 ||
+		    (disk->flags & GENHD_FL_SUPPRESS_PARTITION_INFO))
+			continue;
+
 		disk_part_iter_init(&piter, disk, DISK_PITER_INCL_PART0);
 		while ((part = disk_part_iter_next(&piter))) {
 			char name_buf[BDEVNAME_SIZE];
