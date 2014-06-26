@@ -259,7 +259,11 @@ static
 int lttng_enumerate_file_descriptors(struct lttng_session *session)
 {
 	struct task_struct *p;
-	char *tmp = (char *) __get_free_page(GFP_KERNEL);
+	char *tmp;
+
+	tmp = (char *) __get_free_page(GFP_KERNEL);
+	if (!tmp)
+		return -ENOMEM;
 
 	/* Enumerate active file descriptors */
 	rcu_read_lock();
@@ -325,7 +329,7 @@ int lttng_enumerate_vm_maps(struct lttng_session *session)
 #endif
 
 static
-void lttng_list_interrupts(struct lttng_session *session)
+int lttng_list_interrupts(struct lttng_session *session)
 {
 	unsigned int irq;
 	unsigned long flags = 0;
@@ -347,12 +351,14 @@ void lttng_list_interrupts(struct lttng_session *session)
 		wrapper_desc_spin_unlock(&desc->lock);
 		local_irq_restore(flags);
 	}
+	return 0;
 #undef irq_to_desc
 }
 #else
 static inline
-void lttng_list_interrupts(struct lttng_session *session)
+int lttng_list_interrupts(struct lttng_session *session)
 {
+	return 0;
 }
 #endif
 
@@ -453,15 +459,35 @@ void lttng_statedump_work_func(struct work_struct *work)
 static
 int do_lttng_statedump(struct lttng_session *session)
 {
-	int cpu;
+	int cpu, ret;
 
 	trace_lttng_statedump_start(session);
-	lttng_enumerate_process_states(session);
-	lttng_enumerate_file_descriptors(session);
-	/* FIXME lttng_enumerate_vm_maps(session); */
-	lttng_list_interrupts(session);
-	lttng_enumerate_network_ip_interface(session);
-	lttng_enumerate_block_devices(session);
+	ret = lttng_enumerate_process_states(session);
+	if (ret)
+		return ret;
+	ret = lttng_enumerate_file_descriptors(session);
+	if (ret)
+		return ret;
+	/*
+	 * FIXME
+	 * ret = lttng_enumerate_vm_maps(session);
+	 * if (ret)
+	 * 	return ret;
+	 */
+	ret = lttng_list_interrupts(session);
+	if (ret)
+		return ret;
+	ret = lttng_enumerate_network_ip_interface(session);
+	if (ret)
+		return ret;
+	ret = lttng_enumerate_block_devices(session);
+	switch (ret) {
+	case -ENOSYS:
+		printk(KERN_WARNING "LTTng: block device enumeration is not supported by kernel\n");
+		break;
+	default:
+		return ret;
+	}
 
 	/* TODO lttng_dump_idt_table(session); */
 	/* TODO lttng_dump_softirq_vec(session); */
