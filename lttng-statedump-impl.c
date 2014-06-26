@@ -79,7 +79,7 @@ struct lttng_fd_ctx {
 	char *page;
 	struct lttng_session *session;
 	struct task_struct *p;
-	struct fdtable *fdt;
+	struct files_struct *files;
 };
 
 /*
@@ -219,13 +219,24 @@ int lttng_dump_one_fd(const void *p, struct file *file, unsigned int fd)
 	const struct lttng_fd_ctx *ctx = p;
 	const char *s = d_path(&file->f_path, ctx->page, PAGE_SIZE);
 	unsigned int flags = file->f_flags;
+	struct fdtable *fdt;
 
 	/*
 	 * We don't expose kernel internal flags, only userspace-visible
 	 * flags.
 	 */
 	flags &= ~FMODE_NONOTIFY;
-	if (test_bit(fd, ctx->fdt->close_on_exec))
+	fdt = files_fdtable(ctx->files);
+	/*
+	 * We need to check here again whether fd is within the fdt
+	 * max_fds range, because we might be seeing a different
+	 * files_fdtable() than iterate_fd(), assuming only RCU is
+	 * protecting the read. In reality, iterate_fd() holds
+	 * file_lock, which should ensure the fdt does not change while
+	 * the lock is taken, but we are not aware whether this is
+	 * guaranteed or not, so play safe.
+	 */
+	if (fd < fdt->max_fds && test_bit(fd, fdt->close_on_exec))
 		flags |= O_CLOEXEC;
 	if (IS_ERR(s)) {
 		struct dentry *dentry = file->f_path.dentry;
@@ -248,10 +259,15 @@ void lttng_enumerate_task_fd(struct lttng_session *session,
 		struct task_struct *p, char *tmp)
 {
 	struct lttng_fd_ctx ctx = { .page = tmp, .session = session, .p = p };
+	struct files_struct *files;
 
 	task_lock(p);
-	ctx.fdt = files_fdtable(p->files);
-	lttng_iterate_fd(p->files, 0, lttng_dump_one_fd, &ctx);
+	files = p->files;
+	if (!files)
+		goto end;
+	ctx.files = files;
+	lttng_iterate_fd(files, 0, lttng_dump_one_fd, &ctx);
+end:
 	task_unlock(p);
 }
 
