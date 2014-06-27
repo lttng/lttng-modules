@@ -1,3 +1,10 @@
+2014-06-27 LTTng modules 2.5.0-rc2
+	* Fix: statedump: check whether "files" is NULL, RCU semantic fix
+	* Fix: statedump handle oom case, handle errors
+	* Fix: correct typo in kernel version number
+	* Fix: blktrace instrumentation for backported branches
+	* Fix: statedump block devices OOPS
+
 2014-05-28 (International Hamburger Day) LTTng modules 2.5.0-rc1
 	* Add TID field to some block_* events
 	* Fix: refuse overwrite mode buffers with less than two subbuffers
