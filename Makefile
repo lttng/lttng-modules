@@ -35,7 +35,7 @@ lttng-tracer-objs :=  lttng-events.o lttng-abi.o \
 			lttng-context-vtid.o lttng-context-ppid.o \
 			lttng-context-vppid.o lttng-calibrate.o \
 			lttng-context-hostname.o wrapper/random.o \
-			probes/lttng.o
+			probes/lttng.o wrapper/trace-clock.o
 
 obj-m += lttng-statedump.o
 lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o \
