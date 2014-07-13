@@ -238,6 +238,44 @@ TRACE_EVENT(mm_shrink_slab_start,
 		__entry->total_scan)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
+TRACE_EVENT(mm_shrink_slab_end,
+	TP_PROTO(struct shrinker *shr, int nid, int shrinker_retval,
+		long unused_scan_cnt, long new_scan_cnt, long total_scan),
+
+	TP_ARGS(shr, nid, shrinker_retval, unused_scan_cnt, new_scan_cnt,
+		total_scan),
+
+	TP_STRUCT__entry(
+		__field(struct shrinker *, shr)
+		__field(int, nid)
+		__field(void *, shrink)
+		__field(long, unused_scan)
+		__field(long, new_scan)
+		__field(int, retval)
+		__field(long, total_scan)
+	),
+
+	TP_fast_assign(
+		tp_assign(shr, shr)
+		tp_assign(nid, nid)
+		tp_assign(shrink, shr->scan_objects)
+		tp_assign(unused_scan, unused_scan_cnt)
+		tp_assign(new_scan, new_scan_cnt)
+		tp_assign(retval, shrinker_retval)
+		tp_assign(total_scan, total_scan)
+	),
+
+	TP_printk("%pF %p: nid %d unused scan count %ld new scan count %ld total_scan %ld last shrinker return val %d",
+		__entry->shrink,
+		__entry->shr,
+		__entry->nid,
+		__entry->unused_scan,
+		__entry->new_scan,
+		__entry->total_scan,
+		__entry->retval)
+)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0)) */
 TRACE_EVENT(mm_shrink_slab_end,
 	TP_PROTO(struct shrinker *shr, int shrinker_retval,
 		long unused_scan_cnt, long new_scan_cnt),
@@ -274,6 +312,7 @@ TRACE_EVENT(mm_shrink_slab_end,
 		__entry->total_scan,
 		__entry->retval)
 )
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0)) */
 #endif
 
 DECLARE_EVENT_CLASS(mm_vmscan_lru_isolate_template,
