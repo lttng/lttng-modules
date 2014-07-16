@@ -1,3 +1,15 @@
+2014-07-16 LTTng modules 2.4.2
+	* Fix: statedump handle oom case, handle errors
+	* Fix: correct typo in kernel version number
+	* Fix: blktrace instrumentation for backported branches
+	* Fix: refuse overwrite mode buffers with less than two subbuffers
+	* Fix: lttng modules system call generation script
+	* Fix: incorrect rwbs field type in block_bio_queue
+	* Fix: blktrace instrumentation for v3.2.58+ stable branch
+	* Fix: update block instrumentation to 3.15 kernel
+	* Fix: pass proper args when writing commit counter
+	* Fix: allow racy tracepoint string input from kernel and userspace
+
 2014-04-08 LTTng modules 2.4.1
 	* Fix: rcu instrumentation: add const qualifier to char pointers
 	* Fix: add missing module version information
