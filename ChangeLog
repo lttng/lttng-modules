@@ -1,3 +1,6 @@
+2014-07-16 (Take Your Poet to Work Day) LTTng modules 2.5.0
+	* (no change)
+
 2014-06-27 LTTng modules 2.5.0-rc2
 	* Fix: statedump: check whether "files" is NULL, RCU semantic fix
 	* Fix: statedump handle oom case, handle errors
