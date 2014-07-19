@@ -925,15 +925,23 @@ int lttng_abi_create_event(struct file *channel_file,
 		atomic_long_inc(&channel_file->f_count);
 		break;
 	case LTTNG_KERNEL_SYSCALL:
-		/*
-		 * Only all-syscall tracing supported for now.
-		 */
-		if (event_param->name[0] != '\0')
-			return -EINVAL;
 		ret = lttng_syscalls_register(channel, NULL);
 		if (ret)
 			goto fd_error;
 		event_fd = 0;
+		if (event_param->u.syscall.disable) {
+			ret = lttng_syscall_filter_disable(channel,
+				event_param->name[0] == '\0' ?
+					NULL : event_param->name);
+			if (ret)
+				goto fd_error;
+		} else {
+			ret = lttng_syscall_filter_enable(channel,
+				event_param->name[0] == '\0' ?
+					NULL : event_param->name);
+			if (ret)
+				goto fd_error;
+		}
 		break;
 	}
 	return event_fd;

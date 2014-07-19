@@ -280,6 +280,8 @@ struct lttng_transport {
 	struct lttng_channel_ops ops;
 };
 
+struct lttng_syscall_filter;
+
 struct lttng_channel {
 	unsigned int id;
 	struct channel *chan;		/* Channel buffers */
@@ -297,9 +299,13 @@ struct lttng_channel {
 	struct lttng_event *sc_unknown;	/* for unknown syscalls */
 	struct lttng_event *sc_compat_unknown;
 	struct lttng_event *sc_exit;	/* for syscall exit */
+	struct lttng_syscall_filter *sc_filter;
 	int header_type;		/* 0: unset, 1: compact, 2: large */
 	enum channel_type channel_type;
-	unsigned int metadata_dumped:1;
+	unsigned int metadata_dumped:1,
+		sys_enter_registered:1,
+		sys_exit_registered:1,
+		syscall_all:1;
 };
 
 struct lttng_metadata_stream {
@@ -392,6 +398,10 @@ int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 #if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
 int lttng_syscalls_register(struct lttng_channel *chan, void *filter);
 int lttng_syscalls_unregister(struct lttng_channel *chan);
+int lttng_syscall_filter_enable(struct lttng_channel *chan,
+		const char *name);
+int lttng_syscall_filter_disable(struct lttng_channel *chan,
+		const char *name);
 #else
 static inline int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 {
@@ -401,6 +411,18 @@ static inline int lttng_syscalls_register(struct lttng_channel *chan, void *filt
 static inline int lttng_syscalls_unregister(struct lttng_channel *chan)
 {
 	return 0;
+}
+
+int lttng_syscall_filter_enable(struct lttng_channel *chan,
+		const char *name)
+{
+	return -ENOSYS;
+}
+
+int lttng_syscall_filter_disable(struct lttng_channel *chan,
+		const char *name)
+{
+	return -ENOSYS;
 }
 #endif
 

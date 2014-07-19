@@ -24,6 +24,7 @@
 #include <linux/slab.h>
 #include <linux/compat.h>
 #include <linux/err.h>
+#include <linux/bitmap.h>
 #include <asm/ptrace.h>
 #include <asm/syscall.h>
 
@@ -48,6 +49,12 @@ struct oldold_utsname;
 struct old_utsname;
 struct sel_arg_struct;
 struct mmap_arg_struct;
+
+#ifdef IA32_NR_syscalls
+#define NR_compat_syscalls IA32_NR_syscalls
+#else
+#define NR_compat_syscalls NR_syscalls
+#endif
 
 /*
  * Take care of NOARGS not supported by mainline.
@@ -163,6 +170,11 @@ const struct trace_syscall_entry compat_sc_table[] = {
 
 #undef CREATE_SYSCALL_TABLE
 
+struct lttng_syscall_filter {
+	DECLARE_BITMAP(sc, NR_syscalls);
+	DECLARE_BITMAP(sc_compat, NR_compat_syscalls);
+};
+
 static void syscall_entry_unknown(struct lttng_event *event,
 	struct pt_regs *regs, unsigned int id)
 {
@@ -183,10 +195,30 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 	size_t table_len;
 
 	if (unlikely(is_compat_task())) {
+		struct lttng_syscall_filter *filter;
+
+		filter = rcu_dereference(chan->sc_filter);
+		if (filter) {
+			if (id >= NR_compat_syscalls
+				|| !test_bit(id, filter->sc_compat)) {
+				/* System call filtered out. */
+				return;
+			}
+		}
 		table = compat_sc_table;
 		table_len = ARRAY_SIZE(compat_sc_table);
 		unknown_event = chan->sc_compat_unknown;
 	} else {
+		struct lttng_syscall_filter *filter;
+
+		filter = rcu_dereference(chan->sc_filter);
+		if (filter) {
+			if (id >= NR_syscalls
+				|| !test_bit(id, filter->sc)) {
+				/* System call filtered out. */
+				return;
+			}
+		}
 		table = sc_table;
 		table_len = ARRAY_SIZE(sc_table);
 		unknown_event = chan->sc_unknown;
@@ -419,20 +451,27 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 	if (ret)
 		return ret;
 #endif
-	ret = lttng_wrapper_tracepoint_probe_register("sys_enter",
-			(void *) syscall_entry_probe, chan);
-	if (ret)
-		return ret;
+	if (!chan->sys_enter_registered) {
+		ret = lttng_wrapper_tracepoint_probe_register("sys_enter",
+				(void *) syscall_entry_probe, chan);
+		if (ret)
+			return ret;
+		chan->sys_enter_registered = 1;
+	}
 	/*
 	 * We change the name of sys_exit tracepoint due to namespace
 	 * conflict with sys_exit syscall entry.
 	 */
-	ret = lttng_wrapper_tracepoint_probe_register("sys_exit",
-			(void *) __event_probe__exit_syscall,
-			chan->sc_exit);
-	if (ret) {
-		WARN_ON_ONCE(lttng_wrapper_tracepoint_probe_unregister("sys_enter",
-			(void *) syscall_entry_probe, chan));
+	if (!chan->sys_exit_registered) {
+		ret = lttng_wrapper_tracepoint_probe_register("sys_exit",
+				(void *) __event_probe__exit_syscall,
+				chan->sc_exit);
+		if (ret) {
+			WARN_ON_ONCE(lttng_wrapper_tracepoint_probe_unregister("sys_enter",
+				(void *) syscall_entry_probe, chan));
+			return ret;
+		}
+		chan->sys_exit_registered = 1;
 	}
 	return ret;
 }
@@ -446,19 +485,181 @@ int lttng_syscalls_unregister(struct lttng_channel *chan)
 
 	if (!chan->sc_table)
 		return 0;
-	ret = lttng_wrapper_tracepoint_probe_unregister("sys_exit",
-			(void *) __event_probe__exit_syscall,
-			chan->sc_exit);
-	if (ret)
-		return ret;
-	ret = lttng_wrapper_tracepoint_probe_unregister("sys_enter",
-			(void *) syscall_entry_probe, chan);
-	if (ret)
-		return ret;
+	if (chan->sys_enter_registered) {
+		ret = lttng_wrapper_tracepoint_probe_unregister("sys_exit",
+				(void *) __event_probe__exit_syscall,
+				chan->sc_exit);
+		if (ret)
+			return ret;
+		chan->sys_enter_registered = 0;
+	}
+	if (chan->sys_exit_registered) {
+		ret = lttng_wrapper_tracepoint_probe_unregister("sys_enter",
+				(void *) syscall_entry_probe, chan);
+		if (ret)
+			return ret;
+		chan->sys_exit_registered = 0;
+	}
 	/* lttng_event destroy will be performed by lttng_session_destroy() */
 	kfree(chan->sc_table);
 #ifdef CONFIG_COMPAT
 	kfree(chan->compat_sc_table);
 #endif
+	kfree(chan->sc_filter);
 	return 0;
+}
+
+static
+int get_syscall_nr(const char *syscall_name)
+{
+	int syscall_nr = -1;
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(sc_table); i++) {
+		const struct trace_syscall_entry *entry;
+
+		entry = &sc_table[i];
+		if (!entry->desc)
+			continue;
+		if (!strcmp(syscall_name, entry->desc->name)) {
+			syscall_nr = i;
+			break;
+		}
+	}
+	return syscall_nr;
+}
+
+static
+int get_compat_syscall_nr(const char *syscall_name)
+{
+	int syscall_nr = -1;
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(compat_sc_table); i++) {
+		const struct trace_syscall_entry *entry;
+
+		entry = &compat_sc_table[i];
+		if (!entry->desc)
+			continue;
+		if (!strcmp(syscall_name, entry->desc->name)) {
+			syscall_nr = i;
+			break;
+		}
+	}
+	return syscall_nr;
+}
+
+int lttng_syscall_filter_enable(struct lttng_channel *chan,
+		const char *name)
+{
+	int syscall_nr, compat_syscall_nr, ret;
+	struct lttng_syscall_filter *filter;
+
+	WARN_ON_ONCE(!chan->sc_table);
+
+	if (!name) {
+		/* Enable all system calls by removing filter */
+		if (chan->sc_filter) {
+			filter = chan->sc_filter;
+			rcu_assign_pointer(chan->sc_filter, NULL);
+			synchronize_trace();
+			kfree(filter);
+		}
+		chan->syscall_all = 1;
+		return 0;
+	}
+
+	if (!chan->sc_filter) {
+		if (chan->syscall_all) {
+			/*
+			 * All syscalls are already enabled.
+			 */
+			return -EEXIST;
+		}
+		filter = kzalloc(sizeof(struct lttng_syscall_filter),
+				GFP_KERNEL);
+		if (!filter)
+			return -ENOMEM;
+	} else {
+		filter = chan->sc_filter;
+	}
+	syscall_nr = get_syscall_nr(name);
+	compat_syscall_nr = get_compat_syscall_nr(name);
+	if (syscall_nr < 0 && compat_syscall_nr < 0) {
+		ret = -ENOENT;
+		goto error;
+	}
+	if (syscall_nr >= 0) {
+		if (test_bit(syscall_nr, filter->sc)) {
+			ret = -EEXIST;
+			goto error;
+		}
+		bitmap_set(filter->sc, syscall_nr, 1);
+	}
+	if (compat_syscall_nr >= 0) {
+		if (test_bit(compat_syscall_nr, filter->sc_compat)) {
+			ret = -EEXIST;
+			goto error;
+		}
+		bitmap_set(filter->sc_compat, compat_syscall_nr, 1);
+	}
+	if (!chan->sc_filter)
+		rcu_assign_pointer(chan->sc_filter, filter);
+	return 0;
+
+error:
+	if (!chan->sc_filter)
+		kfree(filter);
+	return ret;
+}
+
+int lttng_syscall_filter_disable(struct lttng_channel *chan,
+		const char *name)
+{
+	int syscall_nr, compat_syscall_nr, ret;
+	struct lttng_syscall_filter *filter;
+
+	WARN_ON_ONCE(!chan->sc_table);
+
+	if (!chan->sc_filter) {
+		filter = kzalloc(sizeof(struct lttng_syscall_filter),
+				GFP_KERNEL);
+		if (!filter)
+			return -ENOMEM;
+		/* Trace all system calls, then apply disable. */
+		bitmap_set(filter->sc, 0, NR_syscalls);
+		bitmap_set(filter->sc_compat, 0, NR_compat_syscalls);
+	} else {
+		filter = chan->sc_filter;
+	}
+
+	syscall_nr = get_syscall_nr(name);
+	compat_syscall_nr = get_compat_syscall_nr(name);
+	if (syscall_nr < 0 && compat_syscall_nr < 0) {
+		ret = -ENOENT;
+		goto error;
+	}
+	if (syscall_nr >= 0) {
+		if (!test_bit(syscall_nr, chan->sc_filter->sc)) {
+			ret = -EEXIST;
+			goto error;
+		}
+		bitmap_clear(chan->sc_filter->sc, syscall_nr, 1);
+	}
+	if (compat_syscall_nr >= 0) {
+		if (!test_bit(compat_syscall_nr, chan->sc_filter->sc_compat)) {
+			ret = -EEXIST;
+			goto error;
+		}
+		bitmap_clear(chan->sc_filter->sc_compat, compat_syscall_nr, 1);
+	}
+	if (!chan->sc_filter)
+		rcu_assign_pointer(chan->sc_filter, filter);
+	chan->syscall_all = 0;
+	return 0;
+
+error:
+	if (!chan->sc_filter)
+		kfree(filter);
+	return ret;
 }
