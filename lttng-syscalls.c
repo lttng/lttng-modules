@@ -94,12 +94,14 @@ struct mmap_arg_struct;
 
 #define SC_ENTER
 
-#undef SC_EXIT_PROTO
-#define SC_EXIT_PROTO(...)
-#undef SC_EXIT_ARGS
-#define SC_EXIT_ARGS(...)
 #undef sc_exit
 #define sc_exit(...)
+#undef sc_in
+#define sc_in(...)	__VA_ARGS__
+#undef sc_out
+#define sc_out(...)
+#undef sc_inout
+#define sc_inout(...)	__VA_ARGS__
 
 /* Hijack probe callback for system call enter */
 #undef TP_PROBE_CB
@@ -164,12 +166,14 @@ struct mmap_arg_struct;
 
 #define SC_EXIT
 
-#undef SC_EXIT_PROTO
-#define SC_EXIT_PROTO(...)	__VA_ARGS__
-#undef SC_EXIT_ARGS
-#define SC_EXIT_ARGS(...)	__VA_ARGS__
 #undef sc_exit
 #define sc_exit(...)		__VA_ARGS__
+#undef sc_in
+#define sc_in(...)
+#undef sc_out
+#define sc_out(...)		__VA_ARGS__
+#undef sc_inout
+#define sc_inout(...)		__VA_ARGS__
 
 /* Hijack probe callback for system call exit */
 #define TP_PROBE_CB(_template)		&syscall_exit_probe

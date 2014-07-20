@@ -17,6 +17,8 @@ BITNESS=$4
 INPUT=${INPUTDIR}/${INPUTFILE}
 SRCFILE=gen.tmp.0
 TMPFILE=gen.tmp.1
+TMPFILE2=gen.tmp.2
+TMPFILE3=gen.tmp.3
 HEADER=headers/${INPUTFILE}_${CLASS}.h
 
 if [ x"$INPUTDIR" = x"" ]; then
@@ -136,57 +138,84 @@ fi
 
 NRARGS=1
 grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}
-perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
+
+while read LINE; do
+	echo "${LINE}" > ${TMPFILE2}
+	perl -p -e 's/^syscall ([^ ]*) .*/$1/g' ${TMPFILE2} > ${TMPFILE3}
+	SC_NAME=$(cat ${TMPFILE3})
+	ARG1=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 1)
+	echo Syscall: ${SC_NAME} ${ARG1}
+	perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 'types: \(([^)]*)\) '\
 'args: \(([^)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_sys_$1\n'\
 'SC_TRACE_EVENT(sys_$1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $5),\n'\
 '	TP_ARGS(sc_exit(ret,) $5),\n'\
-'	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field($4, $5)),\n'\
-'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) tp_assign($4, $5, $5)),\n'\
+'	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $5))),\n'\
+'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) '"${ARG1}"'(tp_assign($4, $5, $5))),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
-	${TMPFILE} >> ${HEADER}
+		${TMPFILE2} >> ${HEADER}
+done < ${TMPFILE}
 
 # types: 4 5
 # args   6 7
 
 NRARGS=2
 grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}
-perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
+
+while read LINE; do
+	echo "${LINE}" > ${TMPFILE2}
+	perl -p -e 's/^syscall ([^ ]*) .*/$1/g' ${TMPFILE2} > ${TMPFILE3}
+	SC_NAME=$(cat ${TMPFILE3})
+	ARG1=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 1)
+	ARG2=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 2)
+	echo Syscall: ${SC_NAME} ${ARG1} ${ARG2}
+	perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 'types: \(([^,]*), ([^)]*)\) '\
 'args: \(([^,]*), ([^)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_sys_$1\n'\
 'SC_TRACE_EVENT(sys_$1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $6, $5 $7),\n'\
 '	TP_ARGS(sc_exit(ret,) $6, $7),\n'\
-'	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field($4, $6) __field($5, $7)),\n'\
-'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) tp_assign($4, $6, $6) tp_assign($5, $7, $7)),\n'\
+'	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $6)) '"${ARG2}"'(__field($5, $7))),\n'\
+'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) '"${ARG1}"'(tp_assign($4, $6, $6)) '"${ARG2}"'(tp_assign($5, $7, $7))),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
-	${TMPFILE} >> ${HEADER}
+		${TMPFILE2} >> ${HEADER}
+done < ${TMPFILE}
 
 # types: 4 5 6
 # args   7 8 9
 
 NRARGS=3
 grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}
-perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
+
+while read LINE; do
+	echo "${LINE}" > ${TMPFILE2}
+	perl -p -e 's/^syscall ([^ ]*) .*/$1/g' ${TMPFILE2} > ${TMPFILE3}
+	SC_NAME=$(cat ${TMPFILE3})
+	ARG1=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 1)
+	ARG2=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 2)
+	ARG3=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 3)
+	echo Syscall: ${SC_NAME} ${ARG1} ${ARG2} ${ARG3}
+	perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 'types: \(([^,]*), ([^,]*), ([^)]*)\) '\
 'args: \(([^,]*), ([^,]*), ([^)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_sys_$1\n'\
 'SC_TRACE_EVENT(sys_$1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $7, $5 $8, $6 $9),\n'\
 '	TP_ARGS(sc_exit(ret,) $7, $8, $9),\n'\
-'	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field($4, $7) __field($5, $8) __field($6, $9)),\n'\
-'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) tp_assign($4, $7, $7) tp_assign($5, $8, $8) tp_assign($6, $9, $9)),\n'\
+'	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $7)) '"${ARG2}"'(__field($5, $8)) '"${ARG3}"'(__field($6, $9))),\n'\
+'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) '"${ARG1}"'(tp_assign($4, $7, $7)) '"${ARG2}"'(tp_assign($5, $8, $8)) '"${ARG3}"'(tp_assign($6, $9, $9))),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
-	${TMPFILE} >> ${HEADER}
+		${TMPFILE2} >> ${HEADER}
+done < ${TMPFILE}
 
 
 # types: 4 5  6  7
@@ -194,38 +223,61 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 
 NRARGS=4
 grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}
-perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
+
+while read LINE; do
+	echo "${LINE}" > ${TMPFILE2}
+	perl -p -e 's/^syscall ([^ ]*) .*/$1/g' ${TMPFILE2} > ${TMPFILE3}
+	SC_NAME=$(cat ${TMPFILE3})
+	ARG1=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 1)
+	ARG2=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 2)
+	ARG3=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 3)
+	ARG4=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 4)
+	echo Syscall: ${SC_NAME} ${ARG1} ${ARG2} ${ARG3} ${ARG4}
+	perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 'types: \(([^,]*), ([^,]*), ([^,]*), ([^)]*)\) '\
 'args: \(([^,]*), ([^,]*), ([^,]*), ([^)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_sys_$1\n'\
 'SC_TRACE_EVENT(sys_$1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $8, $5 $9, $6 $10, $7 $11),\n'\
 '	TP_ARGS(sc_exit(ret,) $8, $9, $10, $11),\n'\
-'	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field($4, $8) __field($5, $9) __field($6, $10) __field($7, $11)),\n'\
-'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) tp_assign($4, $8, $8) tp_assign($5, $9, $9) tp_assign($6, $10, $10) tp_assign($7, $11, $11)),\n'\
+'	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $8)) '"${ARG2}"'(__field($5, $9)) '"${ARG3}"'(__field($6, $10)) '"${ARG4}"'(__field($7, $11))),\n'\
+'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) '"${ARG1}"'(tp_assign($4, $8, $8)) '"${ARG2}"'(tp_assign($5, $9, $9)) '"${ARG3}"'(tp_assign($6, $10, $10)) '"${ARG4}"'(tp_assign($7, $11, $11))),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
-	${TMPFILE} >> ${HEADER}
+		${TMPFILE2} >> ${HEADER}
+done < ${TMPFILE}
 
 # types: 4  5  6  7  8
 # args   9 10 11 12 13
 
 NRARGS=5
 grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}
-perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
+
+while read LINE; do
+	echo "${LINE}" > ${TMPFILE2}
+	perl -p -e 's/^syscall ([^ ]*) .*/$1/g' ${TMPFILE2} > ${TMPFILE3}
+	SC_NAME=$(cat ${TMPFILE3})
+	ARG1=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 1)
+	ARG2=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 2)
+	ARG3=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 3)
+	ARG4=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 4)
+	ARG5=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 5)
+	echo Syscall: ${SC_NAME} ${ARG1} ${ARG2} ${ARG3} ${ARG4} ${ARG5}
+	perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 'types: \(([^,]*), ([^,]*), ([^,]*), ([^,]*), ([^)]*)\) '\
 'args: \(([^,]*), ([^,]*), ([^,]*), ([^,]*), ([^)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_sys_$1\n'\
 'SC_TRACE_EVENT(sys_$1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $9, $5 $10, $6 $11, $7 $12, $8 $13),\n'\
 '	TP_ARGS(sc_exit(ret,) $9, $10, $11, $12, $13),\n'\
-'	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field($4, $9) __field($5, $10) __field($6, $11) __field($7, $12) __field($8, $13)),\n'\
-'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) tp_assign($4, $9, $9) tp_assign($5, $10, $10) tp_assign($6, $11, $11) tp_assign($7, $12, $12) tp_assign($8, $13, $13)),\n'\
+'	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $9)) '"${ARG2}"'(__field($5, $10)) '"${ARG3}"'(__field($6, $11)) '"${ARG4}"'(__field($7, $12)) '"${ARG5}"'(__field($8, $13))),\n'\
+'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) '"${ARG1}"'(tp_assign($4, $9, $9)) '"${ARG2}"'(tp_assign($5, $10, $10)) '"${ARG3}"'(tp_assign($6, $11, $11)) '"${ARG4}"'(tp_assign($7, $12, $12)) '"${ARG5}"'(tp_assign($8, $13, $13))),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
-	${TMPFILE} >> ${HEADER}
+	${TMPFILE2} >> ${HEADER}
+done < ${TMPFILE}
 
 
 # types: 4   5  6  7  8  9
@@ -233,19 +285,32 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 
 NRARGS=6
 grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}
-perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
+
+while read LINE; do
+	echo "${LINE}" > ${TMPFILE2}
+	perl -p -e 's/^syscall ([^ ]*) .*/$1/g' ${TMPFILE2} > ${TMPFILE3}
+	SC_NAME=$(cat ${TMPFILE3})
+	ARG1=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 1)
+	ARG2=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 2)
+	ARG3=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 3)
+	ARG4=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 4)
+	ARG5=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 5)
+	ARG6=$(./lttng-get-syscall-inout.sh table-syscall-inout.txt sys_${SC_NAME} 6)
+	echo Syscall: ${SC_NAME} ${ARG1} ${ARG2} ${ARG3} ${ARG4} ${ARG5} ${ARG6}
+	perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 'types: \(([^,]*), ([^,]*), ([^,]*), ([^,]*), ([^,]*), ([^\)]*)\) '\
 'args: \(([^,]*), ([^,]*), ([^,]*), ([^,]*), ([^,]*), ([^\)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_sys_$1\n'\
 'SC_TRACE_EVENT(sys_$1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $10, $5 $11, $6 $12, $7 $13, $8 $14, $9 $15),\n'\
 '	TP_ARGS(sc_exit(ret,) $10, $11, $12, $13, $14, $15),\n'\
-'	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field($4, $10) __field($5, $11) __field($6, $12) __field($7, $13) __field($8, $14) __field($9, $15)),\n'\
-'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) tp_assign($4, $10, $10) tp_assign($5, $11, $11) tp_assign($6, $12, $12) tp_assign($7, $13, $13) tp_assign($8, $14, $14) tp_assign($9, $15, $15)),\n'\
+'	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $10)) '"${ARG2}"'(__field($5, $11)) '"${ARG3}"'(__field($6, $12)) '"${ARG4}"'(__field($7, $13)) '"${ARG5}"'(__field($8, $14)) '"${ARG6}"'(__field($9, $15))),\n'\
+'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) '"${ARG1}"'(tp_assign($4, $10, $10)) '"${ARG2}"'(tp_assign($5, $11, $11)) '"${ARG3}"'(tp_assign($6, $12, $12)) '"${ARG4}"'(tp_assign($7, $13, $13)) '"${ARG5}"'(tp_assign($8, $14, $14)) '"${ARG6}"'(tp_assign($9, $15, $15))),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
-	${TMPFILE} >> ${HEADER}
+	${TMPFILE2} >> ${HEADER}
+done < ${TMPFILE}
 
 # Macro for tracing syscall table
 
@@ -339,5 +404,7 @@ perl -p -e 's/tp_assign\(([^,)]*), ([^,]*), ([^\)]*)\)/tp_assign($2, $3)/g'\
 	${TMPFILE} >> ${HEADER}
 
 rm -f ${INPUTFILE}.tmp
+rm -f ${TMPFILE3}
+rm -f ${TMPFILE2}
 rm -f ${TMPFILE}
 rm -f ${SRCFILE}

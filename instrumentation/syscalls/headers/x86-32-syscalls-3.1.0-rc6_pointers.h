@@ -13,8 +13,8 @@
 SC_TRACE_EVENT(sys_unlink,
 	TP_PROTO(sc_exit(long ret,) const char * pathname),
 	TP_ARGS(sc_exit(ret,) pathname),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(pathname, pathname)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(pathname, pathname)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(pathname, pathname))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(pathname, pathname))),
 	TP_printk()
 )
 #endif
@@ -22,8 +22,8 @@ SC_TRACE_EVENT(sys_unlink,
 SC_TRACE_EVENT(sys_chdir,
 	TP_PROTO(sc_exit(long ret,) const char * filename),
 	TP_ARGS(sc_exit(ret,) filename),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(filename, filename))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(filename, filename))),
 	TP_printk()
 )
 #endif
@@ -31,8 +31,8 @@ SC_TRACE_EVENT(sys_chdir,
 SC_TRACE_EVENT(sys_time,
 	TP_PROTO(sc_exit(long ret,) time_t * tloc),
 	TP_ARGS(sc_exit(ret,) tloc),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(time_t *, tloc)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(tloc, tloc)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_out(__field_hex(time_t *, tloc))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_out(tp_assign(tloc, tloc))),
 	TP_printk()
 )
 #endif
@@ -40,8 +40,8 @@ SC_TRACE_EVENT(sys_time,
 SC_TRACE_EVENT(sys_oldumount,
 	TP_PROTO(sc_exit(long ret,) char * name),
 	TP_ARGS(sc_exit(ret,) name),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(name, name)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(name, name)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__string_from_user(name, name))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_copy_string_from_user(name, name))),
 	TP_printk()
 )
 #endif
@@ -49,8 +49,8 @@ SC_TRACE_EVENT(sys_oldumount,
 SC_TRACE_EVENT(sys_stime,
 	TP_PROTO(sc_exit(long ret,) time_t * tptr),
 	TP_ARGS(sc_exit(ret,) tptr),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(time_t *, tptr)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(tptr, tptr)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field_hex(time_t *, tptr))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(tptr, tptr))),
 	TP_printk()
 )
 #endif
@@ -58,8 +58,8 @@ SC_TRACE_EVENT(sys_stime,
 SC_TRACE_EVENT(sys_rmdir,
 	TP_PROTO(sc_exit(long ret,) const char * pathname),
 	TP_ARGS(sc_exit(ret,) pathname),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(pathname, pathname)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(pathname, pathname)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(pathname, pathname))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(pathname, pathname))),
 	TP_printk()
 )
 #endif
@@ -67,8 +67,8 @@ SC_TRACE_EVENT(sys_rmdir,
 SC_TRACE_EVENT(sys_pipe,
 	TP_PROTO(sc_exit(long ret,) int * fildes),
 	TP_ARGS(sc_exit(ret,) fildes),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(int *, fildes)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fildes, fildes)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_out(__field_hex(int *, fildes))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_out(tp_assign(fildes, fildes))),
 	TP_printk()
 )
 #endif
@@ -76,8 +76,8 @@ SC_TRACE_EVENT(sys_pipe,
 SC_TRACE_EVENT(sys_times,
 	TP_PROTO(sc_exit(long ret,) struct tms * tbuf),
 	TP_ARGS(sc_exit(ret,) tbuf),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(struct tms *, tbuf)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(tbuf, tbuf)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_out(__field_hex(struct tms *, tbuf))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_out(tp_assign(tbuf, tbuf))),
 	TP_printk()
 )
 #endif
@@ -85,8 +85,8 @@ SC_TRACE_EVENT(sys_times,
 SC_TRACE_EVENT(sys_acct,
 	TP_PROTO(sc_exit(long ret,) const char * name),
 	TP_ARGS(sc_exit(ret,) name),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(name, name)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(name, name)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(name, name))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(name, name))),
 	TP_printk()
 )
 #endif
@@ -94,8 +94,8 @@ SC_TRACE_EVENT(sys_acct,
 SC_TRACE_EVENT(sys_olduname,
 	TP_PROTO(sc_exit(long ret,) struct oldold_utsname * name),
 	TP_ARGS(sc_exit(ret,) name),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(struct oldold_utsname *, name)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(name, name)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field_hex(struct oldold_utsname *, name))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(name, name))),
 	TP_printk()
 )
 #endif
@@ -103,8 +103,8 @@ SC_TRACE_EVENT(sys_olduname,
 SC_TRACE_EVENT(sys_chroot,
 	TP_PROTO(sc_exit(long ret,) const char * filename),
 	TP_ARGS(sc_exit(ret,) filename),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(filename, filename))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(filename, filename))),
 	TP_printk()
 )
 #endif
@@ -112,8 +112,8 @@ SC_TRACE_EVENT(sys_chroot,
 SC_TRACE_EVENT(sys_sigpending,
 	TP_PROTO(sc_exit(long ret,) old_sigset_t * set),
 	TP_ARGS(sc_exit(ret,) set),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(old_sigset_t *, set)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(set, set)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field_hex(old_sigset_t *, set))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(set, set))),
 	TP_printk()
 )
 #endif
@@ -121,8 +121,8 @@ SC_TRACE_EVENT(sys_sigpending,
 SC_TRACE_EVENT(sys_old_select,
 	TP_PROTO(sc_exit(long ret,) struct sel_arg_struct * arg),
 	TP_ARGS(sc_exit(ret,) arg),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(struct sel_arg_struct *, arg)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(arg, arg)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field_hex(struct sel_arg_struct *, arg))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(arg, arg))),
 	TP_printk()
 )
 #endif
@@ -130,8 +130,8 @@ SC_TRACE_EVENT(sys_old_select,
 SC_TRACE_EVENT(sys_uselib,
 	TP_PROTO(sc_exit(long ret,) const char * library),
 	TP_ARGS(sc_exit(ret,) library),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(const char *, library)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(library, library)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field_hex(const char *, library))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(library, library))),
 	TP_printk()
 )
 #endif
@@ -139,8 +139,8 @@ SC_TRACE_EVENT(sys_uselib,
 SC_TRACE_EVENT(sys_old_mmap,
 	TP_PROTO(sc_exit(long ret,) struct mmap_arg_struct * arg),
 	TP_ARGS(sc_exit(ret,) arg),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(struct mmap_arg_struct *, arg)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(arg, arg)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field_hex(struct mmap_arg_struct *, arg))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(arg, arg))),
 	TP_printk()
 )
 #endif
@@ -148,8 +148,8 @@ SC_TRACE_EVENT(sys_old_mmap,
 SC_TRACE_EVENT(sys_uname,
 	TP_PROTO(sc_exit(long ret,) struct old_utsname * name),
 	TP_ARGS(sc_exit(ret,) name),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(struct old_utsname *, name)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(name, name)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field_hex(struct old_utsname *, name))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(name, name))),
 	TP_printk()
 )
 #endif
@@ -157,8 +157,8 @@ SC_TRACE_EVENT(sys_uname,
 SC_TRACE_EVENT(sys_swapoff,
 	TP_PROTO(sc_exit(long ret,) const char * specialfile),
 	TP_ARGS(sc_exit(ret,) specialfile),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(specialfile, specialfile)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(specialfile, specialfile)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(specialfile, specialfile))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(specialfile, specialfile))),
 	TP_printk()
 )
 #endif
@@ -166,8 +166,8 @@ SC_TRACE_EVENT(sys_swapoff,
 SC_TRACE_EVENT(sys_sysinfo,
 	TP_PROTO(sc_exit(long ret,) struct sysinfo * info),
 	TP_ARGS(sc_exit(ret,) info),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(struct sysinfo *, info)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(info, info)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_out(__field_hex(struct sysinfo *, info))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_out(tp_assign(info, info))),
 	TP_printk()
 )
 #endif
@@ -175,8 +175,8 @@ SC_TRACE_EVENT(sys_sysinfo,
 SC_TRACE_EVENT(sys_newuname,
 	TP_PROTO(sc_exit(long ret,) struct new_utsname * name),
 	TP_ARGS(sc_exit(ret,) name),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(struct new_utsname *, name)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(name, name)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_out(__field_hex(struct new_utsname *, name))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_out(tp_assign(name, name))),
 	TP_printk()
 )
 #endif
@@ -184,8 +184,8 @@ SC_TRACE_EVENT(sys_newuname,
 SC_TRACE_EVENT(sys_adjtimex,
 	TP_PROTO(sc_exit(long ret,) struct timex * txc_p),
 	TP_ARGS(sc_exit(ret,) txc_p),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(struct timex *, txc_p)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(txc_p, txc_p)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field_hex(struct timex *, txc_p))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(txc_p, txc_p))),
 	TP_printk()
 )
 #endif
@@ -193,8 +193,8 @@ SC_TRACE_EVENT(sys_adjtimex,
 SC_TRACE_EVENT(sys_sysctl,
 	TP_PROTO(sc_exit(long ret,) struct __sysctl_args * args),
 	TP_ARGS(sc_exit(ret,) args),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(struct __sysctl_args *, args)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(args, args)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field_hex(struct __sysctl_args *, args))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(args, args))),
 	TP_printk()
 )
 #endif
@@ -202,8 +202,8 @@ SC_TRACE_EVENT(sys_sysctl,
 SC_TRACE_EVENT(sys_set_tid_address,
 	TP_PROTO(sc_exit(long ret,) int * tidptr),
 	TP_ARGS(sc_exit(ret,) tidptr),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(int *, tidptr)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(tidptr, tidptr)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field_hex(int *, tidptr))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(tidptr, tidptr))),
 	TP_printk()
 )
 #endif
@@ -211,8 +211,8 @@ SC_TRACE_EVENT(sys_set_tid_address,
 SC_TRACE_EVENT(sys_mq_unlink,
 	TP_PROTO(sc_exit(long ret,) const char * u_name),
 	TP_ARGS(sc_exit(ret,) u_name),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(u_name, u_name)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(u_name, u_name)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(u_name, u_name))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(u_name, u_name))),
 	TP_printk()
 )
 #endif
@@ -220,8 +220,8 @@ SC_TRACE_EVENT(sys_mq_unlink,
 SC_TRACE_EVENT(sys_creat,
 	TP_PROTO(sc_exit(long ret,) const char * pathname, int mode),
 	TP_ARGS(sc_exit(ret,) pathname, mode),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(pathname, pathname) __field(int, mode)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(pathname, pathname) tp_assign(mode, mode)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(pathname, pathname)) sc_in(__field(int, mode))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(pathname, pathname)) sc_in(tp_assign(mode, mode))),
 	TP_printk()
 )
 #endif
@@ -229,8 +229,8 @@ SC_TRACE_EVENT(sys_creat,
 SC_TRACE_EVENT(sys_link,
 	TP_PROTO(sc_exit(long ret,) const char * oldname, const char * newname),
 	TP_ARGS(sc_exit(ret,) oldname, newname),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(oldname, oldname) __string_from_user(newname, newname)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(oldname, oldname) tp_copy_string_from_user(newname, newname)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(oldname, oldname)) sc_in(__string_from_user(newname, newname))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(oldname, oldname)) sc_in(tp_copy_string_from_user(newname, newname))),
 	TP_printk()
 )
 #endif
@@ -238,8 +238,8 @@ SC_TRACE_EVENT(sys_link,
 SC_TRACE_EVENT(sys_chmod,
 	TP_PROTO(sc_exit(long ret,) const char * filename, mode_t mode),
 	TP_ARGS(sc_exit(ret,) filename, mode),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename) __field(mode_t, mode)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename) tp_assign(mode, mode)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(filename, filename)) sc_in(__field(mode_t, mode))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(filename, filename)) sc_in(tp_assign(mode, mode))),
 	TP_printk()
 )
 #endif
@@ -247,8 +247,8 @@ SC_TRACE_EVENT(sys_chmod,
 SC_TRACE_EVENT(sys_stat,
 	TP_PROTO(sc_exit(long ret,) const char * filename, struct __old_kernel_stat * statbuf),
 	TP_ARGS(sc_exit(ret,) filename, statbuf),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename) __field_hex(struct __old_kernel_stat *, statbuf)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename) tp_assign(statbuf, statbuf)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__string_from_user(filename, filename)) sc_inout(__field_hex(struct __old_kernel_stat *, statbuf))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_copy_string_from_user(filename, filename)) sc_inout(tp_assign(statbuf, statbuf))),
 	TP_printk()
 )
 #endif
@@ -256,8 +256,8 @@ SC_TRACE_EVENT(sys_stat,
 SC_TRACE_EVENT(sys_fstat,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, struct __old_kernel_stat * statbuf),
 	TP_ARGS(sc_exit(ret,) fd, statbuf),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned int, fd) __field_hex(struct __old_kernel_stat *, statbuf)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(statbuf, statbuf)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field(unsigned int, fd)) sc_inout(__field_hex(struct __old_kernel_stat *, statbuf))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(fd, fd)) sc_inout(tp_assign(statbuf, statbuf))),
 	TP_printk()
 )
 #endif
@@ -265,8 +265,8 @@ SC_TRACE_EVENT(sys_fstat,
 SC_TRACE_EVENT(sys_utime,
 	TP_PROTO(sc_exit(long ret,) char * filename, struct utimbuf * times),
 	TP_ARGS(sc_exit(ret,) filename, times),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename) __field_hex(struct utimbuf *, times)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename) tp_assign(times, times)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(filename, filename)) sc_in(__field_hex(struct utimbuf *, times))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(filename, filename)) sc_in(tp_assign(times, times))),
 	TP_printk()
 )
 #endif
@@ -274,8 +274,8 @@ SC_TRACE_EVENT(sys_utime,
 SC_TRACE_EVENT(sys_access,
 	TP_PROTO(sc_exit(long ret,) const char * filename, int mode),
 	TP_ARGS(sc_exit(ret,) filename, mode),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename) __field(int, mode)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename) tp_assign(mode, mode)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(filename, filename)) sc_in(__field(int, mode))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(filename, filename)) sc_in(tp_assign(mode, mode))),
 	TP_printk()
 )
 #endif
@@ -283,8 +283,8 @@ SC_TRACE_EVENT(sys_access,
 SC_TRACE_EVENT(sys_rename,
 	TP_PROTO(sc_exit(long ret,) const char * oldname, const char * newname),
 	TP_ARGS(sc_exit(ret,) oldname, newname),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(oldname, oldname) __string_from_user(newname, newname)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(oldname, oldname) tp_copy_string_from_user(newname, newname)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(oldname, oldname)) sc_in(__string_from_user(newname, newname))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(oldname, oldname)) sc_in(tp_copy_string_from_user(newname, newname))),
 	TP_printk()
 )
 #endif
@@ -292,8 +292,8 @@ SC_TRACE_EVENT(sys_rename,
 SC_TRACE_EVENT(sys_mkdir,
 	TP_PROTO(sc_exit(long ret,) const char * pathname, int mode),
 	TP_ARGS(sc_exit(ret,) pathname, mode),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(pathname, pathname) __field(int, mode)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(pathname, pathname) tp_assign(mode, mode)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(pathname, pathname)) sc_in(__field(int, mode))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(pathname, pathname)) sc_in(tp_assign(mode, mode))),
 	TP_printk()
 )
 #endif
@@ -301,8 +301,8 @@ SC_TRACE_EVENT(sys_mkdir,
 SC_TRACE_EVENT(sys_umount,
 	TP_PROTO(sc_exit(long ret,) char * name, int flags),
 	TP_ARGS(sc_exit(ret,) name, flags),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(name, name) __field(int, flags)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(name, name) tp_assign(flags, flags)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(name, name)) sc_in(__field(int, flags))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(name, name)) sc_in(tp_assign(flags, flags))),
 	TP_printk()
 )
 #endif
@@ -310,8 +310,8 @@ SC_TRACE_EVENT(sys_umount,
 SC_TRACE_EVENT(sys_ustat,
 	TP_PROTO(sc_exit(long ret,) unsigned dev, struct ustat * ubuf),
 	TP_ARGS(sc_exit(ret,) dev, ubuf),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned, dev) __field_hex(struct ustat *, ubuf)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(dev, dev) tp_assign(ubuf, ubuf)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned, dev)) sc_out(__field_hex(struct ustat *, ubuf))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(dev, dev)) sc_out(tp_assign(ubuf, ubuf))),
 	TP_printk()
 )
 #endif
@@ -319,8 +319,8 @@ SC_TRACE_EVENT(sys_ustat,
 SC_TRACE_EVENT(sys_sethostname,
 	TP_PROTO(sc_exit(long ret,) char * name, int len),
 	TP_ARGS(sc_exit(ret,) name, len),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(name, name) __field(int, len)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(name, name) tp_assign(len, len)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(name, name)) sc_in(__field(int, len))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(name, name)) sc_in(tp_assign(len, len))),
 	TP_printk()
 )
 #endif
@@ -328,8 +328,8 @@ SC_TRACE_EVENT(sys_sethostname,
 SC_TRACE_EVENT(sys_setrlimit,
 	TP_PROTO(sc_exit(long ret,) unsigned int resource, struct rlimit * rlim),
 	TP_ARGS(sc_exit(ret,) resource, rlim),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned int, resource) __field_hex(struct rlimit *, rlim)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(resource, resource) tp_assign(rlim, rlim)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, resource)) sc_in(__field_hex(struct rlimit *, rlim))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(resource, resource)) sc_in(tp_assign(rlim, rlim))),
 	TP_printk()
 )
 #endif
@@ -337,8 +337,8 @@ SC_TRACE_EVENT(sys_setrlimit,
 SC_TRACE_EVENT(sys_old_getrlimit,
 	TP_PROTO(sc_exit(long ret,) unsigned int resource, struct rlimit * rlim),
 	TP_ARGS(sc_exit(ret,) resource, rlim),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned int, resource) __field_hex(struct rlimit *, rlim)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(resource, resource) tp_assign(rlim, rlim)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field(unsigned int, resource)) sc_inout(__field_hex(struct rlimit *, rlim))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(resource, resource)) sc_inout(tp_assign(rlim, rlim))),
 	TP_printk()
 )
 #endif
@@ -346,8 +346,8 @@ SC_TRACE_EVENT(sys_old_getrlimit,
 SC_TRACE_EVENT(sys_getrusage,
 	TP_PROTO(sc_exit(long ret,) int who, struct rusage * ru),
 	TP_ARGS(sc_exit(ret,) who, ru),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, who) __field_hex(struct rusage *, ru)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(who, who) tp_assign(ru, ru)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, who)) sc_out(__field_hex(struct rusage *, ru))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(who, who)) sc_out(tp_assign(ru, ru))),
 	TP_printk()
 )
 #endif
@@ -355,8 +355,8 @@ SC_TRACE_EVENT(sys_getrusage,
 SC_TRACE_EVENT(sys_gettimeofday,
 	TP_PROTO(sc_exit(long ret,) struct timeval * tv, struct timezone * tz),
 	TP_ARGS(sc_exit(ret,) tv, tz),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(struct timeval *, tv) __field_hex(struct timezone *, tz)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(tv, tv) tp_assign(tz, tz)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_out(__field_hex(struct timeval *, tv)) sc_out(__field_hex(struct timezone *, tz))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_out(tp_assign(tv, tv)) sc_out(tp_assign(tz, tz))),
 	TP_printk()
 )
 #endif
@@ -364,8 +364,8 @@ SC_TRACE_EVENT(sys_gettimeofday,
 SC_TRACE_EVENT(sys_settimeofday,
 	TP_PROTO(sc_exit(long ret,) struct timeval * tv, struct timezone * tz),
 	TP_ARGS(sc_exit(ret,) tv, tz),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(struct timeval *, tv) __field_hex(struct timezone *, tz)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(tv, tv) tp_assign(tz, tz)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field_hex(struct timeval *, tv)) sc_in(__field_hex(struct timezone *, tz))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(tv, tv)) sc_in(tp_assign(tz, tz))),
 	TP_printk()
 )
 #endif
@@ -373,8 +373,8 @@ SC_TRACE_EVENT(sys_settimeofday,
 SC_TRACE_EVENT(sys_getgroups16,
 	TP_PROTO(sc_exit(long ret,) int gidsetsize, old_gid_t * grouplist),
 	TP_ARGS(sc_exit(ret,) gidsetsize, grouplist),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, gidsetsize) __field_hex(old_gid_t *, grouplist)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(gidsetsize, gidsetsize) tp_assign(grouplist, grouplist)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field(int, gidsetsize)) sc_inout(__field_hex(old_gid_t *, grouplist))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(gidsetsize, gidsetsize)) sc_inout(tp_assign(grouplist, grouplist))),
 	TP_printk()
 )
 #endif
@@ -382,8 +382,8 @@ SC_TRACE_EVENT(sys_getgroups16,
 SC_TRACE_EVENT(sys_setgroups16,
 	TP_PROTO(sc_exit(long ret,) int gidsetsize, old_gid_t * grouplist),
 	TP_ARGS(sc_exit(ret,) gidsetsize, grouplist),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, gidsetsize) __field_hex(old_gid_t *, grouplist)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(gidsetsize, gidsetsize) tp_assign(grouplist, grouplist)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field(int, gidsetsize)) sc_inout(__field_hex(old_gid_t *, grouplist))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(gidsetsize, gidsetsize)) sc_inout(tp_assign(grouplist, grouplist))),
 	TP_printk()
 )
 #endif
@@ -391,8 +391,8 @@ SC_TRACE_EVENT(sys_setgroups16,
 SC_TRACE_EVENT(sys_symlink,
 	TP_PROTO(sc_exit(long ret,) const char * oldname, const char * newname),
 	TP_ARGS(sc_exit(ret,) oldname, newname),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(oldname, oldname) __string_from_user(newname, newname)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(oldname, oldname) tp_copy_string_from_user(newname, newname)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(oldname, oldname)) sc_in(__string_from_user(newname, newname))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(oldname, oldname)) sc_in(tp_copy_string_from_user(newname, newname))),
 	TP_printk()
 )
 #endif
@@ -400,8 +400,8 @@ SC_TRACE_EVENT(sys_symlink,
 SC_TRACE_EVENT(sys_lstat,
 	TP_PROTO(sc_exit(long ret,) const char * filename, struct __old_kernel_stat * statbuf),
 	TP_ARGS(sc_exit(ret,) filename, statbuf),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename) __field_hex(struct __old_kernel_stat *, statbuf)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename) tp_assign(statbuf, statbuf)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__string_from_user(filename, filename)) sc_inout(__field_hex(struct __old_kernel_stat *, statbuf))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_copy_string_from_user(filename, filename)) sc_inout(tp_assign(statbuf, statbuf))),
 	TP_printk()
 )
 #endif
@@ -409,8 +409,8 @@ SC_TRACE_EVENT(sys_lstat,
 SC_TRACE_EVENT(sys_swapon,
 	TP_PROTO(sc_exit(long ret,) const char * specialfile, int swap_flags),
 	TP_ARGS(sc_exit(ret,) specialfile, swap_flags),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(specialfile, specialfile) __field(int, swap_flags)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(specialfile, specialfile) tp_assign(swap_flags, swap_flags)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(specialfile, specialfile)) sc_in(__field(int, swap_flags))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(specialfile, specialfile)) sc_in(tp_assign(swap_flags, swap_flags))),
 	TP_printk()
 )
 #endif
@@ -418,8 +418,8 @@ SC_TRACE_EVENT(sys_swapon,
 SC_TRACE_EVENT(sys_truncate,
 	TP_PROTO(sc_exit(long ret,) const char * path, long length),
 	TP_ARGS(sc_exit(ret,) path, length),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(path, path) __field(long, length)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(path, path) tp_assign(length, length)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(path, path)) sc_in(__field(long, length))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(path, path)) sc_in(tp_assign(length, length))),
 	TP_printk()
 )
 #endif
@@ -427,8 +427,8 @@ SC_TRACE_EVENT(sys_truncate,
 SC_TRACE_EVENT(sys_statfs,
 	TP_PROTO(sc_exit(long ret,) const char * pathname, struct statfs * buf),
 	TP_ARGS(sc_exit(ret,) pathname, buf),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(pathname, pathname) __field_hex(struct statfs *, buf)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(pathname, pathname) tp_assign(buf, buf)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(pathname, pathname)) sc_out(__field_hex(struct statfs *, buf))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(pathname, pathname)) sc_out(tp_assign(buf, buf))),
 	TP_printk()
 )
 #endif
@@ -436,8 +436,8 @@ SC_TRACE_EVENT(sys_statfs,
 SC_TRACE_EVENT(sys_fstatfs,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, struct statfs * buf),
 	TP_ARGS(sc_exit(ret,) fd, buf),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned int, fd) __field_hex(struct statfs *, buf)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(buf, buf)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fd)) sc_out(__field_hex(struct statfs *, buf))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_out(tp_assign(buf, buf))),
 	TP_printk()
 )
 #endif
@@ -445,8 +445,8 @@ SC_TRACE_EVENT(sys_fstatfs,
 SC_TRACE_EVENT(sys_socketcall,
 	TP_PROTO(sc_exit(long ret,) int call, unsigned long * args),
 	TP_ARGS(sc_exit(ret,) call, args),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, call) __field_hex(unsigned long *, args)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(call, call) tp_assign(args, args)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field(int, call)) sc_inout(__field_hex(unsigned long *, args))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(call, call)) sc_inout(tp_assign(args, args))),
 	TP_printk()
 )
 #endif
@@ -454,8 +454,8 @@ SC_TRACE_EVENT(sys_socketcall,
 SC_TRACE_EVENT(sys_getitimer,
 	TP_PROTO(sc_exit(long ret,) int which, struct itimerval * value),
 	TP_ARGS(sc_exit(ret,) which, value),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, which) __field_hex(struct itimerval *, value)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(which, which) tp_assign(value, value)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, which)) sc_out(__field_hex(struct itimerval *, value))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(which, which)) sc_out(tp_assign(value, value))),
 	TP_printk()
 )
 #endif
@@ -463,8 +463,8 @@ SC_TRACE_EVENT(sys_getitimer,
 SC_TRACE_EVENT(sys_newstat,
 	TP_PROTO(sc_exit(long ret,) const char * filename, struct stat * statbuf),
 	TP_ARGS(sc_exit(ret,) filename, statbuf),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename) __field_hex(struct stat *, statbuf)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename) tp_assign(statbuf, statbuf)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(filename, filename)) sc_out(__field_hex(struct stat *, statbuf))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(filename, filename)) sc_out(tp_assign(statbuf, statbuf))),
 	TP_printk()
 )
 #endif
@@ -472,8 +472,8 @@ SC_TRACE_EVENT(sys_newstat,
 SC_TRACE_EVENT(sys_newlstat,
 	TP_PROTO(sc_exit(long ret,) const char * filename, struct stat * statbuf),
 	TP_ARGS(sc_exit(ret,) filename, statbuf),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename) __field_hex(struct stat *, statbuf)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename) tp_assign(statbuf, statbuf)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(filename, filename)) sc_out(__field_hex(struct stat *, statbuf))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(filename, filename)) sc_out(tp_assign(statbuf, statbuf))),
 	TP_printk()
 )
 #endif
@@ -481,8 +481,8 @@ SC_TRACE_EVENT(sys_newlstat,
 SC_TRACE_EVENT(sys_newfstat,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, struct stat * statbuf),
 	TP_ARGS(sc_exit(ret,) fd, statbuf),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned int, fd) __field_hex(struct stat *, statbuf)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(statbuf, statbuf)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fd)) sc_out(__field_hex(struct stat *, statbuf))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_out(tp_assign(statbuf, statbuf))),
 	TP_printk()
 )
 #endif
@@ -490,8 +490,8 @@ SC_TRACE_EVENT(sys_newfstat,
 SC_TRACE_EVENT(sys_setdomainname,
 	TP_PROTO(sc_exit(long ret,) char * name, int len),
 	TP_ARGS(sc_exit(ret,) name, len),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(name, name) __field(int, len)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(name, name) tp_assign(len, len)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(name, name)) sc_in(__field(int, len))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(name, name)) sc_in(tp_assign(len, len))),
 	TP_printk()
 )
 #endif
@@ -499,8 +499,8 @@ SC_TRACE_EVENT(sys_setdomainname,
 SC_TRACE_EVENT(sys_delete_module,
 	TP_PROTO(sc_exit(long ret,) const char * name_user, unsigned int flags),
 	TP_ARGS(sc_exit(ret,) name_user, flags),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(name_user, name_user) __field(unsigned int, flags)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(name_user, name_user) tp_assign(flags, flags)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(name_user, name_user)) sc_in(__field(unsigned int, flags))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(name_user, name_user)) sc_in(tp_assign(flags, flags))),
 	TP_printk()
 )
 #endif
@@ -508,8 +508,8 @@ SC_TRACE_EVENT(sys_delete_module,
 SC_TRACE_EVENT(sys_sched_setparam,
 	TP_PROTO(sc_exit(long ret,) pid_t pid, struct sched_param * param),
 	TP_ARGS(sc_exit(ret,) pid, param),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(pid_t, pid) __field_hex(struct sched_param *, param)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(pid, pid) tp_assign(param, param)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(pid_t, pid)) sc_in(__field_hex(struct sched_param *, param))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(pid, pid)) sc_in(tp_assign(param, param))),
 	TP_printk()
 )
 #endif
@@ -517,8 +517,8 @@ SC_TRACE_EVENT(sys_sched_setparam,
 SC_TRACE_EVENT(sys_sched_getparam,
 	TP_PROTO(sc_exit(long ret,) pid_t pid, struct sched_param * param),
 	TP_ARGS(sc_exit(ret,) pid, param),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(pid_t, pid) __field_hex(struct sched_param *, param)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(pid, pid) tp_assign(param, param)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(pid_t, pid)) sc_out(__field_hex(struct sched_param *, param))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(pid, pid)) sc_out(tp_assign(param, param))),
 	TP_printk()
 )
 #endif
@@ -526,8 +526,8 @@ SC_TRACE_EVENT(sys_sched_getparam,
 SC_TRACE_EVENT(sys_sched_rr_get_interval,
 	TP_PROTO(sc_exit(long ret,) pid_t pid, struct timespec * interval),
 	TP_ARGS(sc_exit(ret,) pid, interval),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(pid_t, pid) __field_hex(struct timespec *, interval)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(pid, pid) tp_assign(interval, interval)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(pid_t, pid)) sc_out(__field_hex(struct timespec *, interval))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(pid, pid)) sc_out(tp_assign(interval, interval))),
 	TP_printk()
 )
 #endif
@@ -535,8 +535,8 @@ SC_TRACE_EVENT(sys_sched_rr_get_interval,
 SC_TRACE_EVENT(sys_nanosleep,
 	TP_PROTO(sc_exit(long ret,) struct timespec * rqtp, struct timespec * rmtp),
 	TP_ARGS(sc_exit(ret,) rqtp, rmtp),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(struct timespec *, rqtp) __field_hex(struct timespec *, rmtp)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(rqtp, rqtp) tp_assign(rmtp, rmtp)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field_hex(struct timespec *, rqtp)) sc_out(__field_hex(struct timespec *, rmtp))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(rqtp, rqtp)) sc_out(tp_assign(rmtp, rmtp))),
 	TP_printk()
 )
 #endif
@@ -544,8 +544,8 @@ SC_TRACE_EVENT(sys_nanosleep,
 SC_TRACE_EVENT(sys_rt_sigpending,
 	TP_PROTO(sc_exit(long ret,) sigset_t * set, size_t sigsetsize),
 	TP_ARGS(sc_exit(ret,) set, sigsetsize),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(sigset_t *, set) __field(size_t, sigsetsize)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(set, set) tp_assign(sigsetsize, sigsetsize)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_out(__field_hex(sigset_t *, set)) sc_in(__field(size_t, sigsetsize))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_out(tp_assign(set, set)) sc_in(tp_assign(sigsetsize, sigsetsize))),
 	TP_printk()
 )
 #endif
@@ -553,8 +553,8 @@ SC_TRACE_EVENT(sys_rt_sigpending,
 SC_TRACE_EVENT(sys_rt_sigsuspend,
 	TP_PROTO(sc_exit(long ret,) sigset_t * unewset, size_t sigsetsize),
 	TP_ARGS(sc_exit(ret,) unewset, sigsetsize),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(sigset_t *, unewset) __field(size_t, sigsetsize)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(unewset, unewset) tp_assign(sigsetsize, sigsetsize)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field_hex(sigset_t *, unewset)) sc_in(__field(size_t, sigsetsize))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(unewset, unewset)) sc_in(tp_assign(sigsetsize, sigsetsize))),
 	TP_printk()
 )
 #endif
@@ -562,8 +562,8 @@ SC_TRACE_EVENT(sys_rt_sigsuspend,
 SC_TRACE_EVENT(sys_getcwd,
 	TP_PROTO(sc_exit(long ret,) char * buf, unsigned long size),
 	TP_ARGS(sc_exit(ret,) buf, size),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(char *, buf) __field(unsigned long, size)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(buf, buf) tp_assign(size, size)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_out(__field_hex(char *, buf)) sc_in(__field(unsigned long, size))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_out(tp_assign(buf, buf)) sc_in(tp_assign(size, size))),
 	TP_printk()
 )
 #endif
@@ -571,8 +571,8 @@ SC_TRACE_EVENT(sys_getcwd,
 SC_TRACE_EVENT(sys_getrlimit,
 	TP_PROTO(sc_exit(long ret,) unsigned int resource, struct rlimit * rlim),
 	TP_ARGS(sc_exit(ret,) resource, rlim),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned int, resource) __field_hex(struct rlimit *, rlim)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(resource, resource) tp_assign(rlim, rlim)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, resource)) sc_out(__field_hex(struct rlimit *, rlim))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(resource, resource)) sc_out(tp_assign(rlim, rlim))),
 	TP_printk()
 )
 #endif
@@ -580,8 +580,8 @@ SC_TRACE_EVENT(sys_getrlimit,
 SC_TRACE_EVENT(sys_stat64,
 	TP_PROTO(sc_exit(long ret,) const char * filename, struct stat64 * statbuf),
 	TP_ARGS(sc_exit(ret,) filename, statbuf),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename) __field_hex(struct stat64 *, statbuf)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename) tp_assign(statbuf, statbuf)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__string_from_user(filename, filename)) sc_inout(__field_hex(struct stat64 *, statbuf))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_copy_string_from_user(filename, filename)) sc_inout(tp_assign(statbuf, statbuf))),
 	TP_printk()
 )
 #endif
@@ -589,8 +589,8 @@ SC_TRACE_EVENT(sys_stat64,
 SC_TRACE_EVENT(sys_lstat64,
 	TP_PROTO(sc_exit(long ret,) const char * filename, struct stat64 * statbuf),
 	TP_ARGS(sc_exit(ret,) filename, statbuf),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename) __field_hex(struct stat64 *, statbuf)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename) tp_assign(statbuf, statbuf)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__string_from_user(filename, filename)) sc_inout(__field_hex(struct stat64 *, statbuf))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_copy_string_from_user(filename, filename)) sc_inout(tp_assign(statbuf, statbuf))),
 	TP_printk()
 )
 #endif
@@ -598,8 +598,8 @@ SC_TRACE_EVENT(sys_lstat64,
 SC_TRACE_EVENT(sys_fstat64,
 	TP_PROTO(sc_exit(long ret,) unsigned long fd, struct stat64 * statbuf),
 	TP_ARGS(sc_exit(ret,) fd, statbuf),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned long, fd) __field_hex(struct stat64 *, statbuf)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(statbuf, statbuf)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field(unsigned long, fd)) sc_inout(__field_hex(struct stat64 *, statbuf))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(fd, fd)) sc_inout(tp_assign(statbuf, statbuf))),
 	TP_printk()
 )
 #endif
@@ -607,8 +607,8 @@ SC_TRACE_EVENT(sys_fstat64,
 SC_TRACE_EVENT(sys_getgroups,
 	TP_PROTO(sc_exit(long ret,) int gidsetsize, gid_t * grouplist),
 	TP_ARGS(sc_exit(ret,) gidsetsize, grouplist),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, gidsetsize) __field_hex(gid_t *, grouplist)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(gidsetsize, gidsetsize) tp_assign(grouplist, grouplist)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, gidsetsize)) sc_out(__field_hex(gid_t *, grouplist))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(gidsetsize, gidsetsize)) sc_out(tp_assign(grouplist, grouplist))),
 	TP_printk()
 )
 #endif
@@ -616,8 +616,8 @@ SC_TRACE_EVENT(sys_getgroups,
 SC_TRACE_EVENT(sys_setgroups,
 	TP_PROTO(sc_exit(long ret,) int gidsetsize, gid_t * grouplist),
 	TP_ARGS(sc_exit(ret,) gidsetsize, grouplist),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, gidsetsize) __field_hex(gid_t *, grouplist)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(gidsetsize, gidsetsize) tp_assign(grouplist, grouplist)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, gidsetsize)) sc_in(__field_hex(gid_t *, grouplist))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(gidsetsize, gidsetsize)) sc_in(tp_assign(grouplist, grouplist))),
 	TP_printk()
 )
 #endif
@@ -625,8 +625,8 @@ SC_TRACE_EVENT(sys_setgroups,
 SC_TRACE_EVENT(sys_pivot_root,
 	TP_PROTO(sc_exit(long ret,) const char * new_root, const char * put_old),
 	TP_ARGS(sc_exit(ret,) new_root, put_old),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(new_root, new_root) __string_from_user(put_old, put_old)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(new_root, new_root) tp_copy_string_from_user(put_old, put_old)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(new_root, new_root)) sc_in(__string_from_user(put_old, put_old))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(new_root, new_root)) sc_in(tp_copy_string_from_user(put_old, put_old))),
 	TP_printk()
 )
 #endif
@@ -634,8 +634,8 @@ SC_TRACE_EVENT(sys_pivot_root,
 SC_TRACE_EVENT(sys_removexattr,
 	TP_PROTO(sc_exit(long ret,) const char * pathname, const char * name),
 	TP_ARGS(sc_exit(ret,) pathname, name),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(pathname, pathname) __string_from_user(name, name)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(pathname, pathname) tp_copy_string_from_user(name, name)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(pathname, pathname)) sc_in(__string_from_user(name, name))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(pathname, pathname)) sc_in(tp_copy_string_from_user(name, name))),
 	TP_printk()
 )
 #endif
@@ -643,8 +643,8 @@ SC_TRACE_EVENT(sys_removexattr,
 SC_TRACE_EVENT(sys_lremovexattr,
 	TP_PROTO(sc_exit(long ret,) const char * pathname, const char * name),
 	TP_ARGS(sc_exit(ret,) pathname, name),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(pathname, pathname) __string_from_user(name, name)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(pathname, pathname) tp_copy_string_from_user(name, name)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(pathname, pathname)) sc_in(__string_from_user(name, name))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(pathname, pathname)) sc_in(tp_copy_string_from_user(name, name))),
 	TP_printk()
 )
 #endif
@@ -652,8 +652,8 @@ SC_TRACE_EVENT(sys_lremovexattr,
 SC_TRACE_EVENT(sys_fremovexattr,
 	TP_PROTO(sc_exit(long ret,) int fd, const char * name),
 	TP_ARGS(sc_exit(ret,) fd, name),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, fd) __string_from_user(name, name)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_copy_string_from_user(name, name)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd)) sc_in(__string_from_user(name, name))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_in(tp_copy_string_from_user(name, name))),
 	TP_printk()
 )
 #endif
@@ -661,8 +661,8 @@ SC_TRACE_EVENT(sys_fremovexattr,
 SC_TRACE_EVENT(sys_io_setup,
 	TP_PROTO(sc_exit(long ret,) unsigned nr_events, aio_context_t * ctxp),
 	TP_ARGS(sc_exit(ret,) nr_events, ctxp),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned, nr_events) __field_hex(aio_context_t *, ctxp)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(nr_events, nr_events) tp_assign(ctxp, ctxp)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned, nr_events)) sc_in(__field_hex(aio_context_t *, ctxp))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(nr_events, nr_events)) sc_in(tp_assign(ctxp, ctxp))),
 	TP_printk()
 )
 #endif
@@ -670,8 +670,8 @@ SC_TRACE_EVENT(sys_io_setup,
 SC_TRACE_EVENT(sys_timer_gettime,
 	TP_PROTO(sc_exit(long ret,) timer_t timer_id, struct itimerspec * setting),
 	TP_ARGS(sc_exit(ret,) timer_id, setting),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(timer_t, timer_id) __field_hex(struct itimerspec *, setting)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(timer_id, timer_id) tp_assign(setting, setting)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(timer_t, timer_id)) sc_out(__field_hex(struct itimerspec *, setting))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(timer_id, timer_id)) sc_out(tp_assign(setting, setting))),
 	TP_printk()
 )
 #endif
@@ -679,8 +679,8 @@ SC_TRACE_EVENT(sys_timer_gettime,
 SC_TRACE_EVENT(sys_clock_settime,
 	TP_PROTO(sc_exit(long ret,) const clockid_t which_clock, const struct timespec * tp),
 	TP_ARGS(sc_exit(ret,) which_clock, tp),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(const clockid_t, which_clock) __field_hex(const struct timespec *, tp)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(which_clock, which_clock) tp_assign(tp, tp)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(const clockid_t, which_clock)) sc_in(__field_hex(const struct timespec *, tp))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(which_clock, which_clock)) sc_in(tp_assign(tp, tp))),
 	TP_printk()
 )
 #endif
@@ -688,8 +688,8 @@ SC_TRACE_EVENT(sys_clock_settime,
 SC_TRACE_EVENT(sys_clock_gettime,
 	TP_PROTO(sc_exit(long ret,) const clockid_t which_clock, struct timespec * tp),
 	TP_ARGS(sc_exit(ret,) which_clock, tp),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(const clockid_t, which_clock) __field_hex(struct timespec *, tp)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(which_clock, which_clock) tp_assign(tp, tp)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(const clockid_t, which_clock)) sc_out(__field_hex(struct timespec *, tp))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(which_clock, which_clock)) sc_out(tp_assign(tp, tp))),
 	TP_printk()
 )
 #endif
@@ -697,8 +697,8 @@ SC_TRACE_EVENT(sys_clock_gettime,
 SC_TRACE_EVENT(sys_clock_getres,
 	TP_PROTO(sc_exit(long ret,) const clockid_t which_clock, struct timespec * tp),
 	TP_ARGS(sc_exit(ret,) which_clock, tp),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(const clockid_t, which_clock) __field_hex(struct timespec *, tp)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(which_clock, which_clock) tp_assign(tp, tp)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(const clockid_t, which_clock)) sc_out(__field_hex(struct timespec *, tp))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(which_clock, which_clock)) sc_out(tp_assign(tp, tp))),
 	TP_printk()
 )
 #endif
@@ -706,8 +706,8 @@ SC_TRACE_EVENT(sys_clock_getres,
 SC_TRACE_EVENT(sys_utimes,
 	TP_PROTO(sc_exit(long ret,) char * filename, struct timeval * utimes),
 	TP_ARGS(sc_exit(ret,) filename, utimes),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename) __field_hex(struct timeval *, utimes)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename) tp_assign(utimes, utimes)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(filename, filename)) sc_in(__field_hex(struct timeval *, utimes))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(filename, filename)) sc_in(tp_assign(utimes, utimes))),
 	TP_printk()
 )
 #endif
@@ -715,8 +715,8 @@ SC_TRACE_EVENT(sys_utimes,
 SC_TRACE_EVENT(sys_mq_notify,
 	TP_PROTO(sc_exit(long ret,) mqd_t mqdes, const struct sigevent * u_notification),
 	TP_ARGS(sc_exit(ret,) mqdes, u_notification),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(mqd_t, mqdes) __field_hex(const struct sigevent *, u_notification)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(mqdes, mqdes) tp_assign(u_notification, u_notification)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(mqd_t, mqdes)) sc_in(__field_hex(const struct sigevent *, u_notification))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(mqdes, mqdes)) sc_in(tp_assign(u_notification, u_notification))),
 	TP_printk()
 )
 #endif
@@ -724,8 +724,8 @@ SC_TRACE_EVENT(sys_mq_notify,
 SC_TRACE_EVENT(sys_set_robust_list,
 	TP_PROTO(sc_exit(long ret,) struct robust_list_head * head, size_t len),
 	TP_ARGS(sc_exit(ret,) head, len),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(struct robust_list_head *, head) __field(size_t, len)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(head, head) tp_assign(len, len)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field_hex(struct robust_list_head *, head)) sc_in(__field(size_t, len))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(head, head)) sc_in(tp_assign(len, len))),
 	TP_printk()
 )
 #endif
@@ -733,8 +733,8 @@ SC_TRACE_EVENT(sys_set_robust_list,
 SC_TRACE_EVENT(sys_timerfd_gettime,
 	TP_PROTO(sc_exit(long ret,) int ufd, struct itimerspec * otmr),
 	TP_ARGS(sc_exit(ret,) ufd, otmr),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, ufd) __field_hex(struct itimerspec *, otmr)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(ufd, ufd) tp_assign(otmr, otmr)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, ufd)) sc_out(__field_hex(struct itimerspec *, otmr))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(ufd, ufd)) sc_out(tp_assign(otmr, otmr))),
 	TP_printk()
 )
 #endif
@@ -742,8 +742,8 @@ SC_TRACE_EVENT(sys_timerfd_gettime,
 SC_TRACE_EVENT(sys_pipe2,
 	TP_PROTO(sc_exit(long ret,) int * fildes, int flags),
 	TP_ARGS(sc_exit(ret,) fildes, flags),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(int *, fildes) __field(int, flags)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fildes, fildes) tp_assign(flags, flags)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_out(__field_hex(int *, fildes)) sc_in(__field(int, flags))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_out(tp_assign(fildes, fildes)) sc_in(tp_assign(flags, flags))),
 	TP_printk()
 )
 #endif
@@ -751,8 +751,8 @@ SC_TRACE_EVENT(sys_pipe2,
 SC_TRACE_EVENT(sys_clock_adjtime,
 	TP_PROTO(sc_exit(long ret,) const clockid_t which_clock, struct timex * utx),
 	TP_ARGS(sc_exit(ret,) which_clock, utx),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(const clockid_t, which_clock) __field_hex(struct timex *, utx)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(which_clock, which_clock) tp_assign(utx, utx)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(const clockid_t, which_clock)) sc_inout(__field_hex(struct timex *, utx))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(which_clock, which_clock)) sc_inout(tp_assign(utx, utx))),
 	TP_printk()
 )
 #endif
@@ -760,8 +760,8 @@ SC_TRACE_EVENT(sys_clock_adjtime,
 SC_TRACE_EVENT(sys_read,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, char * buf, size_t count),
 	TP_ARGS(sc_exit(ret,) fd, buf, count),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned int, fd) __field_hex(char *, buf) __field(size_t, count)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(buf, buf) tp_assign(count, count)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fd)) sc_out(__field_hex(char *, buf)) sc_in(__field(size_t, count))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_out(tp_assign(buf, buf)) sc_in(tp_assign(count, count))),
 	TP_printk()
 )
 #endif
@@ -769,8 +769,8 @@ SC_TRACE_EVENT(sys_read,
 SC_TRACE_EVENT(sys_write,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, const char * buf, size_t count),
 	TP_ARGS(sc_exit(ret,) fd, buf, count),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned int, fd) __field_hex(const char *, buf) __field(size_t, count)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(buf, buf) tp_assign(count, count)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fd)) sc_in(__field_hex(const char *, buf)) sc_in(__field(size_t, count))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_in(tp_assign(buf, buf)) sc_in(tp_assign(count, count))),
 	TP_printk()
 )
 #endif
@@ -778,8 +778,8 @@ SC_TRACE_EVENT(sys_write,
 SC_TRACE_EVENT(sys_open,
 	TP_PROTO(sc_exit(long ret,) const char * filename, int flags, int mode),
 	TP_ARGS(sc_exit(ret,) filename, flags, mode),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename) __field(int, flags) __field(int, mode)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename) tp_assign(flags, flags) tp_assign(mode, mode)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(filename, filename)) sc_in(__field(int, flags)) sc_in(__field(int, mode))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(filename, filename)) sc_in(tp_assign(flags, flags)) sc_in(tp_assign(mode, mode))),
 	TP_printk()
 )
 #endif
@@ -787,8 +787,8 @@ SC_TRACE_EVENT(sys_open,
 SC_TRACE_EVENT(sys_waitpid,
 	TP_PROTO(sc_exit(long ret,) pid_t pid, int * stat_addr, int options),
 	TP_ARGS(sc_exit(ret,) pid, stat_addr, options),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(pid_t, pid) __field_hex(int *, stat_addr) __field(int, options)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(pid, pid) tp_assign(stat_addr, stat_addr) tp_assign(options, options)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field(pid_t, pid)) sc_inout(__field_hex(int *, stat_addr)) sc_inout(__field(int, options))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(pid, pid)) sc_inout(tp_assign(stat_addr, stat_addr)) sc_inout(tp_assign(options, options))),
 	TP_printk()
 )
 #endif
@@ -796,8 +796,8 @@ SC_TRACE_EVENT(sys_waitpid,
 SC_TRACE_EVENT(sys_mknod,
 	TP_PROTO(sc_exit(long ret,) const char * filename, int mode, unsigned dev),
 	TP_ARGS(sc_exit(ret,) filename, mode, dev),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename) __field(int, mode) __field(unsigned, dev)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename) tp_assign(mode, mode) tp_assign(dev, dev)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(filename, filename)) sc_in(__field(int, mode)) sc_in(__field(unsigned, dev))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(filename, filename)) sc_in(tp_assign(mode, mode)) sc_in(tp_assign(dev, dev))),
 	TP_printk()
 )
 #endif
@@ -805,8 +805,8 @@ SC_TRACE_EVENT(sys_mknod,
 SC_TRACE_EVENT(sys_lchown16,
 	TP_PROTO(sc_exit(long ret,) const char * filename, old_uid_t user, old_gid_t group),
 	TP_ARGS(sc_exit(ret,) filename, user, group),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename) __field(old_uid_t, user) __field(old_gid_t, group)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename) tp_assign(user, user) tp_assign(group, group)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__string_from_user(filename, filename)) sc_inout(__field(old_uid_t, user)) sc_inout(__field(old_gid_t, group))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_copy_string_from_user(filename, filename)) sc_inout(tp_assign(user, user)) sc_inout(tp_assign(group, group))),
 	TP_printk()
 )
 #endif
@@ -814,8 +814,8 @@ SC_TRACE_EVENT(sys_lchown16,
 SC_TRACE_EVENT(sys_readlink,
 	TP_PROTO(sc_exit(long ret,) const char * path, char * buf, int bufsiz),
 	TP_ARGS(sc_exit(ret,) path, buf, bufsiz),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(path, path) __field_hex(char *, buf) __field(int, bufsiz)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(path, path) tp_assign(buf, buf) tp_assign(bufsiz, bufsiz)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(path, path)) sc_out(__field_hex(char *, buf)) sc_in(__field(int, bufsiz))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(path, path)) sc_out(tp_assign(buf, buf)) sc_in(tp_assign(bufsiz, bufsiz))),
 	TP_printk()
 )
 #endif
@@ -823,8 +823,8 @@ SC_TRACE_EVENT(sys_readlink,
 SC_TRACE_EVENT(sys_old_readdir,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, struct old_linux_dirent * dirent, unsigned int count),
 	TP_ARGS(sc_exit(ret,) fd, dirent, count),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned int, fd) __field_hex(struct old_linux_dirent *, dirent) __field(unsigned int, count)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(dirent, dirent) tp_assign(count, count)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field(unsigned int, fd)) sc_inout(__field_hex(struct old_linux_dirent *, dirent)) sc_inout(__field(unsigned int, count))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(fd, fd)) sc_inout(tp_assign(dirent, dirent)) sc_inout(tp_assign(count, count))),
 	TP_printk()
 )
 #endif
@@ -832,8 +832,8 @@ SC_TRACE_EVENT(sys_old_readdir,
 SC_TRACE_EVENT(sys_syslog,
 	TP_PROTO(sc_exit(long ret,) int type, char * buf, int len),
 	TP_ARGS(sc_exit(ret,) type, buf, len),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, type) __field_hex(char *, buf) __field(int, len)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(type, type) tp_assign(buf, buf) tp_assign(len, len)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, type)) sc_out(__field_hex(char *, buf)) sc_in(__field(int, len))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(type, type)) sc_out(tp_assign(buf, buf)) sc_in(tp_assign(len, len))),
 	TP_printk()
 )
 #endif
@@ -841,8 +841,8 @@ SC_TRACE_EVENT(sys_syslog,
 SC_TRACE_EVENT(sys_setitimer,
 	TP_PROTO(sc_exit(long ret,) int which, struct itimerval * value, struct itimerval * ovalue),
 	TP_ARGS(sc_exit(ret,) which, value, ovalue),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, which) __field_hex(struct itimerval *, value) __field_hex(struct itimerval *, ovalue)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(which, which) tp_assign(value, value) tp_assign(ovalue, ovalue)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, which)) sc_in(__field_hex(struct itimerval *, value)) sc_out(__field_hex(struct itimerval *, ovalue))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(which, which)) sc_in(tp_assign(value, value)) sc_out(tp_assign(ovalue, ovalue))),
 	TP_printk()
 )
 #endif
@@ -850,8 +850,8 @@ SC_TRACE_EVENT(sys_setitimer,
 SC_TRACE_EVENT(sys_sigprocmask,
 	TP_PROTO(sc_exit(long ret,) int how, old_sigset_t * nset, old_sigset_t * oset),
 	TP_ARGS(sc_exit(ret,) how, nset, oset),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, how) __field_hex(old_sigset_t *, nset) __field_hex(old_sigset_t *, oset)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(how, how) tp_assign(nset, nset) tp_assign(oset, oset)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field(int, how)) sc_inout(__field_hex(old_sigset_t *, nset)) sc_inout(__field_hex(old_sigset_t *, oset))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(how, how)) sc_inout(tp_assign(nset, nset)) sc_inout(tp_assign(oset, oset))),
 	TP_printk()
 )
 #endif
@@ -859,8 +859,8 @@ SC_TRACE_EVENT(sys_sigprocmask,
 SC_TRACE_EVENT(sys_init_module,
 	TP_PROTO(sc_exit(long ret,) void * umod, unsigned long len, const char * uargs),
 	TP_ARGS(sc_exit(ret,) umod, len, uargs),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(void *, umod) __field(unsigned long, len) __field_hex(const char *, uargs)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(umod, umod) tp_assign(len, len) tp_assign(uargs, uargs)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field_hex(void *, umod)) sc_in(__field(unsigned long, len)) sc_in(__field_hex(const char *, uargs))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(umod, umod)) sc_in(tp_assign(len, len)) sc_in(tp_assign(uargs, uargs))),
 	TP_printk()
 )
 #endif
@@ -868,8 +868,8 @@ SC_TRACE_EVENT(sys_init_module,
 SC_TRACE_EVENT(sys_getdents,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, struct linux_dirent * dirent, unsigned int count),
 	TP_ARGS(sc_exit(ret,) fd, dirent, count),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned int, fd) __field_hex(struct linux_dirent *, dirent) __field(unsigned int, count)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(dirent, dirent) tp_assign(count, count)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fd)) sc_out(__field_hex(struct linux_dirent *, dirent)) sc_in(__field(unsigned int, count))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_out(tp_assign(dirent, dirent)) sc_in(tp_assign(count, count))),
 	TP_printk()
 )
 #endif
@@ -877,8 +877,8 @@ SC_TRACE_EVENT(sys_getdents,
 SC_TRACE_EVENT(sys_readv,
 	TP_PROTO(sc_exit(long ret,) unsigned long fd, const struct iovec * vec, unsigned long vlen),
 	TP_ARGS(sc_exit(ret,) fd, vec, vlen),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned long, fd) __field_hex(const struct iovec *, vec) __field(unsigned long, vlen)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(vec, vec) tp_assign(vlen, vlen)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned long, fd)) sc_inout(__field_hex(const struct iovec *, vec)) sc_in(__field(unsigned long, vlen))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_inout(tp_assign(vec, vec)) sc_in(tp_assign(vlen, vlen))),
 	TP_printk()
 )
 #endif
@@ -886,8 +886,8 @@ SC_TRACE_EVENT(sys_readv,
 SC_TRACE_EVENT(sys_writev,
 	TP_PROTO(sc_exit(long ret,) unsigned long fd, const struct iovec * vec, unsigned long vlen),
 	TP_ARGS(sc_exit(ret,) fd, vec, vlen),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned long, fd) __field_hex(const struct iovec *, vec) __field(unsigned long, vlen)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(vec, vec) tp_assign(vlen, vlen)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned long, fd)) sc_inout(__field_hex(const struct iovec *, vec)) sc_in(__field(unsigned long, vlen))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_inout(tp_assign(vec, vec)) sc_in(tp_assign(vlen, vlen))),
 	TP_printk()
 )
 #endif
@@ -895,8 +895,8 @@ SC_TRACE_EVENT(sys_writev,
 SC_TRACE_EVENT(sys_sched_setscheduler,
 	TP_PROTO(sc_exit(long ret,) pid_t pid, int policy, struct sched_param * param),
 	TP_ARGS(sc_exit(ret,) pid, policy, param),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(pid_t, pid) __field(int, policy) __field_hex(struct sched_param *, param)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(pid, pid) tp_assign(policy, policy) tp_assign(param, param)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(pid_t, pid)) sc_in(__field(int, policy)) sc_in(__field_hex(struct sched_param *, param))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(pid, pid)) sc_in(tp_assign(policy, policy)) sc_in(tp_assign(param, param))),
 	TP_printk()
 )
 #endif
@@ -904,8 +904,8 @@ SC_TRACE_EVENT(sys_sched_setscheduler,
 SC_TRACE_EVENT(sys_getresuid16,
 	TP_PROTO(sc_exit(long ret,) old_uid_t * ruid, old_uid_t * euid, old_uid_t * suid),
 	TP_ARGS(sc_exit(ret,) ruid, euid, suid),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(old_uid_t *, ruid) __field_hex(old_uid_t *, euid) __field_hex(old_uid_t *, suid)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(ruid, ruid) tp_assign(euid, euid) tp_assign(suid, suid)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field_hex(old_uid_t *, ruid)) sc_inout(__field_hex(old_uid_t *, euid)) sc_inout(__field_hex(old_uid_t *, suid))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(ruid, ruid)) sc_inout(tp_assign(euid, euid)) sc_inout(tp_assign(suid, suid))),
 	TP_printk()
 )
 #endif
@@ -913,8 +913,8 @@ SC_TRACE_EVENT(sys_getresuid16,
 SC_TRACE_EVENT(sys_poll,
 	TP_PROTO(sc_exit(long ret,) struct pollfd * ufds, unsigned int nfds, long timeout_msecs),
 	TP_ARGS(sc_exit(ret,) ufds, nfds, timeout_msecs),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(struct pollfd *, ufds) __field(unsigned int, nfds) __field(long, timeout_msecs)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(ufds, ufds) tp_assign(nfds, nfds) tp_assign(timeout_msecs, timeout_msecs)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field_hex(struct pollfd *, ufds)) sc_in(__field(unsigned int, nfds)) sc_in(__field(long, timeout_msecs))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(ufds, ufds)) sc_in(tp_assign(nfds, nfds)) sc_in(tp_assign(timeout_msecs, timeout_msecs))),
 	TP_printk()
 )
 #endif
@@ -922,8 +922,8 @@ SC_TRACE_EVENT(sys_poll,
 SC_TRACE_EVENT(sys_getresgid16,
 	TP_PROTO(sc_exit(long ret,) old_gid_t * rgid, old_gid_t * egid, old_gid_t * sgid),
 	TP_ARGS(sc_exit(ret,) rgid, egid, sgid),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(old_gid_t *, rgid) __field_hex(old_gid_t *, egid) __field_hex(old_gid_t *, sgid)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(rgid, rgid) tp_assign(egid, egid) tp_assign(sgid, sgid)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field_hex(old_gid_t *, rgid)) sc_inout(__field_hex(old_gid_t *, egid)) sc_inout(__field_hex(old_gid_t *, sgid))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(rgid, rgid)) sc_inout(tp_assign(egid, egid)) sc_inout(tp_assign(sgid, sgid))),
 	TP_printk()
 )
 #endif
@@ -931,8 +931,8 @@ SC_TRACE_EVENT(sys_getresgid16,
 SC_TRACE_EVENT(sys_rt_sigqueueinfo,
 	TP_PROTO(sc_exit(long ret,) pid_t pid, int sig, siginfo_t * uinfo),
 	TP_ARGS(sc_exit(ret,) pid, sig, uinfo),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(pid_t, pid) __field(int, sig) __field_hex(siginfo_t *, uinfo)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(pid, pid) tp_assign(sig, sig) tp_assign(uinfo, uinfo)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(pid_t, pid)) sc_in(__field(int, sig)) sc_in(__field_hex(siginfo_t *, uinfo))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(pid, pid)) sc_in(tp_assign(sig, sig)) sc_in(tp_assign(uinfo, uinfo))),
 	TP_printk()
 )
 #endif
@@ -940,8 +940,8 @@ SC_TRACE_EVENT(sys_rt_sigqueueinfo,
 SC_TRACE_EVENT(sys_chown16,
 	TP_PROTO(sc_exit(long ret,) const char * filename, old_uid_t user, old_gid_t group),
 	TP_ARGS(sc_exit(ret,) filename, user, group),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename) __field(old_uid_t, user) __field(old_gid_t, group)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename) tp_assign(user, user) tp_assign(group, group)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__string_from_user(filename, filename)) sc_inout(__field(old_uid_t, user)) sc_inout(__field(old_gid_t, group))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_copy_string_from_user(filename, filename)) sc_inout(tp_assign(user, user)) sc_inout(tp_assign(group, group))),
 	TP_printk()
 )
 #endif
@@ -949,8 +949,8 @@ SC_TRACE_EVENT(sys_chown16,
 SC_TRACE_EVENT(sys_lchown,
 	TP_PROTO(sc_exit(long ret,) const char * filename, uid_t user, gid_t group),
 	TP_ARGS(sc_exit(ret,) filename, user, group),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename) __field(uid_t, user) __field(gid_t, group)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename) tp_assign(user, user) tp_assign(group, group)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(filename, filename)) sc_in(__field(uid_t, user)) sc_in(__field(gid_t, group))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(filename, filename)) sc_in(tp_assign(user, user)) sc_in(tp_assign(group, group))),
 	TP_printk()
 )
 #endif
@@ -958,8 +958,8 @@ SC_TRACE_EVENT(sys_lchown,
 SC_TRACE_EVENT(sys_getresuid,
 	TP_PROTO(sc_exit(long ret,) uid_t * ruid, uid_t * euid, uid_t * suid),
 	TP_ARGS(sc_exit(ret,) ruid, euid, suid),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(uid_t *, ruid) __field_hex(uid_t *, euid) __field_hex(uid_t *, suid)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(ruid, ruid) tp_assign(euid, euid) tp_assign(suid, suid)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_out(__field_hex(uid_t *, ruid)) sc_out(__field_hex(uid_t *, euid)) sc_out(__field_hex(uid_t *, suid))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_out(tp_assign(ruid, ruid)) sc_out(tp_assign(euid, euid)) sc_out(tp_assign(suid, suid))),
 	TP_printk()
 )
 #endif
@@ -967,8 +967,8 @@ SC_TRACE_EVENT(sys_getresuid,
 SC_TRACE_EVENT(sys_getresgid,
 	TP_PROTO(sc_exit(long ret,) gid_t * rgid, gid_t * egid, gid_t * sgid),
 	TP_ARGS(sc_exit(ret,) rgid, egid, sgid),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(gid_t *, rgid) __field_hex(gid_t *, egid) __field_hex(gid_t *, sgid)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(rgid, rgid) tp_assign(egid, egid) tp_assign(sgid, sgid)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_out(__field_hex(gid_t *, rgid)) sc_out(__field_hex(gid_t *, egid)) sc_out(__field_hex(gid_t *, sgid))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_out(tp_assign(rgid, rgid)) sc_out(tp_assign(egid, egid)) sc_out(tp_assign(sgid, sgid))),
 	TP_printk()
 )
 #endif
@@ -976,8 +976,8 @@ SC_TRACE_EVENT(sys_getresgid,
 SC_TRACE_EVENT(sys_chown,
 	TP_PROTO(sc_exit(long ret,) const char * filename, uid_t user, gid_t group),
 	TP_ARGS(sc_exit(ret,) filename, user, group),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(filename, filename) __field(uid_t, user) __field(gid_t, group)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(filename, filename) tp_assign(user, user) tp_assign(group, group)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(filename, filename)) sc_in(__field(uid_t, user)) sc_in(__field(gid_t, group))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(filename, filename)) sc_in(tp_assign(user, user)) sc_in(tp_assign(group, group))),
 	TP_printk()
 )
 #endif
@@ -985,8 +985,8 @@ SC_TRACE_EVENT(sys_chown,
 SC_TRACE_EVENT(sys_mincore,
 	TP_PROTO(sc_exit(long ret,) unsigned long start, size_t len, unsigned char * vec),
 	TP_ARGS(sc_exit(ret,) start, len, vec),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned long, start) __field(size_t, len) __field_hex(unsigned char *, vec)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(start, start) tp_assign(len, len) tp_assign(vec, vec)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned long, start)) sc_in(__field(size_t, len)) sc_out(__field_hex(unsigned char *, vec))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(start, start)) sc_in(tp_assign(len, len)) sc_out(tp_assign(vec, vec))),
 	TP_printk()
 )
 #endif
@@ -994,8 +994,8 @@ SC_TRACE_EVENT(sys_mincore,
 SC_TRACE_EVENT(sys_getdents64,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, struct linux_dirent64 * dirent, unsigned int count),
 	TP_ARGS(sc_exit(ret,) fd, dirent, count),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned int, fd) __field_hex(struct linux_dirent64 *, dirent) __field(unsigned int, count)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(dirent, dirent) tp_assign(count, count)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fd)) sc_out(__field_hex(struct linux_dirent64 *, dirent)) sc_in(__field(unsigned int, count))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_out(tp_assign(dirent, dirent)) sc_in(tp_assign(count, count))),
 	TP_printk()
 )
 #endif
@@ -1003,8 +1003,8 @@ SC_TRACE_EVENT(sys_getdents64,
 SC_TRACE_EVENT(sys_listxattr,
 	TP_PROTO(sc_exit(long ret,) const char * pathname, char * list, size_t size),
 	TP_ARGS(sc_exit(ret,) pathname, list, size),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(pathname, pathname) __field_hex(char *, list) __field(size_t, size)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(pathname, pathname) tp_assign(list, list) tp_assign(size, size)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(pathname, pathname)) sc_out(__field_hex(char *, list)) sc_in(__field(size_t, size))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(pathname, pathname)) sc_out(tp_assign(list, list)) sc_in(tp_assign(size, size))),
 	TP_printk()
 )
 #endif
@@ -1012,8 +1012,8 @@ SC_TRACE_EVENT(sys_listxattr,
 SC_TRACE_EVENT(sys_llistxattr,
 	TP_PROTO(sc_exit(long ret,) const char * pathname, char * list, size_t size),
 	TP_ARGS(sc_exit(ret,) pathname, list, size),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(pathname, pathname) __field_hex(char *, list) __field(size_t, size)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(pathname, pathname) tp_assign(list, list) tp_assign(size, size)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(pathname, pathname)) sc_out(__field_hex(char *, list)) sc_in(__field(size_t, size))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(pathname, pathname)) sc_out(tp_assign(list, list)) sc_in(tp_assign(size, size))),
 	TP_printk()
 )
 #endif
@@ -1021,8 +1021,8 @@ SC_TRACE_EVENT(sys_llistxattr,
 SC_TRACE_EVENT(sys_flistxattr,
 	TP_PROTO(sc_exit(long ret,) int fd, char * list, size_t size),
 	TP_ARGS(sc_exit(ret,) fd, list, size),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, fd) __field_hex(char *, list) __field(size_t, size)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(list, list) tp_assign(size, size)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd)) sc_out(__field_hex(char *, list)) sc_in(__field(size_t, size))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_out(tp_assign(list, list)) sc_in(tp_assign(size, size))),
 	TP_printk()
 )
 #endif
@@ -1030,8 +1030,8 @@ SC_TRACE_EVENT(sys_flistxattr,
 SC_TRACE_EVENT(sys_sched_setaffinity,
 	TP_PROTO(sc_exit(long ret,) pid_t pid, unsigned int len, unsigned long * user_mask_ptr),
 	TP_ARGS(sc_exit(ret,) pid, len, user_mask_ptr),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(pid_t, pid) __field(unsigned int, len) __field_hex(unsigned long *, user_mask_ptr)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(pid, pid) tp_assign(len, len) tp_assign(user_mask_ptr, user_mask_ptr)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(pid_t, pid)) sc_in(__field(unsigned int, len)) sc_in(__field_hex(unsigned long *, user_mask_ptr))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(pid, pid)) sc_in(tp_assign(len, len)) sc_in(tp_assign(user_mask_ptr, user_mask_ptr))),
 	TP_printk()
 )
 #endif
@@ -1039,8 +1039,8 @@ SC_TRACE_EVENT(sys_sched_setaffinity,
 SC_TRACE_EVENT(sys_sched_getaffinity,
 	TP_PROTO(sc_exit(long ret,) pid_t pid, unsigned int len, unsigned long * user_mask_ptr),
 	TP_ARGS(sc_exit(ret,) pid, len, user_mask_ptr),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(pid_t, pid) __field(unsigned int, len) __field_hex(unsigned long *, user_mask_ptr)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(pid, pid) tp_assign(len, len) tp_assign(user_mask_ptr, user_mask_ptr)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(pid_t, pid)) sc_in(__field(unsigned int, len)) sc_out(__field_hex(unsigned long *, user_mask_ptr))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(pid, pid)) sc_in(tp_assign(len, len)) sc_out(tp_assign(user_mask_ptr, user_mask_ptr))),
 	TP_printk()
 )
 #endif
@@ -1048,8 +1048,8 @@ SC_TRACE_EVENT(sys_sched_getaffinity,
 SC_TRACE_EVENT(sys_io_submit,
 	TP_PROTO(sc_exit(long ret,) aio_context_t ctx_id, long nr, struct iocb * * iocbpp),
 	TP_ARGS(sc_exit(ret,) ctx_id, nr, iocbpp),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(aio_context_t, ctx_id) __field(long, nr) __field_hex(struct iocb * *, iocbpp)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(ctx_id, ctx_id) tp_assign(nr, nr) tp_assign(iocbpp, iocbpp)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(aio_context_t, ctx_id)) sc_in(__field(long, nr)) sc_in(__field_hex(struct iocb * *, iocbpp))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(ctx_id, ctx_id)) sc_in(tp_assign(nr, nr)) sc_in(tp_assign(iocbpp, iocbpp))),
 	TP_printk()
 )
 #endif
@@ -1057,8 +1057,8 @@ SC_TRACE_EVENT(sys_io_submit,
 SC_TRACE_EVENT(sys_io_cancel,
 	TP_PROTO(sc_exit(long ret,) aio_context_t ctx_id, struct iocb * iocb, struct io_event * result),
 	TP_ARGS(sc_exit(ret,) ctx_id, iocb, result),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(aio_context_t, ctx_id) __field_hex(struct iocb *, iocb) __field_hex(struct io_event *, result)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(ctx_id, ctx_id) tp_assign(iocb, iocb) tp_assign(result, result)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(aio_context_t, ctx_id)) sc_in(__field_hex(struct iocb *, iocb)) sc_out(__field_hex(struct io_event *, result))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(ctx_id, ctx_id)) sc_in(tp_assign(iocb, iocb)) sc_out(tp_assign(result, result))),
 	TP_printk()
 )
 #endif
@@ -1066,8 +1066,8 @@ SC_TRACE_EVENT(sys_io_cancel,
 SC_TRACE_EVENT(sys_timer_create,
 	TP_PROTO(sc_exit(long ret,) const clockid_t which_clock, struct sigevent * timer_event_spec, timer_t * created_timer_id),
 	TP_ARGS(sc_exit(ret,) which_clock, timer_event_spec, created_timer_id),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(const clockid_t, which_clock) __field_hex(struct sigevent *, timer_event_spec) __field_hex(timer_t *, created_timer_id)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(which_clock, which_clock) tp_assign(timer_event_spec, timer_event_spec) tp_assign(created_timer_id, created_timer_id)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(const clockid_t, which_clock)) sc_in(__field_hex(struct sigevent *, timer_event_spec)) sc_out(__field_hex(timer_t *, created_timer_id))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(which_clock, which_clock)) sc_in(tp_assign(timer_event_spec, timer_event_spec)) sc_out(tp_assign(created_timer_id, created_timer_id))),
 	TP_printk()
 )
 #endif
@@ -1075,8 +1075,8 @@ SC_TRACE_EVENT(sys_timer_create,
 SC_TRACE_EVENT(sys_statfs64,
 	TP_PROTO(sc_exit(long ret,) const char * pathname, size_t sz, struct statfs64 * buf),
 	TP_ARGS(sc_exit(ret,) pathname, sz, buf),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(pathname, pathname) __field(size_t, sz) __field_hex(struct statfs64 *, buf)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(pathname, pathname) tp_assign(sz, sz) tp_assign(buf, buf)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__string_from_user(pathname, pathname)) sc_inout(__field(size_t, sz)) sc_inout(__field_hex(struct statfs64 *, buf))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_copy_string_from_user(pathname, pathname)) sc_inout(tp_assign(sz, sz)) sc_inout(tp_assign(buf, buf))),
 	TP_printk()
 )
 #endif
@@ -1084,8 +1084,8 @@ SC_TRACE_EVENT(sys_statfs64,
 SC_TRACE_EVENT(sys_fstatfs64,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, size_t sz, struct statfs64 * buf),
 	TP_ARGS(sc_exit(ret,) fd, sz, buf),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned int, fd) __field(size_t, sz) __field_hex(struct statfs64 *, buf)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(sz, sz) tp_assign(buf, buf)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field(unsigned int, fd)) sc_inout(__field(size_t, sz)) sc_inout(__field_hex(struct statfs64 *, buf))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(fd, fd)) sc_inout(tp_assign(sz, sz)) sc_inout(tp_assign(buf, buf))),
 	TP_printk()
 )
 #endif
@@ -1093,8 +1093,8 @@ SC_TRACE_EVENT(sys_fstatfs64,
 SC_TRACE_EVENT(sys_mq_getsetattr,
 	TP_PROTO(sc_exit(long ret,) mqd_t mqdes, const struct mq_attr * u_mqstat, struct mq_attr * u_omqstat),
 	TP_ARGS(sc_exit(ret,) mqdes, u_mqstat, u_omqstat),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(mqd_t, mqdes) __field_hex(const struct mq_attr *, u_mqstat) __field_hex(struct mq_attr *, u_omqstat)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(mqdes, mqdes) tp_assign(u_mqstat, u_mqstat) tp_assign(u_omqstat, u_omqstat)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(mqd_t, mqdes)) sc_in(__field_hex(const struct mq_attr *, u_mqstat)) sc_out(__field_hex(struct mq_attr *, u_omqstat))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(mqdes, mqdes)) sc_in(tp_assign(u_mqstat, u_mqstat)) sc_out(tp_assign(u_omqstat, u_omqstat))),
 	TP_printk()
 )
 #endif
@@ -1102,8 +1102,8 @@ SC_TRACE_EVENT(sys_mq_getsetattr,
 SC_TRACE_EVENT(sys_inotify_add_watch,
 	TP_PROTO(sc_exit(long ret,) int fd, const char * pathname, u32 mask),
 	TP_ARGS(sc_exit(ret,) fd, pathname, mask),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, fd) __string_from_user(pathname, pathname) __field(u32, mask)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_copy_string_from_user(pathname, pathname) tp_assign(mask, mask)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd)) sc_in(__string_from_user(pathname, pathname)) sc_in(__field(u32, mask))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_in(tp_copy_string_from_user(pathname, pathname)) sc_in(tp_assign(mask, mask))),
 	TP_printk()
 )
 #endif
@@ -1111,8 +1111,8 @@ SC_TRACE_EVENT(sys_inotify_add_watch,
 SC_TRACE_EVENT(sys_mkdirat,
 	TP_PROTO(sc_exit(long ret,) int dfd, const char * pathname, int mode),
 	TP_ARGS(sc_exit(ret,) dfd, pathname, mode),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, dfd) __string_from_user(pathname, pathname) __field(int, mode)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(dfd, dfd) tp_copy_string_from_user(pathname, pathname) tp_assign(mode, mode)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, dfd)) sc_in(__string_from_user(pathname, pathname)) sc_in(__field(int, mode))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(dfd, dfd)) sc_in(tp_copy_string_from_user(pathname, pathname)) sc_in(tp_assign(mode, mode))),
 	TP_printk()
 )
 #endif
@@ -1120,8 +1120,8 @@ SC_TRACE_EVENT(sys_mkdirat,
 SC_TRACE_EVENT(sys_futimesat,
 	TP_PROTO(sc_exit(long ret,) int dfd, const char * filename, struct timeval * utimes),
 	TP_ARGS(sc_exit(ret,) dfd, filename, utimes),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, dfd) __string_from_user(filename, filename) __field_hex(struct timeval *, utimes)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(utimes, utimes)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, dfd)) sc_in(__string_from_user(filename, filename)) sc_in(__field_hex(struct timeval *, utimes))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(dfd, dfd)) sc_in(tp_copy_string_from_user(filename, filename)) sc_in(tp_assign(utimes, utimes))),
 	TP_printk()
 )
 #endif
@@ -1129,8 +1129,8 @@ SC_TRACE_EVENT(sys_futimesat,
 SC_TRACE_EVENT(sys_unlinkat,
 	TP_PROTO(sc_exit(long ret,) int dfd, const char * pathname, int flag),
 	TP_ARGS(sc_exit(ret,) dfd, pathname, flag),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, dfd) __string_from_user(pathname, pathname) __field(int, flag)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(dfd, dfd) tp_copy_string_from_user(pathname, pathname) tp_assign(flag, flag)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, dfd)) sc_in(__string_from_user(pathname, pathname)) sc_in(__field(int, flag))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(dfd, dfd)) sc_in(tp_copy_string_from_user(pathname, pathname)) sc_in(tp_assign(flag, flag))),
 	TP_printk()
 )
 #endif
@@ -1138,8 +1138,8 @@ SC_TRACE_EVENT(sys_unlinkat,
 SC_TRACE_EVENT(sys_symlinkat,
 	TP_PROTO(sc_exit(long ret,) const char * oldname, int newdfd, const char * newname),
 	TP_ARGS(sc_exit(ret,) oldname, newdfd, newname),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(oldname, oldname) __field(int, newdfd) __string_from_user(newname, newname)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(oldname, oldname) tp_assign(newdfd, newdfd) tp_copy_string_from_user(newname, newname)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(oldname, oldname)) sc_in(__field(int, newdfd)) sc_in(__string_from_user(newname, newname))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(oldname, oldname)) sc_in(tp_assign(newdfd, newdfd)) sc_in(tp_copy_string_from_user(newname, newname))),
 	TP_printk()
 )
 #endif
@@ -1147,8 +1147,8 @@ SC_TRACE_EVENT(sys_symlinkat,
 SC_TRACE_EVENT(sys_fchmodat,
 	TP_PROTO(sc_exit(long ret,) int dfd, const char * filename, mode_t mode),
 	TP_ARGS(sc_exit(ret,) dfd, filename, mode),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, dfd) __string_from_user(filename, filename) __field(mode_t, mode)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(mode, mode)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, dfd)) sc_in(__string_from_user(filename, filename)) sc_in(__field(mode_t, mode))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(dfd, dfd)) sc_in(tp_copy_string_from_user(filename, filename)) sc_in(tp_assign(mode, mode))),
 	TP_printk()
 )
 #endif
@@ -1156,8 +1156,8 @@ SC_TRACE_EVENT(sys_fchmodat,
 SC_TRACE_EVENT(sys_faccessat,
 	TP_PROTO(sc_exit(long ret,) int dfd, const char * filename, int mode),
 	TP_ARGS(sc_exit(ret,) dfd, filename, mode),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, dfd) __string_from_user(filename, filename) __field(int, mode)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(mode, mode)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, dfd)) sc_in(__string_from_user(filename, filename)) sc_in(__field(int, mode))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(dfd, dfd)) sc_in(tp_copy_string_from_user(filename, filename)) sc_in(tp_assign(mode, mode))),
 	TP_printk()
 )
 #endif
@@ -1165,8 +1165,8 @@ SC_TRACE_EVENT(sys_faccessat,
 SC_TRACE_EVENT(sys_get_robust_list,
 	TP_PROTO(sc_exit(long ret,) int pid, struct robust_list_head * * head_ptr, size_t * len_ptr),
 	TP_ARGS(sc_exit(ret,) pid, head_ptr, len_ptr),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, pid) __field_hex(struct robust_list_head * *, head_ptr) __field_hex(size_t *, len_ptr)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(pid, pid) tp_assign(head_ptr, head_ptr) tp_assign(len_ptr, len_ptr)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, pid)) sc_out(__field_hex(struct robust_list_head * *, head_ptr)) sc_out(__field_hex(size_t *, len_ptr))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(pid, pid)) sc_out(tp_assign(head_ptr, head_ptr)) sc_out(tp_assign(len_ptr, len_ptr))),
 	TP_printk()
 )
 #endif
@@ -1174,8 +1174,8 @@ SC_TRACE_EVENT(sys_get_robust_list,
 SC_TRACE_EVENT(sys_getcpu,
 	TP_PROTO(sc_exit(long ret,) unsigned * cpup, unsigned * nodep, struct getcpu_cache * unused),
 	TP_ARGS(sc_exit(ret,) cpup, nodep, unused),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(unsigned *, cpup) __field_hex(unsigned *, nodep) __field_hex(struct getcpu_cache *, unused)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(cpup, cpup) tp_assign(nodep, nodep) tp_assign(unused, unused)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_out(__field_hex(unsigned *, cpup)) sc_out(__field_hex(unsigned *, nodep)) sc_inout(__field_hex(struct getcpu_cache *, unused))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_out(tp_assign(cpup, cpup)) sc_out(tp_assign(nodep, nodep)) sc_inout(tp_assign(unused, unused))),
 	TP_printk()
 )
 #endif
@@ -1183,8 +1183,8 @@ SC_TRACE_EVENT(sys_getcpu,
 SC_TRACE_EVENT(sys_signalfd,
 	TP_PROTO(sc_exit(long ret,) int ufd, sigset_t * user_mask, size_t sizemask),
 	TP_ARGS(sc_exit(ret,) ufd, user_mask, sizemask),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, ufd) __field_hex(sigset_t *, user_mask) __field(size_t, sizemask)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(ufd, ufd) tp_assign(user_mask, user_mask) tp_assign(sizemask, sizemask)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, ufd)) sc_in(__field_hex(sigset_t *, user_mask)) sc_in(__field(size_t, sizemask))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(ufd, ufd)) sc_in(tp_assign(user_mask, user_mask)) sc_in(tp_assign(sizemask, sizemask))),
 	TP_printk()
 )
 #endif
@@ -1192,8 +1192,8 @@ SC_TRACE_EVENT(sys_signalfd,
 SC_TRACE_EVENT(sys_reboot,
 	TP_PROTO(sc_exit(long ret,) int magic1, int magic2, unsigned int cmd, void * arg),
 	TP_ARGS(sc_exit(ret,) magic1, magic2, cmd, arg),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, magic1) __field(int, magic2) __field(unsigned int, cmd) __field_hex(void *, arg)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(magic1, magic1) tp_assign(magic2, magic2) tp_assign(cmd, cmd) tp_assign(arg, arg)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, magic1)) sc_in(__field(int, magic2)) sc_in(__field(unsigned int, cmd)) sc_in(__field_hex(void *, arg))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(magic1, magic1)) sc_in(tp_assign(magic2, magic2)) sc_in(tp_assign(cmd, cmd)) sc_in(tp_assign(arg, arg))),
 	TP_printk()
 )
 #endif
@@ -1201,8 +1201,8 @@ SC_TRACE_EVENT(sys_reboot,
 SC_TRACE_EVENT(sys_wait4,
 	TP_PROTO(sc_exit(long ret,) pid_t upid, int * stat_addr, int options, struct rusage * ru),
 	TP_ARGS(sc_exit(ret,) upid, stat_addr, options, ru),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(pid_t, upid) __field_hex(int *, stat_addr) __field(int, options) __field_hex(struct rusage *, ru)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(upid, upid) tp_assign(stat_addr, stat_addr) tp_assign(options, options) tp_assign(ru, ru)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(pid_t, upid)) sc_out(__field_hex(int *, stat_addr)) sc_in(__field(int, options)) sc_out(__field_hex(struct rusage *, ru))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(upid, upid)) sc_out(tp_assign(stat_addr, stat_addr)) sc_in(tp_assign(options, options)) sc_out(tp_assign(ru, ru))),
 	TP_printk()
 )
 #endif
@@ -1210,8 +1210,8 @@ SC_TRACE_EVENT(sys_wait4,
 SC_TRACE_EVENT(sys_quotactl,
 	TP_PROTO(sc_exit(long ret,) unsigned int cmd, const char * special, qid_t id, void * addr),
 	TP_ARGS(sc_exit(ret,) cmd, special, id, addr),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned int, cmd) __field_hex(const char *, special) __field(qid_t, id) __field_hex(void *, addr)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(cmd, cmd) tp_assign(special, special) tp_assign(id, id) tp_assign(addr, addr)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, cmd)) sc_in(__field_hex(const char *, special)) sc_in(__field(qid_t, id)) sc_inout(__field_hex(void *, addr))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(cmd, cmd)) sc_in(tp_assign(special, special)) sc_in(tp_assign(id, id)) sc_inout(tp_assign(addr, addr))),
 	TP_printk()
 )
 #endif
@@ -1219,8 +1219,8 @@ SC_TRACE_EVENT(sys_quotactl,
 SC_TRACE_EVENT(sys_rt_sigaction,
 	TP_PROTO(sc_exit(long ret,) int sig, const struct sigaction * act, struct sigaction * oact, size_t sigsetsize),
 	TP_ARGS(sc_exit(ret,) sig, act, oact, sigsetsize),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, sig) __field_hex(const struct sigaction *, act) __field_hex(struct sigaction *, oact) __field(size_t, sigsetsize)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(sig, sig) tp_assign(act, act) tp_assign(oact, oact) tp_assign(sigsetsize, sigsetsize)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, sig)) sc_in(__field_hex(const struct sigaction *, act)) sc_out(__field_hex(struct sigaction *, oact)) sc_in(__field(size_t, sigsetsize))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(sig, sig)) sc_in(tp_assign(act, act)) sc_out(tp_assign(oact, oact)) sc_in(tp_assign(sigsetsize, sigsetsize))),
 	TP_printk()
 )
 #endif
@@ -1228,8 +1228,8 @@ SC_TRACE_EVENT(sys_rt_sigaction,
 SC_TRACE_EVENT(sys_rt_sigprocmask,
 	TP_PROTO(sc_exit(long ret,) int how, sigset_t * nset, sigset_t * oset, size_t sigsetsize),
 	TP_ARGS(sc_exit(ret,) how, nset, oset, sigsetsize),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, how) __field_hex(sigset_t *, nset) __field_hex(sigset_t *, oset) __field(size_t, sigsetsize)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(how, how) tp_assign(nset, nset) tp_assign(oset, oset) tp_assign(sigsetsize, sigsetsize)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, how)) sc_in(__field_hex(sigset_t *, nset)) sc_out(__field_hex(sigset_t *, oset)) sc_in(__field(size_t, sigsetsize))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(how, how)) sc_in(tp_assign(nset, nset)) sc_out(tp_assign(oset, oset)) sc_in(tp_assign(sigsetsize, sigsetsize))),
 	TP_printk()
 )
 #endif
@@ -1237,8 +1237,8 @@ SC_TRACE_EVENT(sys_rt_sigprocmask,
 SC_TRACE_EVENT(sys_rt_sigtimedwait,
 	TP_PROTO(sc_exit(long ret,) const sigset_t * uthese, siginfo_t * uinfo, const struct timespec * uts, size_t sigsetsize),
 	TP_ARGS(sc_exit(ret,) uthese, uinfo, uts, sigsetsize),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(const sigset_t *, uthese) __field_hex(siginfo_t *, uinfo) __field_hex(const struct timespec *, uts) __field(size_t, sigsetsize)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(uthese, uthese) tp_assign(uinfo, uinfo) tp_assign(uts, uts) tp_assign(sigsetsize, sigsetsize)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_out(__field_hex(const sigset_t *, uthese)) sc_out(__field_hex(siginfo_t *, uinfo)) sc_in(__field_hex(const struct timespec *, uts)) sc_in(__field(size_t, sigsetsize))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_out(tp_assign(uthese, uthese)) sc_out(tp_assign(uinfo, uinfo)) sc_in(tp_assign(uts, uts)) sc_in(tp_assign(sigsetsize, sigsetsize))),
 	TP_printk()
 )
 #endif
@@ -1246,8 +1246,8 @@ SC_TRACE_EVENT(sys_rt_sigtimedwait,
 SC_TRACE_EVENT(sys_sendfile,
 	TP_PROTO(sc_exit(long ret,) int out_fd, int in_fd, off_t * offset, size_t count),
 	TP_ARGS(sc_exit(ret,) out_fd, in_fd, offset, count),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, out_fd) __field(int, in_fd) __field_hex(off_t *, offset) __field(size_t, count)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(out_fd, out_fd) tp_assign(in_fd, in_fd) tp_assign(offset, offset) tp_assign(count, count)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field(int, out_fd)) sc_inout(__field(int, in_fd)) sc_inout(__field_hex(off_t *, offset)) sc_inout(__field(size_t, count))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(out_fd, out_fd)) sc_inout(tp_assign(in_fd, in_fd)) sc_inout(tp_assign(offset, offset)) sc_inout(tp_assign(count, count))),
 	TP_printk()
 )
 #endif
@@ -1255,8 +1255,8 @@ SC_TRACE_EVENT(sys_sendfile,
 SC_TRACE_EVENT(sys_getxattr,
 	TP_PROTO(sc_exit(long ret,) const char * pathname, const char * name, void * value, size_t size),
 	TP_ARGS(sc_exit(ret,) pathname, name, value, size),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(pathname, pathname) __string_from_user(name, name) __field_hex(void *, value) __field(size_t, size)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(pathname, pathname) tp_copy_string_from_user(name, name) tp_assign(value, value) tp_assign(size, size)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(pathname, pathname)) sc_in(__string_from_user(name, name)) sc_out(__field_hex(void *, value)) sc_in(__field(size_t, size))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(pathname, pathname)) sc_in(tp_copy_string_from_user(name, name)) sc_out(tp_assign(value, value)) sc_in(tp_assign(size, size))),
 	TP_printk()
 )
 #endif
@@ -1264,8 +1264,8 @@ SC_TRACE_EVENT(sys_getxattr,
 SC_TRACE_EVENT(sys_lgetxattr,
 	TP_PROTO(sc_exit(long ret,) const char * pathname, const char * name, void * value, size_t size),
 	TP_ARGS(sc_exit(ret,) pathname, name, value, size),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(pathname, pathname) __string_from_user(name, name) __field_hex(void *, value) __field(size_t, size)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(pathname, pathname) tp_copy_string_from_user(name, name) tp_assign(value, value) tp_assign(size, size)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(pathname, pathname)) sc_in(__string_from_user(name, name)) sc_out(__field_hex(void *, value)) sc_in(__field(size_t, size))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(pathname, pathname)) sc_in(tp_copy_string_from_user(name, name)) sc_out(tp_assign(value, value)) sc_in(tp_assign(size, size))),
 	TP_printk()
 )
 #endif
@@ -1273,8 +1273,8 @@ SC_TRACE_EVENT(sys_lgetxattr,
 SC_TRACE_EVENT(sys_fgetxattr,
 	TP_PROTO(sc_exit(long ret,) int fd, const char * name, void * value, size_t size),
 	TP_ARGS(sc_exit(ret,) fd, name, value, size),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, fd) __string_from_user(name, name) __field_hex(void *, value) __field(size_t, size)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_copy_string_from_user(name, name) tp_assign(value, value) tp_assign(size, size)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd)) sc_in(__string_from_user(name, name)) sc_out(__field_hex(void *, value)) sc_in(__field(size_t, size))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_in(tp_copy_string_from_user(name, name)) sc_out(tp_assign(value, value)) sc_in(tp_assign(size, size))),
 	TP_printk()
 )
 #endif
@@ -1282,8 +1282,8 @@ SC_TRACE_EVENT(sys_fgetxattr,
 SC_TRACE_EVENT(sys_sendfile64,
 	TP_PROTO(sc_exit(long ret,) int out_fd, int in_fd, loff_t * offset, size_t count),
 	TP_ARGS(sc_exit(ret,) out_fd, in_fd, offset, count),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, out_fd) __field(int, in_fd) __field_hex(loff_t *, offset) __field(size_t, count)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(out_fd, out_fd) tp_assign(in_fd, in_fd) tp_assign(offset, offset) tp_assign(count, count)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, out_fd)) sc_in(__field(int, in_fd)) sc_inout(__field_hex(loff_t *, offset)) sc_in(__field(size_t, count))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(out_fd, out_fd)) sc_in(tp_assign(in_fd, in_fd)) sc_inout(tp_assign(offset, offset)) sc_in(tp_assign(count, count))),
 	TP_printk()
 )
 #endif
@@ -1291,8 +1291,8 @@ SC_TRACE_EVENT(sys_sendfile64,
 SC_TRACE_EVENT(sys_epoll_ctl,
 	TP_PROTO(sc_exit(long ret,) int epfd, int op, int fd, struct epoll_event * event),
 	TP_ARGS(sc_exit(ret,) epfd, op, fd, event),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, epfd) __field(int, op) __field(int, fd) __field_hex(struct epoll_event *, event)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(epfd, epfd) tp_assign(op, op) tp_assign(fd, fd) tp_assign(event, event)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, epfd)) sc_in(__field(int, op)) sc_in(__field(int, fd)) sc_in(__field_hex(struct epoll_event *, event))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(epfd, epfd)) sc_in(tp_assign(op, op)) sc_in(tp_assign(fd, fd)) sc_in(tp_assign(event, event))),
 	TP_printk()
 )
 #endif
@@ -1300,8 +1300,8 @@ SC_TRACE_EVENT(sys_epoll_ctl,
 SC_TRACE_EVENT(sys_epoll_wait,
 	TP_PROTO(sc_exit(long ret,) int epfd, struct epoll_event * events, int maxevents, int timeout),
 	TP_ARGS(sc_exit(ret,) epfd, events, maxevents, timeout),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, epfd) __field_hex(struct epoll_event *, events) __field(int, maxevents) __field(int, timeout)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(epfd, epfd) tp_assign(events, events) tp_assign(maxevents, maxevents) tp_assign(timeout, timeout)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, epfd)) sc_out(__field_hex(struct epoll_event *, events)) sc_in(__field(int, maxevents)) sc_in(__field(int, timeout))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(epfd, epfd)) sc_out(tp_assign(events, events)) sc_in(tp_assign(maxevents, maxevents)) sc_in(tp_assign(timeout, timeout))),
 	TP_printk()
 )
 #endif
@@ -1309,8 +1309,8 @@ SC_TRACE_EVENT(sys_epoll_wait,
 SC_TRACE_EVENT(sys_timer_settime,
 	TP_PROTO(sc_exit(long ret,) timer_t timer_id, int flags, const struct itimerspec * new_setting, struct itimerspec * old_setting),
 	TP_ARGS(sc_exit(ret,) timer_id, flags, new_setting, old_setting),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(timer_t, timer_id) __field(int, flags) __field_hex(const struct itimerspec *, new_setting) __field_hex(struct itimerspec *, old_setting)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(timer_id, timer_id) tp_assign(flags, flags) tp_assign(new_setting, new_setting) tp_assign(old_setting, old_setting)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(timer_t, timer_id)) sc_in(__field(int, flags)) sc_in(__field_hex(const struct itimerspec *, new_setting)) sc_out(__field_hex(struct itimerspec *, old_setting))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(timer_id, timer_id)) sc_in(tp_assign(flags, flags)) sc_in(tp_assign(new_setting, new_setting)) sc_out(tp_assign(old_setting, old_setting))),
 	TP_printk()
 )
 #endif
@@ -1318,8 +1318,8 @@ SC_TRACE_EVENT(sys_timer_settime,
 SC_TRACE_EVENT(sys_clock_nanosleep,
 	TP_PROTO(sc_exit(long ret,) const clockid_t which_clock, int flags, const struct timespec * rqtp, struct timespec * rmtp),
 	TP_ARGS(sc_exit(ret,) which_clock, flags, rqtp, rmtp),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(const clockid_t, which_clock) __field(int, flags) __field_hex(const struct timespec *, rqtp) __field_hex(struct timespec *, rmtp)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(which_clock, which_clock) tp_assign(flags, flags) tp_assign(rqtp, rqtp) tp_assign(rmtp, rmtp)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(const clockid_t, which_clock)) sc_in(__field(int, flags)) sc_in(__field_hex(const struct timespec *, rqtp)) sc_out(__field_hex(struct timespec *, rmtp))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(which_clock, which_clock)) sc_in(tp_assign(flags, flags)) sc_in(tp_assign(rqtp, rqtp)) sc_out(tp_assign(rmtp, rmtp))),
 	TP_printk()
 )
 #endif
@@ -1327,8 +1327,8 @@ SC_TRACE_EVENT(sys_clock_nanosleep,
 SC_TRACE_EVENT(sys_mq_open,
 	TP_PROTO(sc_exit(long ret,) const char * u_name, int oflag, mode_t mode, struct mq_attr * u_attr),
 	TP_ARGS(sc_exit(ret,) u_name, oflag, mode, u_attr),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(u_name, u_name) __field(int, oflag) __field(mode_t, mode) __field_hex(struct mq_attr *, u_attr)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(u_name, u_name) tp_assign(oflag, oflag) tp_assign(mode, mode) tp_assign(u_attr, u_attr)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(u_name, u_name)) sc_in(__field(int, oflag)) sc_in(__field(mode_t, mode)) sc_in(__field_hex(struct mq_attr *, u_attr))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(u_name, u_name)) sc_in(tp_assign(oflag, oflag)) sc_in(tp_assign(mode, mode)) sc_in(tp_assign(u_attr, u_attr))),
 	TP_printk()
 )
 #endif
@@ -1336,8 +1336,8 @@ SC_TRACE_EVENT(sys_mq_open,
 SC_TRACE_EVENT(sys_kexec_load,
 	TP_PROTO(sc_exit(long ret,) unsigned long entry, unsigned long nr_segments, struct kexec_segment * segments, unsigned long flags),
 	TP_ARGS(sc_exit(ret,) entry, nr_segments, segments, flags),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned long, entry) __field(unsigned long, nr_segments) __field_hex(struct kexec_segment *, segments) __field(unsigned long, flags)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(entry, entry) tp_assign(nr_segments, nr_segments) tp_assign(segments, segments) tp_assign(flags, flags)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned long, entry)) sc_in(__field(unsigned long, nr_segments)) sc_in(__field_hex(struct kexec_segment *, segments)) sc_in(__field(unsigned long, flags))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(entry, entry)) sc_in(tp_assign(nr_segments, nr_segments)) sc_in(tp_assign(segments, segments)) sc_in(tp_assign(flags, flags))),
 	TP_printk()
 )
 #endif
@@ -1345,8 +1345,8 @@ SC_TRACE_EVENT(sys_kexec_load,
 SC_TRACE_EVENT(sys_request_key,
 	TP_PROTO(sc_exit(long ret,) const char * _type, const char * _description, const char * _callout_info, key_serial_t destringid),
 	TP_ARGS(sc_exit(ret,) _type, _description, _callout_info, destringid),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(_type, _type) __field_hex(const char *, _description) __field_hex(const char *, _callout_info) __field(key_serial_t, destringid)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(_type, _type) tp_assign(_description, _description) tp_assign(_callout_info, _callout_info) tp_assign(destringid, destringid)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(_type, _type)) sc_in(__field_hex(const char *, _description)) sc_in(__field_hex(const char *, _callout_info)) sc_in(__field(key_serial_t, destringid))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(_type, _type)) sc_in(tp_assign(_description, _description)) sc_in(tp_assign(_callout_info, _callout_info)) sc_in(tp_assign(destringid, destringid))),
 	TP_printk()
 )
 #endif
@@ -1354,8 +1354,8 @@ SC_TRACE_EVENT(sys_request_key,
 SC_TRACE_EVENT(sys_openat,
 	TP_PROTO(sc_exit(long ret,) int dfd, const char * filename, int flags, int mode),
 	TP_ARGS(sc_exit(ret,) dfd, filename, flags, mode),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, dfd) __string_from_user(filename, filename) __field(int, flags) __field(int, mode)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(flags, flags) tp_assign(mode, mode)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, dfd)) sc_in(__string_from_user(filename, filename)) sc_in(__field(int, flags)) sc_in(__field(int, mode))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(dfd, dfd)) sc_in(tp_copy_string_from_user(filename, filename)) sc_in(tp_assign(flags, flags)) sc_in(tp_assign(mode, mode))),
 	TP_printk()
 )
 #endif
@@ -1363,8 +1363,8 @@ SC_TRACE_EVENT(sys_openat,
 SC_TRACE_EVENT(sys_mknodat,
 	TP_PROTO(sc_exit(long ret,) int dfd, const char * filename, int mode, unsigned dev),
 	TP_ARGS(sc_exit(ret,) dfd, filename, mode, dev),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, dfd) __string_from_user(filename, filename) __field(int, mode) __field(unsigned, dev)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(mode, mode) tp_assign(dev, dev)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, dfd)) sc_in(__string_from_user(filename, filename)) sc_in(__field(int, mode)) sc_in(__field(unsigned, dev))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(dfd, dfd)) sc_in(tp_copy_string_from_user(filename, filename)) sc_in(tp_assign(mode, mode)) sc_in(tp_assign(dev, dev))),
 	TP_printk()
 )
 #endif
@@ -1372,8 +1372,8 @@ SC_TRACE_EVENT(sys_mknodat,
 SC_TRACE_EVENT(sys_fstatat64,
 	TP_PROTO(sc_exit(long ret,) int dfd, const char * filename, struct stat64 * statbuf, int flag),
 	TP_ARGS(sc_exit(ret,) dfd, filename, statbuf, flag),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, dfd) __string_from_user(filename, filename) __field_hex(struct stat64 *, statbuf) __field(int, flag)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(statbuf, statbuf) tp_assign(flag, flag)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field(int, dfd)) sc_inout(__string_from_user(filename, filename)) sc_inout(__field_hex(struct stat64 *, statbuf)) sc_inout(__field(int, flag))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(dfd, dfd)) sc_inout(tp_copy_string_from_user(filename, filename)) sc_inout(tp_assign(statbuf, statbuf)) sc_inout(tp_assign(flag, flag))),
 	TP_printk()
 )
 #endif
@@ -1381,8 +1381,8 @@ SC_TRACE_EVENT(sys_fstatat64,
 SC_TRACE_EVENT(sys_renameat,
 	TP_PROTO(sc_exit(long ret,) int olddfd, const char * oldname, int newdfd, const char * newname),
 	TP_ARGS(sc_exit(ret,) olddfd, oldname, newdfd, newname),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, olddfd) __string_from_user(oldname, oldname) __field(int, newdfd) __string_from_user(newname, newname)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(olddfd, olddfd) tp_copy_string_from_user(oldname, oldname) tp_assign(newdfd, newdfd) tp_copy_string_from_user(newname, newname)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, olddfd)) sc_in(__string_from_user(oldname, oldname)) sc_in(__field(int, newdfd)) sc_in(__string_from_user(newname, newname))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(olddfd, olddfd)) sc_in(tp_copy_string_from_user(oldname, oldname)) sc_in(tp_assign(newdfd, newdfd)) sc_in(tp_copy_string_from_user(newname, newname))),
 	TP_printk()
 )
 #endif
@@ -1390,8 +1390,8 @@ SC_TRACE_EVENT(sys_renameat,
 SC_TRACE_EVENT(sys_readlinkat,
 	TP_PROTO(sc_exit(long ret,) int dfd, const char * pathname, char * buf, int bufsiz),
 	TP_ARGS(sc_exit(ret,) dfd, pathname, buf, bufsiz),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, dfd) __string_from_user(pathname, pathname) __field_hex(char *, buf) __field(int, bufsiz)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(dfd, dfd) tp_copy_string_from_user(pathname, pathname) tp_assign(buf, buf) tp_assign(bufsiz, bufsiz)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, dfd)) sc_in(__string_from_user(pathname, pathname)) sc_out(__field_hex(char *, buf)) sc_in(__field(int, bufsiz))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(dfd, dfd)) sc_in(tp_copy_string_from_user(pathname, pathname)) sc_out(tp_assign(buf, buf)) sc_in(tp_assign(bufsiz, bufsiz))),
 	TP_printk()
 )
 #endif
@@ -1399,8 +1399,8 @@ SC_TRACE_EVENT(sys_readlinkat,
 SC_TRACE_EVENT(sys_vmsplice,
 	TP_PROTO(sc_exit(long ret,) int fd, const struct iovec * iov, unsigned long nr_segs, unsigned int flags),
 	TP_ARGS(sc_exit(ret,) fd, iov, nr_segs, flags),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, fd) __field_hex(const struct iovec *, iov) __field(unsigned long, nr_segs) __field(unsigned int, flags)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(iov, iov) tp_assign(nr_segs, nr_segs) tp_assign(flags, flags)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd)) sc_in(__field_hex(const struct iovec *, iov)) sc_in(__field(unsigned long, nr_segs)) sc_in(__field(unsigned int, flags))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_in(tp_assign(iov, iov)) sc_in(tp_assign(nr_segs, nr_segs)) sc_in(tp_assign(flags, flags))),
 	TP_printk()
 )
 #endif
@@ -1408,8 +1408,8 @@ SC_TRACE_EVENT(sys_vmsplice,
 SC_TRACE_EVENT(sys_utimensat,
 	TP_PROTO(sc_exit(long ret,) int dfd, const char * filename, struct timespec * utimes, int flags),
 	TP_ARGS(sc_exit(ret,) dfd, filename, utimes, flags),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, dfd) __string_from_user(filename, filename) __field_hex(struct timespec *, utimes) __field(int, flags)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(utimes, utimes) tp_assign(flags, flags)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, dfd)) sc_in(__string_from_user(filename, filename)) sc_in(__field_hex(struct timespec *, utimes)) sc_in(__field(int, flags))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(dfd, dfd)) sc_in(tp_copy_string_from_user(filename, filename)) sc_in(tp_assign(utimes, utimes)) sc_in(tp_assign(flags, flags))),
 	TP_printk()
 )
 #endif
@@ -1417,8 +1417,8 @@ SC_TRACE_EVENT(sys_utimensat,
 SC_TRACE_EVENT(sys_timerfd_settime,
 	TP_PROTO(sc_exit(long ret,) int ufd, int flags, const struct itimerspec * utmr, struct itimerspec * otmr),
 	TP_ARGS(sc_exit(ret,) ufd, flags, utmr, otmr),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, ufd) __field(int, flags) __field_hex(const struct itimerspec *, utmr) __field_hex(struct itimerspec *, otmr)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(ufd, ufd) tp_assign(flags, flags) tp_assign(utmr, utmr) tp_assign(otmr, otmr)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, ufd)) sc_in(__field(int, flags)) sc_in(__field_hex(const struct itimerspec *, utmr)) sc_out(__field_hex(struct itimerspec *, otmr))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(ufd, ufd)) sc_in(tp_assign(flags, flags)) sc_in(tp_assign(utmr, utmr)) sc_out(tp_assign(otmr, otmr))),
 	TP_printk()
 )
 #endif
@@ -1426,8 +1426,8 @@ SC_TRACE_EVENT(sys_timerfd_settime,
 SC_TRACE_EVENT(sys_signalfd4,
 	TP_PROTO(sc_exit(long ret,) int ufd, sigset_t * user_mask, size_t sizemask, int flags),
 	TP_ARGS(sc_exit(ret,) ufd, user_mask, sizemask, flags),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, ufd) __field_hex(sigset_t *, user_mask) __field(size_t, sizemask) __field(int, flags)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(ufd, ufd) tp_assign(user_mask, user_mask) tp_assign(sizemask, sizemask) tp_assign(flags, flags)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, ufd)) sc_in(__field_hex(sigset_t *, user_mask)) sc_in(__field(size_t, sizemask)) sc_in(__field(int, flags))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(ufd, ufd)) sc_in(tp_assign(user_mask, user_mask)) sc_in(tp_assign(sizemask, sizemask)) sc_in(tp_assign(flags, flags))),
 	TP_printk()
 )
 #endif
@@ -1435,8 +1435,8 @@ SC_TRACE_EVENT(sys_signalfd4,
 SC_TRACE_EVENT(sys_rt_tgsigqueueinfo,
 	TP_PROTO(sc_exit(long ret,) pid_t tgid, pid_t pid, int sig, siginfo_t * uinfo),
 	TP_ARGS(sc_exit(ret,) tgid, pid, sig, uinfo),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(pid_t, tgid) __field(pid_t, pid) __field(int, sig) __field_hex(siginfo_t *, uinfo)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(tgid, tgid) tp_assign(pid, pid) tp_assign(sig, sig) tp_assign(uinfo, uinfo)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(pid_t, tgid)) sc_in(__field(pid_t, pid)) sc_in(__field(int, sig)) sc_in(__field_hex(siginfo_t *, uinfo))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(tgid, tgid)) sc_in(tp_assign(pid, pid)) sc_in(tp_assign(sig, sig)) sc_in(tp_assign(uinfo, uinfo))),
 	TP_printk()
 )
 #endif
@@ -1444,8 +1444,8 @@ SC_TRACE_EVENT(sys_rt_tgsigqueueinfo,
 SC_TRACE_EVENT(sys_prlimit64,
 	TP_PROTO(sc_exit(long ret,) pid_t pid, unsigned int resource, const struct rlimit64 * new_rlim, struct rlimit64 * old_rlim),
 	TP_ARGS(sc_exit(ret,) pid, resource, new_rlim, old_rlim),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(pid_t, pid) __field(unsigned int, resource) __field_hex(const struct rlimit64 *, new_rlim) __field_hex(struct rlimit64 *, old_rlim)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(pid, pid) tp_assign(resource, resource) tp_assign(new_rlim, new_rlim) tp_assign(old_rlim, old_rlim)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(pid_t, pid)) sc_in(__field(unsigned int, resource)) sc_in(__field_hex(const struct rlimit64 *, new_rlim)) sc_out(__field_hex(struct rlimit64 *, old_rlim))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(pid, pid)) sc_in(tp_assign(resource, resource)) sc_in(tp_assign(new_rlim, new_rlim)) sc_out(tp_assign(old_rlim, old_rlim))),
 	TP_printk()
 )
 #endif
@@ -1453,8 +1453,8 @@ SC_TRACE_EVENT(sys_prlimit64,
 SC_TRACE_EVENT(sys_sendmmsg,
 	TP_PROTO(sc_exit(long ret,) int fd, struct mmsghdr * mmsg, unsigned int vlen, unsigned int flags),
 	TP_ARGS(sc_exit(ret,) fd, mmsg, vlen, flags),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, fd) __field_hex(struct mmsghdr *, mmsg) __field(unsigned int, vlen) __field(unsigned int, flags)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(mmsg, mmsg) tp_assign(vlen, vlen) tp_assign(flags, flags)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd)) sc_in(__field_hex(struct mmsghdr *, mmsg)) sc_in(__field(unsigned int, vlen)) sc_in(__field(unsigned int, flags))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_in(tp_assign(mmsg, mmsg)) sc_in(tp_assign(vlen, vlen)) sc_in(tp_assign(flags, flags))),
 	TP_printk()
 )
 #endif
@@ -1462,8 +1462,8 @@ SC_TRACE_EVENT(sys_sendmmsg,
 SC_TRACE_EVENT(sys_mount,
 	TP_PROTO(sc_exit(long ret,) char * dev_name, char * dir_name, char * type, unsigned long flags, void * data),
 	TP_ARGS(sc_exit(ret,) dev_name, dir_name, type, flags, data),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(dev_name, dev_name) __string_from_user(dir_name, dir_name) __string_from_user(type, type) __field(unsigned long, flags) __field_hex(void *, data)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(dev_name, dev_name) tp_copy_string_from_user(dir_name, dir_name) tp_copy_string_from_user(type, type) tp_assign(flags, flags) tp_assign(data, data)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(dev_name, dev_name)) sc_in(__string_from_user(dir_name, dir_name)) sc_in(__string_from_user(type, type)) sc_in(__field(unsigned long, flags)) sc_in(__field_hex(void *, data))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(dev_name, dev_name)) sc_in(tp_copy_string_from_user(dir_name, dir_name)) sc_in(tp_copy_string_from_user(type, type)) sc_in(tp_assign(flags, flags)) sc_in(tp_assign(data, data))),
 	TP_printk()
 )
 #endif
@@ -1471,8 +1471,8 @@ SC_TRACE_EVENT(sys_mount,
 SC_TRACE_EVENT(sys_llseek,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, unsigned long offset_high, unsigned long offset_low, loff_t * result, unsigned int origin),
 	TP_ARGS(sc_exit(ret,) fd, offset_high, offset_low, result, origin),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned int, fd) __field(unsigned long, offset_high) __field(unsigned long, offset_low) __field_hex(loff_t *, result) __field(unsigned int, origin)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(offset_high, offset_high) tp_assign(offset_low, offset_low) tp_assign(result, result) tp_assign(origin, origin)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field(unsigned int, fd)) sc_inout(__field(unsigned long, offset_high)) sc_inout(__field(unsigned long, offset_low)) sc_inout(__field_hex(loff_t *, result)) sc_inout(__field(unsigned int, origin))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(fd, fd)) sc_inout(tp_assign(offset_high, offset_high)) sc_inout(tp_assign(offset_low, offset_low)) sc_inout(tp_assign(result, result)) sc_inout(tp_assign(origin, origin))),
 	TP_printk()
 )
 #endif
@@ -1480,8 +1480,8 @@ SC_TRACE_EVENT(sys_llseek,
 SC_TRACE_EVENT(sys_select,
 	TP_PROTO(sc_exit(long ret,) int n, fd_set * inp, fd_set * outp, fd_set * exp, struct timeval * tvp),
 	TP_ARGS(sc_exit(ret,) n, inp, outp, exp, tvp),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, n) __field_hex(fd_set *, inp) __field_hex(fd_set *, outp) __field_hex(fd_set *, exp) __field_hex(struct timeval *, tvp)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(n, n) tp_assign(inp, inp) tp_assign(outp, outp) tp_assign(exp, exp) tp_assign(tvp, tvp)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, n)) sc_inout(__field_hex(fd_set *, inp)) sc_inout(__field_hex(fd_set *, outp)) sc_inout(__field_hex(fd_set *, exp)) sc_inout(__field_hex(struct timeval *, tvp))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(n, n)) sc_inout(tp_assign(inp, inp)) sc_inout(tp_assign(outp, outp)) sc_inout(tp_assign(exp, exp)) sc_inout(tp_assign(tvp, tvp))),
 	TP_printk()
 )
 #endif
@@ -1489,8 +1489,8 @@ SC_TRACE_EVENT(sys_select,
 SC_TRACE_EVENT(sys_setxattr,
 	TP_PROTO(sc_exit(long ret,) const char * pathname, const char * name, const void * value, size_t size, int flags),
 	TP_ARGS(sc_exit(ret,) pathname, name, value, size, flags),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(pathname, pathname) __string_from_user(name, name) __field_hex(const void *, value) __field(size_t, size) __field(int, flags)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(pathname, pathname) tp_copy_string_from_user(name, name) tp_assign(value, value) tp_assign(size, size) tp_assign(flags, flags)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(pathname, pathname)) sc_in(__string_from_user(name, name)) sc_in(__field_hex(const void *, value)) sc_in(__field(size_t, size)) sc_in(__field(int, flags))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(pathname, pathname)) sc_in(tp_copy_string_from_user(name, name)) sc_in(tp_assign(value, value)) sc_in(tp_assign(size, size)) sc_in(tp_assign(flags, flags))),
 	TP_printk()
 )
 #endif
@@ -1498,8 +1498,8 @@ SC_TRACE_EVENT(sys_setxattr,
 SC_TRACE_EVENT(sys_lsetxattr,
 	TP_PROTO(sc_exit(long ret,) const char * pathname, const char * name, const void * value, size_t size, int flags),
 	TP_ARGS(sc_exit(ret,) pathname, name, value, size, flags),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(pathname, pathname) __string_from_user(name, name) __field_hex(const void *, value) __field(size_t, size) __field(int, flags)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(pathname, pathname) tp_copy_string_from_user(name, name) tp_assign(value, value) tp_assign(size, size) tp_assign(flags, flags)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(pathname, pathname)) sc_in(__string_from_user(name, name)) sc_in(__field_hex(const void *, value)) sc_in(__field(size_t, size)) sc_in(__field(int, flags))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(pathname, pathname)) sc_in(tp_copy_string_from_user(name, name)) sc_in(tp_assign(value, value)) sc_in(tp_assign(size, size)) sc_in(tp_assign(flags, flags))),
 	TP_printk()
 )
 #endif
@@ -1507,8 +1507,8 @@ SC_TRACE_EVENT(sys_lsetxattr,
 SC_TRACE_EVENT(sys_fsetxattr,
 	TP_PROTO(sc_exit(long ret,) int fd, const char * name, const void * value, size_t size, int flags),
 	TP_ARGS(sc_exit(ret,) fd, name, value, size, flags),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, fd) __string_from_user(name, name) __field_hex(const void *, value) __field(size_t, size) __field(int, flags)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_copy_string_from_user(name, name) tp_assign(value, value) tp_assign(size, size) tp_assign(flags, flags)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd)) sc_in(__string_from_user(name, name)) sc_in(__field_hex(const void *, value)) sc_in(__field(size_t, size)) sc_in(__field(int, flags))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_in(tp_copy_string_from_user(name, name)) sc_in(tp_assign(value, value)) sc_in(tp_assign(size, size)) sc_in(tp_assign(flags, flags))),
 	TP_printk()
 )
 #endif
@@ -1516,8 +1516,8 @@ SC_TRACE_EVENT(sys_fsetxattr,
 SC_TRACE_EVENT(sys_io_getevents,
 	TP_PROTO(sc_exit(long ret,) aio_context_t ctx_id, long min_nr, long nr, struct io_event * events, struct timespec * timeout),
 	TP_ARGS(sc_exit(ret,) ctx_id, min_nr, nr, events, timeout),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(aio_context_t, ctx_id) __field(long, min_nr) __field(long, nr) __field_hex(struct io_event *, events) __field_hex(struct timespec *, timeout)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(ctx_id, ctx_id) tp_assign(min_nr, min_nr) tp_assign(nr, nr) tp_assign(events, events) tp_assign(timeout, timeout)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(aio_context_t, ctx_id)) sc_in(__field(long, min_nr)) sc_in(__field(long, nr)) sc_out(__field_hex(struct io_event *, events)) sc_inout(__field_hex(struct timespec *, timeout))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(ctx_id, ctx_id)) sc_in(tp_assign(min_nr, min_nr)) sc_in(tp_assign(nr, nr)) sc_out(tp_assign(events, events)) sc_inout(tp_assign(timeout, timeout))),
 	TP_printk()
 )
 #endif
@@ -1525,8 +1525,8 @@ SC_TRACE_EVENT(sys_io_getevents,
 SC_TRACE_EVENT(sys_mq_timedsend,
 	TP_PROTO(sc_exit(long ret,) mqd_t mqdes, const char * u_msg_ptr, size_t msg_len, unsigned int msg_prio, const struct timespec * u_abs_timeout),
 	TP_ARGS(sc_exit(ret,) mqdes, u_msg_ptr, msg_len, msg_prio, u_abs_timeout),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(mqd_t, mqdes) __field_hex(const char *, u_msg_ptr) __field(size_t, msg_len) __field(unsigned int, msg_prio) __field_hex(const struct timespec *, u_abs_timeout)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(mqdes, mqdes) tp_assign(u_msg_ptr, u_msg_ptr) tp_assign(msg_len, msg_len) tp_assign(msg_prio, msg_prio) tp_assign(u_abs_timeout, u_abs_timeout)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(mqd_t, mqdes)) sc_in(__field_hex(const char *, u_msg_ptr)) sc_in(__field(size_t, msg_len)) sc_in(__field(unsigned int, msg_prio)) sc_in(__field_hex(const struct timespec *, u_abs_timeout))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(mqdes, mqdes)) sc_in(tp_assign(u_msg_ptr, u_msg_ptr)) sc_in(tp_assign(msg_len, msg_len)) sc_in(tp_assign(msg_prio, msg_prio)) sc_in(tp_assign(u_abs_timeout, u_abs_timeout))),
 	TP_printk()
 )
 #endif
@@ -1534,8 +1534,8 @@ SC_TRACE_EVENT(sys_mq_timedsend,
 SC_TRACE_EVENT(sys_mq_timedreceive,
 	TP_PROTO(sc_exit(long ret,) mqd_t mqdes, char * u_msg_ptr, size_t msg_len, unsigned int * u_msg_prio, const struct timespec * u_abs_timeout),
 	TP_ARGS(sc_exit(ret,) mqdes, u_msg_ptr, msg_len, u_msg_prio, u_abs_timeout),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(mqd_t, mqdes) __field_hex(char *, u_msg_ptr) __field(size_t, msg_len) __field_hex(unsigned int *, u_msg_prio) __field_hex(const struct timespec *, u_abs_timeout)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(mqdes, mqdes) tp_assign(u_msg_ptr, u_msg_ptr) tp_assign(msg_len, msg_len) tp_assign(u_msg_prio, u_msg_prio) tp_assign(u_abs_timeout, u_abs_timeout)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(mqd_t, mqdes)) sc_out(__field_hex(char *, u_msg_ptr)) sc_in(__field(size_t, msg_len)) sc_out(__field_hex(unsigned int *, u_msg_prio)) sc_in(__field_hex(const struct timespec *, u_abs_timeout))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(mqdes, mqdes)) sc_out(tp_assign(u_msg_ptr, u_msg_ptr)) sc_in(tp_assign(msg_len, msg_len)) sc_out(tp_assign(u_msg_prio, u_msg_prio)) sc_in(tp_assign(u_abs_timeout, u_abs_timeout))),
 	TP_printk()
 )
 #endif
@@ -1543,8 +1543,8 @@ SC_TRACE_EVENT(sys_mq_timedreceive,
 SC_TRACE_EVENT(sys_waitid,
 	TP_PROTO(sc_exit(long ret,) int which, pid_t upid, struct siginfo * infop, int options, struct rusage * ru),
 	TP_ARGS(sc_exit(ret,) which, upid, infop, options, ru),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, which) __field(pid_t, upid) __field_hex(struct siginfo *, infop) __field(int, options) __field_hex(struct rusage *, ru)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(which, which) tp_assign(upid, upid) tp_assign(infop, infop) tp_assign(options, options) tp_assign(ru, ru)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, which)) sc_in(__field(pid_t, upid)) sc_out(__field_hex(struct siginfo *, infop)) sc_in(__field(int, options)) sc_out(__field_hex(struct rusage *, ru))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(which, which)) sc_in(tp_assign(upid, upid)) sc_out(tp_assign(infop, infop)) sc_in(tp_assign(options, options)) sc_out(tp_assign(ru, ru))),
 	TP_printk()
 )
 #endif
@@ -1552,8 +1552,8 @@ SC_TRACE_EVENT(sys_waitid,
 SC_TRACE_EVENT(sys_add_key,
 	TP_PROTO(sc_exit(long ret,) const char * _type, const char * _description, const void * _payload, size_t plen, key_serial_t ringid),
 	TP_ARGS(sc_exit(ret,) _type, _description, _payload, plen, ringid),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __string_from_user(_type, _type) __field_hex(const char *, _description) __field_hex(const void *, _payload) __field(size_t, plen) __field(key_serial_t, ringid)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_copy_string_from_user(_type, _type) tp_assign(_description, _description) tp_assign(_payload, _payload) tp_assign(plen, plen) tp_assign(ringid, ringid)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__string_from_user(_type, _type)) sc_in(__field_hex(const char *, _description)) sc_in(__field_hex(const void *, _payload)) sc_in(__field(size_t, plen)) sc_in(__field(key_serial_t, ringid))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_copy_string_from_user(_type, _type)) sc_in(tp_assign(_description, _description)) sc_in(tp_assign(_payload, _payload)) sc_in(tp_assign(plen, plen)) sc_in(tp_assign(ringid, ringid))),
 	TP_printk()
 )
 #endif
@@ -1561,8 +1561,8 @@ SC_TRACE_EVENT(sys_add_key,
 SC_TRACE_EVENT(sys_fchownat,
 	TP_PROTO(sc_exit(long ret,) int dfd, const char * filename, uid_t user, gid_t group, int flag),
 	TP_ARGS(sc_exit(ret,) dfd, filename, user, group, flag),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, dfd) __string_from_user(filename, filename) __field(uid_t, user) __field(gid_t, group) __field(int, flag)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(dfd, dfd) tp_copy_string_from_user(filename, filename) tp_assign(user, user) tp_assign(group, group) tp_assign(flag, flag)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, dfd)) sc_in(__string_from_user(filename, filename)) sc_in(__field(uid_t, user)) sc_in(__field(gid_t, group)) sc_in(__field(int, flag))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(dfd, dfd)) sc_in(tp_copy_string_from_user(filename, filename)) sc_in(tp_assign(user, user)) sc_in(tp_assign(group, group)) sc_in(tp_assign(flag, flag))),
 	TP_printk()
 )
 #endif
@@ -1570,8 +1570,8 @@ SC_TRACE_EVENT(sys_fchownat,
 SC_TRACE_EVENT(sys_linkat,
 	TP_PROTO(sc_exit(long ret,) int olddfd, const char * oldname, int newdfd, const char * newname, int flags),
 	TP_ARGS(sc_exit(ret,) olddfd, oldname, newdfd, newname, flags),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, olddfd) __string_from_user(oldname, oldname) __field(int, newdfd) __string_from_user(newname, newname) __field(int, flags)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(olddfd, olddfd) tp_copy_string_from_user(oldname, oldname) tp_assign(newdfd, newdfd) tp_copy_string_from_user(newname, newname) tp_assign(flags, flags)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, olddfd)) sc_in(__string_from_user(oldname, oldname)) sc_in(__field(int, newdfd)) sc_in(__string_from_user(newname, newname)) sc_in(__field(int, flags))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(olddfd, olddfd)) sc_in(tp_copy_string_from_user(oldname, oldname)) sc_in(tp_assign(newdfd, newdfd)) sc_in(tp_copy_string_from_user(newname, newname)) sc_in(tp_assign(flags, flags))),
 	TP_printk()
 )
 #endif
@@ -1579,8 +1579,8 @@ SC_TRACE_EVENT(sys_linkat,
 SC_TRACE_EVENT(sys_ppoll,
 	TP_PROTO(sc_exit(long ret,) struct pollfd * ufds, unsigned int nfds, struct timespec * tsp, const sigset_t * sigmask, size_t sigsetsize),
 	TP_ARGS(sc_exit(ret,) ufds, nfds, tsp, sigmask, sigsetsize),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(struct pollfd *, ufds) __field(unsigned int, nfds) __field_hex(struct timespec *, tsp) __field_hex(const sigset_t *, sigmask) __field(size_t, sigsetsize)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(ufds, ufds) tp_assign(nfds, nfds) tp_assign(tsp, tsp) tp_assign(sigmask, sigmask) tp_assign(sigsetsize, sigsetsize)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field_hex(struct pollfd *, ufds)) sc_in(__field(unsigned int, nfds)) sc_in(__field_hex(struct timespec *, tsp)) sc_in(__field_hex(const sigset_t *, sigmask)) sc_in(__field(size_t, sigsetsize))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(ufds, ufds)) sc_in(tp_assign(nfds, nfds)) sc_in(tp_assign(tsp, tsp)) sc_in(tp_assign(sigmask, sigmask)) sc_in(tp_assign(sigsetsize, sigsetsize))),
 	TP_printk()
 )
 #endif
@@ -1588,8 +1588,8 @@ SC_TRACE_EVENT(sys_ppoll,
 SC_TRACE_EVENT(sys_preadv,
 	TP_PROTO(sc_exit(long ret,) unsigned long fd, const struct iovec * vec, unsigned long vlen, unsigned long pos_l, unsigned long pos_h),
 	TP_ARGS(sc_exit(ret,) fd, vec, vlen, pos_l, pos_h),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned long, fd) __field_hex(const struct iovec *, vec) __field(unsigned long, vlen) __field(unsigned long, pos_l) __field(unsigned long, pos_h)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(vec, vec) tp_assign(vlen, vlen) tp_assign(pos_l, pos_l) tp_assign(pos_h, pos_h)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned long, fd)) sc_out(__field_hex(const struct iovec *, vec)) sc_in(__field(unsigned long, vlen)) sc_in(__field(unsigned long, pos_l)) sc_in(__field(unsigned long, pos_h))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_out(tp_assign(vec, vec)) sc_in(tp_assign(vlen, vlen)) sc_in(tp_assign(pos_l, pos_l)) sc_in(tp_assign(pos_h, pos_h))),
 	TP_printk()
 )
 #endif
@@ -1597,8 +1597,8 @@ SC_TRACE_EVENT(sys_preadv,
 SC_TRACE_EVENT(sys_pwritev,
 	TP_PROTO(sc_exit(long ret,) unsigned long fd, const struct iovec * vec, unsigned long vlen, unsigned long pos_l, unsigned long pos_h),
 	TP_ARGS(sc_exit(ret,) fd, vec, vlen, pos_l, pos_h),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned long, fd) __field_hex(const struct iovec *, vec) __field(unsigned long, vlen) __field(unsigned long, pos_l) __field(unsigned long, pos_h)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(vec, vec) tp_assign(vlen, vlen) tp_assign(pos_l, pos_l) tp_assign(pos_h, pos_h)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned long, fd)) sc_in(__field_hex(const struct iovec *, vec)) sc_in(__field(unsigned long, vlen)) sc_in(__field(unsigned long, pos_l)) sc_in(__field(unsigned long, pos_h))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_in(tp_assign(vec, vec)) sc_in(tp_assign(vlen, vlen)) sc_in(tp_assign(pos_l, pos_l)) sc_in(tp_assign(pos_h, pos_h))),
 	TP_printk()
 )
 #endif
@@ -1606,8 +1606,8 @@ SC_TRACE_EVENT(sys_pwritev,
 SC_TRACE_EVENT(sys_perf_event_open,
 	TP_PROTO(sc_exit(long ret,) struct perf_event_attr * attr_uptr, pid_t pid, int cpu, int group_fd, unsigned long flags),
 	TP_ARGS(sc_exit(ret,) attr_uptr, pid, cpu, group_fd, flags),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(struct perf_event_attr *, attr_uptr) __field(pid_t, pid) __field(int, cpu) __field(int, group_fd) __field(unsigned long, flags)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(attr_uptr, attr_uptr) tp_assign(pid, pid) tp_assign(cpu, cpu) tp_assign(group_fd, group_fd) tp_assign(flags, flags)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field_hex(struct perf_event_attr *, attr_uptr)) sc_in(__field(pid_t, pid)) sc_in(__field(int, cpu)) sc_in(__field(int, group_fd)) sc_in(__field(unsigned long, flags))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(attr_uptr, attr_uptr)) sc_in(tp_assign(pid, pid)) sc_in(tp_assign(cpu, cpu)) sc_in(tp_assign(group_fd, group_fd)) sc_in(tp_assign(flags, flags))),
 	TP_printk()
 )
 #endif
@@ -1615,8 +1615,8 @@ SC_TRACE_EVENT(sys_perf_event_open,
 SC_TRACE_EVENT(sys_recvmmsg,
 	TP_PROTO(sc_exit(long ret,) int fd, struct mmsghdr * mmsg, unsigned int vlen, unsigned int flags, struct timespec * timeout),
 	TP_ARGS(sc_exit(ret,) fd, mmsg, vlen, flags, timeout),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, fd) __field_hex(struct mmsghdr *, mmsg) __field(unsigned int, vlen) __field(unsigned int, flags) __field_hex(struct timespec *, timeout)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd, fd) tp_assign(mmsg, mmsg) tp_assign(vlen, vlen) tp_assign(flags, flags) tp_assign(timeout, timeout)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd)) sc_out(__field_hex(struct mmsghdr *, mmsg)) sc_in(__field(unsigned int, vlen)) sc_in(__field(unsigned int, flags)) sc_inout(__field_hex(struct timespec *, timeout))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd, fd)) sc_out(tp_assign(mmsg, mmsg)) sc_in(tp_assign(vlen, vlen)) sc_in(tp_assign(flags, flags)) sc_inout(tp_assign(timeout, timeout))),
 	TP_printk()
 )
 #endif
@@ -1624,8 +1624,8 @@ SC_TRACE_EVENT(sys_recvmmsg,
 SC_TRACE_EVENT(sys_ipc,
 	TP_PROTO(sc_exit(long ret,) unsigned int call, int first, unsigned long second, unsigned long third, void * ptr, long fifth),
 	TP_ARGS(sc_exit(ret,) call, first, second, third, ptr, fifth),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(unsigned int, call) __field(int, first) __field(unsigned long, second) __field(unsigned long, third) __field_hex(void *, ptr) __field(long, fifth)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(call, call) tp_assign(first, first) tp_assign(second, second) tp_assign(third, third) tp_assign(ptr, ptr) tp_assign(fifth, fifth)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field(unsigned int, call)) sc_inout(__field(int, first)) sc_inout(__field(unsigned long, second)) sc_inout(__field(unsigned long, third)) sc_inout(__field_hex(void *, ptr)) sc_inout(__field(long, fifth))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(call, call)) sc_inout(tp_assign(first, first)) sc_inout(tp_assign(second, second)) sc_inout(tp_assign(third, third)) sc_inout(tp_assign(ptr, ptr)) sc_inout(tp_assign(fifth, fifth))),
 	TP_printk()
 )
 #endif
@@ -1633,8 +1633,8 @@ SC_TRACE_EVENT(sys_ipc,
 SC_TRACE_EVENT(sys_futex,
 	TP_PROTO(sc_exit(long ret,) u32 * uaddr, int op, u32 val, struct timespec * utime, u32 * uaddr2, u32 val3),
 	TP_ARGS(sc_exit(ret,) uaddr, op, val, utime, uaddr2, val3),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field_hex(u32 *, uaddr) __field(int, op) __field(u32, val) __field_hex(struct timespec *, utime) __field_hex(u32 *, uaddr2) __field(u32, val3)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(uaddr, uaddr) tp_assign(op, op) tp_assign(val, val) tp_assign(utime, utime) tp_assign(uaddr2, uaddr2) tp_assign(val3, val3)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_inout(__field_hex(u32 *, uaddr)) sc_in(__field(int, op)) sc_in(__field(u32, val)) sc_in(__field_hex(struct timespec *, utime)) sc_inout(__field_hex(u32 *, uaddr2)) sc_in(__field(u32, val3))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_inout(tp_assign(uaddr, uaddr)) sc_in(tp_assign(op, op)) sc_in(tp_assign(val, val)) sc_in(tp_assign(utime, utime)) sc_inout(tp_assign(uaddr2, uaddr2)) sc_in(tp_assign(val3, val3))),
 	TP_printk()
 )
 #endif
@@ -1642,8 +1642,8 @@ SC_TRACE_EVENT(sys_futex,
 SC_TRACE_EVENT(sys_pselect6,
 	TP_PROTO(sc_exit(long ret,) int n, fd_set * inp, fd_set * outp, fd_set * exp, struct timespec * tsp, void * sig),
 	TP_ARGS(sc_exit(ret,) n, inp, outp, exp, tsp, sig),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, n) __field_hex(fd_set *, inp) __field_hex(fd_set *, outp) __field_hex(fd_set *, exp) __field_hex(struct timespec *, tsp) __field_hex(void *, sig)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(n, n) tp_assign(inp, inp) tp_assign(outp, outp) tp_assign(exp, exp) tp_assign(tsp, tsp) tp_assign(sig, sig)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, n)) sc_inout(__field_hex(fd_set *, inp)) sc_inout(__field_hex(fd_set *, outp)) sc_inout(__field_hex(fd_set *, exp)) sc_inout(__field_hex(struct timespec *, tsp)) sc_in(__field_hex(void *, sig))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(n, n)) sc_inout(tp_assign(inp, inp)) sc_inout(tp_assign(outp, outp)) sc_inout(tp_assign(exp, exp)) sc_inout(tp_assign(tsp, tsp)) sc_in(tp_assign(sig, sig))),
 	TP_printk()
 )
 #endif
@@ -1651,8 +1651,8 @@ SC_TRACE_EVENT(sys_pselect6,
 SC_TRACE_EVENT(sys_splice,
 	TP_PROTO(sc_exit(long ret,) int fd_in, loff_t * off_in, int fd_out, loff_t * off_out, size_t len, unsigned int flags),
 	TP_ARGS(sc_exit(ret,) fd_in, off_in, fd_out, off_out, len, flags),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, fd_in) __field_hex(loff_t *, off_in) __field(int, fd_out) __field_hex(loff_t *, off_out) __field(size_t, len) __field(unsigned int, flags)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(fd_in, fd_in) tp_assign(off_in, off_in) tp_assign(fd_out, fd_out) tp_assign(off_out, off_out) tp_assign(len, len) tp_assign(flags, flags)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd_in)) sc_in(__field_hex(loff_t *, off_in)) sc_in(__field(int, fd_out)) sc_in(__field_hex(loff_t *, off_out)) sc_in(__field(size_t, len)) sc_in(__field(unsigned int, flags))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(fd_in, fd_in)) sc_in(tp_assign(off_in, off_in)) sc_in(tp_assign(fd_out, fd_out)) sc_in(tp_assign(off_out, off_out)) sc_in(tp_assign(len, len)) sc_in(tp_assign(flags, flags))),
 	TP_printk()
 )
 #endif
@@ -1660,8 +1660,8 @@ SC_TRACE_EVENT(sys_splice,
 SC_TRACE_EVENT(sys_epoll_pwait,
 	TP_PROTO(sc_exit(long ret,) int epfd, struct epoll_event * events, int maxevents, int timeout, const sigset_t * sigmask, size_t sigsetsize),
 	TP_ARGS(sc_exit(ret,) epfd, events, maxevents, timeout, sigmask, sigsetsize),
-	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field(int, epfd) __field_hex(struct epoll_event *, events) __field(int, maxevents) __field(int, timeout) __field_hex(const sigset_t *, sigmask) __field(size_t, sigsetsize)),
-	TP_fast_assign(sc_exit(tp_assign(ret, ret)) tp_assign(epfd, epfd) tp_assign(events, events) tp_assign(maxevents, maxevents) tp_assign(timeout, timeout) tp_assign(sigmask, sigmask) tp_assign(sigsetsize, sigsetsize)),
+	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, epfd)) sc_out(__field_hex(struct epoll_event *, events)) sc_in(__field(int, maxevents)) sc_in(__field(int, timeout)) sc_in(__field_hex(const sigset_t *, sigmask)) sc_in(__field(size_t, sigsetsize))),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret)) sc_in(tp_assign(epfd, epfd)) sc_out(tp_assign(events, events)) sc_in(tp_assign(maxevents, maxevents)) sc_in(tp_assign(timeout, timeout)) sc_in(tp_assign(sigmask, sigmask)) sc_in(tp_assign(sigsetsize, sigsetsize))),
 	TP_printk()
 )
 #endif
