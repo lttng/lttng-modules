@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # example usage:
-# lttng-get-syscall-inout.sh table-syscall-inout.txt sys_select 1
+# lttng-get-syscall-inout.sh table-syscall-inout.txt select 1
 
 FILENAME=$1
 SYSCALL_NAME=$2

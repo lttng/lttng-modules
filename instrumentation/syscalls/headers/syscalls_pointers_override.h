@@ -1,9 +1,9 @@
-#define OVERRIDE_32_sys_execve
-#define OVERRIDE_64_sys_execve
+#define OVERRIDE_32_execve
+#define OVERRIDE_64_execve
 
 #ifndef CREATE_SYSCALL_TABLE
 
-SC_TRACE_EVENT(sys_execve,
+SC_TRACE_EVENT(execve,
 	TP_PROTO(sc_exit(long ret,) const char *filename, char *const *argv, char *const *envp),
 	TP_ARGS(sc_exit(ret,) filename, argv, envp),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))
@@ -17,7 +17,7 @@ SC_TRACE_EVENT(sys_execve,
 	TP_printk()
 )
 
-SC_TRACE_EVENT(sys_clone,
+SC_TRACE_EVENT(clone,
 	TP_PROTO(sc_exit(long ret,) unsigned long clone_flags, unsigned long newsp,
 		void __user *parent_tid,
 		void __user *child_tid),
@@ -38,9 +38,9 @@ SC_TRACE_EVENT(sys_clone,
 )
 
 /* present in 32, missing in 64 due to old kernel headers */
-#define OVERRIDE_32_sys_getcpu
-#define OVERRIDE_64_sys_getcpu
-SC_TRACE_EVENT(sys_getcpu,
+#define OVERRIDE_32_getcpu
+#define OVERRIDE_64_getcpu
+SC_TRACE_EVENT(getcpu,
 	TP_PROTO(sc_exit(long ret,) unsigned __user *cpup, unsigned __user *nodep, void *tcache),
 	TP_ARGS(sc_exit(ret,) cpup, nodep, tcache),
 	TP_STRUCT__entry(
