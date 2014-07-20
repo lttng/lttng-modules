@@ -37,8 +37,22 @@
 # endif
 #endif
 
+enum sc_type {
+	SC_TYPE_ENTRY,
+	SC_TYPE_EXIT,
+	SC_TYPE_COMPAT_ENTRY,
+	SC_TYPE_COMPAT_EXIT,
+};
+
+#define SYSCALL_ENTRY_STR		"syscall_entry_"
+#define COMPAT_SYSCALL_ENTRY_STR	"compat_syscall_entry_"
+#define SYSCALL_EXIT_STR		"syscall_exit_"
+#define COMPAT_SYSCALL_EXIT_STR		"compat_syscall_exit_"
+
 static
 void syscall_entry_probe(void *__data, struct pt_regs *regs, long id);
+static
+void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret);
 
 /*
  * Forward declarations for old kernels.
@@ -73,58 +87,129 @@ struct mmap_arg_struct;
 
 #define PARAMS(args...)	args
 
-/* Hijack probe callback for system calls */
-#undef TP_PROBE_CB
-#define TP_PROBE_CB(_template)		&syscall_entry_probe
-#define SC_TRACE_EVENT(_name, _proto, _args, _struct, _assign, _printk)	\
-	TRACE_EVENT(_name, PARAMS(_proto), PARAMS(_args),\
-		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
-#define SC_DECLARE_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk)	\
-	DECLARE_EVENT_CLASS_NOARGS(_name, PARAMS(_struct), PARAMS(_assign),\
-		PARAMS(_printk))
-#define SC_DEFINE_EVENT_NOARGS(_template, _name)			\
-	DEFINE_EVENT_NOARGS(_template, _name)
-#undef TRACE_SYSTEM
-#define TRACE_SYSTEM syscalls_integers
-#include "instrumentation/syscalls/headers/syscalls_integers.h"
-#undef TRACE_SYSTEM
-#define TRACE_SYSTEM syscalls_pointers
-#include "instrumentation/syscalls/headers/syscalls_pointers.h"
-#undef TRACE_SYSTEM
-#undef SC_TRACE_EVENT
-#undef SC_DECLARE_EVENT_CLASS_NOARGS
-#undef SC_DEFINE_EVENT_NOARGS
-
+/* Handle unknown syscalls */
 #define TRACE_SYSTEM syscalls_unknown
 #include "instrumentation/syscalls/headers/syscalls_unknown.h"
 #undef TRACE_SYSTEM
 
-/* For compat syscalls */
-#undef _TRACE_SYSCALLS_integers_H
-#undef _TRACE_SYSCALLS_pointers_H
 
-/* Hijack probe callback for system calls */
+/* Hijack probe callback for system call enter */
 #undef TP_PROBE_CB
 #define TP_PROBE_CB(_template)		&syscall_entry_probe
 #define SC_TRACE_EVENT(_name, _proto, _args, _struct, _assign, _printk)	\
-	TRACE_EVENT(compat_##_name, PARAMS(_proto), PARAMS(_args),	\
-		PARAMS(_struct), PARAMS(_assign),			\
+	TRACE_EVENT(syscall_enter_##_name, PARAMS(_proto), PARAMS(_args),\
+		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
+#define SC_DECLARE_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk)	\
+	DECLARE_EVENT_CLASS_NOARGS(syscall_enter_##_name, PARAMS(_struct), PARAMS(_assign),\
 		PARAMS(_printk))
-#define SC_DECLARE_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk) \
-	DECLARE_EVENT_CLASS_NOARGS(compat_##_name, PARAMS(_struct),	\
-		PARAMS(_assign), PARAMS(_printk))
 #define SC_DEFINE_EVENT_NOARGS(_template, _name)			\
-	DEFINE_EVENT_NOARGS(compat_##_template, compat_##_name)
-#define TRACE_SYSTEM compat_syscalls_integers
-#include "instrumentation/syscalls/headers/compat_syscalls_integers.h"
+	DEFINE_EVENT_NOARGS(syscall_enter_##_template, syscall_enter_##_name)
 #undef TRACE_SYSTEM
-#define TRACE_SYSTEM compat_syscalls_pointers
-#include "instrumentation/syscalls/headers/compat_syscalls_pointers.h"
+#define TRACE_SYSTEM syscall_enter_integers
+#define TRACE_INCLUDE_FILE syscalls_integers
+#include "instrumentation/syscalls/headers/syscalls_integers.h"
+#undef TRACE_INCLUDE_FILE
+#undef TRACE_SYSTEM
+#define TRACE_SYSTEM syscall_enter_pointers
+#define TRACE_INCLUDE_FILE syscalls_pointers
+#include "instrumentation/syscalls/headers/syscalls_pointers.h"
+#undef TRACE_INCLUDE_FILE
 #undef TRACE_SYSTEM
 #undef SC_TRACE_EVENT
 #undef SC_DECLARE_EVENT_CLASS_NOARGS
 #undef SC_DEFINE_EVENT_NOARGS
 #undef TP_PROBE_CB
+#undef _TRACE_SYSCALLS_integers_H
+#undef _TRACE_SYSCALLS_pointers_H
+
+
+/* Hijack probe callback for compat system call enter */
+#define TP_PROBE_CB(_template)		&syscall_entry_probe
+#define SC_TRACE_EVENT(_name, _proto, _args, _struct, _assign, _printk)	\
+	TRACE_EVENT(compat_syscall_enter_##_name, PARAMS(_proto), PARAMS(_args), \
+		PARAMS(_struct), PARAMS(_assign),			\
+		PARAMS(_printk))
+#define SC_DECLARE_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk) \
+	DECLARE_EVENT_CLASS_NOARGS(compat_syscall_enter_##_name, PARAMS(_struct), \
+		PARAMS(_assign), PARAMS(_printk))
+#define SC_DEFINE_EVENT_NOARGS(_template, _name)			\
+	DEFINE_EVENT_NOARGS(compat_syscall_enter_##_template,		\
+		compat_syscall_enter_##_name)
+#define TRACE_SYSTEM compat_syscall_enter_integers
+#define TRACE_INCLUDE_FILE compat_syscalls_integers
+#include "instrumentation/syscalls/headers/compat_syscalls_integers.h"
+#undef TRACE_INCLUDE_FILE
+#undef TRACE_SYSTEM
+#define TRACE_SYSTEM compat_syscall_enter_pointers
+#define TRACE_INCLUDE_FILE compat_syscalls_pointers
+#include "instrumentation/syscalls/headers/compat_syscalls_pointers.h"
+#undef TRACE_INCLUDE_FILE
+#undef TRACE_SYSTEM
+#undef SC_TRACE_EVENT
+#undef SC_DECLARE_EVENT_CLASS_NOARGS
+#undef SC_DEFINE_EVENT_NOARGS
+#undef TP_PROBE_CB
+#undef _TRACE_SYSCALLS_integers_H
+#undef _TRACE_SYSCALLS_pointers_H
+
+
+/* Hijack probe callback for system call exit */
+#define TP_PROBE_CB(_template)		&syscall_exit_probe
+#define SC_TRACE_EVENT(_name, _proto, _args, _struct, _assign, _printk)	\
+	TRACE_EVENT(syscall_exit_##_name, PARAMS(_proto), PARAMS(_args),\
+		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
+#define SC_DECLARE_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk) \
+	DECLARE_EVENT_CLASS_NOARGS(syscall_exit_##_name, PARAMS(_struct), \
+		PARAMS(_assign), PARAMS(_printk))
+#define SC_DEFINE_EVENT_NOARGS(_template, _name)			\
+	DEFINE_EVENT_NOARGS(syscall_exit_##_template,			\
+		syscall_exit_##_name)
+#define TRACE_SYSTEM syscall_exit_integers
+#define TRACE_INCLUDE_FILE syscalls_integers
+#include "instrumentation/syscalls/headers/syscalls_integers.h"
+#undef TRACE_INCLUDE_FILE
+#undef TRACE_SYSTEM
+#define TRACE_SYSTEM syscall_exit_pointers
+#define TRACE_INCLUDE_FILE syscalls_pointers
+#include "instrumentation/syscalls/headers/syscalls_pointers.h"
+#undef TRACE_INCLUDE_FILE
+#undef TRACE_SYSTEM
+#undef SC_TRACE_EVENT
+#undef SC_DECLARE_EVENT_CLASS_NOARGS
+#undef SC_DEFINE_EVENT_NOARGS
+#undef TP_PROBE_CB
+#undef _TRACE_SYSCALLS_integers_H
+#undef _TRACE_SYSCALLS_pointers_H
+
+
+/* Hijack probe callback for compat system call exit */
+#define TP_PROBE_CB(_template)		&syscall_exit_probe
+#define SC_TRACE_EVENT(_name, _proto, _args, _struct, _assign, _printk)	\
+	TRACE_EVENT(compat_syscall_exit_##_name, PARAMS(_proto), PARAMS(_args), \
+		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
+#define SC_DECLARE_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk) \
+	DECLARE_EVENT_CLASS_NOARGS(compat_syscall_exit_##_name, PARAMS(_struct), \
+		PARAMS(_assign), PARAMS(_printk))
+#define SC_DEFINE_EVENT_NOARGS(_template, _name)			\
+	DEFINE_EVENT_NOARGS(compat_syscall_exit_##_template,		\
+		compat_syscall_exit_##_name)
+#define TRACE_SYSTEM compat_syscall_exit_integers
+#define TRACE_INCLUDE_FILE compat_syscalls_integers
+#include "instrumentation/syscalls/headers/compat_syscalls_integers.h"
+#undef TRACE_INCLUDE_FILE
+#undef TRACE_SYSTEM
+#define TRACE_SYSTEM compat_syscall_exit_pointers
+#define TRACE_INCLUDE_FILE compat_syscalls_pointers
+#include "instrumentation/syscalls/headers/compat_syscalls_pointers.h"
+#undef TRACE_INCLUDE_FILE
+#undef TRACE_SYSTEM
+#undef SC_TRACE_EVENT
+#undef SC_DECLARE_EVENT_CLASS_NOARGS
+#undef SC_DEFINE_EVENT_NOARGS
+#undef TP_PROBE_CB
+#undef _TRACE_SYSCALLS_integers_H
+#undef _TRACE_SYSCALLS_pointers_H
+
 
 #undef TP_MODULE_NOINIT
 #undef LTTNG_PACKAGE_BUILD
@@ -142,12 +227,13 @@ struct trace_syscall_entry {
 #undef TRACE_SYSCALL_TABLE
 #define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
 	[ _nr ] = {						\
-		.func = __event_probe__##_template,		\
+		.func = __event_probe__syscall_enter_##_template, \
 		.nrargs = (_nrargs),				\
-		.fields = __event_fields___##_template,		\
-		.desc = &__event_desc___##_name,		\
+		.fields = __event_fields___syscall_enter_##_template, \
+		.desc = &__event_desc___syscall_enter_##_name,	\
 	},
 
+/* Syscall enter tracing table */
 static const struct trace_syscall_entry sc_table[] = {
 #include "instrumentation/syscalls/headers/syscalls_integers.h"
 #include "instrumentation/syscalls/headers/syscalls_pointers.h"
@@ -156,14 +242,44 @@ static const struct trace_syscall_entry sc_table[] = {
 #undef TRACE_SYSCALL_TABLE
 #define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
 	[ _nr ] = {						\
-		.func = __event_probe__##compat_##_template,	\
+		.func = __event_probe__compat_syscall_enter_##_template, \
 		.nrargs = (_nrargs),				\
-		.fields = __event_fields___##compat_##_template,\
-		.desc = &__event_desc___##compat_##_name,	\
+		.fields = __event_fields___compat_syscall_enter_##_template, \
+		.desc = &__event_desc___compat_syscall_enter_##_name, \
 	},
 
-/* Create compatibility syscall table */
+/* Compat syscall enter table */
 const struct trace_syscall_entry compat_sc_table[] = {
+#include "instrumentation/syscalls/headers/compat_syscalls_integers.h"
+#include "instrumentation/syscalls/headers/compat_syscalls_pointers.h"
+};
+
+#undef TRACE_SYSCALL_TABLE
+#define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
+	[ _nr ] = {						\
+		.func = __event_probe__syscall_exit_##_template, \
+		.nrargs = (_nrargs),				\
+		.fields = __event_fields___syscall_exit_##_template, \
+		.desc = &__event_desc___syscall_exit_##_name, \
+	},
+
+/* Syscall exit table */
+static const struct trace_syscall_entry sc_exit_table[] = {
+#include "instrumentation/syscalls/headers/syscalls_integers.h"
+#include "instrumentation/syscalls/headers/syscalls_pointers.h"
+};
+
+#undef TRACE_SYSCALL_TABLE
+#define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
+	[ _nr ] = {						\
+		.func = __event_probe__compat_syscall_exit_##_template, \
+		.nrargs = (_nrargs),				\
+		.fields = __event_fields___compat_syscall_exit_##_template, \
+		.desc = &__event_desc___compat_syscall_exit_##_name, \
+	},
+
+/* Compat syscall exit table */
+const struct trace_syscall_entry compat_sc_exit_table[] = {
 #include "instrumentation/syscalls/headers/compat_syscalls_integers.h"
 #include "instrumentation/syscalls/headers/compat_syscalls_pointers.h"
 };
@@ -182,9 +298,9 @@ static void syscall_entry_unknown(struct lttng_event *event,
 
 	syscall_get_arguments(current, regs, 0, UNKNOWN_SYSCALL_NRARGS, args);
 	if (unlikely(is_compat_task()))
-		__event_probe__compat_sys_unknown(event, id, args);
+		__event_probe__compat_syscall_enter_unknown(event, id, args);
 	else
-		__event_probe__sys_unknown(event, id, args);
+		__event_probe__syscall_enter_unknown(event, id, args);
 }
 
 void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
@@ -326,10 +442,166 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 	}
 }
 
+static void syscall_exit_unknown(struct lttng_event *event,
+	struct pt_regs *regs, unsigned int id, long ret)
+{
+	unsigned long args[UNKNOWN_SYSCALL_NRARGS];
+
+	syscall_get_arguments(current, regs, 0, UNKNOWN_SYSCALL_NRARGS, args);
+	if (unlikely(is_compat_task()))
+		__event_probe__compat_syscall_exit_unknown(event, id, ret,
+			args);
+	else
+		__event_probe__syscall_exit_unknown(event, id, ret, args);
+}
+
+void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
+{
+	struct lttng_channel *chan = __data;
+	struct lttng_event *event, *unknown_event;
+	const struct trace_syscall_entry *table, *entry;
+	size_t table_len;
+	long id;
+
+	id = syscall_get_nr(current, regs);
+	if (unlikely(is_compat_task())) {
+		struct lttng_syscall_filter *filter;
+
+		filter = rcu_dereference(chan->sc_filter);
+		if (filter) {
+			if (id >= NR_compat_syscalls
+				|| !test_bit(id, filter->sc_compat)) {
+				/* System call filtered out. */
+				return;
+			}
+		}
+		table = compat_sc_exit_table;
+		table_len = ARRAY_SIZE(compat_sc_exit_table);
+		unknown_event = chan->compat_sc_exit_unknown;
+	} else {
+		struct lttng_syscall_filter *filter;
+
+		filter = rcu_dereference(chan->sc_filter);
+		if (filter) {
+			if (id >= NR_syscalls
+				|| !test_bit(id, filter->sc)) {
+				/* System call filtered out. */
+				return;
+			}
+		}
+		table = sc_exit_table;
+		table_len = ARRAY_SIZE(sc_exit_table);
+		unknown_event = chan->sc_exit_unknown;
+	}
+	if (unlikely(id >= table_len)) {
+		syscall_exit_unknown(unknown_event, regs, id, ret);
+		return;
+	}
+	if (unlikely(is_compat_task()))
+		event = chan->compat_sc_exit_table[id];
+	else
+		event = chan->sc_exit_table[id];
+	if (unlikely(!event)) {
+		syscall_exit_unknown(unknown_event, regs, id, ret);
+		return;
+	}
+	entry = &table[id];
+	WARN_ON_ONCE(!entry);
+
+	switch (entry->nrargs) {
+	case 0:
+	{
+		void (*fptr)(void *__data) = entry->func;
+
+		fptr(event);
+		break;
+	}
+	case 1:
+	{
+		void (*fptr)(void *__data,
+			unsigned long arg0) = entry->func;
+		unsigned long args[1];
+
+		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		fptr(event, args[0]);
+		break;
+	}
+	case 2:
+	{
+		void (*fptr)(void *__data,
+			unsigned long arg0,
+			unsigned long arg1) = entry->func;
+		unsigned long args[2];
+
+		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		fptr(event, args[0], args[1]);
+		break;
+	}
+	case 3:
+	{
+		void (*fptr)(void *__data,
+			unsigned long arg0,
+			unsigned long arg1,
+			unsigned long arg2) = entry->func;
+		unsigned long args[3];
+
+		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		fptr(event, args[0], args[1], args[2]);
+		break;
+	}
+	case 4:
+	{
+		void (*fptr)(void *__data,
+			unsigned long arg0,
+			unsigned long arg1,
+			unsigned long arg2,
+			unsigned long arg3) = entry->func;
+		unsigned long args[4];
+
+		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		fptr(event, args[0], args[1], args[2], args[3]);
+		break;
+	}
+	case 5:
+	{
+		void (*fptr)(void *__data,
+			unsigned long arg0,
+			unsigned long arg1,
+			unsigned long arg2,
+			unsigned long arg3,
+			unsigned long arg4) = entry->func;
+		unsigned long args[5];
+
+		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		fptr(event, args[0], args[1], args[2], args[3], args[4]);
+		break;
+	}
+	case 6:
+	{
+		void (*fptr)(void *__data,
+			unsigned long arg0,
+			unsigned long arg1,
+			unsigned long arg2,
+			unsigned long arg3,
+			unsigned long arg4,
+			unsigned long arg5) = entry->func;
+		unsigned long args[6];
+
+		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		fptr(event, args[0], args[1], args[2],
+			args[3], args[4], args[5]);
+		break;
+	}
+	default:
+		break;
+	}
+}
+
 /* noinline to diminish caller stack size */
 static
 int fill_table(const struct trace_syscall_entry *table, size_t table_len,
-	struct lttng_event **chan_table, struct lttng_channel *chan, void *filter)
+	struct lttng_event **chan_table, struct lttng_channel *chan,
+	void *filter, enum sc_type type)
 {
 	const struct lttng_event_desc *desc;
 	unsigned int i;
@@ -350,7 +622,29 @@ int fill_table(const struct trace_syscall_entry *table, size_t table_len,
 		if (chan_table[i])
 			continue;
 		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
+		switch (type) {
+		case SC_TYPE_ENTRY:
+			strncpy(ev.name, SYSCALL_ENTRY_STR,
+				LTTNG_KERNEL_SYM_NAME_LEN);
+			break;
+		case SC_TYPE_EXIT:
+			strncpy(ev.name, SYSCALL_EXIT_STR,
+				LTTNG_KERNEL_SYM_NAME_LEN);
+			break;
+		case SC_TYPE_COMPAT_ENTRY:
+			strncpy(ev.name, COMPAT_SYSCALL_ENTRY_STR,
+				LTTNG_KERNEL_SYM_NAME_LEN);
+			break;
+		case SC_TYPE_COMPAT_EXIT:
+			strncpy(ev.name, COMPAT_SYSCALL_EXIT_STR,
+				LTTNG_KERNEL_SYM_NAME_LEN);
+			break;
+		default:
+			BUG_ON(1);
+			break;
+		}
+		strncat(ev.name, desc->name,
+			LTTNG_KERNEL_SYM_NAME_LEN - strlen(ev.name) - 1);
 		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_NOOP;
 		chan_table[i] = lttng_event_create(chan, &ev, filter,
@@ -383,6 +677,14 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 		if (!chan->sc_table)
 			return -ENOMEM;
 	}
+	if (!chan->sc_exit_table) {
+		/* create syscall table mapping syscall to events */
+		chan->sc_exit_table = kzalloc(sizeof(struct lttng_event *)
+					* ARRAY_SIZE(sc_exit_table), GFP_KERNEL);
+		if (!chan->sc_exit_table)
+			return -ENOMEM;
+	}
+
 
 #ifdef CONFIG_COMPAT
 	if (!chan->compat_sc_table) {
@@ -392,10 +694,18 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 		if (!chan->compat_sc_table)
 			return -ENOMEM;
 	}
+
+	if (!chan->compat_sc_exit_table) {
+		/* create syscall table mapping compat syscall to events */
+		chan->compat_sc_exit_table = kzalloc(sizeof(struct lttng_event *)
+					* ARRAY_SIZE(compat_sc_exit_table), GFP_KERNEL);
+		if (!chan->compat_sc_exit_table)
+			return -ENOMEM;
+	}
 #endif
 	if (!chan->sc_unknown) {
 		const struct lttng_event_desc *desc =
-			&__event_desc___sys_unknown;
+			&__event_desc___syscall_enter_unknown;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
@@ -411,7 +721,7 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 
 	if (!chan->sc_compat_unknown) {
 		const struct lttng_event_desc *desc =
-			&__event_desc___compat_sys_unknown;
+			&__event_desc___compat_syscall_enter_unknown;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
@@ -425,29 +735,56 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 		}
 	}
 
-	if (!chan->sc_exit) {
+	if (!chan->compat_sc_exit_unknown) {
 		const struct lttng_event_desc *desc =
-			&__event_desc___exit_syscall;
+			&__event_desc___compat_syscall_exit_unknown;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
 		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_NOOP;
-		chan->sc_exit = lttng_event_create(chan, &ev, filter,
+		chan->compat_sc_exit_unknown = lttng_event_create(chan, &ev,
+						filter, desc);
+		WARN_ON_ONCE(!chan->compat_sc_exit_unknown);
+		if (IS_ERR(chan->compat_sc_exit_unknown)) {
+			return PTR_ERR(chan->compat_sc_exit_unknown);
+		}
+	}
+
+	if (!chan->sc_exit_unknown) {
+		const struct lttng_event_desc *desc =
+			&__event_desc___syscall_exit_unknown;
+
+		memset(&ev, 0, sizeof(ev));
+		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
+		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
+		ev.instrumentation = LTTNG_KERNEL_NOOP;
+		chan->sc_exit_unknown = lttng_event_create(chan, &ev, filter,
 						 desc);
-		WARN_ON_ONCE(!chan->sc_exit);
-		if (IS_ERR(chan->sc_exit)) {
-			return PTR_ERR(chan->sc_exit);
+		WARN_ON_ONCE(!chan->sc_exit_unknown);
+		if (IS_ERR(chan->sc_exit_unknown)) {
+			return PTR_ERR(chan->sc_exit_unknown);
 		}
 	}
 
 	ret = fill_table(sc_table, ARRAY_SIZE(sc_table),
-			chan->sc_table, chan, filter);
+			chan->sc_table, chan, filter, SC_TYPE_ENTRY);
 	if (ret)
 		return ret;
+	ret = fill_table(sc_exit_table, ARRAY_SIZE(sc_exit_table),
+			chan->sc_exit_table, chan, filter, SC_TYPE_EXIT);
+	if (ret)
+		return ret;
+
 #ifdef CONFIG_COMPAT
 	ret = fill_table(compat_sc_table, ARRAY_SIZE(compat_sc_table),
-			chan->compat_sc_table, chan, filter);
+			chan->compat_sc_table, chan, filter,
+			SC_TYPE_COMPAT_ENTRY);
+	if (ret)
+		return ret;
+	ret = fill_table(compat_sc_exit_table, ARRAY_SIZE(compat_sc_exit_table),
+			chan->compat_sc_exit_table, chan, filter,
+			SC_TYPE_COMPAT_EXIT);
 	if (ret)
 		return ret;
 #endif
@@ -464,8 +801,7 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 	 */
 	if (!chan->sys_exit_registered) {
 		ret = lttng_wrapper_tracepoint_probe_register("sys_exit",
-				(void *) __event_probe__exit_syscall,
-				chan->sc_exit);
+				(void *) syscall_exit_probe, chan);
 		if (ret) {
 			WARN_ON_ONCE(lttng_wrapper_tracepoint_probe_unregister("sys_enter",
 				(void *) syscall_entry_probe, chan));
@@ -487,8 +823,7 @@ int lttng_syscalls_unregister(struct lttng_channel *chan)
 		return 0;
 	if (chan->sys_enter_registered) {
 		ret = lttng_wrapper_tracepoint_probe_unregister("sys_exit",
-				(void *) __event_probe__exit_syscall,
-				chan->sc_exit);
+				(void *) syscall_exit_probe, chan);
 		if (ret)
 			return ret;
 		chan->sys_enter_registered = 0;
@@ -502,8 +837,10 @@ int lttng_syscalls_unregister(struct lttng_channel *chan)
 	}
 	/* lttng_event destroy will be performed by lttng_session_destroy() */
 	kfree(chan->sc_table);
+	kfree(chan->sc_exit_table);
 #ifdef CONFIG_COMPAT
 	kfree(chan->compat_sc_table);
+	kfree(chan->compat_sc_exit_table);
 #endif
 	kfree(chan->sc_filter);
 	return 0;
@@ -517,11 +854,14 @@ int get_syscall_nr(const char *syscall_name)
 
 	for (i = 0; i < ARRAY_SIZE(sc_table); i++) {
 		const struct trace_syscall_entry *entry;
+		const char *it_name;
 
 		entry = &sc_table[i];
 		if (!entry->desc)
 			continue;
-		if (!strcmp(syscall_name, entry->desc->name)) {
+		it_name = entry->desc->name;
+		it_name += strlen(SYSCALL_ENTRY_STR);
+		if (!strcmp(syscall_name, it_name)) {
 			syscall_nr = i;
 			break;
 		}
@@ -537,11 +877,14 @@ int get_compat_syscall_nr(const char *syscall_name)
 
 	for (i = 0; i < ARRAY_SIZE(compat_sc_table); i++) {
 		const struct trace_syscall_entry *entry;
+		const char *it_name;
 
 		entry = &compat_sc_table[i];
 		if (!entry->desc)
 			continue;
-		if (!strcmp(syscall_name, entry->desc->name)) {
+		it_name = entry->desc->name;
+		it_name += strlen(COMPAT_SYSCALL_ENTRY_STR);
+		if (!strcmp(syscall_name, it_name)) {
 			syscall_nr = i;
 			break;
 		}

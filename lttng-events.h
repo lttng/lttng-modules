@@ -296,9 +296,12 @@ struct lttng_channel {
 	struct lttng_transport *transport;
 	struct lttng_event **sc_table;	/* for syscall tracing */
 	struct lttng_event **compat_sc_table;
+	struct lttng_event **sc_exit_table;	/* for syscall exit tracing */
+	struct lttng_event **compat_sc_exit_table;
 	struct lttng_event *sc_unknown;	/* for unknown syscalls */
 	struct lttng_event *sc_compat_unknown;
-	struct lttng_event *sc_exit;	/* for syscall exit */
+	struct lttng_event *sc_exit_unknown;
+	struct lttng_event *compat_sc_exit_unknown;
 	struct lttng_syscall_filter *sc_filter;
 	int header_type;		/* 0: unset, 1: compact, 2: large */
 	enum channel_type channel_type;
