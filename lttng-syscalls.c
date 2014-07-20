@@ -92,6 +92,14 @@ struct mmap_arg_struct;
 #include "instrumentation/syscalls/headers/syscalls_unknown.h"
 #undef TRACE_SYSTEM
 
+#define SC_ENTER
+
+#undef SC_EXIT_PROTO
+#define SC_EXIT_PROTO(...)
+#undef SC_EXIT_ARGS
+#define SC_EXIT_ARGS(...)
+#undef sc_exit
+#define sc_exit(...)
 
 /* Hijack probe callback for system call enter */
 #undef TP_PROBE_CB
@@ -152,6 +160,16 @@ struct mmap_arg_struct;
 #undef _TRACE_SYSCALLS_integers_H
 #undef _TRACE_SYSCALLS_pointers_H
 
+#undef SC_ENTER
+
+#define SC_EXIT
+
+#undef SC_EXIT_PROTO
+#define SC_EXIT_PROTO(...)	__VA_ARGS__
+#undef SC_EXIT_ARGS
+#define SC_EXIT_ARGS(...)	__VA_ARGS__
+#undef sc_exit
+#define sc_exit(...)		__VA_ARGS__
 
 /* Hijack probe callback for system call exit */
 #define TP_PROBE_CB(_template)		&syscall_exit_probe
@@ -210,6 +228,7 @@ struct mmap_arg_struct;
 #undef _TRACE_SYSCALLS_integers_H
 #undef _TRACE_SYSCALLS_pointers_H
 
+#undef SC_EXIT
 
 #undef TP_MODULE_NOINIT
 #undef LTTNG_PACKAGE_BUILD
@@ -223,6 +242,11 @@ struct trace_syscall_entry {
 };
 
 #define CREATE_SYSCALL_TABLE
+
+#define SC_ENTER
+
+#undef sc_exit
+#define sc_exit(...)
 
 #undef TRACE_SYSCALL_TABLE
 #define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
@@ -254,6 +278,13 @@ const struct trace_syscall_entry compat_sc_table[] = {
 #include "instrumentation/syscalls/headers/compat_syscalls_pointers.h"
 };
 
+#undef SC_ENTER
+
+#define SC_EXIT
+
+#undef sc_exit
+#define sc_exit(...)		__VA_ARGS__
+
 #undef TRACE_SYSCALL_TABLE
 #define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
 	[ _nr ] = {						\
@@ -283,6 +314,8 @@ const struct trace_syscall_entry compat_sc_exit_table[] = {
 #include "instrumentation/syscalls/headers/compat_syscalls_integers.h"
 #include "instrumentation/syscalls/headers/compat_syscalls_pointers.h"
 };
+
+#undef SC_EXIT
 
 #undef CREATE_SYSCALL_TABLE
 
@@ -511,47 +544,51 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 	switch (entry->nrargs) {
 	case 0:
 	{
-		void (*fptr)(void *__data) = entry->func;
+		void (*fptr)(void *__data, long ret) = entry->func;
 
-		fptr(event);
+		fptr(event, ret);
 		break;
 	}
 	case 1:
 	{
 		void (*fptr)(void *__data,
+			long ret,
 			unsigned long arg0) = entry->func;
 		unsigned long args[1];
 
 		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
-		fptr(event, args[0]);
+		fptr(event, ret, args[0]);
 		break;
 	}
 	case 2:
 	{
 		void (*fptr)(void *__data,
+			long ret,
 			unsigned long arg0,
 			unsigned long arg1) = entry->func;
 		unsigned long args[2];
 
 		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
-		fptr(event, args[0], args[1]);
+		fptr(event, ret, args[0], args[1]);
 		break;
 	}
 	case 3:
 	{
 		void (*fptr)(void *__data,
+			long ret,
 			unsigned long arg0,
 			unsigned long arg1,
 			unsigned long arg2) = entry->func;
 		unsigned long args[3];
 
 		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
-		fptr(event, args[0], args[1], args[2]);
+		fptr(event, ret, args[0], args[1], args[2]);
 		break;
 	}
 	case 4:
 	{
 		void (*fptr)(void *__data,
+			long ret,
 			unsigned long arg0,
 			unsigned long arg1,
 			unsigned long arg2,
@@ -559,12 +596,13 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 		unsigned long args[4];
 
 		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
-		fptr(event, args[0], args[1], args[2], args[3]);
+		fptr(event, ret, args[0], args[1], args[2], args[3]);
 		break;
 	}
 	case 5:
 	{
 		void (*fptr)(void *__data,
+			long ret,
 			unsigned long arg0,
 			unsigned long arg1,
 			unsigned long arg2,
@@ -573,12 +611,13 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 		unsigned long args[5];
 
 		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
-		fptr(event, args[0], args[1], args[2], args[3], args[4]);
+		fptr(event, ret, args[0], args[1], args[2], args[3], args[4]);
 		break;
 	}
 	case 6:
 	{
 		void (*fptr)(void *__data,
+			long ret,
 			unsigned long arg0,
 			unsigned long arg1,
 			unsigned long arg2,
@@ -588,7 +627,7 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 		unsigned long args[6];
 
 		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
-		fptr(event, args[0], args[1], args[2],
+		fptr(event, ret, args[0], args[1], args[2],
 			args[3], args[4], args[5]);
 		break;
 	}

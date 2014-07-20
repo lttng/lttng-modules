@@ -85,6 +85,10 @@ if [ "$CLASS" = integers ]; then
 NRARGS=0
 
 printf \
+'#ifdef SC_ENTER\n'\
+	>> ${HEADER}
+
+printf \
 'SC_DECLARE_EVENT_CLASS_NOARGS(syscalls_noargs,\n'\
 '	TP_STRUCT__entry(),\n'\
 '	TP_fast_assign(),\n'\
@@ -101,6 +105,29 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 '#endif/g'\
 	${TMPFILE} >> ${HEADER}
 
+printf \
+'#else /* #ifdef SC_ENTER */\n'\
+	>> ${HEADER}
+
+grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}
+perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
+'types: \(([^)]*)\) '\
+'args: \(([^)]*)\)/'\
+'#ifndef OVERRIDE_'"${BITNESS}"'_sys_$1\n'\
+'SC_TRACE_EVENT(sys_$1,\n'\
+'	TP_PROTO(sc_exit(long ret)),\n'\
+'	TP_ARGS(sc_exit(ret)),\n'\
+'	TP_STRUCT__entry(sc_exit(__field(long, ret))),\n'\
+'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret))),\n'\
+'	TP_printk()\n'\
+')\n'\
+'#endif/g'\
+	${TMPFILE} >> ${HEADER}
+
+printf \
+'#endif /* else #ifdef SC_ENTER */\n'\
+	>> ${HEADER}
+
 fi
 
 
@@ -114,10 +141,10 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 'args: \(([^)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_sys_$1\n'\
 'SC_TRACE_EVENT(sys_$1,\n'\
-'	TP_PROTO($4 $5),\n'\
-'	TP_ARGS($5),\n'\
-'	TP_STRUCT__entry(__field($4, $5)),\n'\
-'	TP_fast_assign(tp_assign($4, $5, $5)),\n'\
+'	TP_PROTO(sc_exit(long ret,) $4 $5),\n'\
+'	TP_ARGS(sc_exit(ret,) $5),\n'\
+'	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field($4, $5)),\n'\
+'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) tp_assign($4, $5, $5)),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
@@ -133,10 +160,10 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 'args: \(([^,]*), ([^)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_sys_$1\n'\
 'SC_TRACE_EVENT(sys_$1,\n'\
-'	TP_PROTO($4 $6, $5 $7),\n'\
-'	TP_ARGS($6, $7),\n'\
-'	TP_STRUCT__entry(__field($4, $6) __field($5, $7)),\n'\
-'	TP_fast_assign(tp_assign($4, $6, $6) tp_assign($5, $7, $7)),\n'\
+'	TP_PROTO(sc_exit(long ret,) $4 $6, $5 $7),\n'\
+'	TP_ARGS(sc_exit(ret,) $6, $7),\n'\
+'	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field($4, $6) __field($5, $7)),\n'\
+'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) tp_assign($4, $6, $6) tp_assign($5, $7, $7)),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
@@ -152,10 +179,10 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 'args: \(([^,]*), ([^,]*), ([^)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_sys_$1\n'\
 'SC_TRACE_EVENT(sys_$1,\n'\
-'	TP_PROTO($4 $7, $5 $8, $6 $9),\n'\
-'	TP_ARGS($7, $8, $9),\n'\
-'	TP_STRUCT__entry(__field($4, $7) __field($5, $8) __field($6, $9)),\n'\
-'	TP_fast_assign(tp_assign($4, $7, $7) tp_assign($5, $8, $8) tp_assign($6, $9, $9)),\n'\
+'	TP_PROTO(sc_exit(long ret,) $4 $7, $5 $8, $6 $9),\n'\
+'	TP_ARGS(sc_exit(ret,) $7, $8, $9),\n'\
+'	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field($4, $7) __field($5, $8) __field($6, $9)),\n'\
+'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) tp_assign($4, $7, $7) tp_assign($5, $8, $8) tp_assign($6, $9, $9)),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
@@ -172,10 +199,10 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 'args: \(([^,]*), ([^,]*), ([^,]*), ([^)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_sys_$1\n'\
 'SC_TRACE_EVENT(sys_$1,\n'\
-'	TP_PROTO($4 $8, $5 $9, $6 $10, $7 $11),\n'\
-'	TP_ARGS($8, $9, $10, $11),\n'\
-'	TP_STRUCT__entry(__field($4, $8) __field($5, $9) __field($6, $10) __field($7, $11)),\n'\
-'	TP_fast_assign(tp_assign($4, $8, $8) tp_assign($5, $9, $9) tp_assign($6, $10, $10) tp_assign($7, $11, $11)),\n'\
+'	TP_PROTO(sc_exit(long ret,) $4 $8, $5 $9, $6 $10, $7 $11),\n'\
+'	TP_ARGS(sc_exit(ret,) $8, $9, $10, $11),\n'\
+'	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field($4, $8) __field($5, $9) __field($6, $10) __field($7, $11)),\n'\
+'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) tp_assign($4, $8, $8) tp_assign($5, $9, $9) tp_assign($6, $10, $10) tp_assign($7, $11, $11)),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
@@ -191,10 +218,10 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 'args: \(([^,]*), ([^,]*), ([^,]*), ([^,]*), ([^)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_sys_$1\n'\
 'SC_TRACE_EVENT(sys_$1,\n'\
-'	TP_PROTO($4 $9, $5 $10, $6 $11, $7 $12, $8 $13),\n'\
-'	TP_ARGS($9, $10, $11, $12, $13),\n'\
-'	TP_STRUCT__entry(__field($4, $9) __field($5, $10) __field($6, $11) __field($7, $12) __field($8, $13)),\n'\
-'	TP_fast_assign(tp_assign($4, $9, $9) tp_assign($5, $10, $10) tp_assign($6, $11, $11) tp_assign($7, $12, $12) tp_assign($8, $13, $13)),\n'\
+'	TP_PROTO(sc_exit(long ret,) $4 $9, $5 $10, $6 $11, $7 $12, $8 $13),\n'\
+'	TP_ARGS(sc_exit(ret,) $9, $10, $11, $12, $13),\n'\
+'	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field($4, $9) __field($5, $10) __field($6, $11) __field($7, $12) __field($8, $13)),\n'\
+'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) tp_assign($4, $9, $9) tp_assign($5, $10, $10) tp_assign($6, $11, $11) tp_assign($7, $12, $12) tp_assign($8, $13, $13)),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
@@ -211,10 +238,10 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 'args: \(([^,]*), ([^,]*), ([^,]*), ([^,]*), ([^,]*), ([^\)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_sys_$1\n'\
 'SC_TRACE_EVENT(sys_$1,\n'\
-'	TP_PROTO($4 $10, $5 $11, $6 $12, $7 $13, $8 $14, $9 $15),\n'\
-'	TP_ARGS($10, $11, $12, $13, $14, $15),\n'\
-'	TP_STRUCT__entry(__field($4, $10) __field($5, $11) __field($6, $12) __field($7, $13) __field($8, $14) __field($9, $15)),\n'\
-'	TP_fast_assign(tp_assign($4, $10, $10) tp_assign($5, $11, $11) tp_assign($6, $12, $12) tp_assign($7, $13, $13) tp_assign($8, $14, $14) tp_assign($9, $15, $15)),\n'\
+'	TP_PROTO(sc_exit(long ret,) $4 $10, $5 $11, $6 $12, $7 $13, $8 $14, $9 $15),\n'\
+'	TP_ARGS(sc_exit(ret,) $10, $11, $12, $13, $14, $15),\n'\
+'	TP_STRUCT__entry(sc_exit(__field(long, ret)) __field($4, $10) __field($5, $11) __field($6, $12) __field($7, $13) __field($8, $14) __field($9, $15)),\n'\
+'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) tp_assign($4, $10, $10) tp_assign($5, $11, $11) tp_assign($6, $12, $12) tp_assign($7, $13, $13) tp_assign($8, $14, $14) tp_assign($9, $15, $15)),\n'\
 '	TP_printk()\n'\
 ')\n'\
 '#endif/g'\
@@ -239,12 +266,33 @@ NRARGS=0
 
 if [ "$CLASS" = integers ]; then
 #noargs
+
+printf \
+'#ifdef SC_ENTER\n'\
+	>> ${HEADER}
+
 grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}
 perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) .*$/'\
 '#ifndef OVERRIDE_TABLE_'"${BITNESS}"'_sys_$1\n'\
 'TRACE_SYSCALL_TABLE\(syscalls_noargs, sys_$1, $2, $3\)\n'\
 '#endif/g'\
 	${TMPFILE} >> ${HEADER}
+
+printf \
+'#else /* #ifdef SC_ENTER */\n'\
+	>> ${HEADER}
+
+grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " ${SRCFILE} > ${TMPFILE}
+perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) .*$/'\
+'#ifndef OVERRIDE_TABLE_'"${BITNESS}"'_sys_$1\n'\
+'TRACE_SYSCALL_TABLE(sys_$1, sys_$1, $2, $3)\n'\
+'#endif/g'\
+	${TMPFILE} >> ${HEADER}
+
+printf \
+'#endif /* else #ifdef SC_ENTER */\n'\
+	>> ${HEADER}
+
 fi
 
 #others.
