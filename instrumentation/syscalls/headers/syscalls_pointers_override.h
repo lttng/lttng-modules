@@ -56,4 +56,34 @@ SC_TRACE_EVENT(getcpu,
 	TP_printk()
 )
 
+#define OVERRIDE_32_pipe
+#define OVERRIDE_64_pipe
+SC_TRACE_EVENT(pipe,
+	TP_PROTO(sc_exit(long ret,) int * fildes),
+	TP_ARGS(sc_exit(ret,) fildes),
+	TP_STRUCT__entry(sc_exit(__field(long, ret))
+		sc_out(__array(int, fildes, 2))
+	),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret))
+		sc_out(tp_memcpy_from_user(fildes, fildes, 2))
+	),
+	TP_printk()
+)
+
+#define OVERRIDE_32_pipe2
+#define OVERRIDE_64_pipe2
+SC_TRACE_EVENT(pipe2,
+	TP_PROTO(sc_exit(long ret,) int * fildes, int flags),
+	TP_ARGS(sc_exit(ret,) fildes, flags),
+	TP_STRUCT__entry(sc_exit(__field(long, ret))
+		sc_out(__array(int, fildes, 2))
+		sc_in(__field(int, flags))
+	),
+	TP_fast_assign(sc_exit(tp_assign(ret, ret))
+		sc_out(tp_memcpy_from_user(fildes, fildes, 2))
+		sc_in(tp_assign(flags, flags))
+	),
+	TP_printk()
+)
+
 #endif /* CREATE_SYSCALL_TABLE */
