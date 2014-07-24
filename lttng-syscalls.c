@@ -25,6 +25,8 @@
 #include <linux/compat.h>
 #include <linux/err.h>
 #include <linux/bitmap.h>
+#include <linux/in.h>
+#include <linux/in6.h>
 #include <asm/ptrace.h>
 #include <asm/syscall.h>
 
@@ -109,6 +111,10 @@ struct mmap_arg_struct;
 #define SC_TRACE_EVENT(_name, _proto, _args, _struct, _assign, _printk)	\
 	TRACE_EVENT(syscall_enter_##_name, PARAMS(_proto), PARAMS(_args),\
 		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
+#define SC_LTTNG_TRACE_EVENT(_name, _proto, _args, _locvar, _code, _struct, _assign, _printk) \
+	LTTNG_TRACE_EVENT(syscall_enter_##_name, PARAMS(_proto), PARAMS(_args),\
+		PARAMS(_locvar), PARAMS(_code),\
+		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
 #define SC_DECLARE_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk)	\
 	DECLARE_EVENT_CLASS_NOARGS(syscall_enter_##_name, PARAMS(_struct), PARAMS(_assign),\
 		PARAMS(_printk))
@@ -125,6 +131,7 @@ struct mmap_arg_struct;
 #include "instrumentation/syscalls/headers/syscalls_pointers.h"
 #undef TRACE_INCLUDE_FILE
 #undef TRACE_SYSTEM
+#undef SC_LTTNG_TRACE_EVENT
 #undef SC_TRACE_EVENT
 #undef SC_DECLARE_EVENT_CLASS_NOARGS
 #undef SC_DEFINE_EVENT_NOARGS
@@ -139,6 +146,10 @@ struct mmap_arg_struct;
 	TRACE_EVENT(compat_syscall_enter_##_name, PARAMS(_proto), PARAMS(_args), \
 		PARAMS(_struct), PARAMS(_assign),			\
 		PARAMS(_printk))
+#define SC_LTTNG_TRACE_EVENT(_name, _proto, _args, _locvar, _code, _struct, _assign, _printk) \
+	LTTNG_TRACE_EVENT(compat_syscall_enter_##_name, PARAMS(_proto), PARAMS(_args),\
+		PARAMS(_locvar), PARAMS(_code),\
+		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
 #define SC_DECLARE_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk) \
 	DECLARE_EVENT_CLASS_NOARGS(compat_syscall_enter_##_name, PARAMS(_struct), \
 		PARAMS(_assign), PARAMS(_printk))
@@ -155,6 +166,7 @@ struct mmap_arg_struct;
 #include "instrumentation/syscalls/headers/compat_syscalls_pointers.h"
 #undef TRACE_INCLUDE_FILE
 #undef TRACE_SYSTEM
+#undef SC_LTTNG_TRACE_EVENT
 #undef SC_TRACE_EVENT
 #undef SC_DECLARE_EVENT_CLASS_NOARGS
 #undef SC_DEFINE_EVENT_NOARGS
@@ -180,6 +192,10 @@ struct mmap_arg_struct;
 #define SC_TRACE_EVENT(_name, _proto, _args, _struct, _assign, _printk)	\
 	TRACE_EVENT(syscall_exit_##_name, PARAMS(_proto), PARAMS(_args),\
 		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
+#define SC_LTTNG_TRACE_EVENT(_name, _proto, _args, _locvar, _code, _struct, _assign, _printk) \
+	LTTNG_TRACE_EVENT(syscall_exit_##_name, PARAMS(_proto), PARAMS(_args),\
+		PARAMS(_locvar), PARAMS(_code),\
+		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
 #define SC_DECLARE_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk) \
 	DECLARE_EVENT_CLASS_NOARGS(syscall_exit_##_name, PARAMS(_struct), \
 		PARAMS(_assign), PARAMS(_printk))
@@ -196,6 +212,7 @@ struct mmap_arg_struct;
 #include "instrumentation/syscalls/headers/syscalls_pointers.h"
 #undef TRACE_INCLUDE_FILE
 #undef TRACE_SYSTEM
+#undef SC_LTTNG_TRACE_EVENT
 #undef SC_TRACE_EVENT
 #undef SC_DECLARE_EVENT_CLASS_NOARGS
 #undef SC_DEFINE_EVENT_NOARGS
@@ -208,6 +225,10 @@ struct mmap_arg_struct;
 #define TP_PROBE_CB(_template)		&syscall_exit_probe
 #define SC_TRACE_EVENT(_name, _proto, _args, _struct, _assign, _printk)	\
 	TRACE_EVENT(compat_syscall_exit_##_name, PARAMS(_proto), PARAMS(_args), \
+		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
+#define SC_LTTNG_TRACE_EVENT(_name, _proto, _args, _locvar, _code, _struct, _assign, _printk) \
+	LTTNG_TRACE_EVENT(compat_syscall_exit_##_name, PARAMS(_proto), PARAMS(_args),\
+		PARAMS(_locvar), PARAMS(_code),\
 		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
 #define SC_DECLARE_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk) \
 	DECLARE_EVENT_CLASS_NOARGS(compat_syscall_exit_##_name, PARAMS(_struct), \
@@ -225,6 +246,7 @@ struct mmap_arg_struct;
 #include "instrumentation/syscalls/headers/compat_syscalls_pointers.h"
 #undef TRACE_INCLUDE_FILE
 #undef TRACE_SYSTEM
+#undef SC_LTTNG_TRACE_EVENT
 #undef SC_TRACE_EVENT
 #undef SC_DECLARE_EVENT_CLASS_NOARGS
 #undef SC_DEFINE_EVENT_NOARGS

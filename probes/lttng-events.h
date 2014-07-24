@@ -54,6 +54,18 @@
 			     PARAMS(print))				\
 	DEFINE_EVENT_MAP_NOARGS(map, name, map)
 
+#undef LTTNG_TRACE_EVENT
+#define LTTNG_TRACE_EVENT(name, proto, args, _locvar, _code, tstruct, assign, print) \
+	LTTNG_DECLARE_EVENT_CLASS(name,					\
+			     PARAMS(proto),				\
+			     PARAMS(args),				\
+			     PARAMS(_locvar),				\
+			     PARAMS(_code),				\
+			     PARAMS(tstruct),				\
+			     PARAMS(assign),				\
+			     PARAMS(print))				\
+	DEFINE_EVENT_MAP(name, name, name, PARAMS(proto), PARAMS(args))
+
 #undef DEFINE_EVENT_PRINT_MAP
 #define DEFINE_EVENT_PRINT_MAP(template, name, map, proto, args, print)	\
 	DEFINE_EVENT_MAP(template, name, map, PARAMS(proto), PARAMS(args))
@@ -129,6 +141,17 @@
 		PARAMS(tstruct),					\
 		PARAMS(assign),						\
 		PARAMS(print))
+
+#undef DECLARE_EVENT_CLASS
+#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
+	LTTNG_DECLARE_EVENT_CLASS(_name, PARAMS(_proto), PARAMS(_args), , , \
+		PARAMS(_tstruct), PARAMS(_assign), PARAMS(_print))
+
+#undef DECLARE_EVENT_CLASS_NOARGS
+#define DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print)	\
+	LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, , , PARAMS(_tstruct),	\
+		PARAMS(_assign), PARAMS(_print))
+
 
 /*
  * Stage 1 of the trace events.
@@ -256,6 +279,14 @@ void trace_##_name(void *__data);
 #define __dynamic_array_hex(_type, _item, _length)		\
 	__dynamic_array_enc_ext(_type, _item, _length, __BYTE_ORDER, 16, none)
 
+#undef __dynamic_array_network_hex
+#define __dynamic_array_network_hex(_type, _item, _length)		\
+	__dynamic_array_enc_ext(_type, _item, _length, __BIG_ENDIAN, 16, none)
+
+#undef __dynamic_array_network
+#define __dynamic_array_network(_type, _item, _length)		\
+	__dynamic_array_enc_ext(_type, _item, _length, __BIG_ENDIAN, 10, none)
+
 #undef __dynamic_array_text_2
 #define __dynamic_array_text_2(_type, _item, _length1, _length2)	\
 	__dynamic_array_enc_ext_2(_type, _item, _length1, _length2, __BYTE_ORDER, 10, UTF8)
@@ -278,15 +309,15 @@ void trace_##_name(void *__data);
 #undef TP_STRUCT__entry
 #define TP_STRUCT__entry(args...) args	/* Only one used in this phase */
 
-#undef DECLARE_EVENT_CLASS_NOARGS
-#define DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print) \
+#undef LTTNG_DECLARE_EVENT_CLASS_NOARGS
+#define LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print) \
 	static const struct lttng_event_field __event_fields___##_name[] = { \
 		_tstruct						     \
 	};
 
-#undef DECLARE_EVENT_CLASS
-#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print) \
-	DECLARE_EVENT_CLASS_NOARGS(_name, PARAMS(_tstruct), PARAMS(_assign), \
+#undef LTTNG_DECLARE_EVENT_CLASS
+#define LTTNG_DECLARE_EVENT_CLASS(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print) \
+	LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, _locvar, _code, PARAMS(_tstruct), PARAMS(_assign), \
 			PARAMS(_print))
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
@@ -302,12 +333,12 @@ void trace_##_name(void *__data);
 #undef TP_PROTO
 #define TP_PROTO(args...) args
 
-#undef DECLARE_EVENT_CLASS
-#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
+#undef LTTNG_DECLARE_EVENT_CLASS
+#define LTTNG_DECLARE_EVENT_CLASS(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print) \
 static void __event_probe__##_name(void *__data, _proto);
 
-#undef DECLARE_EVENT_CLASS_NOARGS
-#define DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print)	      \
+#undef LTTNG_DECLARE_EVENT_CLASS_NOARGS
+#define LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print) \
 static void __event_probe__##_name(void *__data);
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
@@ -413,7 +444,7 @@ static __used struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 
 #undef __dynamic_array_enc_ext
 #define __dynamic_array_enc_ext(_type, _item, _length, _order, _base, _encoding)\
-	__event_len += lib_ring_buffer_align(__event_len, lttng_alignof(u32));   \
+	__event_len += lib_ring_buffer_align(__event_len, lttng_alignof(u32)); \
 	__event_len += sizeof(u32);					       \
 	__event_len += lib_ring_buffer_align(__event_len, lttng_alignof(_type)); \
 	__dynamic_len[__dynamic_len_idx] = (_length);			       \
@@ -422,7 +453,7 @@ static __used struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 
 #undef __dynamic_array_enc_ext_2
 #define __dynamic_array_enc_ext_2(_type, _item, _length1, _length2, _order, _base, _encoding)\
-	__event_len += lib_ring_buffer_align(__event_len, lttng_alignof(u32));   \
+	__event_len += lib_ring_buffer_align(__event_len, lttng_alignof(u32)); \
 	__event_len += sizeof(u32);					       \
 	__event_len += lib_ring_buffer_align(__event_len, lttng_alignof(_type)); \
 	__dynamic_len[__dynamic_len_idx] = (_length1);			       \
@@ -451,23 +482,30 @@ static __used struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 #undef TP_STRUCT__entry
 #define TP_STRUCT__entry(args...) args
 
-#undef DECLARE_EVENT_CLASS
-#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
-static inline size_t __event_get_size__##_name(size_t *__dynamic_len, _proto) \
+#undef TP_locvar
+#define TP_locvar(...)	__VA_ARGS__
+
+#undef LTTNG_DECLARE_EVENT_CLASS
+#define LTTNG_DECLARE_EVENT_CLASS(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print)  \
+static inline size_t __event_get_size__##_name(size_t *__dynamic_len,	      \
+		void *__tp_locvar, _proto)				      \
 {									      \
 	size_t __event_len = 0;						      \
 	unsigned int __dynamic_len_idx __attribute__((unused)) = 0;	      \
+	struct { _locvar } *tp_locvar __attribute__((unused)) = __tp_locvar;  \
 									      \
 	_tstruct							      \
 	return __event_len;						      \
 }
 
-#undef DECLARE_EVENT_CLASS_NOARGS
-#define DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print)	      \
-static inline size_t __event_get_size__##_name(size_t *__dynamic_len)	      \
+#undef LTTNG_DECLARE_EVENT_CLASS_NOARGS
+#define LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print)  \
+static inline size_t __event_get_size__##_name(size_t *__dynamic_len,	      \
+		void *__tp_locvar)					      \
 {									      \
 	size_t __event_len = 0;						      \
 	unsigned int __dynamic_len_idx __attribute__((unused)) = 0;	      \
+	struct { _locvar } *tp_locvar __attribute__((unused)) = __tp_locvar;  \
 									      \
 	_tstruct							      \
 	return __event_len;						      \
@@ -495,7 +533,7 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len)	      \
 
 #undef __dynamic_array_enc_ext
 #define __dynamic_array_enc_ext(_type, _item, _length, _order, _base, _encoding)\
-	__event_align = max_t(size_t, __event_align, lttng_alignof(u32));	  \
+	__event_align = max_t(size_t, __event_align, lttng_alignof(u32)); \
 	__event_align = max_t(size_t, __event_align, lttng_alignof(_type));
 
 #undef __dynamic_array_enc_ext_2
@@ -514,26 +552,32 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len)	      \
 #undef TP_STRUCT__entry
 #define TP_STRUCT__entry(args...) args
 
-#undef DECLARE_EVENT_CLASS
-#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
-static inline size_t __event_get_align__##_name(_proto)			      \
+#undef TP_locvar
+#define TP_locvar(...)	__VA_ARGS__
+
+#undef LTTNG_DECLARE_EVENT_CLASS
+#define LTTNG_DECLARE_EVENT_CLASS(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print)  \
+static inline size_t __event_get_align__##_name(void *__tp_locvar, _proto) \
 {									      \
 	size_t __event_align = 1;					      \
+	struct { _locvar } *tp_locvar __attribute__((unused)) = __tp_locvar;  \
+									      \
 	_tstruct							      \
 	return __event_align;						      \
 }
 
-#undef DECLARE_EVENT_CLASS_NOARGS
-#define DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print)	      \
-static inline size_t __event_get_align__##_name(void)			      \
+#undef LTTNG_DECLARE_EVENT_CLASS_NOARGS
+#define LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print)  \
+static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 {									      \
 	size_t __event_align = 1;					      \
+	struct { _locvar } *tp_locvar __attribute__((unused)) = __tp_locvar;  \
+									      \
 	_tstruct							      \
 	return __event_align;						      \
 }
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
-
 
 /*
  * Stage 8 of the trace events.
@@ -571,15 +615,15 @@ static inline size_t __event_get_align__##_name(void)			      \
 #undef TP_STRUCT__entry
 #define TP_STRUCT__entry(args...) args
 
-#undef DECLARE_EVENT_CLASS_NOARGS
-#define DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print)	      \
+#undef LTTNG_DECLARE_EVENT_CLASS_NOARGS
+#define LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print)  \
 struct __event_typemap__##_name {					      \
 	_tstruct							      \
 };
 
-#undef DECLARE_EVENT_CLASS
-#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
-	DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print)
+#undef LTTNG_DECLARE_EVENT_CLASS
+#define LTTNG_DECLARE_EVENT_CLASS(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print)  \
+	LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print)
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
@@ -758,6 +802,12 @@ __assign_##dest:							\
 #undef TP_fast_assign
 #define TP_fast_assign(args...) args
 
+#undef TP_locvar
+#define TP_locvar(...)	__VA_ARGS__
+
+#undef TP_code
+#define TP_code(...)	__VA_ARGS__
+
 /*
  * For state dump, check that "session" argument (mandatory) matches the
  * session this event belongs to. Ensures that we write state dump data only
@@ -774,10 +824,11 @@ __assign_##dest:							\
  * __dynamic_array_enc_ext_2() and tp_memcpy_dyn_2(), which are the
  * worse case, needing 2 entries per field.
  */
-#undef DECLARE_EVENT_CLASS
-#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
+#undef LTTNG_DECLARE_EVENT_CLASS
+#define LTTNG_DECLARE_EVENT_CLASS(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print) \
 static void __event_probe__##_name(void *__data, _proto)		      \
 {									      \
+	struct probe_local_vars { _locvar };				      \
 	struct lttng_event *__event = __data;				      \
 	struct lttng_channel *__chan = __event->chan;			      \
 	struct lib_ring_buffer_ctx __ctx;				      \
@@ -786,6 +837,9 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	size_t __dynamic_len[2 * ARRAY_SIZE(__event_fields___##_name)] __attribute__((unused)); \
 	struct __event_typemap__##_name __typemap __attribute__((unused));    \
 	int __ret;							      \
+	struct probe_local_vars __tp_locvar;				      \
+	struct probe_local_vars *tp_locvar __attribute__((unused)) =	      \
+			&__tp_locvar;					      \
 									      \
 	if (!_TP_SESSION_CHECK(session, __chan->session))		      \
 		return;							      \
@@ -795,8 +849,10 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 		return;							      \
 	if (unlikely(!ACCESS_ONCE(__event->enabled)))			      \
 		return;							      \
-	__event_len = __event_get_size__##_name(__dynamic_len, _args);	      \
-	__event_align = __event_get_align__##_name(_args);		      \
+	_code								      \
+	__event_len = __event_get_size__##_name(__dynamic_len, tp_locvar,     \
+				_args);					      \
+	__event_align = __event_get_align__##_name(tp_locvar, _args);         \
 	lib_ring_buffer_ctx_init(&__ctx, __chan->chan, __event, __event_len,  \
 				 __event_align, -1);			      \
 	__ret = __chan->ops->event_reserve(&__ctx, __event->id);	      \
@@ -810,10 +866,11 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	_assign								      \
 }
 
-#undef DECLARE_EVENT_CLASS_NOARGS
-#define DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print)	      \
+#undef LTTNG_DECLARE_EVENT_CLASS_NOARGS
+#define LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print) \
 static void __event_probe__##_name(void *__data)			      \
 {									      \
+	struct probe_local_vars { _locvar };				      \
 	struct lttng_event *__event = __data;				      \
 	struct lttng_channel *__chan = __event->chan;			      \
 	struct lib_ring_buffer_ctx __ctx;				      \
@@ -822,6 +879,9 @@ static void __event_probe__##_name(void *__data)			      \
 	size_t __dynamic_len[2 * ARRAY_SIZE(__event_fields___##_name)] __attribute__((unused)); \
 	struct __event_typemap__##_name __typemap __attribute__((unused));    \
 	int __ret;							      \
+	struct probe_local_vars __tp_locvar;				      \
+	struct probe_local_vars *tp_locvar __attribute__((unused)) =	      \
+			&__tp_locvar;					      \
 									      \
 	if (!_TP_SESSION_CHECK(session, __chan->session))		      \
 		return;							      \
@@ -831,8 +891,9 @@ static void __event_probe__##_name(void *__data)			      \
 		return;							      \
 	if (unlikely(!ACCESS_ONCE(__event->enabled)))			      \
 		return;							      \
-	__event_len = __event_get_size__##_name(__dynamic_len);		      \
-	__event_align = __event_get_align__##_name();			      \
+	_code								      \
+	__event_len = __event_get_size__##_name(__dynamic_len, tp_locvar);    \
+	__event_align = __event_get_align__##_name(tp_locvar);		      \
 	lib_ring_buffer_ctx_init(&__ctx, __chan->chan, __event, __event_len,  \
 				 __event_align, -1);			      \
 	__ret = __chan->ops->event_reserve(&__ctx, __event->id);	      \

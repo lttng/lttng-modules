@@ -92,6 +92,9 @@
 		PARAMS(assign),						\
 		PARAMS(print))
 
+#undef LTTNG_TRACE_EVENT
+#define LTTNG_TRACE_EVENT(name, proto, args, _locvar, _code, tstruct, assign, print)
+
 #undef TRACE_EVENT_FN
 #define TRACE_EVENT_FN(name, proto, args, tstruct,		\
 		assign, print, reg, unreg)
@@ -153,6 +156,9 @@
 #undef DEFINE_EVENT_PRINT_MAP
 #undef DEFINE_EVENT_CONDITION_MAP
 #undef TRACE_HEADER_MULTI_READ
+
+#undef LTTNG_TRACE_EVENT
+#define LTTNG_TRACE_EVENT(name, proto, args, _locvar, _code, tstruct, assign, print)
 
 /* Only undef what we defined in this file */
 #ifdef UNDEF_TRACE_INCLUDE_FILE
