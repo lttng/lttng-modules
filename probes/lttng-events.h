@@ -456,10 +456,19 @@ static __used struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 static inline size_t __event_get_size__##_name(size_t *__dynamic_len, _proto) \
 {									      \
 	size_t __event_len = 0;						      \
-	unsigned int __dynamic_len_idx = 0;				      \
+	unsigned int __dynamic_len_idx __attribute__((unused)) = 0;	      \
 									      \
-	if (0)								      \
-		(void) __dynamic_len_idx;	/* don't warn if unused */    \
+	_tstruct							      \
+	return __event_len;						      \
+}
+
+#undef DECLARE_EVENT_CLASS_NOARGS
+#define DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print)	      \
+static inline size_t __event_get_size__##_name(size_t *__dynamic_len)	      \
+{									      \
+	size_t __event_len = 0;						      \
+	unsigned int __dynamic_len_idx __attribute__((unused)) = 0;	      \
+									      \
 	_tstruct							      \
 	return __event_len;						      \
 }
@@ -514,6 +523,15 @@ static inline size_t __event_get_align__##_name(_proto)			      \
 	return __event_align;						      \
 }
 
+#undef DECLARE_EVENT_CLASS_NOARGS
+#define DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print)	      \
+static inline size_t __event_get_align__##_name(void)			      \
+{									      \
+	size_t __event_align = 1;					      \
+	_tstruct							      \
+	return __event_align;						      \
+}
+
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
 
@@ -553,11 +571,15 @@ static inline size_t __event_get_align__##_name(_proto)			      \
 #undef TP_STRUCT__entry
 #define TP_STRUCT__entry(args...) args
 
-#undef DECLARE_EVENT_CLASS
-#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
+#undef DECLARE_EVENT_CLASS_NOARGS
+#define DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print)	      \
 struct __event_typemap__##_name {					      \
 	_tstruct							      \
 };
+
+#undef DECLARE_EVENT_CLASS
+#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
+	DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print)
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
@@ -760,15 +782,11 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	struct lttng_channel *__chan = __event->chan;			      \
 	struct lib_ring_buffer_ctx __ctx;				      \
 	size_t __event_len, __event_align;				      \
-	size_t __dynamic_len_idx = 0;					      \
-	size_t __dynamic_len[2 * ARRAY_SIZE(__event_fields___##_name)];	      \
-	struct __event_typemap__##_name __typemap;			      \
+	size_t __dynamic_len_idx __attribute__((unused)) = 0;		      \
+	size_t __dynamic_len[2 * ARRAY_SIZE(__event_fields___##_name)] __attribute__((unused)); \
+	struct __event_typemap__##_name __typemap __attribute__((unused));    \
 	int __ret;							      \
 									      \
-	if (0) {							      \
-		(void) __dynamic_len_idx;	/* don't warn if unused */    \
-		(void) __typemap;		/* don't warn if unused */    \
-	}								      \
 	if (!_TP_SESSION_CHECK(session, __chan->session))		      \
 		return;							      \
 	if (unlikely(!ACCESS_ONCE(__chan->session->active)))		      \
@@ -800,6 +818,9 @@ static void __event_probe__##_name(void *__data)			      \
 	struct lttng_channel *__chan = __event->chan;			      \
 	struct lib_ring_buffer_ctx __ctx;				      \
 	size_t __event_len, __event_align;				      \
+	size_t __dynamic_len_idx __attribute__((unused)) = 0;		      \
+	size_t __dynamic_len[2 * ARRAY_SIZE(__event_fields___##_name)] __attribute__((unused)); \
+	struct __event_typemap__##_name __typemap __attribute__((unused));    \
 	int __ret;							      \
 									      \
 	if (!_TP_SESSION_CHECK(session, __chan->session))		      \
@@ -810,8 +831,8 @@ static void __event_probe__##_name(void *__data)			      \
 		return;							      \
 	if (unlikely(!ACCESS_ONCE(__event->enabled)))			      \
 		return;							      \
-	__event_len = 0;						      \
-	__event_align = 1;						      \
+	__event_len = __event_get_size__##_name(__dynamic_len);		      \
+	__event_align = __event_get_align__##_name();			      \
 	lib_ring_buffer_ctx_init(&__ctx, __chan->chan, __event, __event_len,  \
 				 __event_align, -1);			      \
 	__ret = __chan->ops->event_reserve(&__ctx, __event->id);	      \
