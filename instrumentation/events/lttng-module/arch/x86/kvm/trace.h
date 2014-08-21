@@ -724,11 +724,21 @@ TRACE_EVENT(kvm_emulate_insn,
 		tp_memcpy(insn,
 		       vcpu->arch.emulate_ctxt.decode.fetch.data,
 		       15)
-#else
+#elif (LINUX_VERSION_CODE < KERNEL_VERSION(3,17,0))
 		tp_assign(rip, vcpu->arch.emulate_ctxt.fetch.start)
 		tp_assign(csbase, kvm_x86_ops->get_segment_base(vcpu, VCPU_SREG_CS))
 		tp_assign(len, vcpu->arch.emulate_ctxt._eip
 			       - vcpu->arch.emulate_ctxt.fetch.start)
+		tp_memcpy(insn,
+		       vcpu->arch.emulate_ctxt.fetch.data,
+		       15)
+#else
+		tp_assign(rip, vcpu->arch.emulate_ctxt._eip -
+			(vcpu->arch.emulate_ctxt.fetch.ptr -
+				vcpu->arch.emulate_ctxt.fetch.data))
+		tp_assign(csbase, kvm_x86_ops->get_segment_base(vcpu, VCPU_SREG_CS))
+		tp_assign(len, vcpu->arch.emulate_ctxt.fetch.ptr -
+			vcpu->arch.emulate_ctxt.fetch.data)
 		tp_memcpy(insn,
 		       vcpu->arch.emulate_ctxt.fetch.data,
 		       15)
