@@ -204,6 +204,9 @@ struct lttng_probe_ctx {
 struct lttng_ctx_field {
 	struct lttng_event_field event_field;
 	size_t (*get_size)(size_t offset);
+	size_t (*get_size_arg)(size_t offset, struct lttng_ctx_field *field,
+	                       struct lib_ring_buffer_ctx *ctx,
+	                       struct lttng_channel *chan);
 	void (*record)(struct lttng_ctx_field *field,
 		       struct lib_ring_buffer_ctx *ctx,
 		       struct lttng_channel *chan);
