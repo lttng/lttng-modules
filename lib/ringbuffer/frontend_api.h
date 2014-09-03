@@ -58,7 +58,7 @@ int lib_ring_buffer_get_cpu(const struct lib_ring_buffer_config *config)
 	nesting = ++per_cpu(lib_ring_buffer_nesting, cpu);
 	barrier();
 
-	if (unlikely(nesting > 4)) {
+	if (unlikely(nesting > RING_BUFFER_MAX_NESTING)) {
 		WARN_ON_ONCE(1);
 		per_cpu(lib_ring_buffer_nesting, cpu)--;
 		rcu_read_unlock_sched_notrace();

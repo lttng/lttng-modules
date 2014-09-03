@@ -51,6 +51,9 @@
 /* Internal helpers */
 #include <wrapper/ringbuffer/frontend_internal.h>
 
+/* Max ring buffer nesting count, see lib_ring_buffer_get_cpu(). */
+#define RING_BUFFER_MAX_NESTING 4
+
 /* Buffer creation/removal and setup operations */
 
 /*
