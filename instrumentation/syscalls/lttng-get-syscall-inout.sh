@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # example usage:
 # lttng-get-syscall-inout.sh table-syscall-inout.txt select 1
