@@ -29,9 +29,10 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(connect,
 				if (addrlen < sizeof(struct sockaddr_in6))
 					goto skip_code;
 				(void) get_user(tp_locvar->dport, &((struct sockaddr_in6 *) uservaddr)->sin6_port);
-				(void) copy_from_user(tp_locvar->v6addr,
+				if (copy_from_user(tp_locvar->v6addr,
 						&((struct sockaddr_in6 *) uservaddr)->sin6_addr.in6_u.u6_addr8,
-						sizeof(tp_locvar->v6addr));
+						sizeof(tp_locvar->v6addr)))
+					memset(tp_locvar->v6addr, 0, sizeof(tp_locvar->v6addr));
 				tp_locvar->v6addr_len = 8;
 				break;
 			}
@@ -94,9 +95,10 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(accept,
 				if (tp_locvar->uaddr_len < sizeof(struct sockaddr_in6))
 					goto skip_code;
 				(void) get_user(tp_locvar->sport, &((struct sockaddr_in6 *) upeer_sockaddr)->sin6_port);
-				(void) copy_from_user(tp_locvar->v6addr,
+				if (copy_from_user(tp_locvar->v6addr,
 						&((struct sockaddr_in6 *) upeer_sockaddr)->sin6_addr.in6_u.u6_addr8,
-						sizeof(tp_locvar->v6addr));
+						sizeof(tp_locvar->v6addr)))
+					memset(tp_locvar->v6addr, 0, sizeof(tp_locvar->v6addr));
 				tp_locvar->v6addr_len = 8;
 				break;
 			}
