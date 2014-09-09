@@ -30,6 +30,7 @@ modules.builtin
 *.lzma
 *.lzo
 *.gcno
+cscope.*
 
 #
 # Top-level generic files
