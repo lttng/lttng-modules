@@ -1,15 +1,15 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM power
 
-#if !defined(_TRACE_POWER_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_POWER_H
+#if !defined(LTTNG_TRACE_POWER_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_POWER_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/ktime.h>
-#include <linux/tracepoint.h>
 #include <linux/version.h>
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
-DECLARE_EVENT_CLASS(power_cpu,
+LTTNG_TRACEPOINT_EVENT_CLASS(power_cpu,
 
 	TP_PROTO(unsigned int state, unsigned int cpu_id),
 
@@ -29,7 +29,7 @@ DECLARE_EVENT_CLASS(power_cpu,
 		  (unsigned long)__entry->cpu_id)
 )
 
-DEFINE_EVENT_MAP(power_cpu, cpu_idle,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(power_cpu, cpu_idle,
 
 	power_cpu_idle,
 
@@ -45,7 +45,7 @@ DEFINE_EVENT_MAP(power_cpu, cpu_idle,
 #define PWR_EVENT_EXIT -1
 #endif
 
-DEFINE_EVENT_MAP(power_cpu, cpu_frequency,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(power_cpu, cpu_frequency,
 
 	power_cpu_frequency,
 
@@ -54,7 +54,7 @@ DEFINE_EVENT_MAP(power_cpu, cpu_frequency,
 	TP_ARGS(frequency, cpu_id)
 )
 
-TRACE_EVENT_MAP(machine_suspend,
+LTTNG_TRACEPOINT_EVENT_MAP(machine_suspend,
 
 	power_machine_suspend,
 
@@ -75,7 +75,7 @@ TRACE_EVENT_MAP(machine_suspend,
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
-DECLARE_EVENT_CLASS(power_wakeup_source,
+LTTNG_TRACEPOINT_EVENT_CLASS(power_wakeup_source,
 
 	TP_PROTO(const char *name, unsigned int state),
 
@@ -95,7 +95,7 @@ DECLARE_EVENT_CLASS(power_wakeup_source,
 		(unsigned long)__entry->state)
 )
 
-DEFINE_EVENT_MAP(power_wakeup_source, wakeup_source_activate,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(power_wakeup_source, wakeup_source_activate,
 
 	power_wakeup_source_activate,
 
@@ -104,7 +104,7 @@ DEFINE_EVENT_MAP(power_wakeup_source, wakeup_source_activate,
 	TP_ARGS(name, state)
 )
 
-DEFINE_EVENT_MAP(power_wakeup_source, wakeup_source_deactivate,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(power_wakeup_source, wakeup_source_deactivate,
 
 	power_wakeup_source_deactivate,
 
@@ -126,7 +126,7 @@ DEFINE_EVENT_MAP(power_wakeup_source, wakeup_source_deactivate,
  * The power events are used for cpuidle & suspend (power_start, power_end)
  *  and for cpufreq (power_frequency)
  */
-DECLARE_EVENT_CLASS(power,
+LTTNG_TRACEPOINT_EVENT_CLASS(power,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 	TP_PROTO(unsigned int type, unsigned int state, unsigned int cpu_id),
@@ -163,7 +163,7 @@ DECLARE_EVENT_CLASS(power,
 #endif
 )
 
-DEFINE_EVENT(power, power_start,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(power, power_start,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 	TP_PROTO(unsigned int type, unsigned int state, unsigned int cpu_id),
@@ -176,7 +176,7 @@ DEFINE_EVENT(power, power_start,
 #endif
 )
 
-DEFINE_EVENT(power, power_frequency,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(power, power_frequency,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 	TP_PROTO(unsigned int type, unsigned int state, unsigned int cpu_id),
@@ -189,7 +189,7 @@ DEFINE_EVENT(power, power_frequency,
 #endif
 )
 
-TRACE_EVENT(power_end,
+LTTNG_TRACEPOINT_EVENT(power_end,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 	TP_PROTO(unsigned int cpu_id),
@@ -263,7 +263,7 @@ static inline void trace_power_frequency(u64 type, u64 state, u64 cpuid) {};
  * The clock events are used for clock enable/disable and for
  *  clock rate change
  */
-DECLARE_EVENT_CLASS(power_clock,
+LTTNG_TRACEPOINT_EVENT_CLASS(power_clock,
 
 	TP_PROTO(const char *name, unsigned int state, unsigned int cpu_id),
 
@@ -285,7 +285,7 @@ DECLARE_EVENT_CLASS(power_clock,
 		(unsigned long)__entry->state, (unsigned long)__entry->cpu_id)
 )
 
-DEFINE_EVENT_MAP(power_clock, clock_enable,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(power_clock, clock_enable,
 
 	power_clock_enable,
 
@@ -294,7 +294,7 @@ DEFINE_EVENT_MAP(power_clock, clock_enable,
 	TP_ARGS(name, state, cpu_id)
 )
 
-DEFINE_EVENT_MAP(power_clock, clock_disable,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(power_clock, clock_disable,
 
 	power_clock_disable,
 
@@ -303,7 +303,7 @@ DEFINE_EVENT_MAP(power_clock, clock_disable,
 	TP_ARGS(name, state, cpu_id)
 )
 
-DEFINE_EVENT_MAP(power_clock, clock_set_rate,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(power_clock, clock_set_rate,
 
 	power_clock_set_rate,
 
@@ -315,7 +315,7 @@ DEFINE_EVENT_MAP(power_clock, clock_set_rate,
 /*
  * The power domain events are used for power domains transitions
  */
-DECLARE_EVENT_CLASS(power_domain,
+LTTNG_TRACEPOINT_EVENT_CLASS(power_domain,
 
 	TP_PROTO(const char *name, unsigned int state, unsigned int cpu_id),
 
@@ -337,7 +337,7 @@ DECLARE_EVENT_CLASS(power_domain,
 		(unsigned long)__entry->state, (unsigned long)__entry->cpu_id)
 )
 
-DEFINE_EVENT(power_domain, power_domain_target,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(power_domain, power_domain_target,
 
 	TP_PROTO(const char *name, unsigned int state, unsigned int cpu_id),
 
@@ -345,7 +345,7 @@ DEFINE_EVENT(power_domain, power_domain_target,
 )
 #endif
 
-#endif /* _TRACE_POWER_H */
+#endif /* LTTNG_TRACE_POWER_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

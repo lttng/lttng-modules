@@ -1,11 +1,11 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM regmap
 
-#if !defined(_TRACE_REGMAP_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_REGMAP_H
+#if !defined(LTTNG_TRACE_REGMAP_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_REGMAP_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/ktime.h>
-#include <linux/tracepoint.h>
 #include <linux/version.h>
 
 #ifndef _TRACE_REGMAP_DEF_
@@ -17,7 +17,7 @@ struct regmap;
 /*
  * Log register events
  */
-DECLARE_EVENT_CLASS(regmap_reg,
+LTTNG_TRACEPOINT_EVENT_CLASS(regmap_reg,
 
 	TP_PROTO(struct device *dev, unsigned int reg,
 		 unsigned int val),
@@ -41,7 +41,7 @@ DECLARE_EVENT_CLASS(regmap_reg,
 		  (unsigned int)__entry->val)
 )
 
-DEFINE_EVENT(regmap_reg, regmap_reg_write,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_reg, regmap_reg_write,
 
 	TP_PROTO(struct device *dev, unsigned int reg,
 		 unsigned int val),
@@ -50,7 +50,7 @@ DEFINE_EVENT(regmap_reg, regmap_reg_write,
 
 )
 
-DEFINE_EVENT(regmap_reg, regmap_reg_read,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_reg, regmap_reg_read,
 
 	TP_PROTO(struct device *dev, unsigned int reg,
 		 unsigned int val),
@@ -60,7 +60,7 @@ DEFINE_EVENT(regmap_reg, regmap_reg_read,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
-DEFINE_EVENT(regmap_reg, regmap_reg_read_cache,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_reg, regmap_reg_read_cache,
 
 	TP_PROTO(struct device *dev, unsigned int reg,
 		 unsigned int val),
@@ -70,7 +70,7 @@ DEFINE_EVENT(regmap_reg, regmap_reg_read_cache,
 )
 #endif
 
-DECLARE_EVENT_CLASS(regmap_block,
+LTTNG_TRACEPOINT_EVENT_CLASS(regmap_block,
 
 	TP_PROTO(struct device *dev, unsigned int reg, int count),
 
@@ -93,35 +93,35 @@ DECLARE_EVENT_CLASS(regmap_block,
 		  (int)__entry->count)
 )
 
-DEFINE_EVENT(regmap_block, regmap_hw_read_start,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_block, regmap_hw_read_start,
 
 	TP_PROTO(struct device *dev, unsigned int reg, int count),
 
 	TP_ARGS(dev, reg, count)
 )
 
-DEFINE_EVENT(regmap_block, regmap_hw_read_done,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_block, regmap_hw_read_done,
 
 	TP_PROTO(struct device *dev, unsigned int reg, int count),
 
 	TP_ARGS(dev, reg, count)
 )
 
-DEFINE_EVENT(regmap_block, regmap_hw_write_start,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_block, regmap_hw_write_start,
 
 	TP_PROTO(struct device *dev, unsigned int reg, int count),
 
 	TP_ARGS(dev, reg, count)
 )
 
-DEFINE_EVENT(regmap_block, regmap_hw_write_done,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_block, regmap_hw_write_done,
 
 	TP_PROTO(struct device *dev, unsigned int reg, int count),
 
 	TP_ARGS(dev, reg, count)
 )
 
-TRACE_EVENT(regcache_sync,
+LTTNG_TRACEPOINT_EVENT(regcache_sync,
 
 	TP_PROTO(struct device *dev, const char *type,
 		 const char *status),
@@ -145,7 +145,7 @@ TRACE_EVENT(regcache_sync,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-DECLARE_EVENT_CLASS(regmap_bool,
+LTTNG_TRACEPOINT_EVENT_CLASS(regmap_bool,
 
 	TP_PROTO(struct device *dev, bool flag),
 
@@ -165,7 +165,7 @@ DECLARE_EVENT_CLASS(regmap_bool,
 		  (int)__entry->flag)
 )
 
-DEFINE_EVENT(regmap_bool, regmap_cache_only,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_bool, regmap_cache_only,
 
 	TP_PROTO(struct device *dev, bool flag),
 
@@ -173,7 +173,7 @@ DEFINE_EVENT(regmap_bool, regmap_cache_only,
 
 )
 
-DEFINE_EVENT(regmap_bool, regmap_cache_bypass,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_bool, regmap_cache_bypass,
 
 	TP_PROTO(struct device *dev, bool flag),
 
@@ -182,7 +182,7 @@ DEFINE_EVENT(regmap_bool, regmap_cache_bypass,
 )
 #endif
 
-#endif /* _TRACE_REGMAP_H */
+#endif /* LTTNG_TRACE_REGMAP_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

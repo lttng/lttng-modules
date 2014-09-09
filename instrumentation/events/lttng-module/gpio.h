@@ -1,12 +1,12 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM gpio
 
-#if !defined(_TRACE_GPIO_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_GPIO_H
+#if !defined(LTTNG_TRACE_GPIO_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_GPIO_H
 
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 
-TRACE_EVENT(gpio_direction,
+LTTNG_TRACEPOINT_EVENT(gpio_direction,
 
 	TP_PROTO(unsigned gpio, int in, int err),
 
@@ -28,7 +28,7 @@ TRACE_EVENT(gpio_direction,
 		__entry->in ? "in" : "out", __entry->err)
 )
 
-TRACE_EVENT(gpio_value,
+LTTNG_TRACEPOINT_EVENT(gpio_value,
 
 	TP_PROTO(unsigned gpio, int get, int value),
 
@@ -50,7 +50,7 @@ TRACE_EVENT(gpio_value,
 		__entry->get ? "get" : "set", __entry->value)
 )
 
-#endif /* if !defined(_TRACE_GPIO_H) || defined(TRACE_HEADER_MULTI_READ) */
+#endif /* if !defined(LTTNG_TRACE_GPIO_H) || defined(TRACE_HEADER_MULTI_READ) */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

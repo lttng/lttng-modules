@@ -1,12 +1,12 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM lttng
 
-#if !defined(_TRACE_LTTNG_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_LTTNG_H
+#if !defined(LTTNG_TRACE_LTTNG_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_LTTNG_H
 
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 
-TRACE_EVENT(lttng_logger,
+LTTNG_TRACEPOINT_EVENT(lttng_logger,
 	TP_PROTO(const char __user *text, size_t len),
 	TP_ARGS(text, len),
 	TP_STRUCT__entry(
@@ -18,7 +18,7 @@ TRACE_EVENT(lttng_logger,
 	TP_printk("")
 )
 
-#endif /* _TRACE_LTTNG_H */
+#endif /* LTTNG_TRACE_LTTNG_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

@@ -1,10 +1,10 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM timer
 
-#if !defined(_TRACE_TIMER_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_TIMER_H
+#if !defined(LTTNG_TRACE_TIMER_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_TIMER_H
 
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 
 #ifndef _TRACE_TIMER_DEF_
 #define _TRACE_TIMER_DEF_
@@ -15,7 +15,7 @@ struct timer_list;
 
 #endif /* _TRACE_TIMER_DEF_ */
 
-DECLARE_EVENT_CLASS(timer_class,
+LTTNG_TRACEPOINT_EVENT_CLASS(timer_class,
 
 	TP_PROTO(struct timer_list *timer),
 
@@ -36,7 +36,7 @@ DECLARE_EVENT_CLASS(timer_class,
  * timer_init - called when the timer is initialized
  * @timer:	pointer to struct timer_list
  */
-DEFINE_EVENT(timer_class, timer_init,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(timer_class, timer_init,
 
 	TP_PROTO(struct timer_list *timer),
 
@@ -48,7 +48,7 @@ DEFINE_EVENT(timer_class, timer_init,
  * @timer:	pointer to struct timer_list
  * @expires:	the timers expiry time
  */
-TRACE_EVENT(timer_start,
+LTTNG_TRACEPOINT_EVENT(timer_start,
 
 	TP_PROTO(struct timer_list *timer, unsigned long expires),
 
@@ -79,7 +79,7 @@ TRACE_EVENT(timer_start,
  *
  * Allows to determine the timer latency.
  */
-TRACE_EVENT(timer_expire_entry,
+LTTNG_TRACEPOINT_EVENT(timer_expire_entry,
 
 	TP_PROTO(struct timer_list *timer),
 
@@ -110,7 +110,7 @@ TRACE_EVENT(timer_expire_entry,
  * NOTE: Do NOT derefernce timer in TP_fast_assign. The pointer might
  * be invalid. We solely track the pointer.
  */
-DEFINE_EVENT(timer_class, timer_expire_exit,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(timer_class, timer_expire_exit,
 
 	TP_PROTO(struct timer_list *timer),
 
@@ -121,7 +121,7 @@ DEFINE_EVENT(timer_class, timer_expire_exit,
  * timer_cancel - called when the timer is canceled
  * @timer:	pointer to struct timer_list
  */
-DEFINE_EVENT(timer_class, timer_cancel,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(timer_class, timer_cancel,
 
 	TP_PROTO(struct timer_list *timer),
 
@@ -134,7 +134,7 @@ DEFINE_EVENT(timer_class, timer_cancel,
  * @clockid:	the hrtimers clock
  * @mode:	the hrtimers mode
  */
-TRACE_EVENT(hrtimer_init,
+LTTNG_TRACEPOINT_EVENT(hrtimer_init,
 
 	TP_PROTO(struct hrtimer *hrtimer, clockid_t clockid,
 		 enum hrtimer_mode mode),
@@ -164,7 +164,7 @@ TRACE_EVENT(hrtimer_init,
  * hrtimer_start - called when the hrtimer is started
  * @timer: pointer to struct hrtimer
  */
-TRACE_EVENT(hrtimer_start,
+LTTNG_TRACEPOINT_EVENT(hrtimer_start,
 
 	TP_PROTO(struct hrtimer *hrtimer),
 
@@ -200,7 +200,7 @@ TRACE_EVENT(hrtimer_start,
  *
  * Allows to determine the timer latency.
  */
-TRACE_EVENT(hrtimer_expire_entry,
+LTTNG_TRACEPOINT_EVENT(hrtimer_expire_entry,
 
 	TP_PROTO(struct hrtimer *hrtimer, ktime_t *now),
 
@@ -222,7 +222,7 @@ TRACE_EVENT(hrtimer_expire_entry,
 		  (unsigned long long)ktime_to_ns((ktime_t) { .tv64 = __entry->now }))
 )
 
-DECLARE_EVENT_CLASS(hrtimer_class,
+LTTNG_TRACEPOINT_EVENT_CLASS(hrtimer_class,
 
 	TP_PROTO(struct hrtimer *hrtimer),
 
@@ -246,7 +246,7 @@ DECLARE_EVENT_CLASS(hrtimer_class,
  * When used in combination with the hrtimer_expire_entry tracepoint we can
  * determine the runtime of the callback function.
  */
-DEFINE_EVENT(hrtimer_class, hrtimer_expire_exit,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(hrtimer_class, hrtimer_expire_exit,
 
 	TP_PROTO(struct hrtimer *hrtimer),
 
@@ -257,7 +257,7 @@ DEFINE_EVENT(hrtimer_class, hrtimer_expire_exit,
  * hrtimer_cancel - called when the hrtimer is canceled
  * @hrtimer:	pointer to struct hrtimer
  */
-DEFINE_EVENT(hrtimer_class, hrtimer_cancel,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(hrtimer_class, hrtimer_cancel,
 
 	TP_PROTO(struct hrtimer *hrtimer),
 
@@ -271,7 +271,7 @@ DEFINE_EVENT(hrtimer_class, hrtimer_cancel,
  *		zero, otherwise it is started
  * @expires:	the itimers expiry time
  */
-TRACE_EVENT(itimer_state,
+LTTNG_TRACEPOINT_EVENT(itimer_state,
 
 	TP_PROTO(int which, const struct itimerval *const value,
 		 cputime_t expires),
@@ -308,7 +308,7 @@ TRACE_EVENT(itimer_state,
  * @pid:	pid of the process which owns the timer
  * @now:	current time, used to calculate the latency of itimer
  */
-TRACE_EVENT(itimer_expire,
+LTTNG_TRACEPOINT_EVENT(itimer_expire,
 
 	TP_PROTO(int which, struct pid *pid, cputime_t now),
 
@@ -330,7 +330,7 @@ TRACE_EVENT(itimer_expire,
 		  (int) __entry->pid, (unsigned long long)__entry->now)
 )
 
-#endif /*  _TRACE_TIMER_H */
+#endif /*  LTTNG_TRACE_TIMER_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

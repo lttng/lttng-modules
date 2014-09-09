@@ -1,13 +1,13 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM udp
 
-#if !defined(_TRACE_UDP_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_UDP_H
+#if !defined(LTTNG_TRACE_UDP_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_UDP_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/udp.h>
-#include <linux/tracepoint.h>
 
-TRACE_EVENT(udp_fail_queue_rcv_skb,
+LTTNG_TRACEPOINT_EVENT(udp_fail_queue_rcv_skb,
 
 	TP_PROTO(int rc, struct sock *sk),
 
@@ -26,7 +26,7 @@ TRACE_EVENT(udp_fail_queue_rcv_skb,
 	TP_printk("rc=%d port=%hu", __entry->rc, __entry->lport)
 )
 
-#endif /* _TRACE_UDP_H */
+#endif /* LTTNG_TRACE_UDP_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

@@ -4,7 +4,7 @@
 #if !defined(_TRACE_SYSCALLS_POINTERS_H) || defined(TRACE_HEADER_MULTI_READ)
 #define _TRACE_SYSCALLS_POINTERS_H
 
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/syscalls.h>
 #include "mips-64-syscalls-3.5.0_pointers_override.h"
 #include "syscalls_pointers_override.h"

@@ -1,10 +1,10 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM irq
 
-#if !defined(_TRACE_IRQ_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_IRQ_H
+#if !defined(LTTNG_TRACE_IRQ_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_IRQ_H
 
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 
 #ifndef _TRACE_IRQ_DEF_
 #define _TRACE_IRQ_DEF_
@@ -39,7 +39,7 @@ struct softirq_action;
  * conjunction with the irq_handler_exit tracepoint, we can figure
  * out irq handler latencies.
  */
-TRACE_EVENT(irq_handler_entry,
+LTTNG_TRACEPOINT_EVENT(irq_handler_entry,
 
 	TP_PROTO(int irq, struct irqaction *action),
 
@@ -69,7 +69,7 @@ TRACE_EVENT(irq_handler_entry,
  * a shared irq line, or the irq was not handled successfully. Can be used in
  * conjunction with the irq_handler_entry to understand irq handler latencies.
  */
-TRACE_EVENT(irq_handler_exit,
+LTTNG_TRACEPOINT_EVENT(irq_handler_exit,
 
 	TP_PROTO(int irq, struct irqaction *action, int ret),
 
@@ -90,7 +90,7 @@ TRACE_EVENT(irq_handler_exit,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
-DECLARE_EVENT_CLASS(softirq,
+LTTNG_TRACEPOINT_EVENT_CLASS(softirq,
 
 	TP_PROTO(unsigned int vec_nr),
 
@@ -115,7 +115,7 @@ DECLARE_EVENT_CLASS(softirq,
  * When used in combination with the softirq_exit tracepoint
  * we can determine the softirq handler runtine.
  */
-DEFINE_EVENT(softirq, softirq_entry,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(softirq, softirq_entry,
 
 	TP_PROTO(unsigned int vec_nr),
 
@@ -129,7 +129,7 @@ DEFINE_EVENT(softirq, softirq_entry,
  * When used in combination with the softirq_entry tracepoint
  * we can determine the softirq handler runtine.
  */
-DEFINE_EVENT(softirq, softirq_exit,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(softirq, softirq_exit,
 
 	TP_PROTO(unsigned int vec_nr),
 
@@ -143,14 +143,14 @@ DEFINE_EVENT(softirq, softirq_exit,
  * When used in combination with the softirq_entry tracepoint
  * we can determine the softirq raise to run latency.
  */
-DEFINE_EVENT(softirq, softirq_raise,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(softirq, softirq_raise,
 
 	TP_PROTO(unsigned int vec_nr),
 
 	TP_ARGS(vec_nr)
 )
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)) */
-DECLARE_EVENT_CLASS(softirq,
+LTTNG_TRACEPOINT_EVENT_CLASS(softirq,
 
 	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
 
@@ -176,7 +176,7 @@ DECLARE_EVENT_CLASS(softirq,
  * When used in combination with the softirq_exit tracepoint
  * we can determine the softirq handler runtine.
  */
-DEFINE_EVENT(softirq, softirq_entry,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(softirq, softirq_entry,
 
 	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
 
@@ -191,7 +191,7 @@ DEFINE_EVENT(softirq, softirq_entry,
  * When used in combination with the softirq_entry tracepoint
  * we can determine the softirq handler runtine.
  */
-DEFINE_EVENT(softirq, softirq_exit,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(softirq, softirq_exit,
 
 	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
 
@@ -206,7 +206,7 @@ DEFINE_EVENT(softirq, softirq_exit,
  * When used in combination with the softirq_entry tracepoint
  * we can determine the softirq raise to run latency.
  */
-DEFINE_EVENT(softirq, softirq_raise,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(softirq, softirq_raise,
 
 	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
 
@@ -214,7 +214,7 @@ DEFINE_EVENT(softirq, softirq_raise,
 )
 #endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)) */
 
-#endif /*  _TRACE_IRQ_H */
+#endif /*  LTTNG_TRACE_IRQ_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

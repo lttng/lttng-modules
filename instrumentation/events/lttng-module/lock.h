@@ -7,19 +7,19 @@
 #define TRACE_SYSTEM lockdep
 #define TRACE_INCLUDE_FILE lock
 #if defined(_TRACE_LOCKDEP_H)
-#define _TRACE_LOCK_H
+#define LTTNG_TRACE_LOCK_H
 #endif
 #endif
 
-#if !defined(_TRACE_LOCK_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_LOCK_H
+#if !defined(LTTNG_TRACE_LOCK_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_LOCK_H
 
 #include <linux/lockdep.h>
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 
 #ifdef CONFIG_LOCKDEP
 
-TRACE_EVENT(lock_acquire,
+LTTNG_TRACEPOINT_EVENT(lock_acquire,
 
 	TP_PROTO(struct lockdep_map *lock, unsigned int subclass,
 		int trylock, int read, int check,
@@ -55,7 +55,7 @@ TRACE_EVENT(lock_acquire,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 
-DECLARE_EVENT_CLASS(lock,
+LTTNG_TRACEPOINT_EVENT_CLASS(lock,
 
 	TP_PROTO(struct lockdep_map *lock, unsigned long ip),
 
@@ -74,7 +74,7 @@ DECLARE_EVENT_CLASS(lock,
 	TP_printk("%p %s",  __entry->lockdep_addr, __get_str(name))
 )
 
-DEFINE_EVENT(lock, lock_release,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(lock, lock_release,
 
 	TP_PROTO(struct lockdep_map *lock, unsigned long ip),
 
@@ -83,14 +83,14 @@ DEFINE_EVENT(lock, lock_release,
 
 #ifdef CONFIG_LOCK_STAT
 
-DEFINE_EVENT(lock, lock_contended,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(lock, lock_contended,
 
 	TP_PROTO(struct lockdep_map *lock, unsigned long ip),
 
 	TP_ARGS(lock, ip)
 )
 
-DEFINE_EVENT(lock, lock_acquired,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(lock, lock_acquired,
 
 	TP_PROTO(struct lockdep_map *lock, unsigned long ip),
 
@@ -101,7 +101,7 @@ DEFINE_EVENT(lock, lock_acquired,
 
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35)) */
 
-TRACE_EVENT(lock_release,
+LTTNG_TRACEPOINT_EVENT(lock_release,
 
 	TP_PROTO(struct lockdep_map *lock, int nested, unsigned long ip),
 
@@ -130,7 +130,7 @@ TRACE_EVENT(lock_release,
 
 #ifdef CONFIG_LOCK_STAT
 
-TRACE_EVENT(lock_contended,
+LTTNG_TRACEPOINT_EVENT(lock_contended,
 
 	TP_PROTO(struct lockdep_map *lock, unsigned long ip),
 
@@ -157,7 +157,7 @@ TRACE_EVENT(lock_contended,
 #endif
 )
 
-TRACE_EVENT(lock_acquired,
+LTTNG_TRACEPOINT_EVENT(lock_acquired,
 
 	TP_PROTO(struct lockdep_map *lock, unsigned long ip, s64 waittime),
 
@@ -201,7 +201,7 @@ TRACE_EVENT(lock_acquired,
 
 #endif
 
-#endif /* _TRACE_LOCK_H */
+#endif /* LTTNG_TRACE_LOCK_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

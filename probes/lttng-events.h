@@ -36,27 +36,27 @@
  * LTTng name mapping macros. LTTng remaps some of the kernel events to
  * enforce name-spacing.
  */
-#undef TRACE_EVENT_MAP
-#define TRACE_EVENT_MAP(name, map, proto, args, tstruct, assign, print)	\
-	DECLARE_EVENT_CLASS(map,					\
+#undef LTTNG_TRACEPOINT_EVENT_MAP
+#define LTTNG_TRACEPOINT_EVENT_MAP(name, map, proto, args, tstruct, assign, print) \
+	LTTNG_TRACEPOINT_EVENT_CLASS(map,				\
 			     PARAMS(proto),				\
 			     PARAMS(args),				\
 			     PARAMS(tstruct),				\
 			     PARAMS(assign),				\
 			     PARAMS(print))				\
-	DEFINE_EVENT_MAP(map, name, map, PARAMS(proto), PARAMS(args))
+	LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(map, name, map, PARAMS(proto), PARAMS(args))
 
-#undef TRACE_EVENT_MAP_NOARGS
-#define TRACE_EVENT_MAP_NOARGS(name, map, tstruct, assign, print)	\
-	DECLARE_EVENT_CLASS_NOARGS(map,					\
+#undef LTTNG_TRACEPOINT_EVENT_MAP_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_MAP_NOARGS(name, map, tstruct, assign, print) \
+	LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(map,			\
 			     PARAMS(tstruct),				\
 			     PARAMS(assign),				\
 			     PARAMS(print))				\
-	DEFINE_EVENT_MAP_NOARGS(map, name, map)
+	LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(map, name, map)
 
-#undef LTTNG_TRACE_EVENT
-#define LTTNG_TRACE_EVENT(name, proto, args, _locvar, _code, tstruct, assign, print) \
-	LTTNG_DECLARE_EVENT_CLASS(name,					\
+#undef LTTNG_TRACEPOINT_EVENT_CODE
+#define LTTNG_TRACEPOINT_EVENT_CODE(name, proto, args, _locvar, _code, tstruct, assign, print) \
+	LTTNG_TRACEPOINT_EVENT_CLASS_CODE(name,				\
 			     PARAMS(proto),				\
 			     PARAMS(args),				\
 			     PARAMS(_locvar),				\
@@ -64,22 +64,23 @@
 			     PARAMS(tstruct),				\
 			     PARAMS(assign),				\
 			     PARAMS(print))				\
-	DEFINE_EVENT_MAP(name, name, name, PARAMS(proto), PARAMS(args))
+	LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(name, name, name, PARAMS(proto), PARAMS(args))
 
-#undef DEFINE_EVENT_PRINT_MAP
-#define DEFINE_EVENT_PRINT_MAP(template, name, map, proto, args, print)	\
-	DEFINE_EVENT_MAP(template, name, map, PARAMS(proto), PARAMS(args))
+
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT_MAP
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT_MAP(template, name, map, proto, args, print) \
+	LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(template, name, map, PARAMS(proto), PARAMS(args))
 
 /* Callbacks are meaningless to LTTng. */
-#undef TRACE_EVENT_FN_MAP
-#define TRACE_EVENT_FN_MAP(name, map, proto, args, tstruct,		\
+#undef LTTNG_TRACEPOINT_EVENT_FN_MAP
+#define LTTNG_TRACEPOINT_EVENT_FN_MAP(name, map, proto, args, tstruct,	\
 		assign, print, reg, unreg)				\
-	TRACE_EVENT_MAP(name, map, PARAMS(proto), PARAMS(args),		\
-		PARAMS(tstruct), PARAMS(assign), PARAMS(print))		\
+	LTTNG_TRACEPOINT_EVENT_MAP(name, map, PARAMS(proto), PARAMS(args), \
+		PARAMS(tstruct), PARAMS(assign), PARAMS(print))
 
-#undef TRACE_EVENT_CONDITION_MAP
-#define TRACE_EVENT_CONDITION_MAP(name, map, proto, args, cond, tstruct, assign, print) \
-	TRACE_EVENT_MAP(name, map,					\
+#undef LTTNG_TRACEPOINT_EVENT_CONDITION_MAP
+#define LTTNG_TRACEPOINT_EVENT_CONDITION_MAP(name, map, proto, args, cond, tstruct, assign, print) \
+	LTTNG_TRACEPOINT_EVENT_MAP(name, map,				\
 		PARAMS(proto),						\
 		PARAMS(args),						\
 		PARAMS(tstruct),					\
@@ -87,54 +88,55 @@
 		PARAMS(print))
 
 /*
- * DECLARE_EVENT_CLASS can be used to add a generic function
- * handlers for events. That is, if all events have the same
- * parameters and just have distinct trace points.
- * Each tracepoint can be defined with DEFINE_EVENT and that
- * will map the DECLARE_EVENT_CLASS to the tracepoint.
+ * LTTNG_TRACEPOINT_EVENT_CLASS can be used to add a generic function
+ * handlers for events. That is, if all events have the same parameters
+ * and just have distinct trace points.  Each tracepoint can be defined
+ * with LTTNG_TRACEPOINT_EVENT_INSTANCE and that will map the
+ * LTTNG_TRACEPOINT_EVENT_CLASS to the tracepoint.
  *
- * TRACE_EVENT is a one to one mapping between tracepoint and template.
+ * LTTNG_TRACEPOINT_EVENT is a one to one mapping between tracepoint and
+ * template.
  */
 
-#undef TRACE_EVENT
-#define TRACE_EVENT(name, proto, args, tstruct, assign, print)	\
-	TRACE_EVENT_MAP(name, name,				\
-			PARAMS(proto),				\
-			PARAMS(args),				\
-			PARAMS(tstruct),			\
-			PARAMS(assign),				\
+#undef LTTNG_TRACEPOINT_EVENT
+#define LTTNG_TRACEPOINT_EVENT(name, proto, args, tstruct, assign, print) \
+	LTTNG_TRACEPOINT_EVENT_MAP(name, name,				\
+			PARAMS(proto),					\
+			PARAMS(args),					\
+			PARAMS(tstruct),				\
+			PARAMS(assign),					\
 			PARAMS(print))
 
-#undef TRACE_EVENT_NOARGS
-#define TRACE_EVENT_NOARGS(name, tstruct, assign, print)	\
-	TRACE_EVENT_MAP_NOARGS(name, name,			\
-			PARAMS(tstruct),			\
-			PARAMS(assign),				\
+#undef LTTNG_TRACEPOINT_EVENT_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_NOARGS(name, tstruct, assign, print)	\
+	LTTNG_TRACEPOINT_EVENT_MAP_NOARGS(name, name,			\
+			PARAMS(tstruct),				\
+			PARAMS(assign),					\
 			PARAMS(print))
 
-#undef DEFINE_EVENT_PRINT
-#define DEFINE_EVENT_PRINT(template, name, proto, args, print)	\
-	DEFINE_EVENT_PRINT_MAP(template, name, name,		\
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT(template, name, proto, args, print) \
+	LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT_MAP(template, name, name,	\
 			PARAMS(proto), PARAMS(args), PARAMS(print_))
 
-#undef TRACE_EVENT_FN
-#define TRACE_EVENT_FN(name, proto, args, tstruct,			\
+#undef LTTNG_TRACEPOINT_EVENT_FN
+#define LTTNG_TRACEPOINT_EVENT_FN(name, proto, args, tstruct,		\
 		assign, print, reg, unreg)				\
-	TRACE_EVENT_FN_MAP(name, name, PARAMS(proto), PARAMS(args),	\
+	LTTNG_TRACEPOINT_EVENT_FN_MAP(name, name, PARAMS(proto), PARAMS(args), \
 		PARAMS(tstruct), PARAMS(assign), PARAMS(print),		\
 		PARAMS(reg), PARAMS(unreg))				\
 
-#undef DEFINE_EVENT
-#define DEFINE_EVENT(template, name, proto, args)			\
-	DEFINE_EVENT_MAP(template, name, name, PARAMS(proto), PARAMS(args))
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE(template, name, proto, args)	\
+	LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(template, name, name, PARAMS(proto), PARAMS(args))
 
-#undef DEFINE_EVENT_NOARGS
-#define DEFINE_EVENT_NOARGS(template, name)				\
-	DEFINE_EVENT_MAP_NOARGS(template, name, name)
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(template, name)	\
+	LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(template, name, name)
 
-#undef TRACE_EVENT_CONDITION
-#define TRACE_EVENT_CONDITION(name, proto, args, cond, tstruct, assign, print) \
-	TRACE_EVENT_CONDITION_MAP(name, name,				\
+#undef LTTNG_TRACEPOINT_EVENT_CONDITION
+#define LTTNG_TRACEPOINT_EVENT_CONDITION(name, proto, args, cond, tstruct, assign, print) \
+	LTTNG_TRACEPOINT_EVENT_CONDITION_MAP(name, name,		\
 		PARAMS(proto),						\
 		PARAMS(args),						\
 		PARAMS(cond),						\
@@ -142,14 +144,14 @@
 		PARAMS(assign),						\
 		PARAMS(print))
 
-#undef DECLARE_EVENT_CLASS
-#define DECLARE_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print)  \
-	LTTNG_DECLARE_EVENT_CLASS(_name, PARAMS(_proto), PARAMS(_args), , , \
+#undef LTTNG_TRACEPOINT_EVENT_CLASS
+#define LTTNG_TRACEPOINT_EVENT_CLASS(_name, _proto, _args, _tstruct, _assign, _print) \
+	LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, PARAMS(_proto), PARAMS(_args), , , \
 		PARAMS(_tstruct), PARAMS(_assign), PARAMS(_print))
 
-#undef DECLARE_EVENT_CLASS_NOARGS
-#define DECLARE_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print)	\
-	LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, , , PARAMS(_tstruct),	\
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(_name, _tstruct, _assign, _print) \
+	LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, , , PARAMS(_tstruct), \
 		PARAMS(_assign), PARAMS(_print))
 
 
@@ -157,8 +159,8 @@
  * Stage 1 of the trace events.
  *
  * Create dummy trace calls for each events, verifying that the LTTng module
- * TRACE_EVENT headers match the kernel arguments. Will be optimized out by the
- * compiler.
+ * instrumentation headers match the kernel arguments. Will be optimized
+ * out by the compiler.
  */
 
 #include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
@@ -169,12 +171,12 @@
 #undef TP_ARGS
 #define TP_ARGS(args...) args
 
-#undef DEFINE_EVENT_MAP
-#define DEFINE_EVENT_MAP(_template, _name, _map, _proto, _args)		\
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(_template, _name, _map, _proto, _args) \
 void trace_##_name(_proto);
 
-#undef DEFINE_EVENT_MAP_NOARGS
-#define DEFINE_EVENT_MAP_NOARGS(_template, _name, _map)			\
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map) \
 void trace_##_name(void *__data);
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
@@ -309,15 +311,15 @@ void trace_##_name(void *__data);
 #undef TP_STRUCT__entry
 #define TP_STRUCT__entry(args...) args	/* Only one used in this phase */
 
-#undef LTTNG_DECLARE_EVENT_CLASS_NOARGS
-#define LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print) \
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print) \
 	static const struct lttng_event_field __event_fields___##_name[] = { \
 		_tstruct						     \
 	};
 
-#undef LTTNG_DECLARE_EVENT_CLASS
-#define LTTNG_DECLARE_EVENT_CLASS(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print) \
-	LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, _locvar, _code, PARAMS(_tstruct), PARAMS(_assign), \
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print) \
+	LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, PARAMS(_tstruct), PARAMS(_assign), \
 			PARAMS(_print))
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
@@ -333,12 +335,12 @@ void trace_##_name(void *__data);
 #undef TP_PROTO
 #define TP_PROTO(args...) args
 
-#undef LTTNG_DECLARE_EVENT_CLASS
-#define LTTNG_DECLARE_EVENT_CLASS(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print) \
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print) \
 static void __event_probe__##_name(void *__data, _proto);
 
-#undef LTTNG_DECLARE_EVENT_CLASS_NOARGS
-#define LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print) \
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print) \
 static void __event_probe__##_name(void *__data);
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
@@ -357,8 +359,8 @@ static void __event_probe__##_name(void *__data);
 #define TP_PROBE_CB(_template)	&__event_probe__##_template
 #endif
 
-#undef DEFINE_EVENT_MAP_NOARGS
-#define DEFINE_EVENT_MAP_NOARGS(_template, _name, _map)			\
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map)	\
 static const struct lttng_event_desc __event_desc___##_map = {		\
 	.fields = __event_fields___##_template,		     		\
 	.name = #_map,					     		\
@@ -368,9 +370,9 @@ static const struct lttng_event_desc __event_desc___##_map = {		\
 	.owner = THIS_MODULE,				     		\
 };
 
-#undef DEFINE_EVENT_MAP
-#define DEFINE_EVENT_MAP(_template, _name, _map, _proto, _args)		\
-	DEFINE_EVENT_MAP_NOARGS(_template, _name, _map)
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(_template, _name, _map, _proto, _args) \
+	LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map)
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
@@ -385,13 +387,13 @@ static const struct lttng_event_desc __event_desc___##_map = {		\
 
 #include "lttng-events-reset.h"	/* Reset all macros within TRACE_EVENT */
 
-#undef DEFINE_EVENT_MAP_NOARGS
-#define DEFINE_EVENT_MAP_NOARGS(_template, _name, _map)			       \
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map) \
 		&__event_desc___##_map,
 
-#undef DEFINE_EVENT_MAP
-#define DEFINE_EVENT_MAP(_template, _name, _map, _proto, _args)		       \
-	DEFINE_EVENT_MAP_NOARGS(_template, _name, _map)
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(_template, _name, _map, _proto, _args) \
+	LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map)
 
 #define TP_ID1(_token, _system)	_token##_system
 #define TP_ID(_token, _system)	TP_ID1(_token, _system)
@@ -485,8 +487,8 @@ static __used struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 #undef TP_locvar
 #define TP_locvar(...)	__VA_ARGS__
 
-#undef LTTNG_DECLARE_EVENT_CLASS
-#define LTTNG_DECLARE_EVENT_CLASS(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print)  \
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print) \
 static inline size_t __event_get_size__##_name(size_t *__dynamic_len,	      \
 		void *__tp_locvar, _proto)				      \
 {									      \
@@ -498,8 +500,8 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len,	      \
 	return __event_len;						      \
 }
 
-#undef LTTNG_DECLARE_EVENT_CLASS_NOARGS
-#define LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print)  \
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print) \
 static inline size_t __event_get_size__##_name(size_t *__dynamic_len,	      \
 		void *__tp_locvar)					      \
 {									      \
@@ -555,9 +557,9 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len,	      \
 #undef TP_locvar
 #define TP_locvar(...)	__VA_ARGS__
 
-#undef LTTNG_DECLARE_EVENT_CLASS
-#define LTTNG_DECLARE_EVENT_CLASS(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print)  \
-static inline size_t __event_get_align__##_name(void *__tp_locvar, _proto) \
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print) \
+static inline size_t __event_get_align__##_name(void *__tp_locvar, _proto)    \
 {									      \
 	size_t __event_align = 1;					      \
 	struct { _locvar } *tp_locvar __attribute__((unused)) = __tp_locvar;  \
@@ -566,8 +568,8 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar, _proto) \
 	return __event_align;						      \
 }
 
-#undef LTTNG_DECLARE_EVENT_CLASS_NOARGS
-#define LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print)  \
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print) \
 static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 {									      \
 	size_t __event_align = 1;					      \
@@ -615,15 +617,15 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 #undef TP_STRUCT__entry
 #define TP_STRUCT__entry(args...) args
 
-#undef LTTNG_DECLARE_EVENT_CLASS_NOARGS
-#define LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print)  \
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print) \
 struct __event_typemap__##_name {					      \
 	_tstruct							      \
 };
 
-#undef LTTNG_DECLARE_EVENT_CLASS
-#define LTTNG_DECLARE_EVENT_CLASS(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print)  \
-	LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print)
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print) \
+	LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print)
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
@@ -824,8 +826,8 @@ __assign_##dest:							\
  * __dynamic_array_enc_ext_2() and tp_memcpy_dyn_2(), which are the
  * worse case, needing 2 entries per field.
  */
-#undef LTTNG_DECLARE_EVENT_CLASS
-#define LTTNG_DECLARE_EVENT_CLASS(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print) \
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print) \
 static void __event_probe__##_name(void *__data, _proto)		      \
 {									      \
 	struct probe_local_vars { _locvar };				      \
@@ -866,8 +868,8 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	_assign								      \
 }
 
-#undef LTTNG_DECLARE_EVENT_CLASS_NOARGS
-#define LTTNG_DECLARE_EVENT_CLASS_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print) \
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print) \
 static void __event_probe__##_name(void *__data)			      \
 {									      \
 	struct probe_local_vars { _locvar };				      \
@@ -950,4 +952,3 @@ module_exit_eval(__lttng_events_exit__, TRACE_SYSTEM);
 
 #undef TP_PROTO
 #undef TP_ARGS
-#undef TRACE_EVENT_FLAGS

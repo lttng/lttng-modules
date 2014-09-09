@@ -1,16 +1,16 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM net
 
-#if !defined(_TRACE_NET_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_NET_H
+#if !defined(LTTNG_TRACE_NET_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_NET_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
 #include <linux/ip.h>
-#include <linux/tracepoint.h>
 #include <linux/version.h>
 
-TRACE_EVENT(net_dev_xmit,
+LTTNG_TRACEPOINT_EVENT(net_dev_xmit,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,40))
 	TP_PROTO(struct sk_buff *skb,
@@ -57,7 +57,7 @@ TRACE_EVENT(net_dev_xmit,
 		__get_str(name), __entry->skbaddr, __entry->len, __entry->rc)
 )
 
-DECLARE_EVENT_CLASS(net_dev_template,
+LTTNG_TRACEPOINT_EVENT_CLASS(net_dev_template,
 
 	TP_PROTO(struct sk_buff *skb),
 
@@ -79,27 +79,27 @@ DECLARE_EVENT_CLASS(net_dev_template,
 		__get_str(name), __entry->skbaddr, __entry->len)
 )
 
-DEFINE_EVENT(net_dev_template, net_dev_queue,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(net_dev_template, net_dev_queue,
 
 	TP_PROTO(struct sk_buff *skb),
 
 	TP_ARGS(skb)
 )
 
-DEFINE_EVENT(net_dev_template, netif_receive_skb,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(net_dev_template, netif_receive_skb,
 
 	TP_PROTO(struct sk_buff *skb),
 
 	TP_ARGS(skb)
 )
 
-DEFINE_EVENT(net_dev_template, netif_rx,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(net_dev_template, netif_rx,
 
 	TP_PROTO(struct sk_buff *skb),
 
 	TP_ARGS(skb)
 )
-#endif /* _TRACE_NET_H */
+#endif /* LTTNG_TRACE_NET_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

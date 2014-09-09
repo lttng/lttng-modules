@@ -1,10 +1,10 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM signal
 
-#if !defined(_TRACE_SIGNAL_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_SIGNAL_H
+#if !defined(LTTNG_TRACE_SIGNAL_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_SIGNAL_H
 
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/version.h>
 
 #ifndef _TRACE_SIGNAL_DEF
@@ -36,7 +36,7 @@
  * means that si_code is SI_KERNEL.
  */
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,4,0))
-TRACE_EVENT(signal_generate,
+LTTNG_TRACEPOINT_EVENT(signal_generate,
 
 	TP_PROTO(int sig, struct siginfo *info, struct task_struct *task),
 
@@ -62,7 +62,7 @@ TRACE_EVENT(signal_generate,
 		  __entry->comm, __entry->pid)
 )
 #else
-TRACE_EVENT(signal_generate,
+LTTNG_TRACEPOINT_EVENT(signal_generate,
 
 	TP_PROTO(int sig, struct siginfo *info, struct task_struct *task,
 			int group, int result),
@@ -109,7 +109,7 @@ TRACE_EVENT(signal_generate,
  * This means, this can show which signals are actually delivered, but
  * matching generated signals and delivered signals may not be correct.
  */
-TRACE_EVENT(signal_deliver,
+LTTNG_TRACEPOINT_EVENT(signal_deliver,
 
 	TP_PROTO(int sig, struct siginfo *info, struct k_sigaction *ka),
 
@@ -136,7 +136,7 @@ TRACE_EVENT(signal_deliver,
 )
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,4,0))
-DECLARE_EVENT_CLASS(signal_queue_overflow,
+LTTNG_TRACEPOINT_EVENT_CLASS(signal_queue_overflow,
 
 	TP_PROTO(int sig, int group, struct siginfo *info),
 
@@ -170,7 +170,7 @@ DECLARE_EVENT_CLASS(signal_queue_overflow,
  * 'group' is not 0 if the signal will be sent to a process group.
  * 'sig' is always one of RT signals.
  */
-DEFINE_EVENT(signal_queue_overflow, signal_overflow_fail,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(signal_queue_overflow, signal_overflow_fail,
 
 	TP_PROTO(int sig, int group, struct siginfo *info),
 
@@ -188,7 +188,7 @@ DEFINE_EVENT(signal_queue_overflow, signal_overflow_fail,
  * 'group' is not 0 if the signal will be sent to a process group.
  * 'sig' is always one of non-RT signals.
  */
-DEFINE_EVENT(signal_queue_overflow, signal_lose_info,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(signal_queue_overflow, signal_lose_info,
 
 	TP_PROTO(int sig, int group, struct siginfo *info),
 
@@ -196,7 +196,7 @@ DEFINE_EVENT(signal_queue_overflow, signal_lose_info,
 )
 #endif
 
-#endif /* _TRACE_SIGNAL_H */
+#endif /* LTTNG_TRACE_SIGNAL_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

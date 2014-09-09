@@ -1,15 +1,15 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM lttng_statedump
 
-#if !defined(_TRACE_LTTNG_STATEDUMP_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_LTTNG_STATEDUMP_H
+#if !defined(LTTNG_TRACE_LTTNG_STATEDUMP_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_LTTNG_STATEDUMP_H
 
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/nsproxy.h>
 #include <linux/pid_namespace.h>
 #include <linux/types.h>
 
-TRACE_EVENT(lttng_statedump_start,
+LTTNG_TRACEPOINT_EVENT(lttng_statedump_start,
 	TP_PROTO(struct lttng_session *session),
 	TP_ARGS(session),
 	TP_STRUCT__entry(
@@ -19,7 +19,7 @@ TRACE_EVENT(lttng_statedump_start,
 	TP_printk("")
 )
 
-TRACE_EVENT(lttng_statedump_end,
+LTTNG_TRACEPOINT_EVENT(lttng_statedump_end,
 	TP_PROTO(struct lttng_session *session),
 	TP_ARGS(session),
 	TP_STRUCT__entry(
@@ -29,7 +29,7 @@ TRACE_EVENT(lttng_statedump_end,
 	TP_printk("")
 )
 
-TRACE_EVENT(lttng_statedump_process_state,
+LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_state,
 	TP_PROTO(struct lttng_session *session,
 		struct task_struct *p,
 		int type, int mode, int submode, int status,
@@ -86,7 +86,7 @@ TRACE_EVENT(lttng_statedump_process_state,
 	TP_printk("")
 )
 
-TRACE_EVENT(lttng_statedump_file_descriptor,
+LTTNG_TRACEPOINT_EVENT(lttng_statedump_file_descriptor,
 	TP_PROTO(struct lttng_session *session,
 		struct task_struct *p, int fd, const char *filename,
 		unsigned int flags, fmode_t fmode),
@@ -108,7 +108,7 @@ TRACE_EVENT(lttng_statedump_file_descriptor,
 	TP_printk("")
 )
 
-TRACE_EVENT(lttng_statedump_vm_map,
+LTTNG_TRACEPOINT_EVENT(lttng_statedump_vm_map,
 	TP_PROTO(struct lttng_session *session,
 		struct task_struct *p, struct vm_area_struct *map,
 		unsigned long inode),
@@ -132,7 +132,7 @@ TRACE_EVENT(lttng_statedump_vm_map,
 	TP_printk("")
 )
 
-TRACE_EVENT(lttng_statedump_network_interface,
+LTTNG_TRACEPOINT_EVENT(lttng_statedump_network_interface,
 	TP_PROTO(struct lttng_session *session,
 		struct net_device *dev, struct in_ifaddr *ifa),
 	TP_ARGS(session, dev, ifa),
@@ -147,7 +147,7 @@ TRACE_EVENT(lttng_statedump_network_interface,
 	TP_printk("")
 )
 
-TRACE_EVENT(lttng_statedump_block_device,
+LTTNG_TRACEPOINT_EVENT(lttng_statedump_block_device,
 	TP_PROTO(struct lttng_session *session,
 		dev_t dev, const char *diskname),
 	TP_ARGS(session, dev, diskname),
@@ -163,7 +163,7 @@ TRACE_EVENT(lttng_statedump_block_device,
 )
 
 /* Called with desc->lock held */
-TRACE_EVENT(lttng_statedump_interrupt,
+LTTNG_TRACEPOINT_EVENT(lttng_statedump_interrupt,
 	TP_PROTO(struct lttng_session *session,
 		unsigned int irq, const char *chip_name,
 		struct irqaction *action),
@@ -181,7 +181,7 @@ TRACE_EVENT(lttng_statedump_interrupt,
 	TP_printk("")
 )
 
-#endif /*  _TRACE_LTTNG_STATEDUMP_H */
+#endif /*  LTTNG_TRACE_LTTNG_STATEDUMP_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

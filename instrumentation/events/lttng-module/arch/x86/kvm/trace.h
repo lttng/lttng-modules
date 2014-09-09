@@ -1,7 +1,7 @@
-#if !defined(_TRACE_KVM_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_KVM_H
+#if !defined(LTTNG_TRACE_KVM_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_KVM_H
 
-#include <linux/tracepoint.h>
+#include "../../../../../../probes/lttng-tracepoint-event.h"
 #include <asm/vmx.h>
 #include <asm/svm.h>
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
@@ -17,7 +17,7 @@
 /*
  * Tracepoint for guest mode entry.
  */
-TRACE_EVENT(kvm_entry,
+LTTNG_TRACEPOINT_EVENT(kvm_entry,
 	TP_PROTO(unsigned int vcpu_id),
 	TP_ARGS(vcpu_id),
 
@@ -35,7 +35,7 @@ TRACE_EVENT(kvm_entry,
 /*
  * Tracepoint for hypercall.
  */
-TRACE_EVENT(kvm_hypercall,
+LTTNG_TRACEPOINT_EVENT(kvm_hypercall,
 	TP_PROTO(unsigned long nr, unsigned long a0, unsigned long a1,
 		 unsigned long a2, unsigned long a3),
 	TP_ARGS(nr, a0, a1, a2, a3),
@@ -64,7 +64,7 @@ TRACE_EVENT(kvm_hypercall,
 /*
  * Tracepoint for hypercall.
  */
-TRACE_EVENT(kvm_hv_hypercall,
+LTTNG_TRACEPOINT_EVENT(kvm_hv_hypercall,
 	TP_PROTO(__u16 code, bool fast, __u16 rep_cnt, __u16 rep_idx,
 		 __u64 ingpa, __u64 outgpa),
 	TP_ARGS(code, fast, rep_cnt, rep_idx, ingpa, outgpa),
@@ -96,7 +96,7 @@ TRACE_EVENT(kvm_hv_hypercall,
 /*
  * Tracepoint for PIO.
  */
-TRACE_EVENT(kvm_pio,
+LTTNG_TRACEPOINT_EVENT(kvm_pio,
 	TP_PROTO(unsigned int rw, unsigned int port, unsigned int size,
 		 unsigned int count),
 	TP_ARGS(rw, port, size, count),
@@ -123,7 +123,7 @@ TRACE_EVENT(kvm_pio,
 /*
  * Tracepoint for cpuid.
  */
-TRACE_EVENT(kvm_cpuid,
+LTTNG_TRACEPOINT_EVENT(kvm_cpuid,
 	TP_PROTO(unsigned int function, unsigned long rax, unsigned long rbx,
 		 unsigned long rcx, unsigned long rdx),
 	TP_ARGS(function, rax, rbx, rcx, rdx),
@@ -161,7 +161,7 @@ TRACE_EVENT(kvm_cpuid,
 /*
  * Tracepoint for apic access.
  */
-TRACE_EVENT(kvm_apic,
+LTTNG_TRACEPOINT_EVENT(kvm_apic,
 	TP_PROTO(unsigned int rw, unsigned int reg, unsigned int val),
 	TP_ARGS(rw, reg, val),
 
@@ -192,7 +192,7 @@ TRACE_EVENT(kvm_apic,
 /*
  * Tracepoint for kvm guest exit:
  */
-TRACE_EVENT(kvm_exit,
+LTTNG_TRACEPOINT_EVENT(kvm_exit,
 	TP_PROTO(unsigned int exit_reason, struct kvm_vcpu *vcpu, u32 isa, u64 info1, u64 info2),
 	TP_ARGS(exit_reason, vcpu, isa, info1, info2),
 
@@ -224,7 +224,7 @@ TRACE_EVENT(kvm_exit,
 /*
  * Tracepoint for kvm interrupt injection:
  */
-TRACE_EVENT(kvm_inj_virq,
+LTTNG_TRACEPOINT_EVENT(kvm_inj_virq,
 	TP_PROTO(unsigned int irq),
 	TP_ARGS(irq),
 
@@ -249,7 +249,7 @@ TRACE_EVENT(kvm_inj_virq,
 /*
  * Tracepoint for kvm interrupt injection:
  */
-TRACE_EVENT(kvm_inj_exception,
+LTTNG_TRACEPOINT_EVENT(kvm_inj_exception,
 	TP_PROTO(unsigned exception, bool has_error, unsigned error_code),
 	TP_ARGS(exception, has_error, error_code),
 
@@ -274,7 +274,7 @@ TRACE_EVENT(kvm_inj_exception,
 /*
  * Tracepoint for page fault.
  */
-TRACE_EVENT(kvm_page_fault,
+LTTNG_TRACEPOINT_EVENT(kvm_page_fault,
 	TP_PROTO(unsigned long fault_address, unsigned int error_code),
 	TP_ARGS(fault_address, error_code),
 
@@ -295,7 +295,7 @@ TRACE_EVENT(kvm_page_fault,
 /*
  * Tracepoint for guest MSR access.
  */
-TRACE_EVENT(kvm_msr,
+LTTNG_TRACEPOINT_EVENT(kvm_msr,
 	TP_PROTO(unsigned write, u32 ecx, u64 data, bool exception),
 	TP_ARGS(write, ecx, data, exception),
 
@@ -327,7 +327,7 @@ TRACE_EVENT(kvm_msr,
 /*
  * Tracepoint for guest CR access.
  */
-TRACE_EVENT(kvm_cr,
+LTTNG_TRACEPOINT_EVENT(kvm_cr,
 	TP_PROTO(unsigned int rw, unsigned int cr, unsigned long val),
 	TP_ARGS(rw, cr, val),
 
@@ -351,7 +351,7 @@ TRACE_EVENT(kvm_cr,
 #define trace_kvm_cr_read(cr, val)		trace_kvm_cr(0, cr, val)
 #define trace_kvm_cr_write(cr, val)		trace_kvm_cr(1, cr, val)
 
-TRACE_EVENT(kvm_pic_set_irq,
+LTTNG_TRACEPOINT_EVENT(kvm_pic_set_irq,
 	    TP_PROTO(__u8 chip, __u8 pin, __u8 elcr, __u8 imr, bool coalesced),
 	    TP_ARGS(chip, pin, elcr, imr, coalesced),
 
@@ -384,7 +384,7 @@ TRACE_EVENT(kvm_pic_set_irq,
 	{0x2, "all"},			\
 	{0x3, "all-but-self"}
 
-TRACE_EVENT(kvm_apic_ipi,
+LTTNG_TRACEPOINT_EVENT(kvm_apic_ipi,
 	    TP_PROTO(__u32 icr_low, __u32 dest_id),
 	    TP_ARGS(icr_low, dest_id),
 
@@ -409,7 +409,7 @@ TRACE_EVENT(kvm_apic_ipi,
 				   kvm_apic_dst_shorthand))
 )
 
-TRACE_EVENT(kvm_apic_accept_irq,
+LTTNG_TRACEPOINT_EVENT(kvm_apic_accept_irq,
 	    TP_PROTO(__u32 apicid, __u16 dm, __u8 tm, __u8 vec, bool coalesced),
 	    TP_ARGS(apicid, dm, tm, vec, coalesced),
 
@@ -436,7 +436,7 @@ TRACE_EVENT(kvm_apic_accept_irq,
 		  __entry->coalesced ? " (coalesced)" : "")
 )
 
-TRACE_EVENT(kvm_eoi,
+LTTNG_TRACEPOINT_EVENT(kvm_eoi,
 	    TP_PROTO(struct kvm_lapic *apic, int vector),
 	    TP_ARGS(apic, vector),
 
@@ -453,7 +453,7 @@ TRACE_EVENT(kvm_eoi,
 	TP_printk("apicid %x vector %d", __entry->apicid, __entry->vector)
 )
 
-TRACE_EVENT(kvm_pv_eoi,
+LTTNG_TRACEPOINT_EVENT(kvm_pv_eoi,
 	    TP_PROTO(struct kvm_lapic *apic, int vector),
 	    TP_ARGS(apic, vector),
 
@@ -473,7 +473,7 @@ TRACE_EVENT(kvm_pv_eoi,
 /*
  * Tracepoint for nested VMRUN
  */
-TRACE_EVENT(kvm_nested_vmrun,
+LTTNG_TRACEPOINT_EVENT(kvm_nested_vmrun,
 	    TP_PROTO(__u64 rip, __u64 vmcb, __u64 nested_rip, __u32 int_ctl,
 		     __u32 event_inj, bool npt),
 	    TP_ARGS(rip, vmcb, nested_rip, int_ctl, event_inj, npt),
@@ -503,7 +503,7 @@ TRACE_EVENT(kvm_nested_vmrun,
 		__entry->npt ? "on" : "off")
 )
 
-TRACE_EVENT(kvm_nested_intercepts,
+LTTNG_TRACEPOINT_EVENT(kvm_nested_intercepts,
 	    TP_PROTO(__u16 cr_read, __u16 cr_write, __u32 exceptions, __u64 intercept),
 	    TP_ARGS(cr_read, cr_write, exceptions, intercept),
 
@@ -528,7 +528,7 @@ TRACE_EVENT(kvm_nested_intercepts,
 /*
  * Tracepoint for #VMEXIT while nested
  */
-TRACE_EVENT(kvm_nested_vmexit,
+LTTNG_TRACEPOINT_EVENT(kvm_nested_vmexit,
 	    TP_PROTO(__u64 rip, __u32 exit_code,
 		     __u64 exit_info1, __u64 exit_info2,
 		     __u32 exit_int_info, __u32 exit_int_info_err, __u32 isa),
@@ -567,7 +567,7 @@ TRACE_EVENT(kvm_nested_vmexit,
 /*
  * Tracepoint for #VMEXIT reinjected to the guest
  */
-TRACE_EVENT(kvm_nested_vmexit_inject,
+LTTNG_TRACEPOINT_EVENT(kvm_nested_vmexit_inject,
 	    TP_PROTO(__u32 exit_code,
 		     __u64 exit_info1, __u64 exit_info2,
 		     __u32 exit_int_info, __u32 exit_int_info_err, __u32 isa),
@@ -604,7 +604,7 @@ TRACE_EVENT(kvm_nested_vmexit_inject,
 /*
  * Tracepoint for nested #vmexit because of interrupt pending
  */
-TRACE_EVENT(kvm_nested_intr_vmexit,
+LTTNG_TRACEPOINT_EVENT(kvm_nested_intr_vmexit,
 	    TP_PROTO(__u64 rip),
 	    TP_ARGS(rip),
 
@@ -622,7 +622,7 @@ TRACE_EVENT(kvm_nested_intr_vmexit,
 /*
  * Tracepoint for nested #vmexit because of interrupt pending
  */
-TRACE_EVENT(kvm_invlpga,
+LTTNG_TRACEPOINT_EVENT(kvm_invlpga,
 	    TP_PROTO(__u64 rip, int asid, u64 address),
 	    TP_ARGS(rip, asid, address),
 
@@ -645,7 +645,7 @@ TRACE_EVENT(kvm_invlpga,
 /*
  * Tracepoint for nested #vmexit because of interrupt pending
  */
-TRACE_EVENT(kvm_skinit,
+LTTNG_TRACEPOINT_EVENT(kvm_skinit,
 	    TP_PROTO(__u64 rip, __u32 slb),
 	    TP_ARGS(rip, slb),
 
@@ -702,7 +702,7 @@ TRACE_EVENT(kvm_skinit,
 	flags;						\
 	})
 
-TRACE_EVENT(kvm_emulate_insn,
+LTTNG_TRACEPOINT_EVENT(kvm_emulate_insn,
 	TP_PROTO(struct kvm_vcpu *vcpu, __u8 failed),
 	TP_ARGS(vcpu, failed),
 
@@ -759,7 +759,7 @@ TRACE_EVENT(kvm_emulate_insn,
 #define trace_kvm_emulate_insn_start(vcpu) trace_kvm_emulate_insn(vcpu, 0)
 #define trace_kvm_emulate_insn_failed(vcpu) trace_kvm_emulate_insn(vcpu, 1)
 
-TRACE_EVENT(
+LTTNG_TRACEPOINT_EVENT(
 	vcpu_match_mmio,
 	TP_PROTO(gva_t gva, gpa_t gpa, bool write, bool gpa_match),
 	TP_ARGS(gva, gpa, write, gpa_match),
@@ -784,7 +784,7 @@ TRACE_EVENT(
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
-TRACE_EVENT(kvm_write_tsc_offset,
+LTTNG_TRACEPOINT_EVENT(kvm_write_tsc_offset,
 	TP_PROTO(unsigned int vcpu_id, __u64 previous_tsc_offset,
 		 __u64 next_tsc_offset),
 	TP_ARGS(vcpu_id, previous_tsc_offset, next_tsc_offset),
@@ -814,7 +814,7 @@ TRACE_EVENT(kvm_write_tsc_offset,
 	{VCLOCK_TSC,  "tsc"},				\
 	{VCLOCK_HPET, "hpet"}				\
 
-TRACE_EVENT(kvm_update_master_clock,
+LTTNG_TRACEPOINT_EVENT(kvm_update_master_clock,
 	TP_PROTO(bool use_master_clock, unsigned int host_clock, bool offset_matched),
 	TP_ARGS(use_master_clock, host_clock, offset_matched),
 
@@ -836,7 +836,7 @@ TRACE_EVENT(kvm_update_master_clock,
 		  __entry->offset_matched)
 )
 
-TRACE_EVENT(kvm_track_tsc,
+LTTNG_TRACEPOINT_EVENT(kvm_track_tsc,
 	TP_PROTO(unsigned int vcpu_id, unsigned int nr_matched,
 		 unsigned int online_vcpus, bool use_master_clock,
 		 unsigned int host_clock),
@@ -869,7 +869,7 @@ TRACE_EVENT(kvm_track_tsc,
 #endif /* CONFIG_X86_64 */
 #endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0) */
 
-#endif /* _TRACE_KVM_H */
+#endif /* LTTNG_TRACE_KVM_H */
 
 #undef TRACE_INCLUDE_PATH
 #define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module/arch/x86/kvm

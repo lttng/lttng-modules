@@ -1,10 +1,10 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM rcu
 
-#if !defined(_TRACE_RCU_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_RCU_H
+#if !defined(LTTNG_TRACE_RCU_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_RCU_H
 
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/version.h>
 
 /*
@@ -18,7 +18,7 @@
  * An "@" character within "<activity>" is a comment character: Data
  * reduction scripts will ignore the "@" and the remainder of the line.
  */
-TRACE_EVENT(rcu_utilization,
+LTTNG_TRACEPOINT_EVENT(rcu_utilization,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 	TP_PROTO(const char *s),
@@ -52,7 +52,7 @@ TRACE_EVENT(rcu_utilization,
  * and "cpuofl", respectively), and a CPU being kicked for being too
  * long in dyntick-idle mode ("kick").
  */
-TRACE_EVENT(rcu_grace_period,
+LTTNG_TRACEPOINT_EVENT(rcu_grace_period,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 	TP_PROTO(const char *rcuname, unsigned long gpnum, const char *gpevent),
@@ -85,7 +85,7 @@ TRACE_EVENT(rcu_grace_period,
  * rcu_node structure, and the mask of CPUs that will be waited for.
  * All but the type of RCU are extracted from the rcu_node structure.
  */
-TRACE_EVENT(rcu_grace_period_init,
+LTTNG_TRACEPOINT_EVENT(rcu_grace_period_init,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 	TP_PROTO(const char *rcuname, unsigned long gpnum, u8 level,
@@ -126,7 +126,7 @@ TRACE_EVENT(rcu_grace_period_init,
  * include SRCU), the grace-period number that the task is blocking
  * (the current or the next), and the task's PID.
  */
-TRACE_EVENT(rcu_preempt_task,
+LTTNG_TRACEPOINT_EVENT(rcu_preempt_task,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 	TP_PROTO(const char *rcuname, int pid, unsigned long gpnum),
@@ -157,7 +157,7 @@ TRACE_EVENT(rcu_preempt_task,
  * read-side critical section exiting that critical section.  Track the
  * type of RCU (which one day might include SRCU) and the task's PID.
  */
-TRACE_EVENT(rcu_unlock_preempted_task,
+LTTNG_TRACEPOINT_EVENT(rcu_unlock_preempted_task,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 	TP_PROTO(const char *rcuname, unsigned long gpnum, int pid),
@@ -190,7 +190,7 @@ TRACE_EVENT(rcu_unlock_preempted_task,
  * whether there are any blocked tasks blocking the current grace period.
  * All but the type of RCU are extracted from the rcu_node structure.
  */
-TRACE_EVENT(rcu_quiescent_state_report,
+LTTNG_TRACEPOINT_EVENT(rcu_quiescent_state_report,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 	TP_PROTO(const char *rcuname, unsigned long gpnum,
@@ -240,7 +240,7 @@ TRACE_EVENT(rcu_quiescent_state_report,
  * or "kick" when kicking a CPU that has been in dyntick-idle mode for
  * too long.
  */
-TRACE_EVENT(rcu_fqs,
+LTTNG_TRACEPOINT_EVENT(rcu_fqs,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 	TP_PROTO(const char *rcuname, unsigned long gpnum, int cpu, const char *qsevent),
@@ -284,7 +284,7 @@ TRACE_EVENT(rcu_fqs,
  * events use the upper bits of each number, while interrupt-related
  * events use the lower bits.
  */
-TRACE_EVENT(rcu_dyntick,
+LTTNG_TRACEPOINT_EVENT(rcu_dyntick,
 
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
@@ -348,7 +348,7 @@ TRACE_EVENT(rcu_dyntick,
  *	"Demigrate": Timer fired on wrong CPU, woke up correct CPU.
  *	"Cleanup after idle": Idle exited, timer canceled.
  */
-TRACE_EVENT(rcu_prep_idle,
+LTTNG_TRACEPOINT_EVENT(rcu_prep_idle,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 	TP_PROTO(const char *reason),
@@ -377,7 +377,7 @@ TRACE_EVENT(rcu_prep_idle,
  * number of lazy callbacks queued, and the fourth element is the
  * total number of callbacks queued.
  */
-TRACE_EVENT(rcu_callback,
+LTTNG_TRACEPOINT_EVENT(rcu_callback,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 	TP_PROTO(const char *rcuname, struct rcu_head *rhp, long qlen_lazy,
@@ -434,7 +434,7 @@ TRACE_EVENT(rcu_callback,
  * the fourth argument is the number of lazy callbacks queued, and the
  * fifth argument is the total number of callbacks queued.
  */
-TRACE_EVENT(rcu_kfree_callback,
+LTTNG_TRACEPOINT_EVENT(rcu_kfree_callback,
 
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
@@ -492,7 +492,7 @@ TRACE_EVENT(rcu_kfree_callback,
  * the total number of callbacks queued, and the fourth argument is
  * the current RCU-callback batch limit.
  */
-TRACE_EVENT(rcu_batch_start,
+LTTNG_TRACEPOINT_EVENT(rcu_batch_start,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 	TP_PROTO(const char *rcuname, long qlen_lazy, long qlen, long blimit),
@@ -553,7 +553,7 @@ TRACE_EVENT(rcu_batch_start,
  * The first argument is the type of RCU, and the second argument is
  * a pointer to the RCU callback itself.
  */
-TRACE_EVENT(rcu_invoke_callback,
+LTTNG_TRACEPOINT_EVENT(rcu_invoke_callback,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 	TP_PROTO(const char *rcuname, struct rcu_head *rhp),
@@ -586,7 +586,7 @@ TRACE_EVENT(rcu_invoke_callback,
  * is the offset of the callback within the enclosing RCU-protected
  * data structure.
  */
-TRACE_EVENT(rcu_invoke_kfree_callback,
+LTTNG_TRACEPOINT_EVENT(rcu_invoke_kfree_callback,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 	TP_PROTO(const char *rcuname, struct rcu_head *rhp, unsigned long offset),
@@ -623,7 +623,7 @@ TRACE_EVENT(rcu_invoke_kfree_callback,
  * and the sixth argument (risk) is the return value from
  * rcu_is_callbacks_kthread().
  */
-TRACE_EVENT(rcu_batch_end,
+LTTNG_TRACEPOINT_EVENT(rcu_batch_end,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0))
 	TP_PROTO(const char *rcuname, int callbacks_invoked,
@@ -692,7 +692,7 @@ TRACE_EVENT(rcu_batch_end,
  * of the RCU flavor from rcutorture's viewpoint and the second argument
  * is the callback address.
  */
-TRACE_EVENT(rcu_torture_read,
+LTTNG_TRACEPOINT_EVENT(rcu_torture_read,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 	TP_PROTO(const char *rcutorturename, struct rcu_head *rhp,
@@ -759,7 +759,7 @@ TRACE_EVENT(rcu_torture_read,
  * The "cpu" argument is the CPU or -1 if meaningless, the "cnt" argument
  * is the count of remaining callbacks, and "done" is the piggybacking count.
  */
-TRACE_EVENT(rcu_barrier,
+LTTNG_TRACEPOINT_EVENT(rcu_barrier,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 	TP_PROTO(const char *rcuname, const char *s, int cpu, int cnt, unsigned long done),
@@ -840,7 +840,7 @@ TRACE_EVENT(rcu_barrier,
 #endif
 #endif /* #else #ifdef CONFIG_RCU_TRACE */
 
-#endif /* _TRACE_RCU_H */
+#endif /* LTTNG_TRACE_RCU_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

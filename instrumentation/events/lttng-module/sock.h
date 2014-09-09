@@ -1,13 +1,13 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM sock
 
-#if !defined(_TRACE_SOCK_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_SOCK_H
+#if !defined(LTTNG_TRACE_SOCK_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_SOCK_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <net/sock.h>
-#include <linux/tracepoint.h>
 
-TRACE_EVENT(sock_rcvqueue_full,
+LTTNG_TRACEPOINT_EVENT(sock_rcvqueue_full,
 
 	TP_PROTO(struct sock *sk, struct sk_buff *skb),
 
@@ -29,7 +29,7 @@ TRACE_EVENT(sock_rcvqueue_full,
 		__entry->rmem_alloc, __entry->truesize, __entry->sk_rcvbuf)
 )
 
-TRACE_EVENT(sock_exceed_buf_limit,
+LTTNG_TRACEPOINT_EVENT(sock_exceed_buf_limit,
 
 	TP_PROTO(struct sock *sk, struct proto *prot, long allocated),
 
@@ -62,7 +62,7 @@ TRACE_EVENT(sock_exceed_buf_limit,
 		__entry->rmem_alloc)
 )
 
-#endif /* _TRACE_SOCK_H */
+#endif /* LTTNG_TRACE_SOCK_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

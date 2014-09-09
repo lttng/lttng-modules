@@ -2,11 +2,11 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM rpm
 
-#if !defined(_TRACE_RUNTIME_POWER_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_RUNTIME_POWER_H
+#if !defined(LTTNG_TRACE_RUNTIME_POWER_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_RUNTIME_POWER_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/ktime.h>
-#include <linux/tracepoint.h>
 
 #ifndef _TRACE_RPM_DEF_
 #define _TRACE_RPM_DEF_
@@ -17,7 +17,7 @@ struct device;
  * The rpm_internal events are used for tracing some important
  * runtime pm internal functions.
  */
-DECLARE_EVENT_CLASS(rpm_internal,
+LTTNG_TRACEPOINT_EVENT_CLASS(rpm_internal,
 
 	TP_PROTO(struct device *dev, int flags),
 
@@ -56,26 +56,26 @@ DECLARE_EVENT_CLASS(rpm_internal,
 			__entry->child_count
 		 )
 )
-DEFINE_EVENT(rpm_internal, rpm_suspend,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(rpm_internal, rpm_suspend,
 
 	TP_PROTO(struct device *dev, int flags),
 
 	TP_ARGS(dev, flags)
 )
-DEFINE_EVENT(rpm_internal, rpm_resume,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(rpm_internal, rpm_resume,
 
 	TP_PROTO(struct device *dev, int flags),
 
 	TP_ARGS(dev, flags)
 )
-DEFINE_EVENT(rpm_internal, rpm_idle,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(rpm_internal, rpm_idle,
 
 	TP_PROTO(struct device *dev, int flags),
 
 	TP_ARGS(dev, flags)
 )
 
-TRACE_EVENT(rpm_return_int,
+LTTNG_TRACEPOINT_EVENT(rpm_return_int,
 	TP_PROTO(struct device *dev, unsigned long ip, int ret),
 	TP_ARGS(dev, ip, ret),
 
@@ -95,7 +95,7 @@ TRACE_EVENT(rpm_return_int,
 		__entry->ret)
 )
 
-#endif /* _TRACE_RUNTIME_POWER_H */
+#endif /* LTTNG_TRACE_RUNTIME_POWER_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

@@ -2,10 +2,10 @@
 #define TRACE_SYSTEM raw_syscalls
 #define TRACE_INCLUDE_FILE syscalls
 
-#if !defined(_TRACE_EVENTS_SYSCALLS_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_EVENTS_SYSCALLS_H
+#if !defined(LTTNG_TRACE_EVENTS_SYSCALLS_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_EVENTS_SYSCALLS_H
 
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
 
@@ -17,7 +17,7 @@
 
 #endif /* _TRACE_SYSCALLS_DEF_ */
 
-TRACE_EVENT(sys_enter,
+LTTNG_TRACEPOINT_EVENT(sys_enter,
 
 	TP_PROTO(struct pt_regs *regs, long id),
 
@@ -47,7 +47,7 @@ TRACE_EVENT(sys_enter,
 		  __entry->args[3], __entry->args[4], __entry->args[5])
 )
 
-TRACE_EVENT(sys_exit,
+LTTNG_TRACEPOINT_EVENT(sys_exit,
 
 	TP_PROTO(struct pt_regs *regs, long ret),
 
@@ -69,7 +69,7 @@ TRACE_EVENT(sys_exit,
 
 #endif /* CONFIG_HAVE_SYSCALL_TRACEPOINTS */
 
-#endif /* _TRACE_EVENTS_SYSCALLS_H */
+#endif /* LTTNG_TRACE_EVENTS_SYSCALLS_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

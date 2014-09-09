@@ -1,7 +1,7 @@
 #if !defined(_TRACE_SYSCALLS_UNKNOWN_H) || defined(TRACE_HEADER_MULTI_READ)
 #define _TRACE_SYSCALLS_UNKNOWN_H
 
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/syscalls.h>
 
 #define UNKNOWN_SYSCALL_NRARGS	6
@@ -9,7 +9,7 @@
 #undef TP_PROBE_CB
 #define TP_PROBE_CB(_template)          &syscall_entry_probe
 
-TRACE_EVENT(syscall_enter_unknown,
+LTTNG_TRACEPOINT_EVENT(syscall_enter_unknown,
 	TP_PROTO(unsigned int id, unsigned long *args),
 	TP_ARGS(id, args),
 	TP_STRUCT__entry(
@@ -22,7 +22,7 @@ TRACE_EVENT(syscall_enter_unknown,
 	),
 	TP_printk()
 )
-TRACE_EVENT(compat_syscall_enter_unknown,
+LTTNG_TRACEPOINT_EVENT(compat_syscall_enter_unknown,
 	TP_PROTO(unsigned int id, unsigned long *args),
 	TP_ARGS(id, args),
 	TP_STRUCT__entry(
@@ -39,7 +39,7 @@ TRACE_EVENT(compat_syscall_enter_unknown,
 #undef TP_PROBE_CB
 #define TP_PROBE_CB(_template)          &syscall_exit_probe
 
-TRACE_EVENT(syscall_exit_unknown,
+LTTNG_TRACEPOINT_EVENT(syscall_exit_unknown,
 	TP_PROTO(unsigned int id, long ret, unsigned long *args),
 	TP_ARGS(id, ret, args),
 	TP_STRUCT__entry(
@@ -54,7 +54,7 @@ TRACE_EVENT(syscall_exit_unknown,
 	),
 	TP_printk()
 )
-TRACE_EVENT(compat_syscall_exit_unknown,
+LTTNG_TRACEPOINT_EVENT(compat_syscall_exit_unknown,
 	TP_PROTO(unsigned int id, long ret, unsigned long *args),
 	TP_ARGS(id, ret, args),
 	TP_STRUCT__entry(

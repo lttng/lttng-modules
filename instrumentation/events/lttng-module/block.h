@@ -1,12 +1,12 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM block
 
-#if !defined(_TRACE_BLOCK_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_BLOCK_H
+#if !defined(LTTNG_TRACE_BLOCK_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_BLOCK_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/blktrace_api.h>
 #include <linux/blkdev.h>
-#include <linux/tracepoint.h>
 #include <linux/trace_seq.h>
 #include <linux/version.h>
 
@@ -99,7 +99,7 @@ enum {
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-DECLARE_EVENT_CLASS(block_buffer,
+LTTNG_TRACEPOINT_EVENT_CLASS(block_buffer,
 
 	TP_PROTO(struct buffer_head *bh),
 
@@ -129,7 +129,7 @@ DECLARE_EVENT_CLASS(block_buffer,
  *
  * Called from touch_buffer().
  */
-DEFINE_EVENT(block_buffer, block_touch_buffer,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(block_buffer, block_touch_buffer,
 
 	TP_PROTO(struct buffer_head *bh),
 
@@ -142,7 +142,7 @@ DEFINE_EVENT(block_buffer, block_touch_buffer,
  *
  * Called from mark_buffer_dirty().
  */
-DEFINE_EVENT(block_buffer, block_dirty_buffer,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(block_buffer, block_dirty_buffer,
 
 	TP_PROTO(struct buffer_head *bh),
 
@@ -150,7 +150,7 @@ DEFINE_EVENT(block_buffer, block_dirty_buffer,
 )
 #endif
 
-DECLARE_EVENT_CLASS(block_rq_with_error,
+LTTNG_TRACEPOINT_EVENT_CLASS(block_rq_with_error,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
 
@@ -198,7 +198,7 @@ DECLARE_EVENT_CLASS(block_rq_with_error,
  * can be examined to determine which device and sectors the pending
  * operation would access.
  */
-DEFINE_EVENT(block_rq_with_error, block_rq_abort,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_abort,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
 
@@ -214,7 +214,7 @@ DEFINE_EVENT(block_rq_with_error, block_rq_abort,
  * @q.  For some reason the request was not completed and needs to be
  * put back in the queue.
  */
-DEFINE_EVENT(block_rq_with_error, block_rq_requeue,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_requeue,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
 
@@ -239,7 +239,7 @@ DEFINE_EVENT(block_rq_with_error, block_rq_requeue,
  * do for the request. If @rq->bio is non-NULL then there is
  * additional work required to complete the request.
  */
-TRACE_EVENT(block_rq_complete,
+LTTNG_TRACEPOINT_EVENT(block_rq_complete,
 
 	TP_PROTO(struct request_queue *q, struct request *rq,
 		 unsigned int nr_bytes),
@@ -287,7 +287,7 @@ TRACE_EVENT(block_rq_complete,
  * do for the request. If @rq->bio is non-NULL then there is
  * additional work required to complete the request.
  */
-DEFINE_EVENT(block_rq_with_error, block_rq_complete,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_complete,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
 
@@ -296,7 +296,7 @@ DEFINE_EVENT(block_rq_with_error, block_rq_complete,
 
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
 
-DECLARE_EVENT_CLASS(block_rq,
+LTTNG_TRACEPOINT_EVENT_CLASS(block_rq,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
 
@@ -350,7 +350,7 @@ DECLARE_EVENT_CLASS(block_rq,
  * be examined to determine which device and sectors the pending
  * operation would access.
  */
-DEFINE_EVENT(block_rq, block_rq_insert,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq, block_rq_insert,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
 
@@ -365,7 +365,7 @@ DEFINE_EVENT(block_rq, block_rq_insert,
  * Called when block operation request @rq from queue @q is sent to a
  * device driver for processing.
  */
-DEFINE_EVENT(block_rq, block_rq_issue,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq, block_rq_issue,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
 
@@ -383,7 +383,7 @@ DEFINE_EVENT(block_rq, block_rq_issue,
  * bounce buffer requires extra copying of data and decreases
  * performance.
  */
-TRACE_EVENT(block_bio_bounce,
+LTTNG_TRACEPOINT_EVENT(block_bio_bounce,
 
 	TP_PROTO(struct request_queue *q, struct bio *bio),
 
@@ -434,7 +434,7 @@ TRACE_EVENT(block_bio_bounce,
  * This tracepoint indicates there is no further work to do on this
  * block IO operation @bio.
  */
-TRACE_EVENT(block_bio_complete,
+LTTNG_TRACEPOINT_EVENT(block_bio_complete,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
 	TP_PROTO(struct request_queue *q, struct bio *bio, int error),
@@ -482,7 +482,7 @@ TRACE_EVENT(block_bio_complete,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-DECLARE_EVENT_CLASS(block_bio_merge,
+LTTNG_TRACEPOINT_EVENT_CLASS(block_bio_merge,
 
 	TP_PROTO(struct request_queue *q, struct request *rq, struct bio *bio),
 
@@ -530,7 +530,7 @@ DECLARE_EVENT_CLASS(block_bio_merge,
  * Merging block request @bio to the end of an existing block request
  * in queue @q.
  */
-DEFINE_EVENT(block_bio_merge, block_bio_backmerge,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(block_bio_merge, block_bio_backmerge,
 
 	TP_PROTO(struct request_queue *q, struct request *rq, struct bio *bio),
 
@@ -545,7 +545,7 @@ DEFINE_EVENT(block_bio_merge, block_bio_backmerge,
  * Merging block IO operation @bio to the beginning of an existing block
  * operation in queue @q.
  */
-DEFINE_EVENT(block_bio_merge, block_bio_frontmerge,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(block_bio_merge, block_bio_frontmerge,
 
 	TP_PROTO(struct request_queue *q, struct request *rq, struct bio *bio),
 
@@ -559,7 +559,7 @@ DEFINE_EVENT(block_bio_merge, block_bio_frontmerge,
  *
  * About to place the block IO operation @bio into queue @q.
  */
-TRACE_EVENT(block_bio_queue,
+LTTNG_TRACEPOINT_EVENT(block_bio_queue,
 
 	TP_PROTO(struct request_queue *q, struct bio *bio),
 
@@ -598,7 +598,7 @@ TRACE_EVENT(block_bio_queue,
 		  __entry->nr_sector, __entry->comm, __entry->tid)
 )
 #else
-DECLARE_EVENT_CLASS(block_bio,
+LTTNG_TRACEPOINT_EVENT_CLASS(block_bio,
 
 	TP_PROTO(struct request_queue *q, struct bio *bio),
 
@@ -637,7 +637,7 @@ DECLARE_EVENT_CLASS(block_bio,
  * Merging block request @bio to the end of an existing block request
  * in queue @q.
  */
-DEFINE_EVENT(block_bio, block_bio_backmerge,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(block_bio, block_bio_backmerge,
 
 	TP_PROTO(struct request_queue *q, struct bio *bio),
 
@@ -652,7 +652,7 @@ DEFINE_EVENT(block_bio, block_bio_backmerge,
  * Merging block IO operation @bio to the beginning of an existing block
  * operation in queue @q.
  */
-DEFINE_EVENT(block_bio, block_bio_frontmerge,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(block_bio, block_bio_frontmerge,
 
 	TP_PROTO(struct request_queue *q, struct bio *bio),
 
@@ -666,7 +666,7 @@ DEFINE_EVENT(block_bio, block_bio_frontmerge,
  *
  * About to place the block IO operation @bio into queue @q.
  */
-DEFINE_EVENT(block_bio, block_bio_queue,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(block_bio, block_bio_queue,
 
 	TP_PROTO(struct request_queue *q, struct bio *bio),
 
@@ -674,7 +674,7 @@ DEFINE_EVENT(block_bio, block_bio_queue,
 )
 #endif
 
-DECLARE_EVENT_CLASS(block_get_rq,
+LTTNG_TRACEPOINT_EVENT_CLASS(block_get_rq,
 
 	TP_PROTO(struct request_queue *q, struct bio *bio, int rw),
 
@@ -725,7 +725,7 @@ DECLARE_EVENT_CLASS(block_get_rq,
  * A request struct for queue @q has been allocated to handle the
  * block IO operation @bio.
  */
-DEFINE_EVENT(block_get_rq, block_getrq,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(block_get_rq, block_getrq,
 
 	TP_PROTO(struct request_queue *q, struct bio *bio, int rw),
 
@@ -743,7 +743,7 @@ DEFINE_EVENT(block_get_rq, block_getrq,
  * available.  This tracepoint event is generated each time the
  * process goes to sleep waiting for request struct become available.
  */
-DEFINE_EVENT(block_get_rq, block_sleeprq,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(block_get_rq, block_sleeprq,
 
 	TP_PROTO(struct request_queue *q, struct bio *bio, int rw),
 
@@ -758,7 +758,7 @@ DEFINE_EVENT(block_get_rq, block_sleeprq,
  * to be sent to the device driver. Instead, accumulate requests in
  * the queue to improve throughput performance of the block device.
  */
-TRACE_EVENT(block_plug,
+LTTNG_TRACEPOINT_EVENT(block_plug,
 
 	TP_PROTO(struct request_queue *q),
 
@@ -777,7 +777,7 @@ TRACE_EVENT(block_plug,
 	TP_printk("[%s] %d", __entry->comm, __entry->tid)
 )
 
-DECLARE_EVENT_CLASS(block_unplug,
+LTTNG_TRACEPOINT_EVENT_CLASS(block_unplug,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 	TP_PROTO(struct request_queue *q, unsigned int depth, bool explicit),
@@ -817,7 +817,7 @@ DECLARE_EVENT_CLASS(block_unplug,
  * Unplug the request queue @q because a timer expired and allow block
  * operation requests to be sent to the device driver.
  */
-DEFINE_EVENT(block_unplug, block_unplug_timer,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(block_unplug, block_unplug_timer,
 
 	TP_PROTO(struct request_queue *q),
 
@@ -835,9 +835,9 @@ DEFINE_EVENT(block_unplug, block_unplug_timer,
  * on elements in the request queue.
  */
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
-DEFINE_EVENT(block_unplug, block_unplug,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(block_unplug, block_unplug,
 #else
-DEFINE_EVENT(block_unplug, block_unplug_io,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(block_unplug, block_unplug_io,
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
@@ -862,7 +862,7 @@ DEFINE_EVENT(block_unplug, block_unplug_io,
  * @new_sector. This split may be required due to hardware limitation
  * such as operation crossing device boundaries in a RAID system.
  */
-TRACE_EVENT(block_split,
+LTTNG_TRACEPOINT_EVENT(block_split,
 
 	TP_PROTO(struct request_queue *q, struct bio *bio,
 		 unsigned int new_sector),
@@ -915,9 +915,9 @@ TRACE_EVENT(block_split,
  * raw block device.
  */
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
-TRACE_EVENT(block_bio_remap,
+LTTNG_TRACEPOINT_EVENT(block_bio_remap,
 #else
-TRACE_EVENT(block_remap,
+LTTNG_TRACEPOINT_EVENT(block_remap,
 #endif
 
 	TP_PROTO(struct request_queue *q, struct bio *bio, dev_t dev,
@@ -973,7 +973,7 @@ TRACE_EVENT(block_remap,
  * operation request @rq holds the current information and @from hold
  * the original sector.
  */
-TRACE_EVENT(block_rq_remap,
+LTTNG_TRACEPOINT_EVENT(block_rq_remap,
 
 	TP_PROTO(struct request_queue *q, struct request *rq, dev_t dev,
 		 sector_t from),
@@ -1011,7 +1011,7 @@ TRACE_EVENT(block_rq_remap,
 #undef __print_rwbs_flags
 #undef blk_fill_rwbs
 
-#endif /* _TRACE_BLOCK_H */
+#endif /* LTTNG_TRACE_BLOCK_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

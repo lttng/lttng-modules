@@ -1,11 +1,11 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM vmscan
 
-#if !defined(_TRACE_VMSCAN_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_VMSCAN_H
+#if !defined(LTTNG_TRACE_VMSCAN_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_VMSCAN_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/types.h>
-#include <linux/tracepoint.h>
 #include <linux/mm.h>
 #include <linux/memcontrol.h>
 #include <trace/events/gfpflags.h>
@@ -45,7 +45,7 @@ typedef int isolate_mode_t;
 
 #endif
 
-TRACE_EVENT(mm_vmscan_kswapd_sleep,
+LTTNG_TRACEPOINT_EVENT(mm_vmscan_kswapd_sleep,
 
 	TP_PROTO(int nid),
 
@@ -62,7 +62,7 @@ TRACE_EVENT(mm_vmscan_kswapd_sleep,
 	TP_printk("nid=%d", __entry->nid)
 )
 
-TRACE_EVENT(mm_vmscan_kswapd_wake,
+LTTNG_TRACEPOINT_EVENT(mm_vmscan_kswapd_wake,
 
 	TP_PROTO(int nid, int order),
 
@@ -81,7 +81,7 @@ TRACE_EVENT(mm_vmscan_kswapd_wake,
 	TP_printk("nid=%d order=%d", __entry->nid, __entry->order)
 )
 
-TRACE_EVENT(mm_vmscan_wakeup_kswapd,
+LTTNG_TRACEPOINT_EVENT(mm_vmscan_wakeup_kswapd,
 
 	TP_PROTO(int nid, int zid, int order),
 
@@ -105,7 +105,7 @@ TRACE_EVENT(mm_vmscan_wakeup_kswapd,
 		__entry->order)
 )
 
-DECLARE_EVENT_CLASS(mm_vmscan_direct_reclaim_begin_template,
+LTTNG_TRACEPOINT_EVENT_CLASS(mm_vmscan_direct_reclaim_begin_template,
 
 	TP_PROTO(int order, int may_writepage, gfp_t gfp_flags),
 
@@ -129,28 +129,28 @@ DECLARE_EVENT_CLASS(mm_vmscan_direct_reclaim_begin_template,
 		show_gfp_flags(__entry->gfp_flags))
 )
 
-DEFINE_EVENT(mm_vmscan_direct_reclaim_begin_template, mm_vmscan_direct_reclaim_begin,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_direct_reclaim_begin_template, mm_vmscan_direct_reclaim_begin,
 
 	TP_PROTO(int order, int may_writepage, gfp_t gfp_flags),
 
 	TP_ARGS(order, may_writepage, gfp_flags)
 )
 
-DEFINE_EVENT(mm_vmscan_direct_reclaim_begin_template, mm_vmscan_memcg_reclaim_begin,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_direct_reclaim_begin_template, mm_vmscan_memcg_reclaim_begin,
 
 	TP_PROTO(int order, int may_writepage, gfp_t gfp_flags),
 
 	TP_ARGS(order, may_writepage, gfp_flags)
 )
 
-DEFINE_EVENT(mm_vmscan_direct_reclaim_begin_template, mm_vmscan_memcg_softlimit_reclaim_begin,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_direct_reclaim_begin_template, mm_vmscan_memcg_softlimit_reclaim_begin,
 
 	TP_PROTO(int order, int may_writepage, gfp_t gfp_flags),
 
 	TP_ARGS(order, may_writepage, gfp_flags)
 )
 
-DECLARE_EVENT_CLASS(mm_vmscan_direct_reclaim_end_template,
+LTTNG_TRACEPOINT_EVENT_CLASS(mm_vmscan_direct_reclaim_end_template,
 
 	TP_PROTO(unsigned long nr_reclaimed),
 
@@ -167,21 +167,21 @@ DECLARE_EVENT_CLASS(mm_vmscan_direct_reclaim_end_template,
 	TP_printk("nr_reclaimed=%lu", __entry->nr_reclaimed)
 )
 
-DEFINE_EVENT(mm_vmscan_direct_reclaim_end_template, mm_vmscan_direct_reclaim_end,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_direct_reclaim_end_template, mm_vmscan_direct_reclaim_end,
 
 	TP_PROTO(unsigned long nr_reclaimed),
 
 	TP_ARGS(nr_reclaimed)
 )
 
-DEFINE_EVENT(mm_vmscan_direct_reclaim_end_template, mm_vmscan_memcg_reclaim_end,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_direct_reclaim_end_template, mm_vmscan_memcg_reclaim_end,
 
 	TP_PROTO(unsigned long nr_reclaimed),
 
 	TP_ARGS(nr_reclaimed)
 )
 
-DEFINE_EVENT(mm_vmscan_direct_reclaim_end_template, mm_vmscan_memcg_softlimit_reclaim_end,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_direct_reclaim_end_template, mm_vmscan_memcg_softlimit_reclaim_end,
 
 	TP_PROTO(unsigned long nr_reclaimed),
 
@@ -189,7 +189,7 @@ DEFINE_EVENT(mm_vmscan_direct_reclaim_end_template, mm_vmscan_memcg_softlimit_re
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
-TRACE_EVENT(mm_shrink_slab_start,
+LTTNG_TRACEPOINT_EVENT(mm_shrink_slab_start,
 	TP_PROTO(struct shrinker *shr, struct shrink_control *sc,
 		long nr_objects_to_shrink, unsigned long pgs_scanned,
 		unsigned long lru_pgs, unsigned long cache_items,
@@ -239,7 +239,7 @@ TRACE_EVENT(mm_shrink_slab_start,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
-TRACE_EVENT(mm_shrink_slab_end,
+LTTNG_TRACEPOINT_EVENT(mm_shrink_slab_end,
 	TP_PROTO(struct shrinker *shr, int nid, int shrinker_retval,
 		long unused_scan_cnt, long new_scan_cnt, long total_scan),
 
@@ -276,7 +276,7 @@ TRACE_EVENT(mm_shrink_slab_end,
 		__entry->retval)
 )
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0)) */
-TRACE_EVENT(mm_shrink_slab_end,
+LTTNG_TRACEPOINT_EVENT(mm_shrink_slab_end,
 	TP_PROTO(struct shrinker *shr, int shrinker_retval,
 		long unused_scan_cnt, long new_scan_cnt),
 
@@ -315,7 +315,7 @@ TRACE_EVENT(mm_shrink_slab_end,
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0)) */
 #endif
 
-DECLARE_EVENT_CLASS(mm_vmscan_lru_isolate_template,
+LTTNG_TRACEPOINT_EVENT_CLASS(mm_vmscan_lru_isolate_template,
 
 	TP_PROTO(int order,
 		unsigned long nr_requested,
@@ -410,7 +410,7 @@ DECLARE_EVENT_CLASS(mm_vmscan_lru_isolate_template,
 #endif
 )
 
-DEFINE_EVENT(mm_vmscan_lru_isolate_template, mm_vmscan_lru_isolate,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_lru_isolate_template, mm_vmscan_lru_isolate,
 
 	TP_PROTO(int order,
 		unsigned long nr_requested,
@@ -442,7 +442,7 @@ DEFINE_EVENT(mm_vmscan_lru_isolate_template, mm_vmscan_lru_isolate,
 
 )
 
-DEFINE_EVENT(mm_vmscan_lru_isolate_template, mm_vmscan_memcg_isolate,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_lru_isolate_template, mm_vmscan_memcg_isolate,
 
 	TP_PROTO(int order,
 		unsigned long nr_requested,
@@ -473,7 +473,7 @@ DEFINE_EVENT(mm_vmscan_lru_isolate_template, mm_vmscan_memcg_isolate,
 	)
 )
 
-TRACE_EVENT(mm_vmscan_writepage,
+LTTNG_TRACEPOINT_EVENT(mm_vmscan_writepage,
 
 	TP_PROTO(struct page *page,
 		int reclaim_flags),
@@ -497,7 +497,7 @@ TRACE_EVENT(mm_vmscan_writepage,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
-TRACE_EVENT(mm_vmscan_lru_shrink_inactive,
+LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 
 	TP_PROTO(int nid, int zid,
 			unsigned long nr_scanned, unsigned long nr_reclaimed,
@@ -532,7 +532,7 @@ TRACE_EVENT(mm_vmscan_lru_shrink_inactive,
 #endif
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-TRACE_EVENT_MAP(replace_swap_token,
+LTTNG_TRACEPOINT_EVENT_MAP(replace_swap_token,
 
 	mm_vmscan_replace_swap_token,
 
@@ -560,7 +560,7 @@ TRACE_EVENT_MAP(replace_swap_token,
 		  __entry->new_mm, __entry->new_prio)
 )
 
-DECLARE_EVENT_CLASS(mm_vmscan_put_swap_token_template,
+LTTNG_TRACEPOINT_EVENT_CLASS(mm_vmscan_put_swap_token_template,
 	TP_PROTO(struct mm_struct *swap_token_mm),
 
 	TP_ARGS(swap_token_mm),
@@ -576,7 +576,7 @@ DECLARE_EVENT_CLASS(mm_vmscan_put_swap_token_template,
 	TP_printk("token_mm=%p", __entry->swap_token_mm)
 )
 
-DEFINE_EVENT_MAP(mm_vmscan_put_swap_token_template, put_swap_token,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(mm_vmscan_put_swap_token_template, put_swap_token,
 
 	mm_vmscan_put_swap_token,
 
@@ -584,7 +584,7 @@ DEFINE_EVENT_MAP(mm_vmscan_put_swap_token_template, put_swap_token,
 	TP_ARGS(swap_token_mm)
 )
 
-DEFINE_EVENT_CONDITION_MAP(mm_vmscan_put_swap_token_template, disable_swap_token,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION_MAP(mm_vmscan_put_swap_token_template, disable_swap_token,
 
 	mm_vmscan_disable_swap_token,
 
@@ -593,7 +593,7 @@ DEFINE_EVENT_CONDITION_MAP(mm_vmscan_put_swap_token_template, disable_swap_token
 	TP_CONDITION(swap_token_mm != NULL)
 )
 
-TRACE_EVENT_CONDITION_MAP(update_swap_token_priority,
+LTTNG_TRACEPOINT_EVENT_CONDITION_MAP(update_swap_token_priority,
 
 	mm_vmscan_update_swap_token_priority,
 
@@ -627,7 +627,7 @@ TRACE_EVENT_CONDITION_MAP(update_swap_token_priority,
 )
 #endif
 
-#endif /* _TRACE_VMSCAN_H */
+#endif /* LTTNG_TRACE_VMSCAN_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

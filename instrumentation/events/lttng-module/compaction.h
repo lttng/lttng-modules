@@ -1,15 +1,15 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM compaction
 
-#if !defined(_TRACE_COMPACTION_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_COMPACTION_H
+#if !defined(LTTNG_TRACE_COMPACTION_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_COMPACTION_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/types.h>
-#include <linux/tracepoint.h>
 #include <linux/version.h>
 #include <trace/events/gfpflags.h>
 
-DECLARE_EVENT_CLASS(mm_compaction_isolate_template,
+LTTNG_TRACEPOINT_EVENT_CLASS(mm_compaction_isolate_template,
 
 	TP_PROTO(unsigned long nr_scanned,
 		unsigned long nr_taken),
@@ -31,7 +31,7 @@ DECLARE_EVENT_CLASS(mm_compaction_isolate_template,
 		__entry->nr_taken)
 )
 
-DEFINE_EVENT(mm_compaction_isolate_template, mm_compaction_isolate_migratepages,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_compaction_isolate_template, mm_compaction_isolate_migratepages,
 
 	TP_PROTO(unsigned long nr_scanned,
 		unsigned long nr_taken),
@@ -39,7 +39,7 @@ DEFINE_EVENT(mm_compaction_isolate_template, mm_compaction_isolate_migratepages,
 	TP_ARGS(nr_scanned, nr_taken)
 )
 
-DEFINE_EVENT(mm_compaction_isolate_template, mm_compaction_isolate_freepages,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_compaction_isolate_template, mm_compaction_isolate_freepages,
 	TP_PROTO(unsigned long nr_scanned,
 		unsigned long nr_taken),
 
@@ -47,7 +47,7 @@ DEFINE_EVENT(mm_compaction_isolate_template, mm_compaction_isolate_freepages,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
-TRACE_EVENT(mm_compaction_migratepages,
+LTTNG_TRACEPOINT_EVENT(mm_compaction_migratepages,
 
 	TP_PROTO(unsigned long nr_all,
 		int migrate_rc,
@@ -88,7 +88,7 @@ TRACE_EVENT(mm_compaction_migratepages,
 		__entry->nr_failed)
 )
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0)) */
-TRACE_EVENT(mm_compaction_migratepages,
+LTTNG_TRACEPOINT_EVENT(mm_compaction_migratepages,
 
 	TP_PROTO(unsigned long nr_migrated,
 		unsigned long nr_failed),
@@ -111,7 +111,7 @@ TRACE_EVENT(mm_compaction_migratepages,
 )
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0)) */
 
-#endif /* _TRACE_COMPACTION_H */
+#endif /* LTTNG_TRACE_COMPACTION_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

@@ -1,15 +1,15 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM printk
 
-#if !defined(_TRACE_PRINTK_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_PRINTK_H
+#if !defined(LTTNG_TRACE_PRINTK_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_PRINTK_H
 
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/version.h>
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
 
-TRACE_EVENT(console,
+LTTNG_TRACEPOINT_EVENT(console,
 	TP_PROTO(const char *text, size_t len),
 
 	TP_ARGS(text, len),
@@ -27,7 +27,7 @@ TRACE_EVENT(console,
 
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
 
-TRACE_EVENT_CONDITION(console,
+LTTNG_TRACEPOINT_EVENT_CONDITION(console,
 	TP_PROTO(const char *log_buf, unsigned start, unsigned end,
 		 unsigned log_buf_len),
 
@@ -48,7 +48,7 @@ TRACE_EVENT_CONDITION(console,
 
 #else /* (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0)) */
 
-TRACE_EVENT_CONDITION(console,
+LTTNG_TRACEPOINT_EVENT_CONDITION(console,
 	TP_PROTO(const char *log_buf, unsigned start, unsigned end,
 		 unsigned log_buf_len),
 
@@ -77,7 +77,7 @@ TRACE_EVENT_CONDITION(console,
 
 #endif
 
-#endif /* _TRACE_PRINTK_H */
+#endif /* LTTNG_TRACE_PRINTK_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

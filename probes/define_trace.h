@@ -42,75 +42,70 @@
 #undef CREATE_TRACE_POINTS
 
 #include <linux/stringify.h>
-/*
- * module.h includes tracepoints, and because ftrace.h
- * pulls in module.h:
- *  trace/ftrace.h -> linux/ftrace_event.h -> linux/perf_event.h ->
- *  linux/ftrace.h -> linux/module.h
- * we must include module.h here before we play with any of
- * the TRACE_EVENT() macros, otherwise the tracepoints included
- * by module.h may break the build.
- */
-#include <linux/module.h>
 
-#undef TRACE_EVENT_MAP
-#define TRACE_EVENT_MAP(name, map, proto, args, tstruct, assign, print)
+#undef LTTNG_TRACEPOINT_EVENT_MAP
+#define LTTNG_TRACEPOINT_EVENT_MAP(name, map, proto, args, tstruct, assign, print)
 
-#undef TRACE_EVENT_CONDITION_MAP
-#define TRACE_EVENT_CONDITION_MAP(name, map, proto, args, cond, tstruct, assign, print) \
-	TRACE_EVENT(name,						\
+#undef LTTNG_TRACEPOINT_EVENT_MAP_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_MAP_NOARGS(name, map, tstruct, assign, print)
+
+#undef LTTNG_TRACEPOINT_EVENT_CONDITION_MAP
+#define LTTNG_TRACEPOINT_EVENT_CONDITION_MAP(name, map, proto, args, cond, tstruct, assign, print) \
+	LTTNG_TRACEPOINT_EVENT(name,					\
 		PARAMS(proto),						\
 		PARAMS(args),						\
 		PARAMS(tstruct),					\
 		PARAMS(assign),						\
 		PARAMS(print))
 
-#undef TRACE_EVENT_FN_MAP
-#define TRACE_EVENT_FN_MAP(name, map, proto, args, tstruct,		\
+#undef LTTNG_TRACEPOINT_EVENT_FN_MAP
+#define LTTNG_TRACEPOINT_EVENT_FN_MAP(name, map, proto, args, tstruct,	\
 		assign, print, reg, unreg)
 
-#undef DEFINE_EVENT_MAP
-#define DEFINE_EVENT_MAP(template, name, map, proto, args)
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(template, name, map, proto, args)
 
-#undef DEFINE_EVENT_PRINT_MAP
-#define DEFINE_EVENT_PRINT_MAP(template, name, map, proto, args, print)
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT_MAP
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT_MAP(template, name, map, proto, args, print)
 
-#undef DEFINE_EVENT_CONDITION_MAP
-#define DEFINE_EVENT_CONDITION_MAP(template, name, map, proto, args, cond) \
-	DEFINE_EVENT(template, name, PARAMS(proto), PARAMS(args))
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION_MAP
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION_MAP(template, name, map, proto, args, cond) \
+	LTTNG_TRACEPOINT_EVENT_INSTANCE(template, name, PARAMS(proto), PARAMS(args))
 
+#undef LTTNG_TRACEPOINT_EVENT
+#define LTTNG_TRACEPOINT_EVENT(name, proto, args, tstruct, assign, print)
 
-#undef TRACE_EVENT
-#define TRACE_EVENT(name, proto, args, tstruct, assign, print)
-
-#undef TRACE_EVENT_CONDITION
-#define TRACE_EVENT_CONDITION(name, proto, args, cond, tstruct, assign, print) \
-	TRACE_EVENT(name,						\
+#undef LTTNG_TRACEPOINT_EVENT_CONDITION
+#define LTTNG_TRACEPOINT_EVENT_CONDITION(name, proto, args, cond, tstruct, assign, print) \
+	LTTNG_TRACEPOINT_EVENT(name,					\
 		PARAMS(proto),						\
 		PARAMS(args),						\
 		PARAMS(tstruct),					\
 		PARAMS(assign),						\
 		PARAMS(print))
 
-#undef LTTNG_TRACE_EVENT
-#define LTTNG_TRACE_EVENT(name, proto, args, _locvar, _code, tstruct, assign, print)
+#undef LTTNG_TRACEPOINT_EVENT_CODE
+#define LTTNG_TRACEPOINT_EVENT_CODE(name, proto, args, _locvar, _code, tstruct, assign, print)
 
-#undef TRACE_EVENT_FN
-#define TRACE_EVENT_FN(name, proto, args, tstruct,		\
+#undef LTTNG_TRACEPOINT_EVENT_FN
+#define LTTNG_TRACEPOINT_EVENT_FN(name, proto, args, tstruct,		\
 		assign, print, reg, unreg)
 
-#undef DEFINE_EVENT
-#define DEFINE_EVENT(template, name, proto, args)
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE(template, name, proto, args)
 
-#undef DEFINE_EVENT_PRINT
-#define DEFINE_EVENT_PRINT(template, name, proto, args, print)
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(template, name)
 
-#undef DEFINE_EVENT_CONDITION
-#define DEFINE_EVENT_CONDITION(template, name, proto, args, cond) \
-	DEFINE_EVENT(template, name, PARAMS(proto), PARAMS(args))
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(template, name, map)
 
-#undef DECLARE_TRACE
-#define DECLARE_TRACE(name, proto, args)
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT(template, name, proto, args, print)
+
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION(template, name, proto, args, cond) \
+	LTTNG_TRACEPOINT_EVENT_INSTANCE(template, name, PARAMS(proto), PARAMS(args))
 
 #undef TRACE_INCLUDE
 #undef __TRACE_INCLUDE
@@ -142,23 +137,24 @@
 #include "lttng-events.h"
 #endif
 
-#undef TRACE_EVENT
-#undef TRACE_EVENT_FN
-#undef TRACE_EVENT_CONDITION
-#undef DEFINE_EVENT
-#undef DEFINE_EVENT_PRINT
-#undef DEFINE_EVENT_CONDITION
-#undef TRACE_EVENT_MAP
-#undef TRACE_EVENT_FN_MAP
-#undef TRACE_EVENT_CONDITION_MAP
-#undef DECLARE_EVENT_CLASS
-#undef DEFINE_EVENT_MAP
-#undef DEFINE_EVENT_PRINT_MAP
-#undef DEFINE_EVENT_CONDITION_MAP
+#undef LTTNG_TRACEPOINT_EVENT
+#undef LTTNG_TRACEPOINT_EVENT_FN
+#undef LTTNG_TRACEPOINT_EVENT_CONDITION
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION
+#undef LTTNG_TRACEPOINT_EVENT_MAP
+#undef LTTNG_TRACEPOINT_EVENT_FN_MAP
+#undef LTTNG_TRACEPOINT_EVENT_CONDITION_MAP
+#undef LTTNG_TRACEPOINT_EVENT_CLASS
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT_MAP
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION_MAP
+#undef LTTNG_TRACEPOINT_EVENT_CODE
+#undef LTTNG_TRACEPOINT_EVENT_MAP_NOARGS
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
 #undef TRACE_HEADER_MULTI_READ
-
-#undef LTTNG_TRACE_EVENT
-#define LTTNG_TRACE_EVENT(name, proto, args, _locvar, _code, tstruct, assign, print)
 
 /* Only undef what we defined in this file */
 #ifdef UNDEF_TRACE_INCLUDE_FILE
@@ -170,6 +166,11 @@
 # undef TRACE_INCLUDE_PATH
 # undef UNDEF_TRACE_INCLUDE_PATH
 #endif
+
+/*
+ * We want to re-include lttng-tracepoint-event.h for a following probe.
+ */
+#undef LTTNG_TRACEPOINT_EVENT_H
 
 /* We may be processing more files */
 #define CREATE_TRACE_POINTS

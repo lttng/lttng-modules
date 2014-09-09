@@ -1,14 +1,14 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM sunrpc
 
-#if !defined(_TRACE_SUNRPC_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_SUNRPC_H
+#if !defined(LTTNG_TRACE_SUNRPC_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_SUNRPC_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/sunrpc/sched.h>
 #include <linux/sunrpc/clnt.h>
-#include <linux/tracepoint.h>
 
-DECLARE_EVENT_CLASS(rpc_task_status,
+LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_status,
 
 	TP_PROTO(struct rpc_task *task),
 
@@ -29,19 +29,19 @@ DECLARE_EVENT_CLASS(rpc_task_status,
 	TP_printk("task:%p@%p, status %d",__entry->task, __entry->clnt, __entry->status)
 )
 
-DEFINE_EVENT(rpc_task_status, rpc_call_status,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_status, rpc_call_status,
 	TP_PROTO(struct rpc_task *task),
 
 	TP_ARGS(task)
 )
 
-DEFINE_EVENT(rpc_task_status, rpc_bind_status,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_status, rpc_bind_status,
 	TP_PROTO(struct rpc_task *task),
 
 	TP_ARGS(task)
 )
 
-TRACE_EVENT(rpc_connect_status,
+LTTNG_TRACEPOINT_EVENT(rpc_connect_status,
 	TP_PROTO(struct rpc_task *task, int status),
 
 	TP_ARGS(task, status),
@@ -61,7 +61,7 @@ TRACE_EVENT(rpc_connect_status,
 	TP_printk("task:%p@%p, status %d",__entry->task, __entry->clnt, __entry->status)
 )
 
-DECLARE_EVENT_CLASS(rpc_task_running,
+LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_running,
 
 	TP_PROTO(const struct rpc_clnt *clnt, const struct rpc_task *task, const void *action),
 
@@ -95,7 +95,7 @@ DECLARE_EVENT_CLASS(rpc_task_running,
 		)
 )
 
-DEFINE_EVENT(rpc_task_running, rpc_task_begin,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_running, rpc_task_begin,
 
 	TP_PROTO(const struct rpc_clnt *clnt, const struct rpc_task *task, const void *action),
 
@@ -103,7 +103,7 @@ DEFINE_EVENT(rpc_task_running, rpc_task_begin,
 
 )
 
-DEFINE_EVENT(rpc_task_running, rpc_task_run_action,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_running, rpc_task_run_action,
 
 	TP_PROTO(const struct rpc_clnt *clnt, const struct rpc_task *task, const void *action),
 
@@ -111,7 +111,7 @@ DEFINE_EVENT(rpc_task_running, rpc_task_run_action,
 
 )
 
-DEFINE_EVENT(rpc_task_running, rpc_task_complete,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_running, rpc_task_complete,
 
 	TP_PROTO(const struct rpc_clnt *clnt, const struct rpc_task *task, const void *action),
 
@@ -119,7 +119,7 @@ DEFINE_EVENT(rpc_task_running, rpc_task_complete,
 
 )
 
-DECLARE_EVENT_CLASS(rpc_task_queued,
+LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_queued,
 
 	TP_PROTO(const struct rpc_clnt *clnt, const struct rpc_task *task, const struct rpc_wait_queue *q),
 
@@ -156,7 +156,7 @@ DECLARE_EVENT_CLASS(rpc_task_queued,
 		)
 )
 
-DEFINE_EVENT(rpc_task_queued, rpc_task_sleep,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_queued, rpc_task_sleep,
 
 	TP_PROTO(const struct rpc_clnt *clnt, const struct rpc_task *task, const struct rpc_wait_queue *q),
 
@@ -164,7 +164,7 @@ DEFINE_EVENT(rpc_task_queued, rpc_task_sleep,
 
 )
 
-DEFINE_EVENT(rpc_task_queued, rpc_task_wakeup,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_queued, rpc_task_wakeup,
 
 	TP_PROTO(const struct rpc_clnt *clnt, const struct rpc_task *task, const struct rpc_wait_queue *q),
 
@@ -172,6 +172,6 @@ DEFINE_EVENT(rpc_task_queued, rpc_task_wakeup,
 
 )
 
-#endif /* _TRACE_SUNRPC_H */
+#endif /* LTTNG_TRACE_SUNRPC_H */
 
 #include "../../../probes/define_trace.h"

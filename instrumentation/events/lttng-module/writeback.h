@@ -1,9 +1,10 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM writeback
 
-#if !defined(_TRACE_WRITEBACK_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_WRITEBACK_H
+#if !defined(LTTNG_TRACE_WRITEBACK_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_WRITEBACK_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/backing-dev.h>
 #include <linux/writeback.h>
 #include <linux/version.h>
@@ -46,7 +47,7 @@ static inline struct backing_dev_info *inode_to_bdi(struct inode *inode)
 		{WB_REASON_FORKER_THREAD,	"forker_thread"}
 #endif
 
-DECLARE_EVENT_CLASS(writeback_work_class,
+LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
 	TP_PROTO(struct backing_dev_info *bdi, struct wb_writeback_work *work),
 	TP_ARGS(bdi, work),
 	TP_STRUCT__entry(
@@ -60,20 +61,20 @@ DECLARE_EVENT_CLASS(writeback_work_class,
 		  __entry->name
 	)
 )
-#define DEFINE_WRITEBACK_WORK_EVENT(name) \
-DEFINE_EVENT(writeback_work_class, name, \
+#define LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(name) \
+LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_work_class, name, \
 	TP_PROTO(struct backing_dev_info *bdi, struct wb_writeback_work *work), \
 	TP_ARGS(bdi, work))
-DEFINE_WRITEBACK_WORK_EVENT(writeback_nothread)
-DEFINE_WRITEBACK_WORK_EVENT(writeback_queue)
-DEFINE_WRITEBACK_WORK_EVENT(writeback_exec)
+LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_nothread)
+LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_queue)
+LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_exec)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
-DEFINE_WRITEBACK_WORK_EVENT(writeback_start)
-DEFINE_WRITEBACK_WORK_EVENT(writeback_written)
-DEFINE_WRITEBACK_WORK_EVENT(writeback_wait)
+LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_start)
+LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_written)
+LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_wait)
 #endif
 
-TRACE_EVENT(writeback_pages_written,
+LTTNG_TRACEPOINT_EVENT(writeback_pages_written,
 	TP_PROTO(long pages_written),
 	TP_ARGS(pages_written),
 	TP_STRUCT__entry(
@@ -85,7 +86,7 @@ TRACE_EVENT(writeback_pages_written,
 	TP_printk("%ld", __entry->pages)
 )
 
-DECLARE_EVENT_CLASS(writeback_class,
+LTTNG_TRACEPOINT_EVENT_CLASS(writeback_class,
 	TP_PROTO(struct backing_dev_info *bdi),
 	TP_ARGS(bdi),
 	TP_STRUCT__entry(
@@ -99,12 +100,12 @@ DECLARE_EVENT_CLASS(writeback_class,
 	)
 )
 #define DEFINE_WRITEBACK_EVENT(name) \
-DEFINE_EVENT(writeback_class, name, \
+LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_class, name, \
 	TP_PROTO(struct backing_dev_info *bdi), \
 	TP_ARGS(bdi))
 
 #define DEFINE_WRITEBACK_EVENT_MAP(name, map) \
-DEFINE_EVENT_MAP(writeback_class, name, map, \
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(writeback_class, name, map, \
 	TP_PROTO(struct backing_dev_info *bdi), \
 	TP_ARGS(bdi))
 
@@ -122,7 +123,7 @@ DEFINE_WRITEBACK_EVENT(writeback_thread_stop)
 DEFINE_WRITEBACK_EVENT_MAP(balance_dirty_start, writeback_balance_dirty_start)
 DEFINE_WRITEBACK_EVENT_MAP(balance_dirty_wait, writeback_balance_dirty_wait)
 
-TRACE_EVENT_MAP(balance_dirty_written,
+LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_written,
 
 	writeback_balance_dirty_written,
 
@@ -147,7 +148,7 @@ TRACE_EVENT_MAP(balance_dirty_written,
 )
 #endif
 
-DECLARE_EVENT_CLASS(writeback_wbc_class,
+LTTNG_TRACEPOINT_EVENT_CLASS(writeback_wbc_class,
 	TP_PROTO(struct writeback_control *wbc, struct backing_dev_info *bdi),
 	TP_ARGS(wbc, bdi),
 	TP_STRUCT__entry(
@@ -209,22 +210,22 @@ DECLARE_EVENT_CLASS(writeback_wbc_class,
 )
 
 #undef DEFINE_WBC_EVENT
-#define DEFINE_WBC_EVENT(name, map) \
-DEFINE_EVENT_MAP(writeback_wbc_class, name, map, \
+#define LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(name, map) \
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(writeback_wbc_class, name, map, \
 	TP_PROTO(struct writeback_control *wbc, struct backing_dev_info *bdi), \
 	TP_ARGS(wbc, bdi))
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,1,0))
-DEFINE_WBC_EVENT(wbc_writeback_start, writeback_wbc_writeback_start)
-DEFINE_WBC_EVENT(wbc_writeback_written, writeback_wbc_writeback_written)
-DEFINE_WBC_EVENT(wbc_writeback_wait, writeback_wbc_writeback_wait)
-DEFINE_WBC_EVENT(wbc_balance_dirty_start, writeback_wbc_balance_dirty_start)
-DEFINE_WBC_EVENT(wbc_balance_dirty_written, writeback_wbc_balance_dirty_written)
-DEFINE_WBC_EVENT(wbc_balance_dirty_wait, writeback_wbc_balance_dirty_wait)
+LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_writeback_start, writeback_wbc_writeback_start)
+LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_writeback_written, writeback_wbc_writeback_written)
+LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_writeback_wait, writeback_wbc_writeback_wait)
+LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_balance_dirty_start, writeback_wbc_balance_dirty_start)
+LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_balance_dirty_written, writeback_wbc_balance_dirty_written)
+LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_balance_dirty_wait, writeback_wbc_balance_dirty_wait)
 #endif
-DEFINE_WBC_EVENT(wbc_writepage, writeback_wbc_writepage)
+LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_writepage, writeback_wbc_writepage)
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
-TRACE_EVENT(writeback_queue_io,
+LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 	TP_PROTO(struct bdi_writeback *wb,
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
 		 struct wb_writeback_work *work,
@@ -271,7 +272,7 @@ TRACE_EVENT(writeback_queue_io,
 #endif
 )
 
-TRACE_EVENT_MAP(global_dirty_state,
+LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 
 	writeback_global_dirty_state,
 
@@ -324,7 +325,7 @@ TRACE_EVENT_MAP(global_dirty_state,
 
 #define KBps(x)			((x) << (PAGE_SHIFT - 10))
 
-TRACE_EVENT_MAP(bdi_dirty_ratelimit,
+LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 
 	writeback_bdi_dirty_ratelimit,
 
@@ -369,7 +370,7 @@ TRACE_EVENT_MAP(bdi_dirty_ratelimit,
 	)
 )
 
-TRACE_EVENT_MAP(balance_dirty_pages,
+LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 
 	writeback_balance_dirty_pages,
 
@@ -485,7 +486,7 @@ TRACE_EVENT_MAP(balance_dirty_pages,
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
-TRACE_EVENT(writeback_sb_inodes_requeue,
+LTTNG_TRACEPOINT_EVENT(writeback_sb_inodes_requeue,
 
 	TP_PROTO(struct inode *inode),
 	TP_ARGS(inode),
@@ -515,7 +516,7 @@ TRACE_EVENT(writeback_sb_inodes_requeue,
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
-DECLARE_EVENT_CLASS(writeback_congest_waited_template,
+LTTNG_TRACEPOINT_EVENT_CLASS(writeback_congest_waited_template,
 
 	TP_PROTO(unsigned int usec_timeout, unsigned int usec_delayed),
 
@@ -536,14 +537,14 @@ DECLARE_EVENT_CLASS(writeback_congest_waited_template,
 			__entry->usec_delayed)
 )
 
-DEFINE_EVENT(writeback_congest_waited_template, writeback_congestion_wait,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_congest_waited_template, writeback_congestion_wait,
 
 	TP_PROTO(unsigned int usec_timeout, unsigned int usec_delayed),
 
 	TP_ARGS(usec_timeout, usec_delayed)
 )
 
-DEFINE_EVENT(writeback_congest_waited_template, writeback_wait_iff_congested,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_congest_waited_template, writeback_wait_iff_congested,
 
 	TP_PROTO(unsigned int usec_timeout, unsigned int usec_delayed),
 
@@ -552,7 +553,7 @@ DEFINE_EVENT(writeback_congest_waited_template, writeback_wait_iff_congested,
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
-DECLARE_EVENT_CLASS(writeback_single_inode_template,
+LTTNG_TRACEPOINT_EVENT_CLASS(writeback_single_inode_template,
 
 	TP_PROTO(struct inode *inode,
 		 struct writeback_control *wbc,
@@ -595,7 +596,7 @@ DECLARE_EVENT_CLASS(writeback_single_inode_template,
 )
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-DEFINE_EVENT(writeback_single_inode_template, writeback_single_inode_requeue,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_single_inode_template, writeback_single_inode_requeue,
 	TP_PROTO(struct inode *inode,
 		struct writeback_control *wbc,
 		unsigned long nr_to_write),
@@ -603,7 +604,7 @@ DEFINE_EVENT(writeback_single_inode_template, writeback_single_inode_requeue,
 )
 #endif
 
-DEFINE_EVENT(writeback_single_inode_template, writeback_single_inode,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_single_inode_template, writeback_single_inode,
 	TP_PROTO(struct inode *inode,
 		 struct writeback_control *wbc,
 		 unsigned long nr_to_write),
@@ -611,7 +612,7 @@ DEFINE_EVENT(writeback_single_inode_template, writeback_single_inode,
 )
 #endif
 
-#endif /* _TRACE_WRITEBACK_H */
+#endif /* LTTNG_TRACE_WRITEBACK_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

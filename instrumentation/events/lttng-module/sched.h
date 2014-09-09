@@ -1,11 +1,11 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM sched
 
-#if !defined(_TRACE_SCHED_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_SCHED_H
+#if !defined(LTTNG_TRACE_SCHED_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_SCHED_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/sched.h>
-#include <linux/tracepoint.h>
 #include <linux/binfmts.h>
 #include <linux/version.h>
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
@@ -73,7 +73,7 @@ static inline long __trace_sched_switch_state(struct task_struct *p)
 /*
  * Tracepoint for calling kthread_stop, performed to end a kthread:
  */
-TRACE_EVENT(sched_kthread_stop,
+LTTNG_TRACEPOINT_EVENT(sched_kthread_stop,
 
 	TP_PROTO(struct task_struct *t),
 
@@ -95,7 +95,7 @@ TRACE_EVENT(sched_kthread_stop,
 /*
  * Tracepoint for the return value of the kthread stopping:
  */
-TRACE_EVENT(sched_kthread_stop_ret,
+LTTNG_TRACEPOINT_EVENT(sched_kthread_stop_ret,
 
 	TP_PROTO(int ret),
 
@@ -115,7 +115,7 @@ TRACE_EVENT(sched_kthread_stop_ret,
 /*
  * Tracepoint for waking up a task:
  */
-DECLARE_EVENT_CLASS(sched_wakeup_template,
+LTTNG_TRACEPOINT_EVENT_CLASS(sched_wakeup_template,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 	TP_PROTO(struct task_struct *p, int success),
@@ -165,27 +165,27 @@ DECLARE_EVENT_CLASS(sched_wakeup_template,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 
-DEFINE_EVENT(sched_wakeup_template, sched_wakeup,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_wakeup_template, sched_wakeup,
 	     TP_PROTO(struct task_struct *p, int success),
 	     TP_ARGS(p, success))
 
 /*
  * Tracepoint for waking up a new task:
  */
-DEFINE_EVENT(sched_wakeup_template, sched_wakeup_new,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_wakeup_template, sched_wakeup_new,
 	     TP_PROTO(struct task_struct *p, int success),
 	     TP_ARGS(p, success))
 
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35)) */
 
-DEFINE_EVENT(sched_wakeup_template, sched_wakeup,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_wakeup_template, sched_wakeup,
 	     TP_PROTO(struct rq *rq, struct task_struct *p, int success),
 	     TP_ARGS(rq, p, success))
 
 /*
  * Tracepoint for waking up a new task:
  */
-DEFINE_EVENT(sched_wakeup_template, sched_wakeup_new,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_wakeup_template, sched_wakeup_new,
 	     TP_PROTO(struct rq *rq, struct task_struct *p, int success),
 	     TP_ARGS(rq, p, success))
 
@@ -194,7 +194,7 @@ DEFINE_EVENT(sched_wakeup_template, sched_wakeup_new,
 /*
  * Tracepoint for task switches, performed by the scheduler:
  */
-TRACE_EVENT(sched_switch,
+LTTNG_TRACEPOINT_EVENT(sched_switch,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 	TP_PROTO(struct task_struct *prev,
@@ -257,7 +257,7 @@ TRACE_EVENT(sched_switch,
 /*
  * Tracepoint for a task being migrated:
  */
-TRACE_EVENT(sched_migrate_task,
+LTTNG_TRACEPOINT_EVENT(sched_migrate_task,
 
 	TP_PROTO(struct task_struct *p, int dest_cpu),
 
@@ -284,7 +284,7 @@ TRACE_EVENT(sched_migrate_task,
 		  __entry->orig_cpu, __entry->dest_cpu)
 )
 
-DECLARE_EVENT_CLASS(sched_process_template,
+LTTNG_TRACEPOINT_EVENT_CLASS(sched_process_template,
 
 	TP_PROTO(struct task_struct *p),
 
@@ -309,7 +309,7 @@ DECLARE_EVENT_CLASS(sched_process_template,
 /*
  * Tracepoint for freeing a task:
  */
-DEFINE_EVENT(sched_process_template, sched_process_free,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_process_template, sched_process_free,
 	     TP_PROTO(struct task_struct *p),
 	     TP_ARGS(p))
 	     
@@ -317,7 +317,7 @@ DEFINE_EVENT(sched_process_template, sched_process_free,
 /*
  * Tracepoint for a task exiting:
  */
-DEFINE_EVENT(sched_process_template, sched_process_exit,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_process_template, sched_process_exit,
 	     TP_PROTO(struct task_struct *p),
 	     TP_ARGS(p))
 
@@ -325,11 +325,11 @@ DEFINE_EVENT(sched_process_template, sched_process_exit,
  * Tracepoint for waiting on task to unschedule:
  */
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
-DEFINE_EVENT(sched_process_template, sched_wait_task,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_process_template, sched_wait_task,
 	TP_PROTO(struct task_struct *p),
 	TP_ARGS(p))
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35)) */
-DEFINE_EVENT(sched_process_template, sched_wait_task,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_process_template, sched_wait_task,
 	TP_PROTO(struct rq *rq, struct task_struct *p),
 	TP_ARGS(rq, p))
 #endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35)) */
@@ -337,7 +337,7 @@ DEFINE_EVENT(sched_process_template, sched_wait_task,
 /*
  * Tracepoint for a waiting task:
  */
-TRACE_EVENT(sched_process_wait,
+LTTNG_TRACEPOINT_EVENT(sched_process_wait,
 
 	TP_PROTO(struct pid *pid),
 
@@ -367,7 +367,7 @@ TRACE_EVENT(sched_process_wait,
  * == child_pid, while creation of a thread yields to child_tid !=
  * child_pid.
  */
-TRACE_EVENT(sched_process_fork,
+LTTNG_TRACEPOINT_EVENT(sched_process_fork,
 
 	TP_PROTO(struct task_struct *parent, struct task_struct *child),
 
@@ -400,7 +400,7 @@ TRACE_EVENT(sched_process_fork,
 /*
  * Tracepoint for sending a signal:
  */
-TRACE_EVENT(sched_signal_send,
+LTTNG_TRACEPOINT_EVENT(sched_signal_send,
 
 	TP_PROTO(int sig, struct task_struct *p),
 
@@ -427,7 +427,7 @@ TRACE_EVENT(sched_signal_send,
 /*
  * Tracepoint for exec:
  */
-TRACE_EVENT(sched_process_exec,
+LTTNG_TRACEPOINT_EVENT(sched_process_exec,
 
 	TP_PROTO(struct task_struct *p, pid_t old_pid,
 		 struct linux_binprm *bprm),
@@ -456,7 +456,7 @@ TRACE_EVENT(sched_process_exec,
  * XXX the below sched_stat tracepoints only apply to SCHED_OTHER/BATCH/IDLE
  *     adding sched_stat support to SCHED_FIFO/RR would be welcome.
  */
-DECLARE_EVENT_CLASS(sched_stat_template,
+LTTNG_TRACEPOINT_EVENT_CLASS(sched_stat_template,
 
 	TP_PROTO(struct task_struct *tsk, u64 delay),
 
@@ -487,7 +487,7 @@ DECLARE_EVENT_CLASS(sched_stat_template,
  * Tracepoint for accounting wait time (time the task is runnable
  * but not actually running due to scheduler contention).
  */
-DEFINE_EVENT(sched_stat_template, sched_stat_wait,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_stat_template, sched_stat_wait,
 	     TP_PROTO(struct task_struct *tsk, u64 delay),
 	     TP_ARGS(tsk, delay))
 
@@ -495,7 +495,7 @@ DEFINE_EVENT(sched_stat_template, sched_stat_wait,
  * Tracepoint for accounting sleep time (time the task is not runnable,
  * including iowait, see below).
  */
-DEFINE_EVENT(sched_stat_template, sched_stat_sleep,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_stat_template, sched_stat_sleep,
 	     TP_PROTO(struct task_struct *tsk, u64 delay),
 	     TP_ARGS(tsk, delay))
 
@@ -503,7 +503,7 @@ DEFINE_EVENT(sched_stat_template, sched_stat_sleep,
  * Tracepoint for accounting iowait time (time the task is not runnable
  * due to waiting on IO to complete).
  */
-DEFINE_EVENT(sched_stat_template, sched_stat_iowait,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_stat_template, sched_stat_iowait,
 	     TP_PROTO(struct task_struct *tsk, u64 delay),
 	     TP_ARGS(tsk, delay))
 
@@ -511,7 +511,7 @@ DEFINE_EVENT(sched_stat_template, sched_stat_iowait,
 /*
  * Tracepoint for accounting blocked time (time the task is in uninterruptible).
  */
-DEFINE_EVENT(sched_stat_template, sched_stat_blocked,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_stat_template, sched_stat_blocked,
 	     TP_PROTO(struct task_struct *tsk, u64 delay),
 	     TP_ARGS(tsk, delay))
 #endif
@@ -520,7 +520,7 @@ DEFINE_EVENT(sched_stat_template, sched_stat_blocked,
  * Tracepoint for accounting runtime (time the task is executing
  * on a CPU).
  */
-TRACE_EVENT(sched_stat_runtime,
+LTTNG_TRACEPOINT_EVENT(sched_stat_runtime,
 
 	TP_PROTO(struct task_struct *tsk, u64 runtime, u64 vruntime),
 
@@ -558,7 +558,7 @@ TRACE_EVENT(sched_stat_runtime,
  * Tracepoint for showing priority inheritance modifying a tasks
  * priority.
  */
-TRACE_EVENT(sched_pi_setprio,
+LTTNG_TRACEPOINT_EVENT(sched_pi_setprio,
 
 	TP_PROTO(struct task_struct *tsk, int newprio),
 
@@ -584,7 +584,7 @@ TRACE_EVENT(sched_pi_setprio,
 )
 #endif
 
-#endif /* _TRACE_SCHED_H */
+#endif /* LTTNG_TRACE_SCHED_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

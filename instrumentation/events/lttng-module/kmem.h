@@ -1,17 +1,17 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM kmem
 
-#if !defined(_TRACE_KMEM_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_KMEM_H
+#if !defined(LTTNG_TRACE_KMEM_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_KMEM_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/types.h>
-#include <linux/tracepoint.h>
 #include <linux/version.h>
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 #include <trace/events/gfpflags.h>
 #endif
 
-DECLARE_EVENT_CLASS(kmem_alloc,
+LTTNG_TRACEPOINT_EVENT_CLASS(kmem_alloc,
 
 	TP_PROTO(unsigned long call_site,
 		 const void *ptr,
@@ -45,7 +45,7 @@ DECLARE_EVENT_CLASS(kmem_alloc,
 		show_gfp_flags(__entry->gfp_flags))
 )
 
-DEFINE_EVENT_MAP(kmem_alloc, kmalloc,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(kmem_alloc, kmalloc,
 
 	kmem_kmalloc,
 
@@ -55,7 +55,7 @@ DEFINE_EVENT_MAP(kmem_alloc, kmalloc,
 	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags)
 )
 
-DEFINE_EVENT(kmem_alloc, kmem_cache_alloc,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(kmem_alloc, kmem_cache_alloc,
 
 	TP_PROTO(unsigned long call_site, const void *ptr,
 		 size_t bytes_req, size_t bytes_alloc, gfp_t gfp_flags),
@@ -63,7 +63,7 @@ DEFINE_EVENT(kmem_alloc, kmem_cache_alloc,
 	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags)
 )
 
-DECLARE_EVENT_CLASS(kmem_alloc_node,
+LTTNG_TRACEPOINT_EVENT_CLASS(kmem_alloc_node,
 
 	TP_PROTO(unsigned long call_site,
 		 const void *ptr,
@@ -101,7 +101,7 @@ DECLARE_EVENT_CLASS(kmem_alloc_node,
 		__entry->node)
 )
 
-DEFINE_EVENT_MAP(kmem_alloc_node, kmalloc_node,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(kmem_alloc_node, kmalloc_node,
 
 	kmem_kmalloc_node,
 
@@ -112,7 +112,7 @@ DEFINE_EVENT_MAP(kmem_alloc_node, kmalloc_node,
 	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node)
 )
 
-DEFINE_EVENT(kmem_alloc_node, kmem_cache_alloc_node,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(kmem_alloc_node, kmem_cache_alloc_node,
 
 	TP_PROTO(unsigned long call_site, const void *ptr,
 		 size_t bytes_req, size_t bytes_alloc,
@@ -121,7 +121,7 @@ DEFINE_EVENT(kmem_alloc_node, kmem_cache_alloc_node,
 	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node)
 )
 
-DECLARE_EVENT_CLASS(kmem_free,
+LTTNG_TRACEPOINT_EVENT_CLASS(kmem_free,
 
 	TP_PROTO(unsigned long call_site, const void *ptr),
 
@@ -140,7 +140,7 @@ DECLARE_EVENT_CLASS(kmem_free,
 	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
 )
 
-DEFINE_EVENT_MAP(kmem_free, kfree,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(kmem_free, kfree,
 
 	kmem_kfree,
 
@@ -149,7 +149,7 @@ DEFINE_EVENT_MAP(kmem_free, kfree,
 	TP_ARGS(call_site, ptr)
 )
 
-DEFINE_EVENT(kmem_free, kmem_cache_free,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(kmem_free, kmem_cache_free,
 
 	TP_PROTO(unsigned long call_site, const void *ptr),
 
@@ -158,9 +158,9 @@ DEFINE_EVENT(kmem_free, kmem_cache_free,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
-TRACE_EVENT(mm_page_free,
+LTTNG_TRACEPOINT_EVENT(mm_page_free,
 #else
-TRACE_EVENT(mm_page_free_direct,
+LTTNG_TRACEPOINT_EVENT(mm_page_free_direct,
 #endif
 
 	TP_PROTO(struct page *page, unsigned int order),
@@ -184,9 +184,9 @@ TRACE_EVENT(mm_page_free_direct,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
-TRACE_EVENT(mm_page_free_batched,
+LTTNG_TRACEPOINT_EVENT(mm_page_free_batched,
 #else
-TRACE_EVENT(mm_pagevec_free,
+LTTNG_TRACEPOINT_EVENT(mm_pagevec_free,
 #endif
 
 	TP_PROTO(struct page *page, int cold),
@@ -209,7 +209,7 @@ TRACE_EVENT(mm_pagevec_free,
 			__entry->cold)
 )
 
-TRACE_EVENT(mm_page_alloc,
+LTTNG_TRACEPOINT_EVENT(mm_page_alloc,
 
 	TP_PROTO(struct page *page, unsigned int order,
 			gfp_t gfp_flags, int migratetype),
@@ -238,7 +238,7 @@ TRACE_EVENT(mm_page_alloc,
 		show_gfp_flags(__entry->gfp_flags))
 )
 
-DECLARE_EVENT_CLASS(mm_page,
+LTTNG_TRACEPOINT_EVENT_CLASS(mm_page,
 
 	TP_PROTO(struct page *page, unsigned int order, int migratetype),
 
@@ -264,14 +264,14 @@ DECLARE_EVENT_CLASS(mm_page,
 		__entry->order == 0)
 )
 
-DEFINE_EVENT(mm_page, mm_page_alloc_zone_locked,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_page, mm_page_alloc_zone_locked,
 
 	TP_PROTO(struct page *page, unsigned int order, int migratetype),
 
 	TP_ARGS(page, order, migratetype)
 )
 
-DEFINE_EVENT_PRINT(mm_page, mm_page_pcpu_drain,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT(mm_page, mm_page_pcpu_drain,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
 	TP_PROTO(struct page *page, unsigned int order, int migratetype),
@@ -288,7 +288,7 @@ DEFINE_EVENT_PRINT(mm_page, mm_page_pcpu_drain,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 
-TRACE_EVENT(mm_page_alloc_extfrag,
+LTTNG_TRACEPOINT_EVENT(mm_page_alloc_extfrag,
 
 	TP_PROTO(struct page *page,
 			int alloc_order, int fallback_order,
@@ -332,7 +332,7 @@ TRACE_EVENT(mm_page_alloc_extfrag,
 
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
-TRACE_EVENT(mm_page_alloc_extfrag,
+LTTNG_TRACEPOINT_EVENT(mm_page_alloc_extfrag,
 
 	TP_PROTO(struct page *page,
 			int alloc_order, int fallback_order,
@@ -374,7 +374,7 @@ TRACE_EVENT(mm_page_alloc_extfrag,
 
 #endif
 
-#endif /* _TRACE_KMEM_H */
+#endif /* LTTNG_TRACE_KMEM_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

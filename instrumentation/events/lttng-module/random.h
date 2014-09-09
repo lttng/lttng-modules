@@ -1,13 +1,13 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM random
 
-#if !defined(_TRACE_RANDOM_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_RANDOM_H
+#if !defined(LTTNG_TRACE_RANDOM_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_RANDOM_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/writeback.h>
-#include <linux/tracepoint.h>
 
-DECLARE_EVENT_CLASS(random__mix_pool_bytes,
+LTTNG_TRACEPOINT_EVENT_CLASS(random__mix_pool_bytes,
 	TP_PROTO(const char *pool_name, int bytes, unsigned long IP),
 
 	TP_ARGS(pool_name, bytes, IP),
@@ -28,7 +28,7 @@ DECLARE_EVENT_CLASS(random__mix_pool_bytes,
 		  __get_str(pool_name), __entry->bytes, (void *)__entry->IP)
 )
 
-DEFINE_EVENT_MAP(random__mix_pool_bytes, mix_pool_bytes,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(random__mix_pool_bytes, mix_pool_bytes,
 
 	random_mix_pool_bytes,
 
@@ -37,7 +37,7 @@ DEFINE_EVENT_MAP(random__mix_pool_bytes, mix_pool_bytes,
 	TP_ARGS(pool_name, bytes, IP)
 )
 
-DEFINE_EVENT_MAP(random__mix_pool_bytes, mix_pool_bytes_nolock,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(random__mix_pool_bytes, mix_pool_bytes_nolock,
 
 	random_mix_pool_bytes_nolock,
 
@@ -46,7 +46,7 @@ DEFINE_EVENT_MAP(random__mix_pool_bytes, mix_pool_bytes_nolock,
 	TP_ARGS(pool_name, bytes, IP)
 )
 
-TRACE_EVENT_MAP(credit_entropy_bits,
+LTTNG_TRACEPOINT_EVENT_MAP(credit_entropy_bits,
 
 	random_credit_entropy_bits,
 
@@ -77,7 +77,7 @@ TRACE_EVENT_MAP(credit_entropy_bits,
 		  (void *)__entry->IP)
 )
 
-TRACE_EVENT_MAP(get_random_bytes,
+LTTNG_TRACEPOINT_EVENT_MAP(get_random_bytes,
 
 	random_get_random_bytes,
 
@@ -98,7 +98,7 @@ TRACE_EVENT_MAP(get_random_bytes,
 	TP_printk("nbytes %d caller %pF", __entry->nbytes, (void *)__entry->IP)
 )
 
-DECLARE_EVENT_CLASS(random__extract_entropy,
+LTTNG_TRACEPOINT_EVENT_CLASS(random__extract_entropy,
 	TP_PROTO(const char *pool_name, int nbytes, int entropy_count,
 		 unsigned long IP),
 
@@ -124,7 +124,7 @@ DECLARE_EVENT_CLASS(random__extract_entropy,
 )
 
 
-DEFINE_EVENT_MAP(random__extract_entropy, extract_entropy,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(random__extract_entropy, extract_entropy,
 
 	random_extract_entropy,
 
@@ -134,7 +134,7 @@ DEFINE_EVENT_MAP(random__extract_entropy, extract_entropy,
 	TP_ARGS(pool_name, nbytes, entropy_count, IP)
 )
 
-DEFINE_EVENT_MAP(random__extract_entropy, extract_entropy_user,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(random__extract_entropy, extract_entropy_user,
 
 	random_extract_entropy_user,
 
@@ -146,7 +146,7 @@ DEFINE_EVENT_MAP(random__extract_entropy, extract_entropy_user,
 
 
 
-#endif /* _TRACE_RANDOM_H */
+#endif /* LTTNG_TRACE_RANDOM_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

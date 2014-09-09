@@ -1,11 +1,11 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM jbd2
 
-#if !defined(_TRACE_JBD2_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_JBD2_H
+#if !defined(LTTNG_TRACE_JBD2_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_JBD2_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/jbd2.h>
-#include <linux/tracepoint.h>
 #include <linux/version.h>
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
@@ -16,7 +16,7 @@ struct transaction_run_stats_s;
 #endif
 #endif
 
-TRACE_EVENT(jbd2_checkpoint,
+LTTNG_TRACEPOINT_EVENT(jbd2_checkpoint,
 
 	TP_PROTO(journal_t *journal, int result),
 
@@ -36,7 +36,7 @@ TRACE_EVENT(jbd2_checkpoint,
 		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->result)
 )
 
-DECLARE_EVENT_CLASS(jbd2_commit,
+LTTNG_TRACEPOINT_EVENT_CLASS(jbd2_commit,
 
 	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
 
@@ -59,28 +59,28 @@ DECLARE_EVENT_CLASS(jbd2_commit,
 		  __entry->transaction, __entry->sync_commit)
 )
 
-DEFINE_EVENT(jbd2_commit, jbd2_start_commit,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(jbd2_commit, jbd2_start_commit,
 
 	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
 
 	TP_ARGS(journal, commit_transaction)
 )
 
-DEFINE_EVENT(jbd2_commit, jbd2_commit_locking,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(jbd2_commit, jbd2_commit_locking,
 
 	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
 
 	TP_ARGS(journal, commit_transaction)
 )
 
-DEFINE_EVENT(jbd2_commit, jbd2_commit_flushing,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(jbd2_commit, jbd2_commit_flushing,
 
 	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
 
 	TP_ARGS(journal, commit_transaction)
 )
 
-DEFINE_EVENT(jbd2_commit, jbd2_commit_logging,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(jbd2_commit, jbd2_commit_logging,
 
 	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
 
@@ -88,7 +88,7 @@ DEFINE_EVENT(jbd2_commit, jbd2_commit_logging,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-DEFINE_EVENT(jbd2_commit, jbd2_drop_transaction,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(jbd2_commit, jbd2_drop_transaction,
 
 	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
 
@@ -96,7 +96,7 @@ DEFINE_EVENT(jbd2_commit, jbd2_drop_transaction,
 )
 #endif
 
-TRACE_EVENT(jbd2_end_commit,
+LTTNG_TRACEPOINT_EVENT(jbd2_end_commit,
 	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
 
 	TP_ARGS(journal, commit_transaction),
@@ -120,7 +120,7 @@ TRACE_EVENT(jbd2_end_commit,
 		  __entry->transaction, __entry->sync_commit, __entry->head)
 )
 
-TRACE_EVENT(jbd2_submit_inode_data,
+LTTNG_TRACEPOINT_EVENT(jbd2_submit_inode_data,
 	TP_PROTO(struct inode *inode),
 
 	TP_ARGS(inode),
@@ -141,7 +141,7 @@ TRACE_EVENT(jbd2_submit_inode_data,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
-TRACE_EVENT(jbd2_run_stats,
+LTTNG_TRACEPOINT_EVENT(jbd2_run_stats,
 	TP_PROTO(dev_t dev, unsigned long tid,
 		 struct transaction_run_stats_s *stats),
 
@@ -185,7 +185,7 @@ TRACE_EVENT(jbd2_run_stats,
 		  __entry->blocks_logged)
 )
 
-TRACE_EVENT(jbd2_checkpoint_stats,
+LTTNG_TRACEPOINT_EVENT(jbd2_checkpoint_stats,
 	TP_PROTO(dev_t dev, unsigned long tid,
 		 struct transaction_chp_stats_s *stats),
 
@@ -219,9 +219,9 @@ TRACE_EVENT(jbd2_checkpoint_stats,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-TRACE_EVENT(jbd2_update_log_tail,
+LTTNG_TRACEPOINT_EVENT(jbd2_update_log_tail,
 #else
-TRACE_EVENT(jbd2_cleanup_journal_tail,
+LTTNG_TRACEPOINT_EVENT(jbd2_cleanup_journal_tail,
 #endif
 
 	TP_PROTO(journal_t *journal, tid_t first_tid,
@@ -253,7 +253,7 @@ TRACE_EVENT(jbd2_cleanup_journal_tail,
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-TRACE_EVENT(jbd2_write_superblock,
+LTTNG_TRACEPOINT_EVENT(jbd2_write_superblock,
 
 	TP_PROTO(journal_t *journal, int write_op),
 
@@ -274,7 +274,7 @@ TRACE_EVENT(jbd2_write_superblock,
 )
 #endif
 
-#endif /* _TRACE_JBD2_H */
+#endif /* LTTNG_TRACE_JBD2_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

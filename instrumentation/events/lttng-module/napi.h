@@ -1,16 +1,16 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM napi
 
-#if !defined(_TRACE_NAPI_H_) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_NAPI_H_
+#if !defined(LTTNG_TRACE_NAPI_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_NAPI_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/netdevice.h>
-#include <linux/tracepoint.h>
 #include <linux/ftrace.h>
 
 #define NO_DEV "(no_device)"
 
-TRACE_EVENT(napi_poll,
+LTTNG_TRACEPOINT_EVENT(napi_poll,
 
 	TP_PROTO(struct napi_struct *napi),
 
@@ -32,7 +32,7 @@ TRACE_EVENT(napi_poll,
 
 #undef NO_DEV
 
-#endif /* _TRACE_NAPI_H_ */
+#endif /* LTTNG_TRACE_NAPI_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

@@ -1,18 +1,18 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM skb
 
-#if !defined(_TRACE_SKB_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_SKB_H
+#if !defined(LTTNG_TRACE_SKB_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_SKB_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
-#include <linux/tracepoint.h>
 #include <linux/version.h>
 
 /*
  * Tracepoint for free an sk_buff:
  */
-TRACE_EVENT_MAP(kfree_skb,
+LTTNG_TRACEPOINT_EVENT_MAP(kfree_skb,
 
 	skb_kfree,
 
@@ -37,7 +37,7 @@ TRACE_EVENT_MAP(kfree_skb,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
-TRACE_EVENT_MAP(consume_skb,
+LTTNG_TRACEPOINT_EVENT_MAP(consume_skb,
 
 	skb_consume,
 
@@ -58,7 +58,7 @@ TRACE_EVENT_MAP(consume_skb,
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
-TRACE_EVENT(skb_copy_datagram_iovec,
+LTTNG_TRACEPOINT_EVENT(skb_copy_datagram_iovec,
 
 	TP_PROTO(const struct sk_buff *skb, int len),
 
@@ -78,7 +78,7 @@ TRACE_EVENT(skb_copy_datagram_iovec,
 )
 #endif
 
-#endif /* _TRACE_SKB_H */
+#endif /* LTTNG_TRACE_SKB_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

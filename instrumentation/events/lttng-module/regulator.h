@@ -1,17 +1,17 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM regulator
 
-#if !defined(_TRACE_REGULATOR_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_REGULATOR_H
+#if !defined(LTTNG_TRACE_REGULATOR_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_REGULATOR_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/ktime.h>
-#include <linux/tracepoint.h>
 
 /*
  * Events which just log themselves and the regulator name for enable/disable
  * type tracking.
  */
-DECLARE_EVENT_CLASS(regulator_basic,
+LTTNG_TRACEPOINT_EVENT_CLASS(regulator_basic,
 
 	TP_PROTO(const char *name),
 
@@ -29,7 +29,7 @@ DECLARE_EVENT_CLASS(regulator_basic,
 
 )
 
-DEFINE_EVENT(regulator_basic, regulator_enable,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(regulator_basic, regulator_enable,
 
 	TP_PROTO(const char *name),
 
@@ -37,7 +37,7 @@ DEFINE_EVENT(regulator_basic, regulator_enable,
 
 )
 
-DEFINE_EVENT(regulator_basic, regulator_enable_delay,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(regulator_basic, regulator_enable_delay,
 
 	TP_PROTO(const char *name),
 
@@ -45,7 +45,7 @@ DEFINE_EVENT(regulator_basic, regulator_enable_delay,
 
 )
 
-DEFINE_EVENT(regulator_basic, regulator_enable_complete,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(regulator_basic, regulator_enable_complete,
 
 	TP_PROTO(const char *name),
 
@@ -53,7 +53,7 @@ DEFINE_EVENT(regulator_basic, regulator_enable_complete,
 
 )
 
-DEFINE_EVENT(regulator_basic, regulator_disable,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(regulator_basic, regulator_disable,
 
 	TP_PROTO(const char *name),
 
@@ -61,7 +61,7 @@ DEFINE_EVENT(regulator_basic, regulator_disable,
 
 )
 
-DEFINE_EVENT(regulator_basic, regulator_disable_complete,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(regulator_basic, regulator_disable_complete,
 
 	TP_PROTO(const char *name),
 
@@ -73,7 +73,7 @@ DEFINE_EVENT(regulator_basic, regulator_disable_complete,
  * Events that take a range of numerical values, mostly for voltages
  * and so on.
  */
-DECLARE_EVENT_CLASS(regulator_range,
+LTTNG_TRACEPOINT_EVENT_CLASS(regulator_range,
 
 	TP_PROTO(const char *name, int min, int max),
 
@@ -95,7 +95,7 @@ DECLARE_EVENT_CLASS(regulator_range,
 		  (int)__entry->min, (int)__entry->max)
 )
 
-DEFINE_EVENT(regulator_range, regulator_set_voltage,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(regulator_range, regulator_set_voltage,
 
 	TP_PROTO(const char *name, int min, int max),
 
@@ -107,7 +107,7 @@ DEFINE_EVENT(regulator_range, regulator_set_voltage,
 /*
  * Events that take a single value, mostly for readback and refcounts.
  */
-DECLARE_EVENT_CLASS(regulator_value,
+LTTNG_TRACEPOINT_EVENT_CLASS(regulator_value,
 
 	TP_PROTO(const char *name, unsigned int val),
 
@@ -127,7 +127,7 @@ DECLARE_EVENT_CLASS(regulator_value,
 		  (int)__entry->val)
 )
 
-DEFINE_EVENT(regulator_value, regulator_set_voltage_complete,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(regulator_value, regulator_set_voltage_complete,
 
 	TP_PROTO(const char *name, unsigned int value),
 

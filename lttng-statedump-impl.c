@@ -65,6 +65,7 @@
 #define CREATE_TRACE_POINTS
 #define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module
 #define TRACE_INCLUDE_FILE lttng-statedump
+#define LTTNG_INSTRUMENTATION
 #include "instrumentation/events/lttng-module/lttng-statedump.h"
 
 DEFINE_TRACE(lttng_statedump_block_device);

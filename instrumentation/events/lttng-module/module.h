@@ -11,10 +11,10 @@
 #define TRACE_SYSTEM module
 #endif
 
-#if !defined(_TRACE_MODULE_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_MODULE_H
+#if !defined(LTTNG_TRACE_MODULE_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_MODULE_H
 
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/version.h>
 
 #ifdef CONFIG_MODULES
@@ -25,7 +25,7 @@ struct module;
 
 #endif
 
-TRACE_EVENT(module_load,
+LTTNG_TRACEPOINT_EVENT(module_load,
 
 	TP_PROTO(struct module *mod),
 
@@ -44,7 +44,7 @@ TRACE_EVENT(module_load,
 	TP_printk("%s %s", __get_str(name), show_module_flags(__entry->taints))
 )
 
-TRACE_EVENT(module_free,
+LTTNG_TRACEPOINT_EVENT(module_free,
 
 	TP_PROTO(struct module *mod),
 
@@ -64,7 +64,7 @@ TRACE_EVENT(module_free,
 #ifdef CONFIG_MODULE_UNLOAD
 /* trace_module_get/put are only used if CONFIG_MODULE_UNLOAD is defined */
 
-DECLARE_EVENT_CLASS(module_refcnt,
+LTTNG_TRACEPOINT_EVENT_CLASS(module_refcnt,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 	TP_PROTO(struct module *mod, unsigned long ip),
@@ -96,7 +96,7 @@ DECLARE_EVENT_CLASS(module_refcnt,
 		  __get_str(name), (void *)__entry->ip, __entry->refcnt)
 )
 
-DEFINE_EVENT(module_refcnt, module_get,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(module_refcnt, module_get,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 	TP_PROTO(struct module *mod, unsigned long ip),
@@ -109,7 +109,7 @@ DEFINE_EVENT(module_refcnt, module_get,
 #endif
 )
 
-DEFINE_EVENT(module_refcnt, module_put,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(module_refcnt, module_put,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 	TP_PROTO(struct module *mod, unsigned long ip),
@@ -123,7 +123,7 @@ DEFINE_EVENT(module_refcnt, module_put,
 )
 #endif /* CONFIG_MODULE_UNLOAD */
 
-TRACE_EVENT(module_request,
+LTTNG_TRACEPOINT_EVENT(module_request,
 
 	TP_PROTO(char *name, bool wait, unsigned long ip),
 
@@ -147,7 +147,7 @@ TRACE_EVENT(module_request,
 
 #endif /* CONFIG_MODULES */
 
-#endif /* _TRACE_MODULE_H */
+#endif /* LTTNG_TRACE_MODULE_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

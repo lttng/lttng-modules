@@ -1,12 +1,12 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM scsi
 
-#if !defined(_TRACE_SCSI_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_SCSI_H
+#if !defined(LTTNG_TRACE_SCSI_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_SCSI_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <scsi/scsi_cmnd.h>
 #include <scsi/scsi_host.h>
-#include <linux/tracepoint.h>
 #include <linux/trace_seq.h>
 #include <linux/version.h>
 
@@ -205,7 +205,7 @@ const char *scsi_trace_parse_cdb(struct trace_seq*, unsigned char*, int);
 #define __parse_cdb(cdb, len) scsi_trace_parse_cdb(p, cdb, len)
 #endif
 
-TRACE_EVENT(scsi_dispatch_cmd_start,
+LTTNG_TRACEPOINT_EVENT(scsi_dispatch_cmd_start,
 
 	TP_PROTO(struct scsi_cmnd *cmd),
 
@@ -258,7 +258,7 @@ TRACE_EVENT(scsi_dispatch_cmd_start,
 		  __print_hex(__get_dynamic_array(cmnd), __entry->cmd_len))
 )
 
-TRACE_EVENT(scsi_dispatch_cmd_error,
+LTTNG_TRACEPOINT_EVENT(scsi_dispatch_cmd_error,
 
 	TP_PROTO(struct scsi_cmnd *cmd, int rtn),
 
@@ -314,7 +314,7 @@ TRACE_EVENT(scsi_dispatch_cmd_error,
 		  __entry->rtn)
 )
 
-DECLARE_EVENT_CLASS(scsi_cmd_done_timeout_template,
+LTTNG_TRACEPOINT_EVENT_CLASS(scsi_cmd_done_timeout_template,
 
 	TP_PROTO(struct scsi_cmnd *cmd),
 
@@ -375,15 +375,15 @@ DECLARE_EVENT_CLASS(scsi_cmd_done_timeout_template,
 		  show_statusbyte_name(__entry->result & 0xff))
 )
 
-DEFINE_EVENT(scsi_cmd_done_timeout_template, scsi_dispatch_cmd_done,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(scsi_cmd_done_timeout_template, scsi_dispatch_cmd_done,
 	     TP_PROTO(struct scsi_cmnd *cmd),
 	     TP_ARGS(cmd))
 
-DEFINE_EVENT(scsi_cmd_done_timeout_template, scsi_dispatch_cmd_timeout,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(scsi_cmd_done_timeout_template, scsi_dispatch_cmd_timeout,
 	     TP_PROTO(struct scsi_cmnd *cmd),
 	     TP_ARGS(cmd))
 
-TRACE_EVENT(scsi_eh_wakeup,
+LTTNG_TRACEPOINT_EVENT(scsi_eh_wakeup,
 
 	TP_PROTO(struct Scsi_Host *shost),
 
@@ -400,7 +400,7 @@ TRACE_EVENT(scsi_eh_wakeup,
 	TP_printk("host_no=%u", __entry->host_no)
 )
 
-#endif /*  _TRACE_SCSI_H */
+#endif /*  LTTNG_TRACE_SCSI_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

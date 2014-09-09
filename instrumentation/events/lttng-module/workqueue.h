@@ -1,10 +1,10 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM workqueue
 
-#if !defined(_TRACE_WORKQUEUE_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_WORKQUEUE_H
+#if !defined(LTTNG_TRACE_WORKQUEUE_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_WORKQUEUE_H
 
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/workqueue.h>
 #include <linux/version.h>
 
@@ -18,7 +18,7 @@ struct global_cwq;
 
 #endif
 
-DECLARE_EVENT_CLASS(workqueue_work,
+LTTNG_TRACEPOINT_EVENT_CLASS(workqueue_work,
 
 	TP_PROTO(struct work_struct *work),
 
@@ -46,7 +46,7 @@ DECLARE_EVENT_CLASS(workqueue_work,
  * delayed work is actually queued on a workqueue (ie: once the delay
  * has been reached).
  */
-TRACE_EVENT(workqueue_queue_work,
+LTTNG_TRACEPOINT_EVENT(workqueue_queue_work,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
 	TP_PROTO(unsigned int req_cpu, struct pool_workqueue *pwq,
@@ -85,7 +85,7 @@ TRACE_EVENT(workqueue_queue_work,
  * which happens immediately after queueing unless @max_active limit
  * is reached.
  */
-DEFINE_EVENT(workqueue_work, workqueue_activate_work,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(workqueue_work, workqueue_activate_work,
 
 	TP_PROTO(struct work_struct *work),
 
@@ -99,7 +99,7 @@ DEFINE_EVENT(workqueue_work, workqueue_activate_work,
  *
  * Allows to track workqueue execution.
  */
-TRACE_EVENT(workqueue_execute_start,
+LTTNG_TRACEPOINT_EVENT(workqueue_execute_start,
 
 	TP_PROTO(struct work_struct *work),
 
@@ -124,7 +124,7 @@ TRACE_EVENT(workqueue_execute_start,
  *
  * Allows to track workqueue execution.
  */
-DEFINE_EVENT(workqueue_work, workqueue_execute_end,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(workqueue_work, workqueue_execute_end,
 
 	TP_PROTO(struct work_struct *work),
 
@@ -133,7 +133,7 @@ DEFINE_EVENT(workqueue_work, workqueue_execute_end,
 
 #else
 
-DECLARE_EVENT_CLASS(workqueue,
+LTTNG_TRACEPOINT_EVENT_CLASS(workqueue,
 
 	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
 
@@ -155,14 +155,14 @@ DECLARE_EVENT_CLASS(workqueue,
 		__entry->thread_pid, __entry->func)
 )
 
-DEFINE_EVENT(workqueue, workqueue_insertion,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(workqueue, workqueue_insertion,
 
 	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
 
 	TP_ARGS(wq_thread, work)
 )
 
-DEFINE_EVENT(workqueue, workqueue_execution,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(workqueue, workqueue_execution,
 
 	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
 
@@ -170,7 +170,7 @@ DEFINE_EVENT(workqueue, workqueue_execution,
 )
 
 /* Trace the creation of one workqueue thread on a cpu */
-TRACE_EVENT(workqueue_creation,
+LTTNG_TRACEPOINT_EVENT(workqueue_creation,
 
 	TP_PROTO(struct task_struct *wq_thread, int cpu),
 
@@ -192,7 +192,7 @@ TRACE_EVENT(workqueue_creation,
 		__entry->thread_pid, __entry->cpu)
 )
 
-TRACE_EVENT(workqueue_destruction,
+LTTNG_TRACEPOINT_EVENT(workqueue_destruction,
 
 	TP_PROTO(struct task_struct *wq_thread),
 
@@ -213,7 +213,7 @@ TRACE_EVENT(workqueue_destruction,
 
 #endif
 
-#endif /*  _TRACE_WORKQUEUE_H */
+#endif /*  LTTNG_TRACE_WORKQUEUE_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

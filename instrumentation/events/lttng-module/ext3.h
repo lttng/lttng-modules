@@ -1,13 +1,13 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM ext3
 
-#if !defined(_TRACE_EXT3_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_EXT3_H
+#if !defined(LTTNG_TRACE_EXT3_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_EXT3_H
 
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/version.h>
 
-TRACE_EVENT(ext3_free_inode,
+LTTNG_TRACEPOINT_EVENT(ext3_free_inode,
 	TP_PROTO(struct inode *inode),
 
 	TP_ARGS(inode),
@@ -42,7 +42,7 @@ TRACE_EVENT(ext3_free_inode,
 		  (unsigned long) __entry->blocks)
 )
 
-TRACE_EVENT(ext3_request_inode,
+LTTNG_TRACEPOINT_EVENT(ext3_request_inode,
 	TP_PROTO(struct inode *dir, int mode),
 
 	TP_ARGS(dir, mode),
@@ -64,7 +64,7 @@ TRACE_EVENT(ext3_request_inode,
 		  (unsigned long) __entry->dir, __entry->mode)
 )
 
-TRACE_EVENT(ext3_allocate_inode,
+LTTNG_TRACEPOINT_EVENT(ext3_allocate_inode,
 	TP_PROTO(struct inode *inode, struct inode *dir, int mode),
 
 	TP_ARGS(inode, dir, mode),
@@ -89,7 +89,7 @@ TRACE_EVENT(ext3_allocate_inode,
 		  (unsigned long) __entry->dir, __entry->mode)
 )
 
-TRACE_EVENT(ext3_evict_inode,
+LTTNG_TRACEPOINT_EVENT(ext3_evict_inode,
 	TP_PROTO(struct inode *inode),
 
 	TP_ARGS(inode),
@@ -111,7 +111,7 @@ TRACE_EVENT(ext3_evict_inode,
 		  (unsigned long) __entry->ino, __entry->nlink)
 )
 
-TRACE_EVENT(ext3_drop_inode,
+LTTNG_TRACEPOINT_EVENT(ext3_drop_inode,
 	TP_PROTO(struct inode *inode, int drop),
 
 	TP_ARGS(inode, drop),
@@ -133,7 +133,7 @@ TRACE_EVENT(ext3_drop_inode,
 		  (unsigned long) __entry->ino, __entry->drop)
 )
 
-TRACE_EVENT(ext3_mark_inode_dirty,
+LTTNG_TRACEPOINT_EVENT(ext3_mark_inode_dirty,
 	TP_PROTO(struct inode *inode, unsigned long IP),
 
 	TP_ARGS(inode, IP),
@@ -155,7 +155,7 @@ TRACE_EVENT(ext3_mark_inode_dirty,
 		  (unsigned long) __entry->ino, (void *)__entry->ip)
 )
 
-TRACE_EVENT(ext3_write_begin,
+LTTNG_TRACEPOINT_EVENT(ext3_write_begin,
 	TP_PROTO(struct inode *inode, loff_t pos, unsigned int len,
 		 unsigned int flags),
 
@@ -184,7 +184,7 @@ TRACE_EVENT(ext3_write_begin,
 		  __entry->flags)
 )
 
-DECLARE_EVENT_CLASS(ext3__write_end,
+LTTNG_TRACEPOINT_EVENT_CLASS(ext3__write_end,
 	TP_PROTO(struct inode *inode, loff_t pos, unsigned int len,
 			unsigned int copied),
 
@@ -213,7 +213,7 @@ DECLARE_EVENT_CLASS(ext3__write_end,
 		  __entry->copied)
 )
 
-DEFINE_EVENT(ext3__write_end, ext3_ordered_write_end,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(ext3__write_end, ext3_ordered_write_end,
 
 	TP_PROTO(struct inode *inode, loff_t pos, unsigned int len,
 		 unsigned int copied),
@@ -221,7 +221,7 @@ DEFINE_EVENT(ext3__write_end, ext3_ordered_write_end,
 	TP_ARGS(inode, pos, len, copied)
 )
 
-DEFINE_EVENT(ext3__write_end, ext3_writeback_write_end,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(ext3__write_end, ext3_writeback_write_end,
 
 	TP_PROTO(struct inode *inode, loff_t pos, unsigned int len,
 		 unsigned int copied),
@@ -229,7 +229,7 @@ DEFINE_EVENT(ext3__write_end, ext3_writeback_write_end,
 	TP_ARGS(inode, pos, len, copied)
 )
 
-DEFINE_EVENT(ext3__write_end, ext3_journalled_write_end,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(ext3__write_end, ext3_journalled_write_end,
 
 	TP_PROTO(struct inode *inode, loff_t pos, unsigned int len,
 		 unsigned int copied),
@@ -237,7 +237,7 @@ DEFINE_EVENT(ext3__write_end, ext3_journalled_write_end,
 	TP_ARGS(inode, pos, len, copied)
 )
 
-DECLARE_EVENT_CLASS(ext3__page_op,
+LTTNG_TRACEPOINT_EVENT_CLASS(ext3__page_op,
 	TP_PROTO(struct page *page),
 
 	TP_ARGS(page),
@@ -260,35 +260,35 @@ DECLARE_EVENT_CLASS(ext3__page_op,
 		  (unsigned long) __entry->ino, __entry->index)
 )
 
-DEFINE_EVENT(ext3__page_op, ext3_ordered_writepage,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(ext3__page_op, ext3_ordered_writepage,
 
 	TP_PROTO(struct page *page),
 
 	TP_ARGS(page)
 )
 
-DEFINE_EVENT(ext3__page_op, ext3_writeback_writepage,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(ext3__page_op, ext3_writeback_writepage,
 
 	TP_PROTO(struct page *page),
 
 	TP_ARGS(page)
 )
 
-DEFINE_EVENT(ext3__page_op, ext3_journalled_writepage,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(ext3__page_op, ext3_journalled_writepage,
 
 	TP_PROTO(struct page *page),
 
 	TP_ARGS(page)
 )
 
-DEFINE_EVENT(ext3__page_op, ext3_readpage,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(ext3__page_op, ext3_readpage,
 
 	TP_PROTO(struct page *page),
 
 	TP_ARGS(page)
 )
 
-DEFINE_EVENT(ext3__page_op, ext3_releasepage,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(ext3__page_op, ext3_releasepage,
 
 	TP_PROTO(struct page *page),
 
@@ -297,7 +297,7 @@ DEFINE_EVENT(ext3__page_op, ext3_releasepage,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
 
-TRACE_EVENT(ext3_invalidatepage,
+LTTNG_TRACEPOINT_EVENT(ext3_invalidatepage,
 	TP_PROTO(struct page *page, unsigned int offset, unsigned int length),
 
 	TP_ARGS(page, offset, length),
@@ -327,7 +327,7 @@ TRACE_EVENT(ext3_invalidatepage,
 
 #else
 
-TRACE_EVENT(ext3_invalidatepage,
+LTTNG_TRACEPOINT_EVENT(ext3_invalidatepage,
 	TP_PROTO(struct page *page, unsigned long offset),
 
 	TP_ARGS(page, offset),
@@ -355,7 +355,7 @@ TRACE_EVENT(ext3_invalidatepage,
 
 #endif
 
-TRACE_EVENT(ext3_discard_blocks,
+LTTNG_TRACEPOINT_EVENT(ext3_discard_blocks,
 	TP_PROTO(struct super_block *sb, unsigned long blk,
 			unsigned long count),
 
@@ -379,7 +379,7 @@ TRACE_EVENT(ext3_discard_blocks,
 		  __entry->blk, __entry->count)
 )
 
-TRACE_EVENT(ext3_request_blocks,
+LTTNG_TRACEPOINT_EVENT(ext3_request_blocks,
 	TP_PROTO(struct inode *inode, unsigned long goal,
 		 unsigned long count),
 
@@ -405,7 +405,7 @@ TRACE_EVENT(ext3_request_blocks,
 		  __entry->count, __entry->goal)
 )
 
-TRACE_EVENT(ext3_allocate_blocks,
+LTTNG_TRACEPOINT_EVENT(ext3_allocate_blocks,
 	TP_PROTO(struct inode *inode, unsigned long goal,
 		 unsigned long count, unsigned long block),
 
@@ -434,7 +434,7 @@ TRACE_EVENT(ext3_allocate_blocks,
 		  __entry->goal)
 )
 
-TRACE_EVENT(ext3_free_blocks,
+LTTNG_TRACEPOINT_EVENT(ext3_free_blocks,
 	TP_PROTO(struct inode *inode, unsigned long block,
 		 unsigned long count),
 
@@ -462,7 +462,7 @@ TRACE_EVENT(ext3_free_blocks,
 		  __entry->mode, __entry->block, __entry->count)
 )
 
-TRACE_EVENT(ext3_sync_file_enter,
+LTTNG_TRACEPOINT_EVENT(ext3_sync_file_enter,
 	TP_PROTO(struct file *file, int datasync),
 
 	TP_ARGS(file, datasync),
@@ -487,7 +487,7 @@ TRACE_EVENT(ext3_sync_file_enter,
 		  (unsigned long) __entry->parent, __entry->datasync)
 )
 
-TRACE_EVENT(ext3_sync_file_exit,
+LTTNG_TRACEPOINT_EVENT(ext3_sync_file_exit,
 	TP_PROTO(struct inode *inode, int ret),
 
 	TP_ARGS(inode, ret),
@@ -510,7 +510,7 @@ TRACE_EVENT(ext3_sync_file_exit,
 		  __entry->ret)
 )
 
-TRACE_EVENT(ext3_sync_fs,
+LTTNG_TRACEPOINT_EVENT(ext3_sync_fs,
 	TP_PROTO(struct super_block *sb, int wait),
 
 	TP_ARGS(sb, wait),
@@ -531,7 +531,7 @@ TRACE_EVENT(ext3_sync_fs,
 		  __entry->wait)
 )
 
-TRACE_EVENT(ext3_rsv_window_add,
+LTTNG_TRACEPOINT_EVENT(ext3_rsv_window_add,
 	TP_PROTO(struct super_block *sb,
 		 struct ext3_reserve_window_node *rsv_node),
 
@@ -554,7 +554,7 @@ TRACE_EVENT(ext3_rsv_window_add,
 		  __entry->start, __entry->end)
 )
 
-TRACE_EVENT(ext3_discard_reservation,
+LTTNG_TRACEPOINT_EVENT(ext3_discard_reservation,
 	TP_PROTO(struct inode *inode,
 		 struct ext3_reserve_window_node *rsv_node),
 
@@ -580,7 +580,7 @@ TRACE_EVENT(ext3_discard_reservation,
 		  __entry->end)
 )
 
-TRACE_EVENT(ext3_alloc_new_reservation,
+LTTNG_TRACEPOINT_EVENT(ext3_alloc_new_reservation,
 	TP_PROTO(struct super_block *sb, unsigned long goal),
 
 	TP_ARGS(sb, goal),
@@ -600,7 +600,7 @@ TRACE_EVENT(ext3_alloc_new_reservation,
 		  __entry->goal)
 )
 
-TRACE_EVENT(ext3_reserved,
+LTTNG_TRACEPOINT_EVENT(ext3_reserved,
 	TP_PROTO(struct super_block *sb, unsigned long block,
 		 struct ext3_reserve_window_node *rsv_node),
 
@@ -625,7 +625,7 @@ TRACE_EVENT(ext3_reserved,
 		  __entry->block, __entry->start, __entry->end)
 )
 
-TRACE_EVENT(ext3_forget,
+LTTNG_TRACEPOINT_EVENT(ext3_forget,
 	TP_PROTO(struct inode *inode, int is_metadata, unsigned long block),
 
 	TP_ARGS(inode, is_metadata, block),
@@ -652,7 +652,7 @@ TRACE_EVENT(ext3_forget,
 		  __entry->mode, __entry->is_metadata, __entry->block)
 )
 
-TRACE_EVENT(ext3_read_block_bitmap,
+LTTNG_TRACEPOINT_EVENT(ext3_read_block_bitmap,
 	TP_PROTO(struct super_block *sb, unsigned int group),
 
 	TP_ARGS(sb, group),
@@ -673,7 +673,7 @@ TRACE_EVENT(ext3_read_block_bitmap,
 		  __entry->group)
 )
 
-TRACE_EVENT(ext3_direct_IO_enter,
+LTTNG_TRACEPOINT_EVENT(ext3_direct_IO_enter,
 	TP_PROTO(struct inode *inode, loff_t offset, unsigned long len, int rw),
 
 	TP_ARGS(inode, offset, len, rw),
@@ -701,7 +701,7 @@ TRACE_EVENT(ext3_direct_IO_enter,
 		  __entry->rw)
 )
 
-TRACE_EVENT(ext3_direct_IO_exit,
+LTTNG_TRACEPOINT_EVENT(ext3_direct_IO_exit,
 	TP_PROTO(struct inode *inode, loff_t offset, unsigned long len,
 		 int rw, int ret),
 
@@ -732,7 +732,7 @@ TRACE_EVENT(ext3_direct_IO_exit,
 		  __entry->rw, __entry->ret)
 )
 
-TRACE_EVENT(ext3_unlink_enter,
+LTTNG_TRACEPOINT_EVENT(ext3_unlink_enter,
 	TP_PROTO(struct inode *parent, struct dentry *dentry),
 
 	TP_ARGS(parent, dentry),
@@ -758,7 +758,7 @@ TRACE_EVENT(ext3_unlink_enter,
 		  (unsigned long) __entry->parent)
 )
 
-TRACE_EVENT(ext3_unlink_exit,
+LTTNG_TRACEPOINT_EVENT(ext3_unlink_exit,
 	TP_PROTO(struct dentry *dentry, int ret),
 
 	TP_ARGS(dentry, ret),
@@ -781,7 +781,7 @@ TRACE_EVENT(ext3_unlink_exit,
 		  __entry->ret)
 )
 
-DECLARE_EVENT_CLASS(ext3__truncate,
+LTTNG_TRACEPOINT_EVENT_CLASS(ext3__truncate,
 	TP_PROTO(struct inode *inode),
 
 	TP_ARGS(inode),
@@ -803,21 +803,21 @@ DECLARE_EVENT_CLASS(ext3__truncate,
 		  (unsigned long) __entry->ino, (unsigned long) __entry->blocks)
 )
 
-DEFINE_EVENT(ext3__truncate, ext3_truncate_enter,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(ext3__truncate, ext3_truncate_enter,
 
 	TP_PROTO(struct inode *inode),
 
 	TP_ARGS(inode)
 )
 
-DEFINE_EVENT(ext3__truncate, ext3_truncate_exit,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(ext3__truncate, ext3_truncate_exit,
 
 	TP_PROTO(struct inode *inode),
 
 	TP_ARGS(inode)
 )
 
-TRACE_EVENT(ext3_get_blocks_enter,
+LTTNG_TRACEPOINT_EVENT(ext3_get_blocks_enter,
 	TP_PROTO(struct inode *inode, unsigned long lblk,
 		 unsigned long len, int create),
 
@@ -845,7 +845,7 @@ TRACE_EVENT(ext3_get_blocks_enter,
 		  __entry->lblk, __entry->len, __entry->create)
 )
 
-TRACE_EVENT(ext3_get_blocks_exit,
+LTTNG_TRACEPOINT_EVENT(ext3_get_blocks_exit,
 	TP_PROTO(struct inode *inode, unsigned long lblk,
 		 unsigned long pblk, unsigned long len, int ret),
 
@@ -876,7 +876,7 @@ TRACE_EVENT(ext3_get_blocks_exit,
 		  __entry->len, __entry->ret)
 )
 
-TRACE_EVENT(ext3_load_inode,
+LTTNG_TRACEPOINT_EVENT(ext3_load_inode,
 	TP_PROTO(struct inode *inode),
 
 	TP_ARGS(inode),
@@ -896,7 +896,7 @@ TRACE_EVENT(ext3_load_inode,
 		  (unsigned long) __entry->ino)
 )
 
-#endif /* _TRACE_EXT3_H */
+#endif /* LTTNG_TRACE_EXT3_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

@@ -1,10 +1,10 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM v4l2
 
-#if !defined(_TRACE_V4L2_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_V4L2_H
+#if !defined(LTTNG_TRACE_V4L2_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_V4L2_H
 
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 
 #define show_field(field)						\
 	__print_symbolic(field,						\
@@ -52,8 +52,8 @@
 		{ V4L2_TC_USERBITS_USERDEFINED,	"USERBITS_USERDEFINED" }, \
 		{ V4L2_TC_USERBITS_8BITCHARS,	"USERBITS_8BITCHARS" })
 
-#define LTTNG_V4L2_TRACE_EVENT(event_name)				\
-	TRACE_EVENT(event_name,						\
+#define LTTNG_TRACEPOINT_EVENT_V4L2(event_name)				\
+	LTTNG_TRACEPOINT_EVENT(event_name,						\
 		TP_PROTO(int minor, struct v4l2_buffer *buf),		\
 									\
 		TP_ARGS(minor, buf),					\
@@ -134,10 +134,10 @@
 		)							\
 	)
 
-LTTNG_V4L2_TRACE_EVENT(v4l2_dqbuf)
-LTTNG_V4L2_TRACE_EVENT(v4l2_qbuf)
+LTTNG_TRACEPOINT_EVENT_V4L2(v4l2_dqbuf)
+LTTNG_TRACEPOINT_EVENT_V4L2(v4l2_qbuf)
 
-#endif /* if !defined(_TRACE_V4L2_H) || defined(TRACE_HEADER_MULTI_READ) */
+#endif /* if !defined(LTTNG_TRACE_V4L2_H) || defined(TRACE_HEADER_MULTI_READ) */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

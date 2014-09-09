@@ -1,7 +1,7 @@
-#if !defined(_TRACE_KVM_MAIN_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_KVM_MAIN_H
+#if !defined(LTTNG_TRACE_KVM_MAIN_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_KVM_MAIN_H
 
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/version.h>
 
 #undef TRACE_SYSTEM
@@ -42,7 +42,7 @@
 
 #endif
 
-TRACE_EVENT(kvm_userspace_exit,
+LTTNG_TRACEPOINT_EVENT(kvm_userspace_exit,
 	    TP_PROTO(__u32 reason, int errno),
 	    TP_ARGS(reason, errno),
 
@@ -72,7 +72,7 @@ TRACE_EVENT(kvm_userspace_exit,
 #endif
 
 #if defined(__KVM_HAVE_IRQ_LINE)
-TRACE_EVENT(kvm_set_irq,
+LTTNG_TRACEPOINT_EVENT(kvm_set_irq,
 	TP_PROTO(unsigned int gsi, int level, int irq_source_id),
 	TP_ARGS(gsi, level, irq_source_id),
 
@@ -104,7 +104,7 @@ TRACE_EVENT(kvm_set_irq,
 	{0x6, "SIPI"},			\
 	{0x7, "ExtINT"}
 
-TRACE_EVENT(kvm_ioapic_set_irq,
+LTTNG_TRACEPOINT_EVENT(kvm_ioapic_set_irq,
 	    TP_PROTO(__u64 e, int pin, bool coalesced),
 	    TP_ARGS(e, pin, coalesced),
 
@@ -129,7 +129,7 @@ TRACE_EVENT(kvm_ioapic_set_irq,
 		  __entry->coalesced ? " (coalesced)" : "")
 )
 
-TRACE_EVENT(kvm_msi_set_irq,
+LTTNG_TRACEPOINT_EVENT(kvm_msi_set_irq,
 	    TP_PROTO(__u64 address, __u64 data),
 	    TP_ARGS(address, data),
 
@@ -156,7 +156,7 @@ TRACE_EVENT(kvm_msi_set_irq,
 	{KVM_IRQCHIP_PIC_SLAVE,		"PIC slave"},		\
 	{KVM_IRQCHIP_IOAPIC,		"IOAPIC"}
 
-TRACE_EVENT(kvm_ack_irq,
+LTTNG_TRACEPOINT_EVENT(kvm_ack_irq,
 	TP_PROTO(unsigned int irqchip, unsigned int pin),
 	TP_ARGS(irqchip, pin),
 
@@ -188,7 +188,7 @@ TRACE_EVENT(kvm_ack_irq,
 	{ KVM_TRACE_MMIO_READ, "read" }, \
 	{ KVM_TRACE_MMIO_WRITE, "write" }
 
-TRACE_EVENT(kvm_mmio,
+LTTNG_TRACEPOINT_EVENT(kvm_mmio,
 	TP_PROTO(int type, int len, u64 gpa, u64 val),
 	TP_ARGS(type, len, gpa, val),
 
@@ -217,7 +217,7 @@ TRACE_EVENT(kvm_mmio,
 	{0, "unload"},		\
 	{1, "load"}
 
-TRACE_EVENT(kvm_fpu,
+LTTNG_TRACEPOINT_EVENT(kvm_fpu,
 	TP_PROTO(int load),
 	TP_ARGS(load),
 
@@ -232,7 +232,7 @@ TRACE_EVENT(kvm_fpu,
 	TP_printk("%s", __print_symbolic(__entry->load, kvm_fpu_load_symbol))
 )
 
-TRACE_EVENT(kvm_age_page,
+LTTNG_TRACEPOINT_EVENT(kvm_age_page,
 	TP_PROTO(ulong hva, struct kvm_memory_slot *slot, int ref),
 	TP_ARGS(hva, slot, ref),
 
@@ -258,7 +258,7 @@ TRACE_EVENT(kvm_age_page,
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
 
 #ifdef CONFIG_KVM_ASYNC_PF
-DECLARE_EVENT_CLASS(kvm_async_get_page_class,
+LTTNG_TRACEPOINT_EVENT_CLASS(kvm_async_get_page_class,
 
 	TP_PROTO(u64 gva, u64 gfn),
 
@@ -277,21 +277,21 @@ DECLARE_EVENT_CLASS(kvm_async_get_page_class,
 	TP_printk("gva = %#llx, gfn = %#llx", __entry->gva, __entry->gfn)
 )
 
-DEFINE_EVENT(kvm_async_get_page_class, kvm_try_async_get_page,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_async_get_page_class, kvm_try_async_get_page,
 
 	TP_PROTO(u64 gva, u64 gfn),
 
 	TP_ARGS(gva, gfn)
 )
 
-DEFINE_EVENT(kvm_async_get_page_class, kvm_async_pf_doublefault,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_async_get_page_class, kvm_async_pf_doublefault,
 
 	TP_PROTO(u64 gva, u64 gfn),
 
 	TP_ARGS(gva, gfn)
 )
 
-DECLARE_EVENT_CLASS(kvm_async_pf_nopresent_ready,
+LTTNG_TRACEPOINT_EVENT_CLASS(kvm_async_pf_nopresent_ready,
 
 	TP_PROTO(u64 token, u64 gva),
 
@@ -311,14 +311,14 @@ DECLARE_EVENT_CLASS(kvm_async_pf_nopresent_ready,
 
 )
 
-DEFINE_EVENT(kvm_async_pf_nopresent_ready, kvm_async_pf_not_present,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_async_pf_nopresent_ready, kvm_async_pf_not_present,
 
 	TP_PROTO(u64 token, u64 gva),
 
 	TP_ARGS(token, gva)
 )
 
-DEFINE_EVENT(kvm_async_pf_nopresent_ready, kvm_async_pf_ready,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_async_pf_nopresent_ready, kvm_async_pf_ready,
 
 	TP_PROTO(u64 token, u64 gva),
 
@@ -327,7 +327,7 @@ DEFINE_EVENT(kvm_async_pf_nopresent_ready, kvm_async_pf_ready,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0))
 
-TRACE_EVENT(
+LTTNG_TRACEPOINT_EVENT(
 	kvm_async_pf_completed,
 	TP_PROTO(unsigned long address, u64 gva),
 	TP_ARGS(address, gva),
@@ -348,7 +348,7 @@ TRACE_EVENT(
 
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0)) */
 
-TRACE_EVENT(
+LTTNG_TRACEPOINT_EVENT(
 	kvm_async_pf_completed,
 	TP_PROTO(unsigned long address, struct page *page, u64 gva),
 	TP_ARGS(address, page, gva),
@@ -375,7 +375,7 @@ TRACE_EVENT(
 
 #endif
 
-#endif /* _TRACE_KVM_MAIN_H */
+#endif /* LTTNG_TRACE_KVM_MAIN_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

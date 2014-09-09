@@ -1,11 +1,11 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM asoc
 
-#if !defined(_TRACE_ASOC_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_ASOC_H
+#if !defined(LTTNG_TRACE_ASOC_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_ASOC_H
 
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/ktime.h>
-#include <linux/tracepoint.h>
 #include <linux/version.h>
 
 #define DAPM_DIRECT "(direct)"
@@ -32,7 +32,7 @@ struct snd_soc_dapm_widget;
 /*
  * Log register events
  */
-DECLARE_EVENT_CLASS(snd_soc_reg,
+LTTNG_TRACEPOINT_EVENT_CLASS(snd_soc_reg,
 
 	TP_PROTO(struct snd_soc_codec *codec, unsigned int reg,
 		 unsigned int val),
@@ -58,7 +58,7 @@ DECLARE_EVENT_CLASS(snd_soc_reg,
 		  (unsigned int)__entry->val)
 )
 
-DEFINE_EVENT(snd_soc_reg, snd_soc_reg_write,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_reg, snd_soc_reg_write,
 
 	TP_PROTO(struct snd_soc_codec *codec, unsigned int reg,
 		 unsigned int val),
@@ -67,7 +67,7 @@ DEFINE_EVENT(snd_soc_reg, snd_soc_reg_write,
 
 )
 
-DEFINE_EVENT(snd_soc_reg, snd_soc_reg_read,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_reg, snd_soc_reg_read,
 
 	TP_PROTO(struct snd_soc_codec *codec, unsigned int reg,
 		 unsigned int val),
@@ -77,7 +77,7 @@ DEFINE_EVENT(snd_soc_reg, snd_soc_reg_read,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
-DECLARE_EVENT_CLASS(snd_soc_preg,
+LTTNG_TRACEPOINT_EVENT_CLASS(snd_soc_preg,
 
 	TP_PROTO(struct snd_soc_platform *platform, unsigned int reg,
 		 unsigned int val),
@@ -103,7 +103,7 @@ DECLARE_EVENT_CLASS(snd_soc_preg,
 		  (unsigned int)__entry->val)
 )
 
-DEFINE_EVENT(snd_soc_preg, snd_soc_preg_write,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_preg, snd_soc_preg_write,
 
 	TP_PROTO(struct snd_soc_platform *platform, unsigned int reg,
 		 unsigned int val),
@@ -112,7 +112,7 @@ DEFINE_EVENT(snd_soc_preg, snd_soc_preg_write,
 
 )
 
-DEFINE_EVENT(snd_soc_preg, snd_soc_preg_read,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_preg, snd_soc_preg_read,
 
 	TP_PROTO(struct snd_soc_platform *platform, unsigned int reg,
 		 unsigned int val),
@@ -122,7 +122,7 @@ DEFINE_EVENT(snd_soc_preg, snd_soc_preg_read,
 )
 #endif
 
-DECLARE_EVENT_CLASS(snd_soc_card,
+LTTNG_TRACEPOINT_EVENT_CLASS(snd_soc_card,
 
 	TP_PROTO(struct snd_soc_card *card, int val),
 
@@ -141,7 +141,7 @@ DECLARE_EVENT_CLASS(snd_soc_card,
 	TP_printk("card=%s val=%d", __get_str(name), (int)__entry->val)
 )
 
-DEFINE_EVENT(snd_soc_card, snd_soc_bias_level_start,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_card, snd_soc_bias_level_start,
 
 	TP_PROTO(struct snd_soc_card *card, int val),
 
@@ -149,7 +149,7 @@ DEFINE_EVENT(snd_soc_card, snd_soc_bias_level_start,
 
 )
 
-DEFINE_EVENT(snd_soc_card, snd_soc_bias_level_done,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_card, snd_soc_bias_level_done,
 
 	TP_PROTO(struct snd_soc_card *card, int val),
 
@@ -157,7 +157,7 @@ DEFINE_EVENT(snd_soc_card, snd_soc_bias_level_done,
 
 )
 
-DECLARE_EVENT_CLASS(snd_soc_dapm_basic,
+LTTNG_TRACEPOINT_EVENT_CLASS(snd_soc_dapm_basic,
 
 	TP_PROTO(struct snd_soc_card *card),
 
@@ -174,7 +174,7 @@ DECLARE_EVENT_CLASS(snd_soc_dapm_basic,
 	TP_printk("card=%s", __get_str(name))
 )
 
-DEFINE_EVENT(snd_soc_dapm_basic, snd_soc_dapm_start,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_dapm_basic, snd_soc_dapm_start,
 
 	TP_PROTO(struct snd_soc_card *card),
 
@@ -182,7 +182,7 @@ DEFINE_EVENT(snd_soc_dapm_basic, snd_soc_dapm_start,
 
 )
 
-DEFINE_EVENT(snd_soc_dapm_basic, snd_soc_dapm_done,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_dapm_basic, snd_soc_dapm_done,
 
 	TP_PROTO(struct snd_soc_card *card),
 
@@ -190,7 +190,7 @@ DEFINE_EVENT(snd_soc_dapm_basic, snd_soc_dapm_done,
 
 )
 
-DECLARE_EVENT_CLASS(snd_soc_dapm_widget,
+LTTNG_TRACEPOINT_EVENT_CLASS(snd_soc_dapm_widget,
 
 	TP_PROTO(struct snd_soc_dapm_widget *w, int val),
 
@@ -210,7 +210,7 @@ DECLARE_EVENT_CLASS(snd_soc_dapm_widget,
 		  (int)__entry->val)
 )
 
-DEFINE_EVENT(snd_soc_dapm_widget, snd_soc_dapm_widget_power,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_dapm_widget, snd_soc_dapm_widget_power,
 
 	TP_PROTO(struct snd_soc_dapm_widget *w, int val),
 
@@ -218,7 +218,7 @@ DEFINE_EVENT(snd_soc_dapm_widget, snd_soc_dapm_widget_power,
 
 )
 
-DEFINE_EVENT(snd_soc_dapm_widget, snd_soc_dapm_widget_event_start,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_dapm_widget, snd_soc_dapm_widget_event_start,
 
 	TP_PROTO(struct snd_soc_dapm_widget *w, int val),
 
@@ -226,7 +226,7 @@ DEFINE_EVENT(snd_soc_dapm_widget, snd_soc_dapm_widget_event_start,
 
 )
 
-DEFINE_EVENT(snd_soc_dapm_widget, snd_soc_dapm_widget_event_done,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_dapm_widget, snd_soc_dapm_widget_event_done,
 
 	TP_PROTO(struct snd_soc_dapm_widget *w, int val),
 
@@ -235,7 +235,7 @@ DEFINE_EVENT(snd_soc_dapm_widget, snd_soc_dapm_widget_event_done,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
-TRACE_EVENT(snd_soc_dapm_walk_done,
+LTTNG_TRACEPOINT_EVENT(snd_soc_dapm_walk_done,
 
 	TP_PROTO(struct snd_soc_card *card),
 
@@ -262,7 +262,7 @@ TRACE_EVENT(snd_soc_dapm_walk_done,
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
-TRACE_EVENT(snd_soc_dapm_output_path,
+LTTNG_TRACEPOINT_EVENT(snd_soc_dapm_output_path,
 
 	TP_PROTO(struct snd_soc_dapm_widget *widget,
 		struct snd_soc_dapm_path *path),
@@ -291,7 +291,7 @@ TRACE_EVENT(snd_soc_dapm_output_path,
 		__get_str(wname), __get_str(pname), __get_str(psname))
 )
 
-TRACE_EVENT(snd_soc_dapm_input_path,
+LTTNG_TRACEPOINT_EVENT(snd_soc_dapm_input_path,
 
 	TP_PROTO(struct snd_soc_dapm_widget *widget,
 		struct snd_soc_dapm_path *path),
@@ -320,7 +320,7 @@ TRACE_EVENT(snd_soc_dapm_input_path,
 		__get_str(wname), __get_str(pname), __get_str(psname))
 )
 
-TRACE_EVENT(snd_soc_dapm_connected,
+LTTNG_TRACEPOINT_EVENT(snd_soc_dapm_connected,
 
 	TP_PROTO(int paths, int stream),
 
@@ -341,7 +341,7 @@ TRACE_EVENT(snd_soc_dapm_connected,
 )
 #endif
 
-TRACE_EVENT(snd_soc_jack_irq,
+LTTNG_TRACEPOINT_EVENT(snd_soc_jack_irq,
 
 	TP_PROTO(const char *name),
 
@@ -358,7 +358,7 @@ TRACE_EVENT(snd_soc_jack_irq,
 	TP_printk("%s", __get_str(name))
 )
 
-TRACE_EVENT(snd_soc_jack_report,
+LTTNG_TRACEPOINT_EVENT(snd_soc_jack_report,
 
 	TP_PROTO(struct snd_soc_jack *jack, int mask, int val),
 
@@ -380,7 +380,7 @@ TRACE_EVENT(snd_soc_jack_report,
 		  (int)__entry->mask)
 )
 
-TRACE_EVENT(snd_soc_jack_notify,
+LTTNG_TRACEPOINT_EVENT(snd_soc_jack_notify,
 
 	TP_PROTO(struct snd_soc_jack *jack, int val),
 
@@ -399,7 +399,7 @@ TRACE_EVENT(snd_soc_jack_notify,
 	TP_printk("jack=%s %x", __get_str(name), (int)__entry->val)
 )
 
-TRACE_EVENT(snd_soc_cache_sync,
+LTTNG_TRACEPOINT_EVENT(snd_soc_cache_sync,
 
 	TP_PROTO(struct snd_soc_codec *codec, const char *type,
 		 const char *status),
@@ -424,7 +424,7 @@ TRACE_EVENT(snd_soc_cache_sync,
 		  (int)__entry->id, __get_str(type), __get_str(status))
 )
 
-#endif /* _TRACE_ASOC_H */
+#endif /* LTTNG_TRACE_ASOC_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

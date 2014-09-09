@@ -4,7 +4,7 @@
 #if !defined(_TRACE_SYSCALLS_INTEGERS_H) || defined(TRACE_HEADER_MULTI_READ)
 #define _TRACE_SYSCALLS_INTEGERS_H
 
-#include <linux/tracepoint.h>
+#include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/syscalls.h>
 #include "mips-64-syscalls-3.5.0_integers_override.h"
 #include "syscalls_integers_override.h"

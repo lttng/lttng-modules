@@ -1,7 +1,7 @@
-#if !defined(_TRACE_KVMMMU_H) || defined(TRACE_HEADER_MULTI_READ)
-#define _TRACE_KVMMMU_H
+#if !defined(LTTNG_TRACE_KVMMMU_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_KVMMMU_H
 
-#include <linux/tracepoint.h>
+#include "../../../../../../probes/lttng-tracepoint-event.h"
 #include <linux/ftrace_event.h>
 
 #undef TRACE_SYSTEM
@@ -52,7 +52,7 @@
 /*
  * A pagetable walk has started
  */
-TRACE_EVENT(
+LTTNG_TRACEPOINT_EVENT(
 	kvm_mmu_pagetable_walk,
 	TP_PROTO(u64 addr, u32 pferr),
 	TP_ARGS(addr, pferr),
@@ -73,7 +73,7 @@ TRACE_EVENT(
 
 
 /* We just walked a paging element */
-TRACE_EVENT(
+LTTNG_TRACEPOINT_EVENT(
 	kvm_mmu_paging_element,
 	TP_PROTO(u64 pte, int level),
 	TP_ARGS(pte, level),
@@ -91,7 +91,7 @@ TRACE_EVENT(
 	TP_printk("pte %llx level %u", __entry->pte, __entry->level)
 )
 
-DECLARE_EVENT_CLASS(kvm_mmu_set_bit_class,
+LTTNG_TRACEPOINT_EVENT_CLASS(kvm_mmu_set_bit_class,
 
 	TP_PROTO(unsigned long table_gfn, unsigned index, unsigned size),
 
@@ -110,7 +110,7 @@ DECLARE_EVENT_CLASS(kvm_mmu_set_bit_class,
 )
 
 /* We set a pte accessed bit */
-DEFINE_EVENT(kvm_mmu_set_bit_class, kvm_mmu_set_accessed_bit,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_mmu_set_bit_class, kvm_mmu_set_accessed_bit,
 
 	TP_PROTO(unsigned long table_gfn, unsigned index, unsigned size),
 
@@ -118,14 +118,14 @@ DEFINE_EVENT(kvm_mmu_set_bit_class, kvm_mmu_set_accessed_bit,
 )
 
 /* We set a pte dirty bit */
-DEFINE_EVENT(kvm_mmu_set_bit_class, kvm_mmu_set_dirty_bit,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_mmu_set_bit_class, kvm_mmu_set_dirty_bit,
 
 	TP_PROTO(unsigned long table_gfn, unsigned index, unsigned size),
 
 	TP_ARGS(table_gfn, index, size)
 )
 
-TRACE_EVENT(
+LTTNG_TRACEPOINT_EVENT(
 	kvm_mmu_walker_error,
 	TP_PROTO(u32 pferr),
 	TP_ARGS(pferr),
@@ -142,7 +142,7 @@ TRACE_EVENT(
 		  __print_flags(__entry->pferr, "|", kvm_mmu_trace_pferr_flags))
 )
 
-TRACE_EVENT(
+LTTNG_TRACEPOINT_EVENT(
 	kvm_mmu_get_page,
 	TP_PROTO(struct kvm_mmu_page *sp, bool created),
 	TP_ARGS(sp, created),
@@ -161,7 +161,7 @@ TRACE_EVENT(
 		  __entry->created ? "new" : "existing")
 )
 
-DECLARE_EVENT_CLASS(kvm_mmu_page_class,
+LTTNG_TRACEPOINT_EVENT_CLASS(kvm_mmu_page_class,
 
 	TP_PROTO(struct kvm_mmu_page *sp),
 	TP_ARGS(sp),
@@ -177,25 +177,25 @@ DECLARE_EVENT_CLASS(kvm_mmu_page_class,
 	TP_printk("%s", KVM_MMU_PAGE_PRINTK())
 )
 
-DEFINE_EVENT(kvm_mmu_page_class, kvm_mmu_sync_page,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_mmu_page_class, kvm_mmu_sync_page,
 	TP_PROTO(struct kvm_mmu_page *sp),
 
 	TP_ARGS(sp)
 )
 
-DEFINE_EVENT(kvm_mmu_page_class, kvm_mmu_unsync_page,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_mmu_page_class, kvm_mmu_unsync_page,
 	TP_PROTO(struct kvm_mmu_page *sp),
 
 	TP_ARGS(sp)
 )
 
-DEFINE_EVENT(kvm_mmu_page_class, kvm_mmu_prepare_zap_page,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_mmu_page_class, kvm_mmu_prepare_zap_page,
 	TP_PROTO(struct kvm_mmu_page *sp),
 
 	TP_ARGS(sp)
 )
 
-TRACE_EVENT(
+LTTNG_TRACEPOINT_EVENT(
 	mark_mmio_spte,
 	TP_PROTO(u64 *sptep, gfn_t gfn, unsigned access),
 	TP_ARGS(sptep, gfn, access),
@@ -216,7 +216,7 @@ TRACE_EVENT(
 		  __entry->access)
 )
 
-TRACE_EVENT(
+LTTNG_TRACEPOINT_EVENT(
 	handle_mmio_page_fault,
 	TP_PROTO(u64 addr, gfn_t gfn, unsigned access),
 	TP_ARGS(addr, gfn, access),
@@ -240,7 +240,7 @@ TRACE_EVENT(
 #define __spte_satisfied(__spte)				\
 	(__entry->retry && is_writable_pte(__entry->__spte))
 
-TRACE_EVENT(
+LTTNG_TRACEPOINT_EVENT(
 	fast_page_fault,
 	TP_PROTO(struct kvm_vcpu *vcpu, gva_t gva, u32 error_code,
 		 u64 *sptep, u64 old_spte, bool retry),
@@ -274,7 +274,7 @@ TRACE_EVENT(
 		  __spte_satisfied(old_spte), __spte_satisfied(new_spte)
 	)
 )
-#endif /* _TRACE_KVMMMU_H */
+#endif /* LTTNG_TRACE_KVMMMU_H */
 
 #undef TRACE_INCLUDE_PATH
 #define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module/arch/x86/kvm
