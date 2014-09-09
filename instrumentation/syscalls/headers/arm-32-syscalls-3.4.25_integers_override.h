@@ -5,7 +5,7 @@
 
 #ifndef CREATE_SYSCALL_TABLE
 
-SC_TRACE_EVENT(sys_arm_fadvise64_64,
+SC_LTTNG_TRACEPOINT_EVENT(sys_arm_fadvise64_64,
 	TP_PROTO(int fd, int advice, loff_t offset, loff_t len),
 	TP_ARGS(fd, advice, offset, len),
 	TP_STRUCT__entry(
@@ -21,7 +21,7 @@ SC_TRACE_EVENT(sys_arm_fadvise64_64,
 	TP_printk()
 )
 
-SC_TRACE_EVENT(sys_sync_file_range2,
+SC_LTTNG_TRACEPOINT_EVENT(sys_sync_file_range2,
 	TP_PROTO(int fd, loff_t offset, loff_t nbytes, unsigned int flags),
 	TP_ARGS(fd, offset, nbytes, flags),
 	TP_STRUCT__entry(

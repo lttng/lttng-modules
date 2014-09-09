@@ -91,7 +91,7 @@ printf \
 	>> ${HEADER}
 
 printf \
-'SC_DECLARE_EVENT_CLASS_NOARGS(syscalls_noargs,\n'\
+'SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(syscalls_noargs,\n'\
 '	TP_STRUCT__entry(),\n'\
 '	TP_fast_assign(),\n'\
 '	TP_printk()\n'\
@@ -103,7 +103,7 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 'types: \(([^)]*)\) '\
 'args: \(([^)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_$1\n'\
-'SC_DEFINE_EVENT_NOARGS(syscalls_noargs, $1)\n'\
+'SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscalls_noargs, $1)\n'\
 '#endif/g'\
 	${TMPFILE} >> ${HEADER}
 
@@ -116,7 +116,7 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 'types: \(([^)]*)\) '\
 'args: \(([^)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_$1\n'\
-'SC_TRACE_EVENT($1,\n'\
+'SC_LTTNG_TRACEPOINT_EVENT($1,\n'\
 '	TP_PROTO(sc_exit(long ret)),\n'\
 '	TP_ARGS(sc_exit(ret)),\n'\
 '	TP_STRUCT__entry(sc_exit(__field(long, ret))),\n'\
@@ -149,7 +149,7 @@ while read LINE; do
 'types: \(([^)]*)\) '\
 'args: \(([^)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_$1\n'\
-'SC_TRACE_EVENT($1,\n'\
+'SC_LTTNG_TRACEPOINT_EVENT($1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $5),\n'\
 '	TP_ARGS(sc_exit(ret,) $5),\n'\
 '	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $5))),\n'\
@@ -177,7 +177,7 @@ while read LINE; do
 'types: \(([^,]*), ([^)]*)\) '\
 'args: \(([^,]*), ([^)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_$1\n'\
-'SC_TRACE_EVENT($1,\n'\
+'SC_LTTNG_TRACEPOINT_EVENT($1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $6, $5 $7),\n'\
 '	TP_ARGS(sc_exit(ret,) $6, $7),\n'\
 '	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $6)) '"${ARG2}"'(__field($5, $7))),\n'\
@@ -206,7 +206,7 @@ while read LINE; do
 'types: \(([^,]*), ([^,]*), ([^)]*)\) '\
 'args: \(([^,]*), ([^,]*), ([^)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_$1\n'\
-'SC_TRACE_EVENT($1,\n'\
+'SC_LTTNG_TRACEPOINT_EVENT($1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $7, $5 $8, $6 $9),\n'\
 '	TP_ARGS(sc_exit(ret,) $7, $8, $9),\n'\
 '	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $7)) '"${ARG2}"'(__field($5, $8)) '"${ARG3}"'(__field($6, $9))),\n'\
@@ -237,7 +237,7 @@ while read LINE; do
 'types: \(([^,]*), ([^,]*), ([^,]*), ([^)]*)\) '\
 'args: \(([^,]*), ([^,]*), ([^,]*), ([^)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_$1\n'\
-'SC_TRACE_EVENT($1,\n'\
+'SC_LTTNG_TRACEPOINT_EVENT($1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $8, $5 $9, $6 $10, $7 $11),\n'\
 '	TP_ARGS(sc_exit(ret,) $8, $9, $10, $11),\n'\
 '	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $8)) '"${ARG2}"'(__field($5, $9)) '"${ARG3}"'(__field($6, $10)) '"${ARG4}"'(__field($7, $11))),\n'\
@@ -268,7 +268,7 @@ while read LINE; do
 'types: \(([^,]*), ([^,]*), ([^,]*), ([^,]*), ([^)]*)\) '\
 'args: \(([^,]*), ([^,]*), ([^,]*), ([^,]*), ([^)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_$1\n'\
-'SC_TRACE_EVENT($1,\n'\
+'SC_LTTNG_TRACEPOINT_EVENT($1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $9, $5 $10, $6 $11, $7 $12, $8 $13),\n'\
 '	TP_ARGS(sc_exit(ret,) $9, $10, $11, $12, $13),\n'\
 '	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $9)) '"${ARG2}"'(__field($5, $10)) '"${ARG3}"'(__field($6, $11)) '"${ARG4}"'(__field($7, $12)) '"${ARG5}"'(__field($8, $13))),\n'\
@@ -301,7 +301,7 @@ while read LINE; do
 'types: \(([^,]*), ([^,]*), ([^,]*), ([^,]*), ([^,]*), ([^\)]*)\) '\
 'args: \(([^,]*), ([^,]*), ([^,]*), ([^,]*), ([^,]*), ([^\)]*)\)/'\
 '#ifndef OVERRIDE_'"${BITNESS}"'_$1\n'\
-'SC_TRACE_EVENT($1,\n'\
+'SC_LTTNG_TRACEPOINT_EVENT($1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $10, $5 $11, $6 $12, $7 $13, $8 $14, $9 $15),\n'\
 '	TP_ARGS(sc_exit(ret,) $10, $11, $12, $13, $14, $15),\n'\
 '	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $10)) '"${ARG2}"'(__field($5, $11)) '"${ARG3}"'(__field($6, $12)) '"${ARG4}"'(__field($7, $13)) '"${ARG5}"'(__field($8, $14)) '"${ARG6}"'(__field($9, $15))),\n'\

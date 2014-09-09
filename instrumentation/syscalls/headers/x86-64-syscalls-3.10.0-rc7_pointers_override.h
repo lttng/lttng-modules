@@ -1,7 +1,7 @@
 #ifndef CREATE_SYSCALL_TABLE
 
 #define OVERRIDE_64_connect
-SC_LTTNG_TRACE_EVENT(connect,
+SC_LTTNG_TRACEPOINT_EVENT_CODE(connect,
 	TP_PROTO(sc_exit(long ret,) int fd, struct sockaddr * uservaddr, int addrlen),
 	TP_ARGS(sc_exit(ret,) fd, uservaddr, addrlen),
 	TP_locvar(
@@ -62,7 +62,7 @@ SC_LTTNG_TRACE_EVENT(connect,
 )
 
 #define OVERRIDE_64_accept
-SC_LTTNG_TRACE_EVENT(accept,
+SC_LTTNG_TRACEPOINT_EVENT_CODE(accept,
 	TP_PROTO(sc_exit(long ret,) int fd, struct sockaddr * upeer_sockaddr, int * upeer_addrlen),
 	TP_ARGS(sc_exit(ret,) fd, upeer_sockaddr, upeer_addrlen),
 	TP_locvar(

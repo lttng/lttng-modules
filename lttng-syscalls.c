@@ -101,17 +101,17 @@ struct mmap_arg_struct;
 /* Hijack probe callback for system call enter */
 #undef TP_PROBE_CB
 #define TP_PROBE_CB(_template)		&syscall_entry_probe
-#define SC_TRACE_EVENT(_name, _proto, _args, _struct, _assign, _printk)	\
+#define SC_LTTNG_TRACEPOINT_EVENT(_name, _proto, _args, _struct, _assign, _printk) \
 	LTTNG_TRACEPOINT_EVENT(syscall_enter_##_name, PARAMS(_proto), PARAMS(_args), \
 		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
-#define SC_LTTNG_TRACE_EVENT(_name, _proto, _args, _locvar, _code, _struct, _assign, _printk) \
-	LTTNG_TRACEPOINT_EVENT_CODE(syscall_enter_##_name, PARAMS(_proto), PARAMS(_args),\
-		PARAMS(_locvar), PARAMS(_code),\
+#define SC_LTTNG_TRACEPOINT_EVENT_CODE(_name, _proto, _args, _locvar, _code, _struct, _assign, _printk) \
+	LTTNG_TRACEPOINT_EVENT_CODE(syscall_enter_##_name, PARAMS(_proto), PARAMS(_args), \
+		PARAMS(_locvar), PARAMS(_code),					\
 		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
-#define SC_DECLARE_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk)	\
+#define SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk) \
 	LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(syscall_enter_##_name, PARAMS(_struct), PARAMS(_assign), \
 		PARAMS(_printk))
-#define SC_DEFINE_EVENT_NOARGS(_template, _name)			\
+#define SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(_template, _name)		\
 	LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscall_enter_##_template, syscall_enter_##_name)
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM syscall_enter_integers
@@ -124,28 +124,28 @@ struct mmap_arg_struct;
 #include "instrumentation/syscalls/headers/syscalls_pointers.h"
 #undef TRACE_INCLUDE_FILE
 #undef TRACE_SYSTEM
-#undef SC_LTTNG_TRACE_EVENT
-#undef SC_TRACE_EVENT
-#undef SC_DECLARE_EVENT_CLASS_NOARGS
-#undef SC_DEFINE_EVENT_NOARGS
+#undef SC_LTTNG_TRACEPOINT_EVENT_CODE
+#undef SC_LTTNG_TRACEPOINT_EVENT
+#undef SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS
+#undef SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS
 #undef TP_PROBE_CB
 #undef _TRACE_SYSCALLS_INTEGERS_H
 #undef _TRACE_SYSCALLS_POINTERS_H
 
 /* Hijack probe callback for compat system call enter */
 #define TP_PROBE_CB(_template)		&syscall_entry_probe
-#define SC_TRACE_EVENT(_name, _proto, _args, _struct, _assign, _printk)	\
+#define SC_LTTNG_TRACEPOINT_EVENT(_name, _proto, _args, _struct, _assign, _printk) \
 	LTTNG_TRACEPOINT_EVENT(compat_syscall_enter_##_name, PARAMS(_proto), PARAMS(_args), \
-		PARAMS(_struct), PARAMS(_assign),			\
+		PARAMS(_struct), PARAMS(_assign),				\
 		PARAMS(_printk))
-#define SC_LTTNG_TRACE_EVENT(_name, _proto, _args, _locvar, _code, _struct, _assign, _printk) \
+#define SC_LTTNG_TRACEPOINT_EVENT_CODE(_name, _proto, _args, _locvar, _code, _struct, _assign, _printk) \
 	LTTNG_TRACEPOINT_EVENT_CODE(compat_syscall_enter_##_name, PARAMS(_proto), PARAMS(_args), \
-		PARAMS(_locvar), PARAMS(_code),\
+		PARAMS(_locvar), PARAMS(_code),					\
 		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
-#define SC_DECLARE_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk) \
+#define SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk) \
 	LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(compat_syscall_enter_##_name, PARAMS(_struct), \
 		PARAMS(_assign), PARAMS(_printk))
-#define SC_DEFINE_EVENT_NOARGS(_template, _name)			\
+#define SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(_template, _name)		\
 	LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(compat_syscall_enter_##_template, \
 		compat_syscall_enter_##_name)
 #define TRACE_SYSTEM compat_syscall_enter_integers
@@ -158,10 +158,10 @@ struct mmap_arg_struct;
 #include "instrumentation/syscalls/headers/compat_syscalls_pointers.h"
 #undef TRACE_INCLUDE_FILE
 #undef TRACE_SYSTEM
-#undef SC_LTTNG_TRACE_EVENT
-#undef SC_TRACE_EVENT
-#undef SC_DECLARE_EVENT_CLASS_NOARGS
-#undef SC_DEFINE_EVENT_NOARGS
+#undef SC_LTTNG_TRACEPOINT_EVENT_CODE
+#undef SC_LTTNG_TRACEPOINT_EVENT
+#undef SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS
+#undef SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS
 #undef TP_PROBE_CB
 #undef _TRACE_SYSCALLS_INTEGERS_H
 #undef _TRACE_SYSCALLS_POINTERS_H
@@ -181,18 +181,18 @@ struct mmap_arg_struct;
 
 /* Hijack probe callback for system call exit */
 #define TP_PROBE_CB(_template)		&syscall_exit_probe
-#define SC_TRACE_EVENT(_name, _proto, _args, _struct, _assign, _printk)	\
+#define SC_LTTNG_TRACEPOINT_EVENT(_name, _proto, _args, _struct, _assign, _printk) \
 	LTTNG_TRACEPOINT_EVENT(syscall_exit_##_name, PARAMS(_proto), PARAMS(_args), \
 		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
-#define SC_LTTNG_TRACE_EVENT(_name, _proto, _args, _locvar, _code, _struct, _assign, _printk) \
+#define SC_LTTNG_TRACEPOINT_EVENT_CODE(_name, _proto, _args, _locvar, _code, _struct, _assign, _printk) \
 	LTTNG_TRACEPOINT_EVENT_CODE(syscall_exit_##_name, PARAMS(_proto), PARAMS(_args), \
-		PARAMS(_locvar), PARAMS(_code), \
+		PARAMS(_locvar), PARAMS(_code),					\
 		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
-#define SC_DECLARE_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk) \
+#define SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk) \
 	LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(syscall_exit_##_name, PARAMS(_struct), \
 		PARAMS(_assign), PARAMS(_printk))
-#define SC_DEFINE_EVENT_NOARGS(_template, _name)			\
-	LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscall_exit_##_template, \
+#define SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(_template, _name) 		\
+	LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscall_exit_##_template,	\
 		syscall_exit_##_name)
 #define TRACE_SYSTEM syscall_exit_integers
 #define TRACE_INCLUDE_FILE syscalls_integers
@@ -204,10 +204,10 @@ struct mmap_arg_struct;
 #include "instrumentation/syscalls/headers/syscalls_pointers.h"
 #undef TRACE_INCLUDE_FILE
 #undef TRACE_SYSTEM
-#undef SC_LTTNG_TRACE_EVENT
-#undef SC_TRACE_EVENT
-#undef SC_DECLARE_EVENT_CLASS_NOARGS
-#undef SC_DEFINE_EVENT_NOARGS
+#undef SC_LTTNG_TRACEPOINT_EVENT_CODE
+#undef SC_LTTNG_TRACEPOINT_EVENT
+#undef SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS
+#undef SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS
 #undef TP_PROBE_CB
 #undef _TRACE_SYSCALLS_INTEGERS_H
 #undef _TRACE_SYSCALLS_POINTERS_H
@@ -215,17 +215,17 @@ struct mmap_arg_struct;
 
 /* Hijack probe callback for compat system call exit */
 #define TP_PROBE_CB(_template)		&syscall_exit_probe
-#define SC_TRACE_EVENT(_name, _proto, _args, _struct, _assign, _printk)	\
+#define SC_LTTNG_TRACEPOINT_EVENT(_name, _proto, _args, _struct, _assign, _printk) \
 	LTTNG_TRACEPOINT_EVENT(compat_syscall_exit_##_name, PARAMS(_proto), PARAMS(_args), \
 		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
-#define SC_LTTNG_TRACE_EVENT(_name, _proto, _args, _locvar, _code, _struct, _assign, _printk) \
+#define SC_LTTNG_TRACEPOINT_EVENT_CODE(_name, _proto, _args, _locvar, _code, _struct, _assign, _printk) \
 	LTTNG_TRACEPOINT_EVENT_CODE(compat_syscall_exit_##_name, PARAMS(_proto), PARAMS(_args), \
-		PARAMS(_locvar), PARAMS(_code), \
+		PARAMS(_locvar), PARAMS(_code),					\
 		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
-#define SC_DECLARE_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk) \
+#define SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk) \
 	LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(compat_syscall_exit_##_name, PARAMS(_struct), \
 		PARAMS(_assign), PARAMS(_printk))
-#define SC_DEFINE_EVENT_NOARGS(_template, _name)			\
+#define SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(_template, _name)		\
 	LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(compat_syscall_exit_##_template, \
 		compat_syscall_exit_##_name)
 #define TRACE_SYSTEM compat_syscall_exit_integers
@@ -238,10 +238,10 @@ struct mmap_arg_struct;
 #include "instrumentation/syscalls/headers/compat_syscalls_pointers.h"
 #undef TRACE_INCLUDE_FILE
 #undef TRACE_SYSTEM
-#undef SC_LTTNG_TRACE_EVENT
-#undef SC_TRACE_EVENT
-#undef SC_DECLARE_EVENT_CLASS_NOARGS
-#undef SC_DEFINE_EVENT_NOARGS
+#undef SC_LTTNG_TRACEPOINT_EVENT_CODE
+#undef SC_LTTNG_TRACEPOINT_EVENT
+#undef SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS
+#undef SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS
 #undef TP_PROBE_CB
 #undef _TRACE_SYSCALLS_INTEGERS_H
 #undef _TRACE_SYSCALLS_POINTERS_H

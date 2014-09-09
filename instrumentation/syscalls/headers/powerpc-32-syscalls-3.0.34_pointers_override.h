@@ -2,7 +2,7 @@
 
 #ifndef CREATE_SYSCALL_TABLE
 
-SC_TRACE_EVENT(sys_mmap2,
+SC_LTTNG_TRACEPOINT_EVENT(sys_mmap2,
 	TP_PROTO(void *addr, size_t len, int prot,
                  int flags, int fd, off_t pgoff),
 	TP_ARGS(addr, len, prot, flags, fd, pgoff),

@@ -10,62 +10,62 @@
 #include "syscalls_integers_override.h"
 
 #ifdef SC_ENTER
-SC_DECLARE_EVENT_CLASS_NOARGS(syscalls_noargs,
+SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(syscalls_noargs,
 	TP_STRUCT__entry(),
 	TP_fast_assign(),
 	TP_printk()
 )
 #ifndef OVERRIDE_64_sched_yield
-SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sched_yield)
+SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscalls_noargs, sched_yield)
 #endif
 #ifndef OVERRIDE_64_pause
-SC_DEFINE_EVENT_NOARGS(syscalls_noargs, pause)
+SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscalls_noargs, pause)
 #endif
 #ifndef OVERRIDE_64_getpid
-SC_DEFINE_EVENT_NOARGS(syscalls_noargs, getpid)
+SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscalls_noargs, getpid)
 #endif
 #ifndef OVERRIDE_64_getuid
-SC_DEFINE_EVENT_NOARGS(syscalls_noargs, getuid)
+SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscalls_noargs, getuid)
 #endif
 #ifndef OVERRIDE_64_getgid
-SC_DEFINE_EVENT_NOARGS(syscalls_noargs, getgid)
+SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscalls_noargs, getgid)
 #endif
 #ifndef OVERRIDE_64_geteuid
-SC_DEFINE_EVENT_NOARGS(syscalls_noargs, geteuid)
+SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscalls_noargs, geteuid)
 #endif
 #ifndef OVERRIDE_64_getegid
-SC_DEFINE_EVENT_NOARGS(syscalls_noargs, getegid)
+SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscalls_noargs, getegid)
 #endif
 #ifndef OVERRIDE_64_getppid
-SC_DEFINE_EVENT_NOARGS(syscalls_noargs, getppid)
+SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscalls_noargs, getppid)
 #endif
 #ifndef OVERRIDE_64_getpgrp
-SC_DEFINE_EVENT_NOARGS(syscalls_noargs, getpgrp)
+SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscalls_noargs, getpgrp)
 #endif
 #ifndef OVERRIDE_64_setsid
-SC_DEFINE_EVENT_NOARGS(syscalls_noargs, setsid)
+SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscalls_noargs, setsid)
 #endif
 #ifndef OVERRIDE_64_munlockall
-SC_DEFINE_EVENT_NOARGS(syscalls_noargs, munlockall)
+SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscalls_noargs, munlockall)
 #endif
 #ifndef OVERRIDE_64_vhangup
-SC_DEFINE_EVENT_NOARGS(syscalls_noargs, vhangup)
+SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscalls_noargs, vhangup)
 #endif
 #ifndef OVERRIDE_64_sync
-SC_DEFINE_EVENT_NOARGS(syscalls_noargs, sync)
+SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscalls_noargs, sync)
 #endif
 #ifndef OVERRIDE_64_gettid
-SC_DEFINE_EVENT_NOARGS(syscalls_noargs, gettid)
+SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscalls_noargs, gettid)
 #endif
 #ifndef OVERRIDE_64_restart_syscall
-SC_DEFINE_EVENT_NOARGS(syscalls_noargs, restart_syscall)
+SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscalls_noargs, restart_syscall)
 #endif
 #ifndef OVERRIDE_64_inotify_init
-SC_DEFINE_EVENT_NOARGS(syscalls_noargs, inotify_init)
+SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscalls_noargs, inotify_init)
 #endif
 #else /* #ifdef SC_ENTER */
 #ifndef OVERRIDE_64_sched_yield
-SC_TRACE_EVENT(sched_yield,
+SC_LTTNG_TRACEPOINT_EVENT(sched_yield,
 	TP_PROTO(sc_exit(long ret)),
 	TP_ARGS(sc_exit(ret)),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))),
@@ -74,7 +74,7 @@ SC_TRACE_EVENT(sched_yield,
 )
 #endif
 #ifndef OVERRIDE_64_pause
-SC_TRACE_EVENT(pause,
+SC_LTTNG_TRACEPOINT_EVENT(pause,
 	TP_PROTO(sc_exit(long ret)),
 	TP_ARGS(sc_exit(ret)),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))),
@@ -83,7 +83,7 @@ SC_TRACE_EVENT(pause,
 )
 #endif
 #ifndef OVERRIDE_64_getpid
-SC_TRACE_EVENT(getpid,
+SC_LTTNG_TRACEPOINT_EVENT(getpid,
 	TP_PROTO(sc_exit(long ret)),
 	TP_ARGS(sc_exit(ret)),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))),
@@ -92,7 +92,7 @@ SC_TRACE_EVENT(getpid,
 )
 #endif
 #ifndef OVERRIDE_64_getuid
-SC_TRACE_EVENT(getuid,
+SC_LTTNG_TRACEPOINT_EVENT(getuid,
 	TP_PROTO(sc_exit(long ret)),
 	TP_ARGS(sc_exit(ret)),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))),
@@ -101,7 +101,7 @@ SC_TRACE_EVENT(getuid,
 )
 #endif
 #ifndef OVERRIDE_64_getgid
-SC_TRACE_EVENT(getgid,
+SC_LTTNG_TRACEPOINT_EVENT(getgid,
 	TP_PROTO(sc_exit(long ret)),
 	TP_ARGS(sc_exit(ret)),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))),
@@ -110,7 +110,7 @@ SC_TRACE_EVENT(getgid,
 )
 #endif
 #ifndef OVERRIDE_64_geteuid
-SC_TRACE_EVENT(geteuid,
+SC_LTTNG_TRACEPOINT_EVENT(geteuid,
 	TP_PROTO(sc_exit(long ret)),
 	TP_ARGS(sc_exit(ret)),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))),
@@ -119,7 +119,7 @@ SC_TRACE_EVENT(geteuid,
 )
 #endif
 #ifndef OVERRIDE_64_getegid
-SC_TRACE_EVENT(getegid,
+SC_LTTNG_TRACEPOINT_EVENT(getegid,
 	TP_PROTO(sc_exit(long ret)),
 	TP_ARGS(sc_exit(ret)),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))),
@@ -128,7 +128,7 @@ SC_TRACE_EVENT(getegid,
 )
 #endif
 #ifndef OVERRIDE_64_getppid
-SC_TRACE_EVENT(getppid,
+SC_LTTNG_TRACEPOINT_EVENT(getppid,
 	TP_PROTO(sc_exit(long ret)),
 	TP_ARGS(sc_exit(ret)),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))),
@@ -137,7 +137,7 @@ SC_TRACE_EVENT(getppid,
 )
 #endif
 #ifndef OVERRIDE_64_getpgrp
-SC_TRACE_EVENT(getpgrp,
+SC_LTTNG_TRACEPOINT_EVENT(getpgrp,
 	TP_PROTO(sc_exit(long ret)),
 	TP_ARGS(sc_exit(ret)),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))),
@@ -146,7 +146,7 @@ SC_TRACE_EVENT(getpgrp,
 )
 #endif
 #ifndef OVERRIDE_64_setsid
-SC_TRACE_EVENT(setsid,
+SC_LTTNG_TRACEPOINT_EVENT(setsid,
 	TP_PROTO(sc_exit(long ret)),
 	TP_ARGS(sc_exit(ret)),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))),
@@ -155,7 +155,7 @@ SC_TRACE_EVENT(setsid,
 )
 #endif
 #ifndef OVERRIDE_64_munlockall
-SC_TRACE_EVENT(munlockall,
+SC_LTTNG_TRACEPOINT_EVENT(munlockall,
 	TP_PROTO(sc_exit(long ret)),
 	TP_ARGS(sc_exit(ret)),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))),
@@ -164,7 +164,7 @@ SC_TRACE_EVENT(munlockall,
 )
 #endif
 #ifndef OVERRIDE_64_vhangup
-SC_TRACE_EVENT(vhangup,
+SC_LTTNG_TRACEPOINT_EVENT(vhangup,
 	TP_PROTO(sc_exit(long ret)),
 	TP_ARGS(sc_exit(ret)),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))),
@@ -173,7 +173,7 @@ SC_TRACE_EVENT(vhangup,
 )
 #endif
 #ifndef OVERRIDE_64_sync
-SC_TRACE_EVENT(sync,
+SC_LTTNG_TRACEPOINT_EVENT(sync,
 	TP_PROTO(sc_exit(long ret)),
 	TP_ARGS(sc_exit(ret)),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))),
@@ -182,7 +182,7 @@ SC_TRACE_EVENT(sync,
 )
 #endif
 #ifndef OVERRIDE_64_gettid
-SC_TRACE_EVENT(gettid,
+SC_LTTNG_TRACEPOINT_EVENT(gettid,
 	TP_PROTO(sc_exit(long ret)),
 	TP_ARGS(sc_exit(ret)),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))),
@@ -191,7 +191,7 @@ SC_TRACE_EVENT(gettid,
 )
 #endif
 #ifndef OVERRIDE_64_restart_syscall
-SC_TRACE_EVENT(restart_syscall,
+SC_LTTNG_TRACEPOINT_EVENT(restart_syscall,
 	TP_PROTO(sc_exit(long ret)),
 	TP_ARGS(sc_exit(ret)),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))),
@@ -200,7 +200,7 @@ SC_TRACE_EVENT(restart_syscall,
 )
 #endif
 #ifndef OVERRIDE_64_inotify_init
-SC_TRACE_EVENT(inotify_init,
+SC_LTTNG_TRACEPOINT_EVENT(inotify_init,
 	TP_PROTO(sc_exit(long ret)),
 	TP_ARGS(sc_exit(ret)),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))),
@@ -210,7 +210,7 @@ SC_TRACE_EVENT(inotify_init,
 #endif
 #endif /* else #ifdef SC_ENTER */
 #ifndef OVERRIDE_64_close
-SC_TRACE_EVENT(close,
+SC_LTTNG_TRACEPOINT_EVENT(close,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd),
 	TP_ARGS(sc_exit(ret,) fd),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fd))),
@@ -219,7 +219,7 @@ SC_TRACE_EVENT(close,
 )
 #endif
 #ifndef OVERRIDE_64_brk
-SC_TRACE_EVENT(brk,
+SC_LTTNG_TRACEPOINT_EVENT(brk,
 	TP_PROTO(sc_exit(long ret,) unsigned long brk),
 	TP_ARGS(sc_exit(ret,) brk),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned long, brk))),
@@ -228,7 +228,7 @@ SC_TRACE_EVENT(brk,
 )
 #endif
 #ifndef OVERRIDE_64_dup
-SC_TRACE_EVENT(dup,
+SC_LTTNG_TRACEPOINT_EVENT(dup,
 	TP_PROTO(sc_exit(long ret,) unsigned int fildes),
 	TP_ARGS(sc_exit(ret,) fildes),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fildes))),
@@ -237,7 +237,7 @@ SC_TRACE_EVENT(dup,
 )
 #endif
 #ifndef OVERRIDE_64_alarm
-SC_TRACE_EVENT(alarm,
+SC_LTTNG_TRACEPOINT_EVENT(alarm,
 	TP_PROTO(sc_exit(long ret,) unsigned int seconds),
 	TP_ARGS(sc_exit(ret,) seconds),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, seconds))),
@@ -246,7 +246,7 @@ SC_TRACE_EVENT(alarm,
 )
 #endif
 #ifndef OVERRIDE_64_exit
-SC_TRACE_EVENT(exit,
+SC_LTTNG_TRACEPOINT_EVENT(exit,
 	TP_PROTO(sc_exit(long ret,) int error_code),
 	TP_ARGS(sc_exit(ret,) error_code),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, error_code))),
@@ -255,7 +255,7 @@ SC_TRACE_EVENT(exit,
 )
 #endif
 #ifndef OVERRIDE_64_fsync
-SC_TRACE_EVENT(fsync,
+SC_LTTNG_TRACEPOINT_EVENT(fsync,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd),
 	TP_ARGS(sc_exit(ret,) fd),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fd))),
@@ -264,7 +264,7 @@ SC_TRACE_EVENT(fsync,
 )
 #endif
 #ifndef OVERRIDE_64_fdatasync
-SC_TRACE_EVENT(fdatasync,
+SC_LTTNG_TRACEPOINT_EVENT(fdatasync,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd),
 	TP_ARGS(sc_exit(ret,) fd),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fd))),
@@ -273,7 +273,7 @@ SC_TRACE_EVENT(fdatasync,
 )
 #endif
 #ifndef OVERRIDE_64_fchdir
-SC_TRACE_EVENT(fchdir,
+SC_LTTNG_TRACEPOINT_EVENT(fchdir,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd),
 	TP_ARGS(sc_exit(ret,) fd),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fd))),
@@ -282,7 +282,7 @@ SC_TRACE_EVENT(fchdir,
 )
 #endif
 #ifndef OVERRIDE_64_umask
-SC_TRACE_EVENT(umask,
+SC_LTTNG_TRACEPOINT_EVENT(umask,
 	TP_PROTO(sc_exit(long ret,) int mask),
 	TP_ARGS(sc_exit(ret,) mask),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, mask))),
@@ -291,7 +291,7 @@ SC_TRACE_EVENT(umask,
 )
 #endif
 #ifndef OVERRIDE_64_setuid
-SC_TRACE_EVENT(setuid,
+SC_LTTNG_TRACEPOINT_EVENT(setuid,
 	TP_PROTO(sc_exit(long ret,) uid_t uid),
 	TP_ARGS(sc_exit(ret,) uid),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(uid_t, uid))),
@@ -300,7 +300,7 @@ SC_TRACE_EVENT(setuid,
 )
 #endif
 #ifndef OVERRIDE_64_setgid
-SC_TRACE_EVENT(setgid,
+SC_LTTNG_TRACEPOINT_EVENT(setgid,
 	TP_PROTO(sc_exit(long ret,) gid_t gid),
 	TP_ARGS(sc_exit(ret,) gid),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(gid_t, gid))),
@@ -309,7 +309,7 @@ SC_TRACE_EVENT(setgid,
 )
 #endif
 #ifndef OVERRIDE_64_getpgid
-SC_TRACE_EVENT(getpgid,
+SC_LTTNG_TRACEPOINT_EVENT(getpgid,
 	TP_PROTO(sc_exit(long ret,) pid_t pid),
 	TP_ARGS(sc_exit(ret,) pid),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(pid_t, pid))),
@@ -318,7 +318,7 @@ SC_TRACE_EVENT(getpgid,
 )
 #endif
 #ifndef OVERRIDE_64_setfsuid
-SC_TRACE_EVENT(setfsuid,
+SC_LTTNG_TRACEPOINT_EVENT(setfsuid,
 	TP_PROTO(sc_exit(long ret,) uid_t uid),
 	TP_ARGS(sc_exit(ret,) uid),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(uid_t, uid))),
@@ -327,7 +327,7 @@ SC_TRACE_EVENT(setfsuid,
 )
 #endif
 #ifndef OVERRIDE_64_setfsgid
-SC_TRACE_EVENT(setfsgid,
+SC_LTTNG_TRACEPOINT_EVENT(setfsgid,
 	TP_PROTO(sc_exit(long ret,) gid_t gid),
 	TP_ARGS(sc_exit(ret,) gid),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(gid_t, gid))),
@@ -336,7 +336,7 @@ SC_TRACE_EVENT(setfsgid,
 )
 #endif
 #ifndef OVERRIDE_64_getsid
-SC_TRACE_EVENT(getsid,
+SC_LTTNG_TRACEPOINT_EVENT(getsid,
 	TP_PROTO(sc_exit(long ret,) pid_t pid),
 	TP_ARGS(sc_exit(ret,) pid),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(pid_t, pid))),
@@ -345,7 +345,7 @@ SC_TRACE_EVENT(getsid,
 )
 #endif
 #ifndef OVERRIDE_64_personality
-SC_TRACE_EVENT(personality,
+SC_LTTNG_TRACEPOINT_EVENT(personality,
 	TP_PROTO(sc_exit(long ret,) unsigned int personality),
 	TP_ARGS(sc_exit(ret,) personality),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, personality))),
@@ -354,7 +354,7 @@ SC_TRACE_EVENT(personality,
 )
 #endif
 #ifndef OVERRIDE_64_sched_getscheduler
-SC_TRACE_EVENT(sched_getscheduler,
+SC_LTTNG_TRACEPOINT_EVENT(sched_getscheduler,
 	TP_PROTO(sc_exit(long ret,) pid_t pid),
 	TP_ARGS(sc_exit(ret,) pid),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(pid_t, pid))),
@@ -363,7 +363,7 @@ SC_TRACE_EVENT(sched_getscheduler,
 )
 #endif
 #ifndef OVERRIDE_64_sched_get_priority_max
-SC_TRACE_EVENT(sched_get_priority_max,
+SC_LTTNG_TRACEPOINT_EVENT(sched_get_priority_max,
 	TP_PROTO(sc_exit(long ret,) int policy),
 	TP_ARGS(sc_exit(ret,) policy),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, policy))),
@@ -372,7 +372,7 @@ SC_TRACE_EVENT(sched_get_priority_max,
 )
 #endif
 #ifndef OVERRIDE_64_sched_get_priority_min
-SC_TRACE_EVENT(sched_get_priority_min,
+SC_LTTNG_TRACEPOINT_EVENT(sched_get_priority_min,
 	TP_PROTO(sc_exit(long ret,) int policy),
 	TP_ARGS(sc_exit(ret,) policy),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, policy))),
@@ -381,7 +381,7 @@ SC_TRACE_EVENT(sched_get_priority_min,
 )
 #endif
 #ifndef OVERRIDE_64_mlockall
-SC_TRACE_EVENT(mlockall,
+SC_LTTNG_TRACEPOINT_EVENT(mlockall,
 	TP_PROTO(sc_exit(long ret,) int flags),
 	TP_ARGS(sc_exit(ret,) flags),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, flags))),
@@ -390,7 +390,7 @@ SC_TRACE_EVENT(mlockall,
 )
 #endif
 #ifndef OVERRIDE_64_io_destroy
-SC_TRACE_EVENT(io_destroy,
+SC_LTTNG_TRACEPOINT_EVENT(io_destroy,
 	TP_PROTO(sc_exit(long ret,) aio_context_t ctx),
 	TP_ARGS(sc_exit(ret,) ctx),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(aio_context_t, ctx))),
@@ -399,7 +399,7 @@ SC_TRACE_EVENT(io_destroy,
 )
 #endif
 #ifndef OVERRIDE_64_epoll_create
-SC_TRACE_EVENT(epoll_create,
+SC_LTTNG_TRACEPOINT_EVENT(epoll_create,
 	TP_PROTO(sc_exit(long ret,) int size),
 	TP_ARGS(sc_exit(ret,) size),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, size))),
@@ -408,7 +408,7 @@ SC_TRACE_EVENT(epoll_create,
 )
 #endif
 #ifndef OVERRIDE_64_timer_getoverrun
-SC_TRACE_EVENT(timer_getoverrun,
+SC_LTTNG_TRACEPOINT_EVENT(timer_getoverrun,
 	TP_PROTO(sc_exit(long ret,) timer_t timer_id),
 	TP_ARGS(sc_exit(ret,) timer_id),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(timer_t, timer_id))),
@@ -417,7 +417,7 @@ SC_TRACE_EVENT(timer_getoverrun,
 )
 #endif
 #ifndef OVERRIDE_64_timer_delete
-SC_TRACE_EVENT(timer_delete,
+SC_LTTNG_TRACEPOINT_EVENT(timer_delete,
 	TP_PROTO(sc_exit(long ret,) timer_t timer_id),
 	TP_ARGS(sc_exit(ret,) timer_id),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(timer_t, timer_id))),
@@ -426,7 +426,7 @@ SC_TRACE_EVENT(timer_delete,
 )
 #endif
 #ifndef OVERRIDE_64_exit_group
-SC_TRACE_EVENT(exit_group,
+SC_LTTNG_TRACEPOINT_EVENT(exit_group,
 	TP_PROTO(sc_exit(long ret,) int error_code),
 	TP_ARGS(sc_exit(ret,) error_code),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, error_code))),
@@ -435,7 +435,7 @@ SC_TRACE_EVENT(exit_group,
 )
 #endif
 #ifndef OVERRIDE_64_unshare
-SC_TRACE_EVENT(unshare,
+SC_LTTNG_TRACEPOINT_EVENT(unshare,
 	TP_PROTO(sc_exit(long ret,) unsigned long unshare_flags),
 	TP_ARGS(sc_exit(ret,) unshare_flags),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned long, unshare_flags))),
@@ -444,7 +444,7 @@ SC_TRACE_EVENT(unshare,
 )
 #endif
 #ifndef OVERRIDE_64_eventfd
-SC_TRACE_EVENT(eventfd,
+SC_LTTNG_TRACEPOINT_EVENT(eventfd,
 	TP_PROTO(sc_exit(long ret,) unsigned int count),
 	TP_ARGS(sc_exit(ret,) count),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, count))),
@@ -453,7 +453,7 @@ SC_TRACE_EVENT(eventfd,
 )
 #endif
 #ifndef OVERRIDE_64_epoll_create1
-SC_TRACE_EVENT(epoll_create1,
+SC_LTTNG_TRACEPOINT_EVENT(epoll_create1,
 	TP_PROTO(sc_exit(long ret,) int flags),
 	TP_ARGS(sc_exit(ret,) flags),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, flags))),
@@ -462,7 +462,7 @@ SC_TRACE_EVENT(epoll_create1,
 )
 #endif
 #ifndef OVERRIDE_64_inotify_init1
-SC_TRACE_EVENT(inotify_init1,
+SC_LTTNG_TRACEPOINT_EVENT(inotify_init1,
 	TP_PROTO(sc_exit(long ret,) int flags),
 	TP_ARGS(sc_exit(ret,) flags),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, flags))),
@@ -471,7 +471,7 @@ SC_TRACE_EVENT(inotify_init1,
 )
 #endif
 #ifndef OVERRIDE_64_syncfs
-SC_TRACE_EVENT(syncfs,
+SC_LTTNG_TRACEPOINT_EVENT(syncfs,
 	TP_PROTO(sc_exit(long ret,) int fd),
 	TP_ARGS(sc_exit(ret,) fd),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd))),
@@ -480,7 +480,7 @@ SC_TRACE_EVENT(syncfs,
 )
 #endif
 #ifndef OVERRIDE_64_munmap
-SC_TRACE_EVENT(munmap,
+SC_LTTNG_TRACEPOINT_EVENT(munmap,
 	TP_PROTO(sc_exit(long ret,) unsigned long addr, size_t len),
 	TP_ARGS(sc_exit(ret,) addr, len),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field_hex(unsigned long, addr)) sc_in(__field(size_t, len))),
@@ -489,7 +489,7 @@ SC_TRACE_EVENT(munmap,
 )
 #endif
 #ifndef OVERRIDE_64_dup2
-SC_TRACE_EVENT(dup2,
+SC_LTTNG_TRACEPOINT_EVENT(dup2,
 	TP_PROTO(sc_exit(long ret,) unsigned int oldfd, unsigned int newfd),
 	TP_ARGS(sc_exit(ret,) oldfd, newfd),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, oldfd)) sc_in(__field(unsigned int, newfd))),
@@ -498,7 +498,7 @@ SC_TRACE_EVENT(dup2,
 )
 #endif
 #ifndef OVERRIDE_64_shutdown
-SC_TRACE_EVENT(shutdown,
+SC_LTTNG_TRACEPOINT_EVENT(shutdown,
 	TP_PROTO(sc_exit(long ret,) int fd, int how),
 	TP_ARGS(sc_exit(ret,) fd, how),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd)) sc_in(__field(int, how))),
@@ -507,7 +507,7 @@ SC_TRACE_EVENT(shutdown,
 )
 #endif
 #ifndef OVERRIDE_64_listen
-SC_TRACE_EVENT(listen,
+SC_LTTNG_TRACEPOINT_EVENT(listen,
 	TP_PROTO(sc_exit(long ret,) int fd, int backlog),
 	TP_ARGS(sc_exit(ret,) fd, backlog),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd)) sc_in(__field(int, backlog))),
@@ -516,7 +516,7 @@ SC_TRACE_EVENT(listen,
 )
 #endif
 #ifndef OVERRIDE_64_kill
-SC_TRACE_EVENT(kill,
+SC_LTTNG_TRACEPOINT_EVENT(kill,
 	TP_PROTO(sc_exit(long ret,) pid_t pid, int sig),
 	TP_ARGS(sc_exit(ret,) pid, sig),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(pid_t, pid)) sc_in(__field(int, sig))),
@@ -525,7 +525,7 @@ SC_TRACE_EVENT(kill,
 )
 #endif
 #ifndef OVERRIDE_64_msgget
-SC_TRACE_EVENT(msgget,
+SC_LTTNG_TRACEPOINT_EVENT(msgget,
 	TP_PROTO(sc_exit(long ret,) key_t key, int msgflg),
 	TP_ARGS(sc_exit(ret,) key, msgflg),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(key_t, key)) sc_in(__field(int, msgflg))),
@@ -534,7 +534,7 @@ SC_TRACE_EVENT(msgget,
 )
 #endif
 #ifndef OVERRIDE_64_flock
-SC_TRACE_EVENT(flock,
+SC_LTTNG_TRACEPOINT_EVENT(flock,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, unsigned int cmd),
 	TP_ARGS(sc_exit(ret,) fd, cmd),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fd)) sc_in(__field(unsigned int, cmd))),
@@ -543,7 +543,7 @@ SC_TRACE_EVENT(flock,
 )
 #endif
 #ifndef OVERRIDE_64_ftruncate
-SC_TRACE_EVENT(ftruncate,
+SC_LTTNG_TRACEPOINT_EVENT(ftruncate,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, unsigned long length),
 	TP_ARGS(sc_exit(ret,) fd, length),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fd)) sc_in(__field(unsigned long, length))),
@@ -552,7 +552,7 @@ SC_TRACE_EVENT(ftruncate,
 )
 #endif
 #ifndef OVERRIDE_64_fchmod
-SC_TRACE_EVENT(fchmod,
+SC_LTTNG_TRACEPOINT_EVENT(fchmod,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, umode_t mode),
 	TP_ARGS(sc_exit(ret,) fd, mode),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fd)) sc_in(__field(umode_t, mode))),
@@ -561,7 +561,7 @@ SC_TRACE_EVENT(fchmod,
 )
 #endif
 #ifndef OVERRIDE_64_setpgid
-SC_TRACE_EVENT(setpgid,
+SC_LTTNG_TRACEPOINT_EVENT(setpgid,
 	TP_PROTO(sc_exit(long ret,) pid_t pid, pid_t pgid),
 	TP_ARGS(sc_exit(ret,) pid, pgid),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(pid_t, pid)) sc_in(__field(pid_t, pgid))),
@@ -570,7 +570,7 @@ SC_TRACE_EVENT(setpgid,
 )
 #endif
 #ifndef OVERRIDE_64_setreuid
-SC_TRACE_EVENT(setreuid,
+SC_LTTNG_TRACEPOINT_EVENT(setreuid,
 	TP_PROTO(sc_exit(long ret,) uid_t ruid, uid_t euid),
 	TP_ARGS(sc_exit(ret,) ruid, euid),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(uid_t, ruid)) sc_in(__field(uid_t, euid))),
@@ -579,7 +579,7 @@ SC_TRACE_EVENT(setreuid,
 )
 #endif
 #ifndef OVERRIDE_64_setregid
-SC_TRACE_EVENT(setregid,
+SC_LTTNG_TRACEPOINT_EVENT(setregid,
 	TP_PROTO(sc_exit(long ret,) gid_t rgid, gid_t egid),
 	TP_ARGS(sc_exit(ret,) rgid, egid),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(gid_t, rgid)) sc_in(__field(gid_t, egid))),
@@ -588,7 +588,7 @@ SC_TRACE_EVENT(setregid,
 )
 #endif
 #ifndef OVERRIDE_64_getpriority
-SC_TRACE_EVENT(getpriority,
+SC_LTTNG_TRACEPOINT_EVENT(getpriority,
 	TP_PROTO(sc_exit(long ret,) int which, int who),
 	TP_ARGS(sc_exit(ret,) which, who),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, which)) sc_in(__field(int, who))),
@@ -597,7 +597,7 @@ SC_TRACE_EVENT(getpriority,
 )
 #endif
 #ifndef OVERRIDE_64_mlock
-SC_TRACE_EVENT(mlock,
+SC_LTTNG_TRACEPOINT_EVENT(mlock,
 	TP_PROTO(sc_exit(long ret,) unsigned long start, size_t len),
 	TP_ARGS(sc_exit(ret,) start, len),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned long, start)) sc_in(__field(size_t, len))),
@@ -606,7 +606,7 @@ SC_TRACE_EVENT(mlock,
 )
 #endif
 #ifndef OVERRIDE_64_munlock
-SC_TRACE_EVENT(munlock,
+SC_LTTNG_TRACEPOINT_EVENT(munlock,
 	TP_PROTO(sc_exit(long ret,) unsigned long start, size_t len),
 	TP_ARGS(sc_exit(ret,) start, len),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned long, start)) sc_in(__field(size_t, len))),
@@ -615,7 +615,7 @@ SC_TRACE_EVENT(munlock,
 )
 #endif
 #ifndef OVERRIDE_64_tkill
-SC_TRACE_EVENT(tkill,
+SC_LTTNG_TRACEPOINT_EVENT(tkill,
 	TP_PROTO(sc_exit(long ret,) pid_t pid, int sig),
 	TP_ARGS(sc_exit(ret,) pid, sig),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(pid_t, pid)) sc_in(__field(int, sig))),
@@ -624,7 +624,7 @@ SC_TRACE_EVENT(tkill,
 )
 #endif
 #ifndef OVERRIDE_64_ioprio_get
-SC_TRACE_EVENT(ioprio_get,
+SC_LTTNG_TRACEPOINT_EVENT(ioprio_get,
 	TP_PROTO(sc_exit(long ret,) int which, int who),
 	TP_ARGS(sc_exit(ret,) which, who),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, which)) sc_in(__field(int, who))),
@@ -633,7 +633,7 @@ SC_TRACE_EVENT(ioprio_get,
 )
 #endif
 #ifndef OVERRIDE_64_inotify_rm_watch
-SC_TRACE_EVENT(inotify_rm_watch,
+SC_LTTNG_TRACEPOINT_EVENT(inotify_rm_watch,
 	TP_PROTO(sc_exit(long ret,) int fd, __s32 wd),
 	TP_ARGS(sc_exit(ret,) fd, wd),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd)) sc_in(__field(__s32, wd))),
@@ -642,7 +642,7 @@ SC_TRACE_EVENT(inotify_rm_watch,
 )
 #endif
 #ifndef OVERRIDE_64_timerfd_create
-SC_TRACE_EVENT(timerfd_create,
+SC_LTTNG_TRACEPOINT_EVENT(timerfd_create,
 	TP_PROTO(sc_exit(long ret,) int clockid, int flags),
 	TP_ARGS(sc_exit(ret,) clockid, flags),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, clockid)) sc_in(__field(int, flags))),
@@ -651,7 +651,7 @@ SC_TRACE_EVENT(timerfd_create,
 )
 #endif
 #ifndef OVERRIDE_64_eventfd2
-SC_TRACE_EVENT(eventfd2,
+SC_LTTNG_TRACEPOINT_EVENT(eventfd2,
 	TP_PROTO(sc_exit(long ret,) unsigned int count, int flags),
 	TP_ARGS(sc_exit(ret,) count, flags),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, count)) sc_in(__field(int, flags))),
@@ -660,7 +660,7 @@ SC_TRACE_EVENT(eventfd2,
 )
 #endif
 #ifndef OVERRIDE_64_fanotify_init
-SC_TRACE_EVENT(fanotify_init,
+SC_LTTNG_TRACEPOINT_EVENT(fanotify_init,
 	TP_PROTO(sc_exit(long ret,) unsigned int flags, unsigned int event_f_flags),
 	TP_ARGS(sc_exit(ret,) flags, event_f_flags),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, flags)) sc_in(__field(unsigned int, event_f_flags))),
@@ -669,7 +669,7 @@ SC_TRACE_EVENT(fanotify_init,
 )
 #endif
 #ifndef OVERRIDE_64_setns
-SC_TRACE_EVENT(setns,
+SC_LTTNG_TRACEPOINT_EVENT(setns,
 	TP_PROTO(sc_exit(long ret,) int fd, int nstype),
 	TP_ARGS(sc_exit(ret,) fd, nstype),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd)) sc_in(__field(int, nstype))),
@@ -678,7 +678,7 @@ SC_TRACE_EVENT(setns,
 )
 #endif
 #ifndef OVERRIDE_64_lseek
-SC_TRACE_EVENT(lseek,
+SC_LTTNG_TRACEPOINT_EVENT(lseek,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, off_t offset, unsigned int whence),
 	TP_ARGS(sc_exit(ret,) fd, offset, whence),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fd)) sc_in(__field(off_t, offset)) sc_in(__field(unsigned int, whence))),
@@ -687,7 +687,7 @@ SC_TRACE_EVENT(lseek,
 )
 #endif
 #ifndef OVERRIDE_64_mprotect
-SC_TRACE_EVENT(mprotect,
+SC_LTTNG_TRACEPOINT_EVENT(mprotect,
 	TP_PROTO(sc_exit(long ret,) unsigned long start, size_t len, unsigned long prot),
 	TP_ARGS(sc_exit(ret,) start, len, prot),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned long, start)) sc_in(__field(size_t, len)) sc_in(__field(unsigned long, prot))),
@@ -696,7 +696,7 @@ SC_TRACE_EVENT(mprotect,
 )
 #endif
 #ifndef OVERRIDE_64_ioctl
-SC_TRACE_EVENT(ioctl,
+SC_LTTNG_TRACEPOINT_EVENT(ioctl,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, unsigned int cmd, unsigned long arg),
 	TP_ARGS(sc_exit(ret,) fd, cmd, arg),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fd)) sc_in(__field(unsigned int, cmd)) sc_inout(__field(unsigned long, arg))),
@@ -705,7 +705,7 @@ SC_TRACE_EVENT(ioctl,
 )
 #endif
 #ifndef OVERRIDE_64_msync
-SC_TRACE_EVENT(msync,
+SC_LTTNG_TRACEPOINT_EVENT(msync,
 	TP_PROTO(sc_exit(long ret,) unsigned long start, size_t len, int flags),
 	TP_ARGS(sc_exit(ret,) start, len, flags),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned long, start)) sc_in(__field(size_t, len)) sc_in(__field(int, flags))),
@@ -714,7 +714,7 @@ SC_TRACE_EVENT(msync,
 )
 #endif
 #ifndef OVERRIDE_64_madvise
-SC_TRACE_EVENT(madvise,
+SC_LTTNG_TRACEPOINT_EVENT(madvise,
 	TP_PROTO(sc_exit(long ret,) unsigned long start, size_t len_in, int behavior),
 	TP_ARGS(sc_exit(ret,) start, len_in, behavior),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned long, start)) sc_in(__field(size_t, len_in)) sc_in(__field(int, behavior))),
@@ -723,7 +723,7 @@ SC_TRACE_EVENT(madvise,
 )
 #endif
 #ifndef OVERRIDE_64_shmget
-SC_TRACE_EVENT(shmget,
+SC_LTTNG_TRACEPOINT_EVENT(shmget,
 	TP_PROTO(sc_exit(long ret,) key_t key, size_t size, int shmflg),
 	TP_ARGS(sc_exit(ret,) key, size, shmflg),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(key_t, key)) sc_in(__field(size_t, size)) sc_in(__field(int, shmflg))),
@@ -732,7 +732,7 @@ SC_TRACE_EVENT(shmget,
 )
 #endif
 #ifndef OVERRIDE_64_socket
-SC_TRACE_EVENT(socket,
+SC_LTTNG_TRACEPOINT_EVENT(socket,
 	TP_PROTO(sc_exit(long ret,) int family, int type, int protocol),
 	TP_ARGS(sc_exit(ret,) family, type, protocol),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, family)) sc_in(__field(int, type)) sc_in(__field(int, protocol))),
@@ -741,7 +741,7 @@ SC_TRACE_EVENT(socket,
 )
 #endif
 #ifndef OVERRIDE_64_semget
-SC_TRACE_EVENT(semget,
+SC_LTTNG_TRACEPOINT_EVENT(semget,
 	TP_PROTO(sc_exit(long ret,) key_t key, int nsems, int semflg),
 	TP_ARGS(sc_exit(ret,) key, nsems, semflg),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(key_t, key)) sc_in(__field(int, nsems)) sc_in(__field(int, semflg))),
@@ -750,7 +750,7 @@ SC_TRACE_EVENT(semget,
 )
 #endif
 #ifndef OVERRIDE_64_fcntl
-SC_TRACE_EVENT(fcntl,
+SC_LTTNG_TRACEPOINT_EVENT(fcntl,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, unsigned int cmd, unsigned long arg),
 	TP_ARGS(sc_exit(ret,) fd, cmd, arg),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fd)) sc_in(__field(unsigned int, cmd)) sc_inout(__field(unsigned long, arg))),
@@ -759,7 +759,7 @@ SC_TRACE_EVENT(fcntl,
 )
 #endif
 #ifndef OVERRIDE_64_fchown
-SC_TRACE_EVENT(fchown,
+SC_LTTNG_TRACEPOINT_EVENT(fchown,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, uid_t user, gid_t group),
 	TP_ARGS(sc_exit(ret,) fd, user, group),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, fd)) sc_in(__field(uid_t, user)) sc_in(__field(gid_t, group))),
@@ -768,7 +768,7 @@ SC_TRACE_EVENT(fchown,
 )
 #endif
 #ifndef OVERRIDE_64_setresuid
-SC_TRACE_EVENT(setresuid,
+SC_LTTNG_TRACEPOINT_EVENT(setresuid,
 	TP_PROTO(sc_exit(long ret,) uid_t ruid, uid_t euid, uid_t suid),
 	TP_ARGS(sc_exit(ret,) ruid, euid, suid),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(uid_t, ruid)) sc_in(__field(uid_t, euid)) sc_in(__field(uid_t, suid))),
@@ -777,7 +777,7 @@ SC_TRACE_EVENT(setresuid,
 )
 #endif
 #ifndef OVERRIDE_64_setresgid
-SC_TRACE_EVENT(setresgid,
+SC_LTTNG_TRACEPOINT_EVENT(setresgid,
 	TP_PROTO(sc_exit(long ret,) gid_t rgid, gid_t egid, gid_t sgid),
 	TP_ARGS(sc_exit(ret,) rgid, egid, sgid),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(gid_t, rgid)) sc_in(__field(gid_t, egid)) sc_in(__field(gid_t, sgid))),
@@ -786,7 +786,7 @@ SC_TRACE_EVENT(setresgid,
 )
 #endif
 #ifndef OVERRIDE_64_sysfs
-SC_TRACE_EVENT(sysfs,
+SC_LTTNG_TRACEPOINT_EVENT(sysfs,
 	TP_PROTO(sc_exit(long ret,) int option, unsigned long arg1, unsigned long arg2),
 	TP_ARGS(sc_exit(ret,) option, arg1, arg2),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, option)) sc_in(__field(unsigned long, arg1)) sc_in(__field(unsigned long, arg2))),
@@ -795,7 +795,7 @@ SC_TRACE_EVENT(sysfs,
 )
 #endif
 #ifndef OVERRIDE_64_setpriority
-SC_TRACE_EVENT(setpriority,
+SC_LTTNG_TRACEPOINT_EVENT(setpriority,
 	TP_PROTO(sc_exit(long ret,) int which, int who, int niceval),
 	TP_ARGS(sc_exit(ret,) which, who, niceval),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, which)) sc_in(__field(int, who)) sc_in(__field(int, niceval))),
@@ -804,7 +804,7 @@ SC_TRACE_EVENT(setpriority,
 )
 #endif
 #ifndef OVERRIDE_64_readahead
-SC_TRACE_EVENT(readahead,
+SC_LTTNG_TRACEPOINT_EVENT(readahead,
 	TP_PROTO(sc_exit(long ret,) int fd, loff_t offset, size_t count),
 	TP_ARGS(sc_exit(ret,) fd, offset, count),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd)) sc_in(__field(loff_t, offset)) sc_in(__field(size_t, count))),
@@ -813,7 +813,7 @@ SC_TRACE_EVENT(readahead,
 )
 #endif
 #ifndef OVERRIDE_64_tgkill
-SC_TRACE_EVENT(tgkill,
+SC_LTTNG_TRACEPOINT_EVENT(tgkill,
 	TP_PROTO(sc_exit(long ret,) pid_t tgid, pid_t pid, int sig),
 	TP_ARGS(sc_exit(ret,) tgid, pid, sig),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(pid_t, tgid)) sc_in(__field(pid_t, pid)) sc_in(__field(int, sig))),
@@ -822,7 +822,7 @@ SC_TRACE_EVENT(tgkill,
 )
 #endif
 #ifndef OVERRIDE_64_ioprio_set
-SC_TRACE_EVENT(ioprio_set,
+SC_LTTNG_TRACEPOINT_EVENT(ioprio_set,
 	TP_PROTO(sc_exit(long ret,) int which, int who, int ioprio),
 	TP_ARGS(sc_exit(ret,) which, who, ioprio),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, which)) sc_in(__field(int, who)) sc_in(__field(int, ioprio))),
@@ -831,7 +831,7 @@ SC_TRACE_EVENT(ioprio_set,
 )
 #endif
 #ifndef OVERRIDE_64_dup3
-SC_TRACE_EVENT(dup3,
+SC_LTTNG_TRACEPOINT_EVENT(dup3,
 	TP_PROTO(sc_exit(long ret,) unsigned int oldfd, unsigned int newfd, int flags),
 	TP_ARGS(sc_exit(ret,) oldfd, newfd, flags),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned int, oldfd)) sc_in(__field(unsigned int, newfd)) sc_in(__field(int, flags))),
@@ -840,7 +840,7 @@ SC_TRACE_EVENT(dup3,
 )
 #endif
 #ifndef OVERRIDE_64_semctl
-SC_TRACE_EVENT(semctl,
+SC_LTTNG_TRACEPOINT_EVENT(semctl,
 	TP_PROTO(sc_exit(long ret,) int semid, int semnum, int cmd, unsigned long arg),
 	TP_ARGS(sc_exit(ret,) semid, semnum, cmd, arg),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, semid)) sc_in(__field(int, semnum)) sc_in(__field(int, cmd)) sc_inout(__field(unsigned long, arg))),
@@ -849,7 +849,7 @@ SC_TRACE_EVENT(semctl,
 )
 #endif
 #ifndef OVERRIDE_64_ptrace
-SC_TRACE_EVENT(ptrace,
+SC_LTTNG_TRACEPOINT_EVENT(ptrace,
 	TP_PROTO(sc_exit(long ret,) long request, long pid, unsigned long addr, unsigned long data),
 	TP_ARGS(sc_exit(ret,) request, pid, addr, data),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(long, request)) sc_in(__field(long, pid)) sc_inout(__field_hex(unsigned long, addr)) sc_inout(__field(unsigned long, data))),
@@ -858,7 +858,7 @@ SC_TRACE_EVENT(ptrace,
 )
 #endif
 #ifndef OVERRIDE_64_fadvise64
-SC_TRACE_EVENT(fadvise64,
+SC_LTTNG_TRACEPOINT_EVENT(fadvise64,
 	TP_PROTO(sc_exit(long ret,) int fd, loff_t offset, size_t len, int advice),
 	TP_ARGS(sc_exit(ret,) fd, offset, len, advice),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd)) sc_in(__field(loff_t, offset)) sc_in(__field(size_t, len)) sc_in(__field(int, advice))),
@@ -867,7 +867,7 @@ SC_TRACE_EVENT(fadvise64,
 )
 #endif
 #ifndef OVERRIDE_64_tee
-SC_TRACE_EVENT(tee,
+SC_LTTNG_TRACEPOINT_EVENT(tee,
 	TP_PROTO(sc_exit(long ret,) int fdin, int fdout, size_t len, unsigned int flags),
 	TP_ARGS(sc_exit(ret,) fdin, fdout, len, flags),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fdin)) sc_in(__field(int, fdout)) sc_in(__field(size_t, len)) sc_in(__field(unsigned int, flags))),
@@ -876,7 +876,7 @@ SC_TRACE_EVENT(tee,
 )
 #endif
 #ifndef OVERRIDE_64_sync_file_range
-SC_TRACE_EVENT(sync_file_range,
+SC_LTTNG_TRACEPOINT_EVENT(sync_file_range,
 	TP_PROTO(sc_exit(long ret,) int fd, loff_t offset, loff_t nbytes, unsigned int flags),
 	TP_ARGS(sc_exit(ret,) fd, offset, nbytes, flags),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd)) sc_in(__field(loff_t, offset)) sc_in(__field(loff_t, nbytes)) sc_in(__field(unsigned int, flags))),
@@ -885,7 +885,7 @@ SC_TRACE_EVENT(sync_file_range,
 )
 #endif
 #ifndef OVERRIDE_64_fallocate
-SC_TRACE_EVENT(fallocate,
+SC_LTTNG_TRACEPOINT_EVENT(fallocate,
 	TP_PROTO(sc_exit(long ret,) int fd, int mode, loff_t offset, loff_t len),
 	TP_ARGS(sc_exit(ret,) fd, mode, offset, len),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, fd)) sc_in(__field(int, mode)) sc_in(__field(loff_t, offset)) sc_in(__field(loff_t, len))),
@@ -894,7 +894,7 @@ SC_TRACE_EVENT(fallocate,
 )
 #endif
 #ifndef OVERRIDE_64_mremap
-SC_TRACE_EVENT(mremap,
+SC_LTTNG_TRACEPOINT_EVENT(mremap,
 	TP_PROTO(sc_exit(long ret,) unsigned long addr, unsigned long old_len, unsigned long new_len, unsigned long flags, unsigned long new_addr),
 	TP_ARGS(sc_exit(ret,) addr, old_len, new_len, flags, new_addr),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field_hex(unsigned long, addr)) sc_in(__field(unsigned long, old_len)) sc_in(__field(unsigned long, new_len)) sc_in(__field(unsigned long, flags)) sc_in(__field_hex(unsigned long, new_addr))),
@@ -903,7 +903,7 @@ SC_TRACE_EVENT(mremap,
 )
 #endif
 #ifndef OVERRIDE_64_prctl
-SC_TRACE_EVENT(prctl,
+SC_LTTNG_TRACEPOINT_EVENT(prctl,
 	TP_PROTO(sc_exit(long ret,) int option, unsigned long arg2, unsigned long arg3, unsigned long arg4, unsigned long arg5),
 	TP_ARGS(sc_exit(ret,) option, arg2, arg3, arg4, arg5),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, option)) sc_inout(__field(unsigned long, arg2)) sc_in(__field(unsigned long, arg3)) sc_in(__field(unsigned long, arg4)) sc_in(__field(unsigned long, arg5))),
@@ -912,7 +912,7 @@ SC_TRACE_EVENT(prctl,
 )
 #endif
 #ifndef OVERRIDE_64_remap_file_pages
-SC_TRACE_EVENT(remap_file_pages,
+SC_LTTNG_TRACEPOINT_EVENT(remap_file_pages,
 	TP_PROTO(sc_exit(long ret,) unsigned long start, unsigned long size, unsigned long prot, unsigned long pgoff, unsigned long flags),
 	TP_ARGS(sc_exit(ret,) start, size, prot, pgoff, flags),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(unsigned long, start)) sc_in(__field(unsigned long, size)) sc_in(__field(unsigned long, prot)) sc_in(__field(unsigned long, pgoff)) sc_in(__field(unsigned long, flags))),
@@ -921,7 +921,7 @@ SC_TRACE_EVENT(remap_file_pages,
 )
 #endif
 #ifndef OVERRIDE_64_keyctl
-SC_TRACE_EVENT(keyctl,
+SC_LTTNG_TRACEPOINT_EVENT(keyctl,
 	TP_PROTO(sc_exit(long ret,) int option, unsigned long arg2, unsigned long arg3, unsigned long arg4, unsigned long arg5),
 	TP_ARGS(sc_exit(ret,) option, arg2, arg3, arg4, arg5),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field(int, option)) sc_inout(__field(unsigned long, arg2)) sc_inout(__field(unsigned long, arg3)) sc_inout(__field(unsigned long, arg4)) sc_inout(__field(unsigned long, arg5))),
@@ -930,7 +930,7 @@ SC_TRACE_EVENT(keyctl,
 )
 #endif
 #ifndef OVERRIDE_64_mmap
-SC_TRACE_EVENT(mmap,
+SC_LTTNG_TRACEPOINT_EVENT(mmap,
 	TP_PROTO(sc_exit(long ret,) unsigned long addr, unsigned long len, unsigned long prot, unsigned long flags, unsigned long fd, unsigned long off),
 	TP_ARGS(sc_exit(ret,) addr, len, prot, flags, fd, off),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field_hex(unsigned long, addr)) sc_in(__field(unsigned long, len)) sc_in(__field(unsigned long, prot)) sc_in(__field(unsigned long, flags)) sc_in(__field(unsigned long, fd)) sc_in(__field(unsigned long, off))),

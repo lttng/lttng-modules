@@ -3,7 +3,7 @@
 
 #ifndef CREATE_SYSCALL_TABLE
 
-SC_TRACE_EVENT(mmap,
+SC_LTTNG_TRACEPOINT_EVENT(mmap,
 	TP_PROTO(sc_exit(long ret,) unsigned long addr, unsigned long len, unsigned long prot, unsigned long flags, unsigned long fd, unsigned long off),
 	TP_ARGS(sc_exit(ret,) addr, len, prot, flags, fd, off),
 	TP_STRUCT__entry(sc_exit(__field(long, ret)) sc_in(__field_hex(unsigned long, addr)) sc_in(__field(size_t, len)) sc_in(__field(int, prot)) sc_in(__field(int, flags)) sc_in(__field(int, fd)) sc_in(__field(off_t, offset))),

@@ -3,7 +3,7 @@
 
 #ifndef CREATE_SYSCALL_TABLE
 
-SC_TRACE_EVENT(execve,
+SC_LTTNG_TRACEPOINT_EVENT(execve,
 	TP_PROTO(sc_exit(long ret,) const char *filename, char *const *argv, char *const *envp),
 	TP_ARGS(sc_exit(ret,) filename, argv, envp),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))
@@ -17,7 +17,7 @@ SC_TRACE_EVENT(execve,
 	TP_printk()
 )
 
-SC_TRACE_EVENT(clone,
+SC_LTTNG_TRACEPOINT_EVENT(clone,
 	TP_PROTO(sc_exit(long ret,) unsigned long clone_flags, unsigned long newsp,
 		void __user *parent_tid,
 		void __user *child_tid),
@@ -40,7 +40,7 @@ SC_TRACE_EVENT(clone,
 /* present in 32, missing in 64 due to old kernel headers */
 #define OVERRIDE_32_getcpu
 #define OVERRIDE_64_getcpu
-SC_TRACE_EVENT(getcpu,
+SC_LTTNG_TRACEPOINT_EVENT(getcpu,
 	TP_PROTO(sc_exit(long ret,) unsigned __user *cpup, unsigned __user *nodep, void *tcache),
 	TP_ARGS(sc_exit(ret,) cpup, nodep, tcache),
 	TP_STRUCT__entry(
@@ -58,7 +58,7 @@ SC_TRACE_EVENT(getcpu,
 
 #define OVERRIDE_32_pipe
 #define OVERRIDE_64_pipe
-SC_TRACE_EVENT(pipe,
+SC_LTTNG_TRACEPOINT_EVENT(pipe,
 	TP_PROTO(sc_exit(long ret,) int * fildes),
 	TP_ARGS(sc_exit(ret,) fildes),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))
@@ -72,7 +72,7 @@ SC_TRACE_EVENT(pipe,
 
 #define OVERRIDE_32_pipe2
 #define OVERRIDE_64_pipe2
-SC_TRACE_EVENT(pipe2,
+SC_LTTNG_TRACEPOINT_EVENT(pipe2,
 	TP_PROTO(sc_exit(long ret,) int * fildes, int flags),
 	TP_ARGS(sc_exit(ret,) fildes, flags),
 	TP_STRUCT__entry(sc_exit(__field(long, ret))
