@@ -1033,6 +1033,12 @@ int lttng_syscall_filter_disable(struct lttng_channel *chan,
 		filter = chan->sc_filter;
 	}
 
+	if (!name) {
+		/* Disable all system calls */
+		bitmap_clear(filter->sc, 0, NR_syscalls);
+		bitmap_clear(filter->sc_compat, 0, NR_compat_syscalls);
+		goto apply_filter;
+	}
 	syscall_nr = get_syscall_nr(name);
 	compat_syscall_nr = get_compat_syscall_nr(name);
 	if (syscall_nr < 0 && compat_syscall_nr < 0) {
@@ -1053,6 +1059,7 @@ int lttng_syscall_filter_disable(struct lttng_channel *chan,
 		}
 		bitmap_clear(chan->sc_filter->sc_compat, compat_syscall_nr, 1);
 	}
+apply_filter:
 	if (!chan->sc_filter)
 		rcu_assign_pointer(chan->sc_filter, filter);
 	chan->syscall_all = 0;
