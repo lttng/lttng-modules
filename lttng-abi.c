@@ -118,7 +118,7 @@ int lttng_abi_tracepoint_list(void)
 		goto fd_error;
 	}
 
-	tracepoint_list_file = anon_inode_getfile("[lttng_session]",
+	tracepoint_list_file = anon_inode_getfile("[lttng_tracepoint_list]",
 					  &lttng_tracepoint_list_fops,
 					  NULL, O_RDWR);
 	if (IS_ERR(tracepoint_list_file)) {
