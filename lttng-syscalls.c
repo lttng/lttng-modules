@@ -27,6 +27,7 @@
 #include <linux/bitmap.h>
 #include <linux/in.h>
 #include <linux/in6.h>
+#include <linux/seq_file.h>
 #include <asm/ptrace.h>
 #include <asm/syscall.h>
 
@@ -1070,3 +1071,86 @@ error:
 		kfree(filter);
 	return ret;
 }
+
+static
+const struct trace_syscall_entry *syscall_list_get_entry(loff_t *pos)
+{
+	const struct trace_syscall_entry *entry;
+	int iter = 0;
+
+	for (entry = sc_table;
+			entry < sc_table + ARRAY_SIZE(sc_table);
+			 entry++) {
+		if (iter++ >= *pos)
+			return entry;
+	}
+	for (entry = compat_sc_table;
+			entry < compat_sc_table + ARRAY_SIZE(compat_sc_table);
+			 entry++) {
+		if (iter++ >= *pos)
+			return entry;
+	}
+	/* End of list */
+	return NULL;
+}
+
+static
+void *syscall_list_start(struct seq_file *m, loff_t *pos)
+{
+	return (void *) syscall_list_get_entry(pos);
+}
+
+static
+void *syscall_list_next(struct seq_file *m, void *p, loff_t *ppos)
+{
+	(*ppos)++;
+	return (void *) syscall_list_get_entry(ppos);
+}
+
+static
+void syscall_list_stop(struct seq_file *m, void *p)
+{
+}
+
+static
+int syscall_list_show(struct seq_file *m, void *p)
+{
+	const struct trace_syscall_entry *table, *entry = p;
+	unsigned int bitness;
+
+	if (entry >= sc_table && entry < sc_table + ARRAY_SIZE(sc_table)) {
+		bitness = BITS_PER_LONG;
+		table = sc_table;
+	} else {
+		bitness = 32;
+		table = compat_sc_table;
+		WARN_ON_ONCE(!(entry >= compat_sc_table
+			&& entry < compat_sc_table + ARRAY_SIZE(compat_sc_table)));
+	}
+	seq_printf(m,	"syscall { name = %s; bitness = %u; };\n",
+		entry->desc->name,
+		bitness);
+	return 0;
+}
+
+static
+const struct seq_operations lttng_syscall_list_seq_ops = {
+	.start = syscall_list_start,
+	.next = syscall_list_next,
+	.stop = syscall_list_stop,
+	.show = syscall_list_show,
+};
+
+static
+int lttng_syscall_list_open(struct inode *inode, struct file *file)
+{
+	return seq_open(file, &lttng_syscall_list_seq_ops);
+}
+
+const struct file_operations lttng_syscall_list_fops = {
+	.owner = THIS_MODULE,
+	.open = lttng_syscall_list_open,
+	.read = seq_read,
+	.llseek = seq_lseek,
+	.release = seq_release,
+};

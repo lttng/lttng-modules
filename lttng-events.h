@@ -556,6 +556,7 @@ void lttng_ftrace_destroy_private(struct lttng_event *event)
 int lttng_calibrate(struct lttng_kernel_calibrate *calibrate);
 
 extern const struct file_operations lttng_tracepoint_list_fops;
+extern const struct file_operations lttng_syscall_list_fops;
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 #define TRACEPOINT_HAS_DATA_ARG
