@@ -379,8 +379,14 @@ struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 	 */
 	list_for_each_entry(event, &chan->session->events, list) {
 		if (!strcmp(event->desc->name, event_param->name)) {
-			ret = -EEXIST;
-			goto exist;
+			/*
+			 * Allow events with the same name to appear in
+			 * different channels.
+			 */
+			if (event->chan == chan) {
+				ret = -EEXIST;
+				goto exist;
+			}
 		}
 	}
 	event = kmem_cache_zalloc(event_cache, GFP_KERNEL);
