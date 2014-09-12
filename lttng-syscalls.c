@@ -1127,7 +1127,8 @@ int syscall_list_show(struct seq_file *m, void *p)
 		WARN_ON_ONCE(!(entry >= compat_sc_table
 			&& entry < compat_sc_table + ARRAY_SIZE(compat_sc_table)));
 	}
-	seq_printf(m,	"syscall { name = %s; bitness = %u; };\n",
+	seq_printf(m,	"syscall { id = %u; name = %s; bitness = %u; };\n",
+		entry - table,
 		entry->desc->name,
 		bitness);
 	return 0;
