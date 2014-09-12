@@ -80,7 +80,7 @@ struct lttng_kernel_function_tracer {
 }__attribute__((packed));
 
 struct lttng_kernel_syscall {
-	char disable;
+	char enable;
 } __attribute__((packed));
 
 /*

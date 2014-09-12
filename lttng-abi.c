@@ -968,14 +968,15 @@ int lttng_abi_create_event(struct file *channel_file,
 		if (ret)
 			goto fd_error;
 		event_fd = 0;
-		if (event_param->u.syscall.disable) {
-			ret = lttng_syscall_filter_disable(channel,
+		if (event_param->u.syscall.enable) {
+			ret = lttng_syscall_filter_enable(channel,
 				event_param->name[0] == '\0' ?
 					NULL : event_param->name);
 			if (ret)
 				goto fd_error;
+
 		} else {
-			ret = lttng_syscall_filter_enable(channel,
+			ret = lttng_syscall_filter_disable(channel,
 				event_param->name[0] == '\0' ?
 					NULL : event_param->name);
 			if (ret)
