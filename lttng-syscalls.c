@@ -31,6 +31,7 @@
 #include <asm/ptrace.h>
 #include <asm/syscall.h>
 
+#include "lib/bitfield.h"
 #include "wrapper/tracepoint.h"
 #include "lttng-events.h"
 
@@ -950,6 +951,12 @@ int get_compat_syscall_nr(const char *syscall_name)
 	return syscall_nr;
 }
 
+static
+uint32_t get_sc_tables_len(void)
+{
+	return ARRAY_SIZE(sc_table) + ARRAY_SIZE(compat_sc_table);
+}
+
 int lttng_syscall_filter_enable(struct lttng_channel *chan,
 		const char *name)
 {
@@ -1113,21 +1120,39 @@ void syscall_list_stop(struct seq_file *m, void *p)
 }
 
 static
+int get_sc_table(const struct trace_syscall_entry *entry,
+		const struct trace_syscall_entry **table,
+		unsigned int *bitness)
+{
+	if (entry >= sc_table && entry < sc_table + ARRAY_SIZE(sc_table)) {
+		if (bitness)
+			*bitness = BITS_PER_LONG;
+		if (table)
+			*table = sc_table;
+		return 0;
+	}
+	if (!(entry >= compat_sc_table
+			&& entry < compat_sc_table + ARRAY_SIZE(compat_sc_table))) {
+		return -EINVAL;
+	}
+	if (bitness)
+		*bitness = 32;
+	if (table)
+		*table = compat_sc_table;
+	return 0;
+}
+
+static
 int syscall_list_show(struct seq_file *m, void *p)
 {
 	const struct trace_syscall_entry *table, *entry = p;
 	unsigned int bitness;
+	int ret;
 
-	if (entry >= sc_table && entry < sc_table + ARRAY_SIZE(sc_table)) {
-		bitness = BITS_PER_LONG;
-		table = sc_table;
-	} else {
-		bitness = 32;
-		table = compat_sc_table;
-		WARN_ON_ONCE(!(entry >= compat_sc_table
-			&& entry < compat_sc_table + ARRAY_SIZE(compat_sc_table)));
-	}
-	seq_printf(m,	"syscall { id = %u; name = %s; bitness = %u; };\n",
+	ret = get_sc_table(entry, &table, &bitness);
+	if (ret)
+		return ret;
+	seq_printf(m,	"syscall { index = %lu; name = %s; bitness = %u; };\n",
 		entry - table,
 		entry->desc->name,
 		bitness);
@@ -1155,3 +1180,40 @@ const struct file_operations lttng_syscall_list_fops = {
 	.llseek = seq_lseek,
 	.release = seq_release,
 };
+
+long lttng_channel_syscall_mask(struct lttng_channel *channel,
+		struct lttng_kernel_syscall_mask __user *usyscall_mask)
+{
+	uint32_t len, sc_tables_len, bitmask_len;
+	int ret = 0, bit;
+	char *tmp_mask;
+	struct lttng_syscall_filter *filter;
+
+	ret = get_user(len, &usyscall_mask->len);
+	if (ret)
+		return ret;
+	sc_tables_len = get_sc_tables_len();
+	bitmask_len = ALIGN(sc_tables_len, 8) >> 3;
+	if (len < sc_tables_len) {
+		return put_user(sc_tables_len, &usyscall_mask->len);
+	}
+	/* Array is large enough, we can copy array to user-space. */
+	tmp_mask = kzalloc(bitmask_len, GFP_KERNEL);
+	if (!tmp_mask)
+		return -ENOMEM;
+	filter = channel->sc_filter;
+
+	for (bit = 0; bit < ARRAY_SIZE(sc_table); bit++) {
+		bt_bitfield_write_be(tmp_mask, char, bit, 1,
+			test_bit(bit, filter->sc));
+	}
+	for (; bit < sc_tables_len; bit++) {
+		bt_bitfield_write_be(tmp_mask, char, bit, 1,
+			test_bit(bit - ARRAY_SIZE(sc_table),
+				filter->sc_compat));
+	}
+	if (copy_to_user(usyscall_mask->mask, tmp_mask, bitmask_len))
+		ret = -EFAULT;
+	kfree(tmp_mask);
+	return ret;
+}

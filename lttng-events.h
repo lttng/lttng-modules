@@ -405,6 +405,8 @@ int lttng_syscall_filter_enable(struct lttng_channel *chan,
 		const char *name);
 int lttng_syscall_filter_disable(struct lttng_channel *chan,
 		const char *name);
+long lttng_channel_syscall_mask(struct lttng_channel *channel,
+		struct lttng_kernel_syscall_mask __user *usyscall_mask);
 #else
 static inline int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 {
@@ -416,14 +418,23 @@ static inline int lttng_syscalls_unregister(struct lttng_channel *chan)
 	return 0;
 }
 
+static
 int lttng_syscall_filter_enable(struct lttng_channel *chan,
 		const char *name)
 {
 	return -ENOSYS;
 }
 
+static
 int lttng_syscall_filter_disable(struct lttng_channel *chan,
 		const char *name)
+{
+	return -ENOSYS;
+}
+
+static
+long lttng_channel_syscall_mask(struct lttng_channel *channel,
+		struct lttng_kernel_syscall_mask __user *usyscall_mask)
 {
 	return -ENOSYS;
 }

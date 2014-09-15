@@ -1170,6 +1170,9 @@ old_ctx_end:
 	case LTTNG_KERNEL_OLD_DISABLE:
 	case LTTNG_KERNEL_DISABLE:
 		return lttng_channel_disable(channel);
+	case LTTNG_KERNEL_SYSCALL_MASK:
+		return lttng_channel_syscall_mask(channel,
+			(struct lttng_kernel_syscall_mask __user *) arg);
 	default:
 		return -ENOIOCTLCMD;
 	}
