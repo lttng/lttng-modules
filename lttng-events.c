@@ -1255,6 +1255,10 @@ static int __init lttng_events_init(void)
 {
 	int ret;
 
+	ret = wrapper_lttng_fixup_sig(THIS_MODULE);
+	if (ret)
+		return ret;
+
 	ret = lttng_tracepoint_init();
 	if (ret)
 		return ret;
