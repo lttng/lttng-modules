@@ -9,7 +9,7 @@
 #undef TP_PROBE_CB
 #define TP_PROBE_CB(_template)          &syscall_entry_probe
 
-LTTNG_TRACEPOINT_EVENT(syscall_enter_unknown,
+LTTNG_TRACEPOINT_EVENT(syscall_entry_unknown,
 	TP_PROTO(unsigned int id, unsigned long *args),
 	TP_ARGS(id, args),
 	TP_STRUCT__entry(
@@ -22,7 +22,7 @@ LTTNG_TRACEPOINT_EVENT(syscall_enter_unknown,
 	),
 	TP_printk()
 )
-LTTNG_TRACEPOINT_EVENT(compat_syscall_enter_unknown,
+LTTNG_TRACEPOINT_EVENT(compat_syscall_entry_unknown,
 	TP_PROTO(unsigned int id, unsigned long *args),
 	TP_ARGS(id, args),
 	TP_STRUCT__entry(

@@ -28,6 +28,7 @@
 #include <linux/in.h>
 #include <linux/in6.h>
 #include <linux/seq_file.h>
+#include <linux/stringify.h>
 #include <asm/ptrace.h>
 #include <asm/syscall.h>
 
@@ -48,10 +49,15 @@ enum sc_type {
 	SC_TYPE_COMPAT_EXIT,
 };
 
-#define SYSCALL_ENTRY_STR		"syscall_entry_"
-#define COMPAT_SYSCALL_ENTRY_STR	"compat_syscall_entry_"
-#define SYSCALL_EXIT_STR		"syscall_exit_"
-#define COMPAT_SYSCALL_EXIT_STR		"compat_syscall_exit_"
+#define SYSCALL_ENTRY_TOK		syscall_entry_
+#define COMPAT_SYSCALL_ENTRY_TOK	compat_syscall_entry_
+#define SYSCALL_EXIT_TOK		syscall_exit_
+#define COMPAT_SYSCALL_EXIT_TOK		compat_syscall_exit_
+
+#define SYSCALL_ENTRY_STR		__stringify(SYSCALL_ENTRY_TOK)
+#define COMPAT_SYSCALL_ENTRY_STR	__stringify(COMPAT_SYSCALL_ENTRY_TOK)
+#define SYSCALL_EXIT_STR		__stringify(SYSCALL_EXIT_TOK)
+#define COMPAT_SYSCALL_EXIT_STR		__stringify(COMPAT_SYSCALL_EXIT_TOK)
 
 static
 void syscall_entry_probe(void *__data, struct pt_regs *regs, long id);
@@ -104,24 +110,24 @@ struct mmap_arg_struct;
 #undef TP_PROBE_CB
 #define TP_PROBE_CB(_template)		&syscall_entry_probe
 #define SC_LTTNG_TRACEPOINT_EVENT(_name, _proto, _args, _struct, _assign, _printk) \
-	LTTNG_TRACEPOINT_EVENT(syscall_enter_##_name, PARAMS(_proto), PARAMS(_args), \
+	LTTNG_TRACEPOINT_EVENT(syscall_entry_##_name, PARAMS(_proto), PARAMS(_args), \
 		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
 #define SC_LTTNG_TRACEPOINT_EVENT_CODE(_name, _proto, _args, _locvar, _code, _struct, _assign, _printk) \
-	LTTNG_TRACEPOINT_EVENT_CODE(syscall_enter_##_name, PARAMS(_proto), PARAMS(_args), \
+	LTTNG_TRACEPOINT_EVENT_CODE(syscall_entry_##_name, PARAMS(_proto), PARAMS(_args), \
 		PARAMS(_locvar), PARAMS(_code),					\
 		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
 #define SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk) \
-	LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(syscall_enter_##_name, PARAMS(_struct), PARAMS(_assign), \
+	LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(syscall_entry_##_name, PARAMS(_struct), PARAMS(_assign), \
 		PARAMS(_printk))
 #define SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(_template, _name)		\
-	LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscall_enter_##_template, syscall_enter_##_name)
+	LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscall_entry_##_template, syscall_entry_##_name)
 #undef TRACE_SYSTEM
-#define TRACE_SYSTEM syscall_enter_integers
+#define TRACE_SYSTEM syscall_entry_integers
 #define TRACE_INCLUDE_FILE syscalls_integers
 #include "instrumentation/syscalls/headers/syscalls_integers.h"
 #undef TRACE_INCLUDE_FILE
 #undef TRACE_SYSTEM
-#define TRACE_SYSTEM syscall_enter_pointers
+#define TRACE_SYSTEM syscall_entry_pointers
 #define TRACE_INCLUDE_FILE syscalls_pointers
 #include "instrumentation/syscalls/headers/syscalls_pointers.h"
 #undef TRACE_INCLUDE_FILE
@@ -137,25 +143,25 @@ struct mmap_arg_struct;
 /* Hijack probe callback for compat system call enter */
 #define TP_PROBE_CB(_template)		&syscall_entry_probe
 #define SC_LTTNG_TRACEPOINT_EVENT(_name, _proto, _args, _struct, _assign, _printk) \
-	LTTNG_TRACEPOINT_EVENT(compat_syscall_enter_##_name, PARAMS(_proto), PARAMS(_args), \
+	LTTNG_TRACEPOINT_EVENT(compat_syscall_entry_##_name, PARAMS(_proto), PARAMS(_args), \
 		PARAMS(_struct), PARAMS(_assign),				\
 		PARAMS(_printk))
 #define SC_LTTNG_TRACEPOINT_EVENT_CODE(_name, _proto, _args, _locvar, _code, _struct, _assign, _printk) \
-	LTTNG_TRACEPOINT_EVENT_CODE(compat_syscall_enter_##_name, PARAMS(_proto), PARAMS(_args), \
+	LTTNG_TRACEPOINT_EVENT_CODE(compat_syscall_entry_##_name, PARAMS(_proto), PARAMS(_args), \
 		PARAMS(_locvar), PARAMS(_code),					\
 		PARAMS(_struct), PARAMS(_assign), PARAMS(_printk))
 #define SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(_name, _struct, _assign, _printk) \
-	LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(compat_syscall_enter_##_name, PARAMS(_struct), \
+	LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(compat_syscall_entry_##_name, PARAMS(_struct), \
 		PARAMS(_assign), PARAMS(_printk))
 #define SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(_template, _name)		\
-	LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(compat_syscall_enter_##_template, \
-		compat_syscall_enter_##_name)
-#define TRACE_SYSTEM compat_syscall_enter_integers
+	LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(compat_syscall_entry_##_template, \
+		compat_syscall_entry_##_name)
+#define TRACE_SYSTEM compat_syscall_entry_integers
 #define TRACE_INCLUDE_FILE compat_syscalls_integers
 #include "instrumentation/syscalls/headers/compat_syscalls_integers.h"
 #undef TRACE_INCLUDE_FILE
 #undef TRACE_SYSTEM
-#define TRACE_SYSTEM compat_syscall_enter_pointers
+#define TRACE_SYSTEM compat_syscall_entry_pointers
 #define TRACE_INCLUDE_FILE compat_syscalls_pointers
 #include "instrumentation/syscalls/headers/compat_syscalls_pointers.h"
 #undef TRACE_INCLUDE_FILE
@@ -271,10 +277,10 @@ struct trace_syscall_entry {
 #undef TRACE_SYSCALL_TABLE
 #define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
 	[ _nr ] = {						\
-		.func = __event_probe__syscall_enter_##_template, \
+		.func = __event_probe__syscall_entry_##_template, \
 		.nrargs = (_nrargs),				\
-		.fields = __event_fields___syscall_enter_##_template, \
-		.desc = &__event_desc___syscall_enter_##_name,	\
+		.fields = __event_fields___syscall_entry_##_template, \
+		.desc = &__event_desc___syscall_entry_##_name,	\
 	},
 
 /* Syscall enter tracing table */
@@ -286,10 +292,10 @@ static const struct trace_syscall_entry sc_table[] = {
 #undef TRACE_SYSCALL_TABLE
 #define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
 	[ _nr ] = {						\
-		.func = __event_probe__compat_syscall_enter_##_template, \
+		.func = __event_probe__compat_syscall_entry_##_template, \
 		.nrargs = (_nrargs),				\
-		.fields = __event_fields___compat_syscall_enter_##_template, \
-		.desc = &__event_desc___compat_syscall_enter_##_name, \
+		.fields = __event_fields___compat_syscall_entry_##_template, \
+		.desc = &__event_desc___compat_syscall_entry_##_name, \
 	},
 
 /* Compat syscall enter table */
@@ -351,9 +357,9 @@ static void syscall_entry_unknown(struct lttng_event *event,
 
 	syscall_get_arguments(current, regs, 0, UNKNOWN_SYSCALL_NRARGS, args);
 	if (unlikely(is_compat_task()))
-		__event_probe__compat_syscall_enter_unknown(event, id, args);
+		__event_probe__compat_syscall_entry_unknown(event, id, args);
 	else
-		__event_probe__syscall_enter_unknown(event, id, args);
+		__event_probe__syscall_entry_unknown(event, id, args);
 }
 
 void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
@@ -764,7 +770,7 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 #endif
 	if (!chan->sc_unknown) {
 		const struct lttng_event_desc *desc =
-			&__event_desc___syscall_enter_unknown;
+			&__event_desc___syscall_entry_unknown;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
@@ -780,7 +786,7 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 
 	if (!chan->sc_compat_unknown) {
 		const struct lttng_event_desc *desc =
-			&__event_desc___compat_syscall_enter_unknown;
+			&__event_desc___compat_syscall_entry_unknown;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
@@ -1147,18 +1153,24 @@ int syscall_list_show(struct seq_file *m, void *p)
 {
 	const struct trace_syscall_entry *table, *entry = p;
 	unsigned int bitness;
+	unsigned long index;
 	int ret;
+	const char *name;
 
 	ret = get_sc_table(entry, &table, &bitness);
 	if (ret)
 		return ret;
 	if (!entry->desc)
 		return 0;
+	if (table == sc_table) {
+		index = entry - table;
+		name = &entry->desc->name[strlen(SYSCALL_ENTRY_STR)];
+	} else {
+		index = (entry - table) + ARRAY_SIZE(sc_table);
+		name = &entry->desc->name[strlen(COMPAT_SYSCALL_ENTRY_STR)];
+	}
 	seq_printf(m,	"syscall { index = %lu; name = %s; bitness = %u; };\n",
-		table == sc_table ? entry - table :
-			(entry - table) + ARRAY_SIZE(sc_table),
-		entry->desc->name,
-		bitness);
+		index, name, bitness);
 	return 0;
 }
 
