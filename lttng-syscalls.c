@@ -1152,8 +1152,11 @@ int syscall_list_show(struct seq_file *m, void *p)
 	ret = get_sc_table(entry, &table, &bitness);
 	if (ret)
 		return ret;
+	if (!entry->desc)
+		return 0;
 	seq_printf(m,	"syscall { index = %lu; name = %s; bitness = %u; };\n",
-		entry - table,
+		table == sc_table ? entry - table :
+			(entry - table) + ARRAY_SIZE(sc_table),
 		entry->desc->name,
 		bitness);
 	return 0;
