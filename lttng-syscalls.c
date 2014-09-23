@@ -1060,18 +1060,18 @@ int lttng_syscall_filter_disable(struct lttng_channel *chan,
 		goto error;
 	}
 	if (syscall_nr >= 0) {
-		if (!test_bit(syscall_nr, chan->sc_filter->sc)) {
+		if (!test_bit(syscall_nr, filter->sc)) {
 			ret = -EEXIST;
 			goto error;
 		}
-		bitmap_clear(chan->sc_filter->sc, syscall_nr, 1);
+		bitmap_clear(filter->sc, syscall_nr, 1);
 	}
 	if (compat_syscall_nr >= 0) {
-		if (!test_bit(compat_syscall_nr, chan->sc_filter->sc_compat)) {
+		if (!test_bit(compat_syscall_nr, filter->sc_compat)) {
 			ret = -EEXIST;
 			goto error;
 		}
-		bitmap_clear(chan->sc_filter->sc_compat, compat_syscall_nr, 1);
+		bitmap_clear(filter->sc_compat, compat_syscall_nr, 1);
 	}
 apply_filter:
 	if (!chan->sc_filter)
