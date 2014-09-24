@@ -1048,6 +1048,14 @@ int lttng_syscall_filter_disable(struct lttng_channel *chan,
 	}
 
 	if (!name) {
+		/* Fail if all syscalls are already disabled. */
+		if (bitmap_empty(filter->sc, NR_syscalls)
+			&& bitmap_empty(filter->sc_compat,
+				NR_compat_syscalls)) {
+			ret = -EEXIST;
+			goto error;
+		}
+
 		/* Disable all system calls */
 		bitmap_clear(filter->sc, 0, NR_syscalls);
 		bitmap_clear(filter->sc_compat, 0, NR_compat_syscalls);
