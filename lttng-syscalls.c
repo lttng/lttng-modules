@@ -1036,6 +1036,8 @@ int lttng_syscall_filter_disable(struct lttng_channel *chan,
 	WARN_ON_ONCE(!chan->sc_table);
 
 	if (!chan->sc_filter) {
+		if (!chan->syscall_all)
+			return -EEXIST;
 		filter = kzalloc(sizeof(struct lttng_syscall_filter),
 				GFP_KERNEL);
 		if (!filter)
