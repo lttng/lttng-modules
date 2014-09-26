@@ -214,6 +214,18 @@ int lttng_enumerate_network_ip_interface(struct lttng_session *session)
 }
 #endif /* CONFIG_INET */
 
+#ifdef FD_ISSET	/* For old kernels lacking close_on_exec() */
+static inline bool lttng_close_on_exec(int fd, const struct fdtable *fdt)
+{
+	return FD_ISSET(fd, fdt->close_on_exec);
+}
+#else
+static inline bool lttng_close_on_exec(int fd, const struct fdtable *fdt)
+{
+	return close_on_exec(fd, fdt);
+}
+#endif
+
 static
 int lttng_dump_one_fd(const void *p, struct file *file, unsigned int fd)
 {
@@ -237,7 +249,7 @@ int lttng_dump_one_fd(const void *p, struct file *file, unsigned int fd)
 	 * the lock is taken, but we are not aware whether this is
 	 * guaranteed or not, so play safe.
 	 */
-	if (fd < fdt->max_fds && test_bit(fd, fdt->close_on_exec))
+	if (fd < fdt->max_fds && lttng_close_on_exec(fd, fdt))
 		flags |= O_CLOEXEC;
 	if (IS_ERR(s)) {
 		struct dentry *dentry = file->f_path.dentry;
