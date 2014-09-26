@@ -311,6 +311,7 @@ struct lttng_metadata_stream {
 	wait_queue_head_t read_wait;	/* Reader buffer-level wait queue */
 	struct list_head list;		/* Stream list */
 	struct lttng_transport *transport;
+	struct mutex lock;
 };
 
 struct lttng_session {
