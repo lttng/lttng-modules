@@ -99,11 +99,12 @@ static void client_buffer_begin(struct lib_ring_buffer *buf, u64 tsc,
 		(struct metadata_packet_header *)
 			lib_ring_buffer_offset_address(&buf->backend,
 				subbuf_idx * chan->backend.subbuf_size);
-	struct lttng_channel *lttng_chan = channel_get_private(chan);
-	struct lttng_session *session = lttng_chan->session;
+	struct lttng_metadata_cache *metadata_cache =
+		channel_get_private(chan);
 
 	header->magic = TSDL_MAGIC_NUMBER;
-	memcpy(header->uuid, session->uuid.b, sizeof(session->uuid));
+	memcpy(header->uuid, metadata_cache->uuid.b,
+		sizeof(metadata_cache->uuid));
 	header->checksum = 0;		/* 0 if unused */
 	header->content_size = 0xFFFFFFFF; /* in bits, for debugging */
 	header->packet_size = 0xFFFFFFFF;  /* in bits, for debugging */
@@ -239,7 +240,8 @@ struct channel *_channel_create(const char *name,
 {
 	struct channel *chan;
 
-	chan = channel_create(&client_config, name, lttng_chan, buf_addr,
+	chan = channel_create(&client_config, name,
+			      lttng_chan->session->metadata_cache, buf_addr,
 			      subbuf_size, num_subbuf, switch_timer_interval,
 			      read_timer_interval);
 	if (chan) {
