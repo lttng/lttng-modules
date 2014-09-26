@@ -98,6 +98,8 @@ struct lttng_session *lttng_session_create(void)
 	kref_init(&metadata_cache->refcount);
 	session->metadata_cache = metadata_cache;
 	INIT_LIST_HEAD(&metadata_cache->metadata_stream);
+	memcpy(&metadata_cache->uuid, &session->uuid,
+		sizeof(metadata_cache->uuid));
 	list_add(&session->list, &sessions);
 	mutex_unlock(&sessions_mutex);
 	return session;

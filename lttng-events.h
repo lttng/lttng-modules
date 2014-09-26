@@ -333,6 +333,7 @@ struct lttng_metadata_cache {
 	unsigned int metadata_written;	/* Number of bytes written in metadata cache */
 	struct kref refcount;		/* Metadata cache usage */
 	struct list_head metadata_stream;	/* Metadata stream list */
+	uuid_le uuid;			/* Trace session unique ID (copy) */
 };
 
 struct lttng_session *lttng_session_create(void);
