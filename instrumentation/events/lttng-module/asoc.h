@@ -21,6 +21,14 @@ struct snd_soc_card;
 struct snd_soc_dapm_widget;
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
+#define CODEC_NAME_FIELD component.name
+#define CODEC_ID_FIELD component.id
+#else
+#define CODEC_NAME_FIELD name
+#define CODEC_ID_FIELD id
+#endif
+
 /*
  * Log register events
  */
@@ -32,15 +40,15 @@ DECLARE_EVENT_CLASS(snd_soc_reg,
 	TP_ARGS(codec, reg, val),
 
 	TP_STRUCT__entry(
-		__string(	name,		codec->name	)
+		__string(	name,		codec->CODEC_NAME_FIELD	)
 		__field(	int,		id		)
 		__field(	unsigned int,	reg		)
 		__field(	unsigned int,	val		)
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, codec->name)
-		tp_assign(id, codec->id)
+		tp_strcpy(name, codec->CODEC_NAME_FIELD)
+		tp_assign(id, codec->CODEC_ID_FIELD)
 		tp_assign(reg, reg)
 		tp_assign(val, val)
 	),
@@ -77,15 +85,15 @@ DECLARE_EVENT_CLASS(snd_soc_preg,
 	TP_ARGS(platform, reg, val),
 
 	TP_STRUCT__entry(
-		__string(	name,		platform->name	)
+		__string(	name,		platform->CODEC_NAME_FIELD	)
 		__field(	int,		id		)
 		__field(	unsigned int,	reg		)
 		__field(	unsigned int,	val		)
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, platform->name)
-		tp_assign(id, platform->id)
+		tp_strcpy(name, platform->CODEC_NAME_FIELD)
+		tp_assign(id, platform->CODEC_ID_FIELD)
 		tp_assign(reg, reg)
 		tp_assign(val, val)
 	),
@@ -399,17 +407,17 @@ TRACE_EVENT(snd_soc_cache_sync,
 	TP_ARGS(codec, type, status),
 
 	TP_STRUCT__entry(
-		__string(	name,		codec->name	)
+		__string(	name,		codec->CODEC_NAME_FIELD	)
 		__string(	status,		status		)
 		__string(	type,		type		)
 		__field(	int,		id		)
 	),
 
 	TP_fast_assign(
-		tp_strcpy(name, codec->name)
+		tp_strcpy(name, codec->CODEC_NAME_FIELD)
 		tp_strcpy(status, status)
 		tp_strcpy(type, type)
-		tp_assign(id, codec->id)
+		tp_assign(id, codec->CODEC_ID_FIELD)
 	),
 
 	TP_printk("codec=%s.%d type=%s status=%s", __get_str(name),
