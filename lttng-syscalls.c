@@ -91,6 +91,7 @@ struct mmap_arg_struct;
 #define PARAMS(args...)	args
 
 /* Handle unknown syscalls */
+#undef TRACE_SYSTEM
 #define TRACE_SYSTEM syscalls_unknown
 #include "instrumentation/syscalls/headers/syscalls_unknown.h"
 #undef TRACE_SYSTEM
