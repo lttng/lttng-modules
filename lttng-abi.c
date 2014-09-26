@@ -841,6 +841,7 @@ int lttng_abi_open_metadata_stream(struct file *channel_file)
 	metadata_stream->priv = buf;
 	stream_priv = metadata_stream;
 	metadata_stream->transport = channel->transport;
+	mutex_init(&metadata_stream->lock);
 
 	/*
 	 * Since life-time of metadata cache differs from that of
