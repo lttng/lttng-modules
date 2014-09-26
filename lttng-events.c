@@ -597,16 +597,20 @@ int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 
 	/*
 	 * Ensure we support mutiple get_next / put sequences followed
-	 * by put_next.
+	 * by put_next. The metadata stream lock internally protects
+	 * reading the metadata cache. It can indeed be read
+	 * concurrently by "get_next_subbuf" and "flush" operations on
+	 * the buffer invoked by different processes.
 	 */
+	mutex_lock(&stream->lock);
 	WARN_ON(stream->metadata_in < stream->metadata_out);
 	if (stream->metadata_in != stream->metadata_out)
-		return 0;
+		goto end;
 
 	len = stream->metadata_cache->metadata_written -
 		stream->metadata_in;
 	if (!len)
-		return 0;
+		goto end;
 	reserve_len = min_t(size_t,
 			stream->transport->ops.packet_avail_size(chan),
 			len);
@@ -628,6 +632,7 @@ int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 	ret = reserve_len;
 
 end:
+	mutex_unlock(&stream->lock);
 	return ret;
 }
 
