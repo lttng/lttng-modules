@@ -69,8 +69,7 @@
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT_MAP(template, name, map, proto, args, print)
 
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION_MAP
-#define LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION_MAP(template, name, map, proto, args, cond) \
-	LTTNG_TRACEPOINT_EVENT_INSTANCE(template, name, PARAMS(proto), PARAMS(args))
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION_MAP(template, name, map, proto, args, cond)
 
 #undef LTTNG_TRACEPOINT_EVENT
 #define LTTNG_TRACEPOINT_EVENT(name, proto, args, tstruct, assign, print)

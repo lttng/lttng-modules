@@ -87,6 +87,10 @@
 		PARAMS(assign),						\
 		PARAMS(print))
 
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION_MAP
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION_MAP(template, name, map, proto, args, cond) \
+	LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(template, name, map, PARAMS(proto), PARAMS(args))
+
 /*
  * LTTNG_TRACEPOINT_EVENT_CLASS can be used to add a generic function
  * handlers for events. That is, if all events have the same parameters
