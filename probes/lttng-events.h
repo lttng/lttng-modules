@@ -837,6 +837,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	struct probe_local_vars { _locvar };				      \
 	struct lttng_event *__event = __data;				      \
 	struct lttng_channel *__chan = __event->chan;			      \
+	struct lttng_session *__session = __chan->session;		      \
 	struct lib_ring_buffer_ctx __ctx;				      \
 	size_t __event_len, __event_align;				      \
 	size_t __dynamic_len_idx __attribute__((unused)) = 0;		      \
@@ -846,14 +847,18 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	struct probe_local_vars __tp_locvar;				      \
 	struct probe_local_vars *tp_locvar __attribute__((unused)) =	      \
 			&__tp_locvar;					      \
+	struct lttng_pid_tracker *__lpf;				      \
 									      \
-	if (!_TP_SESSION_CHECK(session, __chan->session))		      \
+	if (!_TP_SESSION_CHECK(session, __session))			      \
 		return;							      \
-	if (unlikely(!ACCESS_ONCE(__chan->session->active)))		      \
+	if (unlikely(!ACCESS_ONCE(__session->active)))			      \
 		return;							      \
 	if (unlikely(!ACCESS_ONCE(__chan->enabled)))			      \
 		return;							      \
 	if (unlikely(!ACCESS_ONCE(__event->enabled)))			      \
+		return;							      \
+	__lpf = rcu_dereference(__session->pid_tracker);		      \
+	if (__lpf && likely(!lttng_pid_tracker_lookup(__lpf, current->pid)))  \
 		return;							      \
 	_code								      \
 	__event_len = __event_get_size__##_name(__dynamic_len, tp_locvar,     \
@@ -879,6 +884,7 @@ static void __event_probe__##_name(void *__data)			      \
 	struct probe_local_vars { _locvar };				      \
 	struct lttng_event *__event = __data;				      \
 	struct lttng_channel *__chan = __event->chan;			      \
+	struct lttng_session *__session = __chan->session;		      \
 	struct lib_ring_buffer_ctx __ctx;				      \
 	size_t __event_len, __event_align;				      \
 	size_t __dynamic_len_idx __attribute__((unused)) = 0;		      \
@@ -888,14 +894,18 @@ static void __event_probe__##_name(void *__data)			      \
 	struct probe_local_vars __tp_locvar;				      \
 	struct probe_local_vars *tp_locvar __attribute__((unused)) =	      \
 			&__tp_locvar;					      \
+	struct lttng_pid_tracker *__lpf;				      \
 									      \
-	if (!_TP_SESSION_CHECK(session, __chan->session))		      \
+	if (!_TP_SESSION_CHECK(session, __session))			      \
 		return;							      \
-	if (unlikely(!ACCESS_ONCE(__chan->session->active)))		      \
+	if (unlikely(!ACCESS_ONCE(__session->active)))			      \
 		return;							      \
 	if (unlikely(!ACCESS_ONCE(__chan->enabled)))			      \
 		return;							      \
 	if (unlikely(!ACCESS_ONCE(__event->enabled)))			      \
+		return;							      \
+	__lpf = rcu_dereference(__session->pid_tracker);		      \
+	if (__lpf && likely(!lttng_pid_tracker_lookup(__lpf, current->pid)))  \
 		return;							      \
 	_code								      \
 	__event_len = __event_get_size__##_name(__dynamic_len, tp_locvar);    \

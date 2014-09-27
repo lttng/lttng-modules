@@ -324,6 +324,18 @@ struct lttng_metadata_stream {
 	struct mutex lock;
 };
 
+
+/*
+ * struct lttng_pid_tracker declared in header due to deferencing of *v
+ * in RCU_INITIALIZER(v).
+ */
+#define LTTNG_PID_HASH_BITS	6
+#define LTTNG_PID_TABLE_SIZE	(1 << LTTNG_PID_HASH_BITS)
+
+struct lttng_pid_tracker {
+	struct hlist_head pid_hash[LTTNG_PID_TABLE_SIZE];
+};
+
 struct lttng_session {
 	int active;			/* Is trace session active ? */
 	int been_active;		/* Has trace session been active ? */
@@ -334,6 +346,7 @@ struct lttng_session {
 	unsigned int free_chan_id;	/* Next chan ID to allocate */
 	uuid_le uuid;			/* Trace session unique ID */
 	struct lttng_metadata_cache *metadata_cache;
+	struct lttng_pid_tracker *pid_tracker;
 	unsigned int metadata_dumped:1;
 };
 
@@ -398,6 +411,15 @@ void lttng_probes_exit(void);
 
 int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 		struct channel *chan);
+
+struct lttng_pid_tracker *lttng_pid_tracker_create(void);
+void lttng_pid_tracker_destroy(struct lttng_pid_tracker *lpf);
+bool lttng_pid_tracker_lookup(struct lttng_pid_tracker *lpf, int pid);
+int lttng_pid_tracker_add(struct lttng_pid_tracker *lpf, int pid);
+int lttng_pid_tracker_del(struct lttng_pid_tracker *lpf, int pid);
+
+int lttng_session_track_pid(struct lttng_session *session, int pid);
+int lttng_session_untrack_pid(struct lttng_session *session, int pid);
 
 #if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
 int lttng_syscalls_register(struct lttng_channel *chan, void *filter);

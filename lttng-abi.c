@@ -423,6 +423,10 @@ fd_error:
  *		Disables tracing for a session (strong disable)
  *	LTTNG_KERNEL_METADATA
  *		Returns a LTTng metadata file descriptor
+ *	LTTNG_KERNEL_SESSION_TRACK_PID
+ *		Add PID to session tracker
+ *	LTTNG_KERNEL_SESSION_UNTRACK_PID
+ *		Remove PID from session tracker
  *
  * The returned channel will be deleted when its file descriptor is closed.
  */
@@ -502,6 +506,10 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return lttng_abi_create_channel(file, &chan_param,
 				METADATA_CHANNEL);
 	}
+	case LTTNG_KERNEL_SESSION_TRACK_PID:
+		return lttng_session_track_pid(session, (int) arg);
+	case LTTNG_KERNEL_SESSION_UNTRACK_PID:
+		return lttng_session_untrack_pid(session, (int) arg);
 	default:
 		return -ENOIOCTLCMD;
 	}

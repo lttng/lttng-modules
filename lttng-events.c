@@ -147,6 +147,8 @@ void lttng_session_destroy(struct lttng_session *session)
 	}
 	list_for_each_entry(metadata_stream, &session->metadata_cache->metadata_stream, list)
 		_lttng_metadata_channel_hangup(metadata_stream);
+	if (session->pid_tracker)
+		lttng_pid_tracker_destroy(session->pid_tracker);
 	kref_put(&session->metadata_cache->refcount, metadata_cache_destroy);
 	list_del(&session->list);
 	mutex_unlock(&sessions_mutex);
@@ -584,6 +586,78 @@ void _lttng_event_destroy(struct lttng_event *event)
 	list_del(&event->list);
 	lttng_destroy_context(event->ctx);
 	kmem_cache_free(event_cache, event);
+}
+
+int lttng_session_track_pid(struct lttng_session *session, int pid)
+{
+	int ret;
+
+	if (pid < -1)
+		return -EINVAL;
+	mutex_lock(&sessions_mutex);
+	if (pid == -1) {
+		/* track all pids: destroy tracker. */
+		if (session->pid_tracker) {
+			struct lttng_pid_tracker *lpf;
+
+			lpf = session->pid_tracker;
+			rcu_assign_pointer(session->pid_tracker, NULL);
+			synchronize_trace();
+			lttng_pid_tracker_destroy(lpf);
+		}
+		ret = 0;
+	} else {
+		if (!session->pid_tracker) {
+			struct lttng_pid_tracker *lpf;
+
+			lpf = lttng_pid_tracker_create();
+			if (!lpf) {
+				ret = -ENOMEM;
+				goto unlock;
+			}
+			ret = lttng_pid_tracker_add(lpf, pid);
+			rcu_assign_pointer(session->pid_tracker, lpf);
+		} else {
+			ret = lttng_pid_tracker_add(session->pid_tracker, pid);
+		}
+	}
+unlock:
+	mutex_unlock(&sessions_mutex);
+	return ret;
+}
+
+int lttng_session_untrack_pid(struct lttng_session *session, int pid)
+{
+	int ret;
+
+	if (pid < -1)
+		return -EINVAL;
+	mutex_lock(&sessions_mutex);
+	if (pid == -1) {
+		/* untrack all pids: replace by empty tracker. */
+		struct lttng_pid_tracker *old_lpf = session->pid_tracker;
+		struct lttng_pid_tracker *lpf;
+
+		lpf = lttng_pid_tracker_create();
+		if (!lpf) {
+			ret = -ENOMEM;
+			goto unlock;
+		}
+		rcu_assign_pointer(session->pid_tracker, lpf);
+		synchronize_trace();
+		if (old_lpf)
+			lttng_pid_tracker_destroy(old_lpf);
+		ret = 0;
+	} else {
+		if (!session->pid_tracker) {
+			ret = -ENOENT;
+			goto unlock;
+		}
+		ret = lttng_pid_tracker_del(session->pid_tracker, pid);
+	}
+unlock:
+	mutex_unlock(&sessions_mutex);
+	return ret;
 }
 
 /*
