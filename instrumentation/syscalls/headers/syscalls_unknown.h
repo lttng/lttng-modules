@@ -10,10 +10,10 @@
 #define TP_PROBE_CB(_template)          &syscall_entry_probe
 
 LTTNG_TRACEPOINT_EVENT(syscall_entry_unknown,
-	TP_PROTO(unsigned int id, unsigned long *args),
+	TP_PROTO(int id, unsigned long *args),
 	TP_ARGS(id, args),
 	TP_STRUCT__entry(
-		__field(unsigned int, id)
+		__field(int, id)
 		__array(unsigned long, args, UNKNOWN_SYSCALL_NRARGS)
 	),
 	TP_fast_assign(
@@ -23,10 +23,10 @@ LTTNG_TRACEPOINT_EVENT(syscall_entry_unknown,
 	TP_printk()
 )
 LTTNG_TRACEPOINT_EVENT(compat_syscall_entry_unknown,
-	TP_PROTO(unsigned int id, unsigned long *args),
+	TP_PROTO(int id, unsigned long *args),
 	TP_ARGS(id, args),
 	TP_STRUCT__entry(
-		__field(unsigned int, id)
+		__field(int, id)
 		__array(unsigned long, args, UNKNOWN_SYSCALL_NRARGS)
 	),
 	TP_fast_assign(
@@ -40,10 +40,10 @@ LTTNG_TRACEPOINT_EVENT(compat_syscall_entry_unknown,
 #define TP_PROBE_CB(_template)          &syscall_exit_probe
 
 LTTNG_TRACEPOINT_EVENT(syscall_exit_unknown,
-	TP_PROTO(unsigned int id, long ret, unsigned long *args),
+	TP_PROTO(int id, long ret, unsigned long *args),
 	TP_ARGS(id, ret, args),
 	TP_STRUCT__entry(
-		__field(unsigned int, id)
+		__field(int, id)
 		__field(long, ret)
 		__array(unsigned long, args, UNKNOWN_SYSCALL_NRARGS)
 	),
@@ -55,10 +55,10 @@ LTTNG_TRACEPOINT_EVENT(syscall_exit_unknown,
 	TP_printk()
 )
 LTTNG_TRACEPOINT_EVENT(compat_syscall_exit_unknown,
-	TP_PROTO(unsigned int id, long ret, unsigned long *args),
+	TP_PROTO(int id, long ret, unsigned long *args),
 	TP_ARGS(id, ret, args),
 	TP_STRUCT__entry(
-		__field(unsigned int, id)
+		__field(int, id)
 		__field(long, ret)
 		__array(unsigned long, args, UNKNOWN_SYSCALL_NRARGS)
 	),

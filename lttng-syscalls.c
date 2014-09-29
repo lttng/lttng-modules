@@ -375,7 +375,7 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 
 		filter = rcu_dereference(chan->sc_filter);
 		if (filter) {
-			if (id >= NR_compat_syscalls
+			if (id < 0 || id >= NR_compat_syscalls
 				|| !test_bit(id, filter->sc_compat)) {
 				/* System call filtered out. */
 				return;
@@ -389,7 +389,7 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 
 		filter = rcu_dereference(chan->sc_filter);
 		if (filter) {
-			if (id >= NR_syscalls
+			if (id < 0 || id >= NR_syscalls
 				|| !test_bit(id, filter->sc)) {
 				/* System call filtered out. */
 				return;
@@ -399,7 +399,7 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 		table_len = ARRAY_SIZE(sc_table);
 		unknown_event = chan->sc_unknown;
 	}
-	if (unlikely(id >= table_len)) {
+	if (unlikely(id < 0 || id >= table_len)) {
 		syscall_entry_unknown(unknown_event, regs, id);
 		return;
 	}
@@ -503,7 +503,7 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 }
 
 static void syscall_exit_unknown(struct lttng_event *event,
-	struct pt_regs *regs, unsigned int id, long ret)
+	struct pt_regs *regs, int id, long ret)
 {
 	unsigned long args[UNKNOWN_SYSCALL_NRARGS];
 
@@ -529,7 +529,7 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 
 		filter = rcu_dereference(chan->sc_filter);
 		if (filter) {
-			if (id >= NR_compat_syscalls
+			if (id < 0 || id >= NR_compat_syscalls
 				|| !test_bit(id, filter->sc_compat)) {
 				/* System call filtered out. */
 				return;
@@ -543,7 +543,7 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 
 		filter = rcu_dereference(chan->sc_filter);
 		if (filter) {
-			if (id >= NR_syscalls
+			if (id < 0 || id >= NR_syscalls
 				|| !test_bit(id, filter->sc)) {
 				/* System call filtered out. */
 				return;
@@ -553,7 +553,7 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 		table_len = ARRAY_SIZE(sc_exit_table);
 		unknown_event = chan->sc_exit_unknown;
 	}
-	if (unlikely(id >= table_len)) {
+	if (unlikely(id < 0 || id >= table_len)) {
 		syscall_exit_unknown(unknown_event, regs, id, ret);
 		return;
 	}
