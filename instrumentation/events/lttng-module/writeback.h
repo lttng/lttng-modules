@@ -99,6 +99,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_class,
 		  __entry->name
 	)
 )
+#undef DEFINE_WRITEBACK_EVENT
 #define DEFINE_WRITEBACK_EVENT(name) \
 LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_class, name, \
 	TP_PROTO(struct backing_dev_info *bdi), \
