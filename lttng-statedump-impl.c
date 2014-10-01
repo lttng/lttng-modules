@@ -411,12 +411,13 @@ void lttng_statedump_process_ns(struct lttng_session *session,
 	 * "namespaces: Use task_lock and not rcu to protect nsproxy"
 	 * for details.
 	 */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0) || \
+		LTTNG_UBUNTU_KERNEL_RANGE(3,13,11,36, 3,14,0,0))
 	proxy = p->nsproxy;
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)) */
+#else
 	rcu_read_lock();
 	proxy = task_nsproxy(p);
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)) */
+#endif
 	if (proxy) {
 		pid_ns = lttng_get_proxy_pid_ns(proxy);
 		do {
@@ -428,11 +429,12 @@ void lttng_statedump_process_ns(struct lttng_session *session,
 		trace_lttng_statedump_process_state(session,
 			p, type, mode, submode, status, NULL);
 	}
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0) || \
+		LTTNG_UBUNTU_KERNEL_RANGE(3,13,11,36, 3,14,0,0))
 	/* (nothing) */
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)) */
+#else
 	rcu_read_unlock();
-#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)) */
+#endif
 }
 
 static
