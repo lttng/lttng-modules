@@ -24,6 +24,7 @@
  */
 
 #include <linux/version.h>
+#include <linux/vermagic.h>
 
 /*
  * This macro checks if the kernel version is between the two specified
@@ -32,5 +33,19 @@
 #define LTTNG_KERNEL_RANGE(a_low, b_low, c_low, a_high, b_high, c_high) \
 	(LINUX_VERSION_CODE >= KERNEL_VERSION(a_low, b_low, c_low) && \
 	 LINUX_VERSION_CODE < KERNEL_VERSION(a_high, b_high, c_high))
+
+#define LTTNG_UBUNTU_KERNEL_VERSION(a, b, c, d) \
+	(((a) << 24) + ((b) << 16) + (c << 8) + (d))
+
+#define LTTNG_UBUNTU_VERSION_CODE \
+	((LINUX_VERSION_CODE << 8) + UTS_UBUNTU_RELEASE_ABI)
+
+#define LTTNG_UBUNTU_KERNEL_RANGE(a_low, b_low, c_low, d_low, \
+		a_high, b_high, c_high, d_high) \
+	(defined(UTS_UBUNTU_RELEASE_ABI) && \
+		LTTNG_UBUNTU_VERSION_CODE >= \
+		LTTNG_UBUNTU_KERNEL_VERSION(a_low, b_low, c_low, d_low) && \
+		LTTNG_UBUNTU_VERSION_CODE < \
+		LTTNG_UBUNTU_KERNEL_VERSION(a_high, b_high, c_high, d_high))
 
 #endif /* _LTTNG_KERNEL_VERSION_H */
