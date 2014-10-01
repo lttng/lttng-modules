@@ -225,7 +225,8 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_requeue,
 	|| LTTNG_KERNEL_RANGE(3,12,21, 3,13,0)		\
 	|| LTTNG_KERNEL_RANGE(3,10,41, 3,11,0)		\
 	|| LTTNG_KERNEL_RANGE(3,4,91, 3,5,0)		\
-	|| LTTNG_KERNEL_RANGE(3,2,58, 3,3,0))
+	|| LTTNG_KERNEL_RANGE(3,2,58, 3,3,0)		\
+	|| LTTNG_UBUNTU_KERNEL_RANGE(3,13,11,31, 3,14,0,0))
 
 /**
  * block_rq_complete - block IO operation completed by device driver
