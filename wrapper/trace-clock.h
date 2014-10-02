@@ -140,11 +140,6 @@ static inline u64 trace_clock_monotonic_wrapper(void)
 }
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)) */
 
-static inline u32 trace_clock_read32(void)
-{
-	return (u32) trace_clock_monotonic_wrapper();
-}
-
 static inline u64 trace_clock_read64(void)
 {
 	return (u64) trace_clock_monotonic_wrapper();
