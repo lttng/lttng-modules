@@ -132,7 +132,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
 	TP_PROTO(struct backing_dev_info *bdi, struct wb_writeback_work *work),
 	TP_ARGS(bdi, work),
 	TP_STRUCT__entry(
-		__array(char, name, 32)
+		__array_text(char, name, 32)
 	),
 	TP_fast_assign(
 		tp_memcpy(name, dev_name(bdi->dev ? bdi->dev :
@@ -171,7 +171,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_class,
 	TP_PROTO(struct backing_dev_info *bdi),
 	TP_ARGS(bdi),
 	TP_STRUCT__entry(
-		__array(char, name, 32)
+		__array_text(char, name, 32)
 	),
 	TP_fast_assign(
 		tp_memcpy(name, dev_name(bdi->dev), 32)
@@ -234,7 +234,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_wbc_class,
 	TP_PROTO(struct writeback_control *wbc, struct backing_dev_info *bdi),
 	TP_ARGS(wbc, bdi),
 	TP_STRUCT__entry(
-		__array(char, name, 32)
+		__array_text(char, name, 32)
 		__field(long, nr_to_write)
 		__field(long, pages_skipped)
 		__field(int, sync_mode)
@@ -574,7 +574,7 @@ LTTNG_TRACEPOINT_EVENT(writeback_sb_inodes_requeue,
 	TP_ARGS(inode),
 
 	TP_STRUCT__entry(
-		__array(char, name, 32)
+		__array_text(char, name, 32)
 		__field(unsigned long, ino)
 		__field(unsigned long, state)
 		__field(unsigned long, dirtied_when)
@@ -645,7 +645,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_single_inode_template,
 	TP_ARGS(inode, wbc, nr_to_write),
 
 	TP_STRUCT__entry(
-		__array(char, name, 32)
+		__array_text(char, name, 32)
 		__field(unsigned long, ino)
 		__field(unsigned long, state)
 		__field(unsigned long, dirtied_when)
