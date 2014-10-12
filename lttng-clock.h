@@ -1,14 +1,10 @@
-#ifndef _LTTNG_WRAPPER_RANDOM_H
-#define _LTTNG_WRAPPER_RANDOM_H
+#ifndef _LTTNG_CLOCK_H
+#define _LTTNG_CLOCK_H
 
 /*
- * wrapper/random.h
+ * lttng-clock.h
  *
- * wrapper around bootid read. Using KALLSYMS to get its address when
- * available, else we need to have a kernel that exports this function to GPL
- * modules.
- *
- * Copyright (C) 2011-2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+ * Copyright (C) 2014 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,10 +21,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "../lttng-clock.h"
+#include <linux/module.h>
 
-#define BOOT_ID_LEN	LTTNG_MODULES_UUID_STR_LEN
+#define LTTNG_MODULES_UUID_STR_LEN	37
 
-int wrapper_get_bootid(char *bootid);
+struct lttng_trace_clock {
+	u64 (*read64)(void);
+	u64 (*freq)(void);
+	int (*uuid)(char *uuid);
+	const char *(*name)(void);
+	const char *(*description)(void);
+};
 
-#endif /* _LTTNG_WRAPPER_RANDOM_H */
+int lttng_clock_register_plugin(struct lttng_trace_clock *ltc,
+		struct module *mod);
+void lttng_clock_unregister_plugin(struct lttng_trace_clock *ltc,
+		struct module *mod);
+
+#endif /* _LTTNG_TRACE_CLOCK_H */

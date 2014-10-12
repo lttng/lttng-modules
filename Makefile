@@ -31,6 +31,7 @@ obj-m += lttng-ring-buffer-metadata-client.o
 obj-m += lttng-ring-buffer-client-mmap-discard.o
 obj-m += lttng-ring-buffer-client-mmap-overwrite.o
 obj-m += lttng-ring-buffer-metadata-mmap-client.o
+obj-m += lttng-clock.o
 
 obj-m += lttng-tracer.o
 lttng-tracer-objs :=  lttng-events.o lttng-abi.o \

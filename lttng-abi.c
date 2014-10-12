@@ -1676,6 +1676,7 @@ int __init lttng_abi_init(void)
 	int ret = 0;
 
 	wrapper_vmalloc_sync_all();
+	lttng_clock_ref();
 	lttng_proc_dentry = proc_create_data("lttng", S_IRUSR | S_IWUSR, NULL,
 					&lttng_fops, NULL);
 	
@@ -1685,14 +1686,17 @@ int __init lttng_abi_init(void)
 		goto error;
 	}
 	lttng_stream_override_ring_buffer_fops();
+	return 0;
 
 error:
+	lttng_clock_unref();
 	return ret;
 }
 
 /* No __exit annotation because used by init error path too. */
 void lttng_abi_exit(void)
 {
+	lttng_clock_unref();
 	if (lttng_proc_dentry)
 		remove_proc_entry("lttng", NULL);
 }

@@ -36,6 +36,7 @@
 #include <linux/version.h>
 #include <asm/local.h>
 #include "../lttng-kernel-version.h"
+#include "../lttng-clock.h"
 #include "percpu-defs.h"
 #include "random.h"
 
@@ -43,6 +44,8 @@
 	|| LTTNG_KERNEL_RANGE(3,11,0, 3,11,3))
 #error "Linux kernels 3.10 and 3.11 introduce a deadlock in the timekeeping subsystem. Fixed by commit 7bd36014460f793c19e7d6c94dab67b0afcfcb7f \"timekeeping: Fix HRTICK related deadlock from ntp lock changes\" in Linux."
 #endif
+
+extern struct lttng_trace_clock *lttng_trace_clock;
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0))
 
@@ -142,19 +145,29 @@ static inline u64 trace_clock_monotonic_wrapper(void)
 }
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)) */
 
-static inline u64 trace_clock_read64(void)
+static inline u64 trace_clock_read64_monotonic(void)
 {
 	return (u64) trace_clock_monotonic_wrapper();
 }
 
-static inline u64 trace_clock_freq(void)
+static inline u64 trace_clock_freq_monotonic(void)
 {
 	return (u64) NSEC_PER_SEC;
 }
 
-static inline int trace_clock_uuid(char *uuid)
+static inline int trace_clock_uuid_monotonic(char *uuid)
 {
 	return wrapper_get_bootid(uuid);
+}
+
+static inline const char *trace_clock_name_monotonic(void)
+{
+	return "monotonic";
+}
+
+static inline const char *trace_clock_description_monotonic(void)
+{
+	return "Monotonic Clock";
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0))
@@ -173,6 +186,67 @@ static inline int get_trace_clock(void)
 
 static inline void put_trace_clock(void)
 {
+}
+
+static inline u64 trace_clock_read64(void)
+{
+	struct lttng_trace_clock *ltc = ACCESS_ONCE(lttng_trace_clock);
+
+	if (likely(!ltc)) {
+		return trace_clock_read64_monotonic();
+	} else {
+		read_barrier_depends();	/* load ltc before content */
+		return ltc->read64();
+	}
+}
+
+static inline u64 trace_clock_freq(void)
+{
+	struct lttng_trace_clock *ltc = ACCESS_ONCE(lttng_trace_clock);
+
+	if (!ltc) {
+		return trace_clock_freq_monotonic();
+	} else {
+		read_barrier_depends();	/* load ltc before content */
+		return ltc->freq();
+	}
+}
+
+static inline int trace_clock_uuid(char *uuid)
+{
+	struct lttng_trace_clock *ltc = ACCESS_ONCE(lttng_trace_clock);
+
+	read_barrier_depends();	/* load ltc before content */
+	/* Use default UUID cb when NULL */
+	if (!ltc || !ltc->uuid) {
+		return trace_clock_uuid_monotonic(uuid);
+	} else {
+		return ltc->uuid(uuid);
+	}
+}
+
+static inline const char *trace_clock_name(void)
+{
+	struct lttng_trace_clock *ltc = ACCESS_ONCE(lttng_trace_clock);
+
+	if (!ltc) {
+		return trace_clock_name_monotonic();
+	} else {
+		read_barrier_depends();	/* load ltc before content */
+		return ltc->name();
+	}
+}
+
+static inline const char *trace_clock_description(void)
+{
+	struct lttng_trace_clock *ltc = ACCESS_ONCE(lttng_trace_clock);
+
+	if (!ltc) {
+		return trace_clock_description_monotonic();
+	} else {
+		read_barrier_depends();	/* load ltc before content */
+		return ltc->description();
+	}
 }
 
 #endif /* CONFIG_HAVE_TRACE_CLOCK */

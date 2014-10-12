@@ -557,6 +557,9 @@ int lttng_session_untrack_pid(struct lttng_session *session, int pid);
 
 int lttng_session_list_tracker_pids(struct lttng_session *session);
 
+void lttng_clock_ref(void);
+void lttng_clock_unref(void);
+
 #if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
 int lttng_syscalls_register(struct lttng_channel *chan, void *filter);
 int lttng_syscalls_unregister(struct lttng_channel *chan);
