@@ -210,6 +210,8 @@ obj-m +=  $(shell \
 	if [ $(VERSION) -ge 3 \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 36 \) ] ; then \
 		echo "lttng-probe-writeback.o" ; fi;)
+else
+$(warning CONFIG_KALLSYMS_ALL is disabled, therefore probe "writeback" is disabled. Rebuild your kernel with this configuration option enabled in order to trace this subsystem.)
 endif
 
 
