@@ -1230,13 +1230,31 @@ long lttng_channel_syscall_mask(struct lttng_channel *channel,
 	filter = channel->sc_filter;
 
 	for (bit = 0; bit < ARRAY_SIZE(sc_table); bit++) {
-		bt_bitfield_write_be(tmp_mask, char, bit, 1,
-			filter ? test_bit(bit, filter->sc) : 1);
+		bool state;
+
+		if (channel->sc_table) {
+			if (filter)
+				state = test_bit(bit, filter->sc);
+			else
+				state = 1;
+		} else {
+			state = 0;
+		}
+		bt_bitfield_write_be(tmp_mask, char, bit, 1, state);
 	}
 	for (; bit < sc_tables_len; bit++) {
-		bt_bitfield_write_be(tmp_mask, char, bit, 1,
-			filter ? test_bit(bit - ARRAY_SIZE(sc_table),
-				filter->sc_compat) : 1);
+		bool state;
+
+		if (channel->compat_sc_table) {
+			if (filter)
+				state = test_bit(bit - ARRAY_SIZE(sc_table),
+						filter->sc_compat);
+			else
+				state = 1;
+		} else {
+			state = 0;
+		}
+		bt_bitfield_write_be(tmp_mask, char, bit, 1, state);
 	}
 	if (copy_to_user(usyscall_mask->mask, tmp_mask, bitmask_len))
 		ret = -EFAULT;
