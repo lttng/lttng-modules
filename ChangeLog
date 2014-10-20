@@ -1,3 +1,67 @@
+2014-10-20 LTTng modules 2.6.0-rc1
+	* Expose lttng-modules ABI version ioctl
+	* Fix: syscall list ioctl number conflict
+	* lttng-modules: fix build for non-x86
+	* Fix: syscall listing of session
+	* Print build warning when writeback probe is disabled
+	* Add atomic.h wrapper for before/after atomic
+	* Fix compilation on Ubuntu 14.10
+	* Fix: export name as text array in writeback
+	* Cleanup: remove unused trace_clock_read32()
+	* Use 3.17 ktime_get_mono_fast_ns() new API
+	* Check for stale version.h files
+	* Fix: compile lttng_statedump_process_ns on Ubuntu
+	* Reverse version check logic in lttng_statedump_process_ns
+	* Fix block_rq_complete TP on Ubuntu kernel
+	* Introduce macros to check Ubuntu kernel version
+	* Sync writeback tracepoints from mainline
+	* Fix: redefinition of DEFINE_WRITEBACK_EVENT
+	* Fix: hander negative get_syscall_nr return value
+	* Fix: statedump: close_on_exec flag backward compat
+	* Fix instrumentation of vmscan for older kernels
+	* Fix: older kernels (3.2.x) don't undefine TRACE_SYSTEM
+	* Fix: syscall listing: handle "enable all syscall"
+	* Fix: don't allow disabling syscalls when none are enabled
+	* Fix: syscall: fail disable all if all already disabled
+	* Fix: syscall filtering: NULL pointer deref
+	* Cleanup: list syscall without syscall_entry prefix
+	* Fix: syscall_list_show NULL pointer deref
+	* implement syscall mask getter
+	* Cleanup: lttng-abi.h coding style
+	* syscall listing: show syscall ID
+	* Allow events with same name to be enabled for each channel
+	* ABI: use enable a syscall ABI field name
+	* Implement syscall listing
+	* Fix: tracepoint list anonymous file name
+	* Fix: syscall filtering: disable all syscalls
+	* syscall tracing: input/output parameter handling for all arch
+	* lttng-get-syscall-inout.sh depends on bash
+	* Fix generate syscall header script: add missing escape char
+	* syscall instrumentation: handle copy_from_user return value
+	* Rename LTTng syscall instrumentation macros
+	* Rename LTTng instrumentation macros
+	* Extract input/output arguments from accept and connect syscalls
+	* syscall: extract pipe and pipe2 output args
+	* Remove sys_ prefix from syscall names
+	* System call inout/output arg processing
+	* Update syscall inout table
+	* Add syscall inout table
+	* Extract syscall exit ret value on x86 32/64
+	* Extract system call exit return value
+	* Syscall filtering: apply to syscall exit
+	* System call filtering
+	* asoc.h: fix build with v3.17 kernel
+	* Fix: lttng-modules teardown NULL pointer OOPS
+	* Fix: handle concurrent flush vs get_next_subbuf on metadata cache
+	* Modernize README using Markdown
+	* Fix: OOT lttng_logger tracepoint not visible with signed kernels
+	* Add cscope to gitignore
+	* Update kvm instrumentation: compile on 3.17-rc1
+	* Update statedump to 3.17 nsproxy locking
+	* Fix: noargs probes should calculate alignment and event length
+	* Update compaction instrumentation to 3.16 kernel
+	* Update vmscan instrumentation to 3.16 kernel
+
 2014-07-16 (Take Your Poet to Work Day) LTTng modules 2.5.0
 	* (no change)
 
