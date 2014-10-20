@@ -1,3 +1,21 @@
+2014-10-20 LTTng modules 2.5.1
+	* Print build warning when writeback probe is disabled
+	* Fix compilation on Ubuntu 14.10
+	* Fix: compile lttng_statedump_process_ns on Ubuntu
+	* Reverse version check logic in lttng_statedump_process_ns
+	* Update statedump to 3.17 nsproxy locking
+	* Fix block_rq_complete TP on Ubuntu kernel
+	* Introduce macros to check Ubuntu kernel version
+	* asoc.h: fix build with v3.17 kernel
+	* Add atomic.h wrapper for before/after atomic
+	* Update vmscan instrumentation to 3.16 kernel
+	* Update compaction instrumentation to 3.16 kernel
+	* Check for stale version.h files
+	* Fix: statedump: close_on_exec flag backward compat
+	* Fix: lttng-modules teardown NULL pointer OOPS
+	* Fix: handle concurrent flush vs get_next_subbuf on metadata cache
+	* Fix: OOT lttng_logger tracepoint not visible with signed kernels
+
 2014-07-16 (Take Your Poet to Work Day) LTTng modules 2.5.0
 	* (no change)
 
