@@ -162,7 +162,7 @@ struct lttng_kernel_context {
 #define LTTNG_KERNEL_WAIT_QUIESCENT		_IO(0xF6, 0x48)
 #define LTTNG_KERNEL_CALIBRATE			\
 	_IOWR(0xF6, 0x49, struct lttng_kernel_calibrate)
-#define LTTNG_KERNEL_SYSCALL_LIST		_IO(0xF6, 0x49)
+#define LTTNG_KERNEL_SYSCALL_LIST		_IO(0xF6, 0x4A)
 
 /* Session FD ioctl */
 #define LTTNG_KERNEL_METADATA			\
