@@ -189,6 +189,13 @@ void lttng_abi_tracer_version(struct lttng_kernel_tracer_version *v)
 }
 
 static
+void lttng_abi_tracer_abi_version(struct lttng_kernel_tracer_abi_version *v)
+{
+	v->major = LTTNG_MODULES_ABI_MAJOR_VERSION;
+	v->minor = LTTNG_MODULES_ABI_MINOR_VERSION;
+}
+
+static
 long lttng_abi_add_context(struct file *file,
 	struct lttng_kernel_context *context_param,
 	struct lttng_ctx **ctx, struct lttng_session *session)
@@ -245,6 +252,8 @@ long lttng_abi_add_context(struct file *file,
  *		Returns a file descriptor listing available tracepoints
  *	LTTNG_KERNEL_WAIT_QUIESCENT
  *		Returns after all previously running probes have completed
+ *	LTTNG_KERNEL_TRACER_ABI_VERSION
+ *		Returns the LTTng kernel tracer ABI version
  *
  * The returned session will be deleted when its file descriptor is closed.
  */
@@ -278,7 +287,19 @@ long lttng_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			(struct lttng_kernel_tracer_version __user *) arg;
 
 		lttng_abi_tracer_version(&version);
-		
+
+		if (copy_to_user(uversion, &version, sizeof(version)))
+			return -EFAULT;
+		return 0;
+	}
+	case LTTNG_KERNEL_TRACER_ABI_VERSION:
+	{
+		struct lttng_kernel_tracer_abi_version version;
+		struct lttng_kernel_tracer_abi_version *uversion =
+			(struct lttng_kernel_tracer_abi_version __user *) arg;
+
+		lttng_abi_tracer_abi_version(&version);
+
 		if (copy_to_user(uversion, &version, sizeof(version)))
 			return -EFAULT;
 		return 0;

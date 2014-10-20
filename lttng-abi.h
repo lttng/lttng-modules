@@ -25,6 +25,13 @@
 
 #include <linux/fs.h>
 
+/*
+ * Major/minor version of ABI exposed to lttng tools. Major number
+ * should be increased when an incompatible ABI change is done.
+ */
+#define LTTNG_MODULES_ABI_MAJOR_VERSION		1
+#define LTTNG_MODULES_ABI_MINOR_VERSION		0
+
 #define LTTNG_KERNEL_SYM_NAME_LEN	256
 
 enum lttng_kernel_instrumentation {
@@ -109,6 +116,11 @@ struct lttng_kernel_tracer_version {
 	uint32_t patchlevel;
 } __attribute__((packed));
 
+struct lttng_kernel_tracer_abi_version {
+	uint32_t major;
+	uint32_t minor;
+} __attribute__((packed));
+
 enum lttng_kernel_calibrate_type {
 	LTTNG_KERNEL_CALIBRATE_KRETPROBE,
 };
@@ -163,6 +175,8 @@ struct lttng_kernel_context {
 #define LTTNG_KERNEL_CALIBRATE			\
 	_IOWR(0xF6, 0x49, struct lttng_kernel_calibrate)
 #define LTTNG_KERNEL_SYSCALL_LIST		_IO(0xF6, 0x4A)
+#define LTTNG_KERNEL_TRACER_ABI_VERSION		\
+	_IOR(0xF6, 0x4B, struct lttng_kernel_tracer_abi_version)
 
 /* Session FD ioctl */
 #define LTTNG_KERNEL_METADATA			\
