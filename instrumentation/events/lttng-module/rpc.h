@@ -1,8 +1,8 @@
 #undef TRACE_SYSTEM
-#define TRACE_SYSTEM sunrpc
+#define TRACE_SYSTEM rpc
 
-#if !defined(LTTNG_TRACE_SUNRPC_H) || defined(TRACE_HEADER_MULTI_READ)
-#define LTTNG_TRACE_SUNRPC_H
+#if !defined(LTTNG_TRACE_RPC_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_RPC_H
 
 #include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/sunrpc/sched.h>
@@ -172,6 +172,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_queued, rpc_task_wakeup,
 
 )
 
-#endif /* LTTNG_TRACE_SUNRPC_H */
+#endif /* LTTNG_TRACE_RPC_H */
 
 #include "../../../probes/define_trace.h"

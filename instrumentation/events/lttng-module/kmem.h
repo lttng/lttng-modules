@@ -158,9 +158,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(kmem_free, kmem_cache_free,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
-LTTNG_TRACEPOINT_EVENT(mm_page_free,
+LTTNG_TRACEPOINT_EVENT_MAP(mm_page_free, kmem_mm_page_free,
 #else
-LTTNG_TRACEPOINT_EVENT(mm_page_free_direct,
+LTTNG_TRACEPOINT_EVENT_MAP(mm_page_free_direct, kmem_mm_page_free_direct,
 #endif
 
 	TP_PROTO(struct page *page, unsigned int order),
@@ -184,9 +184,9 @@ LTTNG_TRACEPOINT_EVENT(mm_page_free_direct,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
-LTTNG_TRACEPOINT_EVENT(mm_page_free_batched,
+LTTNG_TRACEPOINT_EVENT_MAP(mm_page_free_batched, kmem_mm_page_free_batched,
 #else
-LTTNG_TRACEPOINT_EVENT(mm_pagevec_free,
+LTTNG_TRACEPOINT_EVENT_MAP(mm_pagevec_free, kmem_pagevec_free,
 #endif
 
 	TP_PROTO(struct page *page, int cold),
@@ -209,7 +209,7 @@ LTTNG_TRACEPOINT_EVENT(mm_pagevec_free,
 			__entry->cold)
 )
 
-LTTNG_TRACEPOINT_EVENT(mm_page_alloc,
+LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc, kmem_mm_page_alloc,
 
 	TP_PROTO(struct page *page, unsigned int order,
 			gfp_t gfp_flags, int migratetype),
@@ -238,7 +238,7 @@ LTTNG_TRACEPOINT_EVENT(mm_page_alloc,
 		show_gfp_flags(__entry->gfp_flags))
 )
 
-LTTNG_TRACEPOINT_EVENT_CLASS(mm_page,
+LTTNG_TRACEPOINT_EVENT_CLASS(kmem_mm_page,
 
 	TP_PROTO(struct page *page, unsigned int order, int migratetype),
 
@@ -264,14 +264,18 @@ LTTNG_TRACEPOINT_EVENT_CLASS(mm_page,
 		__entry->order == 0)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_page, mm_page_alloc_zone_locked,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(kmem_mm_page, mm_page_alloc_zone_locked,
+
+	kmem_mm_page_alloc_zone_locked,
 
 	TP_PROTO(struct page *page, unsigned int order, int migratetype),
 
 	TP_ARGS(page, order, migratetype)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT(mm_page, mm_page_pcpu_drain,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT_MAP(kmem_mm_page, mm_page_pcpu_drain,
+
+	kmem_mm_page_pcpu_drain,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
 	TP_PROTO(struct page *page, unsigned int order, int migratetype),
@@ -374,7 +378,9 @@ LTTNG_TRACEPOINT_EVENT(mm_page_alloc_extfrag,
 
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 
-LTTNG_TRACEPOINT_EVENT(mm_page_alloc_extfrag,
+LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
+
+	kmem_mm_page_alloc_extfrag,
 
 	TP_PROTO(struct page *page,
 			int alloc_order, int fallback_order,
@@ -418,7 +424,9 @@ LTTNG_TRACEPOINT_EVENT(mm_page_alloc_extfrag,
 
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
-LTTNG_TRACEPOINT_EVENT(mm_page_alloc_extfrag,
+LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
+
+	kmem_mm_page_alloc_extfrag,
 
 	TP_PROTO(struct page *page,
 			int alloc_order, int fallback_order,

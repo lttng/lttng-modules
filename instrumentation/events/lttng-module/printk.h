@@ -9,7 +9,10 @@
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
 
-LTTNG_TRACEPOINT_EVENT(console,
+LTTNG_TRACEPOINT_EVENT_MAP(console,
+
+	printk_console,
+
 	TP_PROTO(const char *text, size_t len),
 
 	TP_ARGS(text, len),
@@ -27,7 +30,10 @@ LTTNG_TRACEPOINT_EVENT(console,
 
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
 
-LTTNG_TRACEPOINT_EVENT_CONDITION(console,
+LTTNG_TRACEPOINT_EVENT_CONDITION_MAP(console,
+
+	printk_console,
+
 	TP_PROTO(const char *log_buf, unsigned start, unsigned end,
 		 unsigned log_buf_len),
 
@@ -48,7 +54,10 @@ LTTNG_TRACEPOINT_EVENT_CONDITION(console,
 
 #else /* (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0)) */
 
-LTTNG_TRACEPOINT_EVENT_CONDITION(console,
+LTTNG_TRACEPOINT_EVENT_CONDITION_MAP(console,
+
+	printk_console,
+
 	TP_PROTO(const char *log_buf, unsigned start, unsigned end,
 		 unsigned log_buf_len),
 

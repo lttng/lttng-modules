@@ -37,7 +37,7 @@
 #define CREATE_TRACE_POINTS
 #define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module
 
-#include "../instrumentation/events/lttng-module/sunrpc.h"
+#include "../instrumentation/events/lttng-module/rpc.h"
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Andrew Gabbasov <andrew_gabbasov@mentor.com>");

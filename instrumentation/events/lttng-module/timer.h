@@ -134,7 +134,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(timer_class, timer_cancel,
  * @clockid:	the hrtimers clock
  * @mode:	the hrtimers mode
  */
-LTTNG_TRACEPOINT_EVENT(hrtimer_init,
+LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_init,
+
+	timer_hrtimer_init,
 
 	TP_PROTO(struct hrtimer *hrtimer, clockid_t clockid,
 		 enum hrtimer_mode mode),
@@ -164,7 +166,9 @@ LTTNG_TRACEPOINT_EVENT(hrtimer_init,
  * hrtimer_start - called when the hrtimer is started
  * @timer: pointer to struct hrtimer
  */
-LTTNG_TRACEPOINT_EVENT(hrtimer_start,
+LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_start,
+
+	timer_hrtimer_start,
 
 	TP_PROTO(struct hrtimer *hrtimer),
 
@@ -200,7 +204,9 @@ LTTNG_TRACEPOINT_EVENT(hrtimer_start,
  *
  * Allows to determine the timer latency.
  */
-LTTNG_TRACEPOINT_EVENT(hrtimer_expire_entry,
+LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_expire_entry,
+
+	timer_hrtimer_expire_entry,
 
 	TP_PROTO(struct hrtimer *hrtimer, ktime_t *now),
 
@@ -222,7 +228,7 @@ LTTNG_TRACEPOINT_EVENT(hrtimer_expire_entry,
 		  (unsigned long long)ktime_to_ns((ktime_t) { .tv64 = __entry->now }))
 )
 
-LTTNG_TRACEPOINT_EVENT_CLASS(hrtimer_class,
+LTTNG_TRACEPOINT_EVENT_CLASS(timer_hrtimer_class,
 
 	TP_PROTO(struct hrtimer *hrtimer),
 
@@ -246,7 +252,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(hrtimer_class,
  * When used in combination with the hrtimer_expire_entry tracepoint we can
  * determine the runtime of the callback function.
  */
-LTTNG_TRACEPOINT_EVENT_INSTANCE(hrtimer_class, hrtimer_expire_exit,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(timer_hrtimer_class, hrtimer_expire_exit,
+
+	timer_hrtimer_expire_exit,
 
 	TP_PROTO(struct hrtimer *hrtimer),
 
@@ -257,7 +265,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(hrtimer_class, hrtimer_expire_exit,
  * hrtimer_cancel - called when the hrtimer is canceled
  * @hrtimer:	pointer to struct hrtimer
  */
-LTTNG_TRACEPOINT_EVENT_INSTANCE(hrtimer_class, hrtimer_cancel,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(timer_hrtimer_class, hrtimer_cancel,
+
+	timer_hrtimer_cancel,
 
 	TP_PROTO(struct hrtimer *hrtimer),
 
@@ -271,7 +281,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(hrtimer_class, hrtimer_cancel,
  *		zero, otherwise it is started
  * @expires:	the itimers expiry time
  */
-LTTNG_TRACEPOINT_EVENT(itimer_state,
+LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
+
+	timer_itimer_state,
 
 	TP_PROTO(int which, const struct itimerval *const value,
 		 cputime_t expires),
@@ -308,7 +320,9 @@ LTTNG_TRACEPOINT_EVENT(itimer_state,
  * @pid:	pid of the process which owns the timer
  * @now:	current time, used to calculate the latency of itimer
  */
-LTTNG_TRACEPOINT_EVENT(itimer_expire,
+LTTNG_TRACEPOINT_EVENT_MAP(itimer_expire,
+
+	timer_itimer_expire,
 
 	TP_PROTO(int which, struct pid *pid, cputime_t now),
 

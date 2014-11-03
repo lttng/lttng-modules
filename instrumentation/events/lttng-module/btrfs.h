@@ -505,7 +505,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__writepage,
 #endif
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__writepage, __extent_writepage,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs__writepage,
+
+	__extent_writepage,
+
+	btrfs__extent_writepage,
 
 	TP_PROTO(struct page *page, struct inode *inode,
 		 struct writeback_control *wbc),

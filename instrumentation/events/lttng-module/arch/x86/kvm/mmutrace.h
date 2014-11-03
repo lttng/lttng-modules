@@ -1,11 +1,11 @@
-#if !defined(LTTNG_TRACE_KVMMMU_H) || defined(TRACE_HEADER_MULTI_READ)
-#define LTTNG_TRACE_KVMMMU_H
+#if !defined(LTTNG_TRACE_KVM_MMU_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_KVM_MMU_H
 
 #include "../../../../../../probes/lttng-tracepoint-event.h"
 #include <linux/ftrace_event.h>
 
 #undef TRACE_SYSTEM
-#define TRACE_SYSTEM kvmmmu
+#define TRACE_SYSTEM kvm_mmu
 
 #define KVM_MMU_PAGE_FIELDS \
 	__field(__u64, gfn) \
@@ -195,8 +195,11 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_mmu_page_class, kvm_mmu_prepare_zap_page,
 	TP_ARGS(sp)
 )
 
-LTTNG_TRACEPOINT_EVENT(
+LTTNG_TRACEPOINT_EVENT_MAP(
 	mark_mmio_spte,
+
+	kvm_mmu_mark_mmio_spte,
+
 	TP_PROTO(u64 *sptep, gfn_t gfn, unsigned access),
 	TP_ARGS(sptep, gfn, access),
 
@@ -216,8 +219,11 @@ LTTNG_TRACEPOINT_EVENT(
 		  __entry->access)
 )
 
-LTTNG_TRACEPOINT_EVENT(
+LTTNG_TRACEPOINT_EVENT_MAP(
 	handle_mmio_page_fault,
+
+	kvm_mmu_handle_mmio_page_fault,
+
 	TP_PROTO(u64 addr, gfn_t gfn, unsigned access),
 	TP_ARGS(addr, gfn, access),
 
@@ -240,8 +246,11 @@ LTTNG_TRACEPOINT_EVENT(
 #define __spte_satisfied(__spte)				\
 	(__entry->retry && is_writable_pte(__entry->__spte))
 
-LTTNG_TRACEPOINT_EVENT(
+LTTNG_TRACEPOINT_EVENT_MAP(
 	fast_page_fault,
+
+	kvm_mmu_fast_page_fault,
+
 	TP_PROTO(struct kvm_vcpu *vcpu, gva_t gva, u32 error_code,
 		 u64 *sptep, u64 old_spte, bool retry),
 	TP_ARGS(vcpu, gva, error_code, sptep, old_spte, retry),
@@ -274,7 +283,7 @@ LTTNG_TRACEPOINT_EVENT(
 		  __spte_satisfied(old_spte), __spte_satisfied(new_spte)
 	)
 )
-#endif /* LTTNG_TRACE_KVMMMU_H */
+#endif /* LTTNG_TRACE_KVM_MMU_H */
 
 #undef TRACE_INCLUDE_PATH
 #define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module/arch/x86/kvm

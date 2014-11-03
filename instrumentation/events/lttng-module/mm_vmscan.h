@@ -1,8 +1,8 @@
 #undef TRACE_SYSTEM
-#define TRACE_SYSTEM vmscan
+#define TRACE_SYSTEM mm_vmscan
 
-#if !defined(LTTNG_TRACE_VMSCAN_H) || defined(TRACE_HEADER_MULTI_READ)
-#define LTTNG_TRACE_VMSCAN_H
+#if !defined(LTTNG_TRACE_MM_VMSCAN_H) || defined(TRACE_HEADER_MULTI_READ)
+#define LTTNG_TRACE_MM_VMSCAN_H
 
 #include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/types.h>
@@ -189,7 +189,10 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_direct_reclaim_end_template, mm_vmscan
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
-LTTNG_TRACEPOINT_EVENT(mm_shrink_slab_start,
+LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_start,
+
+	mm_vmscan_shrink_slab_start,
+
 	TP_PROTO(struct shrinker *shr, struct shrink_control *sc,
 		long nr_objects_to_shrink, unsigned long pgs_scanned,
 		unsigned long lru_pgs, unsigned long cache_items,
@@ -239,7 +242,10 @@ LTTNG_TRACEPOINT_EVENT(mm_shrink_slab_start,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
-LTTNG_TRACEPOINT_EVENT(mm_shrink_slab_end,
+LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_end,
+
+	mm_vmscan_shrink_slab_end,
+
 	TP_PROTO(struct shrinker *shr, int nid, int shrinker_retval,
 		long unused_scan_cnt, long new_scan_cnt, long total_scan),
 
@@ -276,7 +282,10 @@ LTTNG_TRACEPOINT_EVENT(mm_shrink_slab_end,
 		__entry->retval)
 )
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0)) */
-LTTNG_TRACEPOINT_EVENT(mm_shrink_slab_end,
+LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_end,
+
+	mm_vmscan_shrink_slab_end,
+
 	TP_PROTO(struct shrinker *shr, int shrinker_retval,
 		long unused_scan_cnt, long new_scan_cnt),
 
@@ -627,7 +636,7 @@ LTTNG_TRACEPOINT_EVENT_CONDITION_MAP(update_swap_token_priority,
 )
 #endif
 
-#endif /* LTTNG_TRACE_VMSCAN_H */
+#endif /* LTTNG_TRACE_MM_VMSCAN_H */
 
 /* This part must be outside protection */
 #include "../../../probes/define_trace.h"

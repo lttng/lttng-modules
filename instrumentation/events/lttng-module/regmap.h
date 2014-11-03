@@ -121,7 +121,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_block, regmap_hw_write_done,
 	TP_ARGS(dev, reg, count)
 )
 
-LTTNG_TRACEPOINT_EVENT(regcache_sync,
+LTTNG_TRACEPOINT_EVENT_MAP(regcache_sync,
+
+	regmap_regcache_sync,
 
 	TP_PROTO(struct device *dev, const char *type,
 		 const char *status),
