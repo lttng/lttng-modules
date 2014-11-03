@@ -29,7 +29,7 @@
  * Major/minor version of ABI exposed to lttng tools. Major number
  * should be increased when an incompatible ABI change is done.
  */
-#define LTTNG_MODULES_ABI_MAJOR_VERSION		1
+#define LTTNG_MODULES_ABI_MAJOR_VERSION		2
 #define LTTNG_MODULES_ABI_MINOR_VERSION		0
 
 #define LTTNG_KERNEL_SYM_NAME_LEN	256
@@ -91,7 +91,7 @@ struct lttng_kernel_syscall {
 } __attribute__((packed));
 
 /*
- * For syscall tracing, name = '\0' means "enable all".
+ * For syscall tracing, name = "*" means "enable all".
  */
 #define LTTNG_KERNEL_EVENT_PADDING1	16
 #define LTTNG_KERNEL_EVENT_PADDING2	LTTNG_KERNEL_SYM_NAME_LEN + 32

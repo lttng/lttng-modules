@@ -181,18 +181,35 @@ struct lttng_event_desc {
 };
 
 struct lttng_probe_desc {
+	const char *provider;
 	const struct lttng_event_desc **event_desc;
 	unsigned int nr_events;
 	struct list_head head;			/* chain registered probes */
+	struct list_head lazy_init_head;
+	int lazy;				/* lazy registration */
 };
 
 struct lttng_krp;				/* Kretprobe handling */
+
+enum lttng_event_type {
+	LTTNG_TYPE_EVENT = 0,
+	LTTNG_TYPE_ENABLER = 1,
+};
+
+/*
+ * Objects in a linked-list of enablers, owned by an event.
+ */
+struct lttng_enabler_ref {
+	struct list_head node;			/* enabler ref list */
+	struct lttng_enabler *ref;		/* backward ref */
+};
 
 /*
  * lttng_event structure is referred to by the tracing fast path. It must be
  * kept small.
  */
 struct lttng_event {
+	enum lttng_event_type evtype;	/* First field. */
 	unsigned int id;
 	struct lttng_channel *chan;
 	int enabled;
@@ -213,8 +230,35 @@ struct lttng_event {
 			char *symbol_name;
 		} ftrace;
 	} u;
-	struct list_head list;		/* Event list */
+	struct list_head list;		/* Event list in session */
 	unsigned int metadata_dumped:1;
+
+	/* Backward references: list of lttng_enabler_ref (ref to enablers) */
+	struct list_head enablers_ref_head;
+	struct hlist_node hlist;	/* session ht of events */
+	int registered;			/* has reg'd tracepoint probe */
+};
+
+enum lttng_enabler_type {
+	LTTNG_ENABLER_WILDCARD,
+	LTTNG_ENABLER_NAME,
+};
+
+/*
+ * Enabler field, within whatever object is enabling an event. Target of
+ * backward reference.
+ */
+struct lttng_enabler {
+	enum lttng_event_type evtype;	/* First field. */
+
+	enum lttng_enabler_type type;
+
+	struct list_head node;	/* per-session list of enablers */
+
+	struct lttng_kernel_event event_param;
+	struct lttng_channel *chan;
+	struct lttng_ctx *ctx;
+	unsigned int enabled:1;
 };
 
 struct lttng_channel_ops {
@@ -283,6 +327,13 @@ struct lttng_transport {
 
 struct lttng_syscall_filter;
 
+#define LTTNG_EVENT_HT_BITS		12
+#define LTTNG_EVENT_HT_SIZE		(1U << LTTNG_EVENT_HT_BITS)
+
+struct lttng_event_ht {
+	struct hlist_head table[LTTNG_EVENT_HT_SIZE];
+};
+
 struct lttng_channel {
 	unsigned int id;
 	struct channel *chan;		/* Channel buffers */
@@ -309,7 +360,8 @@ struct lttng_channel {
 	unsigned int metadata_dumped:1,
 		sys_enter_registered:1,
 		sys_exit_registered:1,
-		syscall_all:1;
+		syscall_all:1,
+		tstate:1;		/* Transient enable state */
 };
 
 struct lttng_metadata_stream {
@@ -352,7 +404,12 @@ struct lttng_session {
 	uuid_le uuid;			/* Trace session unique ID */
 	struct lttng_metadata_cache *metadata_cache;
 	struct lttng_pid_tracker *pid_tracker;
-	unsigned int metadata_dumped:1;
+	unsigned int metadata_dumped:1,
+		tstate:1;		/* Transient enable state */
+	/* List of enablers */
+	struct list_head enablers_head;
+	/* Hash table of events */
+	struct lttng_event_ht events_ht;
 };
 
 struct lttng_metadata_cache {
@@ -363,6 +420,20 @@ struct lttng_metadata_cache {
 	struct list_head metadata_stream;	/* Metadata stream list */
 	uuid_le uuid;			/* Trace session unique ID (copy) */
 };
+
+void lttng_lock_sessions(void);
+void lttng_unlock_sessions(void);
+
+struct list_head *lttng_get_probe_list_head(void);
+
+struct lttng_enabler *lttng_enabler_create(enum lttng_enabler_type type,
+		struct lttng_kernel_event *event_param,
+		struct lttng_channel *chan);
+
+int lttng_enabler_enable(struct lttng_enabler *enabler);
+int lttng_enabler_disable(struct lttng_enabler *enabler);
+int lttng_fix_pending_events(void);
+int lttng_session_active(void);
 
 struct lttng_session *lttng_session_create(void);
 int lttng_session_enable(struct lttng_session *session);
@@ -385,9 +456,10 @@ struct lttng_channel *lttng_global_channel_create(struct lttng_session *session,
 
 void lttng_metadata_channel_destroy(struct lttng_channel *chan);
 struct lttng_event *lttng_event_create(struct lttng_channel *chan,
-				   struct lttng_kernel_event *event_param,
-				   void *filter,
-				   const struct lttng_event_desc *internal_desc);
+				struct lttng_kernel_event *event_param,
+				void *filter,
+				const struct lttng_event_desc *event_desc,
+				enum lttng_kernel_instrumentation itype);
 struct lttng_event *lttng_event_compat_old_create(struct lttng_channel *chan,
 		struct lttng_kernel_old_event *old_event_param,
 		void *filter,

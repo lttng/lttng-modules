@@ -717,7 +717,7 @@ int fill_table(const struct trace_syscall_entry *table, size_t table_len,
 		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_NOOP;
 		chan_table[i] = lttng_event_create(chan, &ev, filter,
-						desc);
+						desc, ev.instrumentation);
 		WARN_ON_ONCE(!chan_table[i]);
 		if (IS_ERR(chan_table[i])) {
 			/*
@@ -781,7 +781,8 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_NOOP;
 		chan->sc_unknown = lttng_event_create(chan, &ev, filter,
-						    desc);
+						desc,
+						ev.instrumentation);
 		WARN_ON_ONCE(!chan->sc_unknown);
 		if (IS_ERR(chan->sc_unknown)) {
 			return PTR_ERR(chan->sc_unknown);
@@ -797,7 +798,8 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_NOOP;
 		chan->sc_compat_unknown = lttng_event_create(chan, &ev, filter,
-							   desc);
+						desc,
+						ev.instrumentation);
 		WARN_ON_ONCE(!chan->sc_unknown);
 		if (IS_ERR(chan->sc_compat_unknown)) {
 			return PTR_ERR(chan->sc_compat_unknown);
@@ -813,7 +815,8 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_NOOP;
 		chan->compat_sc_exit_unknown = lttng_event_create(chan, &ev,
-						filter, desc);
+						filter, desc,
+						ev.instrumentation);
 		WARN_ON_ONCE(!chan->compat_sc_exit_unknown);
 		if (IS_ERR(chan->compat_sc_exit_unknown)) {
 			return PTR_ERR(chan->compat_sc_exit_unknown);
@@ -829,7 +832,7 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_NOOP;
 		chan->sc_exit_unknown = lttng_event_create(chan, &ev, filter,
-						 desc);
+						desc, ev.instrumentation);
 		WARN_ON_ONCE(!chan->sc_exit_unknown);
 		if (IS_ERR(chan->sc_exit_unknown)) {
 			return PTR_ERR(chan->sc_exit_unknown);

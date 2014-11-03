@@ -911,9 +911,9 @@ int lttng_abi_create_event(struct file *channel_file,
 			   struct lttng_kernel_event *event_param)
 {
 	struct lttng_channel *channel = channel_file->private_data;
-	struct lttng_event *event;
 	int event_fd, ret;
 	struct file *event_file;
+	void *priv;
 
 	event_param->name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 	switch (event_param->instrumentation) {
@@ -943,17 +943,35 @@ int lttng_abi_create_event(struct file *channel_file,
 			ret = PTR_ERR(event_file);
 			goto file_error;
 		}
-		/*
-		 * We tolerate no failure path after event creation. It
-		 * will stay invariant for the rest of the session.
-		 */
-		event = lttng_event_create(channel, event_param, NULL, NULL);
-		WARN_ON_ONCE(!event);
-		if (IS_ERR(event)) {
-			ret = PTR_ERR(event);
-			goto event_error;
+		if (event_param->instrumentation == LTTNG_KERNEL_TRACEPOINT) {
+			struct lttng_enabler *enabler;
+
+			if (event_param->name[strlen(event_param->name) - 1] == '*') {
+				enabler = lttng_enabler_create(LTTNG_ENABLER_WILDCARD,
+					event_param, channel);
+			} else {
+				enabler = lttng_enabler_create(LTTNG_ENABLER_NAME,
+					event_param, channel);
+			}
+			priv = enabler;
+		} else {
+			struct lttng_event *event;
+
+			/*
+			 * We tolerate no failure path after event creation. It
+			 * will stay invariant for the rest of the session.
+			 */
+			event = lttng_event_create(channel, event_param,
+					NULL, NULL,
+					event_param->instrumentation);
+			WARN_ON_ONCE(!event);
+			if (IS_ERR(event)) {
+				ret = PTR_ERR(event);
+				goto event_error;
+			}
+			priv = event;
 		}
-		event_file->private_data = event;
+		event_file->private_data = priv;
 		fd_install(event_fd, event_file);
 		/* The event holds a reference on the channel */
 		atomic_long_inc(&channel_file->f_count);
@@ -965,14 +983,14 @@ int lttng_abi_create_event(struct file *channel_file,
 		event_fd = 0;
 		if (event_param->u.syscall.enable) {
 			ret = lttng_syscall_filter_enable(channel,
-				event_param->name[0] == '\0' ?
+				!strcmp(event_param->name, "*") ?
 					NULL : event_param->name);
 			if (ret)
 				goto fd_error;
 
 		} else {
 			ret = lttng_syscall_filter_disable(channel,
-				event_param->name[0] == '\0' ?
+				!strcmp(event_param->name, "*") ?
 					NULL : event_param->name);
 			if (ret)
 				goto fd_error;
@@ -1287,77 +1305,47 @@ static const struct file_operations lttng_metadata_fops = {
 static
 long lttng_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	struct lttng_event *event = file->private_data;
+	struct lttng_event *event;
+	struct lttng_enabler *enabler;
+	enum lttng_event_type *evtype = file->private_data;
 
 	switch (cmd) {
 	case LTTNG_KERNEL_OLD_CONTEXT:
 	{
-		struct lttng_kernel_context *ucontext_param;
-		struct lttng_kernel_old_context *old_ucontext_param;
-		int ret;
-
-		ucontext_param = kmalloc(sizeof(struct lttng_kernel_context),
-				GFP_KERNEL);
-		if (!ucontext_param) {
-			ret = -ENOMEM;
-			goto old_ctx_end;
-		}
-		old_ucontext_param = kmalloc(sizeof(struct lttng_kernel_old_context),
-				GFP_KERNEL);
-		if (!old_ucontext_param) {
-			ret = -ENOMEM;
-			goto old_ctx_error_free_param;
-		}
-
-		if (copy_from_user(old_ucontext_param,
-					(struct lttng_kernel_old_context __user *) arg,
-					sizeof(struct lttng_kernel_old_context))) {
-			ret = -EFAULT;
-			goto old_ctx_error_free_old_param;
-		}
-		ucontext_param->ctx = old_ucontext_param->ctx;
-		memcpy(ucontext_param->padding, old_ucontext_param->padding,
-				sizeof(ucontext_param->padding));
-		/* only type that uses the union */
-		if (old_ucontext_param->ctx == LTTNG_KERNEL_CONTEXT_PERF_COUNTER) {
-			ucontext_param->u.perf_counter.type =
-				old_ucontext_param->u.perf_counter.type;
-			ucontext_param->u.perf_counter.config =
-				old_ucontext_param->u.perf_counter.config;
-			memcpy(ucontext_param->u.perf_counter.name,
-					old_ucontext_param->u.perf_counter.name,
-					sizeof(ucontext_param->u.perf_counter.name));
-		}
-
-		ret = lttng_abi_add_context(file,
-				ucontext_param,
-				&event->ctx, event->chan->session);
-
-old_ctx_error_free_old_param:
-		kfree(old_ucontext_param);
-old_ctx_error_free_param:
-		kfree(ucontext_param);
-old_ctx_end:
-		return ret;
+		/* Not implemented */
+		return -ENOSYS;
 	}
 	case LTTNG_KERNEL_CONTEXT:
 	{
-		struct lttng_kernel_context ucontext_param;
-
-		if (copy_from_user(&ucontext_param,
-					(struct lttng_kernel_context __user *) arg,
-					sizeof(ucontext_param)))
-			return -EFAULT;
-		return lttng_abi_add_context(file,
-				&ucontext_param,
-				&event->ctx, event->chan->session);
+		/* Not implemented */
+		return -ENOSYS;
 	}
 	case LTTNG_KERNEL_OLD_ENABLE:
 	case LTTNG_KERNEL_ENABLE:
-		return lttng_event_enable(event);
+		switch (*evtype) {
+		case LTTNG_TYPE_EVENT:
+			event = file->private_data;
+			return lttng_event_enable(event);
+		case LTTNG_TYPE_ENABLER:
+			enabler = file->private_data;
+			return lttng_enabler_enable(enabler);
+		default:
+			WARN_ON_ONCE(1);
+			return -ENOSYS;
+		}
 	case LTTNG_KERNEL_OLD_DISABLE:
 	case LTTNG_KERNEL_DISABLE:
-		return lttng_event_disable(event);
+		switch (*evtype) {
+		case LTTNG_TYPE_EVENT:
+			event = file->private_data;
+			return lttng_event_disable(event);
+		case LTTNG_TYPE_ENABLER:
+			enabler = file->private_data;
+			return lttng_enabler_disable(enabler);
+		default:
+			WARN_ON_ONCE(1);
+			return -ENOSYS;
+		}
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -1366,10 +1354,29 @@ old_ctx_end:
 static
 int lttng_event_release(struct inode *inode, struct file *file)
 {
-	struct lttng_event *event = file->private_data;
+	struct lttng_event *event;
+	struct lttng_enabler *enabler;
+	enum lttng_event_type *evtype = file->private_data;
 
-	if (event)
-		fput(event->chan->file);
+	if (!evtype)
+		return 0;
+
+	switch (*evtype) {
+	case LTTNG_TYPE_EVENT:
+		event = file->private_data;
+		if (event)
+			fput(event->chan->file);
+		break;
+	case LTTNG_TYPE_ENABLER:
+		enabler = file->private_data;
+		if (enabler)
+			fput(enabler->chan->file);
+		break;
+	default:
+		WARN_ON_ONCE(1);
+		break;
+	}
+
 	return 0;
 }
 

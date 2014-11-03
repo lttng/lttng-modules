@@ -421,8 +421,12 @@ static const struct lttng_event_desc *TP_ID(__event_desc___, TRACE_SYSTEM)[] = {
 
 /* non-const because list head will be modified when registered. */
 static __used struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
+	.provider = __stringify(TRACE_SYSTEM),
 	.event_desc = TP_ID(__event_desc___, TRACE_SYSTEM),
 	.nr_events = ARRAY_SIZE(TP_ID(__event_desc___, TRACE_SYSTEM)),
+	.head = { NULL, NULL },
+	.lazy_init_head = { NULL, NULL },
+	.lazy = 0,
 };
 
 #undef TP_ID1
