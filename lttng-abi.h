@@ -86,10 +86,6 @@ struct lttng_kernel_function_tracer {
 	char symbol_name[LTTNG_KERNEL_SYM_NAME_LEN];
 } __attribute__((packed));
 
-struct lttng_kernel_syscall {
-	char enable;
-} __attribute__((packed));
-
 /*
  * For syscall tracing, name = "*" means "enable all".
  */
@@ -105,7 +101,6 @@ struct lttng_kernel_event {
 		struct lttng_kernel_kretprobe kretprobe;
 		struct lttng_kernel_kprobe kprobe;
 		struct lttng_kernel_function_tracer ftrace;
-		struct lttng_kernel_syscall syscall;
 		char padding[LTTNG_KERNEL_EVENT_PADDING2];
 	} u;
 } __attribute__((packed));

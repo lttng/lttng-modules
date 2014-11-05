@@ -103,7 +103,7 @@ void lttng_lazy_probe_register(struct lttng_probe_desc *desc)
 	/* We should be added at the head of the list */
 	list_add(&desc->head, probe_list);
 desc_added:
-	printk(KERN_DEBUG "just registered probe %s containing %u events\n",
+	pr_debug("LTTng: just registered probe %s containing %u events\n",
 		desc->provider, desc->nr_events);
 }
 
@@ -167,7 +167,7 @@ int lttng_probe_register(struct lttng_probe_desc *desc)
 	}
 	list_add(&desc->lazy_init_head, &lazy_probe_init);
 	desc->lazy = 1;
-	printk(KERN_DEBUG "adding probe %s containing %u events to lazy registration list\n",
+	pr_debug("LTTng: adding probe %s containing %u events to lazy registration list\n",
 		desc->provider, desc->nr_events);
 	/*
 	 * If there is at least one active session, we need to register
@@ -189,7 +189,7 @@ void lttng_probe_unregister(struct lttng_probe_desc *desc)
 		list_del(&desc->head);
 	else
 		list_del(&desc->lazy_init_head);
-	printk(KERN_DEBUG "just unregistered probe %s\n", desc->provider);
+	pr_debug("LTTng: just unregistered probe %s\n", desc->provider);
 	lttng_unlock_sessions();
 }
 EXPORT_SYMBOL_GPL(lttng_probe_unregister);

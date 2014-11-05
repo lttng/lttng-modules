@@ -460,6 +460,11 @@ struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 				void *filter,
 				const struct lttng_event_desc *event_desc,
 				enum lttng_kernel_instrumentation itype);
+struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
+				struct lttng_kernel_event *event_param,
+				void *filter,
+				const struct lttng_event_desc *event_desc,
+				enum lttng_kernel_instrumentation itype);
 struct lttng_event *lttng_event_compat_old_create(struct lttng_channel *chan,
 		struct lttng_kernel_old_event *old_event_param,
 		void *filter,

@@ -481,6 +481,7 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 	case LTTNG_KERNEL_KRETPROBE:
 	case LTTNG_KERNEL_FUNCTION:
 	case LTTNG_KERNEL_NOOP:
+	case LTTNG_KERNEL_SYSCALL:
 		event_name = event_param->name;
 		break;
 	default:
@@ -614,6 +615,7 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		WARN_ON_ONCE(!ret);
 		break;
 	case LTTNG_KERNEL_NOOP:
+	case LTTNG_KERNEL_SYSCALL:
 		event->enabled = 1;
 		event->registered = 0;
 		event->desc = event_desc;
@@ -711,6 +713,7 @@ int _lttng_event_unregister(struct lttng_event *event)
 		ret = 0;
 		break;
 	case LTTNG_KERNEL_NOOP:
+	case LTTNG_KERNEL_SYSCALL:
 		ret = 0;
 		break;
 	default:
@@ -744,6 +747,7 @@ void _lttng_event_destroy(struct lttng_event *event)
 		lttng_ftrace_destroy_private(event);
 		break;
 	case LTTNG_KERNEL_NOOP:
+	case LTTNG_KERNEL_SYSCALL:
 		break;
 	default:
 		WARN_ON_ONCE(1);
@@ -1025,6 +1029,8 @@ static
 int lttng_event_match_enabler(struct lttng_event *event,
 		struct lttng_enabler *enabler)
 {
+	if (enabler->event_param.instrumentation != event->instrumentation)
+		return 0;
 	if (lttng_desc_match_enabler(event->desc, enabler)
 			&& event->chan == enabler->chan)
 		return 1;
@@ -1046,13 +1052,8 @@ struct lttng_enabler_ref *lttng_event_enabler_ref(struct lttng_event *event,
 	return NULL;
 }
 
-/*
- * Create struct lttng_event if it is missing and present in the list of
- * tracepoint probes.
- * Should be called with sessions mutex held.
- */
 static
-void lttng_create_event_if_missing(struct lttng_enabler *enabler)
+void lttng_create_tracepoint_if_missing(struct lttng_enabler *enabler)
 {
 	struct lttng_session *session = enabler->chan->session;
 	struct lttng_probe_desc *probe_desc;
@@ -1106,6 +1107,36 @@ void lttng_create_event_if_missing(struct lttng_enabler *enabler)
 					probe_desc->event_desc[i]->name);
 			}
 		}
+	}
+}
+
+static
+void lttng_create_syscall_if_missing(struct lttng_enabler *enabler)
+{
+	int ret;
+
+	ret = lttng_syscalls_register(enabler->chan, NULL);
+	WARN_ON_ONCE(ret);
+}
+
+/*
+ * Create struct lttng_event if it is missing and present in the list of
+ * tracepoint probes.
+ * Should be called with sessions mutex held.
+ */
+static
+void lttng_create_event_if_missing(struct lttng_enabler *enabler)
+{
+	switch (enabler->event_param.instrumentation) {
+	case LTTNG_KERNEL_TRACEPOINT:
+		lttng_create_tracepoint_if_missing(enabler);
+		break;
+	case LTTNG_KERNEL_SYSCALL:
+		lttng_create_syscall_if_missing(enabler);
+		break;
+	default:
+		WARN_ON_ONCE(1);
+		break;
 	}
 }
 

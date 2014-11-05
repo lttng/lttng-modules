@@ -929,74 +929,51 @@ int lttng_abi_create_event(struct file *channel_file,
 	default:
 		break;
 	}
-	switch (event_param->instrumentation) {
-	default:
-		event_fd = lttng_get_unused_fd();
-		if (event_fd < 0) {
-			ret = event_fd;
-			goto fd_error;
-		}
-		event_file = anon_inode_getfile("[lttng_event]",
-						&lttng_event_fops,
-						NULL, O_RDWR);
-		if (IS_ERR(event_file)) {
-			ret = PTR_ERR(event_file);
-			goto file_error;
-		}
-		if (event_param->instrumentation == LTTNG_KERNEL_TRACEPOINT) {
-			struct lttng_enabler *enabler;
-
-			if (event_param->name[strlen(event_param->name) - 1] == '*') {
-				enabler = lttng_enabler_create(LTTNG_ENABLER_WILDCARD,
-					event_param, channel);
-			} else {
-				enabler = lttng_enabler_create(LTTNG_ENABLER_NAME,
-					event_param, channel);
-			}
-			priv = enabler;
-		} else {
-			struct lttng_event *event;
-
-			/*
-			 * We tolerate no failure path after event creation. It
-			 * will stay invariant for the rest of the session.
-			 */
-			event = lttng_event_create(channel, event_param,
-					NULL, NULL,
-					event_param->instrumentation);
-			WARN_ON_ONCE(!event);
-			if (IS_ERR(event)) {
-				ret = PTR_ERR(event);
-				goto event_error;
-			}
-			priv = event;
-		}
-		event_file->private_data = priv;
-		fd_install(event_fd, event_file);
-		/* The event holds a reference on the channel */
-		atomic_long_inc(&channel_file->f_count);
-		break;
-	case LTTNG_KERNEL_SYSCALL:
-		ret = lttng_syscalls_register(channel, NULL);
-		if (ret)
-			goto fd_error;
-		event_fd = 0;
-		if (event_param->u.syscall.enable) {
-			ret = lttng_syscall_filter_enable(channel,
-				!strcmp(event_param->name, "*") ?
-					NULL : event_param->name);
-			if (ret)
-				goto fd_error;
-
-		} else {
-			ret = lttng_syscall_filter_disable(channel,
-				!strcmp(event_param->name, "*") ?
-					NULL : event_param->name);
-			if (ret)
-				goto fd_error;
-		}
-		break;
+	event_fd = lttng_get_unused_fd();
+	if (event_fd < 0) {
+		ret = event_fd;
+		goto fd_error;
 	}
+	event_file = anon_inode_getfile("[lttng_event]",
+					&lttng_event_fops,
+					NULL, O_RDWR);
+	if (IS_ERR(event_file)) {
+		ret = PTR_ERR(event_file);
+		goto file_error;
+	}
+	if (event_param->instrumentation == LTTNG_KERNEL_TRACEPOINT
+			|| event_param->instrumentation == LTTNG_KERNEL_SYSCALL) {
+		struct lttng_enabler *enabler;
+
+		if (event_param->name[strlen(event_param->name) - 1] == '*') {
+			enabler = lttng_enabler_create(LTTNG_ENABLER_WILDCARD,
+				event_param, channel);
+		} else {
+			enabler = lttng_enabler_create(LTTNG_ENABLER_NAME,
+				event_param, channel);
+		}
+		priv = enabler;
+	} else {
+		struct lttng_event *event;
+
+		/*
+		 * We tolerate no failure path after event creation. It
+		 * will stay invariant for the rest of the session.
+		 */
+		event = lttng_event_create(channel, event_param,
+				NULL, NULL,
+				event_param->instrumentation);
+		WARN_ON_ONCE(!event);
+		if (IS_ERR(event)) {
+			ret = PTR_ERR(event);
+			goto event_error;
+		}
+		priv = event;
+	}
+	event_file->private_data = priv;
+	fd_install(event_fd, event_file);
+	/* The event holds a reference on the channel */
+	atomic_long_inc(&channel_file->f_count);
 	return event_fd;
 
 event_error:
