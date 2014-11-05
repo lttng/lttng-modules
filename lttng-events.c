@@ -672,12 +672,29 @@ void register_event(struct lttng_event *event)
 	const struct lttng_event_desc *desc;
 	int ret;
 
-	WARN_ON_ONCE(event->instrumentation != LTTNG_KERNEL_TRACEPOINT);
 	if (event->registered)
 		return;
+
 	desc = event->desc;
-	ret = lttng_wrapper_tracepoint_probe_register(desc->kname,
-		desc->probe_callback, event);
+	switch (event->instrumentation) {
+	case LTTNG_KERNEL_TRACEPOINT:
+		ret = lttng_wrapper_tracepoint_probe_register(desc->kname,
+						  desc->probe_callback,
+						  event);
+		break;
+	case LTTNG_KERNEL_SYSCALL:
+		ret = lttng_syscall_filter_enable(event->chan,
+			desc->name);
+		break;
+	case LTTNG_KERNEL_KPROBE:
+	case LTTNG_KERNEL_KRETPROBE:
+	case LTTNG_KERNEL_FUNCTION:
+	case LTTNG_KERNEL_NOOP:
+		ret = 0;
+		break;
+	default:
+		WARN_ON_ONCE(1);
+	}
 	if (!ret)
 		event->registered = 1;
 }
@@ -687,18 +704,18 @@ void register_event(struct lttng_event *event)
  */
 int _lttng_event_unregister(struct lttng_event *event)
 {
+	const struct lttng_event_desc *desc;
 	int ret = -EINVAL;
 
 	if (!event->registered)
 		return 0;
 
+	desc = event->desc;
 	switch (event->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
 		ret = lttng_wrapper_tracepoint_probe_unregister(event->desc->kname,
 						  event->desc->probe_callback,
 						  event);
-		if (ret)
-			return ret;
 		break;
 	case LTTNG_KERNEL_KPROBE:
 		lttng_kprobes_unregister(event);
@@ -712,8 +729,11 @@ int _lttng_event_unregister(struct lttng_event *event)
 		lttng_ftrace_unregister(event);
 		ret = 0;
 		break;
-	case LTTNG_KERNEL_NOOP:
 	case LTTNG_KERNEL_SYSCALL:
+		ret = lttng_syscall_filter_disable(event->chan,
+			desc->name);
+		break;
+	case LTTNG_KERNEL_NOOP:
 		ret = 0;
 		break;
 	default:
@@ -990,23 +1010,20 @@ fd_error:
  * Enabler management.
  */
 static
-int lttng_desc_match_wildcard_enabler(const struct lttng_event_desc *desc,
-		struct lttng_enabler *enabler)
+int lttng_match_enabler_wildcard(const char *desc_name,
+		const char *name)
 {
-	WARN_ON_ONCE(enabler->type != LTTNG_ENABLER_WILDCARD);
 	/* Compare excluding final '*' */
-	if (strncmp(desc->name, enabler->event_param.name,
-			strlen(enabler->event_param.name) - 1))
+	if (strncmp(desc_name, name, strlen(name) - 1))
 		return 0;
 	return 1;
 }
 
 static
-int lttng_desc_match_name_enabler(const struct lttng_event_desc *desc,
-		struct lttng_enabler *enabler)
+int lttng_match_enabler_name(const char *desc_name,
+		const char *name)
 {
-	WARN_ON_ONCE(enabler->type != LTTNG_ENABLER_NAME);
-	if (strcmp(desc->name, enabler->event_param.name))
+	if (strcmp(desc_name, name))
 		return 0;
 	return 1;
 }
@@ -1015,11 +1032,37 @@ static
 int lttng_desc_match_enabler(const struct lttng_event_desc *desc,
 		struct lttng_enabler *enabler)
 {
+	const char *desc_name, *enabler_name;
+
+	enabler_name = enabler->event_param.name;
+	switch (enabler->event_param.instrumentation) {
+	case LTTNG_KERNEL_TRACEPOINT:
+		desc_name = desc->name;
+		break;
+	case LTTNG_KERNEL_SYSCALL:
+		desc_name = desc->name;
+		if (!strncmp(desc_name, "compat_", strlen("compat_")))
+			desc_name += strlen("compat_");
+		if (!strncmp(desc_name, "syscall_exit_",
+				strlen("syscall_exit_"))) {
+			desc_name += strlen("syscall_exit_");
+		} else if (!strncmp(desc_name, "syscall_entry_",
+				strlen("syscall_entry_"))) {
+			desc_name += strlen("syscall_entry_");
+		} else {
+			WARN_ON_ONCE(1);
+			return -EINVAL;
+		}
+		break;
+	default:
+		WARN_ON_ONCE(1);
+		return -EINVAL;
+	}
 	switch (enabler->type) {
 	case LTTNG_ENABLER_WILDCARD:
-		return lttng_desc_match_wildcard_enabler(desc, enabler);
+		return lttng_match_enabler_wildcard(desc_name, enabler_name);
 	case LTTNG_ENABLER_NAME:
-		return lttng_desc_match_name_enabler(desc, enabler);
+		return lttng_match_enabler_name(desc_name, enabler_name);
 	default:
 		return -EINVAL;
 	}
@@ -1272,7 +1315,9 @@ void lttng_session_sync_enablers(struct lttng_session *session)
 		struct lttng_enabler_ref *enabler_ref;
 		int enabled = 0;
 
-		if (event->instrumentation == LTTNG_KERNEL_TRACEPOINT) {
+		switch (event->instrumentation) {
+		case LTTNG_KERNEL_TRACEPOINT:
+		case LTTNG_KERNEL_SYSCALL:
 			/* Enable events */
 			list_for_each_entry(enabler_ref,
 					&event->enablers_ref_head, node) {
@@ -1281,7 +1326,8 @@ void lttng_session_sync_enablers(struct lttng_session *session)
 					break;
 				}
 			}
-		} else {
+			break;
+		default:
 			/* Not handled with lazy sync. */
 			continue;
 		}
