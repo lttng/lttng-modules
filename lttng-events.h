@@ -140,6 +140,12 @@ struct lttng_event_field {
 	struct lttng_type type;
 };
 
+union lttng_ctx_value {
+	int64_t s64;
+	const char *str;
+	double d;
+};
+
 /*
  * We need to keep this perf counter field separately from struct
  * lttng_ctx_field because cpu hotplug needs fixed-location addresses.
@@ -157,6 +163,8 @@ struct lttng_ctx_field {
 	void (*record)(struct lttng_ctx_field *field,
 		       struct lib_ring_buffer_ctx *ctx,
 		       struct lttng_channel *chan);
+	void (*get_value)(struct lttng_ctx_field *field,
+			 union lttng_ctx_value *value);
 	union {
 		struct lttng_perf_counter_field *perf_counter;
 	} u;
@@ -194,6 +202,33 @@ struct lttng_krp;				/* Kretprobe handling */
 enum lttng_event_type {
 	LTTNG_TYPE_EVENT = 0,
 	LTTNG_TYPE_ENABLER = 1,
+};
+
+struct lttng_filter_bytecode_node {
+	struct list_head node;
+	struct lttng_enabler *enabler;
+	/*
+	 * struct lttng_kernel_filter_bytecode has var. sized array, must be
+	 * last field.
+	 */
+	struct lttng_kernel_filter_bytecode bc;
+};
+
+/*
+ * Filter return value masks.
+ */
+enum lttng_filter_ret {
+	LTTNG_FILTER_DISCARD = 0,
+	LTTNG_FILTER_RECORD_FLAG = (1ULL << 0),
+	/* Other bits are kept for future use. */
+};
+
+struct lttng_bytecode_runtime {
+	/* Associated bytecode */
+	struct lttng_filter_bytecode_node *bc;
+	uint64_t (*filter)(void *filter_data, const char *filter_stack_data);
+	int link_failed;
+	struct list_head node;	/* list of bytecode runtime in event */
 };
 
 /*
@@ -237,6 +272,9 @@ struct lttng_event {
 	struct list_head enablers_ref_head;
 	struct hlist_node hlist;	/* session ht of events */
 	int registered;			/* has reg'd tracepoint probe */
+	/* list of struct lttng_bytecode_runtime, sorted by seqnum */
+	struct list_head bytecode_runtime_head;
+	int has_enablers_without_bytecode;
 };
 
 enum lttng_enabler_type {
@@ -254,6 +292,8 @@ struct lttng_enabler {
 	enum lttng_enabler_type type;
 
 	struct list_head node;	/* per-session list of enablers */
+	/* head list of struct lttng_ust_filter_bytecode_node */
+	struct list_head filter_bytecode_head;
 
 	struct lttng_kernel_event event_param;
 	struct lttng_channel *chan;
@@ -555,9 +595,18 @@ int lttng_abi_syscall_list(void)
 }
 #endif
 
+void lttng_filter_sync_state(struct lttng_bytecode_runtime *runtime);
+int lttng_enabler_attach_bytecode(struct lttng_enabler *enabler,
+		struct lttng_kernel_filter_bytecode __user *bytecode);
+
+extern struct lttng_ctx *lttng_static_ctx;
+
+int lttng_context_init(void);
+void lttng_context_exit(void);
 struct lttng_ctx_field *lttng_append_context(struct lttng_ctx **ctx);
 void lttng_context_update(struct lttng_ctx *ctx);
 int lttng_find_context(struct lttng_ctx *ctx, const char *name);
+int lttng_get_context_index(struct lttng_ctx *ctx, const char *name);
 void lttng_remove_context_field(struct lttng_ctx **ctx,
 				struct lttng_ctx_field *field);
 void lttng_destroy_context(struct lttng_ctx *ctx);

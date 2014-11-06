@@ -161,6 +161,14 @@ struct lttng_kernel_context {
 	} u;
 } __attribute__((packed));
 
+#define FILTER_BYTECODE_MAX_LEN		65536
+struct lttng_kernel_filter_bytecode {
+	uint32_t len;
+	uint32_t reloc_offset;
+	uint64_t seqnum;
+	char data[0];
+} __attribute__((packed));
+
 /* LTTng file descriptor ioctl */
 #define LTTNG_KERNEL_SESSION			_IO(0xF6, 0x45)
 #define LTTNG_KERNEL_TRACER_VERSION		\
@@ -200,6 +208,9 @@ struct lttng_kernel_context {
 /* Event, Channel and Session ioctl */
 #define LTTNG_KERNEL_ENABLE			_IO(0xF6, 0x82)
 #define LTTNG_KERNEL_DISABLE			_IO(0xF6, 0x83)
+
+/* Event FD ioctl */
+#define LTTNG_KERNEL_FILTER			_IO(0xF6, 0x90)
 
 /* LTTng-specific ioctls for the lib ringbuffer */
 /* returns the timestamp begin of the current sub-buffer */

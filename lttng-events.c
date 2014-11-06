@@ -512,6 +512,7 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 	event->id = chan->free_event_id++;
 	event->instrumentation = itype;
 	event->evtype = LTTNG_TYPE_EVENT;
+	INIT_LIST_HEAD(&event->bytecode_runtime_head);
 	INIT_LIST_HEAD(&event->enablers_ref_head);
 
 	switch (itype) {
@@ -1246,6 +1247,7 @@ struct lttng_enabler *lttng_enabler_create(enum lttng_enabler_type type,
 	if (!enabler)
 		return NULL;
 	enabler->type = type;
+	INIT_LIST_HEAD(&enabler->filter_bytecode_head);
 	memcpy(&enabler->event_param, event_param,
 		sizeof(enabler->event_param));
 	enabler->chan = chan;
@@ -1277,6 +1279,36 @@ int lttng_enabler_disable(struct lttng_enabler *enabler)
 	return 0;
 }
 
+int lttng_enabler_attach_bytecode(struct lttng_enabler *enabler,
+		struct lttng_kernel_filter_bytecode __user *bytecode)
+{
+	struct lttng_filter_bytecode_node *bytecode_node;
+	uint32_t bytecode_len;
+	int ret;
+
+	ret = get_user(bytecode_len, &bytecode->len);
+	if (ret)
+		return ret;
+	bytecode_node = kzalloc(sizeof(*bytecode_node) + bytecode_len,
+			GFP_KERNEL);
+	if (!bytecode_node)
+		return -ENOMEM;
+	ret = copy_from_user(&bytecode_node->bc, bytecode,
+		sizeof(*bytecode) + bytecode_len);
+	if (ret)
+		goto error_free;
+	bytecode_node->enabler = enabler;
+	/* Enforce length based on allocated size */
+	bytecode_node->bc.len = bytecode_len;
+	list_add_tail(&bytecode_node->node, &enabler->filter_bytecode_head);
+	lttng_session_lazy_sync_enablers(enabler->chan->session);
+	return 0;
+
+error_free:
+	kfree(bytecode_node);
+	return ret;
+}
+
 int lttng_enabler_attach_context(struct lttng_enabler *enabler,
 		struct lttng_kernel_context *context_param)
 {
@@ -1286,6 +1318,14 @@ int lttng_enabler_attach_context(struct lttng_enabler *enabler,
 static
 void lttng_enabler_destroy(struct lttng_enabler *enabler)
 {
+	struct lttng_filter_bytecode_node *filter_node, *tmp_filter_node;
+
+	/* Destroy filter bytecode */
+	list_for_each_entry_safe(filter_node, tmp_filter_node,
+			&enabler->filter_bytecode_head, node) {
+		kfree(filter_node);
+	}
+
 	/* Destroy contexts */
 	lttng_destroy_context(enabler->ctx);
 
@@ -1313,7 +1353,8 @@ void lttng_session_sync_enablers(struct lttng_session *session)
 	 */
 	list_for_each_entry(event, &session->events, list) {
 		struct lttng_enabler_ref *enabler_ref;
-		int enabled = 0;
+		struct lttng_bytecode_runtime *runtime;
+		int enabled = 0, has_enablers_without_bytecode = 0;
 
 		switch (event->instrumentation) {
 		case LTTNG_KERNEL_TRACEPOINT:
@@ -1347,6 +1388,24 @@ void lttng_session_sync_enablers(struct lttng_session *session)
 			register_event(event);
 		} else {
 			_lttng_event_unregister(event);
+		}
+
+		/* Check if has enablers without bytecode enabled */
+		list_for_each_entry(enabler_ref,
+				&event->enablers_ref_head, node) {
+			if (enabler_ref->ref->enabled
+					&& list_empty(&enabler_ref->ref->filter_bytecode_head)) {
+				has_enablers_without_bytecode = 1;
+				break;
+			}
+		}
+		event->has_enablers_without_bytecode =
+			has_enablers_without_bytecode;
+
+		/* Enable filters */
+		list_for_each_entry(runtime,
+				&event->bytecode_runtime_head, node) {
+			lttng_filter_sync_state(runtime);
 		}
 	}
 }
@@ -2053,9 +2112,12 @@ static int __init lttng_events_init(void)
 	if (ret)
 		return ret;
 
-	ret = lttng_tracepoint_init();
+	ret = lttng_context_init();
 	if (ret)
 		return ret;
+	ret = lttng_tracepoint_init();
+	if (ret)
+		goto error_tp;
 	event_cache = KMEM_CACHE(lttng_event, 0);
 	if (!event_cache) {
 		ret = -ENOMEM;
@@ -2075,6 +2137,8 @@ error_abi:
 	kmem_cache_destroy(event_cache);
 error_kmem:
 	lttng_tracepoint_exit();
+error_tp:
+	lttng_context_exit();
 	return ret;
 }
 
@@ -2090,6 +2154,7 @@ static void __exit lttng_events_exit(void)
 		lttng_session_destroy(session);
 	kmem_cache_destroy(event_cache);
 	lttng_tracepoint_exit();
+	lttng_context_exit();
 }
 
 module_exit(lttng_events_exit);
