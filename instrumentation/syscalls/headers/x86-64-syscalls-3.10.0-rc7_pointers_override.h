@@ -9,7 +9,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(connect,
 		uint16_t dport;
 		uint32_t v4addr;
 		uint16_t v6addr[8];
-		int v4addr_len, v6addr_len;
+		unsigned int v4addr_len, v6addr_len;
 	),
 	TP_code(
 		sc_in(
@@ -46,8 +46,8 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(connect,
 		sc_in(ctf_integer_hex(int, addrlen, addrlen))
 		sc_in(ctf_integer(int, family, tp_locvar->sa_family))
 		sc_in(ctf_integer_network(uint16_t, dport, tp_locvar->dport))
-		sc_in(ctf_sequence_network(uint8_t, v4addr, &tp_locvar->v4addr, int, tp_locvar->v4addr_len))
-		sc_in(ctf_sequence_network(uint16_t, v6addr, &tp_locvar->v6addr, int, tp_locvar->v6addr_len))
+		sc_in(ctf_sequence_network(uint8_t, v4addr, &tp_locvar->v4addr, unsigned int, tp_locvar->v4addr_len))
+		sc_in(ctf_sequence_network(uint16_t, v6addr, &tp_locvar->v6addr, unsigned int, tp_locvar->v6addr_len))
 	)
 )
 
@@ -101,8 +101,8 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(accept,
 		sc_inout(ctf_integer(int, upeer_addrlen, tp_locvar->uaddr_len))
 		sc_out(ctf_integer(int, family, tp_locvar->sa_family))
 		sc_out(ctf_integer_network(uint16_t, sport, tp_locvar->sport))
-		sc_in(ctf_sequence_network(uint8_t, v4addr, &tp_locvar->v4addr, int, tp_locvar->v4addr_len))
-		sc_in(ctf_sequence_network(uint16_t, v6addr, &tp_locvar->v6addr, int, tp_locvar->v6addr_len))
+		sc_in(ctf_sequence_network(uint8_t, v4addr, &tp_locvar->v4addr, unsigned int, tp_locvar->v4addr_len))
+		sc_in(ctf_sequence_network(uint16_t, v6addr, &tp_locvar->v6addr, unsigned int, tp_locvar->v6addr_len))
 	)
 )
 

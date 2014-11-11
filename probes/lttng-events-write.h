@@ -64,7 +64,7 @@
 #undef ctf_sequence_text
 #define ctf_sequence_text(_type, _item, _src, _length_type, _src_length) \
 	_ctf_sequence_encoded(_type, _item, _src,		\
-			_length_type, _src_length, UTF8, __BYTE_ORDER, 0, 0, 0)
+			_length_type, _src_length, UTF8, __BYTE_ORDER, 10, 0, 0)
 
 #undef ctf_string
 #define ctf_string(_item, _src)					\
@@ -108,7 +108,7 @@
 #undef ctf_user_sequence_text
 #define ctf_user_sequence_text(_type, _item, _src, _length_type, _src_length) \
 	_ctf_sequence_encoded(_type, _item, _src,		\
-			_length_type, _src_length, UTF8, __BYTE_ORDER, 0, 1, 0)
+			_length_type, _src_length, UTF8, __BYTE_ORDER, 10, 1, 0)
 
 #undef ctf_user_string
 #define ctf_user_string(_item, _src)					\

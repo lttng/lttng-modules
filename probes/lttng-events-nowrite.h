@@ -54,7 +54,7 @@
 #undef ctf_sequence_text_nowrite
 #define ctf_sequence_text_nowrite(_type, _item, _user_src, _length_type, _user_src_length) \
 	_ctf_sequence_encoded(_type, _item, _user_src,		\
-			_length_type, _user_src_length, UTF8, __BYTE_ORDER, 0, 0, 1)
+			_length_type, _user_src_length, UTF8, __BYTE_ORDER, 10, 0, 1)
 
 #undef ctf_string_nowrite
 #define ctf_string_nowrite(_item, _user_src)			\
@@ -93,7 +93,7 @@
 #undef ctf_user_sequence_text_nowrite
 #define ctf_user_sequence_text_nowrite(_type, _item, _user_src, _length_type, _user_src_length) \
 	_ctf_sequence_encoded(_type, _item, _user_src,		\
-			_length_type, _user_src_length, UTF8, __BYTE_ORDER, 0, 1, 1)
+			_length_type, _user_src_length, UTF8, __BYTE_ORDER, 10, 1, 1)
 
 #undef ctf_user_string_nowrite
 #define ctf_user_string_nowrite(_item, _user_src)		\
