@@ -17,16 +17,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(regulator_basic,
 
 	TP_ARGS(name),
 
-	TP_STRUCT__entry(
-		__string(	name,	name	)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, name)
-	),
-
-	TP_printk("name=%s", __get_str(name))
-
+	TP_FIELDS(
+		ctf_string(name, name)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(regulator_basic, regulator_enable,
@@ -79,20 +72,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(regulator_range,
 
 	TP_ARGS(name, min, max),
 
-	TP_STRUCT__entry(
-		__string(	name,		name		)
-		__field(        int,            min             )
-		__field(        int,            max             )
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, name)
-		tp_assign(min, min)
-		tp_assign(max, max)
-	),
-
-	TP_printk("name=%s (%d-%d)", __get_str(name),
-		  (int)__entry->min, (int)__entry->max)
+	TP_FIELDS(
+		ctf_string(name, name)
+		ctf_integer(int, min, min)
+		ctf_integer(int, max, max)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(regulator_range, regulator_set_voltage,
@@ -113,18 +97,10 @@ LTTNG_TRACEPOINT_EVENT_CLASS(regulator_value,
 
 	TP_ARGS(name, val),
 
-	TP_STRUCT__entry(
-		__string(	name,		name		)
-		__field(        unsigned int,   val             )
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, name)
-		tp_assign(val, val)
-	),
-
-	TP_printk("name=%s, val=%u", __get_str(name),
-		  (int)__entry->val)
+	TP_FIELDS(
+		ctf_string(name, name)
+		ctf_integer(unsigned int, val, val)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(regulator_value, regulator_set_voltage_complete,

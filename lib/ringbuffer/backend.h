@@ -209,7 +209,7 @@ size_t lib_ring_buffer_do_strcpy_from_user_inatomic(const struct lib_ring_buffer
 		int ret;
 		char c;
 
-		ret = __get_user(c, &src[count]);
+		ret = __copy_from_user_inatomic(&c, src + count, 1);
 		if (ret || !c)
 			break;
 		lib_ring_buffer_do_copy(config, &dest[count], &c, 1);

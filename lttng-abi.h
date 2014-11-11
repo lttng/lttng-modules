@@ -161,7 +161,7 @@ struct lttng_kernel_context {
 	} u;
 } __attribute__((packed));
 
-#define FILTER_BYTECODE_MAX_LEN		65536
+#define LTTNG_KERNEL_FILTER_BYTECODE_MAX_LEN		65536
 struct lttng_kernel_filter_bytecode {
 	uint32_t len;
 	uint32_t reloc_offset;

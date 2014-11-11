@@ -21,28 +21,13 @@ LTTNG_TRACEPOINT_EVENT_CLASS(kmem_alloc,
 
 	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags),
 
-	TP_STRUCT__entry(
-		__field_hex(	unsigned long,	call_site	)
-		__field_hex(	const void *,	ptr		)
-		__field(	size_t,		bytes_req	)
-		__field(	size_t,		bytes_alloc	)
-		__field(	gfp_t,		gfp_flags	)
-	),
-
-	TP_fast_assign(
-		tp_assign(call_site, call_site)
-		tp_assign(ptr, ptr)
-		tp_assign(bytes_req, bytes_req)
-		tp_assign(bytes_alloc, bytes_alloc)
-		tp_assign(gfp_flags, gfp_flags)
-	),
-
-	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s",
-		__entry->call_site,
-		__entry->ptr,
-		__entry->bytes_req,
-		__entry->bytes_alloc,
-		show_gfp_flags(__entry->gfp_flags))
+	TP_FIELDS(
+		ctf_integer_hex(unsigned long, call_site, call_site)
+		ctf_integer_hex(const void *, ptr, ptr)
+		ctf_integer(size_t, bytes_req, bytes_req)
+		ctf_integer(size_t, bytes_alloc, bytes_alloc)
+		ctf_integer(gfp_t, gfp_flags, gfp_flags)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(kmem_alloc, kmalloc,
@@ -74,31 +59,14 @@ LTTNG_TRACEPOINT_EVENT_CLASS(kmem_alloc_node,
 
 	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node),
 
-	TP_STRUCT__entry(
-		__field_hex(	unsigned long,	call_site	)
-		__field_hex(	const void *,	ptr		)
-		__field(	size_t,		bytes_req	)
-		__field(	size_t,		bytes_alloc	)
-		__field(	gfp_t,		gfp_flags	)
-		__field(	int,		node		)
-	),
-
-	TP_fast_assign(
-		tp_assign(call_site, call_site)
-		tp_assign(ptr, ptr)
-		tp_assign(bytes_req, bytes_req)
-		tp_assign(bytes_alloc, bytes_alloc)
-		tp_assign(gfp_flags, gfp_flags)
-		tp_assign(node, node)
-	),
-
-	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s node=%d",
-		__entry->call_site,
-		__entry->ptr,
-		__entry->bytes_req,
-		__entry->bytes_alloc,
-		show_gfp_flags(__entry->gfp_flags),
-		__entry->node)
+	TP_FIELDS(
+		ctf_integer_hex(unsigned long, call_site, call_site)
+		ctf_integer_hex(const void *, ptr, ptr)
+		ctf_integer(size_t, bytes_req, bytes_req)
+		ctf_integer(size_t, bytes_alloc, bytes_alloc)
+		ctf_integer(gfp_t, gfp_flags, gfp_flags)
+		ctf_integer(int, node, node)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(kmem_alloc_node, kmalloc_node,
@@ -127,17 +95,10 @@ LTTNG_TRACEPOINT_EVENT_CLASS(kmem_free,
 
 	TP_ARGS(call_site, ptr),
 
-	TP_STRUCT__entry(
-		__field_hex(	unsigned long,	call_site	)
-		__field_hex(	const void *,	ptr		)
-	),
-
-	TP_fast_assign(
-		tp_assign(call_site, call_site)
-		tp_assign(ptr, ptr)
-	),
-
-	TP_printk("call_site=%lx ptr=%p", __entry->call_site, __entry->ptr)
+	TP_FIELDS(
+		ctf_integer_hex(unsigned long, call_site, call_site)
+		ctf_integer_hex(const void *, ptr, ptr)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(kmem_free, kfree,
@@ -167,20 +128,10 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_free_direct, kmem_mm_page_free_direct,
 
 	TP_ARGS(page, order),
 
-	TP_STRUCT__entry(
-		__field_hex(	struct page *,	page		)
-		__field(	unsigned int,	order		)
-	),
-
-	TP_fast_assign(
-		tp_assign(page, page)
-		tp_assign(order, order)
-	),
-
-	TP_printk("page=%p pfn=%lu order=%d",
-			__entry->page,
-			page_to_pfn(__entry->page),
-			__entry->order)
+	TP_FIELDS(
+		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(unsigned int, order, order)
+	)
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
@@ -193,20 +144,10 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_pagevec_free, kmem_pagevec_free,
 
 	TP_ARGS(page, cold),
 
-	TP_STRUCT__entry(
-		__field_hex(	struct page *,	page		)
-		__field(	int,		cold		)
-	),
-
-	TP_fast_assign(
-		tp_assign(page, page)
-		tp_assign(cold, cold)
-	),
-
-	TP_printk("page=%p pfn=%lu order=0 cold=%d",
-			__entry->page,
-			page_to_pfn(__entry->page),
-			__entry->cold)
+	TP_FIELDS(
+		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(int, cold, cold)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc, kmem_mm_page_alloc,
@@ -216,26 +157,12 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc, kmem_mm_page_alloc,
 
 	TP_ARGS(page, order, gfp_flags, migratetype),
 
-	TP_STRUCT__entry(
-		__field_hex(	struct page *,	page		)
-		__field(	unsigned int,	order		)
-		__field(	gfp_t,		gfp_flags	)
-		__field(	int,		migratetype	)
-	),
-
-	TP_fast_assign(
-		tp_assign(page, page)
-		tp_assign(order, order)
-		tp_assign(gfp_flags, gfp_flags)
-		tp_assign(migratetype, migratetype)
-	),
-
-	TP_printk("page=%p pfn=%lu order=%d migratetype=%d gfp_flags=%s",
-		__entry->page,
-		__entry->page ? page_to_pfn(__entry->page) : 0,
-		__entry->order,
-		__entry->migratetype,
-		show_gfp_flags(__entry->gfp_flags))
+	TP_FIELDS(
+		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(unsigned int, order, order)
+		ctf_integer(gfp_t, gfp_flags, gfp_flags)
+		ctf_integer(int, migratetype, migratetype)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_CLASS(kmem_mm_page,
@@ -244,24 +171,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(kmem_mm_page,
 
 	TP_ARGS(page, order, migratetype),
 
-	TP_STRUCT__entry(
-		__field_hex(	struct page *,	page		)
-		__field(	unsigned int,	order		)
-		__field(	int,		migratetype	)
-	),
-
-	TP_fast_assign(
-		tp_assign(page, page)
-		tp_assign(order, order)
-		tp_assign(migratetype, migratetype)
-	),
-
-	TP_printk("page=%p pfn=%lu order=%u migratetype=%d percpu_refill=%d",
-		__entry->page,
-		__entry->page ? page_to_pfn(__entry->page) : 0,
-		__entry->order,
-		__entry->migratetype,
-		__entry->order == 0)
+	TP_FIELDS(
+		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(unsigned int, order, order)
+		ctf_integer(int, migratetype, migratetype)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(kmem_mm_page, mm_page_alloc_zone_locked,
@@ -273,7 +187,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(kmem_mm_page, mm_page_alloc_zone_locked,
 	TP_ARGS(page, order, migratetype)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT_MAP(kmem_mm_page, mm_page_pcpu_drain,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(kmem_mm_page, mm_page_pcpu_drain,
 
 	kmem_mm_page_pcpu_drain,
 
@@ -283,11 +197,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT_MAP(kmem_mm_page, mm_page_pcpu_drain,
 	TP_PROTO(struct page *page, int order, int migratetype),
 #endif
 
-	TP_ARGS(page, order, migratetype),
-
-	TP_printk("page=%p pfn=%lu order=%d migratetype=%d",
-		__entry->page, page_to_pfn(__entry->page),
-		__entry->order, __entry->migratetype)
+	TP_ARGS(page, order, migratetype)
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,2)	\
@@ -392,34 +302,14 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
 		alloc_migratetype, fallback_migratetype,
 		change_ownership),
 
-	TP_STRUCT__entry(
-		__field_hex(	struct page *,	page			)
-		__field(	int,		alloc_order		)
-		__field(	int,		fallback_order		)
-		__field(	int,		alloc_migratetype	)
-		__field(	int,		fallback_migratetype	)
-		__field(	int,		change_ownership	)
-	),
-
-	TP_fast_assign(
-		tp_assign(page, page)
-		tp_assign(alloc_order, alloc_order)
-		tp_assign(fallback_order, fallback_order)
-		tp_assign(alloc_migratetype, alloc_migratetype)
-		tp_assign(fallback_migratetype, fallback_migratetype)
-		tp_assign(change_ownership, change_ownership)
-	),
-
-	TP_printk("page=%p pfn=%lu alloc_order=%d fallback_order=%d pageblock_order=%d alloc_migratetype=%d fallback_migratetype=%d fragmenting=%d change_ownership=%d",
-		__entry->page,
-		page_to_pfn(__entry->page),
-		__entry->alloc_order,
-		__entry->fallback_order,
-		pageblock_order,
-		__entry->alloc_migratetype,
-		__entry->fallback_migratetype,
-		__entry->fallback_order < pageblock_order,
-		__entry->change_ownership)
+	TP_FIELDS(
+		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(int, alloc_order, alloc_order)
+		ctf_integer(int, fallback_order, fallback_order)
+		ctf_integer(int, alloc_migratetype, alloc_migratetype)
+		ctf_integer(int, fallback_migratetype, fallback_migratetype)
+		ctf_integer(int, change_ownership, change_ownership)
+	)
 )
 
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
@@ -436,32 +326,13 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
 		alloc_order, fallback_order,
 		alloc_migratetype, fallback_migratetype),
 
-	TP_STRUCT__entry(
-		__field_hex(	struct page *,	page			)
-		__field(	int,		alloc_order		)
-		__field(	int,		fallback_order		)
-		__field(	int,		alloc_migratetype	)
-		__field(	int,		fallback_migratetype	)
-	),
-
-	TP_fast_assign(
-		tp_assign(page, page)
-		tp_assign(alloc_order, alloc_order)
-		tp_assign(fallback_order, fallback_order)
-		tp_assign(alloc_migratetype, alloc_migratetype)
-		tp_assign(fallback_migratetype, fallback_migratetype)
-	),
-
-	TP_printk("page=%p pfn=%lu alloc_order=%d fallback_order=%d pageblock_order=%d alloc_migratetype=%d fallback_migratetype=%d fragmenting=%d change_ownership=%d",
-		__entry->page,
-		page_to_pfn(__entry->page),
-		__entry->alloc_order,
-		__entry->fallback_order,
-		pageblock_order,
-		__entry->alloc_migratetype,
-		__entry->fallback_migratetype,
-		__entry->fallback_order < pageblock_order,
-		__entry->alloc_migratetype == __entry->fallback_migratetype)
+	TP_FIELDS(
+		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(int, alloc_order, alloc_order)
+		ctf_integer(int, fallback_order, fallback_order)
+		ctf_integer(int, alloc_migratetype, alloc_migratetype)
+		ctf_integer(int, fallback_migratetype, fallback_migratetype)
+	)
 )
 
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */

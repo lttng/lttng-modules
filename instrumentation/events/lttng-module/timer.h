@@ -21,15 +21,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(timer_class,
 
 	TP_ARGS(timer),
 
-	TP_STRUCT__entry(
-		__field( void *,	timer	)
-	),
-
-	TP_fast_assign(
-		tp_assign(timer, timer)
-	),
-
-	TP_printk("timer=%p", __entry->timer)
+	TP_FIELDS(
+		ctf_integer(void *, timer, timer)
+	)
 )
 
 /**
@@ -54,23 +48,12 @@ LTTNG_TRACEPOINT_EVENT(timer_start,
 
 	TP_ARGS(timer, expires),
 
-	TP_STRUCT__entry(
-		__field( void *,	timer		)
-		__field( void *,	function	)
-		__field( unsigned long,	expires		)
-		__field( unsigned long,	now		)
-	),
-
-	TP_fast_assign(
-		tp_assign(timer, timer)
-		tp_assign(function, timer->function)
-		tp_assign(expires, expires)
-		tp_assign(now, jiffies)
-	),
-
-	TP_printk("timer=%p function=%pf expires=%lu [timeout=%ld]",
-		  __entry->timer, __entry->function, __entry->expires,
-		  (long)__entry->expires - __entry->now)
+	TP_FIELDS(
+		ctf_integer(void *, timer, timer)
+		ctf_integer(void *, function, timer->function)
+		ctf_integer(unsigned long, expires, expires)
+		ctf_integer(unsigned long, now, jiffies)
+	)
 )
 
 /**
@@ -85,19 +68,11 @@ LTTNG_TRACEPOINT_EVENT(timer_expire_entry,
 
 	TP_ARGS(timer),
 
-	TP_STRUCT__entry(
-		__field( void *,	timer	)
-		__field( unsigned long,	now	)
-		__field( void *,	function)
-	),
-
-	TP_fast_assign(
-		tp_assign(timer, timer)
-		tp_assign(now, jiffies)
-		tp_assign(function, timer->function)
-	),
-
-	TP_printk("timer=%p function=%pf now=%lu", __entry->timer, __entry->function,__entry->now)
+	TP_FIELDS(
+		ctf_integer(void *, timer, timer)
+		ctf_integer(unsigned long, now, jiffies)
+		ctf_integer(void *, function, timer->function)
+	)
 )
 
 /**
@@ -143,23 +118,11 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_init,
 
 	TP_ARGS(hrtimer, clockid, mode),
 
-	TP_STRUCT__entry(
-		__field( void *,		hrtimer		)
-		__field( clockid_t,		clockid		)
-		__field( enum hrtimer_mode,	mode		)
-	),
-
-	TP_fast_assign(
-		tp_assign(hrtimer, hrtimer)
-		tp_assign(clockid, clockid)
-		tp_assign(mode, mode)
-	),
-
-	TP_printk("hrtimer=%p clockid=%s mode=%s", __entry->hrtimer,
-		  __entry->clockid == CLOCK_REALTIME ?
-			"CLOCK_REALTIME" : "CLOCK_MONOTONIC",
-		  __entry->mode == HRTIMER_MODE_ABS ?
-			"HRTIMER_MODE_ABS" : "HRTIMER_MODE_REL")
+	TP_FIELDS(
+		ctf_integer(void *, hrtimer, hrtimer)
+		ctf_integer(clockid_t, clockid, clockid)
+		ctf_integer(enum hrtimer_mode, mode, mode)
+	)
 )
 
 /**
@@ -174,26 +137,12 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_start,
 
 	TP_ARGS(hrtimer),
 
-	TP_STRUCT__entry(
-		__field( void *,	hrtimer		)
-		__field( void *,	function	)
-		__field( s64,		expires		)
-		__field( s64,		softexpires	)
-	),
-
-	TP_fast_assign(
-		tp_assign(hrtimer, hrtimer)
-		tp_assign(function, hrtimer->function)
-		tp_assign(expires, hrtimer_get_expires(hrtimer).tv64)
-		tp_assign(softexpires, hrtimer_get_softexpires(hrtimer).tv64)
-	),
-
-	TP_printk("hrtimer=%p function=%pf expires=%llu softexpires=%llu",
-		  __entry->hrtimer, __entry->function,
-		  (unsigned long long)ktime_to_ns((ktime_t) {
-				  .tv64 = __entry->expires }),
-		  (unsigned long long)ktime_to_ns((ktime_t) {
-				  .tv64 = __entry->softexpires }))
+	TP_FIELDS(
+		ctf_integer(void *, hrtimer, hrtimer)
+		ctf_integer(void *, function, hrtimer->function)
+		ctf_integer(s64, expires, hrtimer_get_expires(hrtimer).tv64)
+		ctf_integer(s64, softexpires, hrtimer_get_softexpires(hrtimer).tv64)
+	)
 )
 
 /**
@@ -212,20 +161,11 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_expire_entry,
 
 	TP_ARGS(hrtimer, now),
 
-	TP_STRUCT__entry(
-		__field( void *,	hrtimer	)
-		__field( s64,		now	)
-		__field( void *,	function)
-	),
-
-	TP_fast_assign(
-		tp_assign(hrtimer, hrtimer)
-		tp_assign(now, now->tv64)
-		tp_assign(function, hrtimer->function)
-	),
-
-	TP_printk("hrtimer=%p function=%pf now=%llu", __entry->hrtimer, __entry->function,
-		  (unsigned long long)ktime_to_ns((ktime_t) { .tv64 = __entry->now }))
+	TP_FIELDS(
+		ctf_integer(void *, hrtimer, hrtimer)
+		ctf_integer(s64, now, now->tv64)
+		ctf_integer(void *, function, hrtimer->function)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_CLASS(timer_hrtimer_class,
@@ -234,15 +174,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(timer_hrtimer_class,
 
 	TP_ARGS(hrtimer),
 
-	TP_STRUCT__entry(
-		__field( void *,	hrtimer	)
-	),
-
-	TP_fast_assign(
-		tp_assign(hrtimer, hrtimer)
-	),
-
-	TP_printk("hrtimer=%p", __entry->hrtimer)
+	TP_FIELDS(
+		ctf_integer(void *, hrtimer, hrtimer)
+	)
 )
 
 /**
@@ -290,28 +224,14 @@ LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
 
 	TP_ARGS(which, value, expires),
 
-	TP_STRUCT__entry(
-		__field(	int,		which		)
-		__field(	cputime_t,	expires		)
-		__field(	long,		value_sec	)
-		__field(	long,		value_usec	)
-		__field(	long,		interval_sec	)
-		__field(	long,		interval_usec	)
-	),
-
-	TP_fast_assign(
-		tp_assign(which, which)
-		tp_assign(expires, expires)
-		tp_assign(value_sec, value->it_value.tv_sec)
-		tp_assign(value_usec, value->it_value.tv_usec)
-		tp_assign(interval_sec, value->it_interval.tv_sec)
-		tp_assign(interval_usec, value->it_interval.tv_usec)
-	),
-
-	TP_printk("which=%d expires=%llu it_value=%ld.%ld it_interval=%ld.%ld",
-		  __entry->which, (unsigned long long)__entry->expires,
-		  __entry->value_sec, __entry->value_usec,
-		  __entry->interval_sec, __entry->interval_usec)
+	TP_FIELDS(
+		ctf_integer(int, which, which)
+		ctf_integer(cputime_t, expires, expires)
+		ctf_integer(long, value_sec, value->it_value.tv_sec)
+		ctf_integer(long, value_usec, value->it_value.tv_usec)
+		ctf_integer(long, interval_sec, value->it_interval.tv_sec)
+		ctf_integer(long, interval_usec, value->it_interval.tv_usec)
+	)
 )
 
 /**
@@ -328,20 +248,11 @@ LTTNG_TRACEPOINT_EVENT_MAP(itimer_expire,
 
 	TP_ARGS(which, pid, now),
 
-	TP_STRUCT__entry(
-		__field( int ,		which	)
-		__field( pid_t,		pid	)
-		__field( cputime_t,	now	)
-	),
-
-	TP_fast_assign(
-		tp_assign(which, which)
-		tp_assign(now, now)
-		tp_assign(pid, pid_nr(pid))
-	),
-
-	TP_printk("which=%d pid=%d now=%llu", __entry->which,
-		  (int) __entry->pid, (unsigned long long)__entry->now)
+	TP_FIELDS(
+		ctf_integer(int , which, which)
+		ctf_integer(pid_t, pid, pid_nr(pid))
+		ctf_integer(cputime_t, now, now)
+	)
 )
 
 #endif /*  LTTNG_TRACE_TIMER_H */

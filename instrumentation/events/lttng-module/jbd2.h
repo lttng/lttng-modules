@@ -22,18 +22,10 @@ LTTNG_TRACEPOINT_EVENT(jbd2_checkpoint,
 
 	TP_ARGS(journal, result),
 
-	TP_STRUCT__entry(
-		__field(	dev_t,	dev			)
-		__field(	int,	result			)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev)
-		tp_assign(result, result)
-	),
-
-	TP_printk("dev %d,%d result %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->result)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
+		ctf_integer(int, result, result)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_CLASS(jbd2_commit,
@@ -42,21 +34,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(jbd2_commit,
 
 	TP_ARGS(journal, commit_transaction),
 
-	TP_STRUCT__entry(
-		__field(	dev_t,	dev			)
-		__field(	char,	sync_commit		  )
-		__field(	int,	transaction		  )
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev)
-		tp_assign(sync_commit, commit_transaction->t_synchronous_commit)
-		tp_assign(transaction, commit_transaction->t_tid)
-	),
-
-	TP_printk("dev %d,%d transaction %d sync %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __entry->transaction, __entry->sync_commit)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
+		ctf_integer(char, sync_commit, commit_transaction->t_synchronous_commit)
+		ctf_integer(int, transaction, commit_transaction->t_tid)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(jbd2_commit, jbd2_start_commit,
@@ -101,23 +83,12 @@ LTTNG_TRACEPOINT_EVENT(jbd2_end_commit,
 
 	TP_ARGS(journal, commit_transaction),
 
-	TP_STRUCT__entry(
-		__field(	dev_t,	dev			)
-		__field(	char,	sync_commit		  )
-		__field(	int,	transaction		  )
-		__field(	int,	head		  	  )
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev)
-		tp_assign(sync_commit, commit_transaction->t_synchronous_commit)
-		tp_assign(transaction, commit_transaction->t_tid)
-		tp_assign(head, journal->j_tail_sequence)
-	),
-
-	TP_printk("dev %d,%d transaction %d sync %d head %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __entry->transaction, __entry->sync_commit, __entry->head)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
+		ctf_integer(char, sync_commit, commit_transaction->t_synchronous_commit)
+		ctf_integer(int, transaction, commit_transaction->t_tid)
+		ctf_integer(int, head, journal->j_tail_sequence)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(jbd2_submit_inode_data,
@@ -125,19 +96,10 @@ LTTNG_TRACEPOINT_EVENT(jbd2_submit_inode_data,
 
 	TP_ARGS(inode),
 
-	TP_STRUCT__entry(
-		__field(	dev_t,	dev			)
-		__field(	ino_t,	ino			)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, inode->i_sb->s_dev)
-		tp_assign(ino, inode->i_ino)
-	),
-
-	TP_printk("dev %d,%d ino %lu",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  (unsigned long) __entry->ino)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
+		ctf_integer(ino_t, ino, inode->i_ino)
+	)
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
@@ -147,42 +109,18 @@ LTTNG_TRACEPOINT_EVENT(jbd2_run_stats,
 
 	TP_ARGS(dev, tid, stats),
 
-	TP_STRUCT__entry(
-		__field(		dev_t,	dev		)
-		__field(	unsigned long,	tid		)
-		__field(	unsigned long,	wait		)
-		__field(	unsigned long,	running		)
-		__field(	unsigned long,	locked		)
-		__field(	unsigned long,	flushing	)
-		__field(	unsigned long,	logging		)
-		__field(		__u32,	handle_count	)
-		__field(		__u32,	blocks		)
-		__field(		__u32,	blocks_logged	)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, dev)
-		tp_assign(tid, tid)
-		tp_assign(wait, stats->rs_wait)
-		tp_assign(running, stats->rs_running)
-		tp_assign(locked, stats->rs_locked)
-		tp_assign(flushing, stats->rs_flushing)
-		tp_assign(logging, stats->rs_logging)
-		tp_assign(handle_count, stats->rs_handle_count)
-		tp_assign(blocks, stats->rs_blocks)
-		tp_assign(blocks_logged, stats->rs_blocks_logged)
-	),
-
-	TP_printk("dev %d,%d tid %lu wait %u running %u locked %u flushing %u "
-		  "logging %u handle_count %u blocks %u blocks_logged %u",
-		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->tid,
-		  jiffies_to_msecs(__entry->wait),
-		  jiffies_to_msecs(__entry->running),
-		  jiffies_to_msecs(__entry->locked),
-		  jiffies_to_msecs(__entry->flushing),
-		  jiffies_to_msecs(__entry->logging),
-		  __entry->handle_count, __entry->blocks,
-		  __entry->blocks_logged)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, dev)
+		ctf_integer(unsigned long, tid, tid)
+		ctf_integer(unsigned long, wait, stats->rs_wait)
+		ctf_integer(unsigned long, running, stats->rs_running)
+		ctf_integer(unsigned long, locked, stats->rs_locked)
+		ctf_integer(unsigned long, flushing, stats->rs_flushing)
+		ctf_integer(unsigned long, logging, stats->rs_logging)
+		ctf_integer(__u32, handle_count, stats->rs_handle_count)
+		ctf_integer(__u32, blocks, stats->rs_blocks)
+		ctf_integer(__u32, blocks_logged, stats->rs_blocks_logged)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(jbd2_checkpoint_stats,
@@ -191,29 +129,14 @@ LTTNG_TRACEPOINT_EVENT(jbd2_checkpoint_stats,
 
 	TP_ARGS(dev, tid, stats),
 
-	TP_STRUCT__entry(
-		__field(		dev_t,	dev		)
-		__field(	unsigned long,	tid		)
-		__field(	unsigned long,	chp_time	)
-		__field(		__u32,	forced_to_close	)
-		__field(		__u32,	written		)
-		__field(		__u32,	dropped		)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, dev)
-		tp_assign(tid, tid)
-		tp_assign(chp_time, stats->cs_chp_time)
-		tp_assign(forced_to_close, stats->cs_forced_to_close)
-		tp_assign(written, stats->cs_written)
-		tp_assign(dropped, stats->cs_dropped)
-	),
-
-	TP_printk("dev %d,%d tid %lu chp_time %u forced_to_close %u "
-		  "written %u dropped %u",
-		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->tid,
-		  jiffies_to_msecs(__entry->chp_time),
-		  __entry->forced_to_close, __entry->written, __entry->dropped)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, dev)
+		ctf_integer(unsigned long, tid, tid)
+		ctf_integer(unsigned long, chp_time, stats->cs_chp_time)
+		ctf_integer(__u32, forced_to_close, stats->cs_forced_to_close)
+		ctf_integer(__u32, written, stats->cs_written)
+		ctf_integer(__u32, dropped, stats->cs_dropped)
+	)
 )
 #endif
 
@@ -229,26 +152,13 @@ LTTNG_TRACEPOINT_EVENT(jbd2_cleanup_journal_tail,
 
 	TP_ARGS(journal, first_tid, block_nr, freed),
 
-	TP_STRUCT__entry(
-		__field(	dev_t,	dev			)
-		__field(	tid_t,	tail_sequence		)
-		__field(	tid_t,	first_tid		)
-		__field(unsigned long,	block_nr		)
-		__field(unsigned long,	freed			)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev)
-		tp_assign(tail_sequence, journal->j_tail_sequence)
-		tp_assign(first_tid, first_tid)
-		tp_assign(block_nr, block_nr)
-		tp_assign(freed, freed)
-	),
-
-	TP_printk("dev %d,%d from %u to %u offset %lu freed %lu",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __entry->tail_sequence, __entry->first_tid,
-		  __entry->block_nr, __entry->freed)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
+		ctf_integer(tid_t, tail_sequence, journal->j_tail_sequence)
+		ctf_integer(tid_t, first_tid, first_tid)
+		ctf_integer(unsigned long, block_nr, block_nr)
+		ctf_integer(unsigned long, freed, freed)
+	)
 )
 #endif
 
@@ -259,18 +169,10 @@ LTTNG_TRACEPOINT_EVENT(jbd2_write_superblock,
 
 	TP_ARGS(journal, write_op),
 
-	TP_STRUCT__entry(
-		__field(	dev_t,  dev			)
-		__field(	  int,  write_op		)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev)
-		tp_assign(write_op, write_op)
-	),
-
-	TP_printk("dev %d,%d write_op %x", MAJOR(__entry->dev),
-		  MINOR(__entry->dev), __entry->write_op)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
+		ctf_integer(int, write_op, write_op)
+	)
 )
 #endif
 

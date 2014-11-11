@@ -24,15 +24,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(workqueue_work,
 
 	TP_ARGS(work),
 
-	TP_STRUCT__entry(
-		__field( void *,	work	)
-	),
-
-	TP_fast_assign(
-		tp_assign(work, work)
-	),
-
-	TP_printk("work struct %p", __entry->work)
+	TP_FIELDS(
+		ctf_integer(void *, work, work)
+	)
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
@@ -60,21 +54,11 @@ LTTNG_TRACEPOINT_EVENT(workqueue_queue_work,
 	TP_ARGS(req_cpu, cwq, work),
 #endif
 
-	TP_STRUCT__entry(
-		__field( void *,	work	)
-		__field( void *,	function)
-		__field( unsigned int,	req_cpu	)
-	),
-
-	TP_fast_assign(
-		tp_assign(work, work)
-		tp_assign(function, work->func)
-		tp_assign(req_cpu, req_cpu)
-	),
-
-	TP_printk("work struct=%p function=%pf req_cpu=%u",
-		  __entry->work, __entry->function,
-		  __entry->req_cpu)
+	TP_FIELDS(
+		ctf_integer(void *, work, work)
+		ctf_integer(void *, function, work->func)
+		ctf_integer(unsigned int, req_cpu, req_cpu)
+	)
 )
 
 /**
@@ -105,17 +89,10 @@ LTTNG_TRACEPOINT_EVENT(workqueue_execute_start,
 
 	TP_ARGS(work),
 
-	TP_STRUCT__entry(
-		__field( void *,	work	)
-		__field( void *,	function)
-	),
-
-	TP_fast_assign(
-		tp_assign(work, work)
-		tp_assign(function, work->func)
-	),
-
-	TP_printk("work struct %p: function %pf", __entry->work, __entry->function)
+	TP_FIELDS(
+		ctf_integer(void *, work, work)
+		ctf_integer(void *, function, work->func)
+	)
 )
 
 /**
@@ -139,20 +116,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(workqueue,
 
 	TP_ARGS(wq_thread, work),
 
-	TP_STRUCT__entry(
-		__array(char,		thread_comm,	TASK_COMM_LEN)
-		__field(pid_t,		thread_pid)
-		__field(work_func_t,	func)
-	),
-
-	TP_fast_assign(
-		tp_memcpy(thread_comm, wq_thread->comm, TASK_COMM_LEN)
-		tp_assign(thread_pid, wq_thread->pid)
-		tp_assign(func, work->func)
-	),
-
-	TP_printk("thread=%s:%d func=%pf", __entry->thread_comm,
-		__entry->thread_pid, __entry->func)
+	TP_FIELDS(
+		ctf_array(char, thread_comm, wq_thread->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, thread_pid, wq_thread->pid)
+		ctf_integer(work_func_t, func, work->func)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(workqueue, workqueue_insertion,
@@ -176,20 +144,11 @@ LTTNG_TRACEPOINT_EVENT(workqueue_creation,
 
 	TP_ARGS(wq_thread, cpu),
 
-	TP_STRUCT__entry(
-		__array(char,	thread_comm,	TASK_COMM_LEN)
-		__field(pid_t,	thread_pid)
-		__field(int,	cpu)
-	),
-
-	TP_fast_assign(
-		tp_memcpy(thread_comm, wq_thread->comm, TASK_COMM_LEN)
-		tp_assign(thread_pid, wq_thread->pid)
-		tp_assign(cpu, cpu)
-	),
-
-	TP_printk("thread=%s:%d cpu=%d", __entry->thread_comm,
-		__entry->thread_pid, __entry->cpu)
+	TP_FIELDS(
+		ctf_array(char, thread_comm, wq_thread->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, thread_pid, wq_thread->pid)
+		ctf_integer(int, cpu, cpu)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(workqueue_destruction,
@@ -198,17 +157,10 @@ LTTNG_TRACEPOINT_EVENT(workqueue_destruction,
 
 	TP_ARGS(wq_thread),
 
-	TP_STRUCT__entry(
-		__array(char,	thread_comm,	TASK_COMM_LEN)
-		__field(pid_t,	thread_pid)
-	),
-
-	TP_fast_assign(
-		tp_memcpy(thread_comm, wq_thread->comm, TASK_COMM_LEN)
-		tp_assign(thread_pid, wq_thread->pid)
-	),
-
-	TP_printk("thread=%s:%d", __entry->thread_comm, __entry->thread_pid)
+	TP_FIELDS(
+		ctf_array(char, thread_comm, wq_thread->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, thread_pid, wq_thread->pid)
+	)
 )
 
 #endif

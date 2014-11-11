@@ -51,6 +51,13 @@ void procname_record(struct lttng_ctx_field *field,
 	chan->ops->event_write(ctx, current->comm, sizeof(current->comm));
 }
 
+static
+void procname_get_value(struct lttng_ctx_field *field,
+		union lttng_ctx_value *value)
+{
+	value->str = current->comm;
+}
+
 int lttng_add_procname_to_ctx(struct lttng_ctx **ctx)
 {
 	struct lttng_ctx_field *field;
@@ -75,6 +82,7 @@ int lttng_add_procname_to_ctx(struct lttng_ctx **ctx)
 
 	field->get_size = procname_get_size;
 	field->record = procname_record;
+	field->get_value = procname_get_value;
 	lttng_context_update(*ctx);
 	wrapper_vmalloc_sync_all();
 	return 0;

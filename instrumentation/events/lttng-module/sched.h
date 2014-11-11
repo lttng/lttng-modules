@@ -99,17 +99,10 @@ LTTNG_TRACEPOINT_EVENT(sched_kthread_stop,
 
 	TP_ARGS(t),
 
-	TP_STRUCT__entry(
-		__array_text(	char,	comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	tid			)
-	),
-
-	TP_fast_assign(
-		tp_memcpy(comm, t->comm, TASK_COMM_LEN)
-		tp_assign(tid, t->pid)
-	),
-
-	TP_printk("comm=%s tid=%d", __entry->comm, __entry->tid)
+	TP_FIELDS(
+		ctf_array_text(char, comm, t->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, tid, t->pid)
+	)
 )
 
 /*
@@ -121,15 +114,9 @@ LTTNG_TRACEPOINT_EVENT(sched_kthread_stop_ret,
 
 	TP_ARGS(ret),
 
-	TP_STRUCT__entry(
-		__field(	int,	ret	)
-	),
-
-	TP_fast_assign(
-		tp_assign(ret, ret)
-	),
-
-	TP_printk("ret=%d", __entry->ret)
+	TP_FIELDS(
+		ctf_integer(int, ret, ret)
+	)
 )
 
 /*
@@ -147,40 +134,15 @@ LTTNG_TRACEPOINT_EVENT_CLASS(sched_wakeup_template,
 	TP_ARGS(rq, p, success),
 #endif
 
-	TP_STRUCT__entry(
-		__array_text(	char,	comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	tid			)
-		__field(	int,	prio			)
-		__field(	int,	success			)
+	TP_FIELDS(
+		ctf_array_text(char, comm, p->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, tid, p->pid)
+		ctf_integer(int, prio, p->prio)
+		ctf_integer(int, success, success)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
-		__field(	int,	target_cpu		)
+		ctf_integer(int, target_cpu, task_cpu(p))
 #endif
-	),
-
-	TP_fast_assign(
-		tp_memcpy(comm, p->comm, TASK_COMM_LEN)
-		tp_assign(tid, p->pid)
-		tp_assign(prio, p->prio)
-		tp_assign(success, success)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
-		tp_assign(target_cpu, task_cpu(p))
-#endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
 	)
-	TP_perf_assign(
-		__perf_task(p)
-#endif
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
-	TP_printk("comm=%s tid=%d prio=%d success=%d target_cpu=%03d",
-		  __entry->comm, __entry->tid, __entry->prio,
-		  __entry->success, __entry->target_cpu)
-#else
-	TP_printk("comm=%s tid=%d prio=%d success=%d",
-		  __entry->comm, __entry->tid, __entry->prio,
-		  __entry->success)
-#endif
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
@@ -228,50 +190,19 @@ LTTNG_TRACEPOINT_EVENT(sched_switch,
 	TP_ARGS(rq, prev, next),
 #endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35)) */
 
-	TP_STRUCT__entry(
-		__array_text(	char,	prev_comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	prev_tid			)
-		__field(	int,	prev_prio			)
-		__field(	long,	prev_state			)
-		__array_text(	char,	next_comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	next_tid			)
-		__field(	int,	next_prio			)
-	),
-
-	TP_fast_assign(
-		tp_memcpy(next_comm, next->comm, TASK_COMM_LEN)
-		tp_assign(prev_tid, prev->pid)
-		tp_assign(prev_prio, prev->prio - MAX_RT_PRIO)
+	TP_FIELDS(
+		ctf_array_text(char, prev_comm,	prev->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, prev_tid, prev->pid)
+		ctf_integer(int, prev_prio, prev->prio - MAX_RT_PRIO)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
-		tp_assign(prev_state, __trace_sched_switch_state(prev))
+		ctf_integer(long, prev_state, __trace_sched_switch_state(prev))
 #else
-		tp_assign(prev_state, prev->state)
+		ctf_integer(long, prev_state, prev->state)
 #endif
-		tp_memcpy(prev_comm, prev->comm, TASK_COMM_LEN)
-		tp_assign(next_tid, next->pid)
-		tp_assign(next_prio, next->prio - MAX_RT_PRIO)
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
-	TP_printk("prev_comm=%s prev_tid=%d prev_prio=%d prev_state=%s%s ==> next_comm=%s next_tid=%d next_prio=%d",
-		__entry->prev_comm, __entry->prev_tid, __entry->prev_prio,
-		__entry->prev_state & (TASK_STATE_MAX-1) ?
-		  __print_flags(__entry->prev_state & (TASK_STATE_MAX-1), "|",
-				{ 1, "S"} , { 2, "D" }, { 4, "T" }, { 8, "t" },
-				{ 16, "Z" }, { 32, "X" }, { 64, "x" },
-				{ 128, "W" }) : "R",
-		__entry->prev_state & TASK_STATE_MAX ? "+" : "",
-		__entry->next_comm, __entry->next_tid, __entry->next_prio)
-#else
-	TP_printk("prev_comm=%s prev_tid=%d prev_prio=%d prev_state=%s ==> next_comm=%s next_tid=%d next_prio=%d",
-		__entry->prev_comm, __entry->prev_tid, __entry->prev_prio,
-		__entry->prev_state ?
-		  __print_flags(__entry->prev_state, "|",
-				{ 1, "S"} , { 2, "D" }, { 4, "T" }, { 8, "t" },
-				{ 16, "Z" }, { 32, "X" }, { 64, "x" },
-				{ 128, "W" }) : "R",
-		__entry->next_comm, __entry->next_tid, __entry->next_prio)
-#endif
+		ctf_array_text(char, next_comm, next->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, next_tid, next->pid)
+		ctf_integer(int, next_prio, next->prio - MAX_RT_PRIO)
+	)
 )
 
 /*
@@ -283,25 +214,13 @@ LTTNG_TRACEPOINT_EVENT(sched_migrate_task,
 
 	TP_ARGS(p, dest_cpu),
 
-	TP_STRUCT__entry(
-		__array_text(	char,	comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	tid			)
-		__field(	int,	prio			)
-		__field(	int,	orig_cpu		)
-		__field(	int,	dest_cpu		)
-	),
-
-	TP_fast_assign(
-		tp_memcpy(comm, p->comm, TASK_COMM_LEN)
-		tp_assign(tid, p->pid)
-		tp_assign(prio, p->prio - MAX_RT_PRIO)
-		tp_assign(orig_cpu, task_cpu(p))
-		tp_assign(dest_cpu, dest_cpu)
-	),
-
-	TP_printk("comm=%s tid=%d prio=%d orig_cpu=%d dest_cpu=%d",
-		  __entry->comm, __entry->tid, __entry->prio,
-		  __entry->orig_cpu, __entry->dest_cpu)
+	TP_FIELDS(
+		ctf_array_text(char, comm, p->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, tid, p->pid)
+		ctf_integer(int, prio, p->prio - MAX_RT_PRIO)
+		ctf_integer(int, orig_cpu, task_cpu(p))
+		ctf_integer(int, dest_cpu, dest_cpu)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_CLASS(sched_process_template,
@@ -310,20 +229,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(sched_process_template,
 
 	TP_ARGS(p),
 
-	TP_STRUCT__entry(
-		__array_text(	char,	comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	tid			)
-		__field(	int,	prio			)
-	),
-
-	TP_fast_assign(
-		tp_memcpy(comm, p->comm, TASK_COMM_LEN)
-		tp_assign(tid, p->pid)
-		tp_assign(prio, p->prio - MAX_RT_PRIO)
-	),
-
-	TP_printk("comm=%s tid=%d prio=%d",
-		  __entry->comm, __entry->tid, __entry->prio)
+	TP_FIELDS(
+		ctf_array_text(char, comm, p->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, tid, p->pid)
+		ctf_integer(int, prio, p->prio - MAX_RT_PRIO)
+	)
 )
 
 /*
@@ -363,20 +273,11 @@ LTTNG_TRACEPOINT_EVENT(sched_process_wait,
 
 	TP_ARGS(pid),
 
-	TP_STRUCT__entry(
-		__array_text(	char,	comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	tid			)
-		__field(	int,	prio			)
-	),
-
-	TP_fast_assign(
-		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
-		tp_assign(tid, pid_nr(pid))
-		tp_assign(prio, current->prio - MAX_RT_PRIO)
-	),
-
-	TP_printk("comm=%s tid=%d prio=%d",
-		  __entry->comm, __entry->tid, __entry->prio)
+	TP_FIELDS(
+		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, tid, pid_nr(pid))
+		ctf_integer(int, prio, current->prio - MAX_RT_PRIO)
+	)
 )
 
 /*
@@ -393,27 +294,14 @@ LTTNG_TRACEPOINT_EVENT(sched_process_fork,
 
 	TP_ARGS(parent, child),
 
-	TP_STRUCT__entry(
-		__array_text(	char,	parent_comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	parent_tid			)
-		__field(	pid_t,	parent_pid			)
-		__array_text(	char,	child_comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	child_tid			)
-		__field(	pid_t,	child_pid			)
-	),
-
-	TP_fast_assign(
-		tp_memcpy(parent_comm, parent->comm, TASK_COMM_LEN)
-		tp_assign(parent_tid, parent->pid)
-		tp_assign(parent_pid, parent->tgid)
-		tp_memcpy(child_comm, child->comm, TASK_COMM_LEN)
-		tp_assign(child_tid, child->pid)
-		tp_assign(child_pid, child->tgid)
-	),
-
-	TP_printk("comm=%s tid=%d child_comm=%s child_tid=%d",
-		__entry->parent_comm, __entry->parent_tid,
-		__entry->child_comm, __entry->child_tid)
+	TP_FIELDS(
+		ctf_array_text(char, parent_comm, parent->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, parent_tid, parent->pid)
+		ctf_integer(pid_t, parent_pid, parent->tgid)
+		ctf_array_text(char, child_comm, child->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, child_tid, child->pid)
+		ctf_integer(pid_t, child_pid, child->tgid)
+	)
 )
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,33))
@@ -426,20 +314,11 @@ LTTNG_TRACEPOINT_EVENT(sched_signal_send,
 
 	TP_ARGS(sig, p),
 
-	TP_STRUCT__entry(
-		__field(	int,	sig			)
-		__array(	char,	comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	pid			)
-	),
-
-	TP_fast_assign(
-		tp_memcpy(comm, p->comm, TASK_COMM_LEN)
-		tp_assign(pid, p->pid)
-		tp_assign(sig, sig)
-	),
-
-	TP_printk("sig=%d comm=%s pid=%d",
-		__entry->sig, __entry->comm, __entry->pid)
+	TP_FIELDS(
+		ctf_integer(int, sig, sig)
+		ctf_array_text(char, comm, p->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, tid, p->pid)
+	)
 )
 #endif
 
@@ -454,20 +333,11 @@ LTTNG_TRACEPOINT_EVENT(sched_process_exec,
 
 	TP_ARGS(p, old_pid, bprm),
 
-	TP_STRUCT__entry(
-		__string(	filename,	bprm->filename	)
-		__field(	pid_t,		tid		)
-		__field(	pid_t,		old_tid		)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(filename, bprm->filename)
-		tp_assign(tid, p->pid)
-		tp_assign(old_tid, old_pid)
-	),
-
-	TP_printk("filename=%s tid=%d old_tid=%d", __get_str(filename),
-		  __entry->tid, __entry->old_tid)
+	TP_FIELDS(
+		ctf_string(filename, bprm->filename)
+		ctf_integer(pid_t, tid, p->pid)
+		ctf_integer(pid_t, old_tid, old_pid)
+	)
 )
 #endif
 
@@ -482,24 +352,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(sched_stat_template,
 
 	TP_ARGS(tsk, delay),
 
-	TP_STRUCT__entry(
-		__array_text( char,	comm,	TASK_COMM_LEN	)
-		__field( pid_t,	tid			)
-		__field( u64,	delay			)
-	),
-
-	TP_fast_assign(
-		tp_memcpy(comm, tsk->comm, TASK_COMM_LEN)
-		tp_assign(tid,  tsk->pid)
-		tp_assign(delay, delay)
+	TP_FIELDS(
+		ctf_array_text(char, comm, tsk->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, tid, tsk->pid)
+		ctf_integer(u64, delay, delay)
 	)
-	TP_perf_assign(
-		__perf_count(delay)
-	),
-
-	TP_printk("comm=%s tid=%d delay=%Lu [ns]",
-			__entry->comm, __entry->tid,
-			(unsigned long long)__entry->delay)
 )
 
 
@@ -546,30 +403,12 @@ LTTNG_TRACEPOINT_EVENT(sched_stat_runtime,
 
 	TP_ARGS(tsk, runtime, vruntime),
 
-	TP_STRUCT__entry(
-		__array_text( char,	comm,	TASK_COMM_LEN	)
-		__field( pid_t,	tid			)
-		__field( u64,	runtime			)
-		__field( u64,	vruntime			)
-	),
-
-	TP_fast_assign(
-		tp_memcpy(comm, tsk->comm, TASK_COMM_LEN)
-		tp_assign(tid, tsk->pid)
-		tp_assign(runtime, runtime)
-		tp_assign(vruntime, vruntime)
+	TP_FIELDS(
+		ctf_array_text(char, comm, tsk->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, tid, tsk->pid)
+		ctf_integer(u64, runtime, runtime)
+		ctf_integer(u64, vruntime, vruntime)
 	)
-	TP_perf_assign(
-		__perf_count(runtime)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
-		__perf_task(tsk)
-#endif
-	),
-
-	TP_printk("comm=%s tid=%d runtime=%Lu [ns] vruntime=%Lu [ns]",
-			__entry->comm, __entry->tid,
-			(unsigned long long)__entry->runtime,
-			(unsigned long long)__entry->vruntime)
 )
 #endif
 
@@ -584,23 +423,12 @@ LTTNG_TRACEPOINT_EVENT(sched_pi_setprio,
 
 	TP_ARGS(tsk, newprio),
 
-	TP_STRUCT__entry(
-		__array_text( char,	comm,	TASK_COMM_LEN	)
-		__field( pid_t,	tid			)
-		__field( int,	oldprio			)
-		__field( int,	newprio			)
-	),
-
-	TP_fast_assign(
-		tp_memcpy(comm, tsk->comm, TASK_COMM_LEN)
-		tp_assign(tid, tsk->pid)
-		tp_assign(oldprio, tsk->prio - MAX_RT_PRIO)
-		tp_assign(newprio, newprio - MAX_RT_PRIO)
-	),
-
-	TP_printk("comm=%s tid=%d oldprio=%d newprio=%d",
-			__entry->comm, __entry->tid,
-			__entry->oldprio, __entry->newprio)
+	TP_FIELDS(
+		ctf_array_text(char, comm, tsk->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, tid, tsk->pid)
+		ctf_integer(int, oldprio, tsk->prio - MAX_RT_PRIO)
+		ctf_integer(int, newprio, newprio - MAX_RT_PRIO)
+	)
 )
 #endif
 

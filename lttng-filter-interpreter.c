@@ -20,21 +20,51 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <linux/uaccess.h>
+
 #include "lttng-filter.h"
+
+/*
+ * get_char should be called with page fault handler disabled if it is expected
+ * to handle user-space read.
+ */
+static
+char get_char(struct estack_entry *reg, size_t offset)
+{
+	if (unlikely(offset >= reg->u.s.seq_len))
+		return '\0';
+	if (reg->u.s.user) {
+		char c;
+
+		/* Handle invalid access as end of string. */
+		if (unlikely(!access_ok(VERIFY_READ,
+				reg->u.s.user_str + offset,
+				sizeof(c))))
+			return '\0';
+		/* Handle fault (nonzero return value) as end of string. */
+		if (unlikely(__copy_from_user_inatomic(&c,
+				reg->u.s.user_str + offset,
+				sizeof(c))))
+			return '\0';
+		return c;
+	} else {
+		return reg->u.s.str[offset];
+	}
+}
 
 /*
  * -1: wildcard found.
  * -2: unknown escape char.
  * 0: normal char.
  */
-
 static
-int parse_char(const char **p)
+int parse_char(struct estack_entry *reg, char *c, size_t *offset)
 {
-	switch (**p) {
+	switch (*c) {
 	case '\\':
-		(*p)++;
-		switch (**p) {
+		(*offset)++;
+		*c = get_char(reg, *offset);
+		switch (*c) {
 		case '\\':
 		case '*':
 			return 0;
@@ -51,66 +81,103 @@ int parse_char(const char **p)
 static
 int stack_strcmp(struct estack *stack, int top, const char *cmp_type)
 {
-	const char *p = estack_bx(stack, top)->u.s.str, *q = estack_ax(stack, top)->u.s.str;
-	int ret;
-	int diff;
+	size_t offset_bx = 0, offset_ax = 0;
+	int diff, has_user = 0;
+	mm_segment_t old_fs;
+
+	if (estack_bx(stack, top)->u.s.user
+			|| estack_ax(stack, top)->u.s.user) {
+		has_user = 1;
+		old_fs = get_fs();
+		set_fs(KERNEL_DS);
+		pagefault_disable();
+	}
 
 	for (;;) {
+		int ret;
 		int escaped_r0 = 0;
+		char char_bx, char_ax;
 
-		if (unlikely(p - estack_bx(stack, top)->u.s.str > estack_bx(stack, top)->u.s.seq_len || *p == '\0')) {
-			if (q - estack_ax(stack, top)->u.s.str > estack_ax(stack, top)->u.s.seq_len || *q == '\0') {
-				return 0;
+		char_bx = get_char(estack_bx(stack, top), offset_bx);
+		char_ax = get_char(estack_ax(stack, top), offset_ax);
+
+		if (unlikely(char_bx == '\0')) {
+			if (char_ax == '\0') {
+				diff = 0;
+				break;
 			} else {
 				if (estack_ax(stack, top)->u.s.literal) {
-					ret = parse_char(&q);
-					if (ret == -1)
-						return 0;
+					ret = parse_char(estack_ax(stack, top),
+						&char_ax, &offset_ax);
+					if (ret == -1) {
+						diff = 0;
+						break;
+					}
 				}
-				return -1;
+				diff = -1;
+				break;
 			}
 		}
-		if (unlikely(q - estack_ax(stack, top)->u.s.str > estack_ax(stack, top)->u.s.seq_len || *q == '\0')) {
-			if (p - estack_bx(stack, top)->u.s.str > estack_bx(stack, top)->u.s.seq_len || *p == '\0') {
-				return 0;
+		if (unlikely(char_ax == '\0')) {
+			if (char_bx == '\0') {
+				diff = 0;
+				break;
 			} else {
 				if (estack_bx(stack, top)->u.s.literal) {
-					ret = parse_char(&p);
-					if (ret == -1)
-						return 0;
+					ret = parse_char(estack_bx(stack, top),
+						&char_bx, &offset_bx);
+					if (ret == -1) {
+						diff = 0;
+						break;
+					}
 				}
-				return 1;
+				diff = 1;
+				break;
 			}
 		}
 		if (estack_bx(stack, top)->u.s.literal) {
-			ret = parse_char(&p);
+			ret = parse_char(estack_bx(stack, top),
+				&char_bx, &offset_bx);
 			if (ret == -1) {
-				return 0;
+				diff = 0;
+				break;
 			} else if (ret == -2) {
 				escaped_r0 = 1;
 			}
 			/* else compare both char */
 		}
 		if (estack_ax(stack, top)->u.s.literal) {
-			ret = parse_char(&q);
+			ret = parse_char(estack_ax(stack, top),
+				&char_ax, &offset_ax);
 			if (ret == -1) {
-				return 0;
+				diff = 0;
+				break;
 			} else if (ret == -2) {
-				if (!escaped_r0)
-					return -1;
+				if (!escaped_r0) {
+					diff = -1;
+					break;
+				}
 			} else {
-				if (escaped_r0)
-					return 1;
+				if (escaped_r0) {
+					diff = 1;
+					break;
+				}
 			}
 		} else {
-			if (escaped_r0)
-				return 1;
+			if (escaped_r0) {
+				diff = 1;
+				break;
+			}
 		}
-		diff = *p - *q;
+		diff = char_bx - char_ax;
 		if (diff != 0)
 			break;
-		p++;
-		q++;
+		offset_bx++;
+		offset_ax++;
+	}
+	if (has_user) {
+		pagefault_enable();
+		set_fs(old_fs);
 	}
 	return diff;
 }
@@ -285,6 +352,10 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 		[ FILTER_OP_GET_CONTEXT_REF_STRING ] = &&LABEL_FILTER_OP_GET_CONTEXT_REF_STRING,
 		[ FILTER_OP_GET_CONTEXT_REF_S64 ] = &&LABEL_FILTER_OP_GET_CONTEXT_REF_S64,
 		[ FILTER_OP_GET_CONTEXT_REF_DOUBLE ] = &&LABEL_FILTER_OP_GET_CONTEXT_REF_DOUBLE,
+
+		/* load userspace field ref */
+		[ FILTER_OP_LOAD_FIELD_REF_USER_STRING ] = &&LABEL_FILTER_OP_LOAD_FIELD_REF_USER_STRING,
+		[ FILTER_OP_LOAD_FIELD_REF_USER_SEQUENCE ] = &&LABEL_FILTER_OP_LOAD_FIELD_REF_USER_SEQUENCE,
 	};
 #endif /* #ifndef INTERPRETER_USE_SWITCH */
 
@@ -579,6 +650,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 			}
 			estack_ax(stack, top)->u.s.seq_len = UINT_MAX;
 			estack_ax(stack, top)->u.s.literal = 0;
+			estack_ax(stack, top)->u.s.user = 0;
 			dbg_printk("ref load string %s\n", estack_ax(stack, top)->u.s.str);
 			next_pc += sizeof(struct load_op) + sizeof(struct field_ref);
 			PO;
@@ -603,6 +675,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 				goto end;
 			}
 			estack_ax(stack, top)->u.s.literal = 0;
+			estack_ax(stack, top)->u.s.user = 0;
 			next_pc += sizeof(struct load_op) + sizeof(struct field_ref);
 			PO;
 		}
@@ -639,6 +712,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 			estack_ax(stack, top)->u.s.str = insn->data;
 			estack_ax(stack, top)->u.s.seq_len = UINT_MAX;
 			estack_ax(stack, top)->u.s.literal = 1;
+			estack_ax(stack, top)->u.s.user = 0;
 			next_pc += sizeof(struct load_op) + strlen(insn->data) + 1;
 			PO;
 		}
@@ -702,6 +776,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 			}
 			estack_ax(stack, top)->u.s.seq_len = UINT_MAX;
 			estack_ax(stack, top)->u.s.literal = 0;
+			estack_ax(stack, top)->u.s.user = 0;
 			dbg_printk("ref get context string %s\n", estack_ax(stack, top)->u.s.str);
 			next_pc += sizeof(struct load_op) + sizeof(struct field_ref);
 			PO;
@@ -729,6 +804,54 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 		OP(FILTER_OP_GET_CONTEXT_REF_DOUBLE):
 		{
 			BUG_ON(1);
+			PO;
+		}
+
+		/* load userspace field ref */
+		OP(FILTER_OP_LOAD_FIELD_REF_USER_STRING):
+		{
+			struct load_op *insn = (struct load_op *) pc;
+			struct field_ref *ref = (struct field_ref *) insn->data;
+
+			dbg_printk("load field ref offset %u type user string\n",
+				ref->offset);
+			estack_push(stack, top, ax, bx);
+			estack_ax(stack, top)->u.s.str =
+				*(const char * const *) &filter_stack_data[ref->offset];
+			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
+				dbg_printk("Filter warning: loading a NULL string.\n");
+				ret = -EINVAL;
+				goto end;
+			}
+			estack_ax(stack, top)->u.s.seq_len = UINT_MAX;
+			estack_ax(stack, top)->u.s.literal = 0;
+			estack_ax(stack, top)->u.s.user = 1;
+			dbg_printk("ref load string %s\n", estack_ax(stack, top)->u.s.str);
+			next_pc += sizeof(struct load_op) + sizeof(struct field_ref);
+			PO;
+		}
+
+		OP(FILTER_OP_LOAD_FIELD_REF_USER_SEQUENCE):
+		{
+			struct load_op *insn = (struct load_op *) pc;
+			struct field_ref *ref = (struct field_ref *) insn->data;
+
+			dbg_printk("load field ref offset %u type user sequence\n",
+				ref->offset);
+			estack_push(stack, top, ax, bx);
+			estack_ax(stack, top)->u.s.seq_len =
+				*(unsigned long *) &filter_stack_data[ref->offset];
+			estack_ax(stack, top)->u.s.str =
+				*(const char **) (&filter_stack_data[ref->offset
+								+ sizeof(unsigned long)]);
+			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
+				dbg_printk("Filter warning: loading a NULL sequence.\n");
+				ret = -EINVAL;
+				goto end;
+			}
+			estack_ax(stack, top)->u.s.literal = 0;
+			estack_ax(stack, top)->u.s.user = 1;
+			next_pc += sizeof(struct load_op) + sizeof(struct field_ref);
 			PO;
 		}
 

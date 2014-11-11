@@ -299,6 +299,8 @@ int bytecode_validate_overflow(struct bytecode_runtime *bytecode,
 	}
 	case FILTER_OP_LOAD_FIELD_REF_STRING:
 	case FILTER_OP_LOAD_FIELD_REF_SEQUENCE:
+	case FILTER_OP_LOAD_FIELD_REF_USER_STRING:
+	case FILTER_OP_LOAD_FIELD_REF_USER_SEQUENCE:
 	case FILTER_OP_LOAD_FIELD_REF_S64:
 	case FILTER_OP_GET_CONTEXT_REF_STRING:
 	case FILTER_OP_GET_CONTEXT_REF_S64:
@@ -612,6 +614,8 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 	}
 	case FILTER_OP_LOAD_FIELD_REF_STRING:
 	case FILTER_OP_LOAD_FIELD_REF_SEQUENCE:
+	case FILTER_OP_LOAD_FIELD_REF_USER_STRING:
+	case FILTER_OP_LOAD_FIELD_REF_USER_SEQUENCE:
 	{
 		struct load_op *insn = (struct load_op *) pc;
 		struct field_ref *ref = (struct field_ref *) insn->data;
@@ -932,6 +936,8 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	case FILTER_OP_LOAD_FIELD_REF_STRING:
 	case FILTER_OP_LOAD_FIELD_REF_SEQUENCE:
 	case FILTER_OP_GET_CONTEXT_REF_STRING:
+	case FILTER_OP_LOAD_FIELD_REF_USER_STRING:
+	case FILTER_OP_LOAD_FIELD_REF_USER_SEQUENCE:
 	{
 		if (vstack_push(stack)) {
 			ret = -EINVAL;

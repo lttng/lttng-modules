@@ -12,21 +12,13 @@
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_start,
 	TP_PROTO(struct lttng_session *session),
 	TP_ARGS(session),
-	TP_STRUCT__entry(
-	),
-	TP_fast_assign(
-	),
-	TP_printk("")
+	TP_FIELDS()
 )
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_end,
 	TP_PROTO(struct lttng_session *session),
 	TP_ARGS(session),
-	TP_STRUCT__entry(
-	),
-	TP_fast_assign(
-	),
-	TP_printk("")
+	TP_FIELDS()
 )
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_state,
@@ -35,26 +27,12 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_state,
 		int type, int mode, int submode, int status,
 		struct pid_namespace *pid_ns),
 	TP_ARGS(session, p, type, mode, submode, status, pid_ns),
-	TP_STRUCT__entry(
-		__field(pid_t, tid)
-		__field(pid_t, vtid)
-		__field(pid_t, pid)
-		__field(pid_t, vpid)
-		__field(pid_t, ppid)
-		__field(pid_t, vppid)
-		__array_text(char, name, TASK_COMM_LEN)
-		__field(int, type)
-		__field(int, mode)
-		__field(int, submode)
-		__field(int, status)
-		__field(int, ns_level)
-	),
-	TP_fast_assign(
-		tp_assign(tid, p->pid)
-		tp_assign(vtid, pid_ns ? task_pid_nr_ns(p, pid_ns) : 0)
-		tp_assign(pid, p->tgid)
-		tp_assign(vpid, pid_ns ? task_tgid_nr_ns(p, pid_ns) : 0)
-		tp_assign(ppid,
+	TP_FIELDS(
+		ctf_integer(pid_t, tid, p->pid)
+		ctf_integer(pid_t, vtid, pid_ns ? task_pid_nr_ns(p, pid_ns) : 0)
+		ctf_integer(pid_t, pid, p->tgid)
+		ctf_integer(pid_t, vpid, pid_ns ? task_tgid_nr_ns(p, pid_ns) : 0)
+		ctf_integer(pid_t, ppid,
 			({
 				pid_t ret;
 
@@ -63,7 +41,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_state,
 				rcu_read_unlock();
 				ret;
 			}))
-		tp_assign(vppid,
+		ctf_integer(pid_t, vppid,
 			({
 				struct task_struct *parent;
 				pid_t ret = 0;
@@ -76,14 +54,13 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_state,
 				}
 				ret;
 			}))
-		tp_memcpy(name, p->comm, TASK_COMM_LEN)
-		tp_assign(type, type)
-		tp_assign(mode, mode)
-		tp_assign(submode, submode)
-		tp_assign(status, status)
-		tp_assign(ns_level, pid_ns ? pid_ns->level : 0)
-	),
-	TP_printk("")
+		ctf_array_text(char, name, p->comm, TASK_COMM_LEN)
+		ctf_integer(int, type, type)
+		ctf_integer(int, mode, mode)
+		ctf_integer(int, submode, submode)
+		ctf_integer(int, status, status)
+		ctf_integer(int, ns_level, pid_ns ? pid_ns->level : 0)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_file_descriptor,
@@ -91,21 +68,13 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_file_descriptor,
 		struct task_struct *p, int fd, const char *filename,
 		unsigned int flags, fmode_t fmode),
 	TP_ARGS(session, p, fd, filename, flags, fmode),
-	TP_STRUCT__entry(
-		__field(pid_t, pid)
-		__field(int, fd)
-		__field_oct(unsigned int, flags)
-		__field_hex(fmode_t, fmode)
-		__string(filename, filename)
-	),
-	TP_fast_assign(
-		tp_assign(pid, p->tgid)
-		tp_assign(fd, fd)
-		tp_assign(flags, flags)
-		tp_assign(fmode, fmode)
-		tp_strcpy(filename, filename)
-	),
-	TP_printk("")
+	TP_FIELDS(
+		ctf_integer(pid_t, pid, p->tgid)
+		ctf_integer(int, fd, fd)
+		ctf_integer_oct(unsigned int, flags, flags)
+		ctf_integer_hex(fmode_t, fmode, fmode)
+		ctf_string(filename, filename)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_vm_map,
@@ -113,53 +82,35 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_vm_map,
 		struct task_struct *p, struct vm_area_struct *map,
 		unsigned long inode),
 	TP_ARGS(session, p, map, inode),
-	TP_STRUCT__entry(
-		__field(pid_t, pid)
-		__field_hex(unsigned long, start)
-		__field_hex(unsigned long, end)
-		__field_hex(unsigned long, flags)
-		__field(unsigned long, inode)
-		__field(unsigned long, pgoff)
-	),
-	TP_fast_assign(
-		tp_assign(pid, p->tgid)
-		tp_assign(start, map->vm_start)
-		tp_assign(end, map->vm_end)
-		tp_assign(flags, map->vm_flags)
-		tp_assign(inode, inode)
-		tp_assign(pgoff, map->vm_pgoff << PAGE_SHIFT)
-	),
-	TP_printk("")
+	TP_FIELDS(
+		ctf_integer(pid_t, pid, p->tgid)
+		ctf_integer_hex(unsigned long, start, map->vm_start)
+		ctf_integer_hex(unsigned long, end, map->vm_end)
+		ctf_integer_hex(unsigned long, flags, map->vm_flags)
+		ctf_integer(unsigned long, inode, inode)
+		ctf_integer(unsigned long, pgoff, map->vm_pgoff << PAGE_SHIFT)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_network_interface,
 	TP_PROTO(struct lttng_session *session,
 		struct net_device *dev, struct in_ifaddr *ifa),
 	TP_ARGS(session, dev, ifa),
-	TP_STRUCT__entry(
-		__string(name, dev->name)
-		__field_network_hex(uint32_t, address_ipv4)
-	),
-	TP_fast_assign(
-		tp_strcpy(name, dev->name)
-		tp_assign(address_ipv4, ifa ? ifa->ifa_address : 0U)
-	),
-	TP_printk("")
+	TP_FIELDS(
+		ctf_string(name, dev->name)
+		ctf_integer_network_hex(uint32_t, address_ipv4,
+			ifa ? ifa->ifa_address : 0U)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_block_device,
 	TP_PROTO(struct lttng_session *session,
 		dev_t dev, const char *diskname),
 	TP_ARGS(session, dev, diskname),
-	TP_STRUCT__entry(
-		__field(dev_t, dev)
-		__string(diskname, diskname)
-	),
-	TP_fast_assign(
-		tp_assign(dev, dev)
-		tp_strcpy(diskname, diskname)
-	),
-	TP_printk("")
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, dev)
+		ctf_string(diskname, diskname)
+	)
 )
 
 /* Called with desc->lock held */
@@ -168,17 +119,11 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_interrupt,
 		unsigned int irq, const char *chip_name,
 		struct irqaction *action),
 	TP_ARGS(session, irq, chip_name, action),
-	TP_STRUCT__entry(
-		__field(unsigned int, irq)
-		__string(name, chip_name)
-		__string(action, action->name ? : "")
-	),
-	TP_fast_assign(
-		tp_assign(irq, irq)
-		tp_strcpy(name, chip_name)
-		tp_strcpy(action, action->name ? : "")
-	),
-	TP_printk("")
+	TP_FIELDS(
+		ctf_integer(unsigned int, irq, irq)
+		ctf_string(name, chip_name)
+		ctf_string(action, action->name ? : "")
+	)
 )
 
 #endif /*  LTTNG_TRACE_LTTNG_STATEDUMP_H */

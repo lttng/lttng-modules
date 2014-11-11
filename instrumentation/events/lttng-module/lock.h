@@ -27,30 +27,13 @@ LTTNG_TRACEPOINT_EVENT(lock_acquire,
 
 	TP_ARGS(lock, subclass, trylock, read, check, next_lock, ip),
 
-	TP_STRUCT__entry(
-		__field(unsigned int, flags)
-		__string(name, lock->name)
+	TP_FIELDS(
+		ctf_integer(unsigned int, flags, (trylock ? 1 : 0) | (read ? 2 : 0))
+		ctf_string(name, lock->name)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
-		__field(void *, lockdep_addr)
+		ctf_integer(void *, lockdep_addr, lock)
 #endif
-	),
-
-	TP_fast_assign(
-		tp_assign(flags, (trylock ? 1 : 0) | (read ? 2 : 0))
-		tp_strcpy(name, lock->name)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
-		tp_assign(lockdep_addr, lock)
-#endif
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
-	TP_printk("%p %s%s%s", __entry->lockdep_addr,
-#else
-	TP_printk("%s%s%s",
-#endif
-		  (__entry->flags & 1) ? "try " : "",
-		  (__entry->flags & 2) ? "read " : "",
-		  __get_str(name))
+	)
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
@@ -61,17 +44,10 @@ LTTNG_TRACEPOINT_EVENT_CLASS(lock,
 
 	TP_ARGS(lock, ip),
 
-	TP_STRUCT__entry(
-		__string(	name, 	lock->name	)
-		__field(	void *, lockdep_addr	)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, lock->name)
-		tp_assign(lockdep_addr, lock)
-	),
-
-	TP_printk("%p %s",  __entry->lockdep_addr, __get_str(name))
+	TP_FIELDS(
+		ctf_string(name, lock->name)
+		ctf_integer(void *, lockdep_addr, lock)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(lock, lock_release,
@@ -107,25 +83,12 @@ LTTNG_TRACEPOINT_EVENT(lock_release,
 
 	TP_ARGS(lock, nested, ip),
 
-	TP_STRUCT__entry(
-		__string(	name, 	lock->name	)
+	TP_FIELDS(
+		ctf_string(name, lock->name)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
-		__field(	void *, lockdep_addr	)
+		ctf_integer(void *, lockdep_addr, lock)
 #endif
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, lock->name)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
-		tp_assign(lockdep_addr, lock)
-#endif
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
-	TP_printk("%p %s",  __entry->lockdep_addr, __get_str(name))
-#else
-	TP_printk("%s",  __get_str(name))
-#endif
+	)
 )
 
 #ifdef CONFIG_LOCK_STAT
@@ -136,25 +99,12 @@ LTTNG_TRACEPOINT_EVENT(lock_contended,
 
 	TP_ARGS(lock, ip),
 
-	TP_STRUCT__entry(
-		__string(	name, 	lock->name	)
+	TP_FIELDS(
+		ctf_string(name, lock->name)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
-		__field(	void *, lockdep_addr	)
+		ctf_integer(void *, lockdep_addr, lock)
 #endif
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, lock->name)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
-		tp_assign(lockdep_addr, lock)
-#endif
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
-	TP_printk("%p %s",  __entry->lockdep_addr, __get_str(name))
-#else
-	TP_printk("%s",  __get_str(name))
-#endif
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(lock_acquired,
@@ -163,36 +113,16 @@ LTTNG_TRACEPOINT_EVENT(lock_acquired,
 
 	TP_ARGS(lock, ip, waittime),
 
-	TP_STRUCT__entry(
-		__string(	name, 	lock->name	)
+	TP_FIELDS(
+		ctf_string(name, lock->name)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
-		__field(	s64,    wait_nsec	)
-		__field(	void *, lockdep_addr	)
+		ctf_integer(s64, wait_nsec, wait_nsec)
+		ctf_integer(void *, lockdep_addr, lock)
 #else
-		__field(unsigned long, wait_usec)
-		__field(unsigned long, wait_nsec_rem)
+		ctf_integer(unsigned long, wait_usec, (unsigned long) waittime)
+		ctf_integer(unsigned long, wait_nsec_rem, do_div(waittime, NSEC_PER_USEC))
 #endif
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, lock->name)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
-		tp_assign(wait_nsec, waittime)
-		tp_assign(lockdep_addr, lock)
-#else
-		tp_assign(wait_usec, (unsigned long)waittime)
-		tp_assign(wait_nsec_rem, do_div(waittime, NSEC_PER_USEC))
-#endif
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
-	TP_printk("%p %s (%llu ns)",  __entry->lockdep_addr,
-		  __get_str(name), __entry->wait_nsec)
-#else
-	TP_printk("%s (%lu.%03lu us)",
-		  __get_str(name),
-		  __entry->wait_usec, __entry->wait_nsec_rem)
-#endif
+	)
 )
 
 #endif

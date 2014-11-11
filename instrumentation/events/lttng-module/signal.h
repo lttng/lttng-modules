@@ -11,13 +11,13 @@
 #define _TRACE_SIGNAL_DEF
 #include <linux/signal.h>
 #include <linux/sched.h>
-#undef TP_STORE_SIGINFO
-#define TP_STORE_SIGINFO(info)					\
-		tp_assign(errno,				\
+#undef LTTNG_FIELDS_SIGINFO
+#define LTTNG_FIELDS_SIGINFO(info)				\
+		ctf_integer(int, errno,				\
 			(info == SEND_SIG_NOINFO || info == SEND_SIG_FORCED || info == SEND_SIG_PRIV) ? \
 			0 :					\
 			info->si_errno)				\
-		tp_assign(code,					\
+		ctf_integer(int, code,				\
 			(info == SEND_SIG_NOINFO || info == SEND_SIG_FORCED) ? \
 			SI_USER : 				\
 			((info == SEND_SIG_PRIV) ? SI_KERNEL : info->si_code))
@@ -42,24 +42,12 @@ LTTNG_TRACEPOINT_EVENT(signal_generate,
 
 	TP_ARGS(sig, info, task),
 
-	TP_STRUCT__entry(
-		__field(	int,	sig			)
-		__field(	int,	errno			)
-		__field(	int,	code			)
-		__array_text(	char,	comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	pid			)
-	),
-
-	TP_fast_assign(
-		tp_assign(sig, sig)
-		TP_STORE_SIGINFO(info)
-		tp_memcpy(comm, task->comm, TASK_COMM_LEN)
-		tp_assign(pid, task->pid)
-	),
-
-	TP_printk("sig=%d errno=%d code=%d comm=%s pid=%d",
-		  __entry->sig, __entry->errno, __entry->code,
-		  __entry->comm, __entry->pid)
+	TP_FIELDS(
+		ctf_integer(int, sig, sig)
+		LTTNG_FIELDS_SIGINFO(info)
+		ctf_array_text(char, comm, task->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, pid, task->pid)
+	)
 )
 #else
 LTTNG_TRACEPOINT_EVENT(signal_generate,
@@ -69,29 +57,14 @@ LTTNG_TRACEPOINT_EVENT(signal_generate,
 
 	TP_ARGS(sig, info, task, group, result),
 
-	TP_STRUCT__entry(
-		__field(	int,	sig			)
-		__field(	int,	errno			)
-		__field(	int,	code			)
-		__array_text(	char,	comm,	TASK_COMM_LEN	)
-		__field(	pid_t,	pid			)
-		__field(	int,	group			)
-		__field(	int,	result			)
-	),
-
-	TP_fast_assign(
-		tp_assign(sig, sig)
-		TP_STORE_SIGINFO(info)
-		tp_memcpy(comm, task->comm, TASK_COMM_LEN)
-		tp_assign(pid, task->pid)
-		tp_assign(group, group)
-		tp_assign(result, result)
-	),
-
-	TP_printk("sig=%d errno=%d code=%d comm=%s pid=%d grp=%d res=%d",
-		  __entry->sig, __entry->errno, __entry->code,
-		  __entry->comm, __entry->pid, __entry->group,
-		  __entry->result)
+	TP_FIELDS(
+		ctf_integer(int, sig, sig)
+		LTTNG_FIELDS_SIGINFO(info)
+		ctf_array_text(char, comm, task->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, pid, task->pid)
+		ctf_integer(int, group, group)
+		ctf_integer(int, result, result)
+	)
 )
 #endif
 
@@ -115,24 +88,12 @@ LTTNG_TRACEPOINT_EVENT(signal_deliver,
 
 	TP_ARGS(sig, info, ka),
 
-	TP_STRUCT__entry(
-		__field(	int,		sig		)
-		__field(	int,		errno		)
-		__field(	int,		code		)
-		__field(	unsigned long,	sa_handler	)
-		__field(	unsigned long,	sa_flags	)
-	),
-
-	TP_fast_assign(
-		tp_assign(sig, sig)
-		TP_STORE_SIGINFO(info)
-		tp_assign(sa_handler, (unsigned long)ka->sa.sa_handler)
-		tp_assign(sa_flags, ka->sa.sa_flags)
-	),
-
-	TP_printk("sig=%d errno=%d code=%d sa_handler=%lx sa_flags=%lx",
-		  __entry->sig, __entry->errno, __entry->code,
-		  __entry->sa_handler, __entry->sa_flags)
+	TP_FIELDS(
+		ctf_integer(int, sig, sig)
+		LTTNG_FIELDS_SIGINFO(info)
+		ctf_integer(unsigned long, sa_handler, (unsigned long) ka->sa.sa_handler)
+		ctf_integer(unsigned long, sa_flags, ka->sa.sa_flags)
+	)
 )
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,4,0))
@@ -142,21 +103,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(signal_queue_overflow,
 
 	TP_ARGS(sig, group, info),
 
-	TP_STRUCT__entry(
-		__field(	int,	sig	)
-		__field(	int,	group	)
-		__field(	int,	errno	)
-		__field(	int,	code	)
-	),
-
-	TP_fast_assign(
-		tp_assign(sig, sig)
-		tp_assign(group, group)
-		TP_STORE_SIGINFO(info)
-	),
-
-	TP_printk("sig=%d group=%d errno=%d code=%d",
-		  __entry->sig, __entry->group, __entry->errno, __entry->code)
+	TP_FIELDS(
+		ctf_integer(int, sig, sig)
+		ctf_integer(int, group, group)
+		LTTNG_FIELDS_SIGINFO(info)
+	)
 )
 
 /**

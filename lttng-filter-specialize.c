@@ -423,6 +423,8 @@ int lttng_filter_specialize_bytecode(struct bytecode_runtime *bytecode)
 		case FILTER_OP_LOAD_FIELD_REF_STRING:
 		case FILTER_OP_LOAD_FIELD_REF_SEQUENCE:
 		case FILTER_OP_GET_CONTEXT_REF_STRING:
+		case FILTER_OP_LOAD_FIELD_REF_USER_STRING:
+		case FILTER_OP_LOAD_FIELD_REF_USER_SEQUENCE:
 		{
 			if (vstack_push(stack)) {
 				ret = -EINVAL;

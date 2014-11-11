@@ -10,12 +10,8 @@
 #include <linux/trace_seq.h>
 #include <linux/version.h>
 
-#define RWBS_LEN	8
-
 #ifndef _TRACE_BLOCK_DEF_
 #define _TRACE_BLOCK_DEF_
-
-#define __blk_dump_cmd(cmd, len)	"<unknown>"
 
 enum {
 	RWBS_FLAG_WRITE		= (1 << 0),
@@ -32,23 +28,10 @@ enum {
 
 #endif /* _TRACE_BLOCK_DEF_ */
 
-#define __print_rwbs_flags(rwbs)		\
-	__print_flags(rwbs, "",			\
-		{ RWBS_FLAG_FLUSH, "F" },	\
-		{ RWBS_FLAG_WRITE, "W" },	\
-		{ RWBS_FLAG_DISCARD, "D" },	\
-		{ RWBS_FLAG_READ, "R" },	\
-		{ RWBS_FLAG_FUA, "F" },		\
-		{ RWBS_FLAG_RAHEAD, "A" },	\
-		{ RWBS_FLAG_BARRIER, "B" },	\
-		{ RWBS_FLAG_SYNC, "S" },	\
-		{ RWBS_FLAG_META, "M" },	\
-		{ RWBS_FLAG_SECURE, "E" })
-
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
 
-#define blk_fill_rwbs(rwbs, rw, bytes)					      \
-		tp_assign(rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :	      \
+#define blk_rwbs_ctf_integer(type, rwbs, rw, bytes)			      \
+		ctf_integer(type, rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :     \
 			( (rw) & REQ_DISCARD ? RWBS_FLAG_DISCARD :	      \
 			( (bytes) ? RWBS_FLAG_READ :			      \
 			( 0 ))))					      \
@@ -61,8 +44,8 @@ enum {
 
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 
-#define blk_fill_rwbs(rwbs, rw, bytes)					      \
-		tp_assign(rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :	      \
+#define blk_rwbs_ctf_integer(type, rwbs, rw, bytes)			      \
+		ctf_integer(type, rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :     \
 			( (rw) & REQ_DISCARD ? RWBS_FLAG_DISCARD :	      \
 			( (bytes) ? RWBS_FLAG_READ :			      \
 			( 0 ))))					      \
@@ -73,8 +56,8 @@ enum {
 
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 
-#define blk_fill_rwbs(rwbs, rw, bytes)					      \
-		tp_assign(rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :	      \
+#define blk_rwbs_ctf_integer(type, rwbs, rw, bytes)			      \
+		ctf_integer(type, rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :     \
 			( (rw) & REQ_DISCARD ? RWBS_FLAG_DISCARD :	      \
 			( (bytes) ? RWBS_FLAG_READ :			      \
 			( 0 ))))					      \
@@ -86,8 +69,8 @@ enum {
 
 #else
 
-#define blk_fill_rwbs(rwbs, rw, bytes)					      \
-		tp_assign(rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :	      \
+#define blk_rwbs_ctf_integer(type, rwbs, rw, bytes)			      \
+		ctf_integer(type, rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :     \
 			( (rw) & (1 << BIO_RW_DISCARD) ? RWBS_FLAG_DISCARD :  \
 			( (bytes) ? RWBS_FLAG_READ :			      \
 			( 0 ))))					      \
@@ -105,21 +88,10 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_buffer,
 
 	TP_ARGS(bh),
 
-	TP_STRUCT__entry (
-		__field(  dev_t,	dev			)
-		__field(  sector_t,	sector			)
-		__field(  size_t,	size			)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, bh->b_bdev->bd_dev)
-		tp_assign(sector, bh->b_blocknr)
-		tp_assign(size, bh->b_size)
-	),
-
-	TP_printk("%d,%d sector=%llu size=%zu",
-		MAJOR(__entry->dev), MINOR(__entry->dev),
-		(unsigned long long)__entry->sector, __entry->size
+	TP_FIELDS (
+		ctf_integer(dev_t, dev, bh->b_bdev->bd_dev)
+		ctf_integer(sector_t, sector, bh->b_blocknr)
+		ctf_integer(size_t, size, bh->b_size)
 	)
 )
 
@@ -150,42 +122,44 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_buffer, block_dirty_buffer,
 )
 #endif
 
-LTTNG_TRACEPOINT_EVENT_CLASS(block_rq_with_error,
+LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq_with_error,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
 
 	TP_ARGS(q, rq),
 
-	TP_STRUCT__entry(
-		__field(  dev_t,	dev			)
-		__field(  sector_t,	sector			)
-		__field(  unsigned int,	nr_sector		)
-		__field(  int,		errors			)
-		__field(  unsigned int,	rwbs			)
-		__dynamic_array_hex( unsigned char,	cmd,
-			(rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
-				rq->cmd_len : 0)
+	TP_locvar(
+		sector_t sector;
+		unsigned int nr_sector;
+		unsigned char *cmd;
+		size_t cmd_len;
 	),
 
-	TP_fast_assign(
-		tp_assign(dev, rq->rq_disk ? disk_devt(rq->rq_disk) : 0)
-		tp_assign(sector, (rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
-					0 : blk_rq_pos(rq))
-		tp_assign(nr_sector, (rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
-					0 : blk_rq_sectors(rq))
-		tp_assign(errors, rq->errors)
-		blk_fill_rwbs(rwbs, rq->cmd_flags, blk_rq_bytes(rq))
-		tp_memcpy_dyn(cmd, (rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
-					rq->cmd : NULL)
+	TP_code(
+		if (rq->cmd_type == REQ_TYPE_BLOCK_PC) {
+			tp_locvar->sector = 0;
+			tp_locvar->nr_sector = 0;
+			tp_locvar->cmd = rq->cmd;
+			tp_locvar->cmd_len = rq->cmd_len;
+		} else {
+			tp_locvar->sector = blk_rq_pos(rq);
+			tp_locvar->nr_sector = blk_rq_sectors(rq);
+			tp_locvar->cmd = NULL;
+			tp_locvar->cmd_len = 0;
+		}
 	),
 
-	TP_printk("%d,%d %s (%s) %llu + %u [%d]",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __print_rwbs_flags(__entry->rwbs),
-		  __blk_dump_cmd(__get_dynamic_array(cmd),
-				 __get_dynamic_array_len(cmd)),
-		  (unsigned long long)__entry->sector,
-		  __entry->nr_sector, __entry->errors)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev,
+			rq->rq_disk ? disk_devt(rq->rq_disk) : 0)
+		ctf_integer(sector_t, sector, tp_locvar->sector)
+		ctf_integer(unsigned int, nr_sector, tp_locvar->nr_sector)
+		ctf_integer(int, errors, rq->errors)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			rq->cmd_flags, blk_rq_bytes(rq))
+		ctf_sequence_hex(unsigned char, cmd,
+			tp_locvar->cmd, size_t, tp_locvar->cmd_len)
+	)
 )
 
 /**
@@ -240,39 +214,39 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_requeue,
  * do for the request. If @rq->bio is non-NULL then there is
  * additional work required to complete the request.
  */
-LTTNG_TRACEPOINT_EVENT(block_rq_complete,
+LTTNG_TRACEPOINT_EVENT_CODE(block_rq_complete,
 
 	TP_PROTO(struct request_queue *q, struct request *rq,
 		 unsigned int nr_bytes),
 
 	TP_ARGS(q, rq, nr_bytes),
 
-	TP_STRUCT__entry(
-		__field(  dev_t,	dev			)
-		__field(  sector_t,	sector			)
-		__field(  unsigned int,	nr_sector		)
-		__field(  int,		errors			)
-		__field(  unsigned int,	rwbs			)
-		__dynamic_array_hex( unsigned char,	cmd,
-			(rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
-				rq->cmd_len : 0)
+	TP_locvar(
+		unsigned char *cmd;
+		size_t cmd_len;
 	),
 
-	TP_fast_assign(
-		tp_assign(dev, rq->rq_disk ? disk_devt(rq->rq_disk) : 0)
-		tp_assign(sector, blk_rq_pos(rq))
-		tp_assign(nr_sector, nr_bytes >> 9)
-		tp_assign(errors, rq->errors)
-		blk_fill_rwbs(rwbs, rq->cmd_flags, nr_bytes)
-		tp_memcpy_dyn(cmd, (rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
-					rq->cmd : NULL)
+	TP_code(
+		if (rq->cmd_type == REQ_TYPE_BLOCK_PC) {
+			tp_locvar->cmd = rq->cmd;
+			tp_locvar->cmd_len = rq->cmd_len;
+		} else {
+			tp_locvar->cmd = NULL;
+			tp_locvar->cmd_len = 0;
+		}
 	),
 
-	TP_printk("%d,%d %s (%s) %llu + %u [%d]",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __entry->rwbs, __get_str(cmd),
-		  (unsigned long long)__entry->sector,
-		  __entry->nr_sector, __entry->errors)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev,
+			rq->rq_disk ? disk_devt(rq->rq_disk) : 0)
+		ctf_integer(sector_t, sector, blk_rq_pos(rq))
+		ctf_integer(unsigned int, nr_sector, nr_bytes >> 9)
+		ctf_integer(int, errors, rq->errors)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			rq->cmd_flags, nr_bytes)
+		ctf_sequence_hex(unsigned char, cmd,
+			tp_locvar->cmd, size_t, tp_locvar->cmd_len)
+	)
 )
 
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
@@ -297,48 +271,49 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_complete,
 
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
 
-LTTNG_TRACEPOINT_EVENT_CLASS(block_rq,
+LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
 
 	TP_ARGS(q, rq),
 
-	TP_STRUCT__entry(
-		__field(  dev_t,	dev			)
-		__field(  sector_t,	sector			)
-		__field(  unsigned int,	nr_sector		)
-		__field(  unsigned int,	bytes			)
-		__field(  unsigned int,	rwbs			)
-		__field(  pid_t,	tid			)
-		__array_text(  char,         comm,   TASK_COMM_LEN   )
-		__dynamic_array_hex( unsigned char,	cmd,
-			(rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
-				rq->cmd_len : 0)
+	TP_locvar(
+		sector_t sector;
+		unsigned int nr_sector;
+		unsigned int bytes;
+		unsigned char *cmd;
+		size_t cmd_len;
 	),
 
-	TP_fast_assign(
-		tp_assign(dev, rq->rq_disk ? disk_devt(rq->rq_disk) : 0)
-		tp_assign(sector, (rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
-					0 : blk_rq_pos(rq))
-		tp_assign(nr_sector, (rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
-					0 : blk_rq_sectors(rq))
-		tp_assign(bytes, (rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
-					blk_rq_bytes(rq) : 0)
-		blk_fill_rwbs(rwbs, rq->cmd_flags, blk_rq_bytes(rq))
-		tp_memcpy_dyn(cmd, (rq->cmd_type == REQ_TYPE_BLOCK_PC) ?
-					rq->cmd : NULL)
-		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
-		tp_assign(tid, current->pid)
+	TP_code(
+		if (rq->cmd_type == REQ_TYPE_BLOCK_PC) {
+			tp_locvar->sector = 0;
+			tp_locvar->nr_sector = 0;
+			tp_locvar->bytes = blk_rq_bytes(rq);
+			tp_locvar->cmd = rq->cmd;
+			tp_locvar->cmd_len = rq->cmd_len;
+		} else {
+			tp_locvar->sector = blk_rq_pos(rq);
+			tp_locvar->nr_sector = blk_rq_sectors(rq);
+			tp_locvar->bytes = 0;
+			tp_locvar->cmd = NULL;
+			tp_locvar->cmd_len = 0;
+		}
 	),
 
-	TP_printk("%d,%d %s %u (%s) %llu + %u [%s] %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __print_rwbs_flags(__entry->rwbs),
-		  __entry->bytes,
-		  __blk_dump_cmd(__get_dynamic_array(cmd),
-				 __get_dynamic_array_len(cmd)),
-		  (unsigned long long)__entry->sector,
-		  __entry->nr_sector, __entry->comm, __entry->tid)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev,
+			rq->rq_disk ? disk_devt(rq->rq_disk) : 0)
+		ctf_integer(sector_t, sector, tp_locvar->sector)
+		ctf_integer(unsigned int, nr_sector, tp_locvar->nr_sector)
+		ctf_integer(unsigned int, bytes, tp_locvar->bytes)
+		ctf_integer(pid_t, tid, current->pid)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			rq->cmd_flags, blk_rq_bytes(rq))
+		ctf_sequence_hex(unsigned char, cmd,
+			tp_locvar->cmd, size_t, tp_locvar->cmd_len)
+		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
+	)
 )
 
 /**
@@ -390,40 +365,22 @@ LTTNG_TRACEPOINT_EVENT(block_bio_bounce,
 
 	TP_ARGS(q, bio),
 
-	TP_STRUCT__entry(
-		__field( dev_t,		dev			)
-		__field( sector_t,	sector			)
-		__field( unsigned int,	nr_sector		)
-		__field( unsigned int,	rwbs			)
-		__field( pid_t,		tid			)
-		__array_text( char,		comm,	TASK_COMM_LEN	)
-	),
-
-	TP_fast_assign(
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, bio->bi_bdev ? bio->bi_bdev->bd_dev : 0)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-		tp_assign(dev, bio->bi_bdev ?
-					  bio->bi_bdev->bd_dev : 0)
-		tp_assign(sector, bio->bi_iter.bi_sector)
-		tp_assign(nr_sector, bio_sectors(bio))
-		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_iter.bi_size)
-		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
-		tp_assign(tid, current->pid)
+		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
+		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			bio->bi_rw, bio->bi_iter.bi_size)
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
-		tp_assign(dev, bio->bi_bdev ?
-					  bio->bi_bdev->bd_dev : 0)
-		tp_assign(sector, bio->bi_sector)
-		tp_assign(nr_sector, bio->bi_size >> 9)
-		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_size)
-		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
-		tp_assign(tid, current->pid)
+		ctf_integer(sector_t, sector, bio->bi_sector)
+		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			bio->bi_rw, bio->bi_size)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
-	),
-
-	TP_printk("%d,%d %s %llu + %u [%s] %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __print_rwbs_flags(__entry->rwbs),
-		  (unsigned long long)__entry->sector,
-		  __entry->nr_sector, __entry->comm, __entry->tid)
+		ctf_integer(pid_t, tid, current->pid)
+		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
+	)
 )
 
 /**
@@ -447,39 +404,26 @@ LTTNG_TRACEPOINT_EVENT(block_bio_complete,
 	TP_ARGS(q, bio),
 #endif
 
-	TP_STRUCT__entry(
-		__field( dev_t,		dev		)
-		__field( sector_t,	sector		)
-		__field( unsigned,	nr_sector	)
-		__field( int,		error		)
-		__field( unsigned int,	rwbs		)
-	),
-
-	TP_fast_assign(
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-		tp_assign(dev, bio->bi_bdev->bd_dev)
-		tp_assign(sector, bio->bi_iter.bi_sector)
-		tp_assign(nr_sector, bio_sectors(bio))
-		tp_assign(error, error)
-		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_iter.bi_size)
+		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
+		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
+		ctf_integer(int, error, error)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			bio->bi_rw, bio->bi_iter.bi_size)
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
-		tp_assign(dev, bio->bi_bdev->bd_dev)
-		tp_assign(sector, bio->bi_sector)
-		tp_assign(nr_sector, bio->bi_size >> 9)
+		ctf_integer(sector_t, sector, bio->bi_sector)
+		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
-		tp_assign(error, error)
+		ctf_integer(int, error, error)
 #else
-		tp_assign(error, 0)
+		ctf_integer(int, error, 0)
 #endif
-		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_size)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			bio->bi_rw, bio->bi_size)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
-	),
-
-	TP_printk("%d,%d %s %llu + %u [%d]",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __print_rwbs_flags(__entry->rwbs),
-		  (unsigned long long)__entry->sector,
-		  __entry->nr_sector, __entry->error)
+	)
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
@@ -489,38 +433,22 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_bio_merge,
 
 	TP_ARGS(q, rq, bio),
 
-	TP_STRUCT__entry(
-		__field( dev_t,		dev			)
-		__field( sector_t,	sector			)
-		__field( unsigned int,	nr_sector		)
-		__field( unsigned int,	rwbs			)
-		__field( pid_t,		tid			)
-		__array_text( char,		comm,	TASK_COMM_LEN	)
-	),
-
-	TP_fast_assign(
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-		tp_assign(dev, bio->bi_bdev->bd_dev)
-		tp_assign(sector, bio->bi_iter.bi_sector)
-		tp_assign(nr_sector, bio_sectors(bio))
-		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_iter.bi_size)
-		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
-		tp_assign(tid, current->pid)
+		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
+		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			bio->bi_rw, bio->bi_iter.bi_size)
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
-		tp_assign(dev, bio->bi_bdev->bd_dev)
-		tp_assign(sector, bio->bi_sector)
-		tp_assign(nr_sector, bio->bi_size >> 9)
-		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_size)
-		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
-		tp_assign(tid, current->pid)
+		ctf_integer(sector_t, sector, bio->bi_sector)
+		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			bio->bi_rw, bio->bi_size)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
-	),
-
-	TP_printk("%d,%d %s %llu + %u [%s] %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __print_rwbs_flags(__entry->rwbs),
-		  (unsigned long long)__entry->sector,
-		  __entry->nr_sector, __entry->comm, __entry->tid)
+		ctf_integer(pid_t, tid, current->pid)
+		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
+	)
 )
 
 /**
@@ -566,68 +494,39 @@ LTTNG_TRACEPOINT_EVENT(block_bio_queue,
 
 	TP_ARGS(q, bio),
 
-	TP_STRUCT__entry(
-		__field( dev_t,		dev			)
-		__field( sector_t,	sector			)
-		__field( unsigned int,	nr_sector		)
-		__field( unsigned int,	rwbs			)
-		__field( pid_t,		tid			)
-		__array_text( char,		comm,	TASK_COMM_LEN	)
-	),
-
-	TP_fast_assign(
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-		tp_assign(dev, bio->bi_bdev->bd_dev)
-		tp_assign(sector, bio->bi_iter.bi_sector)
-		tp_assign(nr_sector, bio_sectors(bio))
-		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_iter.bi_size)
-		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
-		tp_assign(tid, current->pid)
+		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
+		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			bio->bi_rw, bio->bi_iter.bi_size)
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
-		tp_assign(dev, bio->bi_bdev->bd_dev)
-		tp_assign(sector, bio->bi_sector)
-		tp_assign(nr_sector, bio->bi_size >> 9)
-		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_size)
-		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
-		tp_assign(tid, current->pid)
+		ctf_integer(sector_t, sector, bio->bi_sector)
+		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			bio->bi_rw, bio->bi_size)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
-	),
-
-	TP_printk("%d,%d %s %llu + %u [%s] %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev), __entry->rwbs,
-		  (unsigned long long)__entry->sector,
-		  __entry->nr_sector, __entry->comm, __entry->tid)
+		ctf_integer(pid_t, tid, current->pid)
+		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
+	)
 )
-#else
+#else /* if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0)) */
 LTTNG_TRACEPOINT_EVENT_CLASS(block_bio,
 
 	TP_PROTO(struct request_queue *q, struct bio *bio),
 
 	TP_ARGS(q, bio),
 
-	TP_STRUCT__entry(
-		__field( dev_t,		dev			)
-		__field( sector_t,	sector			)
-		__field( unsigned int,	nr_sector		)
-		__field( unsigned int,	rwbs			)
-		__field( pid_t,		tid			)
-		__array_text( char,		comm,	TASK_COMM_LEN	)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, bio->bi_bdev ? bio->bi_bdev->bd_dev : 0)
-		tp_assign(sector, bio->bi_sector)
-		tp_assign(nr_sector, bio->bi_size >> 9)
-		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_size)
-		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
-		tp_assign(tid, current->pid)
-	),
-
-	TP_printk("%d,%d %s %llu + %u [%s] %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __print_rwbs_flags(__entry->rwbs),
-		  (unsigned long long)__entry->sector,
-		  __entry->nr_sector, __entry->comm, __entry->tid)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, bio->bi_bdev ? bio->bi_bdev->bd_dev : 0)
+		ctf_integer(sector_t, sector, bio->bi_sector)
+		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			bio->bi_rw, bio->bi_size)
+		ctf_integer(pid_t, tid, current->pid)
+		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
+	)
 )
 
 /**
@@ -673,7 +572,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_bio, block_bio_queue,
 
 	TP_ARGS(q, bio)
 )
-#endif
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0)) */
 
 LTTNG_TRACEPOINT_EVENT_CLASS(block_get_rq,
 
@@ -681,40 +580,26 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_get_rq,
 
 	TP_ARGS(q, bio, rw),
 
-	TP_STRUCT__entry(
-		__field( dev_t,		dev			)
-		__field( sector_t,	sector			)
-		__field( unsigned int,	nr_sector		)
-		__field( unsigned int,	rwbs			)
-		__field( pid_t,		tid			)
-		__array_text( char,		comm,	TASK_COMM_LEN	)
-        ),
-
-	TP_fast_assign(
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, bio ? bio->bi_bdev->bd_dev : 0)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-		tp_assign(dev, bio ? bio->bi_bdev->bd_dev : 0)
-		tp_assign(sector, bio ? bio->bi_iter.bi_sector : 0)
-		tp_assign(nr_sector, bio ? bio_sectors(bio) : 0)
-		blk_fill_rwbs(rwbs, bio ? bio->bi_rw : 0,
-			      bio ? bio_sectors(bio) : 0)
-		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
-		tp_assign(tid, current->pid)
+		ctf_integer(sector_t, sector, bio ? bio->bi_iter.bi_sector : 0)
+		ctf_integer(unsigned int, nr_sector,
+			bio ? bio_sectors(bio) : 0)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			bio ? bio->bi_rw : 0,
+			bio ? bio->bi_iter.bi_size : 0)
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
-		tp_assign(dev, bio ? bio->bi_bdev->bd_dev : 0)
-		tp_assign(sector, bio ? bio->bi_sector : 0)
-		tp_assign(nr_sector, bio ? bio->bi_size >> 9 : 0)
-		blk_fill_rwbs(rwbs, bio ? bio->bi_rw : 0,
-			      bio ? bio->bi_size >> 9 : 0)
-		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
-		tp_assign(tid, current->pid)
+		ctf_integer(sector_t, sector, bio ? bio->bi_sector : 0)
+		ctf_integer(unsigned int, nr_sector,
+			bio ? bio->bi_size >> 9 : 0)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			bio ? bio->bi_rw : 0,
+			bio ? bio->bi_size : 0)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
-        ),
-
-	TP_printk("%d,%d %s %llu + %u [%s] %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __print_rwbs_flags(__entry->rwbs),
-		  (unsigned long long)__entry->sector,
-		  __entry->nr_sector, __entry->comm, __entry->tid)
+		ctf_integer(pid_t, tid, current->pid)
+		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
+        )
 )
 
 /**
@@ -765,17 +650,10 @@ LTTNG_TRACEPOINT_EVENT(block_plug,
 
 	TP_ARGS(q),
 
-	TP_STRUCT__entry(
-		__field( pid_t,		tid			)
-		__array_text( char,		comm,	TASK_COMM_LEN	)
-	),
-
-	TP_fast_assign(
-		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
-		tp_assign(tid, current->pid)
-	),
-
-	TP_printk("[%s] %d", __entry->comm, __entry->tid)
+	TP_FIELDS(
+		ctf_integer(pid_t, tid, current->pid)
+		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_CLASS(block_unplug,
@@ -790,24 +668,15 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_unplug,
 	TP_ARGS(q),
 #endif
 
-	TP_STRUCT__entry(
-		__field( int,		nr_rq			)
-		__field( pid_t,		tid			)
-		__array_text( char,		comm,	TASK_COMM_LEN	)
-	),
-
-	TP_fast_assign(
+	TP_FIELDS(
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
-		tp_assign(nr_rq, depth)
+		ctf_integer(int, nr_rq, depth)
 #else
-		tp_assign(nr_rq, q->rq.count[READ] + q->rq.count[WRITE])
+		ctf_integer(int, nr_rq, q->rq.count[READ] + q->rq.count[WRITE])
 #endif
-		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
-		tp_assign(tid, current->pid)
-	),
-
-	TP_printk("[%s] %d %d", __entry->comm, , __entry->tid,
-			__entry->nr_rq)
+		ctf_integer(pid_t, tid, current->pid)
+		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
+	)
 )
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,39))
@@ -870,39 +739,21 @@ LTTNG_TRACEPOINT_EVENT(block_split,
 
 	TP_ARGS(q, bio, new_sector),
 
-	TP_STRUCT__entry(
-		__field( dev_t,		dev				)
-		__field( sector_t,	sector				)
-		__field( sector_t,	new_sector			)
-		__field( unsigned int,	rwbs		)
-		__field( pid_t,		tid			)
-		__array_text( char,		comm,		TASK_COMM_LEN	)
-	),
-
-	TP_fast_assign(
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-		tp_assign(dev, bio->bi_bdev->bd_dev)
-		tp_assign(sector, bio->bi_iter.bi_sector)
-		tp_assign(new_sector, new_sector)
-		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_iter.bi_size)
-		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
-		tp_assign(tid, current->pid)
+		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			bio->bi_rw, bio->bi_iter.bi_size)
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
-		tp_assign(dev, bio->bi_bdev->bd_dev)
-		tp_assign(sector, bio->bi_sector)
-		tp_assign(new_sector, new_sector)
-		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_size)
-		tp_memcpy(comm, current->comm, TASK_COMM_LEN)
-		tp_assign(tid, current->pid)
+		ctf_integer(sector_t, sector, bio->bi_sector)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			bio->bi_rw, bio->bi_size)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
-	),
-
-	TP_printk("%d,%d %s %llu / %llu [%s] %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __print_rwbs_flags(__entry->rwbs),
-		  (unsigned long long)__entry->sector,
-		  (unsigned long long)__entry->new_sector,
-		  __entry->comm, __entry->tid)
+		ctf_integer(sector_t, new_sector, new_sector)
+		ctf_integer(pid_t, tid, current->pid)
+		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
+	)
 )
 
 /**
@@ -926,40 +777,22 @@ LTTNG_TRACEPOINT_EVENT(block_remap,
 
 	TP_ARGS(q, bio, dev, from),
 
-	TP_STRUCT__entry(
-		__field( dev_t,		dev		)
-		__field( sector_t,	sector		)
-		__field( unsigned int,	nr_sector	)
-		__field( dev_t,		old_dev		)
-		__field( sector_t,	old_sector	)
-		__field( unsigned int,	rwbs		)
-	),
-
-	TP_fast_assign(
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-		tp_assign(dev, bio->bi_bdev->bd_dev)
-		tp_assign(sector, bio->bi_iter.bi_sector)
-		tp_assign(nr_sector, bio_sectors(bio))
-		tp_assign(old_dev, dev)
-		tp_assign(old_sector, from)
-		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_iter.bi_size)
+		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
+		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			bio->bi_rw, bio->bi_iter.bi_size)
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
-		tp_assign(dev, bio->bi_bdev->bd_dev)
-		tp_assign(sector, bio->bi_sector)
-		tp_assign(nr_sector, bio->bi_size >> 9)
-		tp_assign(old_dev, dev)
-		tp_assign(old_sector, from)
-		blk_fill_rwbs(rwbs, bio->bi_rw, bio->bi_size)
+		ctf_integer(sector_t, sector, bio->bi_sector)
+		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			bio->bi_rw, bio->bi_size)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
-	),
-
-	TP_printk("%d,%d %s %llu + %u <- (%d,%d) %llu",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __print_rwbs_flags(__entry->rwbs),
-		  (unsigned long long)__entry->sector,
-		  __entry->nr_sector,
-		  MAJOR(__entry->old_dev), MINOR(__entry->old_dev),
-		  (unsigned long long)__entry->old_sector)
+		ctf_integer(dev_t, old_dev, dev)
+		ctf_integer(sector_t, old_sector, from)
+	)
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
@@ -981,31 +814,15 @@ LTTNG_TRACEPOINT_EVENT(block_rq_remap,
 
 	TP_ARGS(q, rq, dev, from),
 
-	TP_STRUCT__entry(
-		__field( dev_t,		dev		)
-		__field( sector_t,	sector		)
-		__field( unsigned int,	nr_sector	)
-		__field( dev_t,		old_dev		)
-		__field( sector_t,	old_sector	)
-		__field( unsigned int,	rwbs		)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, disk_devt(rq->rq_disk))
-		tp_assign(sector, blk_rq_pos(rq))
-		tp_assign(nr_sector, blk_rq_sectors(rq))
-		tp_assign(old_dev, dev)
-		tp_assign(old_sector, from)
-		blk_fill_rwbs(rwbs, rq->cmd_flags, blk_rq_bytes(rq))
-	),
-
-	TP_printk("%d,%d %s %llu + %u <- (%d,%d) %llu",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __print_rwbs_flags(__entry->rwbs),
-		  (unsigned long long)__entry->sector,
-		  __entry->nr_sector,
-		  MAJOR(__entry->old_dev), MINOR(__entry->old_dev),
-		  (unsigned long long)__entry->old_sector)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, disk_devt(rq->rq_disk))
+		ctf_integer(sector_t, sector, blk_rq_pos(rq))
+		ctf_integer(unsigned int, nr_sector, blk_rq_sectors(rq))
+		ctf_integer(dev_t, old_dev, dev)
+		ctf_integer(sector_t, old_sector, from)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			rq->cmd_flags, blk_rq_bytes(rq))
+	)
 )
 #endif
 

@@ -12,20 +12,6 @@
 struct irqaction;
 struct softirq_action;
 
-#define softirq_name(sirq) { sirq##_SOFTIRQ, #sirq }
-#define show_softirq_name(val)				\
-	__print_symbolic(val,				\
-			 softirq_name(HI),		\
-			 softirq_name(TIMER),		\
-			 softirq_name(NET_TX),		\
-			 softirq_name(NET_RX),		\
-			 softirq_name(BLOCK),		\
-			 softirq_name(BLOCK_IOPOLL),	\
-			 softirq_name(TASKLET),		\
-			 softirq_name(SCHED),		\
-			 softirq_name(HRTIMER),		\
-			 softirq_name(RCU))
-
 #endif /* _TRACE_IRQ_DEF_ */
 
 /**
@@ -45,17 +31,10 @@ LTTNG_TRACEPOINT_EVENT(irq_handler_entry,
 
 	TP_ARGS(irq, action),
 
-	TP_STRUCT__entry(
-		__field(	int,	irq		)
-		__string(	name,	action->name	)
-	),
-
-	TP_fast_assign(
-		tp_assign(irq, irq)
-		tp_strcpy(name, action->name)
-	),
-
-	TP_printk("irq=%d name=%s", __entry->irq, __get_str(name))
+	TP_FIELDS(
+		ctf_integer(int, irq, irq)
+		ctf_string(name, action->name)
+	)
 )
 
 /**
@@ -75,18 +54,10 @@ LTTNG_TRACEPOINT_EVENT(irq_handler_exit,
 
 	TP_ARGS(irq, action, ret),
 
-	TP_STRUCT__entry(
-		__field(	int,	irq	)
-		__field(	int,	ret	)
-	),
-
-	TP_fast_assign(
-		tp_assign(irq, irq)
-		tp_assign(ret, ret)
-	),
-
-	TP_printk("irq=%d ret=%s",
-		  __entry->irq, __entry->ret ? "handled" : "unhandled")
+	TP_FIELDS(
+		ctf_integer(int, irq, irq)
+		ctf_integer(int, ret, ret)
+	)
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
@@ -96,16 +67,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(irq_softirq,
 
 	TP_ARGS(vec_nr),
 
-	TP_STRUCT__entry(
-		__field(	unsigned int,	vec	)
-	),
-
-	TP_fast_assign(
-		tp_assign(vec, vec_nr)
-	),
-
-	TP_printk("vec=%u [action=%s]", __entry->vec,
-		  show_softirq_name(__entry->vec))
+	TP_FIELDS(
+		ctf_integer(unsigned int, vec, vec_nr)
+	)
 )
 
 /**
@@ -162,16 +126,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(irq_softirq,
 
 	TP_ARGS(h, vec),
 
-	TP_STRUCT__entry(
-		__field(	unsigned int,	vec	)
-	),
-
-	TP_fast_assign(
-		tp_assign(vec, (int)(h - vec))
-	),
-
-	TP_printk("vec=%u [action=%s]", __entry->vec,
-		  show_softirq_name(__entry->vec))
+	TP_FIELDS(
+		ctf_integer(unsigned int, vec, (int)(h - vec))
+	)
 )
 
 /**

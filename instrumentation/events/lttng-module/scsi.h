@@ -313,51 +313,20 @@ LTTNG_TRACEPOINT_EVENT(scsi_dispatch_cmd_start,
 
 	TP_ARGS(cmd),
 
-	TP_STRUCT__entry(
-		__field( unsigned int,	host_no	)
-		__field( unsigned int,	channel	)
-		__field( unsigned int,	id	)
-		__field( unsigned int,	lun	)
-		__field( unsigned int,	opcode	)
-		__field( unsigned int,	cmd_len )
-		__field( unsigned int,	data_sglen )
-		__field( unsigned int,	prot_sglen )
+	TP_FIELDS(
+		ctf_integer(unsigned int, host_no, cmd->device->host->host_no)
+		ctf_integer(unsigned int, channel, cmd->device->channel)
+		ctf_integer(unsigned int, id, cmd->device->id)
+		ctf_integer(unsigned int, lun, cmd->device->lun)
+		ctf_integer(unsigned int, opcode, cmd->cmnd[0])
+		ctf_integer(unsigned int, cmd_len, cmd->cmd_len)
+		ctf_integer(unsigned int, data_sglen, scsi_sg_count(cmd))
+		ctf_integer(unsigned int, prot_sglen, scsi_prot_sg_count(cmd))
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
-		__field( unsigned char,	prot_op )
+		ctf_integer(unsigned char, prot_op, scsi_get_prot_op(cmd))
 #endif
-		__dynamic_array_hex(unsigned char,	cmnd, cmd->cmd_len)
-	),
-
-	TP_fast_assign(
-		tp_assign(host_no, cmd->device->host->host_no)
-		tp_assign(channel, cmd->device->channel)
-		tp_assign(id, cmd->device->id)
-		tp_assign(lun, cmd->device->lun)
-		tp_assign(opcode, cmd->cmnd[0])
-		tp_assign(cmd_len, cmd->cmd_len)
-		tp_assign(data_sglen, scsi_sg_count(cmd))
-		tp_assign(prot_sglen, scsi_prot_sg_count(cmd))
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
-		tp_assign(prot_op, scsi_get_prot_op(cmd))
-#endif
-		tp_memcpy_dyn(cmnd, cmd->cmnd)
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
-	TP_printk("host_no=%u channel=%u id=%u lun=%u data_sgl=%u prot_sgl=%u" \
-		  " prot_op=%s cmnd=(%s %s raw=%s)",
-#else
-	TP_printk("host_no=%u channel=%u id=%u lun=%u data_sgl=%u prot_sgl=%u" \
-		  " cmnd=(%s %s raw=%s)",
-#endif
-		  __entry->host_no, __entry->channel, __entry->id,
-		  __entry->lun, __entry->data_sglen, __entry->prot_sglen,
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
-		  show_prot_op_name(__entry->prot_op),
-#endif
-		  show_opcode_name(__entry->opcode),
-		  __parse_cdb(__get_dynamic_array(cmnd), __entry->cmd_len),
-		  __print_hex(__get_dynamic_array(cmnd), __entry->cmd_len))
+		ctf_sequence_hex(unsigned char, cmnd, cmd->cmnd, u32, cmd->cmd_len)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(scsi_dispatch_cmd_error,
@@ -366,54 +335,21 @@ LTTNG_TRACEPOINT_EVENT(scsi_dispatch_cmd_error,
 
 	TP_ARGS(cmd, rtn),
 
-	TP_STRUCT__entry(
-		__field( unsigned int,	host_no	)
-		__field( unsigned int,	channel	)
-		__field( unsigned int,	id	)
-		__field( unsigned int,	lun	)
-		__field( int,		rtn	)
-		__field( unsigned int,	opcode	)
-		__field( unsigned int,	cmd_len )
-		__field( unsigned int,	data_sglen )
-		__field( unsigned int,	prot_sglen )
+	TP_FIELDS(
+		ctf_integer(unsigned int, host_no, cmd->device->host->host_no)
+		ctf_integer(unsigned int, channel, cmd->device->channel)
+		ctf_integer(unsigned int, id, cmd->device->id)
+		ctf_integer(unsigned int, lun, cmd->device->lun)
+		ctf_integer(int, rtn, rtn)
+		ctf_integer(unsigned int, opcode, cmd->cmnd[0])
+		ctf_integer(unsigned int, cmd_len, cmd->cmd_len)
+		ctf_integer(unsigned int, data_sglen, scsi_sg_count(cmd))
+		ctf_integer(unsigned int, prot_sglen, scsi_prot_sg_count(cmd))
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
-		__field( unsigned char,	prot_op )
+		ctf_integer(unsigned char, prot_op, scsi_get_prot_op(cmd))
 #endif
-		__dynamic_array_hex(unsigned char,	cmnd, cmd->cmd_len)
-	),
-
-	TP_fast_assign(
-		tp_assign(host_no, cmd->device->host->host_no)
-		tp_assign(channel, cmd->device->channel)
-		tp_assign(id, cmd->device->id)
-		tp_assign(lun, cmd->device->lun)
-		tp_assign(rtn, rtn)
-		tp_assign(opcode, cmd->cmnd[0])
-		tp_assign(cmd_len, cmd->cmd_len)
-		tp_assign(data_sglen, scsi_sg_count(cmd))
-		tp_assign(prot_sglen, scsi_prot_sg_count(cmd))
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
-		tp_assign(prot_op, scsi_get_prot_op(cmd))
-#endif
-		tp_memcpy_dyn(cmnd, cmd->cmnd)
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
-	TP_printk("host_no=%u channel=%u id=%u lun=%u data_sgl=%u prot_sgl=%u" \
-		  " prot_op=%s cmnd=(%s %s raw=%s) rtn=%d",
-#else
-	TP_printk("host_no=%u channel=%u id=%u lun=%u data_sgl=%u prot_sgl=%u" \
-		  " cmnd=(%s %s raw=%s) rtn=%d",
-#endif
-		  __entry->host_no, __entry->channel, __entry->id,
-		  __entry->lun, __entry->data_sglen, __entry->prot_sglen,
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
-		  show_prot_op_name(__entry->prot_op),
-#endif
-		  show_opcode_name(__entry->opcode),
-		  __parse_cdb(__get_dynamic_array(cmnd), __entry->cmd_len),
-		  __print_hex(__get_dynamic_array(cmnd), __entry->cmd_len),
-		  __entry->rtn)
+		ctf_sequence_hex(unsigned char, cmnd, cmd->cmnd, u32, cmd->cmd_len)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_CLASS(scsi_cmd_done_timeout_template,
@@ -422,59 +358,21 @@ LTTNG_TRACEPOINT_EVENT_CLASS(scsi_cmd_done_timeout_template,
 
 	TP_ARGS(cmd),
 
-	TP_STRUCT__entry(
-		__field( unsigned int,	host_no	)
-		__field( unsigned int,	channel	)
-		__field( unsigned int,	id	)
-		__field( unsigned int,	lun	)
-		__field( int,		result	)
-		__field( unsigned int,	opcode	)
-		__field( unsigned int,	cmd_len )
-		__field( unsigned int,	data_sglen )
-		__field( unsigned int,	prot_sglen )
+	TP_FIELDS(
+		ctf_integer(unsigned int, host_no, cmd->device->host->host_no)
+		ctf_integer(unsigned int, channel, cmd->device->channel)
+		ctf_integer(unsigned int, id, cmd->device->id)
+		ctf_integer(unsigned int, lun, cmd->device->lun)
+		ctf_integer(int, result, cmd->result)
+		ctf_integer(unsigned int, opcode, cmd->cmnd[0])
+		ctf_integer(unsigned int, cmd_len, cmd->cmd_len)
+		ctf_integer(unsigned int, data_sglen, scsi_sg_count(cmd))
+		ctf_integer(unsigned int, prot_sglen, scsi_prot_sg_count(cmd))
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
-		__field( unsigned char,	prot_op )
+		ctf_integer(unsigned char, prot_op, scsi_get_prot_op(cmd))
 #endif
-		__dynamic_array_hex(unsigned char,	cmnd, cmd->cmd_len)
-	),
-
-	TP_fast_assign(
-		tp_assign(host_no, cmd->device->host->host_no)
-		tp_assign(channel, cmd->device->channel)
-		tp_assign(id, cmd->device->id)
-		tp_assign(lun, cmd->device->lun)
-		tp_assign(result, cmd->result)
-		tp_assign(opcode, cmd->cmnd[0])
-		tp_assign(cmd_len, cmd->cmd_len)
-		tp_assign(data_sglen, scsi_sg_count(cmd))
-		tp_assign(prot_sglen, scsi_prot_sg_count(cmd))
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
-		tp_assign(prot_op, scsi_get_prot_op(cmd))
-#endif
-		tp_memcpy_dyn(cmnd, cmd->cmnd)
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
-	TP_printk("host_no=%u channel=%u id=%u lun=%u data_sgl=%u " \
-		  "prot_sgl=%u prot_op=%s cmnd=(%s %s raw=%s) result=(driver=" \
-		  "%s host=%s message=%s status=%s)",
-#else
-	TP_printk("host_no=%u channel=%u id=%u lun=%u data_sgl=%u " \
-		  "prot_sgl=%u cmnd=(%s %s raw=%s) result=(driver=%s host=%s " \
-		  "message=%s status=%s)",
-#endif
-		  __entry->host_no, __entry->channel, __entry->id,
-		  __entry->lun, __entry->data_sglen, __entry->prot_sglen,
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
-		  show_prot_op_name(__entry->prot_op),
-#endif
-		  show_opcode_name(__entry->opcode),
-		  __parse_cdb(__get_dynamic_array(cmnd), __entry->cmd_len),
-		  __print_hex(__get_dynamic_array(cmnd), __entry->cmd_len),
-		  show_driverbyte_name(((__entry->result) >> 24) & 0xff),
-		  show_hostbyte_name(((__entry->result) >> 16) & 0xff),
-		  show_msgbyte_name(((__entry->result) >> 8) & 0xff),
-		  show_statusbyte_name(__entry->result & 0xff))
+		ctf_sequence_hex(unsigned char, cmnd, cmd->cmnd, u32, cmd->cmd_len)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(scsi_cmd_done_timeout_template, scsi_dispatch_cmd_done,
@@ -491,15 +389,9 @@ LTTNG_TRACEPOINT_EVENT(scsi_eh_wakeup,
 
 	TP_ARGS(shost),
 
-	TP_STRUCT__entry(
-		__field( unsigned int,	host_no	)
-	),
-
-	TP_fast_assign(
-		tp_assign(host_no, shost->host_no)
-	),
-
-	TP_printk("host_no=%u", __entry->host_no)
+	TP_FIELDS(
+		ctf_integer(unsigned int, host_no, shost->host_no)
+	)
 )
 
 #endif /*  LTTNG_TRACE_SCSI_H */

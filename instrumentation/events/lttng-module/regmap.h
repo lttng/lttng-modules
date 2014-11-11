@@ -24,21 +24,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(regmap_reg,
 
 	TP_ARGS(dev, reg, val),
 
-	TP_STRUCT__entry(
-		__string(	name,		dev_name(dev)	)
-		__field(	unsigned int,	reg		)
-		__field(	unsigned int,	val		)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, dev_name(dev))
-		tp_assign(reg, reg)
-		tp_assign(val, val)
-	),
-
-	TP_printk("%s reg=%x val=%x", __get_str(name),
-		  (unsigned int)__entry->reg,
-		  (unsigned int)__entry->val)
+	TP_FIELDS(
+		ctf_string(name, dev_name(dev))
+		ctf_integer(unsigned int, reg, reg)
+		ctf_integer(unsigned int, val, val)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_reg, regmap_reg_write,
@@ -76,21 +66,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(regmap_block,
 
 	TP_ARGS(dev, reg, count),
 
-	TP_STRUCT__entry(
-		__string(	name,		dev_name(dev)	)
-		__field(	unsigned int,	reg		)
-		__field(	int,		count		)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, dev_name(dev))
-		tp_assign(reg, reg)
-		tp_assign(count, count)
-	),
-
-	TP_printk("%s reg=%x count=%d", __get_str(name),
-		  (unsigned int)__entry->reg,
-		  (int)__entry->count)
+	TP_FIELDS(
+		ctf_string(name, dev_name(dev))
+		ctf_integer(unsigned int, reg, reg)
+		ctf_integer(int, count, count)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_block, regmap_hw_read_start,
@@ -130,20 +110,11 @@ LTTNG_TRACEPOINT_EVENT_MAP(regcache_sync,
 
 	TP_ARGS(dev, type, status),
 
-	TP_STRUCT__entry(
-		__string(       name,           dev_name(dev)   )
-		__string(	status,		status		)
-		__string(	type,		type		)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, dev_name(dev))
-		tp_strcpy(status, status)
-		tp_strcpy(type, type)
-	),
-
-	TP_printk("%s type=%s status=%s", __get_str(name),
-		  __get_str(type), __get_str(status))
+	TP_FIELDS(
+		ctf_string(name, dev_name(dev))
+		ctf_string(status, status)
+		ctf_string(type, type)
+	)
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
@@ -153,18 +124,10 @@ LTTNG_TRACEPOINT_EVENT_CLASS(regmap_bool,
 
 	TP_ARGS(dev, flag),
 
-	TP_STRUCT__entry(
-		__string(	name,		dev_name(dev)	)
-		__field(	int,		flag		)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, dev_name(dev))
-		tp_assign(flag, flag)
-	),
-
-	TP_printk("%s flag=%d", __get_str(name),
-		  (int)__entry->flag)
+	TP_FIELDS(
+		ctf_string(name, dev_name(dev))
+		ctf_integer(int, flag, flag)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_bool, regmap_cache_only,

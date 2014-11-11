@@ -65,6 +65,28 @@ void hostname_record(struct lttng_ctx_field *field,
 	}
 }
 
+static
+void hostname_get_value(struct lttng_ctx_field *field,
+		union lttng_ctx_value *value)
+{
+	struct nsproxy *nsproxy;
+	struct uts_namespace *ns;
+	char *hostname;
+
+	/*
+	 * No need to take the RCU read-side lock to read current
+	 * nsproxy. (documented in nsproxy.h)
+	 */
+	nsproxy = current->nsproxy;
+	if (nsproxy) {
+		ns = nsproxy->uts_ns;
+		hostname = ns->name.nodename;
+	} else {
+		hostname = "";
+	}
+	value->str = hostname;
+}
+
 int lttng_add_hostname_to_ctx(struct lttng_ctx **ctx)
 {
 	struct lttng_ctx_field *field;
@@ -89,6 +111,7 @@ int lttng_add_hostname_to_ctx(struct lttng_ctx **ctx)
 
 	field->get_size = hostname_get_size;
 	field->record = hostname_record;
+	field->get_value = hostname_get_value;
 	lttng_context_update(*ctx);
 	wrapper_vmalloc_sync_all();
 	return 0;

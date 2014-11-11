@@ -20,20 +20,11 @@ LTTNG_TRACEPOINT_EVENT_MAP(kfree_skb,
 
 	TP_ARGS(skb, location),
 
-	TP_STRUCT__entry(
-		__field(	void *,		skbaddr		)
-		__field(	void *,		location	)
-		__field(	unsigned short,	protocol	)
-	),
-
-	TP_fast_assign(
-		tp_assign(skbaddr, skb)
-		tp_assign(location, location)
-		tp_assign(protocol, ntohs(skb->protocol))
-	),
-
-	TP_printk("skbaddr=%p protocol=%u location=%p",
-		__entry->skbaddr, __entry->protocol, __entry->location)
+	TP_FIELDS(
+		ctf_integer(void *, skbaddr, skb)
+		ctf_integer(void *, location, location)
+		ctf_integer_network(unsigned short, protocol, skb->protocol)
+	)
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
@@ -45,15 +36,9 @@ LTTNG_TRACEPOINT_EVENT_MAP(consume_skb,
 
 	TP_ARGS(skb),
 
-	TP_STRUCT__entry(
-		__field(	void *,	skbaddr	)
-	),
-
-	TP_fast_assign(
-		tp_assign(skbaddr, skb)
-	),
-
-	TP_printk("skbaddr=%p", __entry->skbaddr)
+	TP_FIELDS(
+		ctf_integer(void *, skbaddr, skb)
+	)
 )
 #endif
 
@@ -64,17 +49,10 @@ LTTNG_TRACEPOINT_EVENT(skb_copy_datagram_iovec,
 
 	TP_ARGS(skb, len),
 
-	TP_STRUCT__entry(
-		__field(	const void *,		skbaddr		)
-		__field(	int,			len		)
-	),
-
-	TP_fast_assign(
-		tp_assign(skbaddr, skb)
-		tp_assign(len, len)
-	),
-
-	TP_printk("skbaddr=%p len=%d", __entry->skbaddr, __entry->len)
+	TP_FIELDS(
+		ctf_integer(const void *, skbaddr, skb)
+		ctf_integer(int, len, len)
+	)
 )
 #endif
 

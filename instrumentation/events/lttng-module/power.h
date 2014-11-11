@@ -15,18 +15,10 @@ LTTNG_TRACEPOINT_EVENT_CLASS(power_cpu,
 
 	TP_ARGS(state, cpu_id),
 
-	TP_STRUCT__entry(
-		__field(	u32,		state		)
-		__field(	u32,		cpu_id		)
-	),
-
-	TP_fast_assign(
-		tp_assign(state, state)
-		tp_assign(cpu_id, cpu_id)
-	),
-
-	TP_printk("state=%lu cpu_id=%lu", (unsigned long)__entry->state,
-		  (unsigned long)__entry->cpu_id)
+	TP_FIELDS(
+		ctf_integer(u32, state, state)
+		ctf_integer(u32, cpu_id, cpu_id)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(power_cpu, cpu_idle,
@@ -62,15 +54,9 @@ LTTNG_TRACEPOINT_EVENT_MAP(machine_suspend,
 
 	TP_ARGS(state),
 
-	TP_STRUCT__entry(
-		__field(	u32,		state		)
-	),
-
-	TP_fast_assign(
-		tp_assign(state, state)
-	),
-
-	TP_printk("state=%lu", (unsigned long)__entry->state)
+	TP_FIELDS(
+		ctf_integer(u32, state, state)
+	)
 )
 #endif
 
@@ -81,18 +67,10 @@ LTTNG_TRACEPOINT_EVENT_CLASS(power_wakeup_source,
 
 	TP_ARGS(name, state),
 
-	TP_STRUCT__entry(
-		__string(       name,           name            )
-		__field(        u64,            state           )
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, name)
-		tp_assign(state, state)
-	),
-
-	TP_printk("%s state=0x%lx", __get_str(name),
-		(unsigned long)__entry->state)
+	TP_FIELDS(
+		ctf_string(name, name)
+		ctf_integer(u64, state, state)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(power_wakeup_source, wakeup_source_activate,
@@ -138,29 +116,13 @@ LTTNG_TRACEPOINT_EVENT_CLASS(power,
 	TP_ARGS(type, state),
 #endif
 
-	TP_STRUCT__entry(
-		__field(	u64,		type		)
-		__field(	u64,		state		)
+	TP_FIELDS(
+		ctf_integer(u64, type, type)
+		ctf_integer(u64, state, state)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
-		__field(	u64,		cpu_id		)
+		ctf_integer(u64, cpu_id, cpu_id)
 #endif
-	),
-
-	TP_fast_assign(
-		tp_assign(type, type)
-		tp_assign(state, state)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
-		tp_assign(cpu_id, cpu_id)
-#endif
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
-	TP_printk("type=%lu state=%lu cpu_id=%lu", (unsigned long)__entry->type,
-		(unsigned long)__entry->state, (unsigned long)__entry->cpu_id)
-#else
-	TP_printk("type=%lu state=%lu", (unsigned long)__entry->type,
-		(unsigned long)__entry->state)
-#endif
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(power, power_start,
@@ -201,27 +163,13 @@ LTTNG_TRACEPOINT_EVENT(power_end,
 	TP_ARGS(dummy),
 #endif
 
-	TP_STRUCT__entry(
+	TP_FIELDS(
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
-		__field(	u64,		cpu_id		)
+		ctf_integer(u64, cpu_id, cpu_id)
 #else
-		__field(	u64,		dummy		)
+		ctf_integer(u64, dummy, 0xffff)
 #endif
-	),
-
-	TP_fast_assign(
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
-		tp_assign(cpu_id, cpu_id)
-#else
-		tp_assign(dummy, 0xffff)
-#endif
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
-	TP_printk("cpu_id=%lu", (unsigned long)__entry->cpu_id)
-#else
-	TP_printk("dummy=%lu", (unsigned long)__entry->dummy)
-#endif
+	)
 )
 
 /* Deprecated dummy functions must be protected against multi-declartion */
@@ -269,20 +217,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(power_clock,
 
 	TP_ARGS(name, state, cpu_id),
 
-	TP_STRUCT__entry(
-		__string(       name,           name            )
-		__field(        u64,            state           )
-		__field(        u64,            cpu_id          )
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, name)
-		tp_assign(state, state)
-		tp_assign(cpu_id, cpu_id)
-	),
-
-	TP_printk("%s state=%lu cpu_id=%lu", __get_str(name),
-		(unsigned long)__entry->state, (unsigned long)__entry->cpu_id)
+	TP_FIELDS(
+		ctf_string(name, name)
+		ctf_integer(u64, state, state)
+		ctf_integer(u64, cpu_id, cpu_id)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(power_clock, clock_enable,
@@ -321,20 +260,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(power_domain,
 
 	TP_ARGS(name, state, cpu_id),
 
-	TP_STRUCT__entry(
-		__string(       name,           name            )
-		__field(        u64,            state           )
-		__field(        u64,            cpu_id          )
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, name)
-		tp_assign(state, state)
-		tp_assign(cpu_id, cpu_id)
-),
-
-	TP_printk("%s state=%lu cpu_id=%lu", __get_str(name),
-		(unsigned long)__entry->state, (unsigned long)__entry->cpu_id)
+	TP_FIELDS(
+		ctf_string(name, name)
+		ctf_integer(u64, state, state)
+		ctf_integer(u64, cpu_id, cpu_id)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(power_domain, power_domain_target,

@@ -13,17 +13,10 @@ LTTNG_TRACEPOINT_EVENT(udp_fail_queue_rcv_skb,
 
 	TP_ARGS(rc, sk),
 
-	TP_STRUCT__entry(
-		__field(int, rc)
-		__field(__u16, lport)
-	),
-
-	TP_fast_assign(
-		tp_assign(rc, rc)
-		tp_assign(lport, inet_sk(sk)->inet_num)
-	),
-
-	TP_printk("rc=%d port=%hu", __entry->rc, __entry->lport)
+	TP_FIELDS(
+		ctf_integer(int, rc, rc)
+		ctf_integer(__u16, lport, inet_sk(sk)->inet_num)
+	)
 )
 
 #endif /* LTTNG_TRACE_UDP_H */

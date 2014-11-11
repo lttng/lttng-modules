@@ -35,39 +35,25 @@
 #define _LTTNG_INSTRUMENTATION(...)
 #endif
 
-#define LTTNG_TRACEPOINT_EVENT(name, proto, args, struct, assign, print) \
+#define LTTNG_TRACEPOINT_EVENT(name, proto, args, fields) \
 	_LTTNG_INSTRUMENTATION(DECLARE_TRACE(name, PARAMS(proto), PARAMS(args)))
-#define LTTNG_TRACEPOINT_EVENT_CODE(name, proto, args, _locvar, _code, tstruct, assign, print) \
+#define LTTNG_TRACEPOINT_EVENT_CODE(name, proto, args, _locvar, _code, fields) \
 	_LTTNG_INSTRUMENTATION(DECLARE_TRACE(name, PARAMS(proto), PARAMS(args)))
-#define LTTNG_TRACEPOINT_EVENT_MAP(name, map, proto, args, tstruct, assign, print) \
+#define LTTNG_TRACEPOINT_EVENT_CODE_MAP(name, map, proto, args, _locvar, _code, fields) \
 	_LTTNG_INSTRUMENTATION(DECLARE_TRACE(name, PARAMS(proto), PARAMS(args)))
-#define LTTNG_TRACEPOINT_EVENT_FN(name, proto, args, struct, assign, print, reg, unreg) \
+#define LTTNG_TRACEPOINT_EVENT_MAP(name, map, proto, args, fields) \
 	_LTTNG_INSTRUMENTATION(DECLARE_TRACE(name, PARAMS(proto), PARAMS(args)))
-#define LTTNG_TRACEPOINT_EVENT_FN_MAP(name, map, proto, args, tstruct, assign, print, reg, unreg) \
-	_LTTNG_INSTRUMENTATION(DECLARE_TRACE(name, PARAMS(proto), PARAMS(args)))
-#define LTTNG_TRACEPOINT_EVENT_CONDITION(name, proto, args, cond, struct, assign, print) \
-	_LTTNG_INSTRUMENTATION(DECLARE_TRACE(name, PARAMS(proto), PARAMS(args)))
-#define LTTNG_TRACEPOINT_EVENT_CONDITION_MAP(name, map, proto, args, cond, struct, assign, print) \
-	_LTTNG_INSTRUMENTATION(DECLARE_TRACE(name, PARAMS(proto), PARAMS(args)))
-#define LTTNG_TRACEPOINT_EVENT_MAP_NOARGS(name, map, struct, assign, print) \
+#define LTTNG_TRACEPOINT_EVENT_MAP_NOARGS(name, map, fields) \
 	_LTTNG_INSTRUMENTATION(DECLARE_TRACE_NOARGS(name))
 
-#define LTTNG_TRACEPOINT_EVENT_CLASS(name, proto, args, tstruct, assign, print)
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print)
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print)
+#define LTTNG_TRACEPOINT_EVENT_CLASS(name, proto, args, fields)
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _fields)
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _fields)
 
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE(template, name, proto, args) \
 	_LTTNG_INSTRUMENTATION(DECLARE_TRACE(name, PARAMS(proto), PARAMS(args)))
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(template, name) \
 	_LTTNG_INSTRUMENTATION(DECLARE_TRACE_NOARGS(name))
-#define LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT(template, name, proto, args, print) \
-	_LTTNG_INSTRUMENTATION(DECLARE_TRACE(name, PARAMS(proto), PARAMS(args)))
-#define LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT_MAP(template, name, map, proto, args, print) \
-	_LTTNG_INSTRUMENTATION(DECLARE_TRACE(name, PARAMS(proto), PARAMS(args)))
-#define LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION(template, name, proto, args, cond) \
-	_LTTNG_INSTRUMENTATION(DECLARE_TRACE(name, PARAMS(proto), PARAMS(args)))
-#define LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION_MAP(template, name, map, proto, args, cond) \
-	_LTTNG_INSTRUMENTATION(DECLARE_TRACE(name, PARAMS(proto), PARAMS(args)))
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(_template, _name, _map, _proto, _args) \
 	_LTTNG_INSTRUMENTATION(DECLARE_TRACE(name, PARAMS(proto), PARAMS(args)))
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map) \

@@ -44,51 +44,22 @@
 #include <linux/stringify.h>
 
 #undef LTTNG_TRACEPOINT_EVENT_MAP
-#define LTTNG_TRACEPOINT_EVENT_MAP(name, map, proto, args, tstruct, assign, print)
+#define LTTNG_TRACEPOINT_EVENT_MAP(name, map, proto, args, fields)
 
 #undef LTTNG_TRACEPOINT_EVENT_MAP_NOARGS
-#define LTTNG_TRACEPOINT_EVENT_MAP_NOARGS(name, map, tstruct, assign, print)
-
-#undef LTTNG_TRACEPOINT_EVENT_CONDITION_MAP
-#define LTTNG_TRACEPOINT_EVENT_CONDITION_MAP(name, map, proto, args, cond, tstruct, assign, print) \
-	LTTNG_TRACEPOINT_EVENT(name,					\
-		PARAMS(proto),						\
-		PARAMS(args),						\
-		PARAMS(tstruct),					\
-		PARAMS(assign),						\
-		PARAMS(print))
-
-#undef LTTNG_TRACEPOINT_EVENT_FN_MAP
-#define LTTNG_TRACEPOINT_EVENT_FN_MAP(name, map, proto, args, tstruct,	\
-		assign, print, reg, unreg)
+#define LTTNG_TRACEPOINT_EVENT_MAP_NOARGS(name, map, fields)
 
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(template, name, map, proto, args)
 
-#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT_MAP
-#define LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT_MAP(template, name, map, proto, args, print)
-
-#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION_MAP
-#define LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION_MAP(template, name, map, proto, args, cond)
-
 #undef LTTNG_TRACEPOINT_EVENT
-#define LTTNG_TRACEPOINT_EVENT(name, proto, args, tstruct, assign, print)
-
-#undef LTTNG_TRACEPOINT_EVENT_CONDITION
-#define LTTNG_TRACEPOINT_EVENT_CONDITION(name, proto, args, cond, tstruct, assign, print) \
-	LTTNG_TRACEPOINT_EVENT(name,					\
-		PARAMS(proto),						\
-		PARAMS(args),						\
-		PARAMS(tstruct),					\
-		PARAMS(assign),						\
-		PARAMS(print))
+#define LTTNG_TRACEPOINT_EVENT(name, proto, args, fields)
 
 #undef LTTNG_TRACEPOINT_EVENT_CODE
-#define LTTNG_TRACEPOINT_EVENT_CODE(name, proto, args, _locvar, _code, tstruct, assign, print)
+#define LTTNG_TRACEPOINT_EVENT_CODE(name, proto, args, _locvar, _code, fields)
 
-#undef LTTNG_TRACEPOINT_EVENT_FN
-#define LTTNG_TRACEPOINT_EVENT_FN(name, proto, args, tstruct,		\
-		assign, print, reg, unreg)
+#undef LTTNG_TRACEPOINT_EVENT_CODE_MAP
+#define LTTNG_TRACEPOINT_EVENT_CODE_MAP(name, map, proto, args, _locvar, _code, fields)
 
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE(template, name, proto, args)
@@ -98,13 +69,6 @@
 
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(template, name, map)
-
-#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT
-#define LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT(template, name, proto, args, print)
-
-#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION
-#define LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION(template, name, proto, args, cond) \
-	LTTNG_TRACEPOINT_EVENT_INSTANCE(template, name, PARAMS(proto), PARAMS(args))
 
 #undef TRACE_INCLUDE
 #undef __TRACE_INCLUDE
@@ -137,18 +101,11 @@
 #endif
 
 #undef LTTNG_TRACEPOINT_EVENT
-#undef LTTNG_TRACEPOINT_EVENT_FN
-#undef LTTNG_TRACEPOINT_EVENT_CONDITION
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE
-#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT
-#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION
 #undef LTTNG_TRACEPOINT_EVENT_MAP
-#undef LTTNG_TRACEPOINT_EVENT_FN_MAP
-#undef LTTNG_TRACEPOINT_EVENT_CONDITION_MAP
 #undef LTTNG_TRACEPOINT_EVENT_CLASS
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP
-#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_PRINT_MAP
-#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_CONDITION_MAP
+#undef LTTNG_TRACEPOINT_EVENT_CODE_MAP
 #undef LTTNG_TRACEPOINT_EVENT_CODE
 #undef LTTNG_TRACEPOINT_EVENT_MAP_NOARGS
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS

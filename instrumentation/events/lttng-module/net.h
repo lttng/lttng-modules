@@ -26,35 +26,16 @@ LTTNG_TRACEPOINT_EVENT(net_dev_xmit,
 	TP_ARGS(skb, rc),
 #endif
 
-	TP_STRUCT__entry(
-		__field(	void *,		skbaddr		)
-		__field(	unsigned int,	len		)
-		__field(	int,		rc		)
+	TP_FIELDS(
+		ctf_integer(void *, skbaddr, skb)
+		ctf_integer(unsigned int, len, skb_len)
+		ctf_integer(int, rc, rc)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,40))
-		__string(	name,		dev->name	)
+		ctf_string(name, dev->name)
 #else
-		__string(	name,		skb->dev->name	)
+		ctf_string(name, skb->dev->name)
 #endif
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,40))
-	TP_fast_assign(
-		tp_assign(skbaddr, skb)
-		tp_assign(len, skb_len)
-		tp_assign(rc, rc)
-		tp_strcpy(name, dev->name)
-	),
-#else
-	TP_fast_assign(
-		tp_assign(skbaddr, skb)
-		tp_assign(len, skb->len)
-		tp_assign(rc, rc)
-		tp_strcpy(name, skb->dev->name)
-	),
-#endif
-
-	TP_printk("dev=%s skbaddr=%p len=%u rc=%d",
-		__get_str(name), __entry->skbaddr, __entry->len, __entry->rc)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_CLASS(net_dev_template,
@@ -63,20 +44,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(net_dev_template,
 
 	TP_ARGS(skb),
 
-	TP_STRUCT__entry(
-		__field(	void *,		skbaddr		)
-		__field(	unsigned int,	len		)
-		__string(	name,		skb->dev->name	)
-	),
-
-	TP_fast_assign(
-		tp_assign(skbaddr, skb)
-		tp_assign(len, skb->len)
-		tp_strcpy(name, skb->dev->name)
-	),
-
-	TP_printk("dev=%s skbaddr=%p len=%u",
-		__get_str(name), __entry->skbaddr, __entry->len)
+	TP_FIELDS(
+		ctf_integer(void *, skbaddr, skb)
+		ctf_integer(unsigned int, len, skb->len)
+		ctf_string(name, skb->dev->name)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(net_dev_template, net_dev_queue,

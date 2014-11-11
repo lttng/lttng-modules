@@ -31,6 +31,9 @@
 #include "lttng-abi.h"
 #include "lttng-abi-old.h"
 
+/* FIXME test */
+#undef CONFIG_HAVE_SYSCALL_TRACEPOINTS
+
 #define lttng_is_signed_type(type)	(((type)(-1)) < 0)
 
 struct lttng_channel;
@@ -138,6 +141,8 @@ struct lttng_enum {
 struct lttng_event_field {
 	const char *name;
 	struct lttng_type type;
+	unsigned int nowrite:1,		/* do not write into trace */
+			user:1;		/* fetch from user-space */
 };
 
 union lttng_ctx_value {
@@ -567,22 +572,19 @@ static inline int lttng_syscalls_unregister(struct lttng_channel *chan)
 	return 0;
 }
 
-static inline
-int lttng_syscall_filter_enable(struct lttng_channel *chan,
+static inline int lttng_syscall_filter_enable(struct lttng_channel *chan,
 		const char *name)
 {
 	return -ENOSYS;
 }
 
-static inline
-int lttng_syscall_filter_disable(struct lttng_channel *chan,
+static inline int lttng_syscall_filter_disable(struct lttng_channel *chan,
 		const char *name)
 {
 	return -ENOSYS;
 }
 
-static inline
-long lttng_channel_syscall_mask(struct lttng_channel *channel,
+static inline long lttng_channel_syscall_mask(struct lttng_channel *channel,
 		struct lttng_kernel_syscall_mask __user *usyscall_mask)
 {
 	return -ENOSYS;
@@ -598,6 +600,8 @@ int lttng_abi_syscall_list(void)
 void lttng_filter_sync_state(struct lttng_bytecode_runtime *runtime);
 int lttng_enabler_attach_bytecode(struct lttng_enabler *enabler,
 		struct lttng_kernel_filter_bytecode __user *bytecode);
+void lttng_enabler_event_link_bytecode(struct lttng_event *event,
+		struct lttng_enabler *enabler);
 
 extern struct lttng_ctx *lttng_static_ctx;
 

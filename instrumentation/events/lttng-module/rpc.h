@@ -14,19 +14,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_status,
 
 	TP_ARGS(task),
 
-	TP_STRUCT__entry(
-		__field(const struct rpc_task *, task)
-		__field(const struct rpc_clnt *, clnt)
-		__field(int, status)
-	),
-
-	TP_fast_assign(
-		tp_assign(task, task)
-		tp_assign(clnt, task->tk_client)
-		tp_assign(status, task->tk_status)
-	),
-
-	TP_printk("task:%p@%p, status %d",__entry->task, __entry->clnt, __entry->status)
+	TP_FIELDS(
+		ctf_integer(const struct rpc_task *, task, task)
+		ctf_integer(const struct rpc_clnt *, clnt, task->tk_client)
+		ctf_integer(int, status, task->tk_status)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_status, rpc_call_status,
@@ -46,19 +38,11 @@ LTTNG_TRACEPOINT_EVENT(rpc_connect_status,
 
 	TP_ARGS(task, status),
 
-	TP_STRUCT__entry(
-		__field(const struct rpc_task *, task)
-		__field(const struct rpc_clnt *, clnt)
-		__field(int, status)
-	),
-
-	TP_fast_assign(
-		tp_assign(task, task)
-		tp_assign(clnt, task->tk_client)
-		tp_assign(status, status)
-	),
-
-	TP_printk("task:%p@%p, status %d",__entry->task, __entry->clnt, __entry->status)
+	TP_FIELDS(
+		ctf_integer(const struct rpc_task *, task, task)
+		ctf_integer(const struct rpc_clnt *, clnt, task->tk_client)
+		ctf_integer(int, status, status)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_running,
@@ -67,32 +51,14 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_running,
 
 	TP_ARGS(clnt, task, action),
 
-	TP_STRUCT__entry(
-		__field(const struct rpc_clnt *, clnt)
-		__field(const struct rpc_task *, task)
-		__field(const void *, action)
-		__field(unsigned long, runstate)
-		__field(int, status)
-		__field(unsigned short, flags)
-		),
-
-	TP_fast_assign(
-		tp_assign(clnt, clnt)
-		tp_assign(task, task)
-		tp_assign(action, action)
-		tp_assign(runstate, task->tk_runstate)
-		tp_assign(status, task->tk_status)
-		tp_assign(flags, task->tk_flags)
-		),
-
-	TP_printk("task:%p@%p flags=%4.4x state=%4.4lx status=%d action=%pf",
-		__entry->task,
-		__entry->clnt,
-		__entry->flags,
-		__entry->runstate,
-		__entry->status,
-		__entry->action
-		)
+	TP_FIELDS(
+		ctf_integer(const struct rpc_clnt *, clnt, clnt)
+		ctf_integer(const struct rpc_task *, task, task)
+		ctf_integer(const void *, action, action)
+		ctf_integer(unsigned long, runstate, task->tk_runstate)
+		ctf_integer(int, status, task->tk_status)
+		ctf_integer(unsigned short, flags, task->tk_flags)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_running, rpc_task_begin,
@@ -125,35 +91,15 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_queued,
 
 	TP_ARGS(clnt, task, q),
 
-	TP_STRUCT__entry(
-		__field(const struct rpc_clnt *, clnt)
-		__field(const struct rpc_task *, task)
-		__field(unsigned long, timeout)
-		__field(unsigned long, runstate)
-		__field(int, status)
-		__field(unsigned short, flags)
-		__string(q_name, rpc_qname(q))
-		),
-
-	TP_fast_assign(
-		tp_assign(clnt, clnt)
-		tp_assign(task, task)
-		tp_assign(timeout, task->tk_timeout)
-		tp_assign(runstate, task->tk_runstate)
-		tp_assign(status, task->tk_status)
-		tp_assign(flags, task->tk_flags)
-		tp_strcpy(q_name, rpc_qname(q))
-		),
-
-	TP_printk("task:%p@%p flags=%4.4x state=%4.4lx status=%d timeout=%lu queue=%s",
-		__entry->task,
-		__entry->clnt,
-		__entry->flags,
-		__entry->runstate,
-		__entry->status,
-		__entry->timeout,
-		__get_str(q_name)
-		)
+	TP_FIELDS(
+		ctf_integer(const struct rpc_clnt *, clnt, clnt)
+		ctf_integer(const struct rpc_task *, task, task)
+		ctf_integer(unsigned long, timeout, task->tk_timeout)
+		ctf_integer(unsigned long, runstate, task->tk_runstate)
+		ctf_integer(int, status, task->tk_status)
+		ctf_integer(unsigned short, flags, task->tk_flags)
+		ctf_string(q_name, rpc_qname(q))
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_queued, rpc_task_sleep,

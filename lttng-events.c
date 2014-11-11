@@ -671,7 +671,7 @@ static
 void register_event(struct lttng_event *event)
 {
 	const struct lttng_event_desc *desc;
-	int ret;
+	int ret = -EINVAL;
 
 	if (event->registered)
 		return;
@@ -1218,6 +1218,11 @@ int lttng_enabler_ref_events(struct lttng_enabler *enabler)
 				&event->enablers_ref_head);
 		}
 
+		/*
+		 * Link filter bytecodes if not linked yet.
+		 */
+		lttng_enabler_event_link_bytecode(event, enabler);
+
 		/* TODO: merge event context. */
 	}
 	return 0;
@@ -1404,9 +1409,8 @@ void lttng_session_sync_enablers(struct lttng_session *session)
 
 		/* Enable filters */
 		list_for_each_entry(runtime,
-				&event->bytecode_runtime_head, node) {
+				&event->bytecode_runtime_head, node)
 			lttng_filter_sync_state(runtime);
-		}
 	}
 }
 

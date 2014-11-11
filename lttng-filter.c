@@ -126,6 +126,10 @@ static const char *opnames[] = {
 	[ FILTER_OP_GET_CONTEXT_REF_STRING ] = "GET_CONTEXT_REF_STRING",
 	[ FILTER_OP_GET_CONTEXT_REF_S64 ] = "GET_CONTEXT_REF_S64",
 	[ FILTER_OP_GET_CONTEXT_REF_DOUBLE ] = "GET_CONTEXT_REF_DOUBLE",
+
+	/* load userspace field ref */
+	[ FILTER_OP_LOAD_FIELD_REF_USER_STRING ] = "LOAD_FIELD_REF_USER_STRING",
+	[ FILTER_OP_LOAD_FIELD_REF_USER_SEQUENCE ] = "LOAD_FIELD_REF_USER_SEQUENCE",
 };
 
 const char *lttng_filter_print_op(enum filter_op op)
@@ -187,7 +191,7 @@ int apply_field_reloc(struct lttng_event *event,
 		return -EINVAL;
 
 	/* Check if field offset is too large for 16-bit offset */
-	if (field_offset > FILTER_BYTECODE_MAX_LEN - 1)
+	if (field_offset > LTTNG_KERNEL_FILTER_BYTECODE_MAX_LEN - 1)
 		return -EINVAL;
 
 	/* set type */
@@ -200,10 +204,16 @@ int apply_field_reloc(struct lttng_event *event,
 		break;
 	case atype_array:
 	case atype_sequence:
-		op->op = FILTER_OP_LOAD_FIELD_REF_SEQUENCE;
+		if (field->user)
+			op->op = FILTER_OP_LOAD_FIELD_REF_USER_SEQUENCE;
+		else
+			op->op = FILTER_OP_LOAD_FIELD_REF_SEQUENCE;
 		break;
 	case atype_string:
-		op->op = FILTER_OP_LOAD_FIELD_REF_STRING;
+		if (field->user)
+			op->op = FILTER_OP_LOAD_FIELD_REF_USER_STRING;
+		else
+			op->op = FILTER_OP_LOAD_FIELD_REF_STRING;
 		break;
 	default:
 		return -EINVAL;
@@ -233,7 +243,7 @@ int apply_context_reloc(struct lttng_event *event,
 		return -ENOENT;
 
 	/* Check if idx is too large for 16-bit offset */
-	if (idx > FILTER_BYTECODE_MAX_LEN - 1)
+	if (idx > LTTNG_KERNEL_FILTER_BYTECODE_MAX_LEN - 1)
 		return -EINVAL;
 
 	/* Get context return type */
@@ -249,6 +259,7 @@ int apply_context_reloc(struct lttng_event *event,
 	case atype_string:
 	case atype_array:
 	case atype_sequence:
+		BUG_ON(ctx_field->event_field.user);
 		op->op = FILTER_OP_GET_CONTEXT_REF_STRING;
 		break;
 	default:

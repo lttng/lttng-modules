@@ -14,19 +14,10 @@ LTTNG_TRACEPOINT_EVENT(jbd_checkpoint,
 
 	TP_ARGS(journal, result),
 
-	TP_STRUCT__entry(
-		__field(	dev_t,	dev			)
-		__field(	int,	result			)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev)
-		tp_assign(result, result)
-	),
-
-	TP_printk("dev %d,%d result %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __entry->result)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
+		ctf_integer(int, result, result)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_CLASS(jbd_commit,
@@ -35,31 +26,13 @@ LTTNG_TRACEPOINT_EVENT_CLASS(jbd_commit,
 
 	TP_ARGS(journal, commit_transaction),
 
-	TP_STRUCT__entry(
-		__field(	dev_t,	dev			)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-		__field(	char,	sync_commit		)
+		ctf_integer(char, sync_commit, commit_transaction->t_synchronous_commit)
 #endif
-		__field(	int,	transaction		)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev)
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-		tp_assign(sync_commit, commit_transaction->t_synchronous_commit)
-#endif
-		tp_assign(transaction, commit_transaction->t_tid)
-	),
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-	TP_printk("dev %d,%d transaction %d sync %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __entry->transaction, __entry->sync_commit)
-#else
-	TP_printk("dev %d,%d transaction %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __entry->transaction)
-#endif
+		ctf_integer(int, transaction, commit_transaction->t_tid)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(jbd_commit, jbd_start_commit,
@@ -96,31 +69,13 @@ LTTNG_TRACEPOINT_EVENT(jbd_drop_transaction,
 
 	TP_ARGS(journal, commit_transaction),
 
-	TP_STRUCT__entry(
-		__field(	dev_t,	dev			)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-		__field(	char,	sync_commit		)
+		ctf_integer(char, sync_commit, commit_transaction->t_synchronous_commit)
 #endif
-		__field(	int,	transaction		)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev)
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-		tp_assign(sync_commit, commit_transaction->t_synchronous_commit)
-#endif
-		tp_assign(transaction, commit_transaction->t_tid)
-	),
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-	TP_printk("dev %d,%d transaction %d sync %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __entry->transaction, __entry->sync_commit)
-#else
-	TP_printk("dev %d,%d transaction %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __entry->transaction)
-#endif
+		ctf_integer(int, transaction, commit_transaction->t_tid)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(jbd_end_commit,
@@ -128,33 +83,14 @@ LTTNG_TRACEPOINT_EVENT(jbd_end_commit,
 
 	TP_ARGS(journal, commit_transaction),
 
-	TP_STRUCT__entry(
-		__field(	dev_t,	dev			)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-		__field(	char,	sync_commit		)
+		ctf_integer(char, sync_commit, commit_transaction->t_synchronous_commit)
 #endif
-		__field(	int,	transaction		)
-		__field(	int,	head			)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev)
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-		tp_assign(sync_commit, commit_transaction->t_synchronous_commit)
-#endif
-		tp_assign(transaction, commit_transaction->t_tid)
-		tp_assign(head, journal->j_tail_sequence)
-	),
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-	TP_printk("dev %d,%d transaction %d sync %d head %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __entry->transaction, __entry->sync_commit, __entry->head)
-#else
-	TP_printk("dev %d,%d transaction %d head %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __entry->transaction, __entry->head)
-#endif
+		ctf_integer(int, transaction, commit_transaction->t_tid)
+		ctf_integer(int, head, journal->j_tail_sequence)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(jbd_do_submit_data,
@@ -162,31 +98,13 @@ LTTNG_TRACEPOINT_EVENT(jbd_do_submit_data,
 
 	TP_ARGS(journal, commit_transaction),
 
-	TP_STRUCT__entry(
-		__field(	dev_t,	dev			)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-		__field(	char,	sync_commit		)
+		ctf_integer(char, sync_commit, commit_transaction->t_synchronous_commit)
 #endif
-		__field(	int,	transaction		)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev)
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-		tp_assign(sync_commit, commit_transaction->t_synchronous_commit)
-#endif
-		tp_assign(transaction, commit_transaction->t_tid)
-	),
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
-	TP_printk("dev %d,%d transaction %d sync %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		   __entry->transaction, __entry->sync_commit)
-#else
-	TP_printk("dev %d,%d transaction %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		   __entry->transaction)
-#endif
+		ctf_integer(int, transaction, commit_transaction->t_tid)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(jbd_cleanup_journal_tail,
@@ -196,26 +114,13 @@ LTTNG_TRACEPOINT_EVENT(jbd_cleanup_journal_tail,
 
 	TP_ARGS(journal, first_tid, block_nr, freed),
 
-	TP_STRUCT__entry(
-		__field(	dev_t,	dev			)
-		__field(	tid_t,	tail_sequence		)
-		__field(	tid_t,	first_tid		)
-		__field(unsigned long,	block_nr		)
-		__field(unsigned long,	freed			)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev)
-		tp_assign(tail_sequence, journal->j_tail_sequence)
-		tp_assign(first_tid, first_tid)
-		tp_assign(block_nr, block_nr)
-		tp_assign(freed, freed)
-	),
-
-	TP_printk("dev %d,%d from %u to %u offset %lu freed %lu",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		  __entry->tail_sequence, __entry->first_tid,
-		  __entry->block_nr, __entry->freed)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
+		ctf_integer(tid_t, tail_sequence, journal->j_tail_sequence)
+		ctf_integer(tid_t, first_tid, first_tid)
+		ctf_integer(unsigned long, block_nr, block_nr)
+		ctf_integer(unsigned long, freed, freed)
+	)
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
@@ -227,18 +132,10 @@ LTTNG_TRACEPOINT_EVENT_MAP(journal_write_superblock,
 
 	TP_ARGS(journal, write_op),
 
-	TP_STRUCT__entry(
-		__field(	dev_t,	dev			)
-		__field(	int,	write_op		)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev)
-		tp_assign(write_op, write_op)
-	),
-
-	TP_printk("dev %d,%d write_op %x", MAJOR(__entry->dev),
-		  MINOR(__entry->dev), __entry->write_op)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
+		ctf_integer(int, write_op, write_op)
+	)
 )
 #else
 LTTNG_TRACEPOINT_EVENT(jbd_update_superblock_end,
@@ -246,9 +143,9 @@ LTTNG_TRACEPOINT_EVENT(jbd_update_superblock_end,
 
 	TP_ARGS(journal, wait),
 
-	TP_STRUCT__entry(
-		__field(	dev_t,	dev			)
-		__field(	int,	wait			)
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
+		ctf_integer(int, wait, wait)
 	),
 
 	TP_fast_assign(

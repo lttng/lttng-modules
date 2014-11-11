@@ -21,15 +21,9 @@ LTTNG_TRACEPOINT_EVENT(kvm_entry,
 	TP_PROTO(unsigned int vcpu_id),
 	TP_ARGS(vcpu_id),
 
-	TP_STRUCT__entry(
-		__field(	unsigned int,	vcpu_id		)
-	),
-
-	TP_fast_assign(
-		tp_assign(vcpu_id, vcpu_id)
-	),
-
-	TP_printk("vcpu %u", __entry->vcpu_id)
+	TP_FIELDS(
+		ctf_integer(unsigned int, vcpu_id, vcpu_id)
+	)
 )
 
 /*
@@ -40,25 +34,13 @@ LTTNG_TRACEPOINT_EVENT(kvm_hypercall,
 		 unsigned long a2, unsigned long a3),
 	TP_ARGS(nr, a0, a1, a2, a3),
 
-	TP_STRUCT__entry(
-		__field(	unsigned long, 	nr		)
-		__field(	unsigned long,	a0		)
-		__field(	unsigned long,	a1		)
-		__field(	unsigned long,	a2		)
-		__field(	unsigned long,	a3		)
-	),
-
-	TP_fast_assign(
-		tp_assign(nr, nr)
-		tp_assign(a0, a0)
-		tp_assign(a1, a1)
-		tp_assign(a2, a2)
-		tp_assign(a3, a3)
-	),
-
-	TP_printk("nr 0x%lx a0 0x%lx a1 0x%lx a2 0x%lx a3 0x%lx",
-		 __entry->nr, __entry->a0, __entry->a1,  __entry->a2,
-		 __entry->a3)
+	TP_FIELDS(
+		ctf_integer(unsigned long, nr, nr)
+		ctf_integer(unsigned long, a0, a0)
+		ctf_integer(unsigned long, a1, a1)
+		ctf_integer(unsigned long, a2, a2)
+		ctf_integer(unsigned long, a3, a3)
+	)
 )
 
 /*
@@ -69,28 +51,14 @@ LTTNG_TRACEPOINT_EVENT(kvm_hv_hypercall,
 		 __u64 ingpa, __u64 outgpa),
 	TP_ARGS(code, fast, rep_cnt, rep_idx, ingpa, outgpa),
 
-	TP_STRUCT__entry(
-		__field(	__u16,		rep_cnt		)
-		__field(	__u16,		rep_idx		)
-		__field(	__u64,		ingpa		)
-		__field(	__u64,		outgpa		)
-		__field(	__u16, 		code		)
-		__field(	bool,		fast		)
-	),
-
-	TP_fast_assign(
-		tp_assign(rep_cnt, rep_cnt)
-		tp_assign(rep_idx, rep_idx)
-		tp_assign(ingpa, ingpa)
-		tp_assign(outgpa, outgpa)
-		tp_assign(code, code)
-		tp_assign(fast, fast)
-	),
-
-	TP_printk("code 0x%x %s cnt 0x%x idx 0x%x in 0x%llx out 0x%llx",
-		  __entry->code, __entry->fast ? "fast" : "slow",
-		  __entry->rep_cnt, __entry->rep_idx,  __entry->ingpa,
-		  __entry->outgpa)
+	TP_FIELDS(
+		ctf_integer(__u16, rep_cnt, rep_cnt)
+		ctf_integer(__u16, rep_idx, rep_idx)
+		ctf_integer(__u64, ingpa, ingpa)
+		ctf_integer(__u64, outgpa, outgpa)
+		ctf_integer(__u16, code, code)
+		ctf_integer(bool, fast, fast)
+	)
 )
 
 /*
@@ -101,23 +69,12 @@ LTTNG_TRACEPOINT_EVENT(kvm_pio,
 		 unsigned int count),
 	TP_ARGS(rw, port, size, count),
 
-	TP_STRUCT__entry(
-		__field(	unsigned int, 	rw		)
-		__field(	unsigned int, 	port		)
-		__field(	unsigned int, 	size		)
-		__field(	unsigned int,	count		)
-	),
-
-	TP_fast_assign(
-		tp_assign(rw, rw)
-		tp_assign(port, port)
-		tp_assign(size, size)
-		tp_assign(count, count)
-	),
-
-	TP_printk("pio_%s at 0x%x size %d count %d",
-		  __entry->rw ? "write" : "read",
-		  __entry->port, __entry->size, __entry->count)
+	TP_FIELDS(
+		ctf_integer(unsigned int, rw, rw)
+		ctf_integer(unsigned int, port, port)
+		ctf_integer(unsigned int, size, size)
+		ctf_integer(unsigned int, count, count)
+	)
 )
 
 /*
@@ -128,36 +85,15 @@ LTTNG_TRACEPOINT_EVENT(kvm_cpuid,
 		 unsigned long rcx, unsigned long rdx),
 	TP_ARGS(function, rax, rbx, rcx, rdx),
 
-	TP_STRUCT__entry(
-		__field(	unsigned int,	function	)
-		__field(	unsigned long,	rax		)
-		__field(	unsigned long,	rbx		)
-		__field(	unsigned long,	rcx		)
-		__field(	unsigned long,	rdx		)
-	),
-
-	TP_fast_assign(
-		tp_assign(function, function)
-		tp_assign(rax, rax)
-		tp_assign(rbx, rbx)
-		tp_assign(rcx, rcx)
-		tp_assign(rdx, rdx)
-	),
-
-	TP_printk("func %x rax %lx rbx %lx rcx %lx rdx %lx",
-		  __entry->function, __entry->rax,
-		  __entry->rbx, __entry->rcx, __entry->rdx)
+	TP_FIELDS(
+		ctf_integer(unsigned int, function, function)
+		ctf_integer(unsigned long, rax, rax)
+		ctf_integer(unsigned long, rbx, rbx)
+		ctf_integer(unsigned long, rcx, rcx)
+		ctf_integer(unsigned long, rdx, rdx)
+	)
 )
 
-#define AREG(x) { APIC_##x, "APIC_" #x }
-
-#define kvm_trace_symbol_apic						    \
-	AREG(ID), AREG(LVR), AREG(TASKPRI), AREG(ARBPRI), AREG(PROCPRI),    \
-	AREG(EOI), AREG(RRR), AREG(LDR), AREG(DFR), AREG(SPIV), AREG(ISR),  \
-	AREG(TMR), AREG(IRR), AREG(ESR), AREG(ICR), AREG(ICR2), AREG(LVTT), \
-	AREG(LVTTHMR), AREG(LVTPC), AREG(LVT0), AREG(LVT1), AREG(LVTERR),   \
-	AREG(TMICT), AREG(TMCCT), AREG(TDCR), AREG(SELF_IPI), AREG(EFEAT),  \
-	AREG(ECTRL)
 /*
  * Tracepoint for apic access.
  */
@@ -165,60 +101,39 @@ LTTNG_TRACEPOINT_EVENT(kvm_apic,
 	TP_PROTO(unsigned int rw, unsigned int reg, unsigned int val),
 	TP_ARGS(rw, reg, val),
 
-	TP_STRUCT__entry(
-		__field(	unsigned int,	rw		)
-		__field(	unsigned int,	reg		)
-		__field(	unsigned int,	val		)
-	),
-
-	TP_fast_assign(
-		tp_assign(rw, rw)
-		tp_assign(reg, reg)
-		tp_assign(val, val)
-	),
-
-	TP_printk("apic_%s %s = 0x%x",
-		  __entry->rw ? "write" : "read",
-		  __print_symbolic(__entry->reg, kvm_trace_symbol_apic),
-		  __entry->val)
+	TP_FIELDS(
+		ctf_integer(unsigned int, rw, rw)
+		ctf_integer(unsigned int, reg, reg)
+		ctf_integer(unsigned int, val, val)
+	)
 )
 
 #define trace_kvm_apic_read(reg, val)		trace_kvm_apic(0, reg, val)
 #define trace_kvm_apic_write(reg, val)		trace_kvm_apic(1, reg, val)
 
-#define KVM_ISA_VMX   1
-#define KVM_ISA_SVM   2
-
 /*
  * Tracepoint for kvm guest exit:
  */
-LTTNG_TRACEPOINT_EVENT(kvm_exit,
-	TP_PROTO(unsigned int exit_reason, struct kvm_vcpu *vcpu, u32 isa, u64 info1, u64 info2),
-	TP_ARGS(exit_reason, vcpu, isa, info1, info2),
+LTTNG_TRACEPOINT_EVENT_CODE(kvm_exit,
+	TP_PROTO(unsigned int exit_reason, struct kvm_vcpu *vcpu, u32 isa),
+	TP_ARGS(exit_reason, vcpu, isa),
 
-	TP_STRUCT__entry(
-		__field(	unsigned int,	exit_reason	)
-		__field(	unsigned long,	guest_rip	)
-		__field(	u32,	        isa             )
-		__field(	u64,	        info1           )
-		__field(	u64,	        info2           )
+	TP_locvar(
+		u64 info1, info2;
 	),
 
-	TP_fast_assign(
-		tp_assign(exit_reason, exit_reason)
-		tp_assign(guest_rip, kvm_rip_read(vcpu))
-		tp_assign(isa, isa)
-    kvm_x86_ops->get_exit_info(vcpu, &info1,
-              &info2);
-    tp_assign(info1, info1)
-    tp_assign(info2, info2)
+	TP_code(
+		kvm_x86_ops->get_exit_info(vcpu, &tp_locvar->info1,
+				&tp_locvar->info2);
 	),
 
-	TP_printk("reason %s rip  info %llx %llx",
-		 (__entry->isa == KVM_ISA_VMX) ?
-		 __print_symbolic(__entry->exit_reason, VMX_EXIT_REASONS) :
-		 __print_symbolic(__entry->exit_reason, SVM_EXIT_REASONS),
-		/* __entry->guest_rip,*/ __entry->info1, __entry->info2)
+	TP_FIELDS(
+		ctf_integer(unsigned int, exit_reason, exit_reason)
+		ctf_integer(unsigned long, guest_rip, kvm_rip_read(vcpu))
+		ctf_integer(u32, isa, isa)
+		ctf_integer(u64, info1, tp_locvar->info1)
+		ctf_integer(u64, info2, tp_locvar->info2)
+	)
 )
 
 /*
@@ -228,23 +143,10 @@ LTTNG_TRACEPOINT_EVENT(kvm_inj_virq,
 	TP_PROTO(unsigned int irq),
 	TP_ARGS(irq),
 
-	TP_STRUCT__entry(
-		__field(	unsigned int,	irq		)
-	),
-
-	TP_fast_assign(
-		tp_assign(irq, irq)
-	),
-
-	TP_printk("irq %u", __entry->irq)
+	TP_FIELDS(
+		ctf_integer(unsigned int, irq, irq)
+	)
 )
-
-#define EXS(x) { x##_VECTOR, "#" #x }
-
-#define kvm_trace_sym_exc						\
-	EXS(DE), EXS(DB), EXS(BP), EXS(OF), EXS(BR), EXS(UD), EXS(NM),	\
-	EXS(DF), EXS(TS), EXS(NP), EXS(SS), EXS(GP), EXS(PF),		\
-	EXS(MF), EXS(MC)
 
 /*
  * Tracepoint for kvm interrupt injection:
@@ -253,22 +155,11 @@ LTTNG_TRACEPOINT_EVENT(kvm_inj_exception,
 	TP_PROTO(unsigned exception, bool has_error, unsigned error_code),
 	TP_ARGS(exception, has_error, error_code),
 
-	TP_STRUCT__entry(
-		__field(	u8,	exception	)
-		__field(	u8,	has_error	)
-		__field(	u32,	error_code	)
-	),
-
-	TP_fast_assign(
-		tp_assign(exception, exception)
-		tp_assign(has_error, has_error)
-		tp_assign(error_code, error_code)
-	),
-
-	TP_printk("%s (0x%x)",
-		  __print_symbolic(__entry->exception, kvm_trace_sym_exc),
-		  /* FIXME: don't print error_code if not present */
-		  __entry->has_error ? __entry->error_code : 0)
+	TP_FIELDS(
+		ctf_integer(u8, exception, exception)
+		ctf_integer(u8, has_error, has_error)
+		ctf_integer(u32, error_code, error_code)
+	)
 )
 
 /*
@@ -278,18 +169,10 @@ LTTNG_TRACEPOINT_EVENT(kvm_page_fault,
 	TP_PROTO(unsigned long fault_address, unsigned int error_code),
 	TP_ARGS(fault_address, error_code),
 
-	TP_STRUCT__entry(
-		__field(	unsigned long,	fault_address	)
-		__field(	unsigned int,	error_code	)
-	),
-
-	TP_fast_assign(
-		tp_assign(fault_address, fault_address)
-		tp_assign(error_code, error_code)
-	),
-
-	TP_printk("address %lx error_code %x",
-		  __entry->fault_address, __entry->error_code)
+	TP_FIELDS(
+		ctf_integer(unsigned long, fault_address, fault_address)
+		ctf_integer(unsigned int, error_code, error_code)
+	)
 )
 
 /*
@@ -299,24 +182,12 @@ LTTNG_TRACEPOINT_EVENT(kvm_msr,
 	TP_PROTO(unsigned write, u32 ecx, u64 data, bool exception),
 	TP_ARGS(write, ecx, data, exception),
 
-	TP_STRUCT__entry(
-		__field(	unsigned,	write		)
-		__field(	u32,		ecx		)
-		__field(	u64,		data		)
-		__field(	u8,		exception	)
-	),
-
-	TP_fast_assign(
-		tp_assign(write, write)
-		tp_assign(ecx, ecx)
-		tp_assign(data, data)
-		tp_assign(exception, exception)
-	),
-
-	TP_printk("msr_%s %x = 0x%llx%s",
-		  __entry->write ? "write" : "read",
-		  __entry->ecx, __entry->data,
-		  __entry->exception ? " (#GP)" : "")
+	TP_FIELDS(
+		ctf_integer(unsigned, write, write)
+		ctf_integer(u32, ecx, ecx)
+		ctf_integer(u64, data, data)
+		ctf_integer(u8, exception, exception)
+	)
 )
 
 #define trace_kvm_msr_read(ecx, data)      trace_kvm_msr(0, ecx, data, false)
@@ -331,21 +202,11 @@ LTTNG_TRACEPOINT_EVENT(kvm_cr,
 	TP_PROTO(unsigned int rw, unsigned int cr, unsigned long val),
 	TP_ARGS(rw, cr, val),
 
-	TP_STRUCT__entry(
-		__field(	unsigned int,	rw		)
-		__field(	unsigned int,	cr		)
-		__field(	unsigned long,	val		)
-	),
-
-	TP_fast_assign(
-		tp_assign(rw, rw)
-		tp_assign(cr, cr)
-		tp_assign(val, val)
-	),
-
-	TP_printk("cr_%s %x = 0x%lx",
-		  __entry->rw ? "write" : "read",
-		  __entry->cr, __entry->val)
+	TP_FIELDS(
+		ctf_integer(unsigned int, rw, rw)
+		ctf_integer(unsigned int, cr, cr)
+		ctf_integer(unsigned long, val, val)
+	)
 )
 
 #define trace_kvm_cr_read(cr, val)		trace_kvm_cr(0, cr, val)
@@ -355,119 +216,56 @@ LTTNG_TRACEPOINT_EVENT(kvm_pic_set_irq,
 	    TP_PROTO(__u8 chip, __u8 pin, __u8 elcr, __u8 imr, bool coalesced),
 	    TP_ARGS(chip, pin, elcr, imr, coalesced),
 
-	TP_STRUCT__entry(
-		__field(	__u8,		chip		)
-		__field(	__u8,		pin		)
-		__field(	__u8,		elcr		)
-		__field(	__u8,		imr		)
-		__field(	bool,		coalesced	)
-	),
-
-	TP_fast_assign(
-		tp_assign(chip, chip)
-		tp_assign(pin, pin)
-		tp_assign(elcr, elcr)
-		tp_assign(imr, imr)
-		tp_assign(coalesced, coalesced)
-	),
-
-	TP_printk("chip %u pin %u (%s%s)%s",
-		  __entry->chip, __entry->pin,
-		  (__entry->elcr & (1 << __entry->pin)) ? "level":"edge",
-		  (__entry->imr & (1 << __entry->pin)) ? "|masked":"",
-		  __entry->coalesced ? " (coalesced)" : "")
+	TP_FIELDS(
+		ctf_integer(__u8, chip, chip)
+		ctf_integer(__u8, pin, pin)
+		ctf_integer(__u8, elcr, elcr)
+		ctf_integer(__u8, imr, imr)
+		ctf_integer(bool, coalesced, coalesced)
+	)
 )
-
-#define kvm_apic_dst_shorthand		\
-	{0x0, "dst"},			\
-	{0x1, "self"},			\
-	{0x2, "all"},			\
-	{0x3, "all-but-self"}
 
 LTTNG_TRACEPOINT_EVENT(kvm_apic_ipi,
 	    TP_PROTO(__u32 icr_low, __u32 dest_id),
 	    TP_ARGS(icr_low, dest_id),
 
-	TP_STRUCT__entry(
-		__field(	__u32,		icr_low		)
-		__field(	__u32,		dest_id		)
-	),
-
-	TP_fast_assign(
-		tp_assign(icr_low, icr_low)
-		tp_assign(dest_id, dest_id)
-	),
-
-	TP_printk("dst %x vec %u (%s|%s|%s|%s|%s)",
-		  __entry->dest_id, (u8)__entry->icr_low,
-		  __print_symbolic((__entry->icr_low >> 8 & 0x7),
-				   kvm_deliver_mode),
-		  (__entry->icr_low & (1<<11)) ? "logical" : "physical",
-		  (__entry->icr_low & (1<<14)) ? "assert" : "de-assert",
-		  (__entry->icr_low & (1<<15)) ? "level" : "edge",
-		  __print_symbolic((__entry->icr_low >> 18 & 0x3),
-				   kvm_apic_dst_shorthand))
+	TP_FIELDS(
+		ctf_integer(__u32, icr_low, icr_low)
+		ctf_integer(__u32, dest_id, dest_id)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(kvm_apic_accept_irq,
 	    TP_PROTO(__u32 apicid, __u16 dm, __u8 tm, __u8 vec, bool coalesced),
 	    TP_ARGS(apicid, dm, tm, vec, coalesced),
 
-	TP_STRUCT__entry(
-		__field(	__u32,		apicid		)
-		__field(	__u16,		dm		)
-		__field(	__u8,		tm		)
-		__field(	__u8,		vec		)
-		__field(	bool,		coalesced	)
-	),
-
-	TP_fast_assign(
-		tp_assign(apicid, apicid)
-		tp_assign(dm, dm)
-		tp_assign(tm, tm)
-		tp_assign(vec, vec)
-		tp_assign(coalesced, coalesced)
-	),
-
-	TP_printk("apicid %x vec %u (%s|%s)%s",
-		  __entry->apicid, __entry->vec,
-		  __print_symbolic((__entry->dm >> 8 & 0x7), kvm_deliver_mode),
-		  __entry->tm ? "level" : "edge",
-		  __entry->coalesced ? " (coalesced)" : "")
+	TP_FIELDS(
+		ctf_integer(__u32, apicid, apicid)
+		ctf_integer(__u16, dm, dm)
+		ctf_integer(__u8, tm, tm)
+		ctf_integer(__u8, vec, vec)
+		ctf_integer(bool, coalesced, coalesced)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(kvm_eoi,
 	    TP_PROTO(struct kvm_lapic *apic, int vector),
 	    TP_ARGS(apic, vector),
 
-	TP_STRUCT__entry(
-		__field(	__u32,		apicid		)
-		__field(	int,		vector		)
-	),
-
-	TP_fast_assign(
-		tp_assign(apicid, apic->vcpu->vcpu_id)
-		tp_assign(vector, vector)
-	),
-
-	TP_printk("apicid %x vector %d", __entry->apicid, __entry->vector)
+	TP_FIELDS(
+		ctf_integer(__u32, apicid, apic->vcpu->vcpu_id)
+		ctf_integer(int, vector, vector)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(kvm_pv_eoi,
 	    TP_PROTO(struct kvm_lapic *apic, int vector),
 	    TP_ARGS(apic, vector),
 
-	TP_STRUCT__entry(
-		__field(	__u32,		apicid		)
-		__field(	int,		vector		)
-	),
-
-	TP_fast_assign(
-		tp_assign(apicid, apic->vcpu->vcpu_id)
-		tp_assign(vector, vector)
-	),
-
-	TP_printk("apicid %x vector %d", __entry->apicid, __entry->vector)
+	TP_FIELDS(
+		ctf_integer(__u32, apicid, apic->vcpu->vcpu_id)
+		ctf_integer(int, vector, vector)
+	)
 )
 
 /*
@@ -478,52 +276,26 @@ LTTNG_TRACEPOINT_EVENT(kvm_nested_vmrun,
 		     __u32 event_inj, bool npt),
 	    TP_ARGS(rip, vmcb, nested_rip, int_ctl, event_inj, npt),
 
-	TP_STRUCT__entry(
-		__field(	__u64,		rip		)
-		__field(	__u64,		vmcb		)
-		__field(	__u64,		nested_rip	)
-		__field(	__u32,		int_ctl		)
-		__field(	__u32,		event_inj	)
-		__field(	bool,		npt		)
-	),
-
-	TP_fast_assign(
-		tp_assign(rip, rip)
-		tp_assign(vmcb, vmcb)
-		tp_assign(nested_rip, nested_rip)
-		tp_assign(int_ctl, int_ctl)
-		tp_assign(event_inj, event_inj)
-		tp_assign(npt, npt)
-	),
-
-	TP_printk("rip: 0x%016llx vmcb: 0x%016llx nrip: 0x%016llx int_ctl: 0x%08x "
-		  "event_inj: 0x%08x npt: %s",
-		__entry->rip, __entry->vmcb, __entry->nested_rip,
-		__entry->int_ctl, __entry->event_inj,
-		__entry->npt ? "on" : "off")
+	TP_FIELDS(
+		ctf_integer(__u64, rip, rip)
+		ctf_integer(__u64, vmcb, vmcb)
+		ctf_integer(__u64, nested_rip, nested_rip)
+		ctf_integer(__u32, int_ctl, int_ctl)
+		ctf_integer(__u32, event_inj, event_inj)
+		ctf_integer(bool, npt, npt)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(kvm_nested_intercepts,
 	    TP_PROTO(__u16 cr_read, __u16 cr_write, __u32 exceptions, __u64 intercept),
 	    TP_ARGS(cr_read, cr_write, exceptions, intercept),
 
-	TP_STRUCT__entry(
-		__field(	__u16,		cr_read		)
-		__field(	__u16,		cr_write	)
-		__field(	__u32,		exceptions	)
-		__field(	__u64,		intercept	)
-	),
-
-	TP_fast_assign(
-		tp_assign(cr_read, cr_read)
-		tp_assign(cr_write, cr_write)
-		tp_assign(exceptions, exceptions)
-		tp_assign(intercept, intercept)
-	),
-
-	TP_printk("cr_read: %04x cr_write: %04x excp: %08x intercept: %016llx",
-		__entry->cr_read, __entry->cr_write, __entry->exceptions,
-		__entry->intercept)
+	TP_FIELDS(
+		ctf_integer(__u16, cr_read, cr_read)
+		ctf_integer(__u16, cr_write, cr_write)
+		ctf_integer(__u32, exceptions, exceptions)
+		ctf_integer(__u64, intercept, intercept)
+	)
 )
 /*
  * Tracepoint for #VMEXIT while nested
@@ -535,33 +307,15 @@ LTTNG_TRACEPOINT_EVENT(kvm_nested_vmexit,
 	    TP_ARGS(rip, exit_code, exit_info1, exit_info2,
 		    exit_int_info, exit_int_info_err, isa),
 
-	TP_STRUCT__entry(
-		__field(	__u64,		rip			)
-		__field(	__u32,		exit_code		)
-		__field(	__u64,		exit_info1		)
-		__field(	__u64,		exit_info2		)
-		__field(	__u32,		exit_int_info		)
-		__field(	__u32,		exit_int_info_err	)
-		__field(	__u32,		isa			)
-	),
-
-	TP_fast_assign(
-		tp_assign(rip, rip)
-		tp_assign(exit_code, exit_code)
-		tp_assign(exit_info1, exit_info1)
-		tp_assign(exit_info2, exit_info2)
-		tp_assign(exit_int_info, exit_int_info)
-		tp_assign(exit_int_info_err, exit_int_info_err)
-		tp_assign(isa, isa)
-	),
-	TP_printk("rip: 0x%016llx reason: %s ext_inf1: 0x%016llx "
-		  "ext_inf2: 0x%016llx ext_int: 0x%08x ext_int_err: 0x%08x",
-		  __entry->rip,
-		 (__entry->isa == KVM_ISA_VMX) ?
-		 __print_symbolic(__entry->exit_code, VMX_EXIT_REASONS) :
-		 __print_symbolic(__entry->exit_code, SVM_EXIT_REASONS),
-		  __entry->exit_info1, __entry->exit_info2,
-		  __entry->exit_int_info, __entry->exit_int_info_err)
+	TP_FIELDS(
+		ctf_integer(__u64, rip, rip)
+		ctf_integer(__u32, exit_code, exit_code)
+		ctf_integer(__u64, exit_info1, exit_info1)
+		ctf_integer(__u64, exit_info2, exit_info2)
+		ctf_integer(__u32, exit_int_info, exit_int_info)
+		ctf_integer(__u32, exit_int_info_err, exit_int_info_err)
+		ctf_integer(__u32, isa, isa)
+	)
 )
 
 /*
@@ -574,31 +328,14 @@ LTTNG_TRACEPOINT_EVENT(kvm_nested_vmexit_inject,
 	    TP_ARGS(exit_code, exit_info1, exit_info2,
 		    exit_int_info, exit_int_info_err, isa),
 
-	TP_STRUCT__entry(
-		__field(	__u32,		exit_code		)
-		__field(	__u64,		exit_info1		)
-		__field(	__u64,		exit_info2		)
-		__field(	__u32,		exit_int_info		)
-		__field(	__u32,		exit_int_info_err	)
-		__field(	__u32,		isa			)
-	),
-
-	TP_fast_assign(
-		tp_assign(exit_code, exit_code)
-		tp_assign(exit_info1, exit_info1)
-		tp_assign(exit_info2, exit_info2)
-		tp_assign(exit_int_info, exit_int_info)
-		tp_assign(exit_int_info_err, exit_int_info_err)
-		tp_assign(isa, isa)
-	),
-
-	TP_printk("reason: %s ext_inf1: 0x%016llx "
-		  "ext_inf2: 0x%016llx ext_int: 0x%08x ext_int_err: 0x%08x",
-		 (__entry->isa == KVM_ISA_VMX) ?
-		 __print_symbolic(__entry->exit_code, VMX_EXIT_REASONS) :
-		 __print_symbolic(__entry->exit_code, SVM_EXIT_REASONS),
-		__entry->exit_info1, __entry->exit_info2,
-		__entry->exit_int_info, __entry->exit_int_info_err)
+	TP_FIELDS(
+		ctf_integer(__u32, exit_code, exit_code)
+		ctf_integer(__u64, exit_info1, exit_info1)
+		ctf_integer(__u64, exit_info2, exit_info2)
+		ctf_integer(__u32, exit_int_info, exit_int_info)
+		ctf_integer(__u32, exit_int_info_err, exit_int_info_err)
+		ctf_integer(__u32, isa, isa)
+	)
 )
 
 /*
@@ -608,15 +345,9 @@ LTTNG_TRACEPOINT_EVENT(kvm_nested_intr_vmexit,
 	    TP_PROTO(__u64 rip),
 	    TP_ARGS(rip),
 
-	TP_STRUCT__entry(
-		__field(	__u64,	rip	)
-	),
-
-	TP_fast_assign(
-		tp_assign(rip,	rip)
-	),
-
-	TP_printk("rip: 0x%016llx", __entry->rip)
+	TP_FIELDS(
+		ctf_integer(__u64, rip, rip)
+	)
 )
 
 /*
@@ -626,20 +357,11 @@ LTTNG_TRACEPOINT_EVENT(kvm_invlpga,
 	    TP_PROTO(__u64 rip, int asid, u64 address),
 	    TP_ARGS(rip, asid, address),
 
-	TP_STRUCT__entry(
-		__field(	__u64,	rip	)
-		__field(	int,	asid	)
-		__field(	__u64,	address	)
-	),
-
-	TP_fast_assign(
-		tp_assign(rip,	rip)
-		tp_assign(asid,	asid)
-		tp_assign(address,	address)
-	),
-
-	TP_printk("rip: 0x%016llx asid: %d address: 0x%016llx",
-		  __entry->rip, __entry->asid, __entry->address)
+	TP_FIELDS(
+		ctf_integer(__u64, rip, rip)
+		ctf_integer(int, asid, asid)
+		ctf_integer(__u64, address, address)
+	)
 )
 
 /*
@@ -649,18 +371,10 @@ LTTNG_TRACEPOINT_EVENT(kvm_skinit,
 	    TP_PROTO(__u64 rip, __u32 slb),
 	    TP_ARGS(rip, slb),
 
-	TP_STRUCT__entry(
-		__field(	__u64,	rip	)
-		__field(	__u32,	slb	)
-	),
-
-	TP_fast_assign(
-		tp_assign(rip,	rip)
-		tp_assign(slb,	slb)
-	),
-
-	TP_printk("rip: 0x%016llx slb: 0x%08x",
-		  __entry->rip, __entry->slb)
+	TP_FIELDS(
+		ctf_integer(__u64, rip, rip)
+		ctf_integer(__u32, slb, slb)
+	)
 )
 
 #define KVM_EMUL_INSN_F_CR0_PE (1 << 0)
@@ -706,55 +420,32 @@ LTTNG_TRACEPOINT_EVENT(kvm_emulate_insn,
 	TP_PROTO(struct kvm_vcpu *vcpu, __u8 failed),
 	TP_ARGS(vcpu, failed),
 
-	TP_STRUCT__entry(
-		__field(    __u64, rip                       )
-		__field(    __u32, csbase                    )
-		__field(    __u8,  len                       )
-		__array(    __u8,  insn,    15	             )
-		__field(    __u8,  flags       	   	     )
-		__field(    __u8,  failed                    )
-		),
-
-	TP_fast_assign(
+	TP_FIELDS(
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,1,0))
-		tp_assign(rip, vcpu->arch.emulate_ctxt.decode.fetch.start)
-		tp_assign(csbase, kvm_x86_ops->get_segment_base(vcpu, VCPU_SREG_CS))
-		tp_assign(len, vcpu->arch.emulate_ctxt.decode.eip
-			       - vcpu->arch.emulate_ctxt.decode.fetch.start)
-		tp_memcpy(insn,
-		       vcpu->arch.emulate_ctxt.decode.fetch.data,
-		       15)
+		ctf_integer(__u64, rip, vcpu->arch.emulate_ctxt.decode.fetch.start)
+		ctf_integer(__u32, csbase, kvm_x86_ops->get_segment_base(vcpu, VCPU_SREG_CS))
+		ctf_integer(__u8, len, vcpu->arch.emulate_ctxt.decode.eip
+				- vcpu->arch.emulate_ctxt.decode.fetch.start)
+		ctf_array(__u8, insn, vcpu->arch.emulate_ctxt.decode.fetch.data, 15)
 #elif (LINUX_VERSION_CODE < KERNEL_VERSION(3,17,0))
-		tp_assign(rip, vcpu->arch.emulate_ctxt.fetch.start)
-		tp_assign(csbase, kvm_x86_ops->get_segment_base(vcpu, VCPU_SREG_CS))
-		tp_assign(len, vcpu->arch.emulate_ctxt._eip
-			       - vcpu->arch.emulate_ctxt.fetch.start)
-		tp_memcpy(insn,
-		       vcpu->arch.emulate_ctxt.fetch.data,
-		       15)
+		ctf_integer(__u64, rip, vcpu->arch.emulate_ctxt.fetch.start)
+		ctf_integer(__u32, csbase, kvm_x86_ops->get_segment_base(vcpu, VCPU_SREG_CS))
+		ctf_integer(__u8, len, vcpu->arch.emulate_ctxt._eip
+				- vcpu->arch.emulate_ctxt.fetch.start)
+		ctf_array(__u8, insn, vcpu->arch.emulate_ctxt.fetch.data, 15)
 #else
-		tp_assign(rip, vcpu->arch.emulate_ctxt._eip -
-			(vcpu->arch.emulate_ctxt.fetch.ptr -
-				vcpu->arch.emulate_ctxt.fetch.data))
-		tp_assign(csbase, kvm_x86_ops->get_segment_base(vcpu, VCPU_SREG_CS))
-		tp_assign(len, vcpu->arch.emulate_ctxt.fetch.ptr -
-			vcpu->arch.emulate_ctxt.fetch.data)
-		tp_memcpy(insn,
-		       vcpu->arch.emulate_ctxt.fetch.data,
-		       15)
+		ctf_integer(__u64, rip, vcpu->arch.emulate_ctxt._eip -
+				(vcpu->arch.emulate_ctxt.fetch.ptr -
+					vcpu->arch.emulate_ctxt.fetch.data))
+		ctf_integer(__u32, csbase, kvm_x86_ops->get_segment_base(vcpu, VCPU_SREG_CS))
+		ctf_integer(__u8, len, vcpu->arch.emulate_ctxt.fetch.ptr -
+				vcpu->arch.emulate_ctxt.fetch.data)
+		ctf_array(__u8, insn, vcpu->arch.emulate_ctxt.fetch.data, 15)
 #endif
-		tp_assign(flags, kei_decode_mode(vcpu->arch.emulate_ctxt.mode))
-		tp_assign(failed, failed)
-		),
-
-	TP_printk("%x:%llx:%s (%s)%s",
-		  __entry->csbase, __entry->rip,
-		  __print_hex(__entry->insn, __entry->len),
-		  __print_symbolic(__entry->flags,
-				   kvm_trace_symbol_emul_flags),
-		  __entry->failed ? " failed" : ""
-		)
+		ctf_integer(__u8, flags, kei_decode_mode(vcpu->arch.emulate_ctxt.mode))
+		ctf_integer(__u8, failed, failed)
 	)
+)
 
 #define trace_kvm_emulate_insn_start(vcpu) trace_kvm_emulate_insn(vcpu, 0)
 #define trace_kvm_emulate_insn_failed(vcpu) trace_kvm_emulate_insn(vcpu, 1)
@@ -764,23 +455,12 @@ LTTNG_TRACEPOINT_EVENT(
 	TP_PROTO(gva_t gva, gpa_t gpa, bool write, bool gpa_match),
 	TP_ARGS(gva, gpa, write, gpa_match),
 
-	TP_STRUCT__entry(
-		__field(gva_t, gva)
-		__field(gpa_t, gpa)
-		__field(bool, write)
-		__field(bool, gpa_match)
-		),
-
-	TP_fast_assign(
-		tp_assign(gva, gva)
-		tp_assign(gpa, gpa)
-		tp_assign(write, write)
-		tp_assign(gpa_match, gpa_match)
-		),
-
-	TP_printk("gva %#lx gpa %#llx %s %s", __entry->gva, __entry->gpa,
-		  __entry->write ? "Write" : "Read",
-		  __entry->gpa_match ? "GPA" : "GVA")
+	TP_FIELDS(
+		ctf_integer(gva_t, gva, gva)
+		ctf_integer(gpa_t, gpa, gpa)
+		ctf_integer(bool, write, write)
+		ctf_integer(bool, gpa_match, gpa_match)
+	)
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
@@ -789,51 +469,26 @@ LTTNG_TRACEPOINT_EVENT(kvm_write_tsc_offset,
 		 __u64 next_tsc_offset),
 	TP_ARGS(vcpu_id, previous_tsc_offset, next_tsc_offset),
 
-	TP_STRUCT__entry(
-		__field( unsigned int,	vcpu_id				)
-		__field(	__u64,	previous_tsc_offset		)
-		__field(	__u64,	next_tsc_offset			)
-	),
-
-	TP_fast_assign(
-		tp_assign(vcpu_id, vcpu_id)
-		tp_assign(previous_tsc_offset, previous_tsc_offset)
-		tp_assign(next_tsc_offset, next_tsc_offset)
-	),
-
-	TP_printk("vcpu=%u prev=%llu next=%llu", __entry->vcpu_id,
-		  __entry->previous_tsc_offset, __entry->next_tsc_offset)
+	TP_FIELDS(
+		ctf_integer(unsigned int, vcpu_id, vcpu_id)
+		ctf_integer(__u64, previous_tsc_offset, previous_tsc_offset)
+		ctf_integer(__u64, next_tsc_offset, next_tsc_offset)
+	)
 )
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
 #ifdef CONFIG_X86_64
 
-#define host_clocks					\
-	{VCLOCK_NONE, "none"},				\
-	{VCLOCK_TSC,  "tsc"},				\
-	{VCLOCK_HPET, "hpet"}				\
-
 LTTNG_TRACEPOINT_EVENT(kvm_update_master_clock,
 	TP_PROTO(bool use_master_clock, unsigned int host_clock, bool offset_matched),
 	TP_ARGS(use_master_clock, host_clock, offset_matched),
 
-	TP_STRUCT__entry(
-		__field(		bool,	use_master_clock	)
-		__field(	unsigned int,	host_clock		)
-		__field(		bool,	offset_matched		)
-	),
-
-	TP_fast_assign(
-		tp_assign(use_master_clock, use_master_clock)
-		tp_assign(host_clock, host_clock)
-		tp_assign(offset_matched, offset_matched)
-	),
-
-	TP_printk("masterclock %d hostclock %s offsetmatched %u",
-		  __entry->use_master_clock,
-		  __print_symbolic(__entry->host_clock, host_clocks),
-		  __entry->offset_matched)
+	TP_FIELDS(
+		ctf_integer(bool, use_master_clock, use_master_clock)
+		ctf_integer(unsigned int, host_clock, host_clock)
+		ctf_integer(bool, offset_matched, offset_matched)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(kvm_track_tsc,
@@ -843,27 +498,13 @@ LTTNG_TRACEPOINT_EVENT(kvm_track_tsc,
 	TP_ARGS(vcpu_id, nr_matched, online_vcpus, use_master_clock,
 		host_clock),
 
-	TP_STRUCT__entry(
-		__field(	unsigned int,	vcpu_id			)
-		__field(	unsigned int,	nr_vcpus_matched_tsc	)
-		__field(	unsigned int,	online_vcpus		)
-		__field(	bool,		use_master_clock	)
-		__field(	unsigned int,	host_clock		)
-	),
-
-	TP_fast_assign(
-		tp_assign(vcpu_id, vcpu_id)
-		tp_assign(nr_vcpus_matched_tsc, nr_matched)
-		tp_assign(online_vcpus, online_vcpus)
-		tp_assign(use_master_clock, use_master_clock)
-		tp_assign(host_clock, host_clock)
-	),
-
-	TP_printk("vcpu_id %u masterclock %u offsetmatched %u nr_online %u"
-		  " hostclock %s",
-		  __entry->vcpu_id, __entry->use_master_clock,
-		  __entry->nr_vcpus_matched_tsc, __entry->online_vcpus,
-		  __print_symbolic(__entry->host_clock, host_clocks))
+	TP_FIELDS(
+		ctf_integer(unsigned int, vcpu_id, vcpu_id)
+		ctf_integer(unsigned int, nr_vcpus_matched_tsc, nr_matched)
+		ctf_integer(unsigned int, online_vcpus, online_vcpus)
+		ctf_integer(bool, use_master_clock, use_master_clock)
+		ctf_integer(unsigned int, host_clock, host_clock)
+	)
 )
 
 #endif /* CONFIG_X86_64 */

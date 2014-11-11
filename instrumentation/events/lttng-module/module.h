@@ -31,17 +31,10 @@ LTTNG_TRACEPOINT_EVENT(module_load,
 
 	TP_ARGS(mod),
 
-	TP_STRUCT__entry(
-		__field(	unsigned int,	taints		)
-		__string(	name,		mod->name	)
-	),
-
-	TP_fast_assign(
-		tp_assign(taints, mod->taints)
-		tp_strcpy(name, mod->name)
-	),
-
-	TP_printk("%s %s", __get_str(name), show_module_flags(__entry->taints))
+	TP_FIELDS(
+		ctf_integer(unsigned int, taints, mod->taints)
+		ctf_string(name, mod->name)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT(module_free,
@@ -50,15 +43,9 @@ LTTNG_TRACEPOINT_EVENT(module_free,
 
 	TP_ARGS(mod),
 
-	TP_STRUCT__entry(
-		__string(	name,		mod->name	)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, mod->name)
-	),
-
-	TP_printk("%s", __get_str(name))
+	TP_FIELDS(
+		ctf_string(name, mod->name)
+	)
 )
 
 #ifdef CONFIG_MODULE_UNLOAD
@@ -76,26 +63,17 @@ LTTNG_TRACEPOINT_EVENT_CLASS(module_refcnt,
 	TP_ARGS(mod, ip, refcnt),
 #endif
 
-	TP_STRUCT__entry(
-		__field(	unsigned long,	ip		)
-		__field(	int,		refcnt		)
-		__string(	name,		mod->name	)
-	),
-
-	TP_fast_assign(
-		tp_assign(ip, ip)
+	TP_FIELDS(
+		ctf_integer(unsigned long, ip, ip)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
-		tp_assign(refcnt, atomic_read(&mod->refcnt))
+		ctf_integer(int, refcnt, atomic_read(&mod->refcnt))
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
-		tp_assign(refcnt, __this_cpu_read(mod->refptr->incs) + __this_cpu_read(mod->refptr->decs))
+		ctf_integer(int, refcnt, __this_cpu_read(mod->refptr->incs) + __this_cpu_read(mod->refptr->decs))
 #else
-		tp_assign(refcnt, refcnt)
+		ctf_integer(int, refcnt, refcnt)
 #endif
-		tp_strcpy(name, mod->name)
-	),
-
-	TP_printk("%s call_site=%pf refcnt=%d",
-		  __get_str(name), (void *)__entry->ip, __entry->refcnt)
+		ctf_string(name, mod->name)
+	)
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(module_refcnt, module_get,
@@ -131,20 +109,11 @@ LTTNG_TRACEPOINT_EVENT(module_request,
 
 	TP_ARGS(name, wait, ip),
 
-	TP_STRUCT__entry(
-		__field(	unsigned long,	ip		)
-		__field(	bool,		wait		)
-		__string(	name,		name		)
-	),
-
-	TP_fast_assign(
-		tp_assign(ip, ip)
-		tp_assign(wait, wait)
-		tp_strcpy(name, name)
-	),
-
-	TP_printk("%s wait=%d call_site=%pf",
-		  __get_str(name), (int)__entry->wait, (void *)__entry->ip)
+	TP_FIELDS(
+		ctf_integer(unsigned long, ip, ip)
+		ctf_integer(bool, wait, wait)
+		ctf_string(name, name)
+	)
 )
 
 #endif /* CONFIG_MODULES */

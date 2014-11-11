@@ -18,46 +18,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-/* Reset macros used within TRACE_EVENT to "nothing" */
+/* Reset macros used within LTTNG_TRACEPOINT_EVENT to "nothing" */
 
-#undef __field_full
-#define __field_full(_type, _item, _order, _base)
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _fields)
 
-#undef __array_enc_ext
-#define __array_enc_ext(_type, _item, _length, _order, _base, _encoding)
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _fields)
 
-#undef __dynamic_array_enc_ext
-#define __dynamic_array_enc_ext(_type, _item, _length, _order, _base, _encoding)
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(_template, _name, _map, _proto, _args)
 
-#undef __dynamic_array_enc_ext_2
-#define __dynamic_array_enc_ext_2(_type, _item, _length1, _length2, _order, _base, _encoding)
-
-#undef __dynamic_array_len
-#define __dynamic_array_len(_type, _item, _length)
-
-#undef __string
-#define __string(_item, _src)
-
-#undef tp_assign
-#define tp_assign(dest, src)
-
-#undef tp_memcpy
-#define tp_memcpy(dest, src, len)
-
-#undef tp_memcpy_dyn
-#define tp_memcpy_dyn(dest, src, len)
-
-#undef tp_strcpy
-#define tp_strcpy(dest, src)
-
-#undef __get_str
-#define __get_str(field)
-
-#undef __get_dynamic_array
-#define __get_dynamic_array(field)
-
-#undef __get_dynamic_array_len
-#define __get_dynamic_array_len(field)
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map)
 
 #undef TP_PROTO
 #define TP_PROTO(args...)
@@ -71,32 +44,144 @@
 #undef TP_code
 #define TP_code(...)
 
-#undef TP_STRUCT__entry
-#define TP_STRUCT__entry(args...)
+#undef TP_FIELDS
+#define TP_FIELDS(args...)
 
-#undef TP_fast_assign
-#define TP_fast_assign(args...)
+#undef _ctf_integer_ext
+#define _ctf_integer_ext(_type, _item, _src, _byte_order, _base, \
+			_user, _nowrite)
 
-#undef __perf_count
-#define __perf_count(args...)
+#undef _ctf_integer_ext_isuser0
+#define _ctf_integer_ext_isuser0(_type, _item, _src, _byte_order, _base, \
+			_nowrite)
 
-#undef __perf_addr
-#define __perf_addr(args...)
+#undef _ctf_integer_ext_isuser1
+#define _ctf_integer_ext_isuser1(_type, _item, _src, _byte_order, _base, \
+			_nowrite)
 
-#undef TP_perf_assign
-#define TP_perf_assign(args...)
+#undef _ctf_integer_ext_fetched
+#define _ctf_integer_ext_fetched(_type, _item, _src, _byte_order, _base, \
+			_nowrite)
 
-#undef TP_printk
-#define TP_printk(args...)
+#undef _ctf_array_encoded
+#define _ctf_array_encoded(_type, _item, _src, _length, _encoding, \
+			_user, _nowrite)
 
-#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print)
+#undef _ctf_sequence_encoded
+#define _ctf_sequence_encoded(_type, _item, _src, _length_type, \
+			_src_length, _encoding, _base, _user, _nowrite)
 
-#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print)
+#undef _ctf_string
+#define _ctf_string(_item, _src, _user, _nowrite)
 
-#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP
-#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(_template, _name, _map, _proto, _args)
+/* "write" */
+#undef ctf_integer
+#define ctf_integer(_type, _item, _src)
 
-#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
-#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map)
+#undef ctf_integer_hex
+#define ctf_integer_hex(_type, _item, _src)
+
+#undef ctf_integer_oct
+#define ctf_integer_oct(_type, _item, _src)
+
+#undef ctf_integer_network
+#define ctf_integer_network(_type, _item, _src)
+
+#undef ctf_integer_network_hex
+#define ctf_integer_network_hex(_type, _item, _src)
+
+#undef ctf_float
+#define ctf_float(_type, _item, _src)
+
+#undef ctf_array
+#define ctf_array(_type, _item, _src, _length)
+
+#undef ctf_array_text
+#define ctf_array_text(_type, _item, _src, _length)
+
+#undef ctf_sequence
+#define ctf_sequence(_type, _item, _src, _length_type, _src_length)
+
+#undef ctf_sequence_hex
+#define ctf_sequence_hex(_type, _item, _src, _length_type, _src_length)
+
+#undef ctf_sequence_text
+#define ctf_sequence_text(_type, _item, _src, _length_type, _src_length)
+
+#undef ctf_string
+#define ctf_string(_item, _src)
+
+/* "nowrite" */
+#undef ctf_integer_nowrite
+#define ctf_integer_nowrite(_type, _item, _src)
+
+#undef ctf_float_nowrite
+#define ctf_float_nowrite(_type, _item, _src)
+
+#undef ctf_array_nowrite
+#define ctf_array_nowrite(_type, _item, _src, _length)
+
+#undef ctf_array_text_nowrite
+#define ctf_array_text_nowrite(_type, _item, _src, _length)
+
+#undef ctf_sequence_nowrite
+#define ctf_sequence_nowrite(_type, _item, _src, _length_type, _src_length)
+
+#undef ctf_sequence_text_nowrite
+#define ctf_sequence_text_nowrite(_type, _item, _src, _length_type, _src_length)
+
+#undef ctf_string_nowrite
+#define ctf_string_nowrite(_item, _src)
+
+/* "user" - "write" */
+#undef ctf_user_integer
+#define ctf_user_integer(_type, _item, _user_src)
+
+#undef ctf_user_integer_hex
+#define ctf_user_integer_hex(_type, _item, _user_src)
+
+#undef ctf_user_integer_network
+#define ctf_user_integer_network(_type, _item, _user_src)
+
+#undef ctf_user_integer_network_hex
+#define ctf_user_integer_network_hex(_type, _item, _user_src)
+
+#undef ctf_user_float
+#define ctf_user_float(_type, _item, _user_src)
+
+#undef ctf_user_array
+#define ctf_user_array(_type, _item, _user_src, _length)
+
+#undef ctf_user_array_text
+#define ctf_user_array_text(_type, _item, _user_src, _length)
+
+#undef ctf_user_sequence
+#define ctf_user_sequence(_type, _item, _user_src, _length_type, _user_src_length)
+
+#undef ctf_user_sequence_text
+#define ctf_user_sequence_text(_type, _item, _user_src, _length_type, _user_src_length)
+
+#undef ctf_user_string
+#define ctf_user_string(_item, _user_src)
+
+/* "user" - "nowrite" */
+#undef ctf_user_integer_nowrite
+#define ctf_user_integer_nowrite(_type, _item, _user_src)
+
+#undef ctf_user_float_nowrite
+#define ctf_user_float_nowrite(_type, _item, _user_src)
+
+#undef ctf_user_array_nowrite
+#define ctf_user_array_nowrite(_type, _item, _user_src, _length)
+
+#undef ctf_user_array_text_nowrite
+#define ctf_user_array_text_nowrite(_type, _item, _user_src, _length)
+
+#undef ctf_user_sequence_nowrite
+#define ctf_user_sequence_nowrite(_type, _item, _user_src, _length_type, _user_src_length)
+
+#undef ctf_user_sequence_text_nowrite
+#define ctf_user_sequence_text_nowrite(_type, _item, _user_src, _length_type, _user_src_length)
+
+#undef ctf_user_string_nowrite
+#define ctf_user_string_nowrite(_item, _user_src)

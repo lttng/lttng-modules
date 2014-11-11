@@ -28,15 +28,9 @@ LTTNG_TRACEPOINT_EVENT(rcu_utilization,
 
 	TP_ARGS(s),
 
-	TP_STRUCT__entry(
-		__string(s, s)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(s, s)
-	),
-
-	TP_printk("%s", __get_str(s))
+	TP_FIELDS(
+		ctf_string(s, s)
+	)
 )
 
 #ifdef CONFIG_RCU_TRACE
@@ -65,20 +59,11 @@ LTTNG_TRACEPOINT_EVENT(rcu_grace_period,
 
 	TP_ARGS(rcuname, gpnum, gpevent),
 
-	TP_STRUCT__entry(
-		__string(rcuname, rcuname)
-		__field(unsigned long, gpnum)
-		__string(gpevent, gpevent)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(rcuname, rcuname)
-		tp_assign(gpnum, gpnum)
-		tp_strcpy(gpevent, gpevent)
-	),
-
-	TP_printk("%s %lu %s",
-		  __get_str(rcuname), __entry->gpnum, __get_str(gpevent))
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(unsigned long, gpnum, gpnum)
+		ctf_string(gpevent, gpevent)
+	)
 )
 
 /*
@@ -100,27 +85,14 @@ LTTNG_TRACEPOINT_EVENT(rcu_grace_period_init,
 
 	TP_ARGS(rcuname, gpnum, level, grplo, grphi, qsmask),
 
-	TP_STRUCT__entry(
-		__string(rcuname, rcuname)
-		__field(unsigned long, gpnum)
-		__field(u8, level)
-		__field(int, grplo)
-		__field(int, grphi)
-		__field(unsigned long, qsmask)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(rcuname, rcuname)
-		tp_assign(gpnum, gpnum)
-		tp_assign(level, level)
-		tp_assign(grplo, grplo)
-		tp_assign(grphi, grphi)
-		tp_assign(qsmask, qsmask)
-	),
-
-	TP_printk("%s %lu %u %d %d %lx",
-		  __get_str(rcuname), __entry->gpnum, __entry->level,
-		  __entry->grplo, __entry->grphi, __entry->qsmask)
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(unsigned long, gpnum, gpnum)
+		ctf_integer(u8, level, level)
+		ctf_integer(int, grplo, grplo)
+		ctf_integer(int, grphi, grphi)
+		ctf_integer(unsigned long, qsmask, qsmask)
+	)
 )
 
 /*
@@ -139,20 +111,11 @@ LTTNG_TRACEPOINT_EVENT(rcu_preempt_task,
 
 	TP_ARGS(rcuname, pid, gpnum),
 
-	TP_STRUCT__entry(
-		__string(rcuname, rcuname)
-		__field(unsigned long, gpnum)
-		__field(int, pid)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(rcuname, rcuname)
-		tp_assign(gpnum, gpnum)
-		tp_assign(pid, pid)
-	),
-
-	TP_printk("%s %lu %d",
-		  __get_str(rcuname), __entry->gpnum, __entry->pid)
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(unsigned long, gpnum, gpnum)
+		ctf_integer(int, pid, pid)
+	)
 )
 
 /*
@@ -170,19 +133,11 @@ LTTNG_TRACEPOINT_EVENT(rcu_unlock_preempted_task,
 
 	TP_ARGS(rcuname, gpnum, pid),
 
-	TP_STRUCT__entry(
-		__string(rcuname, rcuname)
-		__field(unsigned long, gpnum)
-		__field(int, pid)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(rcuname, rcuname)
-		tp_assign(gpnum, gpnum)
-		tp_assign(pid, pid)
-	),
-
-	TP_printk("%s %lu %d", __get_str(rcuname), __entry->gpnum, __entry->pid)
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(unsigned long, gpnum, gpnum)
+		ctf_integer(int, pid, pid)
+	)
 )
 
 /*
@@ -207,32 +162,16 @@ LTTNG_TRACEPOINT_EVENT(rcu_quiescent_state_report,
 
 	TP_ARGS(rcuname, gpnum, mask, qsmask, level, grplo, grphi, gp_tasks),
 
-	TP_STRUCT__entry(
-		__string(rcuname, rcuname)
-		__field(unsigned long, gpnum)
-		__field(unsigned long, mask)
-		__field(unsigned long, qsmask)
-		__field(u8, level)
-		__field(int, grplo)
-		__field(int, grphi)
-		__field(u8, gp_tasks)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(rcuname, rcuname)
-		tp_assign(gpnum, gpnum)
-		tp_assign(mask, mask)
-		tp_assign(qsmask, qsmask)
-		tp_assign(level, level)
-		tp_assign(grplo, grplo)
-		tp_assign(grphi, grphi)
-		tp_assign(gp_tasks, gp_tasks)
-	),
-
-	TP_printk("%s %lu %lx>%lx %u %d %d %u",
-		  __get_str(rcuname), __entry->gpnum,
-		  __entry->mask, __entry->qsmask, __entry->level,
-		  __entry->grplo, __entry->grphi, __entry->gp_tasks)
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(unsigned long, gpnum, gpnum)
+		ctf_integer(unsigned long, mask, mask)
+		ctf_integer(unsigned long, qsmask, qsmask)
+		ctf_integer(u8, level, level)
+		ctf_integer(int, grplo, grplo)
+		ctf_integer(int, grphi, grphi)
+		ctf_integer(u8, gp_tasks, gp_tasks)
+	)
 )
 
 /*
@@ -253,23 +192,12 @@ LTTNG_TRACEPOINT_EVENT(rcu_fqs,
 
 	TP_ARGS(rcuname, gpnum, cpu, qsevent),
 
-	TP_STRUCT__entry(
-		__string(rcuname, rcuname)
-		__field(unsigned long, gpnum)
-		__field(int, cpu)
-		__string(qsevent, qsevent)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(rcuname, rcuname)
-		tp_assign(gpnum, gpnum)
-		tp_assign(cpu, cpu)
-		tp_strcpy(qsevent, qsevent)
-	),
-
-	TP_printk("%s %lu %d %s",
-		  __get_str(rcuname), __entry->gpnum,
-		  __entry->cpu, __get_str(qsevent))
+	TP_FIELDS(
+		ctf_integer(unsigned long, gpnum, gpnum)
+		ctf_integer(int, cpu, cpu)
+		ctf_string(rcuname, rcuname)
+		ctf_string(qsevent, qsevent)
+	)
 )
 
 #endif	/*
@@ -309,28 +237,13 @@ LTTNG_TRACEPOINT_EVENT(rcu_dyntick,
 	TP_ARGS(polarity),
 #endif
 
-	TP_STRUCT__entry(
-		__string(polarity, polarity)
+	TP_FIELDS(
+		ctf_string(polarity, polarity)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
-		__field(long long, oldnesting)
-		__field(long long, newnesting)
+		ctf_integer(long long, oldnesting, oldnesting)
+		ctf_integer(long long, newnesting, newnesting)
 #endif
-	),
-
-	TP_fast_assign(
-		tp_strcpy(polarity, polarity)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
-		tp_assign(oldnesting, oldnesting)
-		tp_assign(newnesting, newnesting)
-#endif
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
-	TP_printk("%s %llx %llx", __get_str(polarity),
-		  __entry->oldnesting, __entry->newnesting)
-#else
-	TP_printk("%s", __get_str(polarity))
-#endif
+	)
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
@@ -366,15 +279,9 @@ LTTNG_TRACEPOINT_EVENT(rcu_prep_idle,
 
 	TP_ARGS(reason),
 
-	TP_STRUCT__entry(
-		__string(reason, reason)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(reason, reason)
-	),
-
-	TP_printk("%s", __get_str(reason))
+	TP_FIELDS(
+		ctf_string(reason, reason)
+	)
 )
 #endif
 
@@ -403,35 +310,15 @@ LTTNG_TRACEPOINT_EVENT(rcu_callback,
 	TP_ARGS(rcuname, rhp, qlen),
 #endif
 
-	TP_STRUCT__entry(
-		__string(rcuname, rcuname)
-		__field(void *, rhp)
-		__field(void *, func)
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(void *, rhp, rhp)
+		ctf_integer(void *, func, rhp->func)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-		__field(long, qlen_lazy)
+		ctf_integer(long, qlen_lazy, qlen_lazy)
 #endif
-		__field(long, qlen)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(rcuname, rcuname)
-		tp_assign(rhp, rhp)
-		tp_assign(func, rhp->func)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-		tp_assign(qlen_lazy, qlen_lazy)
-#endif
-		tp_assign(qlen, qlen)
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-	TP_printk("%s rhp=%p func=%pf %ld/%ld",
-		  __get_str(rcuname), __entry->rhp, __entry->func,
-		  __entry->qlen_lazy, __entry->qlen)
-#else
-	TP_printk("%s rhp=%p func=%pf %ld",
-		  __get_str(rcuname), __entry->rhp, __entry->func,
-		  __entry->qlen)
-#endif
+		ctf_integer(long, qlen, qlen)
+	)
 )
 
 /*
@@ -462,35 +349,15 @@ LTTNG_TRACEPOINT_EVENT(rcu_kfree_callback,
 	TP_ARGS(rcuname, rhp, offset, qlen),
 #endif
 
-	TP_STRUCT__entry(
-		__string(rcuname, rcuname)
-		__field(void *, rhp)
-		__field(unsigned long, offset)
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(void *, rhp, rhp)
+		ctf_integer(unsigned long, offset, offset)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-		__field(long, qlen_lazy)
+		ctf_integer(long, qlen_lazy, qlen_lazy)
 #endif
-		__field(long, qlen)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(rcuname, rcuname)
-		tp_assign(rhp, rhp)
-		tp_assign(offset, offset)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-		tp_assign(qlen_lazy, qlen_lazy)
-#endif
-		tp_assign(qlen, qlen)
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-	TP_printk("%s rhp=%p func=%ld %ld/%ld",
-		  __get_str(rcuname), __entry->rhp, __entry->offset,
-		  __entry->qlen_lazy, __entry->qlen)
-#else
-	TP_printk("%s rhp=%p func=%ld %ld",
-		  __get_str(rcuname), __entry->rhp, __entry->offset,
-		  __entry->qlen)
-#endif
+		ctf_integer(long, qlen, qlen)
+	)
 )
 
 /*
@@ -520,40 +387,18 @@ LTTNG_TRACEPOINT_EVENT(rcu_batch_start,
 	TP_ARGS(rcuname, qlen, blimit),
 #endif
 
-	TP_STRUCT__entry(
-		__string(rcuname, rcuname)
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-		__field(long, qlen_lazy)
+		ctf_integer(long, qlen_lazy, qlen_lazy)
 #endif
-		__field(long, qlen)
+		ctf_integer(long, qlen, qlen)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-		__field(long, blimit)
+		ctf_integer(long, blimit, blimit)
 #else
-		__field(int, blimit)
+		ctf_integer(int, blimit, blimit)
 #endif
-	),
-
-	TP_fast_assign(
-		tp_strcpy(rcuname, rcuname)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-		tp_assign(qlen_lazy, qlen_lazy)
-#endif
-		tp_assign(qlen, qlen)
-		tp_assign(blimit, blimit)
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-	TP_printk("%s CBs=%ld/%ld bl=%ld",
-		  __get_str(rcuname), __entry->qlen_lazy, __entry->qlen,
-		  __entry->blimit)
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-	TP_printk("%s CBs=%ld/%ld bl=%d",
-		  __get_str(rcuname), __entry->qlen_lazy, __entry->qlen,
-		  __entry->blimit)
-#else
-	TP_printk("%s CBs=%ld bl=%d",
-		  __get_str(rcuname), __entry->qlen, __entry->blimit)
-#endif
+	)
 )
 
 /*
@@ -571,20 +416,11 @@ LTTNG_TRACEPOINT_EVENT(rcu_invoke_callback,
 
 	TP_ARGS(rcuname, rhp),
 
-	TP_STRUCT__entry(
-		__string(rcuname, rcuname)
-		__field(void *, rhp)
-		__field(void *, func)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(rcuname, rcuname)
-		tp_assign(rhp, rhp)
-		tp_assign(func, rhp->func)
-	),
-
-	TP_printk("%s rhp=%p func=%pf",
-		  __get_str(rcuname), __entry->rhp, __entry->func)
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(void *, rhp, rhp)
+		ctf_integer(void *, func, rhp->func)
+	)
 )
 
 /*
@@ -604,20 +440,11 @@ LTTNG_TRACEPOINT_EVENT(rcu_invoke_kfree_callback,
 
 	TP_ARGS(rcuname, rhp, offset),
 
-	TP_STRUCT__entry(
-		__string(rcuname, rcuname)
-		__field(void *, rhp)
-		__field(unsigned long, offset)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(rcuname, rcuname)
-		tp_assign(rhp, rhp)
-		tp_assign(offset, offset)
-	),
-
-	TP_printk("%s rhp=%p func=%ld",
-		  __get_str(rcuname), __entry->rhp, __entry->offset)
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(void *, rhp, rhp)
+		ctf_integer(unsigned long, offset, offset)
+	)
 )
 
 /*
@@ -654,44 +481,21 @@ LTTNG_TRACEPOINT_EVENT(rcu_batch_end,
 	TP_ARGS(rcuname, callbacks_invoked),
 #endif
 
-	TP_STRUCT__entry(
-		__string(rcuname, rcuname)
-		__field(int, callbacks_invoked)
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(int, callbacks_invoked, callbacks_invoked)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0))
-		__field(char, cb)
-		__field(char, nr)
-		__field(char, iit)
-		__field(char, risk)
+		ctf_integer(char, cb, cb)
+		ctf_integer(char, nr, nr)
+		ctf_integer(char, iit, iit)
+		ctf_integer(char, risk, risk)
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
-		__field(bool, cb)
-		__field(bool, nr)
-		__field(bool, iit)
-		__field(bool, risk)
+		ctf_integer(bool, cb, cb)
+		ctf_integer(bool, nr, nr)
+		ctf_integer(bool, iit, iit)
+		ctf_integer(bool, risk, risk)
 #endif
-	),
-
-	TP_fast_assign(
-		tp_strcpy(rcuname, rcuname)
-		tp_assign(callbacks_invoked, callbacks_invoked)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
-		tp_assign(cb, cb)
-		tp_assign(nr, nr)
-		tp_assign(iit, iit)
-		tp_assign(risk, risk)
-#endif
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
-	TP_printk("%s CBs-invoked=%d idle=%c%c%c%c",
-		  __get_str(rcuname), __entry->callbacks_invoked,
-		  __entry->cb ? 'C' : '.',
-		  __entry->nr ? 'S' : '.',
-		  __entry->iit ? 'I' : '.',
-		  __entry->risk ? 'R' : '.')
-#else
-	TP_printk("%s CBs-invoked=%d",
-		  __get_str(rcuname), __entry->callbacks_invoked)
-#endif
+	)
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
@@ -718,34 +522,15 @@ LTTNG_TRACEPOINT_EVENT(rcu_torture_read,
 	TP_ARGS(rcutorturename, rhp),
 #endif
 
-	TP_STRUCT__entry(
-		__string(rcutorturename, rcutorturename)
-		__field(struct rcu_head *, rhp)
+	TP_FIELDS(
+		ctf_string(rcutorturename, rcutorturename)
+		ctf_integer(struct rcu_head *, rhp, rhp)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-		__field(unsigned long, secs)
-		__field(unsigned long, c_old)
-		__field(unsigned long, c)
+		ctf_integer(unsigned long, secs, secs)
+		ctf_integer(unsigned long, c_old, c_old)
+		ctf_integer(unsigned long, c, c)
 #endif
-	),
-
-	TP_fast_assign(
-		tp_strcpy(rcutorturename, rcutorturename)
-		tp_assign(rhp, rhp)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-		tp_assign(secs, secs)
-		tp_assign(c_old, c_old)
-		tp_assign(c, c)
-#endif
-	),
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-	TP_printk("%s torture read %p %luus c: %lu %lu",
-		  __entry->rcutorturename, __entry->rhp,
-		  __entry->secs, __entry->c_old, __entry->c)
-#else
-	TP_printk("%s torture read %p",
-		  __get_str(rcutorturename), __entry->rhp)
-#endif
+	)
 )
 #endif
 
@@ -777,25 +562,13 @@ LTTNG_TRACEPOINT_EVENT(rcu_barrier,
 
 	TP_ARGS(rcuname, s, cpu, cnt, done),
 
-	TP_STRUCT__entry(
-		__string(rcuname, rcuname)
-		__string(s, s)
-		__field(int, cpu)
-		__field(int, cnt)
-		__field(unsigned long, done)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(rcuname, rcuname)
-		tp_strcpy(s, s)
-		tp_assign(cpu, cpu)
-		tp_assign(cnt, cnt)
-		tp_assign(done, done)
-	),
-
-	TP_printk("%s %s cpu %d remaining %d # %lu",
-		  __get_str(rcuname), __get_str(s), __entry->cpu, __entry->cnt,
-		  __entry->done)
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_string(s, s)
+		ctf_integer(int, cpu, cpu)
+		ctf_integer(int, cnt, cnt)
+		ctf_integer(unsigned long, done, done)
+	)
 )
 #endif
 

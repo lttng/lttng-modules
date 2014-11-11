@@ -224,36 +224,31 @@ int lttng_context_init(void)
 {
 	int ret;
 
-	ret = lttng_add_vpid_to_ctx(&lttng_static_ctx);
+	ret = lttng_add_hostname_to_ctx(&lttng_static_ctx);
 	if (ret) {
 		printk(KERN_WARNING "Cannot add context lttng_add_procname_to_ctx");
-	}
-#if 0	//TODO
-	ret = lttng_add_pid_to_ctx(&lttng_static_ctx);
-	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_pthread_id_to_ctx");
-	}
-	ret = lttng_add_procname_to_ctx(&lttng_static_ctx);
-	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_vtid_to_ctx");
-	}
-	ret = lttng_add_prio_to_ctx(&lttng_static_ctx);
-	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_vpid_to_ctx");
 	}
 	ret = lttng_add_nice_to_ctx(&lttng_static_ctx);
 	if (ret) {
 		printk(KERN_WARNING "Cannot add context lttng_add_procname_to_ctx");
 	}
-	ret = lttng_add_tid_to_ctx(&lttng_static_ctx);
+	ret = lttng_add_pid_to_ctx(&lttng_static_ctx);
 	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_procname_to_ctx");
-	}
-	ret = lttng_add_vtid_to_ctx(&lttng_static_ctx);
-	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_procname_to_ctx");
+		printk(KERN_WARNING "Cannot add context lttng_add_pthread_id_to_ctx");
 	}
 	ret = lttng_add_ppid_to_ctx(&lttng_static_ctx);
+	if (ret) {
+		printk(KERN_WARNING "Cannot add context lttng_add_procname_to_ctx");
+	}
+	ret = lttng_add_prio_to_ctx(&lttng_static_ctx);
+	if (ret) {
+		printk(KERN_WARNING "Cannot add context lttng_add_vpid_to_ctx");
+	}
+	ret = lttng_add_procname_to_ctx(&lttng_static_ctx);
+	if (ret) {
+		printk(KERN_WARNING "Cannot add context lttng_add_vtid_to_ctx");
+	}
+	ret = lttng_add_tid_to_ctx(&lttng_static_ctx);
 	if (ret) {
 		printk(KERN_WARNING "Cannot add context lttng_add_procname_to_ctx");
 	}
@@ -261,11 +256,15 @@ int lttng_context_init(void)
 	if (ret) {
 		printk(KERN_WARNING "Cannot add context lttng_add_procname_to_ctx");
 	}
-	ret = lttng_add_hostname_to_ctx(&lttng_static_ctx);
+	ret = lttng_add_vtid_to_ctx(&lttng_static_ctx);
 	if (ret) {
 		printk(KERN_WARNING "Cannot add context lttng_add_procname_to_ctx");
 	}
-#endif
+	ret = lttng_add_vpid_to_ctx(&lttng_static_ctx);
+	if (ret) {
+		printk(KERN_WARNING "Cannot add context lttng_add_procname_to_ctx");
+	}
+	/* TODO: perf counters for filtering */
 	return 0;
 }
 

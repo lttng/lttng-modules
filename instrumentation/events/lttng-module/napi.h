@@ -16,18 +16,10 @@ LTTNG_TRACEPOINT_EVENT(napi_poll,
 
 	TP_ARGS(napi),
 
-	TP_STRUCT__entry(
-		__field(	struct napi_struct *,	napi)
-		__string(	dev_name, napi->dev ? napi->dev->name : NO_DEV)
-	),
-
-	TP_fast_assign(
-		tp_assign(napi, napi)
-		tp_strcpy(dev_name, napi->dev ? napi->dev->name : NO_DEV)
-	),
-
-	TP_printk("napi poll on napi struct %p for device %s",
-		__entry->napi, __get_str(dev_name))
+	TP_FIELDS(
+		ctf_integer(struct napi_struct *, napi, napi)
+		ctf_string(dev_name, napi->dev ? napi->dev->name : NO_DEV)
+	)
 )
 
 #undef NO_DEV

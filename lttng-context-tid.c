@@ -50,6 +50,16 @@ void tid_record(struct lttng_ctx_field *field,
 	chan->ops->event_write(ctx, &tid, sizeof(tid));
 }
 
+static
+void tid_get_value(struct lttng_ctx_field *field,
+		union lttng_ctx_value *value)
+{
+	pid_t tid;
+
+	tid = task_pid_nr(current);
+	value->s64 = tid;
+}
+
 int lttng_add_tid_to_ctx(struct lttng_ctx **ctx)
 {
 	struct lttng_ctx_field *field;
@@ -71,6 +81,7 @@ int lttng_add_tid_to_ctx(struct lttng_ctx **ctx)
 	field->event_field.type.u.basic.integer.encoding = lttng_encode_none;
 	field->get_size = tid_get_size;
 	field->record = tid_record;
+	field->get_value = tid_get_value;
 	lttng_context_update(*ctx);
 	wrapper_vmalloc_sync_all();
 	return 0;

@@ -50,6 +50,13 @@ void nice_record(struct lttng_ctx_field *field,
 	chan->ops->event_write(ctx, &nice, sizeof(nice));
 }
 
+static
+void nice_get_value(struct lttng_ctx_field *field,
+		union lttng_ctx_value *value)
+{
+	value->s64 = task_nice(current);
+}
+
 int lttng_add_nice_to_ctx(struct lttng_ctx **ctx)
 {
 	struct lttng_ctx_field *field;
@@ -71,6 +78,7 @@ int lttng_add_nice_to_ctx(struct lttng_ctx **ctx)
 	field->event_field.type.u.basic.integer.encoding = lttng_encode_none;
 	field->get_size = nice_get_size;
 	field->record = nice_record;
+	field->get_value = nice_get_value;
 	lttng_context_update(*ctx);
 	wrapper_vmalloc_sync_all();
 	return 0;

@@ -9,13 +9,9 @@
 LTTNG_TRACEPOINT_EVENT(lttng_logger,
 	TP_PROTO(const char __user *text, size_t len),
 	TP_ARGS(text, len),
-	TP_STRUCT__entry(
-		__dynamic_array_text(char, msg, len)
-	),
-	TP_fast_assign(
-		tp_memcpy_dyn_from_user(msg, text)
-	),
-	TP_printk("")
+	TP_FIELDS(
+		ctf_user_sequence_text(char, msg, text, size_t, len)
+	)
 )
 
 #endif /* LTTNG_TRACE_LTTNG_H */

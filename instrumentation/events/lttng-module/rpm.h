@@ -23,51 +23,32 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpm_internal,
 
 	TP_ARGS(dev, flags),
 
-	TP_STRUCT__entry(
-		__string(       name,		dev_name(dev)	)
-		__field(        int,            flags           )
-		__field(        int ,   	usage_count	)
-		__field(        int ,   	disable_depth   )
-		__field(        int ,   	runtime_auto	)
-		__field(        int ,   	request_pending	)
-		__field(        int ,   	irq_safe	)
-		__field(        int ,   	child_count 	)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, dev_name(dev))
-		tp_assign(flags, flags)
-		tp_assign(usage_count, atomic_read(&dev->power.usage_count))
-		tp_assign(disable_depth, dev->power.disable_depth)
-		tp_assign(runtime_auto, dev->power.runtime_auto)
-		tp_assign(request_pending, dev->power.request_pending)
-		tp_assign(irq_safe, dev->power.irq_safe)
-		tp_assign(child_count, atomic_read(&dev->power.child_count))
-	),
-
-	TP_printk("%s flags-%x cnt-%-2d dep-%-2d auto-%-1d p-%-1d"
-			" irq-%-1d child-%d",
-			__get_str(name), __entry->flags,
-			__entry->usage_count,
-			__entry->disable_depth,
-			__entry->runtime_auto,
-			__entry->request_pending,
-			__entry->irq_safe,
-			__entry->child_count
-		 )
+	TP_FIELDS(
+		ctf_string(name, dev_name(dev))
+		ctf_integer(int, flags, flags)
+		ctf_integer(int, usage_count, atomic_read(&dev->power.usage_count))
+		ctf_integer(int, disable_depth, dev->power.disable_depth)
+		ctf_integer(int, runtime_auto, dev->power.runtime_auto)
+		ctf_integer(int, request_pending, dev->power.request_pending)
+		ctf_integer(int, irq_safe, dev->power.irq_safe)
+		ctf_integer(int, child_count, atomic_read(&dev->power.child_count))
+	)
 )
+
 LTTNG_TRACEPOINT_EVENT_INSTANCE(rpm_internal, rpm_suspend,
 
 	TP_PROTO(struct device *dev, int flags),
 
 	TP_ARGS(dev, flags)
 )
+
 LTTNG_TRACEPOINT_EVENT_INSTANCE(rpm_internal, rpm_resume,
 
 	TP_PROTO(struct device *dev, int flags),
 
 	TP_ARGS(dev, flags)
 )
+
 LTTNG_TRACEPOINT_EVENT_INSTANCE(rpm_internal, rpm_idle,
 
 	TP_PROTO(struct device *dev, int flags),
@@ -79,20 +60,11 @@ LTTNG_TRACEPOINT_EVENT(rpm_return_int,
 	TP_PROTO(struct device *dev, unsigned long ip, int ret),
 	TP_ARGS(dev, ip, ret),
 
-	TP_STRUCT__entry(
-		__string(       name,		dev_name(dev))
-		__field(	unsigned long,		ip	)
-		__field(	int,			ret	)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, dev_name(dev))
-		tp_assign(ip, ip)
-		tp_assign(ret, ret)
-	),
-
-	TP_printk("%pS:%s ret=%d", (void *)__entry->ip, __get_str(name),
-		__entry->ret)
+	TP_FIELDS(
+		ctf_string(name, dev_name(dev))
+		ctf_integer(unsigned long, ip, ip)
+		ctf_integer(int, ret, ret)
+	)
 )
 
 #endif /* LTTNG_TRACE_RUNTIME_POWER_H */

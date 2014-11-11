@@ -121,8 +121,10 @@ struct estack_entry {
 
 		struct {
 			const char *str;
+			const char __user *user_str;
 			size_t seq_len;
 			int literal;		/* is string literal ? */
+			int user;		/* is string from userspace ? */
 		} s;
 	} u;
 };

@@ -56,6 +56,22 @@ void vtid_record(struct lttng_ctx_field *field,
 	chan->ops->event_write(ctx, &vtid, sizeof(vtid));
 }
 
+static
+void vtid_get_value(struct lttng_ctx_field *field,
+		union lttng_ctx_value *value)
+{
+	pid_t vtid;
+
+	/*
+	 * nsproxy can be NULL when scheduled out of exit.
+	 */
+	if (!current->nsproxy)
+		vtid = 0;
+	else
+		vtid = task_pid_vnr(current);
+	value->s64 = vtid;
+}
+
 int lttng_add_vtid_to_ctx(struct lttng_ctx **ctx)
 {
 	struct lttng_ctx_field *field;
@@ -77,6 +93,7 @@ int lttng_add_vtid_to_ctx(struct lttng_ctx **ctx)
 	field->event_field.type.u.basic.integer.encoding = lttng_encode_none;
 	field->get_size = vtid_get_size;
 	field->record = vtid_record;
+	field->get_value = vtid_get_value;
 	lttng_context_update(*ctx);
 	wrapper_vmalloc_sync_all();
 	return 0;
