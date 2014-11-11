@@ -69,7 +69,7 @@
 
 #undef _ctf_sequence_encoded
 #define _ctf_sequence_encoded(_type, _item, _src, _length_type, \
-			_src_length, _encoding, _base, _user, _nowrite)
+			_src_length, _encoding, _byte_order, _base, _user, _nowrite)
 
 #undef _ctf_string
 #define _ctf_string(_item, _src, _user, _nowrite)
@@ -104,6 +104,9 @@
 
 #undef ctf_sequence_hex
 #define ctf_sequence_hex(_type, _item, _src, _length_type, _src_length)
+
+#undef ctf_sequence_network
+#define ctf_sequence_network(_type, _item, _src, _length_type, _src_length)
 
 #undef ctf_sequence_text
 #define ctf_sequence_text(_type, _item, _src, _length_type, _src_length)

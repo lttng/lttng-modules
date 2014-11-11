@@ -92,9 +92,7 @@ printf \
 
 printf \
 'SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(syscalls_noargs,\n'\
-'	TP_STRUCT__entry(),\n'\
-'	TP_fast_assign(),\n'\
-'	TP_printk()\n'\
+'	TP_FIELDS()\n'\
 ')\n'\
 	>> ${HEADER}
 
@@ -119,9 +117,7 @@ perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) '\
 'SC_LTTNG_TRACEPOINT_EVENT($1,\n'\
 '	TP_PROTO(sc_exit(long ret)),\n'\
 '	TP_ARGS(sc_exit(ret)),\n'\
-'	TP_STRUCT__entry(sc_exit(__field(long, ret))),\n'\
-'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret))),\n'\
-'	TP_printk()\n'\
+'	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)))\n'\
 ')\n'\
 '#endif/g'\
 	${TMPFILE} >> ${HEADER}
@@ -152,9 +148,7 @@ while read LINE; do
 'SC_LTTNG_TRACEPOINT_EVENT($1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $5),\n'\
 '	TP_ARGS(sc_exit(ret,) $5),\n'\
-'	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $5))),\n'\
-'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) '"${ARG1}"'(tp_assign($4, $5, $5))),\n'\
-'	TP_printk()\n'\
+'	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) '"${ARG1}"'(ctf_integer($4, $5, $5)))\n'\
 ')\n'\
 '#endif/g'\
 		${TMPFILE2} >> ${HEADER}
@@ -180,9 +174,7 @@ while read LINE; do
 'SC_LTTNG_TRACEPOINT_EVENT($1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $6, $5 $7),\n'\
 '	TP_ARGS(sc_exit(ret,) $6, $7),\n'\
-'	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $6)) '"${ARG2}"'(__field($5, $7))),\n'\
-'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) '"${ARG1}"'(tp_assign($4, $6, $6)) '"${ARG2}"'(tp_assign($5, $7, $7))),\n'\
-'	TP_printk()\n'\
+'	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) '"${ARG1}"'(ctf_integer($4, $6, $6)) '"${ARG2}"'(ctf_integer($5, $7, $7)))\n'\
 ')\n'\
 '#endif/g'\
 		${TMPFILE2} >> ${HEADER}
@@ -209,9 +201,7 @@ while read LINE; do
 'SC_LTTNG_TRACEPOINT_EVENT($1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $7, $5 $8, $6 $9),\n'\
 '	TP_ARGS(sc_exit(ret,) $7, $8, $9),\n'\
-'	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $7)) '"${ARG2}"'(__field($5, $8)) '"${ARG3}"'(__field($6, $9))),\n'\
-'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) '"${ARG1}"'(tp_assign($4, $7, $7)) '"${ARG2}"'(tp_assign($5, $8, $8)) '"${ARG3}"'(tp_assign($6, $9, $9))),\n'\
-'	TP_printk()\n'\
+'	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) '"${ARG1}"'(ctf_integer($4, $7, $7)) '"${ARG2}"'(ctf_integer($5, $8, $8)) '"${ARG3}"'(ctf_integer($6, $9, $9)))\n'\
 ')\n'\
 '#endif/g'\
 		${TMPFILE2} >> ${HEADER}
@@ -240,9 +230,7 @@ while read LINE; do
 'SC_LTTNG_TRACEPOINT_EVENT($1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $8, $5 $9, $6 $10, $7 $11),\n'\
 '	TP_ARGS(sc_exit(ret,) $8, $9, $10, $11),\n'\
-'	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $8)) '"${ARG2}"'(__field($5, $9)) '"${ARG3}"'(__field($6, $10)) '"${ARG4}"'(__field($7, $11))),\n'\
-'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) '"${ARG1}"'(tp_assign($4, $8, $8)) '"${ARG2}"'(tp_assign($5, $9, $9)) '"${ARG3}"'(tp_assign($6, $10, $10)) '"${ARG4}"'(tp_assign($7, $11, $11))),\n'\
-'	TP_printk()\n'\
+'	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) '"${ARG1}"'(ctf_integer($4, $8, $8)) '"${ARG2}"'(ctf_integer($5, $9, $9)) '"${ARG3}"'(ctf_integer($6, $10, $10)) '"${ARG4}"'(ctf_integer($7, $11, $11)))\n'\
 ')\n'\
 '#endif/g'\
 		${TMPFILE2} >> ${HEADER}
@@ -271,9 +259,7 @@ while read LINE; do
 'SC_LTTNG_TRACEPOINT_EVENT($1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $9, $5 $10, $6 $11, $7 $12, $8 $13),\n'\
 '	TP_ARGS(sc_exit(ret,) $9, $10, $11, $12, $13),\n'\
-'	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $9)) '"${ARG2}"'(__field($5, $10)) '"${ARG3}"'(__field($6, $11)) '"${ARG4}"'(__field($7, $12)) '"${ARG5}"'(__field($8, $13))),\n'\
-'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) '"${ARG1}"'(tp_assign($4, $9, $9)) '"${ARG2}"'(tp_assign($5, $10, $10)) '"${ARG3}"'(tp_assign($6, $11, $11)) '"${ARG4}"'(tp_assign($7, $12, $12)) '"${ARG5}"'(tp_assign($8, $13, $13))),\n'\
-'	TP_printk()\n'\
+'	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) '"${ARG1}"'(ctf_integer($4, $9, $9)) '"${ARG2}"'(ctf_integer($5, $10, $10)) '"${ARG3}"'(ctf_integer($6, $11, $11)) '"${ARG4}"'(ctf_integer($7, $12, $12)) '"${ARG5}"'(ctf_integer($8, $13, $13)))\n'\
 ')\n'\
 '#endif/g'\
 	${TMPFILE2} >> ${HEADER}
@@ -304,9 +290,7 @@ while read LINE; do
 'SC_LTTNG_TRACEPOINT_EVENT($1,\n'\
 '	TP_PROTO(sc_exit(long ret,) $4 $10, $5 $11, $6 $12, $7 $13, $8 $14, $9 $15),\n'\
 '	TP_ARGS(sc_exit(ret,) $10, $11, $12, $13, $14, $15),\n'\
-'	TP_STRUCT__entry(sc_exit(__field(long, ret)) '"${ARG1}"'(__field($4, $10)) '"${ARG2}"'(__field($5, $11)) '"${ARG3}"'(__field($6, $12)) '"${ARG4}"'(__field($7, $13)) '"${ARG5}"'(__field($8, $14)) '"${ARG6}"'(__field($9, $15))),\n'\
-'	TP_fast_assign(sc_exit(tp_assign(long, ret, ret)) '"${ARG1}"'(tp_assign($4, $10, $10)) '"${ARG2}"'(tp_assign($5, $11, $11)) '"${ARG3}"'(tp_assign($6, $12, $12)) '"${ARG4}"'(tp_assign($7, $13, $13)) '"${ARG5}"'(tp_assign($8, $14, $14)) '"${ARG6}"'(tp_assign($9, $15, $15))),\n'\
-'	TP_printk()\n'\
+'	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) '"${ARG1}"'(ctf_integer($4, $10, $10)) '"${ARG2}"'(ctf_integer($5, $11, $11)) '"${ARG3}"'(ctf_integer($6, $12, $12)) '"${ARG4}"'(ctf_integer($7, $13, $13)) '"${ARG5}"'(ctf_integer($8, $14, $14)) '"${ARG6}"'(ctf_integer($9, $15, $15)))\n'\
 ')\n'\
 '#endif/g'\
 	${TMPFILE2} >> ${HEADER}
@@ -377,30 +361,20 @@ echo -n \
 # or *put_old* or *type*
 cp -f ${HEADER} ${TMPFILE}
 rm -f ${HEADER}
-perl -p -e 's/__field\(([^,)]*char \*), ([^\)]*)(name|file|path|root|put_old|type)([^\)]*)\)/__string_from_user($2$3$4, $2$3$4)/g'\
-	${TMPFILE} >> ${HEADER}
-cp -f ${HEADER} ${TMPFILE}
-rm -f ${HEADER}
-perl -p -e 's/tp_assign\(([^,)]*char \*), ([^,]*)(name|file|path|root|put_old|type)([^,]*), ([^\)]*)\)/tp_copy_string_from_user($2$3$4, $5)/g'\
+perl -p -e 's/ctf_integer\(([^,)]*char \*), ([^\)]*)(name|file|path|root|put_old|type)([^\)]*)\)/ctf_user_string($2$3$4)/g'\
 	${TMPFILE} >> ${HEADER}
 
 #prettify addresses heuristics.
 #field names with addr or ptr
 cp -f ${HEADER} ${TMPFILE}
 rm -f ${HEADER}
-perl -p -e 's/__field\(([^,)]*), ([^,)]*addr|[^,)]*ptr)([^),]*)\)/__field_hex($1, $2$3)/g'\
+perl -p -e 's/ctf_integer\(([^,)]*), ([^,)]*addr|[^,)]*ptr)([^),]*)\)/ctf_integer_hex($1, $2$3, $2$3)/g'\
 	${TMPFILE} >> ${HEADER}
 
 #field types ending with '*'
 cp -f ${HEADER} ${TMPFILE}
 rm -f ${HEADER}
-perl -p -e 's/__field\(([^,)]*\*), ([^),]*)\)/__field_hex($1, $2)/g'\
-	${TMPFILE} >> ${HEADER}
-
-#strip the extra type information from tp_assign.
-cp -f ${HEADER} ${TMPFILE}
-rm -f ${HEADER}
-perl -p -e 's/tp_assign\(([^,)]*), ([^,]*), ([^\)]*)\)/tp_assign($2, $3)/g'\
+perl -p -e 's/ctf_integer\(([^,)]*\*), ([^),]*)\)/ctf_integer_hex($1, $2, $2)/g'\
 	${TMPFILE} >> ${HEADER}
 
 rm -f ${INPUTFILE}.tmp

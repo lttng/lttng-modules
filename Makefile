@@ -46,9 +46,9 @@ obj-m += lttng-statedump.o
 lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o \
 			wrapper/fdtable.o
 
-#ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
-#lttng-tracer-objs += lttng-syscalls.o
-#endif # CONFIG_HAVE_SYSCALL_TRACEPOINTS
+ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
+lttng-tracer-objs += lttng-syscalls.o
+endif # CONFIG_HAVE_SYSCALL_TRACEPOINTS
 
 ifneq ($(CONFIG_PERF_EVENTS),)
 lttng-tracer-objs += $(shell \

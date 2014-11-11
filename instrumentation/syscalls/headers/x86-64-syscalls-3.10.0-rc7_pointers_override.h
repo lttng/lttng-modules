@@ -39,27 +39,16 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(connect,
 		skip_code:
 		)
 	),
-	TP_STRUCT__entry(
-		sc_exit(__field(long, ret))
-		sc_in(__field(int, fd))
-		sc_in(__field_hex(struct sockaddr *, uservaddr))
-		sc_in(__field_hex(int, addrlen))
-		sc_in(__field(int, family))
-		sc_in(__field_network(uint16_t, dport))
-		sc_in(__dynamic_array_network(uint8_t, v4addr, tp_locvar->v4addr_len))
-		sc_in(__dynamic_array_network_hex(uint16_t, v6addr, tp_locvar->v6addr_len))
-	),
-	TP_fast_assign(
-		sc_exit(tp_assign(ret, ret))
-		sc_in(tp_assign(fd, fd))
-		sc_in(tp_assign(uservaddr, uservaddr))
-		sc_in(tp_assign(addrlen, addrlen))
-		sc_in(tp_assign(family, tp_locvar->sa_family))
-		sc_in(tp_assign(dport, tp_locvar->dport))
-		sc_in(tp_memcpy_dyn(v4addr, &tp_locvar->v4addr))
-		sc_in(tp_memcpy_dyn(v6addr, &tp_locvar->v6addr))
-	),
-	TP_printk()
+	TP_FIELDS(
+		sc_exit(ctf_integer(long, ret, ret))
+		sc_in(ctf_integer(int, fd, fd))
+		sc_in(ctf_integer_hex(struct sockaddr *, uservaddr, uservaddr))
+		sc_in(ctf_integer_hex(int, addrlen, addrlen))
+		sc_in(ctf_integer(int, family, tp_locvar->sa_family))
+		sc_in(ctf_integer_network(uint16_t, dport, tp_locvar->dport))
+		sc_in(ctf_sequence_network(uint8_t, v4addr, &tp_locvar->v4addr, int, tp_locvar->v4addr_len))
+		sc_in(ctf_sequence_network(uint16_t, v6addr, &tp_locvar->v6addr, int, tp_locvar->v6addr_len))
+	)
 )
 
 #define OVERRIDE_64_accept
@@ -105,27 +94,16 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(accept,
 		skip_code:
 		)
 	),
-	TP_STRUCT__entry(
-		sc_exit(__field(long, ret))
-		sc_in(__field(int, fd))
-		sc_in(__field_hex(struct sockaddr *, upeer_sockaddr))
-		sc_inout(__field(int, upeer_addrlen))
-		sc_out(__field(int, family))
-		sc_out(__field_network(uint16_t, sport))
-		sc_out(__dynamic_array_network(uint8_t, v4addr, tp_locvar->v4addr_len))
-		sc_out(__dynamic_array_network_hex(uint16_t, v6addr, tp_locvar->v6addr_len))
-	),
-	TP_fast_assign(
-		sc_exit(tp_assign(ret, ret))
-		sc_in(tp_assign(fd, fd))
-		sc_in(tp_assign(upeer_sockaddr, upeer_sockaddr))
-		sc_inout(tp_assign(upeer_addrlen, tp_locvar->uaddr_len))
-		sc_out(tp_assign(family, tp_locvar->sa_family))
-		sc_out(tp_assign(sport, tp_locvar->sport))
-		sc_out(tp_memcpy_dyn(v4addr, &tp_locvar->v4addr))
-		sc_out(tp_memcpy_dyn(v6addr, &tp_locvar->v6addr))
-	),
-	TP_printk()
+	TP_FIELDS(
+		sc_exit(ctf_integer(long, ret, ret))
+		sc_in(ctf_integer(int, fd, fd))
+		sc_in(ctf_integer_hex(struct sockaddr *, upeer_sockaddr, upeer_sockaddr))
+		sc_inout(ctf_integer(int, upeer_addrlen, tp_locvar->uaddr_len))
+		sc_out(ctf_integer(int, family, tp_locvar->sa_family))
+		sc_out(ctf_integer_network(uint16_t, sport, tp_locvar->sport))
+		sc_in(ctf_sequence_network(uint8_t, v4addr, &tp_locvar->v4addr, int, tp_locvar->v4addr_len))
+		sc_in(ctf_sequence_network(uint16_t, v6addr, &tp_locvar->v6addr, int, tp_locvar->v6addr_len))
+	)
 )
 
 #else	/* CREATE_SYSCALL_TABLE */

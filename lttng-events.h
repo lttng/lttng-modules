@@ -31,9 +31,6 @@
 #include "lttng-abi.h"
 #include "lttng-abi-old.h"
 
-/* FIXME test */
-#undef CONFIG_HAVE_SYSCALL_TRACEPOINTS
-
 #define lttng_is_signed_type(type)	(((type)(-1)) < 0)
 
 struct lttng_channel;

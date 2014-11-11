@@ -182,7 +182,7 @@ void trace_##_name(void *__data);
 #undef _ctf_sequence_encoded
 #define _ctf_sequence_encoded(_type, _item, _src,		\
 			_length_type, _src_length, _encoding,	\
-			_base, _user, _nowrite)			\
+			_byte_order, _base, _user, _nowrite)	\
 	{							\
 	  .name = #_item,					\
 	  .type =						\
@@ -193,7 +193,7 @@ void trace_##_name(void *__data);
 			  .sequence =				\
 				{				\
 				  .length_type = __type_integer(_length_type, __BYTE_ORDER, 10, none), \
-				  .elem_type = __type_integer(_type, __BYTE_ORDER, _base, _encoding), \
+				  .elem_type = __type_integer(_type, _byte_order, _base, _encoding), \
 				},				\
 			},					\
 		},						\
@@ -276,7 +276,7 @@ static void __event_probe__##_name(void *__data);
 
 #undef _ctf_sequence_encoded
 #define _ctf_sequence_encoded(_type, _item, _src, _length_type,			\
-			_src_length, _encoding, _base, _user, _nowrite)		\
+			_src_length, _encoding, _byte_order, _base, _user, _nowrite) \
 	__event_len += lib_ring_buffer_align(__event_len, lttng_alignof(_length_type)); \
 	__event_len += sizeof(_length_type);				       \
 	__event_len += lib_ring_buffer_align(__event_len, lttng_alignof(_type)); \
@@ -444,7 +444,7 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len,	      \
 
 #undef _ctf_sequence_encoded
 #define _ctf_sequence_encoded(_type, _item, _src, _length_type,		       \
-			_src_length, _encoding, _base, _user, _nowrite)	       \
+			_src_length, _encoding, _byte_order, _base, _user, _nowrite) \
 	{								       \
 		unsigned long __ctf_tmp_ulong = (unsigned long) (_src_length); \
 		const void *__ctf_tmp_ptr = (_src);			       \
@@ -515,7 +515,7 @@ void __event_prepare_filter_stack__##_name(char *__stack_data,		      \
 
 #undef _ctf_sequence_encoded
 #define _ctf_sequence_encoded(_type, _item, _src, _length_type,			\
-			_src_length, _encoding, _base, _user, _nowrite)		\
+			_src_length, _encoding, _byte_order, _base, _user, _nowrite) \
 	__event_align = max_t(size_t, __event_align, lttng_alignof(_length_type)); \
 	__event_align = max_t(size_t, __event_align, lttng_alignof(_type));
 
@@ -602,7 +602,7 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 
 #undef _ctf_sequence_encoded
 #define _ctf_sequence_encoded(_type, _item, _src, _length_type,		\
-			_src_length, _encoding, _base, _user, _nowrite)	\
+			_src_length, _encoding, _byte_order, _base, _user, _nowrite) \
 	{								\
 		_length_type __tmpl = __stackvar.__dynamic_len[__dynamic_len_idx]; \
 		lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(_length_type));\
