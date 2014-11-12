@@ -1257,7 +1257,7 @@ struct lttng_enabler *lttng_enabler_create(enum lttng_enabler_type type,
 		sizeof(enabler->event_param));
 	enabler->chan = chan;
 	/* ctx left NULL */
-	enabler->enabled = 1;
+	enabler->enabled = 0;
 	enabler->evtype = LTTNG_TYPE_ENABLER;
 	mutex_lock(&sessions_mutex);
 	list_add(&enabler->node, &enabler->chan->session->enablers_head);
