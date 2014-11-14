@@ -232,6 +232,34 @@ LTTNG_TRACEPOINT_EVENT(kvm_fpu,
 	TP_printk("%s", __print_symbolic(__entry->load, kvm_fpu_load_symbol))
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
+
+LTTNG_TRACEPOINT_EVENT(kvm_age_page,
+	TP_PROTO(ulong gfn, int level, struct kvm_memory_slot *slot, int ref),
+	TP_ARGS(gfn, level, slot, ref),
+
+	TP_STRUCT__entry(
+		__field(        u64,    hva             )
+		__field(        u64,    gfn             )
+		__field(        u8,     level           )
+		__field(        u8,     referenced      )
+	),
+
+	TP_fast_assign(
+		tp_assign(gfn, gfn)
+		tp_assign(level, level)
+		tp_assign(hva, ((gfn - slot->base_gfn) <<
+			PAGE_SHIFT) + slot->userspace_addr)
+		tp_assign(referenced, ref)
+	),
+
+	TP_printk("hva %llx gfn %llx level %u %s",
+		__entry->hva, __entry->gfn, __entry->level,
+		__entry->referenced ? "YOUNG" : "OLD")
+)
+
+#else
+
 LTTNG_TRACEPOINT_EVENT(kvm_age_page,
 	TP_PROTO(ulong hva, struct kvm_memory_slot *slot, int ref),
 	TP_ARGS(hva, slot, ref),
@@ -253,6 +281,7 @@ LTTNG_TRACEPOINT_EVENT(kvm_age_page,
 		  __entry->hva, __entry->gfn,
 		  __entry->referenced ? "YOUNG" : "OLD")
 )
+#endif
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
