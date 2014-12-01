@@ -83,6 +83,7 @@ int lttng_add_ppid_to_ctx(struct lttng_ctx **ctx)
 	field->event_field.type.u.basic.integer.encoding = lttng_encode_none;
 	field->get_size = ppid_get_size;
 	field->record = ppid_record;
+	lttng_context_update(*ctx);
 	wrapper_vmalloc_sync_all();
 	return 0;
 }

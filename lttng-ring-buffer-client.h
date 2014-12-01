@@ -88,6 +88,7 @@ size_t ctx_get_size(size_t offset, struct lttng_ctx *ctx)
 
 	if (likely(!ctx))
 		return 0;
+	offset += lib_ring_buffer_align(offset, ctx->largest_align);
 	for (i = 0; i < ctx->nr_fields; i++)
 		offset += ctx->fields[i].get_size(offset);
 	return offset - orig_offset;
@@ -102,6 +103,7 @@ void ctx_record(struct lib_ring_buffer_ctx *bufctx,
 
 	if (likely(!ctx))
 		return;
+	lib_ring_buffer_align_ctx(bufctx, ctx->largest_align);
 	for (i = 0; i < ctx->nr_fields; i++)
 		ctx->fields[i].record(&ctx->fields[i], bufctx, chan);
 }
