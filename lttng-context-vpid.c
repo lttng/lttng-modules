@@ -77,6 +77,7 @@ int lttng_add_vpid_to_ctx(struct lttng_ctx **ctx)
 	field->event_field.type.u.basic.integer.encoding = lttng_encode_none;
 	field->get_size = vpid_get_size;
 	field->record = vpid_record;
+	lttng_context_update(*ctx);
 	wrapper_vmalloc_sync_all();
 	return 0;
 }
