@@ -167,6 +167,7 @@ struct lttng_ctx {
 	struct lttng_ctx_field *fields;
 	unsigned int nr_fields;
 	unsigned int allocated_fields;
+	size_t largest_align;	/* in bytes */
 };
 
 struct lttng_event_desc {
@@ -405,6 +406,7 @@ static inline int lttng_syscalls_unregister(struct lttng_channel *chan)
 #endif
 
 struct lttng_ctx_field *lttng_append_context(struct lttng_ctx **ctx);
+void lttng_context_update(struct lttng_ctx *ctx);
 int lttng_find_context(struct lttng_ctx *ctx, const char *name);
 void lttng_remove_context_field(struct lttng_ctx **ctx,
 				struct lttng_ctx_field *field);

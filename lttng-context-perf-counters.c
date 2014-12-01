@@ -253,6 +253,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	field->record = perf_counter_record;
 	field->u.perf_counter = perf_field;
 	perf_field->hp_enable = 1;
+	lttng_context_update(*ctx);
 
 	wrapper_vmalloc_sync_all();
 	return 0;

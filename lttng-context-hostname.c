@@ -89,6 +89,7 @@ int lttng_add_hostname_to_ctx(struct lttng_ctx **ctx)
 
 	field->get_size = hostname_get_size;
 	field->record = hostname_record;
+	lttng_context_update(*ctx);
 	wrapper_vmalloc_sync_all();
 	return 0;
 }
