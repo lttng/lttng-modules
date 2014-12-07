@@ -46,7 +46,8 @@ DEFINE_EVENT(mm_compaction_isolate_template, mm_compaction_isolate_freepages,
 	TP_ARGS(nr_scanned, nr_taken)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
+#if LTTNG_KERNEL_RANGE(3,14,25, 3,15,0) || \
+	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
 TRACE_EVENT(mm_compaction_migratepages,
 
 	TP_PROTO(unsigned long nr_all,
