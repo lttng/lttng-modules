@@ -1,3 +1,9 @@
+2014-12-12 LTTng modules 2.6.0-rc2
+	* Fix: compaction instrumentation update for 3.14.x stable kernels
+	* Fix: context alignment not properly handled
+	* Fix compilation on Linux kernel >= 3.18.0
+	* Fix: build for architectures without HAVE_SYSCALL_TRACEPOINTS
+
 2014-10-20 LTTng modules 2.6.0-rc1
 	* Expose lttng-modules ABI version ioctl
 	* Fix: syscall list ioctl number conflict
