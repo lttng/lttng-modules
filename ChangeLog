@@ -1,3 +1,7 @@
+2014-12-12 LTTng modules 2.5.2
+	* Fix: compaction instrumentation update for 3.14.x stable kernels
+	* Fix: context alignment not properly handled
+
 2014-10-20 LTTng modules 2.5.1
 	* Print build warning when writeback probe is disabled
 	* Fix compilation on Ubuntu 14.10
