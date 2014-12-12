@@ -1,3 +1,10 @@
+2014-12-12 LTTng modules 2.4.3
+	* Fix: compaction instrumentation update for 3.14.x stable kernels
+	* Fix: context alignment not properly handled
+	* Check for stale version.h files
+	* Fix: lttng-modules teardown NULL pointer OOPS
+	* Fix: handle concurrent flush vs get_next_subbuf on metadata cache
+
 2014-07-16 LTTng modules 2.4.2
 	* Fix: statedump handle oom case, handle errors
 	* Fix: correct typo in kernel version number
