@@ -46,7 +46,8 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_compaction_isolate_template, mm_compaction_is
 	TP_ARGS(nr_scanned, nr_taken)
 )
 
-#if LTTNG_KERNEL_RANGE(3,14,25, 3,15,0) || \
+#if LTTNG_KERNEL_RANGE(3,12,30, 3,13,0) || \
+	LTTNG_KERNEL_RANGE(3,14,25, 3,15,0) || \
 	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
 LTTNG_TRACEPOINT_EVENT(mm_compaction_migratepages,
 
