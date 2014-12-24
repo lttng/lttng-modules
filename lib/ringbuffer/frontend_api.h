@@ -30,6 +30,7 @@
  */
 
 #include "../../wrapper/ringbuffer/frontend.h"
+#include "../../wrapper/percpu-defs.h"
 #include <linux/errno.h>
 #include <linux/prefetch.h>
 
@@ -73,7 +74,7 @@ static inline
 void lib_ring_buffer_put_cpu(const struct lib_ring_buffer_config *config)
 {
 	barrier();
-	__get_cpu_var(lib_ring_buffer_nesting)--;
+	(*lttng_this_cpu_ptr(&lib_ring_buffer_nesting))--;
 	rcu_read_unlock_sched_notrace();
 }
 
