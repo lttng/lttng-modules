@@ -36,6 +36,7 @@
 
 #include "lib/bitfield.h"
 #include "wrapper/tracepoint.h"
+#include "wrapper/file.h"
 #include "lttng-events.h"
 
 #ifndef CONFIG_COMPAT
@@ -1269,7 +1270,7 @@ int lttng_abi_syscall_list(void)
 	struct file *syscall_list_file;
 	int file_fd, ret;
 
-	file_fd = get_unused_fd();
+	file_fd = lttng_get_unused_fd();
 	if (file_fd < 0) {
 		ret = file_fd;
 		goto fd_error;
