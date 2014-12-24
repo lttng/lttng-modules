@@ -36,6 +36,7 @@
 #include <linux/version.h>
 #include <asm/local.h>
 #include "../lttng-kernel-version.h"
+#include "percpu-defs.h"
 #include "random.h"
 
 #if LTTNG_KERNEL_RANGE(3,10,0, 3,10,14) || LTTNG_KERNEL_RANGE(3,11,0, 3,11,3)
@@ -97,7 +98,7 @@ static inline u64 trace_clock_monotonic_wrapper(void)
 	local_t *last_tsc;
 
 	/* Use fast nmi-safe monotonic clock provided by the Linux kernel. */
-	last_tsc = &__get_cpu_var(lttng_last_tsc);
+	last_tsc = lttng_this_cpu_ptr(&lttng_last_tsc);
 	last = local_read(last_tsc);
 	/*
 	 * Read "last" before "now". It is not strictly required, but it ensures

@@ -61,6 +61,7 @@
 #include "../../wrapper/ringbuffer/iterator.h"
 #include "../../wrapper/ringbuffer/nohz.h"
 #include "../../wrapper/atomic.h"
+#include "../../wrapper/percpu-defs.h"
 
 /*
  * Internal structure representing offsets to use at a sub-buffer switch.
@@ -498,16 +499,16 @@ static int notrace ring_buffer_tick_nohz_callback(struct notifier_block *nb,
 		raw_spin_unlock(&buf->raw_tick_nohz_spinlock);
 		break;
 	case TICK_NOHZ_STOP:
-		spin_lock(&__get_cpu_var(ring_buffer_nohz_lock));
+		spin_lock(lttng_this_cpu_ptr(&ring_buffer_nohz_lock));
 		lib_ring_buffer_stop_switch_timer(buf);
 		lib_ring_buffer_stop_read_timer(buf);
-		spin_unlock(&__get_cpu_var(ring_buffer_nohz_lock));
+		spin_unlock(lttng_this_cpu_ptr(&ring_buffer_nohz_lock));
 		break;
 	case TICK_NOHZ_RESTART:
-		spin_lock(&__get_cpu_var(ring_buffer_nohz_lock));
+		spin_lock(lttng_this_cpu_ptr(&ring_buffer_nohz_lock));
 		lib_ring_buffer_start_read_timer(buf);
 		lib_ring_buffer_start_switch_timer(buf);
-		spin_unlock(&__get_cpu_var(ring_buffer_nohz_lock));
+		spin_unlock(lttng_this_cpu_ptr(&ring_buffer_nohz_lock));
 		break;
 	}
 
