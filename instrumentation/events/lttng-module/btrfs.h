@@ -240,7 +240,19 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__inode, btrfs_inode_evict,
 #define show_map_type(type)			\
 	type, (type >= EXTENT_MAP_LAST_BYTE) ? "-" :  __show_map_type(type)
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
+
+#define show_map_flags(flag)						\
+	__print_flags(flag, "|",					\
+		{ (1 << EXTENT_FLAG_PINNED), 		"PINNED" 	},\
+		{ (1 << EXTENT_FLAG_COMPRESSED), 	"COMPRESSED" 	},\
+		{ (1 << EXTENT_FLAG_VACANCY), 		"VACANCY" 	},\
+		{ (1 << EXTENT_FLAG_PREALLOC), 		"PREALLOC" 	},\
+		{ (1 << EXTENT_FLAG_LOGGING),	 	"LOGGING" 	},\
+		{ (1 << EXTENT_FLAG_FILLING),	 	"FILLING" 	},\
+		{ (1 << EXTENT_FLAG_FS_MAPPING),	"FS_MAPPING"	})
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
 
 #define show_map_flags(flag)						\
 	__print_flags(flag, "|",					\
