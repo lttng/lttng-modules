@@ -34,6 +34,8 @@ inline int lttng_get_unused_fd(void)
 	return get_unused_fd_flags(0);
 }
 
+#define lttng_f_dentry	f_path.dentry
+
 #else /* #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0) */
 
 static
@@ -41,6 +43,8 @@ inline int lttng_get_unused_fd(void)
 {
 	return get_unused_fd();
 }
+
+#define lttng_f_dentry	f_dentry
 
 #endif /* #else #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0) */
 
