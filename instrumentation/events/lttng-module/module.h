@@ -84,7 +84,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(module_refcnt,
 
 	TP_fast_assign(
 		tp_assign(ip, ip)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
+		tp_assign(refcnt, atomic_read(&mod->refcnt))
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 		tp_assign(refcnt, __this_cpu_read(mod->refptr->incs) + __this_cpu_read(mod->refptr->decs))
 #else
 		tp_assign(refcnt, refcnt)
