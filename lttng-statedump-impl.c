@@ -57,6 +57,7 @@
 #include "wrapper/tracepoint.h"
 #include "wrapper/genhd.h"
 #include "wrapper/file.h"
+#include "wrapper/time.h"
 
 #ifdef CONFIG_LTTNG_HAS_LIST_IRQ
 #include <linux/irq.h>
@@ -214,18 +215,6 @@ int lttng_enumerate_network_ip_interface(struct lttng_session *session)
 	return 0;
 }
 #endif /* CONFIG_INET */
-
-#ifdef FD_ISSET	/* For old kernels lacking close_on_exec() */
-static inline bool lttng_close_on_exec(int fd, const struct fdtable *fdt)
-{
-	return FD_ISSET(fd, fdt->close_on_exec);
-}
-#else
-static inline bool lttng_close_on_exec(int fd, const struct fdtable *fdt)
-{
-	return close_on_exec(fd, fdt);
-}
-#endif
 
 static
 int lttng_dump_one_fd(const void *p, struct file *file, unsigned int fd)
