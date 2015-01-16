@@ -65,7 +65,7 @@
 	({								       \
 		BUILD_RUNTIME_BUG_ON((alignment) == 0			       \
 				   || ((alignment) & ((alignment) - 1)));      \
-		(((align_drift) - (alignment)) & ((alignment) - 1);	       \
+		(((align_drift) - (alignment)) & ((alignment) - 1));	       \
 	})
 
 #endif /* __KERNEL__ */
