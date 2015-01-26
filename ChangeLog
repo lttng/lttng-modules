@@ -1,3 +1,8 @@
+2015-01-26 LTTng modules 2.4.4
+	* Fix: missing parenthesis in offset_align_floor
+	* Fix compile error on kernel 3.0.101 with CONFIG_PERF_EVENTS
+	* Conditional compilation introduced by lttng-modules commit
+
 2014-12-12 LTTng modules 2.4.3
 	* Fix: compaction instrumentation update for 3.14.x stable kernels
 	* Fix: context alignment not properly handled
