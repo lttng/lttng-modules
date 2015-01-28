@@ -42,10 +42,10 @@
  * sessions_mutex across calls to create, destroy, add, and del
  * functions of this API.
  */
-struct lttng_pid_hash_node {
-	struct hlist_node hlist;
-	int pid;
-};
+int lttng_pid_tracker_get_node_pid(const struct lttng_pid_hash_node *node)
+{
+	return node->pid;
+}
 
 /*
  * Lookup performed from RCU read-side critical section (RCU sched),

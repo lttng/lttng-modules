@@ -336,6 +336,11 @@ struct lttng_pid_tracker {
 	struct hlist_head pid_hash[LTTNG_PID_TABLE_SIZE];
 };
 
+struct lttng_pid_hash_node {
+	struct hlist_node hlist;
+	int pid;
+};
+
 struct lttng_session {
 	int active;			/* Is trace session active ? */
 	int been_active;		/* Has trace session been active ? */
@@ -412,6 +417,7 @@ void lttng_probes_exit(void);
 int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 		struct channel *chan);
 
+int lttng_pid_tracker_get_node_pid(const struct lttng_pid_hash_node *node);
 struct lttng_pid_tracker *lttng_pid_tracker_create(void);
 void lttng_pid_tracker_destroy(struct lttng_pid_tracker *lpf);
 bool lttng_pid_tracker_lookup(struct lttng_pid_tracker *lpf, int pid);
@@ -420,6 +426,8 @@ int lttng_pid_tracker_del(struct lttng_pid_tracker *lpf, int pid);
 
 int lttng_session_track_pid(struct lttng_session *session, int pid);
 int lttng_session_untrack_pid(struct lttng_session *session, int pid);
+
+int lttng_session_list_tracker_pids(struct lttng_session *session);
 
 #if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
 int lttng_syscalls_register(struct lttng_channel *chan, void *filter);

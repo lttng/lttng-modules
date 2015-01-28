@@ -510,6 +510,8 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return lttng_session_track_pid(session, (int) arg);
 	case LTTNG_KERNEL_SESSION_UNTRACK_PID:
 		return lttng_session_untrack_pid(session, (int) arg);
+	case LTTNG_KERNEL_SESSION_LIST_TRACKER_PIDS:
+		return lttng_session_list_tracker_pids(session);
 	default:
 		return -ENOIOCTLCMD;
 	}

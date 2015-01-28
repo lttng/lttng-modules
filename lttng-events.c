@@ -28,6 +28,10 @@
 #include <linux/jiffies.h>
 #include <linux/utsname.h>
 #include <linux/err.h>
+#include <linux/seq_file.h>
+#include <linux/file.h>
+#include <linux/anon_inodes.h>
+#include "wrapper/file.h"
 #include "wrapper/uuid.h"
 #include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "wrapper/random.h"
@@ -657,6 +661,163 @@ int lttng_session_untrack_pid(struct lttng_session *session, int pid)
 	}
 unlock:
 	mutex_unlock(&sessions_mutex);
+	return ret;
+}
+
+static
+void *pid_list_start(struct seq_file *m, loff_t *pos)
+{
+	struct lttng_session *session = m->private;
+	struct lttng_pid_tracker *lpf;
+	struct lttng_pid_hash_node *e;
+	int iter = 0, i;
+
+	mutex_lock(&sessions_mutex);
+	lpf = session->pid_tracker;
+	if (lpf) {
+		for (i = 0; i < LTTNG_PID_TABLE_SIZE; i++) {
+			struct hlist_head *head = &lpf->pid_hash[i];
+
+			hlist_for_each_entry(e, head, hlist) {
+				if (iter++ >= *pos)
+					return e;
+			}
+		}
+	} else {
+		/* PID tracker disabled. */
+		if (iter >= *pos && iter == 0) {
+			return session;	/* empty tracker */
+		}
+		iter++;
+	}
+	/* End of list */
+	return NULL;
+}
+
+/* Called with sessions_mutex held. */
+static
+void *pid_list_next(struct seq_file *m, void *p, loff_t *ppos)
+{
+	struct lttng_session *session = m->private;
+	struct lttng_pid_tracker *lpf;
+	struct lttng_pid_hash_node *e;
+	int iter = 0, i;
+
+	(*ppos)++;
+	lpf = session->pid_tracker;
+	if (lpf) {
+		for (i = 0; i < LTTNG_PID_TABLE_SIZE; i++) {
+			struct hlist_head *head = &lpf->pid_hash[i];
+
+			hlist_for_each_entry(e, head, hlist) {
+				if (iter++ >= *ppos)
+					return e;
+			}
+		}
+	} else {
+		/* PID tracker disabled. */
+		if (iter >= *ppos && iter == 0)
+			return session;	/* empty tracker */
+		iter++;
+	}
+
+	/* End of list */
+	return NULL;
+}
+
+static
+void pid_list_stop(struct seq_file *m, void *p)
+{
+	mutex_unlock(&sessions_mutex);
+}
+
+static
+int pid_list_show(struct seq_file *m, void *p)
+{
+	int pid;
+
+	if (p == m->private) {
+		/* Tracker disabled. */
+		pid = -1;
+	} else {
+		const struct lttng_pid_hash_node *e = p;
+
+		pid = lttng_pid_tracker_get_node_pid(e);
+	}
+	seq_printf(m,	"process { pid = %d; };\n", pid);
+	return 0;
+}
+
+static
+const struct seq_operations lttng_tracker_pids_list_seq_ops = {
+	.start = pid_list_start,
+	.next = pid_list_next,
+	.stop = pid_list_stop,
+	.show = pid_list_show,
+};
+
+static
+int lttng_tracker_pids_list_open(struct inode *inode, struct file *file)
+{
+	return seq_open(file, &lttng_tracker_pids_list_seq_ops);
+}
+
+static
+int lttng_tracker_pids_list_release(struct inode *inode, struct file *file)
+{
+	struct seq_file *m = file->private_data;
+	struct lttng_session *session = m->private;
+	int ret;
+
+	WARN_ON_ONCE(!session);
+	ret = seq_release(inode, file);
+	if (!ret && session)
+		fput(session->file);
+	return ret;
+}
+
+const struct file_operations lttng_tracker_pids_list_fops = {
+	.owner = THIS_MODULE,
+	.open = lttng_tracker_pids_list_open,
+	.read = seq_read,
+	.llseek = seq_lseek,
+	.release = lttng_tracker_pids_list_release,
+};
+
+int lttng_session_list_tracker_pids(struct lttng_session *session)
+{
+	struct file *tracker_pids_list_file;
+	struct seq_file *m;
+	int file_fd, ret;
+
+	file_fd = lttng_get_unused_fd();
+	if (file_fd < 0) {
+		ret = file_fd;
+		goto fd_error;
+	}
+
+	tracker_pids_list_file = anon_inode_getfile("[lttng_tracker_pids_list]",
+					  &lttng_tracker_pids_list_fops,
+					  NULL, O_RDWR);
+	if (IS_ERR(tracker_pids_list_file)) {
+		ret = PTR_ERR(tracker_pids_list_file);
+		goto file_error;
+	}
+	ret = lttng_tracker_pids_list_fops.open(NULL, tracker_pids_list_file);
+	if (ret < 0)
+		goto open_error;
+	m = tracker_pids_list_file->private_data;
+	m->private = session;
+	fd_install(file_fd, tracker_pids_list_file);
+	atomic_long_inc(&session->file->f_count);
+
+	return file_fd;
+
+open_error:
+	fput(tracker_pids_list_file);
+file_error:
+	put_unused_fd(file_fd);
+fd_error:
 	return ret;
 }
 
