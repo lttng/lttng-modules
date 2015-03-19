@@ -12,6 +12,8 @@
 
 #ifndef _TRACE_WRITEBACK_DEF_
 #define _TRACE_WRITEBACK_DEF_
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,0,0))
 static inline struct backing_dev_info *inode_to_bdi(struct inode *inode)
 {
 	struct super_block *sb = inode->i_sb;
@@ -21,8 +23,26 @@ static inline struct backing_dev_info *inode_to_bdi(struct inode *inode)
 
 	return sb->s_bdi;
 }
+#endif /* #if (LINUX_VERSION_CODE < KERNEL_VERSION(4,0,0)) */
+
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0))
+#define show_inode_state(state)					\
+	__print_flags(state, "|",				\
+		{I_DIRTY_SYNC,		"I_DIRTY_SYNC"},	\
+		{I_DIRTY_DATASYNC,	"I_DIRTY_DATASYNC"},	\
+		{I_DIRTY_PAGES,		"I_DIRTY_PAGES"},	\
+		{I_NEW,			"I_NEW"},		\
+		{I_WILL_FREE,		"I_WILL_FREE"},		\
+		{I_FREEING,		"I_FREEING"},		\
+		{I_CLEAR,		"I_CLEAR"},		\
+		{I_SYNC,		"I_SYNC"},		\
+		{I_DIRTY_TIME,		"I_DIRTY_TIME"},	\
+		{I_DIRTY_TIME_EXPIRED,	"I_DIRTY_TIME_EXPIRED"}, \
+		{I_REFERENCED,		"I_REFERENCED"}		\
+	)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0)) */
 #define show_inode_state(state)					\
 	__print_flags(state, "|",				\
 		{I_DIRTY_SYNC,		"I_DIRTY_SYNC"},	\
@@ -35,6 +55,7 @@ static inline struct backing_dev_info *inode_to_bdi(struct inode *inode)
 		{I_SYNC,		"I_SYNC"},		\
 		{I_REFERENCED,		"I_REFERENCED"}		\
 	)
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0)) */
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
 #define WB_WORK_REASON							\
@@ -48,7 +69,91 @@ static inline struct backing_dev_info *inode_to_bdi(struct inode *inode)
 		{WB_REASON_FORKER_THREAD,	"forker_thread"}
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0))
+
+LTTNG_TRACEPOINT_EVENT(writeback_dirty_page,
+	TP_PROTO(struct page *page, struct address_space *mapping),
+	TP_ARGS(page, mapping),
+	TP_STRUCT__entry (
+		__array_text(char, name, 32)
+		__field(unsigned long, ino)
+		__field(pgoff_t, index)
+	),
+	TP_fast_assign(
+		tp_memcpy(name,
+			mapping ? dev_name(inode_to_bdi(mapping->host)->dev) : "(unknown)", 32)
+		tp_assign(ino, mapping ? mapping->host->i_ino : 0)
+		tp_assign(index, page->index)
+	),
+	TP_printk("bdi %s: ino=%lu index=%lu",
+		__entry->name,
+		__entry->ino,
+		__entry->index
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_CLASS(writeback_dirty_inode_template,
+	TP_PROTO(struct inode *inode, int flags),
+	TP_ARGS(inode, flags),
+	TP_STRUCT__entry (
+		__array_text(char, name, 32)
+		__field(unsigned long, ino)
+		__field(unsigned long, state)
+		__field(unsigned long, flags)
+	),
+	TP_fast_assign(
+		/* may be called for files on pseudo FSes w/ unregistered bdi */
+		tp_memcpy(name,
+			inode_to_bdi(inode)->dev ?
+				dev_name(inode_to_bdi(inode)->dev) : "(unknown)", 32)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(state, inode->i_state)
+		tp_assign(flags, flags)
+	),
+	TP_printk("bdi %s: ino=%lu flags=%s",
+		__entry->name,
+		__entry->ino,
+		show_inode_state(__entry->flags)
+	)
+)
+#define LTTNG_TRACEPOINT_EVENT_WRITEBACK_DIRTY_INODE_TEMPLATE(name) \
+LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_dirty_inode_template, name, \
+	TP_PROTO(struct inode *inode, int flags), \
+	TP_ARGS(inode, flags))
+LTTNG_TRACEPOINT_EVENT_WRITEBACK_DIRTY_INODE_TEMPLATE(writeback_dirty_inode_start)
+LTTNG_TRACEPOINT_EVENT_WRITEBACK_DIRTY_INODE_TEMPLATE(writeback_dirty_inode)
+LTTNG_TRACEPOINT_EVENT_WRITEBACK_DIRTY_INODE_TEMPLATE(writeback_mark_inode_dirty)
+
+LTTNG_TRACEPOINT_EVENT_CLASS(writeback_write_inode_template,
+	TP_PROTO(struct inode *inode, struct writeback_control *wbc),
+	TP_ARGS(inode, wbc),
+	TP_STRUCT__entry (
+		__array_text(char, name, 32)
+		__field(unsigned long, ino)
+		__field(int, sync_mode)
+	),
+	TP_fast_assign(
+		tp_memcpy(name,
+			dev_name(inode_to_bdi(inode)->dev), 32)
+		tp_assign(ino, inode->i_ino)
+		tp_assign(sync_mode, wbc->sync_mode)
+	),
+	TP_printk("bdi %s: ino=%lu sync_mode=%d",
+		__entry->name,
+		__entry->ino,
+		__entry->sync_mode
+	)
+)
+
+#define LTTNG_TRACEPOINT_EVENT_WRITEBACK_WRITE_INODE(name) \
+LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_write_inode_template, name, \
+	TP_PROTO(struct inode *inode, struct writeback_control *wbc), \
+	TP_ARGS(inode, wbc))
+LTTNG_TRACEPOINT_EVENT_WRITEBACK_WRITE_INODE(writeback_write_inode_start)
+LTTNG_TRACEPOINT_EVENT_WRITEBACK_WRITE_INODE(writeback_write_inode)
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+
 LTTNG_TRACEPOINT_EVENT(writeback_dirty_page,
 	TP_PROTO(struct page *page, struct address_space *mapping),
 	TP_ARGS(page, mapping),
@@ -126,7 +231,27 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_write_inode_template, name, \
 	TP_ARGS(inode, wbc))
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WRITE_INODE(writeback_write_inode_start)
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WRITE_INODE(writeback_write_inode)
+
 #endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0)) */
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0))
+
+LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
+	TP_PROTO(struct backing_dev_info *bdi, struct wb_writeback_work *work),
+	TP_ARGS(bdi, work),
+	TP_STRUCT__entry(
+		__array_text(char, name, 32)
+	),
+	TP_fast_assign(
+		tp_memcpy(name, bdi->dev ? dev_name(bdi->dev) :
+				"(unknown)", 32)
+	),
+	TP_printk("bdi %s",
+		  __entry->name
+	)
+)
+
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0)) */
 
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
 	TP_PROTO(struct backing_dev_info *bdi, struct wb_writeback_work *work),
@@ -142,6 +267,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
 		  __entry->name
 	)
 )
+
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0)) */
+
 #define LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(name) \
 LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_work_class, name, \
 	TP_PROTO(struct backing_dev_info *bdi, struct wb_writeback_work *work), \
