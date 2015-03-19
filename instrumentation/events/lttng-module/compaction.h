@@ -9,6 +9,60 @@
 #include <linux/version.h>
 #include <trace/events/gfpflags.h>
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0)
+
+LTTNG_TRACEPOINT_EVENT_CLASS(mm_compaction_isolate_template,
+
+	TP_PROTO(unsigned long start_pfn,
+		unsigned long end_pfn,
+		unsigned long nr_scanned,
+		unsigned long nr_taken),
+
+	TP_ARGS(start_pfn, end_pfn, nr_scanned, nr_taken),
+
+	TP_STRUCT__entry(
+		__field(unsigned long, start_pfn)
+		__field(unsigned long, end_pfn)
+		__field(unsigned long, nr_scanned)
+		__field(unsigned long, nr_taken)
+	),
+
+	TP_fast_assign(
+		tp_assign(start_pfn, start_pfn)
+		tp_assign(end_pfn, end_pfn)
+		tp_assign(nr_scanned, nr_scanned)
+		tp_assign(nr_taken, nr_taken)
+	),
+
+	TP_printk("range=(0x%lx ~ 0x%lx) nr_scanned=%lu nr_taken=%lu",
+		__entry->start_pfn,
+		__entry->end_pfn,
+		__entry->nr_scanned,
+		__entry->nr_taken)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_compaction_isolate_template, mm_compaction_isolate_migratepages,
+
+	TP_PROTO(unsigned long start_pfn,
+		unsigned long end_pfn,
+		unsigned long nr_scanned,
+		unsigned long nr_taken),
+
+	TP_ARGS(start_pfn, end_pfn, nr_scanned, nr_taken)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_compaction_isolate_template, mm_compaction_isolate_freepages,
+
+	TP_PROTO(unsigned long start_pfn,
+		unsigned long end_pfn,
+		unsigned long nr_scanned,
+		unsigned long nr_taken),
+
+	TP_ARGS(start_pfn, end_pfn, nr_scanned, nr_taken)
+)
+
+#else /* #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0) */
+
 LTTNG_TRACEPOINT_EVENT_CLASS(mm_compaction_isolate_template,
 
 	TP_PROTO(unsigned long nr_scanned,
@@ -45,6 +99,8 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_compaction_isolate_template, mm_compaction_is
 
 	TP_ARGS(nr_scanned, nr_taken)
 )
+
+#endif /* #else #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0) */
 
 #if LTTNG_KERNEL_RANGE(3,12,30, 3,13,0) || \
 	LTTNG_KERNEL_RANGE(3,14,25, 3,15,0) || \
