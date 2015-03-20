@@ -213,35 +213,15 @@ LTTNG_TRACEPOINT_EVENT(mm_page_alloc_extfrag,
 		alloc_order, fallback_order,
 		alloc_migratetype, fallback_migratetype),
 
-	TP_STRUCT__entry(
-		__field_hex(	struct page *,	page			)
-		__field(	int,		alloc_order		)
-		__field(	int,		fallback_order		)
-		__field(	int,		alloc_migratetype	)
-		__field(	int,		fallback_migratetype	)
-		__field(	int,		change_ownership	)
-	),
-
-	TP_fast_assign(
-		tp_assign(page, page)
-		tp_assign(alloc_order, alloc_order)
-		tp_assign(fallback_order, fallback_order)
-		tp_assign(alloc_migratetype, alloc_migratetype)
-		tp_assign(fallback_migratetype, fallback_migratetype)
-		tp_assign(change_ownership,
+	TP_FIELDS(
+		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(int, alloc_order, alloc_order)
+		ctf_integer(int, fallback_order, fallback_order)
+		ctf_integer(int, alloc_migratetype, alloc_migratetype)
+		ctf_integer(int, fallback_migratetype, fallback_migratetype)
+		ctf_integer(int, change_ownership,
 			(alloc_migratetype == get_pageblock_migratetype(page)))
-	),
-
-	TP_printk("page=%p pfn=%lu alloc_order=%d fallback_order=%d pageblock_order=%d alloc_migratetype=%d fallback_migratetype=%d fragmenting=%d change_ownership=%d",
-		__entry->page,
-		page_to_pfn(__entry->page),
-		__entry->alloc_order,
-		__entry->fallback_order,
-		pageblock_order,
-		__entry->alloc_migratetype,
-		__entry->fallback_migratetype,
-		__entry->fallback_order < pageblock_order,
-		__entry->change_ownership)
+	)
 )
 
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,30))
@@ -256,34 +236,14 @@ LTTNG_TRACEPOINT_EVENT(mm_page_alloc_extfrag,
 		alloc_order, fallback_order,
 		alloc_migratetype, fallback_migratetype, new_migratetype),
 
-	TP_STRUCT__entry(
-		__field_hex(	struct page *,	page			)
-		__field(	int,		alloc_order		)
-		__field(	int,		fallback_order		)
-		__field(	int,		alloc_migratetype	)
-		__field(	int,		fallback_migratetype	)
-		__field(	int,		change_ownership	)
-	),
-
-	TP_fast_assign(
-		tp_assign(page, page)
-		tp_assign(alloc_order, alloc_order)
-		tp_assign(fallback_order, fallback_order)
-		tp_assign(alloc_migratetype, alloc_migratetype)
-		tp_assign(fallback_migratetype, fallback_migratetype)
-		tp_assign(change_ownership, (new_migratetype == alloc_migratetype))
-	),
-
-	TP_printk("page=%p pfn=%lu alloc_order=%d fallback_order=%d pageblock_order=%d alloc_migratetype=%d fallback_migratetype=%d fragmenting=%d change_ownership=%d",
-		__entry->page,
-		page_to_pfn(__entry->page),
-		__entry->alloc_order,
-		__entry->fallback_order,
-		pageblock_order,
-		__entry->alloc_migratetype,
-		__entry->fallback_migratetype,
-		__entry->fallback_order < pageblock_order,
-		__entry->change_ownership)
+	TP_FIELDS(
+		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(int, alloc_order, alloc_order)
+		ctf_integer(int, fallback_order, fallback_order)
+		ctf_integer(int, alloc_migratetype, alloc_migratetype)
+		ctf_integer(int, fallback_migratetype, fallback_migratetype)
+		ctf_integer(int, change_ownership, (new_migratetype == alloc_migratetype))
+	)
 )
 
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))

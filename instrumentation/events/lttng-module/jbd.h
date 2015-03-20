@@ -146,16 +146,7 @@ LTTNG_TRACEPOINT_EVENT(jbd_update_superblock_end,
 	TP_FIELDS(
 		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
 		ctf_integer(int, wait, wait)
-	),
-
-	TP_fast_assign(
-		tp_assign(dev, journal->j_fs_dev->bd_dev)
-		tp_assign(wait, wait)
-	),
-
-	TP_printk("dev %d,%d wait %d",
-		  MAJOR(__entry->dev), MINOR(__entry->dev),
-		   __entry->wait)
+	)
 )
 #endif
 

@@ -124,17 +124,13 @@ LTTNG_TRACEPOINT_EVENT(kvm_age_page,
 		__field(        u8,     referenced      )
 	),
 
-	TP_fast_assign(
-		tp_assign(gfn, gfn)
-		tp_assign(level, level)
-		tp_assign(hva, ((gfn - slot->base_gfn) <<
-			PAGE_SHIFT) + slot->userspace_addr)
-		tp_assign(referenced, ref)
-	),
-
-	TP_printk("hva %llx gfn %llx level %u %s",
-		__entry->hva, __entry->gfn, __entry->level,
-		__entry->referenced ? "YOUNG" : "OLD")
+	TP_FIELDS(
+		ctf_integer(u64, hva,
+			((gfn - slot->base_gfn) << PAGE_SHIFT) + slot->userspace_addr)
+		ctf_integer(u64, gfn, gfn)
+		ctf_integer(u8, level, level)
+		ctf_integer(u8, referenced, ref)
+	)
 )
 
 #else
