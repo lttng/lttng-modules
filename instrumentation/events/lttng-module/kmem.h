@@ -286,7 +286,8 @@ DEFINE_EVENT_PRINT(mm_page, mm_page_pcpu_drain,
 		__entry->order, __entry->migratetype)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,2))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,2)	\
+	|| LTTNG_KERNEL_RANGE(3,14,36, 3,15,0))
 
 TRACE_EVENT(mm_page_alloc_extfrag,
 
