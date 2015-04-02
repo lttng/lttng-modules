@@ -25,11 +25,11 @@
 #include <linux/err.h>
 #include <linux/seq_file.h>
 #include <linux/stringify.h>
-#include <linux/rculist.h>
 #include <linux/hash.h>
 #include <linux/rcupdate.h>
 
 #include "wrapper/tracepoint.h"
+#include "wrapper/list.h"
 #include "lttng-events.h"
 
 /*
@@ -59,7 +59,7 @@ bool lttng_pid_tracker_lookup(struct lttng_pid_tracker *lpf, int pid)
 	uint32_t hash = hash_32(pid, 32);
 
 	head = &lpf->pid_hash[hash & (LTTNG_PID_TABLE_SIZE - 1)];
-	hlist_for_each_entry_rcu_notrace(e, head, hlist) {
+	lttng_hlist_for_each_entry_rcu_notrace(e, head, hlist) {
 		if (pid == e->pid)
 			return 1;	/* Found */
 	}
@@ -77,7 +77,7 @@ int lttng_pid_tracker_add(struct lttng_pid_tracker *lpf, int pid)
 	uint32_t hash = hash_32(pid, 32);
 
 	head = &lpf->pid_hash[hash & (LTTNG_PID_TABLE_SIZE - 1)];
-	hlist_for_each_entry(e, head, hlist) {
+	lttng_hlist_for_each_entry(e, head, hlist) {
 		if (pid == e->pid)
 			return -EEXIST;
 	}
@@ -127,7 +127,7 @@ int lttng_pid_tracker_del(struct lttng_pid_tracker *lpf, int pid)
 	 * No need of _safe iteration, because we stop traversal as soon
 	 * as we remove the entry.
 	 */
-	hlist_for_each_entry(e, head, hlist) {
+	lttng_hlist_for_each_entry(e, head, hlist) {
 		if (pid == e->pid) {
 			pid_tracker_del_node_rcu(e);
 			return 0;
@@ -150,7 +150,7 @@ void lttng_pid_tracker_destroy(struct lttng_pid_tracker *lpf)
 		struct lttng_pid_hash_node *e;
 		struct hlist_node *tmp;
 
-		hlist_for_each_entry_safe(e, tmp, head, hlist)
+		lttng_hlist_for_each_entry_safe(e, tmp, head, hlist)
 			pid_tracker_del_node(e);
 	}
 	kfree(lpf);

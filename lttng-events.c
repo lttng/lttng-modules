@@ -21,7 +21,6 @@
  */
 
 #include <linux/module.h>
-#include <linux/list.h>
 #include <linux/mutex.h>
 #include <linux/sched.h>
 #include <linux/slab.h>
@@ -36,6 +35,7 @@
 #include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "wrapper/random.h"
 #include "wrapper/tracepoint.h"
+#include "wrapper/list.h"
 #include "lttng-kernel-version.h"
 #include "lttng-events.h"
 #include "lttng-tracer.h"
@@ -678,7 +678,7 @@ void *pid_list_start(struct seq_file *m, loff_t *pos)
 		for (i = 0; i < LTTNG_PID_TABLE_SIZE; i++) {
 			struct hlist_head *head = &lpf->pid_hash[i];
 
-			hlist_for_each_entry(e, head, hlist) {
+			lttng_hlist_for_each_entry(e, head, hlist) {
 				if (iter++ >= *pos)
 					return e;
 			}
@@ -709,7 +709,7 @@ void *pid_list_next(struct seq_file *m, void *p, loff_t *ppos)
 		for (i = 0; i < LTTNG_PID_TABLE_SIZE; i++) {
 			struct hlist_head *head = &lpf->pid_hash[i];
 
-			hlist_for_each_entry(e, head, hlist) {
+			lttng_hlist_for_each_entry(e, head, hlist) {
 				if (iter++ >= *ppos)
 					return e;
 			}
