@@ -203,7 +203,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(kmem_mm_page, mm_page_pcpu_drain,
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,2)	\
 	|| LTTNG_KERNEL_RANGE(3,14,36, 3,15,0))
 
-LTTNG_TRACEPOINT_EVENT(mm_page_alloc_extfrag,
+LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
+
+	kmem_mm_page_alloc_extfrag,
 
 	TP_PROTO(struct page *page,
 		int alloc_order, int fallback_order,
@@ -226,7 +228,9 @@ LTTNG_TRACEPOINT_EVENT(mm_page_alloc_extfrag,
 
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,30))
 
-LTTNG_TRACEPOINT_EVENT(mm_page_alloc_extfrag,
+LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
+
+	kmem_mm_page_alloc_extfrag,
 
 	TP_PROTO(struct page *page,
 		int alloc_order, int fallback_order,

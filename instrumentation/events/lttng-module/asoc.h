@@ -32,7 +32,7 @@ struct snd_soc_dapm_widget;
 /*
  * Log register events
  */
-LTTNG_TRACEPOINT_EVENT_CLASS(snd_soc_reg,
+LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_reg,
 
 	TP_PROTO(struct snd_soc_codec *codec, unsigned int reg,
 		 unsigned int val),
@@ -47,7 +47,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(snd_soc_reg,
 	)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_reg, snd_soc_reg_write,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_reg, snd_soc_reg_write,
+
+	asoc_snd_soc_reg_write,
 
 	TP_PROTO(struct snd_soc_codec *codec, unsigned int reg,
 		 unsigned int val),
@@ -56,7 +58,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_reg, snd_soc_reg_write,
 
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_reg, snd_soc_reg_read,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_reg, snd_soc_reg_read,
+
+	asoc_snd_soc_reg_read,
 
 	TP_PROTO(struct snd_soc_codec *codec, unsigned int reg,
 		 unsigned int val),
@@ -66,7 +70,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_reg, snd_soc_reg_read,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
-LTTNG_TRACEPOINT_EVENT_CLASS(snd_soc_preg,
+LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_preg,
 
 	TP_PROTO(struct snd_soc_platform *platform, unsigned int reg,
 		 unsigned int val),
@@ -81,7 +85,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(snd_soc_preg,
 	)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_preg, snd_soc_preg_write,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_preg, snd_soc_preg_write,
+
+	asoc_snd_soc_preg_write,
 
 	TP_PROTO(struct snd_soc_platform *platform, unsigned int reg,
 		 unsigned int val),
@@ -90,7 +96,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_preg, snd_soc_preg_write,
 
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_preg, snd_soc_preg_read,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_preg, snd_soc_preg_read,
+
+	asoc_snd_soc_preg_read,
 
 	TP_PROTO(struct snd_soc_platform *platform, unsigned int reg,
 		 unsigned int val),
@@ -100,7 +108,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_preg, snd_soc_preg_read,
 )
 #endif
 
-LTTNG_TRACEPOINT_EVENT_CLASS(snd_soc_card,
+LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_card,
 
 	TP_PROTO(struct snd_soc_card *card, int val),
 
@@ -112,7 +120,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(snd_soc_card,
 	)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_card, snd_soc_bias_level_start,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_card, snd_soc_bias_level_start,
+
+	asoc_snd_soc_bias_level_start,
 
 	TP_PROTO(struct snd_soc_card *card, int val),
 
@@ -120,7 +130,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_card, snd_soc_bias_level_start,
 
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_card, snd_soc_bias_level_done,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_card, snd_soc_bias_level_done,
+
+	asoc_snd_soc_bias_level_done,
 
 	TP_PROTO(struct snd_soc_card *card, int val),
 
@@ -128,7 +140,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_card, snd_soc_bias_level_done,
 
 )
 
-LTTNG_TRACEPOINT_EVENT_CLASS(snd_soc_dapm_basic,
+LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_dapm_basic,
 
 	TP_PROTO(struct snd_soc_card *card),
 
@@ -139,7 +151,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(snd_soc_dapm_basic,
 	)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_dapm_basic, snd_soc_dapm_start,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_dapm_basic, snd_soc_dapm_start,
+
+	asoc_snd_soc_dapm_start,
 
 	TP_PROTO(struct snd_soc_card *card),
 
@@ -147,7 +161,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_dapm_basic, snd_soc_dapm_start,
 
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_dapm_basic, snd_soc_dapm_done,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_dapm_basic, snd_soc_dapm_done,
+
+	asoc_snd_soc_dapm_done,
 
 	TP_PROTO(struct snd_soc_card *card),
 
@@ -155,7 +171,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_dapm_basic, snd_soc_dapm_done,
 
 )
 
-LTTNG_TRACEPOINT_EVENT_CLASS(snd_soc_dapm_widget,
+LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_dapm_widget,
 
 	TP_PROTO(struct snd_soc_dapm_widget *w, int val),
 
@@ -167,7 +183,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(snd_soc_dapm_widget,
 	)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_dapm_widget, snd_soc_dapm_widget_power,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_dapm_widget, snd_soc_dapm_widget_power,
+
+	asoc_snd_soc_dapm_widget_power,
 
 	TP_PROTO(struct snd_soc_dapm_widget *w, int val),
 
@@ -175,7 +193,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_dapm_widget, snd_soc_dapm_widget_power,
 
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_dapm_widget, snd_soc_dapm_widget_event_start,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_dapm_widget, snd_soc_dapm_widget_event_start,
+
+	asoc_snd_soc_dapm_widget_event_start,
 
 	TP_PROTO(struct snd_soc_dapm_widget *w, int val),
 
@@ -183,7 +203,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_dapm_widget, snd_soc_dapm_widget_event_s
 
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_dapm_widget, snd_soc_dapm_widget_event_done,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_dapm_widget, snd_soc_dapm_widget_event_done,
+
+	asoc_snd_soc_dapm_widget_event_done,
 
 	TP_PROTO(struct snd_soc_dapm_widget *w, int val),
 
@@ -192,7 +214,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(snd_soc_dapm_widget, snd_soc_dapm_widget_event_d
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
-LTTNG_TRACEPOINT_EVENT(snd_soc_dapm_walk_done,
+LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_walk_done,
+
+	asoc_snd_soc_dapm_walk_done,
 
 	TP_PROTO(struct snd_soc_card *card),
 
@@ -208,7 +232,9 @@ LTTNG_TRACEPOINT_EVENT(snd_soc_dapm_walk_done,
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
-LTTNG_TRACEPOINT_EVENT(snd_soc_dapm_output_path,
+LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_output_path,
+
+	asoc_snd_soc_dapm_output_path,
 
 	TP_PROTO(struct snd_soc_dapm_widget *widget,
 		struct snd_soc_dapm_path *path),
@@ -224,7 +250,9 @@ LTTNG_TRACEPOINT_EVENT(snd_soc_dapm_output_path,
 	)
 )
 
-LTTNG_TRACEPOINT_EVENT(snd_soc_dapm_input_path,
+LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_input_path,
+
+	asoc_snd_soc_dapm_input_path,
 
 	TP_PROTO(struct snd_soc_dapm_widget *widget,
 		struct snd_soc_dapm_path *path),
@@ -240,7 +268,9 @@ LTTNG_TRACEPOINT_EVENT(snd_soc_dapm_input_path,
 	)
 )
 
-LTTNG_TRACEPOINT_EVENT(snd_soc_dapm_connected,
+LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_connected,
+
+	asoc_snd_soc_dapm_connected,
 
 	TP_PROTO(int paths, int stream),
 
@@ -253,7 +283,9 @@ LTTNG_TRACEPOINT_EVENT(snd_soc_dapm_connected,
 )
 #endif
 
-LTTNG_TRACEPOINT_EVENT(snd_soc_jack_irq,
+LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_irq,
+
+	asoc_snd_soc_jack_irq,
 
 	TP_PROTO(const char *name),
 
@@ -264,7 +296,9 @@ LTTNG_TRACEPOINT_EVENT(snd_soc_jack_irq,
 	)
 )
 
-LTTNG_TRACEPOINT_EVENT(snd_soc_jack_report,
+LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_report,
+
+	asoc_snd_soc_jack_report,
 
 	TP_PROTO(struct snd_soc_jack *jack, int mask, int val),
 
@@ -277,7 +311,9 @@ LTTNG_TRACEPOINT_EVENT(snd_soc_jack_report,
 	)
 )
 
-LTTNG_TRACEPOINT_EVENT(snd_soc_jack_notify,
+LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_notify,
+
+	asoc_snd_soc_jack_notify,
 
 	TP_PROTO(struct snd_soc_jack *jack, int val),
 
@@ -289,7 +325,9 @@ LTTNG_TRACEPOINT_EVENT(snd_soc_jack_notify,
 	)
 )
 
-LTTNG_TRACEPOINT_EVENT(snd_soc_cache_sync,
+LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_cache_sync,
+
+	asoc_snd_soc_cache_sync,
 
 	TP_PROTO(struct snd_soc_codec *codec, const char *type,
 		 const char *status),
