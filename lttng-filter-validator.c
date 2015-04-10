@@ -20,10 +20,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <linux/list.h>
 #include <linux/jhash.h>
 #include <linux/slab.h>
 
+#include "wrapper/list.h"
 #include "lttng-filter.h"
 
 #define MERGE_POINT_TABLE_BITS		7
@@ -87,7 +87,7 @@ int merge_point_add_check(struct mp_table *mp_table, unsigned long target_pc,
 	memcpy(&mp_node->stack, stack, sizeof(mp_node->stack));
 
 	head = &mp_table->mp_head[hash & (MERGE_POINT_TABLE_SIZE - 1)];
-	hlist_for_each_entry(lookup_node, head, node) {
+	lttng_hlist_for_each_entry(lookup_node, head, node) {
 		if (lttng_hash_match(lookup_node, target_pc)) {
 			found = 1;
 			break;
@@ -369,7 +369,7 @@ unsigned long delete_all_nodes(struct mp_table *mp_table)
 		struct hlist_head *head;
 
 		head = &mp_table->mp_head[i];
-		hlist_for_each_entry_safe(mp_node, tmp, head, node) {
+		lttng_hlist_for_each_entry_safe(mp_node, tmp, head, node) {
 			kfree(mp_node);
 			nr_nodes++;
 		}
@@ -739,7 +739,7 @@ int validate_instruction_all_contexts(struct bytecode_runtime *bytecode,
 	/* Validate merge points */
 	hash = jhash_1word(target_pc, 0);
 	head = &mp_table->mp_head[hash & (MERGE_POINT_TABLE_SIZE - 1)];
-	hlist_for_each_entry(mp_node, head, node) {
+	lttng_hlist_for_each_entry(mp_node, head, node) {
 		if (lttng_hash_match(mp_node, target_pc)) {
 			found = 1;
 			break;

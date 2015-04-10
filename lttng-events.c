@@ -492,7 +492,7 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 	name_len = strlen(event_name);
 	hash = jhash(event_name, name_len, 0);
 	head = &session->events_ht.table[hash & (LTTNG_EVENT_HT_SIZE - 1)];
-	hlist_for_each_entry(event, head, hlist) {
+	lttng_hlist_for_each_entry(event, head, hlist) {
 		WARN_ON_ONCE(!event->desc);
 		if (!strncmp(event->desc->name, event_name,
 					LTTNG_KERNEL_SYM_NAME_LEN - 1)
@@ -1131,7 +1131,7 @@ void lttng_create_tracepoint_if_missing(struct lttng_enabler *enabler)
 			 */
 			hash = jhash(event_name, name_len, 0);
 			head = &session->events_ht.table[hash & (LTTNG_EVENT_HT_SIZE - 1)];
-			hlist_for_each_entry(event, head, hlist) {
+			lttng_hlist_for_each_entry(event, head, hlist) {
 				if (event->desc == desc
 						&& event->chan == enabler->chan)
 					found = 1;
