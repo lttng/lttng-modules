@@ -19,6 +19,7 @@
  */
 
 #include <linux/uaccess.h>
+#include <linux/module.h>
 #include "lttng-probe-user.h"
 
 /*
