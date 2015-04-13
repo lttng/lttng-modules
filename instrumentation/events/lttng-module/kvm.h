@@ -117,13 +117,6 @@ LTTNG_TRACEPOINT_EVENT(kvm_age_page,
 	TP_PROTO(ulong gfn, int level, struct kvm_memory_slot *slot, int ref),
 	TP_ARGS(gfn, level, slot, ref),
 
-	TP_STRUCT__entry(
-		__field(        u64,    hva             )
-		__field(        u64,    gfn             )
-		__field(        u8,     level           )
-		__field(        u8,     referenced      )
-	),
-
 	TP_FIELDS(
 		ctf_integer(u64, hva,
 			((gfn - slot->base_gfn) << PAGE_SHIFT) + slot->userspace_addr)
