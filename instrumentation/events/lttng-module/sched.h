@@ -6,11 +6,20 @@
 
 #include "../../../probes/lttng-tracepoint-event.h"
 #include <linux/sched.h>
+#include <linux/pid_namespace.h>
 #include <linux/binfmts.h>
 #include <linux/version.h>
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
 #include <linux/sched/rt.h>
 #endif
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
+#define lttng_proc_inum ns.inum
+#else
+#define lttng_proc_inum proc_inum
+#endif
+
+#define LTTNG_MAX_PID_NS_LEVEL 32
 
 #ifndef _TRACE_SCHED_DEF_
 #define _TRACE_SCHED_DEF_
@@ -288,19 +297,71 @@ LTTNG_TRACEPOINT_EVENT(sched_process_wait,
  * == child_pid, while creation of a thread yields to child_tid !=
  * child_pid.
  */
-LTTNG_TRACEPOINT_EVENT(sched_process_fork,
+LTTNG_TRACEPOINT_EVENT_CODE(sched_process_fork,
 
 	TP_PROTO(struct task_struct *parent, struct task_struct *child),
 
 	TP_ARGS(parent, child),
 
+	TP_locvar(
+		pid_t vtids[LTTNG_MAX_PID_NS_LEVEL];
+		unsigned int ns_level;
+	),
+
+	TP_code(
+		if (child) {
+			struct pid *child_pid;
+			unsigned int i;
+
+			child_pid = task_pid(child);
+			tp_locvar->ns_level =
+				min_t(unsigned int, child_pid->level + 1,
+					LTTNG_MAX_PID_NS_LEVEL);
+			for (i = 0; i < tp_locvar->ns_level; i++)
+				tp_locvar->vtids[i] = child_pid->numbers[i].nr;
+		}
+	),
+
 	TP_FIELDS(
 		ctf_array_text(char, parent_comm, parent->comm, TASK_COMM_LEN)
 		ctf_integer(pid_t, parent_tid, parent->pid)
 		ctf_integer(pid_t, parent_pid, parent->tgid)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+		ctf_integer(unsigned int, parent_ns_inum,
+			({
+				unsigned int parent_ns_inum = 0;
+
+				if (parent) {
+					struct pid_namespace *pid_ns;
+
+					pid_ns = task_active_pid_ns(parent);
+					if (pid_ns)
+						parent_ns_inum =
+							pid_ns->lttng_proc_inum;
+				}
+				parent_ns_inum;
+			}))
+#endif
 		ctf_array_text(char, child_comm, child->comm, TASK_COMM_LEN)
 		ctf_integer(pid_t, child_tid, child->pid)
+		ctf_sequence(pid_t, vtids, tp_locvar->vtids, u8, tp_locvar->ns_level)
 		ctf_integer(pid_t, child_pid, child->tgid)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+		ctf_integer(unsigned int, child_ns_inum,
+			({
+				unsigned int child_ns_inum = 0;
+
+				if (child) {
+					struct pid_namespace *pid_ns;
+
+					pid_ns = task_active_pid_ns(child);
+					if (pid_ns)
+						child_ns_inum =
+							pid_ns->lttng_proc_inum;
+				}
+				child_ns_inum;
+			}))
+#endif
 	)
 )
 
