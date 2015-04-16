@@ -28,7 +28,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(compaction_isolate_template,
 	)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(compaction_isolate_template, mm_compaction_isolate_migratepages,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(compaction_isolate_template,
+
+	mm_compaction_isolate_migratepages,
+
+	compaction_isolate_migratepages,
 
 	TP_PROTO(unsigned long start_pfn,
 		unsigned long end_pfn,
@@ -38,7 +42,11 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(compaction_isolate_template, mm_compaction_isola
 	TP_ARGS(start_pfn, end_pfn, nr_scanned, nr_taken)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(compaction_isolate_template, mm_compaction_isolate_freepages,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(compaction_isolate_template,
+
+	mm_compaction_isolate_freepages,
+
+	compaction_isolate_freepages,
 
 	TP_PROTO(unsigned long start_pfn,
 		unsigned long end_pfn,
