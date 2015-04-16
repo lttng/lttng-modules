@@ -58,14 +58,22 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(net_dev_template, net_dev_queue,
 	TP_ARGS(skb)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(net_dev_template, netif_receive_skb,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_template,
+
+	netif_receive_skb,
+
+	net_if_receive_skb,
 
 	TP_PROTO(struct sk_buff *skb),
 
 	TP_ARGS(skb)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(net_dev_template, netif_rx,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_template,
+
+	netif_rx,
+
+	net_if_rx,
 
 	TP_PROTO(struct sk_buff *skb),
 
