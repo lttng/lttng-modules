@@ -58,7 +58,8 @@ lttng-tracer-objs += $(shell \
 endif # CONFIG_PERF_EVENTS
 
 lttng-tracer-objs += $(shell \
-	if [ $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 15 -a $(SUBLEVEL) -ge 0 ] ; then \
+	if [ $(VERSION) -ge 4 \
+		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 15 -a $(SUBLEVEL) -ge 0 \) ] ; then \
 		echo "lttng-tracepoint.o" ; fi;)
 
 obj-m += probes/
