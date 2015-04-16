@@ -60,6 +60,14 @@ int check_event_provider(struct lttng_probe_desc *desc)
 				desc->provider,
 				provider_name_len))
 			return 0;	/* provider mismatch */
+		/*
+		 * The event needs to contain at least provider name + _ +
+		 * one or more letter.
+		 */
+		if (strlen(desc->event_desc[i]->name) <= provider_name_len + 1)
+			return 0;	/* provider mismatch */
+		if (desc->event_desc[i]->name[provider_name_len] != '_')
+			return 0;	/* provider mismatch */
 	}
 	return 1;
 }
