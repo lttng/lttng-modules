@@ -21,6 +21,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/*
+ * This page_alloc.h wrapper needs to be included before gfpflags.h because it
+ * overrides a function with a define.
+ */
+#include "../wrapper/page_alloc.h"
 #include <linux/module.h>
 #include "../lttng-tracer.h"
 

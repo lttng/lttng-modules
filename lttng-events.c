@@ -20,6 +20,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+/*
+ * This page_alloc.h wrapper needs to be included before gfpflags.h because it
+ * overrides a function with a define.
+ */
+#include "wrapper/page_alloc.h"
+
 #include <linux/module.h>
 #include <linux/mutex.h>
 #include <linux/sched.h>
@@ -2115,7 +2121,9 @@ static int __init lttng_events_init(void)
 	ret = wrapper_lttng_fixup_sig(THIS_MODULE);
 	if (ret)
 		return ret;
-
+	ret = wrapper_get_pfnblock_flags_mask_init();
+	if (ret)
+		return ret;
 	ret = lttng_context_init();
 	if (ret)
 		return ret;
