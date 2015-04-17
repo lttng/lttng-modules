@@ -24,7 +24,12 @@
  */
 
 #include <linux/version.h>
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
+#include <generated/utsrelease.h>
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33)) */
 #include <linux/utsrelease.h>
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33)) */
 
 /*
  * This macro checks if the kernel version is between the two specified
