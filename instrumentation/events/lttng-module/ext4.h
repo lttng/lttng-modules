@@ -277,7 +277,7 @@ LTTNG_TRACEPOINT_EVENT(ext4_da_write_pages,
 		ctf_integer(int, io_done, mpd->io_done)
 		ctf_integer(int, pages_written, mpd->pages_written)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
-		ctf_integer(int, sync_mode, mpd->sync_mode)
+		ctf_integer(int, sync_mode, mpd->wbc->sync_mode)
 #endif
 	)
 )
