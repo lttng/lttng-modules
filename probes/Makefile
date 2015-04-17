@@ -184,7 +184,7 @@ obj-m +=  $(shell \
 ifneq ($(CONFIG_REGMAP),)
 obj-m +=  $(shell \
 	if [ $(VERSION) -ge 4 \
-		\( -o $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 2 \) ] ; then \
+		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 2 \) ] ; then \
 		echo "lttng-probe-regmap.o" ; fi;)
 endif
 
