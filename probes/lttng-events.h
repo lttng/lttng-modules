@@ -134,7 +134,7 @@ void trace_##_name(_proto);
 
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map) \
-void trace_##_name(void *__data);
+void trace_##_name(void);
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
