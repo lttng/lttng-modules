@@ -183,6 +183,38 @@ void trace_##_name(_proto);
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map) \
 void trace_##_name(void);
 
+ /*
+ * Stage 1.1 of the trace events.
+ *
+ * Create dummy trace prototypes for each event class, and for each used
+ * template. This will allow checking whether the prototypes from the
+ * class and the instance using the class actually match.
+ */
+
+#include "lttng-events-reset.h"        /* Reset all macros within TRACE_EVENT */
+
+#undef TP_PROTO
+#define TP_PROTO(args...) args
+
+#undef TP_ARGS
+#define TP_ARGS(args...) args
+
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(_template, _name, _map, _proto, _args) \
+void __event_template_proto___##_template(_proto);
+
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map) \
+void __event_template_proto___##_template(void);
+
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _tstruct, _assign, _print) \
+void __event_template_proto___##_name(_proto);
+
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _tstruct, _assign, _print) \
+void __event_template_proto___##_name(void);
+
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
 /*
