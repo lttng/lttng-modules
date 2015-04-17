@@ -24,8 +24,7 @@
  */
 
 #include <linux/version.h>
-#include <linux/module.h>
-#include <linux/vermagic.h>
+#include <linux/utsrelease.h>
 
 /*
  * This macro checks if the kernel version is between the two specified
