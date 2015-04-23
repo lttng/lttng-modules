@@ -24,8 +24,14 @@ kvm_dep = $(srctree)/virt/kvm/iodev.h
 ifneq ($(wildcard $(kvm_dep)),)
 CFLAGS_lttng-probe-kvm-x86.o += -I$(srctree)/virt/kvm
 CFLAGS_lttng-probe-kvm-x86-mmu.o += -I$(srctree)/virt/kvm
-obj-m += lttng-probe-kvm-x86.o
-obj-m += lttng-probe-kvm-x86-mmu.o
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 \
+		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
+		echo "lttng-probe-kvm-x86.o" ; fi;)
+obj-m +=  $(shell \
+	if [ $(VERSION) -ge 3 \
+		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
+		echo "lttng-probe-kvm-x86-mmu.o" ; fi;)
 else
 $(warning File $(kvm_dep) not found. Probe "kvm" x86-specific is disabled. Use full kernel source tree to enable it.)
 endif
