@@ -37,6 +37,7 @@
 #include "lib/bitfield.h"
 #include "wrapper/tracepoint.h"
 #include "wrapper/file.h"
+#include "wrapper/rcu.h"
 #include "lttng-events.h"
 
 #ifndef CONFIG_COMPAT
@@ -368,7 +369,7 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 	if (unlikely(is_compat_task())) {
 		struct lttng_syscall_filter *filter;
 
-		filter = rcu_dereference(chan->sc_filter);
+		filter = lttng_rcu_dereference(chan->sc_filter);
 		if (filter) {
 			if (id < 0 || id >= NR_compat_syscalls
 				|| !test_bit(id, filter->sc_compat)) {
@@ -382,7 +383,7 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 	} else {
 		struct lttng_syscall_filter *filter;
 
-		filter = rcu_dereference(chan->sc_filter);
+		filter = lttng_rcu_dereference(chan->sc_filter);
 		if (filter) {
 			if (id < 0 || id >= NR_syscalls
 				|| !test_bit(id, filter->sc)) {
@@ -522,7 +523,7 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 	if (unlikely(is_compat_task())) {
 		struct lttng_syscall_filter *filter;
 
-		filter = rcu_dereference(chan->sc_filter);
+		filter = lttng_rcu_dereference(chan->sc_filter);
 		if (filter) {
 			if (id < 0 || id >= NR_compat_syscalls
 				|| !test_bit(id, filter->sc_compat)) {
@@ -536,7 +537,7 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 	} else {
 		struct lttng_syscall_filter *filter;
 
-		filter = rcu_dereference(chan->sc_filter);
+		filter = lttng_rcu_dereference(chan->sc_filter);
 		if (filter) {
 			if (id < 0 || id >= NR_syscalls
 				|| !test_bit(id, filter->sc)) {
