@@ -95,11 +95,7 @@ to print traces as a human-readable text log.
 Support
 -------
 
-So far, it has been tested on various vanilla Linux kernels from 2.6.38
-to 3.16, most of them on IA-32/x86-64 and some of them on ARM and Power-PC
-32-bit. Linux 2.6.32 to 2.6.34 need up to 3 patches applied (refer to
-[`linux-patches`](linux-patches)). It should work fine with newer kernels and
-other architectures, but expect build issues with kernels older than 2.6.36.
+Linux kernels >= 2.6.36 are supported.
 
 
 Notes
