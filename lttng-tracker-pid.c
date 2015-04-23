@@ -29,6 +29,7 @@
 #include <linux/rcupdate.h>
 
 #include "wrapper/tracepoint.h"
+#include "wrapper/rcu.h"
 #include "wrapper/list.h"
 #include "lttng-events.h"
 
@@ -59,7 +60,7 @@ bool lttng_pid_tracker_lookup(struct lttng_pid_tracker *lpf, int pid)
 	uint32_t hash = hash_32(pid, 32);
 
 	head = &lpf->pid_hash[hash & (LTTNG_PID_TABLE_SIZE - 1)];
-	lttng_hlist_for_each_entry_rcu_notrace(e, head, hlist) {
+	lttng_hlist_for_each_entry_rcu(e, head, hlist) {
 		if (pid == e->pid)
 			return 1;	/* Found */
 	}

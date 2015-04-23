@@ -27,6 +27,7 @@
 #include "lttng-probe-user.h"
 #include "../wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "../wrapper/ringbuffer/frontend_types.h"
+#include "../wrapper/rcu.h"
 #include "../lttng-events.h"
 #include "../lttng-tracer-core.h"
 
@@ -728,7 +729,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 		return;							      \
 	if (unlikely(!ACCESS_ONCE(__event->enabled)))			      \
 		return;							      \
-	__lpf = rcu_dereference(__session->pid_tracker);		      \
+	__lpf = lttng_rcu_dereference(__session->pid_tracker);		      \
 	if (__lpf && likely(!lttng_pid_tracker_lookup(__lpf, current->pid)))  \
 		return;							      \
 	_code								      \
@@ -738,7 +739,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 									      \
 		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data, \
 				tp_locvar, _args);				      \
-		list_for_each_entry_rcu(bc_runtime, &__event->bytecode_runtime_head, node) { \
+		lttng_list_for_each_entry_rcu(bc_runtime, &__event->bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->filter(bc_runtime,	      \
 					__stackvar.__filter_stack_data) & LTTNG_FILTER_RECORD_FLAG)) \
 				__filter_record = 1;			      \
@@ -787,7 +788,7 @@ static void __event_probe__##_name(void *__data)			      \
 		return;							      \
 	if (unlikely(!ACCESS_ONCE(__event->enabled)))			      \
 		return;							      \
-	__lpf = rcu_dereference(__session->pid_tracker);		      \
+	__lpf = lttng_rcu_dereference(__session->pid_tracker);		      \
 	if (__lpf && likely(!lttng_pid_tracker_lookup(__lpf, current->pid)))  \
 		return;							      \
 	_code								      \
@@ -797,7 +798,7 @@ static void __event_probe__##_name(void *__data)			      \
 									      \
 		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data, \
 				tp_locvar);				      \
-		list_for_each_entry_rcu(bc_runtime, &__event->bytecode_runtime_head, node) { \
+		lttng_list_for_each_entry_rcu(bc_runtime, &__event->bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->filter(bc_runtime,	      \
 					__stackvar.__filter_stack_data) & LTTNG_FILTER_RECORD_FLAG)) \
 				__filter_record = 1;			      \
