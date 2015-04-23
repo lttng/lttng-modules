@@ -48,6 +48,7 @@ struct oldold_utsname;
 struct old_utsname;
 struct sel_arg_struct;
 struct mmap_arg_struct;
+struct file_handle;
 
 /*
  * Take care of NOARGS not supported by mainline.
