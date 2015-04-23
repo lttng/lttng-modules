@@ -77,6 +77,7 @@ struct oldold_utsname;
 struct old_utsname;
 struct sel_arg_struct;
 struct mmap_arg_struct;
+struct file_handle;
 
 #ifdef IA32_NR_syscalls
 #define NR_compat_syscalls IA32_NR_syscalls
