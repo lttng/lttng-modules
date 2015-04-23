@@ -36,15 +36,7 @@ the kernel modules when needed. Use Babeltrace to print traces as a
 human-readable text log. These tools are available at the following URL:
 http://lttng.org/lttng2.0
 
-So far, it has been tested on vanilla Linux kernels 2.6.38, 2.6.39, 3.0,
-3.1, 3.2, 3.3 (on x86 32/64-bit, and powerpc 32-bit at the moment, build
-tested on ARM), 3.4, 3.5, 3.8, 3.9-rc on x86 64-bit. Kernels 2.6.32 to
-2.6.34 need up to 3 patches applied (refer to linux-patches within the
-lttng-modules tree). It should work fine with newer kernels and other
-architectures, but expect build issues with kernels older than 2.6.36.
-The clock source currently used is the standard gettimeofday (slower,
-less scalable and less precise than the LTTng 0.x clocks).  Support for
-LTTng 0.x clocks will be added back soon into LTTng 2.0.
+Linux kernels >= 2.6.36 are supported.
 
 
 * Kernel config options required
