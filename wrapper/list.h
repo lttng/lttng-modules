@@ -29,6 +29,13 @@
 #include <linux/list.h>
 #include <linux/rculist.h>
 
+/*
+ * return the first or the next element in an RCU protected hlist
+ */
+#define lttng_hlist_first_rcu(head)	(*((struct hlist_node __rcu **)(&(head)->first)))
+#define lttng_hlist_next_rcu(node)	(*((struct hlist_node __rcu **)(&(node)->next)))
+#define lttng_hlist_pprev_rcu(node)	(*((struct hlist_node __rcu **)((node)->pprev)))
+
 #define lttng_hlist_entry_safe(ptr, type, member) \
 	({ typeof(ptr) ____ptr = (ptr); \
 	   ____ptr ? hlist_entry(____ptr, type, member) : NULL; \

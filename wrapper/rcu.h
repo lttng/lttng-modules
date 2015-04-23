@@ -81,10 +81,10 @@
  * not do any RCU debugging or tracing.
  */
 #define lttng_hlist_for_each_entry_rcu(pos, head, member)	\
-	for (pos = lttng_hlist_entry_safe (lttng_rcu_dereference(hlist_first_rcu(head)), \
+	for (pos = lttng_hlist_entry_safe (lttng_rcu_dereference(lttng_hlist_first_rcu(head)), \
 			typeof(*(pos)), member);		\
 		pos;						\
-		pos = lttng_hlist_entry_safe(lttng_rcu_dereference(hlist_next_rcu( \
+		pos = lttng_hlist_entry_safe(lttng_rcu_dereference(lttng_hlist_next_rcu( \
 			&(pos)->member)), typeof(*(pos)), member))
 
 #endif /* _LTTNG_WRAPPER_RCU_H */
