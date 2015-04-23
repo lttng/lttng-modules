@@ -327,10 +327,10 @@ static void __event_probe__##_name(void *__data);
 #define _ctf_string(_item, _src, _user, _nowrite)			       \
 	if (_user)							       \
 		__event_len += __dynamic_len[__dynamic_len_idx++] =	       \
-			strlen(_src) + 1;				       \
+			max_t(size_t, lttng_strlen_user_inatomic(_src), 1);    \
 	else								       \
 		__event_len += __dynamic_len[__dynamic_len_idx++] =	       \
-			max_t(size_t, lttng_strlen_user_inatomic(_src), 1);
+			strlen(_src) + 1;
 
 #undef TP_PROTO
 #define TP_PROTO(...)	__VA_ARGS__
