@@ -20,6 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <linux/types.h>
 #include <linux/jhash.h>
 #include <linux/slab.h>
 
