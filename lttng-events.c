@@ -643,7 +643,6 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 	}
 	hlist_add_head(&event->hlist, head);
 	list_add(&event->list, &chan->session->events);
-	mutex_unlock(&sessions_mutex);
 	return event;
 
 statedump_error:
