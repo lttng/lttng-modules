@@ -23,13 +23,22 @@
 
 #include <linux/module.h>
 #include <linux/device.h>
+#include "../lttng-kernel-version.h"
 #include "../lttng-tracer.h"
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
  * trace event macros match the kernel we run on.
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
+#include <../../drivers/base/regmap/trace.h>
+
+#undef TRACE_INCLUDE_PATH
+#undef TRACE_INCLUDE_FILE
+
+#else	/* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0)) */
 #include <trace/events/regmap.h>
+#endif	/* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0)) */
 
 /*
  * Create LTTng tracepoint probes.

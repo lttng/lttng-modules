@@ -192,10 +192,15 @@ obj-m +=  $(shell \
 		echo "lttng-probe-rcu.o" ; fi;)
 
 ifneq ($(CONFIG_REGMAP),)
+regmap_dep = $(srctree)/drivers/base/regmap/trace.h $(srctree)/include/trace/events/regmap.h
+ifneq ($(wildcard $(regmap_dep)),)
 obj-m +=  $(shell \
 	if [ $(VERSION) -ge 4 \
 		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 2 \) ] ; then \
 		echo "lttng-probe-regmap.o" ; fi;)
+else
+$(warning Either of files { $(regmap_dep) } not found. Probe "regmap" is disabled. Use full kernel source tree to enable it.)
+endif
 endif
 
 ifneq ($(CONFIG_PM_RUNTIME),)
