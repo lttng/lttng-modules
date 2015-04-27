@@ -57,18 +57,6 @@ static inline struct backing_dev_info *inode_to_bdi(struct inode *inode)
 	)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0)) */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
-#define WB_WORK_REASON							\
-		{WB_REASON_BACKGROUND,		"background"},		\
-		{WB_REASON_TRY_TO_FREE_PAGES,	"try_to_free_pages"},	\
-		{WB_REASON_SYNC,		"sync"},		\
-		{WB_REASON_PERIODIC,		"periodic"},		\
-		{WB_REASON_LAPTOP_TIMER,	"laptop_timer"},	\
-		{WB_REASON_FREE_MORE_MEM,	"free_more_memory"},	\
-		{WB_REASON_FS_FREE_SPACE,	"fs_free_space"},	\
-		{WB_REASON_FORKER_THREAD,	"forker_thread"}
-#endif
-
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0))
 
 LTTNG_TRACEPOINT_EVENT(writeback_dirty_page,
