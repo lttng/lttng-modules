@@ -192,14 +192,29 @@ obj-m +=  $(shell \
 		echo "lttng-probe-rcu.o" ; fi;)
 
 ifneq ($(CONFIG_REGMAP),)
-regmap_dep = $(srctree)/drivers/base/regmap/trace.h $(srctree)/include/trace/events/regmap.h
-ifneq ($(wildcard $(regmap_dep)),)
+regmap_dep_3_x = $(srctree)/include/trace/events/regmap.h
+regmap_dep_4_0 = $(srctree)/drivers/base/regmap/internal.h
+regmap_dep_4_1 = $(srctree)/drivers/base/regmap/trace.h
+
+ifneq ($(wildcard $(regmap_dep_4_1)),)
 obj-m +=  $(shell \
-	if [ $(VERSION) -ge 4 \
-		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 2 \) ] ; then \
+	if [ $(VERSION) -ge 5 \
+		-o \( $(VERSION) -eq 4 -a $(PATCHLEVEL) -ge 1 \) ] ; then \
 		echo "lttng-probe-regmap.o" ; fi;)
 else
-$(warning Either of files { $(regmap_dep) } not found. Probe "regmap" is disabled. Use full kernel source tree to enable it.)
+ifneq ($(wildcard $(regmap_dep_4_0)),)
+obj-m +=  $(shell \
+	if [ $(VERSION) -eq 4 -a $(PATCHLEVEL) -eq 0 ] ; then \
+		echo "lttng-probe-regmap.o" ; fi;)
+else
+ifneq ($(wildcard $(regmap_dep_3_x)),)
+obj-m +=  $(shell \
+	if [ $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 2 ] ; then \
+		echo "lttng-probe-regmap.o" ; fi;)
+else
+$(warning Either of files $(regmap_dep_4_1), $(regmap_dep_4_0), or $(regmap_dep_3_x) not found. Probe "regmap" is disabled. Use full kernel source tree to enable it.)
+endif
+endif
 endif
 endif
 
