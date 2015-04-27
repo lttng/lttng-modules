@@ -53,4 +53,18 @@
 		LTTNG_UBUNTU_VERSION_CODE < \
 		LTTNG_UBUNTU_KERNEL_VERSION(a_high, b_high, c_high, d_high))
 
+#define LTTNG_DEBIAN_KERNEL_VERSION(a, b, c, d, e, f) \
+	(((((a) << 16) + ((b) << 8) + (c)) * 1000000ULL) + ((d) * 10000) + ((e) * 100) + (f))
+
+#define LTTNG_DEBIAN_VERSION_CODE \
+	((LINUX_VERSION_CODE * 1000000ULL) + DEBIAN_API_VERSION)
+
+#define LTTNG_DEBIAN_KERNEL_RANGE(a_low, b_low, c_low, d_low, e_low, f_low, \
+		a_high, b_high, c_high, d_high, e_high, f_high) \
+	(defined(DEBIAN_API_VERSION) && \
+		LTTNG_DEBIAN_VERSION_CODE >= \
+		LTTNG_DEBIAN_KERNEL_VERSION(a_low, b_low, c_low, d_low, e_low, f_low) && \
+		LTTNG_DEBIAN_VERSION_CODE < \
+		LTTNG_DEBIAN_KERNEL_VERSION(a_high, b_high, c_high, d_high, e_high, f_high))
+
 #endif /* _LTTNG_KERNEL_VERSION_H */
