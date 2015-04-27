@@ -1,3 +1,7 @@
+KERNELDIR=${LTTNG_KERNELDIR}
+
+include $(KBUILD_EXTMOD)/Makefile.ABI.workarounds
+
 obj-m += lttng-lib-ring-buffer.o
 
 lttng-lib-ring-buffer-objs := \

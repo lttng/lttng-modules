@@ -1,0 +1,11 @@
+# Work-around for distro-specific public modules ABI breakages.
+# Some distributions break the public module instrumentation ABI
+# compared to upstream stable kernels without providing other mean than
+# the kernel EXTRAVERSION to figure it out. Translate this information
+# into a define visible from the C preprocessor.
+
+DEB_API_VERSION=$(shell $(KBUILD_EXTMOD)/abi-debian-version.sh $(KERNELDIR))
+
+ifneq ($(DEB_API_VERSION), 0)
+ccflags-y += -DDEBIAN_API_VERSION=$(DEB_API_VERSION)
+endif

@@ -5,6 +5,8 @@
 ifneq ($(KERNELRELEASE),)
 ifneq ($(CONFIG_TRACEPOINTS),)
 
+KERNELDIR=${LTTNG_KERNELDIR}
+
 lttng_check_linux_version = $(shell pwd)/include/linux/version.h
 lttng_check_generated_linux_version = $(shell pwd)/include/generated/uapi/linux/version.h
 
@@ -18,6 +20,8 @@ ifneq ($(wildcard $(lttng_check_generated_linux_version)),)
 $(error Duplicate version.h files found in $(lttng_check_linux_version) and $(lttng_check_generated_linux_version). Consider running make distclean on your kernel, or removing the stale $(lttng_check_linux_version) file)
 endif
 endif
+
+include $(KBUILD_EXTMOD)/Makefile.ABI.workarounds
 
 obj-m += lttng-ring-buffer-client-discard.o
 obj-m += lttng-ring-buffer-client-overwrite.o
@@ -74,14 +78,14 @@ else # KERNELRELEASE
 	CFLAGS = $(EXTCFLAGS)
 
 default:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
+	LTTNG_KERNELDIR=$(KERNELDIR) $(MAKE) -C $(KERNELDIR) M=$(PWD) modules
 
 modules_install:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules_install
+	LTTNG_KERNELDIR=$(KERNELDIR) $(MAKE) -C $(KERNELDIR) M=$(PWD) modules_install
 
 clean:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
+	LTTNG_KERNELDIR=$(KERNELDIR) $(MAKE) -C $(KERNELDIR) M=$(PWD) clean
 
 %.i: %.c
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) $@
+	LTTNG_KERNELDIR=$(KERNELDIR) $(MAKE) -C $(KERNELDIR) M=$(PWD) $@
 endif # KERNELRELEASE
