@@ -37,6 +37,11 @@
  */
 #include "../wrapper/tracepoint.h"
 
+#include <../../arch/x86/kvm/mmutrace.h>
+
+#undef TRACE_INCLUDE_PATH
+#undef TRACE_INCLUDE_FILE
+
 /*
  * Create LTTng tracepoint probes.
  */
