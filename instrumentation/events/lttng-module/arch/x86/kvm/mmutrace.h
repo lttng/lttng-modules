@@ -3,6 +3,7 @@
 
 #include "../../../../../../probes/lttng-tracepoint-event.h"
 #include <linux/ftrace_event.h>
+#include <linux/version.h>
 
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM kvm_mmu
@@ -117,6 +118,26 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_mmu_page_class, kvm_mmu_prepare_zap_page,
 	TP_ARGS(sp)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+
+LTTNG_TRACEPOINT_EVENT_MAP(
+	mark_mmio_spte,
+
+	kvm_mmu_mark_mmio_spte,
+
+	TP_PROTO(u64 *sptep, gfn_t gfn, unsigned access, unsigned int gen),
+	TP_ARGS(sptep, gfn, access, gen),
+
+	TP_FIELDS(
+		ctf_integer(void *, sptep, sptep)
+		ctf_integer(gfn_t, gfn, gfn)
+		ctf_integer(unsigned, access, access)
+		ctf_integer(unsigned int, gen, gen)
+	)
+)
+
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
+
 LTTNG_TRACEPOINT_EVENT_MAP(
 	mark_mmio_spte,
 
@@ -131,6 +152,8 @@ LTTNG_TRACEPOINT_EVENT_MAP(
 		ctf_integer(unsigned, access, access)
 	)
 )
+
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
 
 LTTNG_TRACEPOINT_EVENT_MAP(
 	handle_mmio_page_fault,
