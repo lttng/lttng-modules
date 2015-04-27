@@ -8,6 +8,27 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM kvmmmu
 
+#undef KVM_MMU_PAGE_FIELDS
+#undef KVM_MMU_PAGE_ASSIGN
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+
+#define KVM_MMU_PAGE_FIELDS \
+	__field(unsigned long, mmu_valid_gen) \
+	__field(__u64, gfn) \
+	__field(__u32, role) \
+	__field(__u32, root_count) \
+	__field(bool, unsync)
+
+#define KVM_MMU_PAGE_ASSIGN(sp)			     \
+	tp_assign(mmu_valid_gen, sp->mmu_valid_gen)  \
+	tp_assign(gfn, sp->gfn)			     \
+	tp_assign(role, sp->role.word)		     \
+	tp_assign(root_count, sp->root_count)        \
+	tp_assign(unsync, sp->unsync)
+
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
+
 #define KVM_MMU_PAGE_FIELDS \
 	__field(__u64, gfn) \
 	__field(__u32, role) \
@@ -20,28 +41,7 @@
 	tp_assign(root_count, sp->root_count)        \
 	tp_assign(unsync, sp->unsync)
 
-#define KVM_MMU_PAGE_PRINTK() ({				        \
-	const char *ret = p->buffer + p->len;				\
-	static const char *access_str[] = {			        \
-		"---", "--x", "w--", "w-x", "-u-", "-ux", "wu-", "wux"  \
-	};							        \
-	union kvm_mmu_page_role role;				        \
-								        \
-	role.word = __entry->role;					\
-									\
-	trace_seq_printf(p, "sp gfn %llx %u%s q%u%s %s%s"		\
-			 " %snxe root %u %s%c",				\
-			 __entry->gfn, role.level,			\
-			 role.cr4_pae ? " pae" : "",			\
-			 role.quadrant,					\
-			 role.direct ? " direct" : "",			\
-			 access_str[role.access],			\
-			 role.invalid ? " invalid" : "",		\
-			 role.nxe ? "" : "!",				\
-			 __entry->root_count,				\
-			 __entry->unsync ? "unsync" : "sync", 0);	\
-	ret;								\
-		})
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
 
 #define kvm_mmu_trace_pferr_flags       \
 	{ PFERR_PRESENT_MASK, "P" },	\
@@ -158,8 +158,7 @@ LTTNG_TRACEPOINT_EVENT(
 		tp_assign(created, created)
 		),
 
-	TP_printk("%s %s", KVM_MMU_PAGE_PRINTK(),
-		  __entry->created ? "new" : "existing")
+	TP_printk()
 )
 
 LTTNG_TRACEPOINT_EVENT_CLASS(kvm_mmu_page_class,
@@ -175,7 +174,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(kvm_mmu_page_class,
 		KVM_MMU_PAGE_ASSIGN(sp)
 	),
 
-	TP_printk("%s", KVM_MMU_PAGE_PRINTK())
+	TP_printk()
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_mmu_page_class, kvm_mmu_sync_page,
