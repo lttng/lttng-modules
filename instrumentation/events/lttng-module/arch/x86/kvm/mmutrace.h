@@ -3,6 +3,7 @@
 
 #include <linux/tracepoint.h>
 #include <linux/ftrace_event.h>
+#include <linux/version.h>
 
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM kvmmmu
@@ -195,6 +196,33 @@ DEFINE_EVENT(kvm_mmu_page_class, kvm_mmu_prepare_zap_page,
 	TP_ARGS(sp)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+
+TRACE_EVENT(
+	mark_mmio_spte,
+	TP_PROTO(u64 *sptep, gfn_t gfn, unsigned access, unsigned int gen),
+	TP_ARGS(sptep, gfn, access, gen),
+
+	TP_STRUCT__entry(
+		__field(void *, sptep)
+		__field(gfn_t, gfn)
+		__field(unsigned, access)
+		__field(unsigned int, gen)
+	),
+
+	TP_fast_assign(
+		tp_assign(sptep, sptep)
+		tp_assign(gfn, gfn)
+		tp_assign(access, access)
+		tp_assign(gen, gen)
+	),
+
+	TP_printk("sptep:%p gfn %llx access %x", __entry->sptep, __entry->gfn,
+		  __entry->access)
+)
+
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
+
 TRACE_EVENT(
 	mark_mmio_spte,
 	TP_PROTO(u64 *sptep, gfn_t gfn, unsigned access),
@@ -215,6 +243,8 @@ TRACE_EVENT(
 	TP_printk("sptep:%p gfn %llx access %x", __entry->sptep, __entry->gfn,
 		  __entry->access)
 )
+
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
 
 TRACE_EVENT(
 	handle_mmio_page_fault,
