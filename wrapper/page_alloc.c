@@ -24,7 +24,9 @@
 
 #include "../lttng-kernel-version.h"
 
-#if defined(CONFIG_KALLSYMS) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,2))
+#if (defined(CONFIG_KALLSYMS) \
+	&& (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,2) \
+		|| LTTNG_DEBIAN_KERNEL_RANGE(3,16,7,9,0,0, 3,17,0,0,0,0)))
 
 #include <linux/kallsyms.h>
 #include <linux/mm_types.h>

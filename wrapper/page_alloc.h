@@ -31,7 +31,9 @@
  * We need to redefine get_pfnblock_flags_mask to our wrapper, because
  * the get_pageblock_migratetype() macro uses it.
  */
-#if defined(CONFIG_KALLSYMS) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,2))
+#if (defined(CONFIG_KALLSYMS) \
+	&& (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,2) \
+		|| LTTNG_DEBIAN_KERNEL_RANGE(3,16,7,9,0,0, 3,17,0,0,0,0)))
 
 #define get_pfnblock_flags_mask		wrapper_get_pfnblock_flags_mask
 
