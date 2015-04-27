@@ -6,19 +6,6 @@
 
 #include "../../../probes/lttng-tracepoint-event.h"
 
-#define show_field(field)						\
-	__print_symbolic(field,						\
-		{ V4L2_FIELD_ANY,		"ANY" },		\
-		{ V4L2_FIELD_NONE,		"NONE" },		\
-		{ V4L2_FIELD_TOP,		"TOP" },		\
-		{ V4L2_FIELD_BOTTOM,		"BOTTOM" },		\
-		{ V4L2_FIELD_INTERLACED,	"INTERLACED" },		\
-		{ V4L2_FIELD_SEQ_TB,		"SEQ_TB" },		\
-		{ V4L2_FIELD_SEQ_BT,		"SEQ_BT" },		\
-		{ V4L2_FIELD_ALTERNATE,		"ALTERNATE" },		\
-		{ V4L2_FIELD_INTERLACED_TB,	"INTERLACED_TB" },      \
-		{ V4L2_FIELD_INTERLACED_BT,	"INTERLACED_BT" })
-
 #define show_timecode_type(type)					\
 	__print_symbolic(type,						\
 		{ V4L2_TC_TYPE_24FPS,		"24FPS" },		\
@@ -108,30 +95,7 @@
 			tp_assign(sequence, buf->sequence);		\
 		),							\
 									\
-		TP_printk("minor = %d, index = %u, type = %s, "		\
-			  "bytesused = %u, flags = %s, "		\
-			  "field = %s, timestamp = %llu, timecode = { "	\
-			  "type = %s, flags = %s, frames = %u, "	\
-			  "seconds = %u, minutes = %u, hours = %u, "	\
-			  "userbits = { %u %u %u %u } }, "		\
-			  "sequence = %u", __entry->minor,		\
-			  __entry->index, show_type(__entry->type),	\
-			  __entry->bytesused,				\
-			  show_flags(__entry->flags),			\
-			  show_field(__entry->field),			\
-			  __entry->timestamp,				\
-			  show_timecode_type(__entry->timecode_type),	\
-			  show_timecode_flags(__entry->timecode_flags),	\
-			  __entry->timecode_frames,			\
-			  __entry->timecode_seconds,			\
-			  __entry->timecode_minutes,			\
-			  __entry->timecode_hours,			\
-			  __entry->timecode_userbits0,			\
-			  __entry->timecode_userbits1,			\
-			  __entry->timecode_userbits2,			\
-			  __entry->timecode_userbits3,			\
-			  __entry->sequence				\
-		)							\
+		TP_printk()						\
 	)
 
 LTTNG_TRACEPOINT_EVENT_V4L2(v4l2_dqbuf)
