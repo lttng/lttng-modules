@@ -16,7 +16,14 @@ DEB_PACKAGE_VERSION=$(sed -rn 's/^#define LINUX_PACKAGE_ID " Debian (.*)"/\1/p' 
 DEB_PACKAGE_VERSION=$(echo ${DEB_PACKAGE_VERSION} | sed -r 's/~(bpo|deb).*//')
 # Get -ckt update number, if present
 KERNEL_CKT_UPDATE=$(echo ${DEB_PACKAGE_VERSION} | sed -rn 's/^[0-9]+\.[0-9]+\.[0-9]+-ckt([0-9]+).*/\1/p')
-test -n "${KERNEL_CKT_UPDATE}" || KERNEL_CKT_UPDATE=0
+
+# Only care about the rest if it is a -ckt kernel, making sure we do not
+# clash with older Debian kernels (e.g. Debian 3.2.65-1+deb7u2).
+if [ -z "${KERNEL_CKT_UPDATE}" ]; then
+	echo 0
+	exit 0
+fi
+
 # Get package revision
 DEB_PACKAGE_REVISION=$(echo ${DEB_PACKAGE_VERSION} | sed -r 's/.*-([^-]+)$/\1/')
 # Get non-sec update number
