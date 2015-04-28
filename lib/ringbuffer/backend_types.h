@@ -28,7 +28,7 @@
 
 struct lib_ring_buffer_backend_page {
 	void *virt;			/* page virtual address (cached) */
-	struct page *page;		/* pointer to page structure */
+	unsigned long pfn;		/* page frame number */
 };
 
 struct lib_ring_buffer_backend_pages {

@@ -38,7 +38,7 @@ static int lib_ring_buffer_fault(struct vm_area_struct *vma, struct vm_fault *vm
 	struct channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	pgoff_t pgoff = vmf->pgoff;
-	struct page **page;
+	unsigned long *pfnp;
 	void **virt;
 	unsigned long offset, sb_bindex;
 
@@ -53,14 +53,14 @@ static int lib_ring_buffer_fault(struct vm_area_struct *vma, struct vm_fault *vm
 			  buf->backend.chan->backend.subbuf_size))
 		return VM_FAULT_SIGBUS;
 	/*
-	 * ring_buffer_read_get_page() gets the page in the current reader's
-	 * pages.
+	 * ring_buffer_read_get_pfn() gets the page frame number for the
+	 * current reader's pages.
 	 */
-	page = lib_ring_buffer_read_get_page(&buf->backend, offset, &virt);
-	if (!*page)
+	pfnp = lib_ring_buffer_read_get_pfn(&buf->backend, offset, &virt);
+	if (!*pfnp)
 		return VM_FAULT_SIGBUS;
-	get_page(*page);
-	vmf->page = *page;
+	get_page(pfn_to_page(*pfnp));
+	vmf->page = pfn_to_page(*pfnp);
 
 	return 0;
 }

@@ -126,7 +126,8 @@ static int subbuf_splice_actor(struct file *in,
 
 	for (; spd.nr_pages < nr_pages; spd.nr_pages++) {
 		unsigned int this_len;
-		struct page **page, *new_page;
+		unsigned long *pfnp, new_pfn;
+		struct page *new_page;
 		void **virt;
 
 		if (!len)
@@ -143,11 +144,11 @@ static int subbuf_splice_actor(struct file *in,
 					    GFP_KERNEL | __GFP_ZERO, 0);
 		if (!new_page)
 			break;
-
+		new_pfn = page_to_pfn(new_page);
 		this_len = PAGE_SIZE - poff;
-		page = lib_ring_buffer_read_get_page(&buf->backend, roffset, &virt);
-		spd.pages[spd.nr_pages] = *page;
-		*page = new_page;
+		pfnp = lib_ring_buffer_read_get_pfn(&buf->backend, roffset, &virt);
+		spd.pages[spd.nr_pages] = pfn_to_page(*pfnp);
+		*pfnp = new_pfn;
 		*virt = page_address(new_page);
 		spd.partial[spd.nr_pages].offset = poff;
 		spd.partial[spd.nr_pages].len = this_len;
