@@ -1,3 +1,16 @@
+2015-04-29 LTTng modules 2.5.4
+	* Fix: mmutrace warnings about redefined macros
+	* Fix: x86 mmutrace event extra field for kernels >= 3.11
+	* Fix: add missing x86 mmutrace kernel header include
+	* Fix: update README file to match reality: kernels >= 2.6.36 are supported
+	* Fix: add struct file_handle forward declaration
+	* Fix: atomic.h wrapper for kernels < 2.6.37
+	* Fix: disable x86 kvm instrumentation for kernels < 2.6.38
+	* Fix: mm_page_alloc_extfrag instrumentation for kernel 3.14.36
+	* Fix: update backported kmem patches to lttng-modules 2.5 API
+	* Fix: kmem instrumentation update for mm_page_alloc_extfrag kernel 3.19.2+
+	* Fix: kmem instrumentation: mm_page_alloc extfrag change_ownership field
+
 2015-01-26 LTTng modules 2.5.3
 	* Fix: missing parenthesis in offset_align_floor
 	* Fix: implement time.h wrapper for FD_ISSET
