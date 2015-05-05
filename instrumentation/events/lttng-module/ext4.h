@@ -1229,7 +1229,6 @@ LTTNG_TRACEPOINT_EVENT_CLASS(ext4__map_blocks_exit,
 	TP_FIELDS(
 		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
 		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(unsigned int, flags, flags)
 		ctf_integer(ext4_fsblk_t, pblk, map->m_pblk)
 		ctf_integer(ext4_lblk_t, lblk, map->m_lblk)
 		ctf_integer(unsigned int, len, map->m_len)
