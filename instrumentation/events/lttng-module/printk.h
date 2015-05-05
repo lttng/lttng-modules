@@ -24,7 +24,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(console,
 
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
 
-LTTNG_TRACEPOINT_EVENT_CONDITION_MAP(console,
+LTTNG_TRACEPOINT_EVENT_MAP(console,
 
 	printk_console,
 
@@ -32,8 +32,6 @@ LTTNG_TRACEPOINT_EVENT_CONDITION_MAP(console,
 		 unsigned log_buf_len),
 
 	TP_ARGS(log_buf, start, end, log_buf_len),
-
-	TP_CONDITION(start != end),
 
 	TP_FIELDS(
 		ctf_sequence_text(char, msg, log_buf + start,
@@ -43,7 +41,7 @@ LTTNG_TRACEPOINT_EVENT_CONDITION_MAP(console,
 
 #else /* (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0)) */
 
-LTTNG_TRACEPOINT_EVENT_CONDITION_MAP(console,
+LTTNG_TRACEPOINT_EVENT_MAP(console,
 
 	printk_console,
 
@@ -51,8 +49,6 @@ LTTNG_TRACEPOINT_EVENT_CONDITION_MAP(console,
 		 unsigned log_buf_len),
 
 	TP_ARGS(log_buf, start, end, log_buf_len),
-
-	TP_CONDITION(start != end),
 
 	TP_FIELDS(
 		/*
