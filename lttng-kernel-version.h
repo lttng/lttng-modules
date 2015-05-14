@@ -42,13 +42,16 @@
 #define LTTNG_UBUNTU_KERNEL_VERSION(a, b, c, d) \
 	(((a) << 24) + ((b) << 16) + (c << 8) + (d))
 
+#ifdef UTS_UBUNTU_RELEASE_ABI
 #define LTTNG_UBUNTU_VERSION_CODE \
 	((LINUX_VERSION_CODE << 8) + UTS_UBUNTU_RELEASE_ABI)
+#else
+#define LTTNG_UBUNTU_VERSION_CODE 	0
+#endif
 
 #define LTTNG_UBUNTU_KERNEL_RANGE(a_low, b_low, c_low, d_low, \
 		a_high, b_high, c_high, d_high) \
-	(defined(UTS_UBUNTU_RELEASE_ABI) && \
-		LTTNG_UBUNTU_VERSION_CODE >= \
+	(LTTNG_UBUNTU_VERSION_CODE >= \
 		LTTNG_UBUNTU_KERNEL_VERSION(a_low, b_low, c_low, d_low) && \
 		LTTNG_UBUNTU_VERSION_CODE < \
 		LTTNG_UBUNTU_KERNEL_VERSION(a_high, b_high, c_high, d_high))
@@ -56,13 +59,16 @@
 #define LTTNG_DEBIAN_KERNEL_VERSION(a, b, c, d, e, f) \
 	(((((a) << 16) + ((b) << 8) + (c)) * 1000000ULL) + ((d) * 10000) + ((e) * 100) + (f))
 
+#ifdef DEBIAN_API_VERSION
 #define LTTNG_DEBIAN_VERSION_CODE \
 	((LINUX_VERSION_CODE * 1000000ULL) + DEBIAN_API_VERSION)
+#else
+#define LTTNG_DEBIAN_VERSION_CODE	0
+#endif
 
 #define LTTNG_DEBIAN_KERNEL_RANGE(a_low, b_low, c_low, d_low, e_low, f_low, \
 		a_high, b_high, c_high, d_high, e_high, f_high) \
-	(defined(DEBIAN_API_VERSION) && \
-		LTTNG_DEBIAN_VERSION_CODE >= \
+	(LTTNG_DEBIAN_VERSION_CODE >= \
 		LTTNG_DEBIAN_KERNEL_VERSION(a_low, b_low, c_low, d_low, e_low, f_low) && \
 		LTTNG_DEBIAN_VERSION_CODE < \
 		LTTNG_DEBIAN_KERNEL_VERSION(a_high, b_high, c_high, d_high, e_high, f_high))
