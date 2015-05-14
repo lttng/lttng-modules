@@ -522,6 +522,8 @@ int do_lttng_statedump(struct lttng_session *session)
 		return ret;
 	ret = lttng_enumerate_block_devices(session);
 	switch (ret) {
+	case 0:
+		break;
 	case -ENOSYS:
 		printk(KERN_WARNING "LTTng: block device enumeration is not supported by kernel\n");
 		break;
