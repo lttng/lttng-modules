@@ -61,7 +61,7 @@
 
 #define LTTNG_DEBIAN_KERNEL_RANGE(a_low, b_low, c_low, d_low, e_low, f_low, \
 		a_high, b_high, c_high, d_high, e_high, f_high) \
-	(defined(LTTNG_DEBIAN_VERSION_CODE) && \
+	(defined(DEBIAN_API_VERSION) && \
 		LTTNG_DEBIAN_VERSION_CODE >= \
 		LTTNG_DEBIAN_KERNEL_VERSION(a_low, b_low, c_low, d_low, e_low, f_low) && \
 		LTTNG_DEBIAN_VERSION_CODE < \
