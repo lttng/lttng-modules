@@ -14,7 +14,6 @@ struct device;
 struct regmap;
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,4))
 /*
  * Log register events
  */
@@ -57,52 +56,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_reg, regmap_reg_read,
 
 	TP_ARGS(map, reg, val)
 )
-#else
-/*
- * Log register events
- */
-LTTNG_TRACEPOINT_EVENT_CLASS(regmap_reg,
 
-	TP_PROTO(struct device *dev, unsigned int reg,
-		 unsigned int val),
-
-	TP_ARGS(dev, reg, val),
-
-	TP_STRUCT__entry(
-		__string(	name,		dev_name(dev)	)
-		__field(	unsigned int,	reg		)
-		__field(	unsigned int,	val		)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, dev_name(dev))
-		tp_assign(reg, reg)
-		tp_assign(val, val)
-	),
-
-	TP_printk("%s reg=%x val=%x", __get_str(name),
-		  (unsigned int)__entry->reg,
-		  (unsigned int)__entry->val)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_reg, regmap_reg_write,
-
-	TP_PROTO(struct device *dev, unsigned int reg,
-		 unsigned int val),
-
-	TP_ARGS(dev, reg, val)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_reg, regmap_reg_read,
-
-	TP_PROTO(struct device *dev, unsigned int reg,
-		 unsigned int val),
-
-	TP_ARGS(dev, reg, val)
-)
-#endif
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,4))
 LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_reg, regmap_reg_read_cache,
 
 	TP_PROTO(struct regmap *map, unsigned int reg,
@@ -110,17 +64,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_reg, regmap_reg_read_cache,
 
 	TP_ARGS(map, reg, val)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
-LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_reg, regmap_reg_read_cache,
 
-	TP_PROTO(struct device *dev, unsigned int reg,
-		 unsigned int val),
-
-	TP_ARGS(dev, reg, val)
-)
-#endif
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,4))
 LTTNG_TRACEPOINT_EVENT_CLASS(regmap_block,
 
 	TP_PROTO(struct regmap *map, unsigned int reg, int count),
@@ -171,60 +115,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_block, regmap_hw_write_done,
 
 	TP_ARGS(map, reg, count)
 )
-#else
-LTTNG_TRACEPOINT_EVENT_CLASS(regmap_block,
 
-	TP_PROTO(struct device *dev, unsigned int reg, int count),
-
-	TP_ARGS(dev, reg, count),
-
-	TP_STRUCT__entry(
-		__string(	name,		dev_name(dev)	)
-		__field(	unsigned int,	reg		)
-		__field(	int,		count		)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, dev_name(dev))
-		tp_assign(reg, reg)
-		tp_assign(count, count)
-	),
-
-	TP_printk("%s reg=%x count=%d", __get_str(name),
-		  (unsigned int)__entry->reg,
-		  (int)__entry->count)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_block, regmap_hw_read_start,
-
-	TP_PROTO(struct device *dev, unsigned int reg, int count),
-
-	TP_ARGS(dev, reg, count)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_block, regmap_hw_read_done,
-
-	TP_PROTO(struct device *dev, unsigned int reg, int count),
-
-	TP_ARGS(dev, reg, count)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_block, regmap_hw_write_start,
-
-	TP_PROTO(struct device *dev, unsigned int reg, int count),
-
-	TP_ARGS(dev, reg, count)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_block, regmap_hw_write_done,
-
-	TP_PROTO(struct device *dev, unsigned int reg, int count),
-
-	TP_ARGS(dev, reg, count)
-)
-#endif
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,4))
 LTTNG_TRACEPOINT_EVENT(regcache_sync,
 
 	TP_PROTO(struct regmap *map, const char *type,
@@ -247,33 +138,7 @@ LTTNG_TRACEPOINT_EVENT(regcache_sync,
 	TP_printk("%s type=%s status=%s", __get_str(name),
 		  __get_str(type), __get_str(status))
 )
-#else
-LTTNG_TRACEPOINT_EVENT(regcache_sync,
 
-	TP_PROTO(struct device *dev, const char *type,
-		 const char *status),
-
-	TP_ARGS(dev, type, status),
-
-	TP_STRUCT__entry(
-		__string(       name,           dev_name(dev)   )
-		__string(	status,		status		)
-		__string(	type,		type		)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, dev_name(dev))
-		tp_strcpy(status, status)
-		tp_strcpy(type, type)
-	),
-
-	TP_printk("%s type=%s status=%s", __get_str(name),
-		  __get_str(type), __get_str(status))
-)
-#endif
-
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,4))
 LTTNG_TRACEPOINT_EVENT_CLASS(regmap_bool,
 
 	TP_PROTO(struct regmap *map, bool flag),
@@ -307,43 +172,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_bool, regmap_cache_bypass,
 
 	TP_ARGS(map, flag)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-LTTNG_TRACEPOINT_EVENT_CLASS(regmap_bool,
-
-	TP_PROTO(struct device *dev, bool flag),
-
-	TP_ARGS(dev, flag),
-
-	TP_STRUCT__entry(
-		__string(	name,		dev_name(dev)	)
-		__field(	int,		flag		)
-	),
-
-	TP_fast_assign(
-		tp_strcpy(name, dev_name(dev))
-		tp_assign(flag, flag)
-	),
-
-	TP_printk("%s flag=%d", __get_str(name),
-		  (int)__entry->flag)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_bool, regmap_cache_only,
-
-	TP_PROTO(struct device *dev, bool flag),
-
-	TP_ARGS(dev, flag)
-
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_bool, regmap_cache_bypass,
-
-	TP_PROTO(struct device *dev, bool flag),
-
-	TP_ARGS(dev, flag)
-
-)
-#endif
 
 #endif /* LTTNG_TRACE_REGMAP_H */
 
