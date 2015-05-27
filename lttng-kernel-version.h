@@ -73,4 +73,21 @@
 		LTTNG_DEBIAN_VERSION_CODE < \
 		LTTNG_DEBIAN_KERNEL_VERSION(a_high, b_high, c_high, d_high, e_high, f_high))
 
+#define LTTNG_RHEL_KERNEL_VERSION(a, b, c, d, e) \
+	(((a) * (1ULL << 32)) + ((b) << 24) + ((c) << 16) + ((d) << 8) + (e))
+
+#ifdef RHEL_RELEASE_CODE
+#define LTTNG_RHEL_VERSION_CODE \
+	((LINUX_VERSION_CODE * (1ULL << 16)) + RHEL_RELEASE_CODE)
+#else
+#define LTTNG_RHEL_VERSION_CODE		0
+#endif
+
+#define LTTNG_RHEL_KERNEL_RANGE(a_low, b_low, c_low, d_low, e_low, \
+		a_high, b_high, c_high, d_high, e_high) \
+	(LTTNG_RHEL_VERSION_CODE >= \
+		LTTNG_RHEL_KERNEL_VERSION(a_low, b_low, c_low, d_low, e_low) && \
+		LTTNG_RHEL_VERSION_CODE < \
+		LTTNG_RHEL_KERNEL_VERSION(a_high, b_high, c_high, d_high, e_high))
+
 #endif /* _LTTNG_KERNEL_VERSION_H */
