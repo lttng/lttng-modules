@@ -40,7 +40,7 @@
 	 LINUX_VERSION_CODE < KERNEL_VERSION(a_high, b_high, c_high))
 
 #define LTTNG_UBUNTU_KERNEL_VERSION(a, b, c, d) \
-	(((a) << 24) + ((b) << 16) + (c << 8) + (d))
+	(((a) << 24) + ((b) << 16) + ((c) << 8) + (d))
 
 #ifdef UTS_UBUNTU_RELEASE_ABI
 #define LTTNG_UBUNTU_VERSION_CODE \
