@@ -325,7 +325,8 @@ DEFINE_EVENT(kvm_async_pf_nopresent_ready, kvm_async_pf_ready,
 	TP_ARGS(token, gva)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0) \
+	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,7,1, 3,11,0,0,0))
 
 TRACE_EVENT(
 	kvm_async_pf_completed,
