@@ -38,6 +38,7 @@
 #include <linux/anon_inodes.h>
 #include "wrapper/file.h"
 #include <linux/jhash.h>
+#include <linux/uaccess.h>
 
 #include "wrapper/uuid.h"
 #include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */

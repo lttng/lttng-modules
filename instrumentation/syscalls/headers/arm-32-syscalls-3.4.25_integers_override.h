@@ -23,7 +23,7 @@ SC_LTTNG_TRACEPOINT_EVENT(sync_file_range2,
 		ctf_integer_hex(int, fd, fd)
 		ctf_integer_hex(loff_t, offset, offset)
 		ctf_integer_hex(loff_t, nbytes, nbytes)
-		ctf_integer_hex(unsigned int, flags), flags)
+		ctf_integer_hex(unsigned int, flags, flags)
 	)
 )
 
