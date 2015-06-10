@@ -39,6 +39,7 @@
 #include "wrapper/file.h"
 #include <linux/jhash.h>
 #include <linux/uaccess.h>
+#include <linux/vmalloc.h>
 
 #include "wrapper/uuid.h"
 #include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
@@ -132,8 +133,7 @@ struct lttng_session *lttng_session_create(void)
 			GFP_KERNEL);
 	if (!metadata_cache)
 		goto err_free_session;
-	metadata_cache->data = kzalloc(METADATA_CACHE_DEFAULT_SIZE,
-			GFP_KERNEL);
+	metadata_cache->data = vzalloc(METADATA_CACHE_DEFAULT_SIZE);
 	if (!metadata_cache->data)
 		goto err_free_cache;
 	metadata_cache->cache_alloc = METADATA_CACHE_DEFAULT_SIZE;
@@ -163,7 +163,7 @@ void metadata_cache_destroy(struct kref *kref)
 {
 	struct lttng_metadata_cache *cache =
 		container_of(kref, struct lttng_metadata_cache, refcount);
-	kfree(cache->data);
+	vfree(cache->data);
 	kfree(cache);
 }
 
@@ -1531,10 +1531,16 @@ int lttng_metadata_printf(struct lttng_session *session,
 		tmp_cache_alloc_size = max_t(unsigned int,
 				session->metadata_cache->cache_alloc + len,
 				session->metadata_cache->cache_alloc << 1);
-		tmp_cache_realloc = krealloc(session->metadata_cache->data,
-				tmp_cache_alloc_size, GFP_KERNEL);
+		tmp_cache_realloc = vzalloc(tmp_cache_alloc_size);
 		if (!tmp_cache_realloc)
 			goto err;
+		if (session->metadata_cache->data) {
+			memcpy(tmp_cache_realloc,
+				session->metadata_cache->data,
+				session->metadata_cache->cache_alloc);
+			vfree(session->metadata_cache->data);
+		}
+
 		session->metadata_cache->cache_alloc = tmp_cache_alloc_size;
 		session->metadata_cache->data = tmp_cache_realloc;
 	}
