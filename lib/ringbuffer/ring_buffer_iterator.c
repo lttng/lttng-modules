@@ -71,7 +71,7 @@ restart:
 			 * Per-CPU buffers rather use a "push" scheme because
 			 * the IPI needed to flush all CPU's buffers is too
 			 * costly. In the "push" scheme, the reader waits for
-			 * the writer periodic deferrable timer to flush the
+			 * the writer periodic timer to flush the
 			 * buffers (keeping track of a quiescent state
 			 * timestamp). Therefore, the writer "pushes" data out
 			 * of the buffers rather than letting the reader "pull"

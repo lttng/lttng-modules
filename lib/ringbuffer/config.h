@@ -106,7 +106,7 @@ struct lib_ring_buffer_client_cb {
  *
  * wakeup:
  *
- * RING_BUFFER_WAKEUP_BY_TIMER uses per-cpu deferrable timers to poll the
+ * RING_BUFFER_WAKEUP_BY_TIMER uses per-cpu timers to poll the
  * buffers and wake up readers if data is ready. Mainly useful for tracers which
  * don't want to call into the wakeup code on the tracing path. Use in
  * combination with "read_timer_interval" channel_create() argument.
