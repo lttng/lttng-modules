@@ -37,7 +37,8 @@ lttng-tracer-objs :=  lttng-events.o lttng-abi.o \
 			lttng-context-prio.o lttng-context-nice.o \
 			lttng-context-vpid.o lttng-context-tid.o \
 			lttng-context-vtid.o lttng-context-ppid.o \
-			lttng-context-vppid.o lttng-calibrate.o \
+			lttng-context-vppid.o lttng-context-cpu-id.o \
+			lttng-calibrate.o \
 			lttng-context-hostname.o wrapper/random.o \
 			probes/lttng.o wrapper/trace-clock.o \
 			wrapper/page_alloc.o \

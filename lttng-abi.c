@@ -240,6 +240,8 @@ long lttng_abi_add_context(struct file *file,
 		return lttng_add_procname_to_ctx(ctx);
 	case LTTNG_KERNEL_CONTEXT_HOSTNAME:
 		return lttng_add_hostname_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_CPU_ID:
+		return lttng_add_cpu_id_to_ctx(ctx);
 	default:
 		return -EINVAL;
 	}

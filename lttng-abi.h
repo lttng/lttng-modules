@@ -141,6 +141,7 @@ enum lttng_kernel_context_type {
 	LTTNG_KERNEL_CONTEXT_PPID		= 8,
 	LTTNG_KERNEL_CONTEXT_VPPID		= 9,
 	LTTNG_KERNEL_CONTEXT_HOSTNAME		= 10,
+	LTTNG_KERNEL_CONTEXT_CPU_ID		= 11,
 };
 
 struct lttng_kernel_perf_counter_ctx {
