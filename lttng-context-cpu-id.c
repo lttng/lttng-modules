@@ -23,7 +23,6 @@
 #include <linux/module.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
-#include <linux/timex.h>
 #include "lttng-events.h"
 #include "wrapper/ringbuffer/frontend_types.h"
 #include "wrapper/vmalloc.h"
@@ -34,8 +33,8 @@ size_t cpu_id_get_size(size_t offset)
 {
 	size_t size = 0;
 
-	size += lib_ring_buffer_align(offset, lttng_alignof(cycles_t));
-	size += sizeof(cycles_t);
+	size += lib_ring_buffer_align(offset, lttng_alignof(int));
+	size += sizeof(int);
 	return size;
 }
 
@@ -44,7 +43,7 @@ void cpu_id_record(struct lttng_ctx_field *field,
 		struct lib_ring_buffer_ctx *ctx,
 		struct lttng_channel *chan)
 {
-	cycles_t cpu;
+	int cpu;
 
 	cpu = ctx->cpu;
 	lib_ring_buffer_align_ctx(ctx, lttng_alignof(cpu));
@@ -71,9 +70,9 @@ int lttng_add_cpu_id_to_ctx(struct lttng_ctx **ctx)
 	}
 	field->event_field.name = "cpu_id";
 	field->event_field.type.atype = atype_integer;
-	field->event_field.type.u.basic.integer.size = sizeof(cycles_t) * CHAR_BIT;
-	field->event_field.type.u.basic.integer.alignment = lttng_alignof(cycles_t) * CHAR_BIT;
-	field->event_field.type.u.basic.integer.signedness = lttng_is_signed_type(cycles_t);
+	field->event_field.type.u.basic.integer.size = sizeof(int) * CHAR_BIT;
+	field->event_field.type.u.basic.integer.alignment = lttng_alignof(int) * CHAR_BIT;
+	field->event_field.type.u.basic.integer.signedness = lttng_is_signed_type(int);
 	field->event_field.type.u.basic.integer.reverse_byte_order = 0;
 	field->event_field.type.u.basic.integer.base = 10;
 	field->event_field.type.u.basic.integer.encoding = lttng_encode_none;
