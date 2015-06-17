@@ -61,10 +61,12 @@ obj-m +=  $(shell \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 37 \) ] ; then \
 		echo "lttng-probe-net.o" ; fi;)
 obj-m +=  $(shell \
-	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 1 ] ; then \
+	if [ $(VERSION) -ge 4 \
+		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 1 \) ] ; then \
 		echo "lttng-probe-sock.o" ; fi;)
 obj-m +=  $(shell \
-	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 1 ] ; then \
+	if [ $(VERSION) -ge 4 \
+		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 1 \) ] ; then \
 		echo "lttng-probe-udp.o" ; fi;)
 endif
 
@@ -79,8 +81,8 @@ ifneq ($(CONFIG_EXT3_FS),)
 ext3_dep = $(srctree)/fs/ext3/*.h
 ext3_dep_check = $(wildcard $(ext3_dep))
 ext3 = $(shell \
-	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 1 ] ; then \
-		if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 4 -a \
+	if [ $(VERSION) -ge 4 -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 1 \) ] ; then \
+		if [ \( $(VERSION) -ge 4 -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 4 \) \) -a \
 			-z "$(ext3_dep_check)" ] ; then \
 			echo "warn" ; \
 			exit ; \
@@ -106,7 +108,8 @@ endif
 
 ifneq ($(CONFIG_JBD),)
 obj-m +=  $(shell \
-	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 1 ] ; then \
+	if [ $(VERSION) -ge 4 \
+		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 1 \) ] ; then \
 		echo "lttng-probe-jbd.o" ; fi;)
 endif
 
@@ -172,7 +175,8 @@ obj-m += $(ext4)
 endif
 
 obj-m +=  $(shell \
-	if [ $(VERSION) -ge 3 -a $(PATCHLEVEL) -ge 4 ] ; then \
+	if [ $(VERSION) -ge 4 \
+		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 4 \) ] ; then \
 		echo "lttng-probe-printk.o" ; fi;)
 ifneq ($(CONFIG_FRAME_WARN),0)
 CFLAGS_lttng-probe-printk.o += -Wframe-larger-than=2200
