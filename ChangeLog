@@ -1,3 +1,15 @@
+2015-06-18 LTTng modules 2.6.2
+	* Fix: version checks for kernel 4.0
+	* Fix: Incorrect Ubuntu kernel patchlevel
+	* Fix: Update kmem event for Ubuntu's 3.16 kernel
+	* Fix: RHEL 7.1 block instrumentation
+	* Fix: add RHEL version macros
+	* Fix: add missing parenthesis in ubuntu version check
+	* Fix: remove regmap instrumentation for kernels < 4.1
+	* Fix: Update kmem event for recent Ubuntu kernel
+	* Fix: missing statedump end event when block device listing available
+	* Fix: don't generate incorrect macros for debian/ubuntu version check
+
 2015-04-29 LTTng modules 2.6.1
 	* Fix: regmap build against kernel 4.0 kernel headers
 	* Fix: mmutrace warnings about redefined macros
