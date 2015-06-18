@@ -1,3 +1,10 @@
+2015-06-18 LTTng modules 2.5.5
+	* Fix: Incorrect Ubuntu kernel patchlevel
+	* Fix: RHEL 7.1 block instrumentation
+	* Fix: add RHEL version macros
+	* Fix: add missing parenthesis in ubuntu version check
+	* Fix: missing statedump end event when block device listing available
+
 2015-04-29 LTTng modules 2.5.4
 	* Fix: mmutrace warnings about redefined macros
 	* Fix: x86 mmutrace event extra field for kernels >= 3.11
