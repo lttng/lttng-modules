@@ -321,7 +321,6 @@ struct lttng_metadata_stream {
 	wait_queue_head_t read_wait;	/* Reader buffer-level wait queue */
 	struct list_head list;		/* Stream list */
 	struct lttng_transport *transport;
-	struct mutex lock;
 };
 
 struct lttng_session {
@@ -344,6 +343,7 @@ struct lttng_metadata_cache {
 	struct kref refcount;		/* Metadata cache usage */
 	struct list_head metadata_stream;	/* Metadata stream list */
 	uuid_le uuid;			/* Trace session unique ID (copy) */
+	struct mutex lock;
 };
 
 struct lttng_session *lttng_session_create(void);
