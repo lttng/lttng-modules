@@ -138,6 +138,7 @@ struct lttng_session *lttng_session_create(void)
 		goto err_free_cache;
 	metadata_cache->cache_alloc = METADATA_CACHE_DEFAULT_SIZE;
 	kref_init(&metadata_cache->refcount);
+	mutex_init(&metadata_cache->lock);
 	session->metadata_cache = metadata_cache;
 	INIT_LIST_HEAD(&metadata_cache->metadata_stream);
 	memcpy(&metadata_cache->uuid, &session->uuid,
@@ -1439,10 +1440,12 @@ void lttng_session_lazy_sync_enablers(struct lttng_session *session)
 /*
  * Serialize at most one packet worth of metadata into a metadata
  * channel.
- * We have exclusive access to our metadata buffer (protected by the
- * sessions_mutex), so we can do racy operations such as looking for
- * remaining space left in packet and write, since mutual exclusion
- * protects us from concurrent writes.
+ * We grab the metadata cache mutex to get exclusive access to our metadata
+ * buffer and to the metadata cache. Exclusive access to the metadata buffer
+ * allows us to do racy operations such as looking for remaining space left in
+ * packet and write, since mutual exclusion protects us from concurrent writes.
+ * Mutual exclusion on the metadata cache allow us to read the cache content
+ * without racing against reallocation of the cache by updates.
  * Returns the number of bytes written in the channel, 0 if no data
  * was written and a negative value on error.
  */
@@ -1454,13 +1457,15 @@ int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 	size_t len, reserve_len;
 
 	/*
-	 * Ensure we support mutiple get_next / put sequences followed
-	 * by put_next. The metadata stream lock internally protects
-	 * reading the metadata cache. It can indeed be read
-	 * concurrently by "get_next_subbuf" and "flush" operations on
-	 * the buffer invoked by different processes.
+	 * Ensure we support mutiple get_next / put sequences followed by
+	 * put_next. The metadata cache lock protects reading the metadata
+	 * cache. It can indeed be read concurrently by "get_next_subbuf" and
+	 * "flush" operations on the buffer invoked by different processes.
+	 * Moreover, since the metadata cache memory can be reallocated, we
+	 * need to have exclusive access against updates even though we only
+	 * read it.
 	 */
-	mutex_lock(&stream->lock);
+	mutex_lock(&stream->metadata_cache->lock);
 	WARN_ON(stream->metadata_in < stream->metadata_out);
 	if (stream->metadata_in != stream->metadata_out)
 		goto end;
@@ -1490,13 +1495,15 @@ int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 	ret = reserve_len;
 
 end:
-	mutex_unlock(&stream->lock);
+	mutex_unlock(&stream->metadata_cache->lock);
 	return ret;
 }
 
 /*
  * Write the metadata to the metadata cache.
  * Must be called with sessions_mutex held.
+ * The metadata cache lock protects us from concurrent read access from
+ * thread outputting metadata content to ring buffer.
  */
 int lttng_metadata_printf(struct lttng_session *session,
 			  const char *fmt, ...)
@@ -1515,6 +1522,7 @@ int lttng_metadata_printf(struct lttng_session *session,
 		return -ENOMEM;
 
 	len = strlen(str);
+	mutex_lock(&session->metadata_cache->lock);
 	if (session->metadata_cache->metadata_written + len >
 			session->metadata_cache->cache_alloc) {
 		char *tmp_cache_realloc;
@@ -1534,6 +1542,7 @@ int lttng_metadata_printf(struct lttng_session *session,
 			session->metadata_cache->metadata_written,
 			str, len);
 	session->metadata_cache->metadata_written += len;
+	mutex_unlock(&session->metadata_cache->lock);
 	kfree(str);
 
 	list_for_each_entry(stream, &session->metadata_cache->metadata_stream, list)
@@ -1542,6 +1551,7 @@ int lttng_metadata_printf(struct lttng_session *session,
 	return 0;
 
 err:
+	mutex_unlock(&session->metadata_cache->lock);
 	kfree(str);
 	return -ENOMEM;
 }
