@@ -1,3 +1,106 @@
+2015-07-15 (Pet Fire Safety Day) lttng-ust 2.7.0-rc1
+	* Fix: Building the event list fails on fragmented memory
+	* Fix: use after free on metadata cache reallocation
+	* Fix: version checks for kernel 4.0
+	* Fix: Incorrect Ubuntu kernel patchlevel
+	* Fix: cpu-id context should use int type
+	* Implement cpu-id context
+	* Implement cpu_id context for filtering
+	* Fix: context printk mismatch on error
+	* Cleanup: misleading comment about deferrable timer
+	* Fix: arm-32 build
+	* Fix: Update kmem event for Ubuntu's 3.16 kernel
+	* Fix: RHEL 7.1 block instrumentation
+	* Fix: add RHEL version macros
+	* Fix: add missing parenthesis in ubuntu version check
+	* Fix: remove regmap instrumentation for kernels < 4.1
+	* Fix: Update kmem event for recent Ubuntu kernel
+	* Fix: missing statedump end event when block device listing available
+	* Fix: don't generate incorrect macros for debian/ubuntu version check
+	* Revert "Fix: build against Ubuntu kernels"
+	* Fix: build against Ubuntu kernels
+	* Add namespace info in sched_fork and statedump
+	* Fix: ext4 instrumentation: flags parameter did not exist prior to 3.11
+	* Fix: printk instrumentation: remove "condition" tracepoints
+	* Fix: regmap build against kernel 4.0 kernel headers
+	* Add mmu_valid_gen field to mmutrace events
+	* Fix: add missing x86 mmutrace kernel header include
+	* Fix: x86 mmutrace event extra field for kernels >= 3.11
+	* Fix: remove execute flag from kvm.h file
+	* Fix: build x86 kvm probes on kernels >= 4.1-rc1
+	* Fix: compilation on 4.1-rc1 kernel, remove unused WB_WORK_REASON
+	* Fix: 4.1-rc1 Linux build and regmap instrumentation
+	* Fix: don't clash with older Debian kernel versions
+	* Fix: update get_pfnblock_flags_mask wrapper for debian kernels
+	* Fix: discover Debian API
+	* Fix: Update README.md to match reality: kernels >= 2.6.36 are supported
+	* Fix: atomic.h wrapper for kernels < 2.6.37
+	* Fix: disable x86 kvm instrumentation for kernels < 2.6.38
+	* Fix: add missing types.h include for older kernels
+	* Fix: add hlist lttng wrappers
+	* Fix: add struct file_handle forward declaration
+	* Fix: string length calculation reversed user vs kernel args
+	* Fix: use lttng_rcu_dereference within lttng-syscalls.c
+	* Fix: add lttng rcu wrapper to allow tracing RCU
+	* Fix: double-unlock of session mutex
+	* Fix: check that class and instance prototype match
+	* Fix: lttng-events.h check function takes void
+	* Fix: regmap instrumentation for Linux 3.19.4 and 4.0
+	* Fix: kernels >= 2.6.33 put utsrelease.h in generated/
+	* Fix: Include utsrelease.h in lttng-kernel-version.h
+	* Fix: ext4 ext4_da_write_pages instrumentation for kernels < 3.11.0
+	* Fix: old kernels need module.h included before vermagic.h
+	* Fix: net instrumentation for kernels 2.6.39 and below
+	* Fix: version condition in makefile
+	* Implement wrapper around get_pfnblock_flags_mask
+	* Be more restrictive in provider name check
+	* Fix: net instrumentation namespacing
+	* Fix: compaction instrumentation namespacing
+	* Fix: Support 4.x kernel versions in Makefile
+	* Fix: remove stale TP_STRUCT_entry from kvm instrumentation
+	* Fix: add missing module.h include to lttng-probe-user.c
+	* Fix: use lttng hlist wrapper in wildcard and filter
+	* Fix: namespace asoc and kmem instrumentation
+	* Fix: update instrumentation after wildcard rebase
+	* Fix: lttng_abi_syscall_list does not need to be exported
+	* Migrate ARM, powerpc, MIPS syscall instrumentation to TP_FIELDS
+	* Remove now unused syscalls.h from lttng-modules
+	* Filter: start with enabler "disabled"
+	* Fix coverity warning about sizeof(void **) != sizeof(void *)
+	* Fix length type and text sequence base
+	* Fix: TP_FIELDS: add missing headers
+	* Migrate syscall instrumentation to TP_FIELDS
+	* Migrate tracepoint instrumentation to TP_FIELDS
+	* Implement filtering infrastructure
+	* syscall wildcards: apply syscall filtering
+	* Implement syscall wildcard support
+	* Implement tracepoint wildcard support
+	* Namespace all tracepoints
+	* Implement list.h wrapper for hlist in older kernels
+	* Implement listing of pid tracker content
+	* Implement PID tracking
+	* Fix: mm_page_alloc_extfrag instrumentation for kernel 3.14.36
+	* Fix: update writeback instrumentation for kernel 4.0+
+	* Fix: compaction mm_compaction_isolate_template update for Linux 4.0+
+	* Fix: kmem instrumentation update for mm_page_alloc_extfrag kernel 3.19.2+
+	* Fix: kmem instrumentation: mm_page_alloc extfrag change_ownership field
+	* Fix: missing parenthesis in offset_align_floor
+	* Fix: implement time.h wrapper for FD_ISSET
+	* Fix: update sched instrumentation for 3.19+ kernels
+	* Fix: update rcu instrumentation for 3.19+ kernels
+	* Fix: update scsi instrumentation for 3.19+ kernels
+	* Fix: update module instrumentation for 3.19+ kernels
+	* Fix: Add f_dentry wrapper for 3.19+ kernels
+	* Fix: introduce lttng_get_unused_fd() wrapper for 3.19 kernels
+	* Fix: lttng_this_cpu_ptr wrapper for kernel 3.19+
+	* Fix: Update btrfs instrumentation for 3.18 Linux kernel
+	* Fix compile error on kernel 3.0.101 with CONFIG_PERF_EVENTS
+	* Conditional compilation introduced by lttng-modules commit
+	* Fix: compaction instrumentation update for 3.14.x stable kernels
+	* Fix: context alignment not properly handled
+	* Fix compilation on Linux kernel >= 3.18.0
+	* Fix: build for architectures without HAVE_SYSCALL_TRACEPOINTS
+
 2014-10-20 LTTng modules 2.6.0-rc1
 	* Expose lttng-modules ABI version ioctl
 	* Fix: syscall list ioctl number conflict
