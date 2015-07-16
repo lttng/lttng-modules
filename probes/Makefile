@@ -5,9 +5,10 @@
 ifneq ($(KERNELRELEASE),)
 ifneq ($(CONFIG_TRACEPOINTS),)
 
-KERNELDIR=${LTTNG_KERNELDIR}
+KERNELDIR = ${LTTNG_KERNELDIR}
+MAKEFILEDIR = $(shell dirname $(lastword $(MAKEFILE_LIST)))
 
-include $(KBUILD_EXTMOD)/Makefile.ABI.workarounds
+include $(MAKEFILEDIR)/../Makefile.ABI.workarounds
 
 ccflags-y += -I$(PWD)/probes
 obj-m += lttng-types.o

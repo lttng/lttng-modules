@@ -1,6 +1,7 @@
-KERNELDIR=${LTTNG_KERNELDIR}
+KERNELDIR = ${LTTNG_KERNELDIR}
+MAKEFILEDIR = $(shell dirname $(lastword $(MAKEFILE_LIST)))
 
-include $(KBUILD_EXTMOD)/Makefile.ABI.workarounds
+include $(MAKEFILEDIR)/../Makefile.ABI.workarounds
 
 obj-m += lttng-lib-ring-buffer.o
 
