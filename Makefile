@@ -5,10 +5,12 @@
 ifneq ($(KERNELRELEASE),)
 ifneq ($(CONFIG_TRACEPOINTS),)
 
-KERNELDIR=${LTTNG_KERNELDIR}
+KERNELDIR = ${LTTNG_KERNELDIR}
+MAKEFILEDIR = $(shell dirname $(lastword $(MAKEFILE_LIST)))
 
 lttng_check_linux_version = $(shell pwd)/include/linux/version.h
 lttng_check_generated_linux_version = $(shell pwd)/include/generated/uapi/linux/version.h
+
 
 #
 # Check for stale version.h, which can be a leftover from an old Linux
@@ -21,7 +23,7 @@ $(error Duplicate version.h files found in $(lttng_check_linux_version) and $(lt
 endif
 endif
 
-include $(KBUILD_EXTMOD)/Makefile.ABI.workarounds
+include $(MAKEFILEDIR)/Makefile.ABI.workarounds
 
 obj-m += lttng-ring-buffer-client-discard.o
 obj-m += lttng-ring-buffer-client-overwrite.o
