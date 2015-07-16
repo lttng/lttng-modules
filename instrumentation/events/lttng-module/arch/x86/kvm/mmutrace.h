@@ -2,8 +2,13 @@
 #define LTTNG_TRACE_KVM_MMU_H
 
 #include "../../../../../../probes/lttng-tracepoint-event.h"
-#include <linux/ftrace_event.h>
 #include <linux/version.h>
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+#include <linux/trace_events.h>
+#else /* if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
+#include <linux/ftrace_event.h>
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
 
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM kvm_mmu
