@@ -863,6 +863,24 @@ LTTNG_TRACEPOINT_EVENT(ext4_da_update_reserve_space,
 	)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+LTTNG_TRACEPOINT_EVENT(ext4_da_reserve_space,
+	TP_PROTO(struct inode *inode),
+
+	TP_ARGS(inode),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
+		ctf_integer(ino_t, ino, inode->i_ino)
+		ctf_integer(__u64, i_blocks, inode->i_blocks)
+		ctf_integer(int, reserved_data_blocks,
+				EXT4_I(inode)->i_reserved_data_blocks)
+		ctf_integer(int, reserved_meta_blocks,
+				EXT4_I(inode)->i_reserved_meta_blocks)
+		ctf_integer(TP_MODE_T, mode, inode->i_mode)
+	)
+)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
 LTTNG_TRACEPOINT_EVENT(ext4_da_reserve_space,
 	TP_PROTO(struct inode *inode, int md_needed),
 
@@ -880,6 +898,7 @@ LTTNG_TRACEPOINT_EVENT(ext4_da_reserve_space,
 		ctf_integer(TP_MODE_T, mode, inode->i_mode)
 	)
 )
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
 
 LTTNG_TRACEPOINT_EVENT(ext4_da_release_space,
 	TP_PROTO(struct inode *inode, int freed_blocks),
