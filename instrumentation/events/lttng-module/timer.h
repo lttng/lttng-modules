@@ -10,6 +10,7 @@
 #define _TRACE_TIMER_DEF_
 #include <linux/hrtimer.h>
 #include <linux/timer.h>
+#include <linux/version.h>
 
 struct timer_list;
 
@@ -37,6 +38,29 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(timer_class, timer_init,
 	TP_ARGS(timer)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+/**
+ * timer_start - called when the timer is started
+ * @timer:	pointer to struct timer_list
+ * @expires:	the timers expiry time
+ * @flags:	the timers expiry time
+ */
+LTTNG_TRACEPOINT_EVENT(timer_start,
+
+	TP_PROTO(struct timer_list *timer, unsigned long expires,
+		unsigned int flags),
+
+	TP_ARGS(timer, expires, flags),
+
+	TP_FIELDS(
+		ctf_integer(void *, timer, timer)
+		ctf_integer(void *, function, timer->function)
+		ctf_integer(unsigned long, expires, expires)
+		ctf_integer(unsigned long, now, jiffies)
+		ctf_integer(unsigned int, flags, flags)
+	)
+)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
 /**
  * timer_start - called when the timer is started
  * @timer:	pointer to struct timer_list
@@ -55,6 +79,7 @@ LTTNG_TRACEPOINT_EVENT(timer_start,
 		ctf_integer(unsigned long, now, jiffies)
 	)
 )
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
 
 /**
  * timer_expire_entry - called immediately before the timer callback
