@@ -25,6 +25,8 @@ obj-m += lttng-probe-statedump.o
 ifneq ($(CONFIG_KVM),)
 obj-m += lttng-probe-kvm.o
 ifneq ($(CONFIG_X86),)
+kvm_dep_lapic = $(srctree)/arch/x86/kvm/lapic.h
+ifneq ($(wildcard $(kvm_dep_lapic)),)
 kvm_dep = $(srctree)/virt/kvm/iodev.h $(srctree)/include/kvm/iodev.h
 ifneq ($(wildcard $(kvm_dep)),)
 CFLAGS_lttng-probe-kvm-x86.o += -I$(srctree)/virt/kvm
@@ -39,6 +41,9 @@ obj-m +=  $(shell \
 		echo "lttng-probe-kvm-x86-mmu.o" ; fi;)
 else
 $(warning File $(kvm_dep) not found. Probe "kvm" x86-specific is disabled. Use full kernel source tree to enable it.)
+endif
+else
+$(warning File $(kvm_dep_lapic) not found. Probe "kvm" x86-specific is disabled. Use full kernel source tree to enable it.)
 endif
 endif
 endif
