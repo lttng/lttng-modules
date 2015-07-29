@@ -1,9 +1,10 @@
 /*
  * wrapper/page_alloc.c
  *
- * wrapper around get_pfnblock_flags_mask. Using KALLSYMS to get its address
- * when available, else we need to have a kernel that exports this function to
- * GPL modules.
+ * wrapper around get_pfnblock_flags_mask and Ubuntu
+ * get_pageblock_flags_mask. Using KALLSYMS to get their address when
+ * available, else we need to have a kernel that exports this function
+ * to GPL modules.
  *
  * Copyright (C) 2015 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
@@ -63,8 +64,50 @@ int wrapper_get_pfnblock_flags_mask_init(void)
 	return 0;
 }
 
-#else /* #if defined(CONFIG_KALLSYMS) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,2)) */
+#else
 
 #include <linux/pageblock-flags.h>
 
-#endif /* #else #if defined(CONFIG_KALLSYMS) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,2)) */
+#endif
+
+#if (defined(CONFIG_KALLSYMS) \
+	&& LTTNG_UBUNTU_KERNEL_RANGE(3,13,11,50, 3,14,0,0))
+
+#include <linux/kallsyms.h>
+#include <linux/mm_types.h>
+#include <linux/module.h>
+#include "kallsyms.h"
+#include "page_alloc.h"
+
+static
+unsigned long (*get_pageblock_flags_mask_sym)(struct page *page,
+		unsigned long end_bitidx,
+		unsigned long mask);
+
+unsigned long wrapper_get_pageblock_flags_mask(struct page *page,
+		unsigned long end_bitidx,
+		unsigned long mask)
+{
+	WARN_ON_ONCE(!get_pageblock_flags_mask_sym);
+	if (get_pageblock_flags_mask_sym) {
+		return get_pageblock_flags_mask_sym(page, end_bitidx, mask);
+	} else {
+		return -ENOSYS;
+	}
+}
+EXPORT_SYMBOL_GPL(wrapper_get_pageblock_flags_mask);
+
+int wrapper_get_pageblock_flags_mask_init(void)
+{
+	get_pageblock_flags_mask_sym =
+		(void *) kallsyms_lookup_funcptr("get_pageblock_flags_mask");
+	if (!get_pageblock_flags_mask_sym)
+		return -1;
+	return 0;
+}
+
+#else
+
+#include <linux/pageblock-flags.h>
+
+#endif
