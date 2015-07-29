@@ -41,7 +41,7 @@
 
 int wrapper_get_pfnblock_flags_mask_init(void);
 
-#else /* #if defined(CONFIG_KALLSYMS) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,2)) */
+#else
 
 #include <linux/mm_types.h>
 
@@ -51,6 +51,38 @@ int wrapper_get_pfnblock_flags_mask_init(void)
 	return 0;
 }
 
-#endif /* else #if defined(CONFIG_KALLSYMS) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,2)) */
+#endif
+
+/*
+ * For a specific range of Ubuntu 3.13 kernels, we need to redefine
+ * get_pageblock_flags_mask to our wrapper, because the
+ * get_pageblock_migratetype() macro uses it. This function has been
+ * introduced into mainline within commit
+ * e58469bafd0524e848c3733bc3918d854595e20f, but never actually showed
+ * up in a stable kernel version, since it has been changed by commit
+ * dc4b0caff24d9b2918e9f27bc65499ee63187eba. Since Ubuntu chose to only
+ * backport the former commit but not the latter, we need to do a
+ * special case to cover this.
+ */
+#if (defined(CONFIG_KALLSYMS) \
+	&& LTTNG_UBUNTU_KERNEL_RANGE(3,13,11,50, 3,14,0,0))
+
+#define get_pageblock_flags_mask	wrapper_get_pageblock_flags_mask
+
+#include <linux/mm_types.h>
+
+int wrapper_get_pageblock_flags_mask_init(void);
+
+#else
+
+#include <linux/mm_types.h>
+
+static inline
+int wrapper_get_pageblock_flags_mask_init(void)
+{
+	return 0;
+}
+
+#endif
 
 #endif /* _LTTNG_WRAPPER_PAGE_ALLOC_H */
