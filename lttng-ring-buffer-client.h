@@ -57,6 +57,7 @@ struct packet_header {
 					 */
 	uint8_t uuid[16];
 	uint32_t stream_id;
+	uint64_t stream_instance_id;
 
 	struct {
 		/* Stream packet context */
@@ -352,6 +353,7 @@ static void client_buffer_begin(struct lib_ring_buffer *buf, u64 tsc,
 	header->magic = CTF_MAGIC_NUMBER;
 	memcpy(header->uuid, session->uuid.b, sizeof(session->uuid));
 	header->stream_id = lttng_chan->id;
+	header->stream_instance_id = buf->backend.cpu;
 	header->ctx.timestamp_begin = tsc;
 	header->ctx.timestamp_end = 0;
 	header->ctx.content_size = ~0ULL; /* for debugging */
@@ -481,6 +483,17 @@ static int client_sequence_number(const struct lib_ring_buffer_config *config,
 	struct packet_header *header = client_packet_header(config, buf);
 
 	*seq = header->ctx.packet_seq_num;
+
+	return 0;
+}
+
+static
+int client_instance_id(const struct lib_ring_buffer_config *config,
+		struct lib_ring_buffer *buf,
+		uint64_t *id)
+{
+	struct packet_header *header = client_packet_header(config, buf);
+	*id = header->stream_instance_id;
 
 	return 0;
 }
@@ -716,6 +729,7 @@ static struct lttng_transport lttng_relay_transport = {
 		.stream_id = client_stream_id,
 		.current_timestamp = client_current_timestamp,
 		.sequence_number = client_sequence_number,
+		.instance_id = client_instance_id,
 	},
 };
 

@@ -1974,6 +1974,7 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 		"		uint32_t magic;\n"
 		"		uint8_t  uuid[16];\n"
 		"		uint32_t stream_id;\n"
+		"		uint64_t stream_instance_id;\n"
 		"	};\n"
 		"};\n\n",
 		lttng_alignof(uint8_t) * CHAR_BIT,

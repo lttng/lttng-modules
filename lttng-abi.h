@@ -230,6 +230,8 @@ struct lttng_kernel_filter_bytecode {
 #define LTTNG_RING_BUFFER_GET_CURRENT_TIMESTAMP	_IOR(0xF6, 0x26, uint64_t)
 /* returns the packet sequence number */
 #define LTTNG_RING_BUFFER_GET_SEQ_NUM		_IOR(0xF6, 0x27, uint64_t)
+/* returns the stream instance id */
+#define LTTNG_RING_BUFFER_INSTANCE_ID		_IOR(0xF6, 0x28, uint64_t)
 
 #ifdef CONFIG_COMPAT
 /* returns the timestamp begin of the current sub-buffer */
@@ -256,6 +258,9 @@ struct lttng_kernel_filter_bytecode {
 /* returns the packet sequence number */
 #define LTTNG_RING_BUFFER_COMPAT_GET_SEQ_NUM	\
 	LTTNG_RING_BUFFER_GET_SEQ_NUM
+/* returns the stream instance id */
+#define LTTNG_RING_BUFFER_COMPAT_INSTANCE_ID	\
+	LTTNG_RING_BUFFER_INSTANCE_ID
 #endif /* CONFIG_COMPAT */
 
 #endif /* _LTTNG_ABI_H */

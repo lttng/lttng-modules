@@ -1517,6 +1517,15 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 			goto error;
 		return put_u64(seq, arg);
 	}
+	case LTTNG_RING_BUFFER_INSTANCE_ID:
+	{
+		uint64_t id;
+
+		ret = ops->instance_id(config, buf, &id);
+		if (ret < 0)
+			goto error;
+		return put_u64(id, arg);
+	}
 	default:
 		return lib_ring_buffer_file_operations.unlocked_ioctl(filp,
 				cmd, arg);
@@ -1611,6 +1620,15 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 		if (ret < 0)
 			goto error;
 		return put_u64(seq, arg);
+	}
+	case LTTNG_RING_BUFFER_COMPAT_INSTANCE_ID:
+	{
+		uint64_t id;
+
+		ret = ops->instance_id(config, buf, &id);
+		if (ret < 0)
+			goto error;
+		return put_u64(id, arg);
 	}
 	default:
 		return lib_ring_buffer_file_operations.compat_ioctl(filp,
