@@ -125,6 +125,15 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 	else
 		bufb->buf_rsb.id = subbuffer_id(config, 0, 1, 0);
 
+	/* Allocate subbuffer packet counter table */
+	bufb->buf_cnt = kzalloc_node(ALIGN(
+				sizeof(struct lib_ring_buffer_backend_counts)
+				* num_subbuf,
+				1 << INTERNODE_CACHE_SHIFT),
+			GFP_KERNEL, cpu_to_node(max(bufb->cpu, 0)));
+	if (unlikely(!bufb->buf_cnt))
+		goto free_wsb;
+
 	/* Assign pages to page index */
 	for (i = 0; i < num_subbuf_alloc; i++) {
 		for (j = 0; j < num_pages_per_subbuf; j++) {
@@ -148,6 +157,8 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 	kfree(pages);
 	return 0;
 
+free_wsb:
+	kfree(bufb->buf_wsb);
 free_array:
 	for (i = 0; (i < num_subbuf_alloc && bufb->array[i]); i++)
 		kfree(bufb->array[i]);
@@ -187,6 +198,7 @@ void lib_ring_buffer_backend_free(struct lib_ring_buffer_backend *bufb)
 		num_subbuf_alloc++;
 
 	kfree(bufb->buf_wsb);
+	kfree(bufb->buf_cnt);
 	for (i = 0; i < num_subbuf_alloc; i++) {
 		for (j = 0; j < bufb->num_pages_per_subbuf; j++)
 			__free_page(bufb->array[i]->p[j].page);

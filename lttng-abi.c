@@ -1508,6 +1508,15 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 			goto error;
 		return put_u64(ts, arg);
 	}
+	case LTTNG_RING_BUFFER_GET_SEQ_NUM:
+	{
+		uint64_t seq;
+
+		ret = ops->sequence_number(config, buf, &seq);
+		if (ret < 0)
+			goto error;
+		return put_u64(seq, arg);
+	}
 	default:
 		return lib_ring_buffer_file_operations.unlocked_ioctl(filp,
 				cmd, arg);
@@ -1593,6 +1602,15 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 		if (ret < 0)
 			goto error;
 		return put_u64(ts, arg);
+	}
+	case LTTNG_RING_BUFFER_COMPAT_GET_SEQ_NUM:
+	{
+		uint64_t seq;
+
+		ret = ops->sequence_number(config, buf, &seq);
+		if (ret < 0)
+			goto error;
+		return put_u64(seq, arg);
 	}
 	default:
 		return lib_ring_buffer_file_operations.compat_ioctl(filp,

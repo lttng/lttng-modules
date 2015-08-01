@@ -358,6 +358,9 @@ struct lttng_channel_ops {
 	int (*current_timestamp) (const struct lib_ring_buffer_config *config,
 			struct lib_ring_buffer *bufb,
 			uint64_t *ts);
+	int (*sequence_number) (const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *seq);
 };
 
 struct lttng_transport {

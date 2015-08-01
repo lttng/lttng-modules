@@ -368,6 +368,12 @@ void lib_ring_buffer_check_deliver(const struct lib_ring_buffer_config *config,
 									idx));
 
 			/*
+			 * Increment the packet counter while we have exclusive
+			 * access.
+			 */
+			subbuffer_inc_packet_count(config, &buf->backend, idx);
+
+			/*
 			 * Set noref flag and offset for this subbuffer id.
 			 * Contains a memory barrier that ensures counter stores
 			 * are ordered before set noref and offset.

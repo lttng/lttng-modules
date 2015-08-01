@@ -309,6 +309,14 @@ unsigned long subbuffer_get_data_size(
 	return pages->data_size;
 }
 
+static inline
+void subbuffer_inc_packet_count(const struct lib_ring_buffer_config *config,
+				struct lib_ring_buffer_backend *bufb,
+				unsigned long idx)
+{
+	bufb->buf_cnt[idx].seq_cnt++;
+}
+
 /**
  * lib_ring_buffer_clear_noref - Clear the noref subbuffer flag, called by
  *                               writer.

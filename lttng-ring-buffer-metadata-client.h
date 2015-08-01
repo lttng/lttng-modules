@@ -199,6 +199,13 @@ static int client_stream_id(const struct lib_ring_buffer_config *config,
 	return -ENOSYS;
 }
 
+static int client_sequence_number(const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *seq)
+{
+	return -ENOSYS;
+}
+
 static const struct lib_ring_buffer_config client_config = {
 	.cb.ring_buffer_clock_read = client_ring_buffer_clock_read,
 	.cb.record_header_size = client_record_header_size,
@@ -405,6 +412,7 @@ static struct lttng_transport lttng_relay_transport = {
 		.packet_size = client_packet_size,
 		.stream_id = client_stream_id,
 		.current_timestamp = client_current_timestamp,
+		.sequence_number = client_sequence_number,
 	},
 };
 
