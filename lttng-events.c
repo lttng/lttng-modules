@@ -270,6 +270,48 @@ end:
 	return ret;
 }
 
+int lttng_session_metadata_regenerate(struct lttng_session *session)
+{
+	int ret = 0;
+	struct lttng_channel *chan;
+	struct lttng_event *event;
+	struct lttng_metadata_cache *cache = session->metadata_cache;
+	struct lttng_metadata_stream *stream;
+
+	mutex_lock(&sessions_mutex);
+	if (!session->active) {
+		ret = -EBUSY;
+		goto end;
+	}
+
+	mutex_lock(&cache->lock);
+	memset(cache->data, 0, cache->cache_alloc);
+	cache->metadata_written = 0;
+	cache->version++;
+	list_for_each_entry(stream, &session->metadata_cache->metadata_stream, list) {
+		stream->metadata_out = 0;
+		stream->metadata_in = 0;
+	}
+	mutex_unlock(&cache->lock);
+
+	session->metadata_dumped = 0;
+	list_for_each_entry(chan, &session->chan, list) {
+		chan->metadata_dumped = 0;
+	}
+
+	list_for_each_entry(event, &session->events, list) {
+		event->metadata_dumped = 0;
+	}
+
+	ret = _lttng_session_metadata_statedump(session);
+
+end:
+	mutex_unlock(&sessions_mutex);
+	return ret;
+}
+
+
+
 int lttng_channel_enable(struct lttng_channel *channel)
 {
 	int ret = 0;
@@ -1516,6 +1558,10 @@ int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 	WARN_ON(stream->metadata_in < stream->metadata_out);
 	if (stream->metadata_in != stream->metadata_out)
 		goto end;
+
+	/* Metadata regenerated, change the version. */
+	if (stream->metadata_cache->version != stream->version)
+		stream->version = stream->metadata_cache->version;
 
 	len = stream->metadata_cache->metadata_written -
 		stream->metadata_in;

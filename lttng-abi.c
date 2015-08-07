@@ -69,6 +69,8 @@ static const struct file_operations lttng_metadata_fops;
 static const struct file_operations lttng_event_fops;
 static struct file_operations lttng_stream_ring_buffer_file_operations;
 
+static int put_u64(uint64_t val, unsigned long arg);
+
 /*
  * Teardown management: opened file descriptors keep a refcount on the module,
  * so it can only exit when all file descriptors are closed.
@@ -551,6 +553,8 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return lttng_session_untrack_pid(session, (int) arg);
 	case LTTNG_KERNEL_SESSION_LIST_TRACKER_PIDS:
 		return lttng_session_list_tracker_pids(session);
+	case LTTNG_KERNEL_SESSION_METADATA_REGEN:
+		return lttng_session_metadata_regenerate(session);
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -678,6 +682,12 @@ long lttng_metadata_ring_buffer_ioctl(struct file *filp,
 			goto err;
 		break;
 	}
+	case RING_BUFFER_GET_METADATA_VERSION:
+	{
+		struct lttng_metadata_stream *stream = filp->private_data;
+
+		return put_u64(stream->version, arg);
+	}
 	default:
 		break;
 	}
@@ -749,6 +759,12 @@ long lttng_metadata_ring_buffer_compat_ioctl(struct file *filp,
 		lttng_metadata_ring_buffer_ioctl_put_next_subbuf(filp,
 				cmd, arg);
 		break;
+	}
+	case RING_BUFFER_GET_METADATA_VERSION:
+	{
+		struct lttng_metadata_stream *stream = filp->private_data;
+
+		return put_u64(stream->version, arg);
 	}
 	default:
 		break;

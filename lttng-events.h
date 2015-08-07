@@ -421,6 +421,7 @@ struct lttng_metadata_stream {
 	wait_queue_head_t read_wait;	/* Reader buffer-level wait queue */
 	struct list_head list;		/* Stream list */
 	struct lttng_transport *transport;
+	uint64_t version;		/* Current version of the metadata cache */
 };
 
 
@@ -466,7 +467,8 @@ struct lttng_metadata_cache {
 	struct kref refcount;		/* Metadata cache usage */
 	struct list_head metadata_stream;	/* Metadata stream list */
 	uuid_le uuid;			/* Trace session unique ID (copy) */
-	struct mutex lock;
+	struct mutex lock;		/* Produce/consume lock */
+	uint64_t version;		/* Current version of the metadata */
 };
 
 void lttng_lock_sessions(void);
@@ -487,6 +489,7 @@ struct lttng_session *lttng_session_create(void);
 int lttng_session_enable(struct lttng_session *session);
 int lttng_session_disable(struct lttng_session *session);
 void lttng_session_destroy(struct lttng_session *session);
+int lttng_session_metadata_regenerate(struct lttng_session *session);
 void metadata_cache_destroy(struct kref *kref);
 
 struct lttng_channel *lttng_channel_create(struct lttng_session *session,
