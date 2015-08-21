@@ -523,6 +523,55 @@ LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 
 #define KBps(x)			((x) << (PAGE_SHIFT - 10))
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+
+LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
+
+	writeback_bdi_dirty_ratelimit,
+
+	TP_PROTO(struct backing_dev_info *bdi,
+		 unsigned long dirty_rate,
+		 unsigned long task_ratelimit),
+
+	TP_ARGS(bdi, dirty_rate, task_ratelimit),
+
+	TP_STRUCT__entry(
+		__array(char,		bdi, 32)
+		__field(unsigned long,	write_bw)
+		__field(unsigned long,	avg_write_bw)
+		__field(unsigned long,	dirty_rate)
+		__field(unsigned long,	dirty_ratelimit)
+		__field(unsigned long,	task_ratelimit)
+		__field(unsigned long,	balanced_dirty_ratelimit)
+	),
+
+	TP_fast_assign(
+		tp_memcpy(bdi, dev_name(bdi->dev), 32)
+		tp_assign(write_bw, KBps(bdi->wb.write_bandwidth))
+		tp_assign(avg_write_bw, KBps(bdi->wb.avg_write_bandwidth))
+		tp_assign(dirty_rate, KBps(dirty_rate))
+		tp_assign(dirty_ratelimit, KBps(bdi->wb.dirty_ratelimit))
+		tp_assign(task_ratelimit, KBps(task_ratelimit))
+		tp_assign(balanced_dirty_ratelimit,
+					KBps(bdi->wb.balanced_dirty_ratelimit))
+	),
+
+	TP_printk("bdi %s: "
+		  "write_bw=%lu awrite_bw=%lu dirty_rate=%lu "
+		  "dirty_ratelimit=%lu task_ratelimit=%lu "
+		  "balanced_dirty_ratelimit=%lu",
+		  __entry->bdi,
+		  __entry->write_bw,		/* write bandwidth */
+		  __entry->avg_write_bw,	/* avg write bandwidth */
+		  __entry->dirty_rate,		/* bdi dirty rate */
+		  __entry->dirty_ratelimit,	/* base ratelimit */
+		  __entry->task_ratelimit, /* ratelimit with position control */
+		  __entry->balanced_dirty_ratelimit /* the balanced ratelimit */
+	)
+)
+
+#else
+
 LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 
 	writeback_bdi_dirty_ratelimit,
@@ -567,6 +616,8 @@ LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 		  __entry->balanced_dirty_ratelimit /* the balanced ratelimit */
 	)
 )
+
+#endif
 
 LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 
