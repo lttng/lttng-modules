@@ -351,6 +351,8 @@ LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 
 #define KBps(x)			((x) << (PAGE_SHIFT - 10))
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+
 LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 
 	writeback_bdi_dirty_ratelimit,
@@ -363,29 +365,41 @@ LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 
 	TP_FIELDS(
 		ctf_array_text(char, bdi, dev_name(bdi->dev), 32)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
 		ctf_integer(unsigned long, write_bw, KBps(bdi->wb.write_bandwidth))
 		ctf_integer(unsigned long, avg_write_bw, KBps(bdi->wb.avg_write_bandwidth))
-#else
-		ctf_integer(unsigned long, write_bw, KBps(bdi->write_bandwidth))
-		ctf_integer(unsigned long, avg_write_bw, KBps(bdi->avg_write_bandwidth))
-#endif
 		ctf_integer(unsigned long, dirty_rate, KBps(dirty_rate))
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
 		ctf_integer(unsigned long, dirty_ratelimit, KBps(bdi->wb.dirty_ratelimit))
-#else
-		ctf_integer(unsigned long, dirty_ratelimit, KBps(bdi->dirty_ratelimit))
-#endif
 		ctf_integer(unsigned long, task_ratelimit, KBps(task_ratelimit))
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
 		ctf_integer(unsigned long, balanced_dirty_ratelimit,
 					KBps(bdi->wb.balanced_dirty_ratelimit))
-#else
-		ctf_integer(unsigned long, balanced_dirty_ratelimit,
-					KBps(bdi->balanced_dirty_ratelimit))
-#endif
 	)
 )
+
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
+
+LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
+
+	writeback_bdi_dirty_ratelimit,
+
+	TP_PROTO(struct backing_dev_info *bdi,
+		 unsigned long dirty_rate,
+		 unsigned long task_ratelimit),
+
+	TP_ARGS(bdi, dirty_rate, task_ratelimit),
+
+	TP_FIELDS(
+		ctf_array_text(char, bdi, dev_name(bdi->dev), 32)
+		ctf_integer(unsigned long, write_bw, KBps(bdi->write_bandwidth))
+		ctf_integer(unsigned long, avg_write_bw, KBps(bdi->avg_write_bandwidth))
+		ctf_integer(unsigned long, dirty_rate, KBps(dirty_rate))
+		ctf_integer(unsigned long, dirty_ratelimit, KBps(bdi->dirty_ratelimit))
+		ctf_integer(unsigned long, task_ratelimit, KBps(task_ratelimit))
+		ctf_integer(unsigned long, balanced_dirty_ratelimit,
+					KBps(bdi->balanced_dirty_ratelimit))
+	)
+)
+
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
 
 LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 
