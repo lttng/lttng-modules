@@ -50,6 +50,7 @@
 #include "lttng-events.h"
 #include "lttng-tracer.h"
 #include "lttng-abi-old.h"
+#include "wrapper/vzalloc.h"
 
 #define METADATA_CACHE_DEFAULT_SIZE 4096
 
@@ -133,7 +134,7 @@ struct lttng_session *lttng_session_create(void)
 			GFP_KERNEL);
 	if (!metadata_cache)
 		goto err_free_session;
-	metadata_cache->data = vzalloc(METADATA_CACHE_DEFAULT_SIZE);
+	metadata_cache->data = lttng_vzalloc(METADATA_CACHE_DEFAULT_SIZE);
 	if (!metadata_cache->data)
 		goto err_free_cache;
 	metadata_cache->cache_alloc = METADATA_CACHE_DEFAULT_SIZE;
@@ -1531,7 +1532,7 @@ int lttng_metadata_printf(struct lttng_session *session,
 		tmp_cache_alloc_size = max_t(unsigned int,
 				session->metadata_cache->cache_alloc + len,
 				session->metadata_cache->cache_alloc << 1);
-		tmp_cache_realloc = vzalloc(tmp_cache_alloc_size);
+		tmp_cache_realloc = lttng_vzalloc(tmp_cache_alloc_size);
 		if (!tmp_cache_realloc)
 			goto err;
 		if (session->metadata_cache->data) {
