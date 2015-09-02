@@ -285,6 +285,26 @@ void lttng_kretprobes_destroy_private(struct lttng_event *event)
 }
 EXPORT_SYMBOL_GPL(lttng_kretprobes_destroy_private);
 
+int lttng_kretprobes_event_enable_state(struct lttng_event *event,
+		int enable)
+{
+	struct lttng_event *event_return;
+	struct lttng_krp *lttng_krp;
+
+	if (event->instrumentation != LTTNG_KERNEL_KRETPROBE) {
+		return -EINVAL;
+	}
+	if (event->enabled == enable) {
+		return -EBUSY;
+	}
+	lttng_krp = event->u.kretprobe.lttng_krp;
+	event_return = lttng_krp->event[EVENT_RETURN];
+	ACCESS_ONCE(event->enabled) = enable;
+	ACCESS_ONCE(event_return->enabled) = enable;
+	return 0;
+}
+EXPORT_SYMBOL_GPL(lttng_kretprobes_event_enable_state);
+
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers");
 MODULE_DESCRIPTION("Linux Trace Toolkit Kretprobes Support");
