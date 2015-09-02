@@ -681,6 +681,8 @@ int lttng_kretprobes_register(const char *name,
 		struct lttng_event *event_exit);
 void lttng_kretprobes_unregister(struct lttng_event *event);
 void lttng_kretprobes_destroy_private(struct lttng_event *event);
+int lttng_kretprobes_event_enable_state(struct lttng_event *event,
+	int enable);
 #else
 static inline
 int lttng_kretprobes_register(const char *name,
@@ -701,6 +703,13 @@ void lttng_kretprobes_unregister(struct lttng_event *event)
 static inline
 void lttng_kretprobes_destroy_private(struct lttng_event *event)
 {
+}
+
+static inline
+int lttng_kretprobes_event_enable_state(struct lttng_event *event,
+	int enable)
+{
+	return -ENOSYS;
 }
 #endif
 

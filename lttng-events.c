@@ -329,8 +329,23 @@ int lttng_event_enable(struct lttng_event *event)
 		ret = -EEXIST;
 		goto end;
 	}
-	ACCESS_ONCE(event->enabled) = 1;
-	lttng_session_sync_enablers(event->chan->session);
+	switch (event->instrumentation) {
+	case LTTNG_KERNEL_TRACEPOINT:
+	case LTTNG_KERNEL_SYSCALL:
+		ret = -EINVAL;
+		break;
+	case LTTNG_KERNEL_KPROBE:
+	case LTTNG_KERNEL_FUNCTION:
+	case LTTNG_KERNEL_NOOP:
+		ACCESS_ONCE(event->enabled) = 1;
+		break;
+	case LTTNG_KERNEL_KRETPROBE:
+		ret = lttng_kretprobes_event_enable_state(event, 1);
+		break;
+	default:
+		WARN_ON_ONCE(1);
+		ret = -EINVAL;
+	}
 end:
 	mutex_unlock(&sessions_mutex);
 	return ret;
@@ -349,8 +364,23 @@ int lttng_event_disable(struct lttng_event *event)
 		ret = -EEXIST;
 		goto end;
 	}
-	ACCESS_ONCE(event->enabled) = 0;
-	lttng_session_sync_enablers(event->chan->session);
+	switch (event->instrumentation) {
+	case LTTNG_KERNEL_TRACEPOINT:
+	case LTTNG_KERNEL_SYSCALL:
+		ret = -EINVAL;
+		break;
+	case LTTNG_KERNEL_KPROBE:
+	case LTTNG_KERNEL_FUNCTION:
+	case LTTNG_KERNEL_NOOP:
+		ACCESS_ONCE(event->enabled) = 0;
+		break;
+	case LTTNG_KERNEL_KRETPROBE:
+		ret = lttng_kretprobes_event_enable_state(event, 0);
+		break;
+	default:
+		WARN_ON_ONCE(1);
+		ret = -EINVAL;
+	}
 end:
 	mutex_unlock(&sessions_mutex);
 	return ret;
@@ -538,7 +568,11 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		smp_wmb();
 		break;
 	case LTTNG_KERNEL_KPROBE:
-		event->enabled = 1;
+		/*
+		 * Needs to be explicitly enabled after creation, since
+		 * we may want to apply filters.
+		 */
+		event->enabled = 0;
 		event->registered = 1;
 		/*
 		 * Populate lttng_event structure before event
@@ -562,7 +596,11 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		struct lttng_event *event_return;
 
 		/* kretprobe defines 2 events */
-		event->enabled = 1;
+		/*
+		 * Needs to be explicitly enabled after creation, since
+		 * we may want to apply filters.
+		 */
+		event->enabled = 0;
 		event->registered = 1;
 		event_return =
 			kmem_cache_zalloc(event_cache, GFP_KERNEL);
@@ -573,7 +611,7 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		event_return->chan = chan;
 		event_return->filter = filter;
 		event_return->id = chan->free_event_id++;
-		event_return->enabled = 1;
+		event_return->enabled = 0;
 		event_return->registered = 1;
 		event_return->instrumentation = itype;
 		/*
@@ -608,7 +646,11 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		break;
 	}
 	case LTTNG_KERNEL_FUNCTION:
-		event->enabled = 1;
+		/*
+		 * Needs to be explicitly enabled after creation, since
+		 * we may want to apply filters.
+		 */
+		event->enabled = 0;
 		event->registered = 1;
 		/*
 		 * Populate lttng_event structure before event
@@ -626,7 +668,11 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		break;
 	case LTTNG_KERNEL_NOOP:
 	case LTTNG_KERNEL_SYSCALL:
-		event->enabled = 1;
+		/*
+		 * Needs to be explicitly enabled after creation, since
+		 * we may want to apply filters.
+		 */
+		event->enabled = 0;
 		event->registered = 0;
 		event->desc = event_desc;
 		if (!event->desc) {
