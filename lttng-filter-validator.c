@@ -104,8 +104,9 @@ int merge_point_add_check(struct mp_table *mp_table, unsigned long target_pc,
 				target_pc);
 			return -EINVAL;
 		}
+	} else {
+		hlist_add_head(&mp_node->node, head);
 	}
-	hlist_add_head(&mp_node->node, head);
 	return 0;
 }
 
