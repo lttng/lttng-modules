@@ -130,10 +130,6 @@ int lttng_abi_tracepoint_list(void)
 	if (ret < 0)
 		goto open_error;
 	fd_install(file_fd, tracepoint_list_file);
-	if (file_fd < 0) {
-		ret = file_fd;
-		goto fd_error;
-	}
 	return file_fd;
 
 open_error:
@@ -174,10 +170,6 @@ int lttng_abi_syscall_list(void)
 	if (ret < 0)
 		goto open_error;
 	fd_install(file_fd, syscall_list_file);
-	if (file_fd < 0) {
-		ret = file_fd;
-		goto fd_error;
-	}
 	return file_fd;
 
 open_error:
