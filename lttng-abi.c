@@ -1286,8 +1286,8 @@ int lttng_metadata_channel_release(struct inode *inode, struct file *file)
 	struct lttng_channel *channel = file->private_data;
 
 	if (channel) {
-		lttng_metadata_channel_destroy(channel);
 		fput(channel->session->file);
+		lttng_metadata_channel_destroy(channel);
 	}
 
 	return 0;
