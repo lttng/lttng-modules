@@ -15,5 +15,5 @@
 #endif
 
 #ifdef CONFIG_CPU_MIPS32
-#include "mips-32-syscalls-3.13.0_integers.h"
+#include "mips-32-syscalls-3.18.0_integers.h"
 #endif
