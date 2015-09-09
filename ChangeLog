@@ -1,3 +1,17 @@
+2015-09-09 LTTng modules 2.6.3
+	* Fix: use after free in channel release
+	* Fix: build failure on 2.6.36
+	* Fix: writeback instrumentation for 4.2 kernels
+	* Fix: mm_page_alloc_extfrag instrumentation for kernel 3.18.10
+	* Fix: kmem probe with Ubuntu 3.13 kernels
+	* Fix: disable kvm probe if lapic.h isn't found
+	* Fix: timer instrumentation for 4.2 kernels
+	* Fix: ext4 instrumentation for 4.2 kernels
+	* Fix: kvm instrumentation for 4.2 kernels
+	* Fix: allow LTTng to be built within kernel tree
+	* Fix: Building the event list fails on fragmented memory
+	* Fix: use after free on metadata cache reallocation
+
 2015-06-18 LTTng modules 2.6.2
 	* Fix: version checks for kernel 4.0
 	* Fix: Incorrect Ubuntu kernel patchlevel
