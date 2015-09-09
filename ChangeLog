@@ -1,3 +1,13 @@
+2015-09-09 LTTng modules 2.5.6
+	* Fix: use after free in channel release
+	* Fix: build failure on 2.6.36
+	* Fix: Update kmem event for Ubuntu's 3.16 kernel
+	* Fix: Update kmem event for recent Ubuntu kernel
+	* Fix: kmem probe with Ubuntu 3.13 kernels
+	* Implement wrapper around get_pfnblock_flags_mask
+	* Fix: Building the event list fails on fragmented memory
+	* Fix: use after free on metadata cache reallocation
+
 2015-06-18 LTTng modules 2.5.5
 	* Fix: Incorrect Ubuntu kernel patchlevel
 	* Fix: RHEL 7.1 block instrumentation
