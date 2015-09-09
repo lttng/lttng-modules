@@ -1,4 +1,24 @@
-2015-07-15 (Pet Fire Safety Day) lttng-ust 2.7.0-rc1
+2015-09-09 LTTng modules 2.7.0-rc2
+	* Use 3.18 syscall instrumentation for MIPS32
+	* Update the MIPS32 syscall instrumentation to 3.18
+	* Fix: Move pipe override to the arch specific pointers_override.h
+	* Implement lttng test module
+	* Cleanup: remove logically dead code
+	* Fix: filter validator use after free
+	* Fix: use after free in channel release
+	* Fix: non-enabler events should be disabled by default
+	* Fix: build failure on 2.6.36
+	* Cleanup: split bdi_dirty_ratelimit with ifdef into separate macros
+	* Fix: writeback instrumentation for 4.2 kernels
+	* Fix: kmem probe with Ubuntu 3.13 kernels
+	* Fix: disable kvm probe if lapic.h isn't found
+	* Fix: timer instrumentation for 4.2 kernels
+	* Fix: ext4 instrumentation for 4.2 kernels
+	* Fix: kvm instrumentation for 4.2 kernels
+	* Fix: mm_page_alloc_extfrag instrumentation for kernel 3.18.10
+	* Fix: allow LTTng to be built within kernel tree
+
+2015-07-15 LTTng modules 2.7.0-rc1
 	* Fix: Building the event list fails on fragmented memory
 	* Fix: use after free on metadata cache reallocation
 	* Fix: version checks for kernel 4.0
