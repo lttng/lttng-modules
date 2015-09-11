@@ -28,6 +28,7 @@
 #include "../lttng-events.h"
 #include "../lttng-tracer.h"
 #include "../wrapper/tracepoint.h"
+#include "../wrapper/kstrtox.h"
 
 #define TP_MODULE_NOAUTOLOAD
 #define LTTNG_PACKAGE_BUILD
@@ -76,7 +77,7 @@ ssize_t lttng_test_filter_event_write(struct file *file, const char __user *user
 	int ret;
 
 	/* Get the number of iterations */
-	ret = kstrtouint_from_user(user_buf, count, 10, &nr_iter);
+	ret = lttng_kstrtouint_from_user(user_buf, count, 10, &nr_iter);
 	if (ret) {
 		written = ret;
 		goto end;
