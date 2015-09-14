@@ -131,6 +131,21 @@ LTTNG_TRACEPOINT_EVENT(sched_kthread_stop_ret,
 /*
  * Tracepoint for waking up a task:
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(sched_wakeup_template,
+
+	TP_PROTO(struct task_struct *p),
+
+	TP_ARGS(p),
+
+	TP_FIELDS(
+		ctf_array_text(char, comm, p->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, tid, p->pid)
+		ctf_integer(int, prio, p->prio)
+		ctf_integer(int, target_cpu, task_cpu(p))
+	)
+)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0)) */
 LTTNG_TRACEPOINT_EVENT_CLASS(sched_wakeup_template,
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
@@ -153,8 +168,34 @@ LTTNG_TRACEPOINT_EVENT_CLASS(sched_wakeup_template,
 #endif
 	)
 )
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0)) */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0))
+
+/*
+ * Tracepoint called when waking a task; this tracepoint is guaranteed to be
+ * called from the waking context.
+ */
+LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_wakeup_template, sched_waking,
+	     TP_PROTO(struct task_struct *p),
+	     TP_ARGS(p))
+
+/*
+ * Tracepoint called when the task is actually woken; p->state == TASK_RUNNNG.
+ * It it not always called from the waking context.
+ */
+LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_wakeup_template, sched_wakeup,
+	     TP_PROTO(struct task_struct *p),
+	     TP_ARGS(p))
+
+/*
+ * Tracepoint for waking up a new task:
+ */
+LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_wakeup_template, sched_wakeup_new,
+	     TP_PROTO(struct task_struct *p),
+	     TP_ARGS(p))
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_wakeup_template, sched_wakeup,
 	     TP_PROTO(struct task_struct *p, int success),
