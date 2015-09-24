@@ -1,3 +1,7 @@
+2015-09-24 LTTng modules 2.6.4
+	* Fix: writeback instrumentation update for 4.3 Linux kernel
+	* Fix: update sched wakeup instrumentation for 4.3 kernel
+
 2015-09-09 LTTng modules 2.6.3
 	* Fix: use after free in channel release
 	* Fix: build failure on 2.6.36
