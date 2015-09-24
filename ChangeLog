@@ -1,3 +1,8 @@
+2015-09-24 LTTng modules 2.7.0
+	* Fix: writeback instrumentation update for 4.3 Linux kernel
+	* Fix: update sched wakeup instrumentation for 4.3 kernel
+	* Fix: lttng-test build failure for kernels < 3.0
+
 2015-09-09 LTTng modules 2.7.0-rc2
 	* Use 3.18 syscall instrumentation for MIPS32
 	* Update the MIPS32 syscall instrumentation to 3.18
