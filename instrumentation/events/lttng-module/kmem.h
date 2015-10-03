@@ -130,6 +130,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_free_direct, kmem_mm_page_free_direct,
 
 	TP_FIELDS(
 		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(unsigned long, pfn, page_to_pfn(page))
 		ctf_integer(unsigned int, order, order)
 	)
 )
@@ -146,6 +147,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_pagevec_free, kmem_pagevec_free,
 
 	TP_FIELDS(
 		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(unsigned long, pfn, page_to_pfn(page))
 		ctf_integer(int, cold, cold)
 	)
 )
@@ -159,6 +161,8 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc, kmem_mm_page_alloc,
 
 	TP_FIELDS(
 		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(unsigned long, pfn,
+			page ? page_to_pfn(page) : -1UL)
 		ctf_integer(unsigned int, order, order)
 		ctf_integer(gfp_t, gfp_flags, gfp_flags)
 		ctf_integer(int, migratetype, migratetype)
@@ -173,6 +177,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(kmem_mm_page,
 
 	TP_FIELDS(
 		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(unsigned long, pfn,
+			page ? page_to_pfn(page) : -1UL)
 		ctf_integer(unsigned int, order, order)
 		ctf_integer(int, migratetype, migratetype)
 	)
@@ -221,6 +227,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
 
 	TP_FIELDS(
 		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(unsigned long, pfn, page_to_pfn(page))
 		ctf_integer(int, alloc_order, alloc_order)
 		ctf_integer(int, fallback_order, fallback_order)
 		ctf_integer(int, alloc_migratetype, alloc_migratetype)
@@ -246,6 +253,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
 
 	TP_FIELDS(
 		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(unsigned long, pfn, page_to_pfn(page))
 		ctf_integer(int, alloc_order, alloc_order)
 		ctf_integer(int, fallback_order, fallback_order)
 		ctf_integer(int, alloc_migratetype, alloc_migratetype)
@@ -272,6 +280,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
 
 	TP_FIELDS(
 		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(unsigned long, pfn, page_to_pfn(page))
 		ctf_integer(int, alloc_order, alloc_order)
 		ctf_integer(int, fallback_order, fallback_order)
 		ctf_integer(int, alloc_migratetype, alloc_migratetype)
@@ -296,6 +305,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
 
 	TP_FIELDS(
 		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(unsigned long, pfn, page_to_pfn(page))
 		ctf_integer(int, alloc_order, alloc_order)
 		ctf_integer(int, fallback_order, fallback_order)
 		ctf_integer(int, alloc_migratetype, alloc_migratetype)
