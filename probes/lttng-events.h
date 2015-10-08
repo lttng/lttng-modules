@@ -22,6 +22,7 @@
 #include <linux/uaccess.h>
 #include <linux/debugfs.h>
 #include <linux/rculist.h>
+#include <asm/byteorder.h>
 #include "lttng.h"
 #include "lttng-types.h"
 #include "lttng-probe-user.h"
@@ -189,7 +190,7 @@ void __event_template_proto___##_name(void);
 #define _ctf_integer_ext(_type, _item, _src, _byte_order, _base, _user, _nowrite) \
 	{							\
 	  .name = #_item,					\
-	  .type = __type_integer(_type, _byte_order, _base, none),\
+	  .type = __type_integer(_type, 0, 0, -1, _byte_order, _base, none),\
 	  .nowrite = _nowrite,					\
 	  .user = _user,					\
 	},
@@ -205,7 +206,7 @@ void __event_template_proto___##_name(void);
 			{					\
 			  .array =				\
 				{				\
-				  .elem_type = __type_integer(_type, __BYTE_ORDER, 10, _encoding), \
+				  .elem_type = __type_integer(_type, 0, 0, 0, __BYTE_ORDER, 10, _encoding), \
 				  .length = _length,		\
 				}				\
 			}					\
@@ -213,6 +214,28 @@ void __event_template_proto___##_name(void);
 	  .nowrite = _nowrite,					\
 	  .user = _user,					\
 	},
+
+#undef _ctf_array_bitfield
+#define _ctf_array_bitfield(_type, _item, _src, _length, _user, _nowrite) \
+	{							\
+	  .name = #_item,					\
+	  .type =						\
+		{						\
+		  .atype = atype_array,				\
+		  .u =						\
+			{					\
+			  .array =				\
+				{				\
+				  .elem_type = __type_integer(_type, 1, 1, 0, __LITTLE_ENDIAN, 10, none), \
+				  .length = (_length) * sizeof(_type) * CHAR_BIT, \
+				  .elem_alignment = lttng_alignof(_type), \
+				}				\
+			}					\
+		},						\
+	  .nowrite = _nowrite,					\
+	  .user = _user,					\
+	},
+
 
 #undef _ctf_sequence_encoded
 #define _ctf_sequence_encoded(_type, _item, _src,		\
@@ -227,8 +250,31 @@ void __event_template_proto___##_name(void);
 			{					\
 			  .sequence =				\
 				{				\
-				  .length_type = __type_integer(_length_type, __BYTE_ORDER, 10, none), \
-				  .elem_type = __type_integer(_type, _byte_order, _base, _encoding), \
+				  .length_type = __type_integer(_length_type, 0, 0, 0, __BYTE_ORDER, 10, none), \
+				  .elem_type = __type_integer(_type, 0, 0, -1, _byte_order, _base, _encoding), \
+				},				\
+			},					\
+		},						\
+	  .nowrite = _nowrite,					\
+	  .user = _user,					\
+	},
+
+#undef _ctf_sequence_bitfield
+#define _ctf_sequence_bitfield(_type, _item, _src,		\
+			_length_type, _src_length,		\
+			_user, _nowrite)			\
+	{							\
+	  .name = #_item,					\
+	  .type =						\
+		{						\
+		  .atype = atype_sequence,			\
+		  .u =						\
+			{					\
+			  .sequence =				\
+				{				\
+				  .length_type = __type_integer(_length_type, 0, 0, 0, __BYTE_ORDER, 10, none), \
+				  .elem_type = __type_integer(_type, 1, 1, 0, __LITTLE_ENDIAN, 10, none), \
+				  .elem_alignment = lttng_alignof(_type), \
 				},				\
 			},					\
 		},						\
@@ -309,6 +355,10 @@ static void __event_probe__##_name(void *__data);
 	__event_len += lib_ring_buffer_align(__event_len, lttng_alignof(_type)); \
 	__event_len += sizeof(_type) * (_length);
 
+#undef _ctf_array_bitfield
+#define _ctf_array_bitfield(_type, _item, _src, _length, _user, _nowrite) \
+	_ctf_array_encoded(_type, _item, _src, _length, none, _user, _nowrite)
+
 #undef _ctf_sequence_encoded
 #define _ctf_sequence_encoded(_type, _item, _src, _length_type,			\
 			_src_length, _encoding, _byte_order, _base, _user, _nowrite) \
@@ -318,6 +368,13 @@ static void __event_probe__##_name(void *__data);
 	__dynamic_len[__dynamic_len_idx] = (_src_length);		       \
 	__event_len += sizeof(_type) * __dynamic_len[__dynamic_len_idx];       \
 	__dynamic_len_idx++;
+
+#undef _ctf_sequence_bitfield
+#define _ctf_sequence_bitfield(_type, _item, _src,		\
+			_length_type, _src_length,		\
+			_user, _nowrite)			\
+	_ctf_sequence_encoded(_type, _item, _src, _length_type, _src_length, \
+		none, __LITTLE_ENDIAN, 10, _user, _nowrite)
 
 /*
  * ctf_user_string includes \0. If returns 0, it faulted, so we set size to
@@ -477,6 +534,10 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len,	      \
 		__stack_data += sizeof(void *);				       \
 	}
 
+#undef _ctf_array_bitfield
+#define _ctf_array_bitfield(_type, _item, _src, _length, _user, _nowrite) \
+	_ctf_array_encoded(_type, _item, _src, _length, none, _user, _nowrite)
+
 #undef _ctf_sequence_encoded
 #define _ctf_sequence_encoded(_type, _item, _src, _length_type,		       \
 			_src_length, _encoding, _byte_order, _base, _user, _nowrite) \
@@ -488,6 +549,13 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len,	      \
 		memcpy(__stack_data, &__ctf_tmp_ptr, sizeof(void *));	       \
 		__stack_data += sizeof(void *);				       \
 	}
+
+#undef _ctf_sequence_bitfield
+#define _ctf_sequence_bitfield(_type, _item, _src,		\
+			_length_type, _src_length,		\
+			_user, _nowrite)			\
+	_ctf_sequence_encoded(_type, _item, _src, _length_type, _src_length, \
+		none, __LITTLE_ENDIAN, 10, _user, _nowrite)
 
 #undef _ctf_string
 #define _ctf_string(_item, _src, _user, _nowrite)			       \
@@ -548,11 +616,22 @@ void __event_prepare_filter_stack__##_name(char *__stack_data,		      \
 #define _ctf_array_encoded(_type, _item, _src, _length, _encoding, _user, _nowrite) \
 	__event_align = max_t(size_t, __event_align, lttng_alignof(_type));
 
+#undef _ctf_array_bitfield
+#define _ctf_array_bitfield(_type, _item, _src, _length, _user, _nowrite) \
+	_ctf_array_encoded(_type, _item, _src, _length, none, _user, _nowrite)
+
 #undef _ctf_sequence_encoded
 #define _ctf_sequence_encoded(_type, _item, _src, _length_type,			\
 			_src_length, _encoding, _byte_order, _base, _user, _nowrite) \
 	__event_align = max_t(size_t, __event_align, lttng_alignof(_length_type)); \
 	__event_align = max_t(size_t, __event_align, lttng_alignof(_type));
+
+#undef _ctf_sequence_bitfield
+#define _ctf_sequence_bitfield(_type, _item, _src,		\
+			_length_type, _src_length,		\
+			_user, _nowrite)			\
+	_ctf_sequence_encoded(_type, _item, _src, _length_type, _src_length, \
+		none, __LITTLE_ENDIAN, 10, _user, _nowrite)
 
 #undef _ctf_string
 #define _ctf_string(_item, _src, _user, _nowrite)
@@ -635,6 +714,54 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 		__chan->ops->event_write(&__ctx, _src, sizeof(_type) * (_length)); \
 	}
 
+#if (__BYTE_ORDER == __LITTLE_ENDIAN)
+#undef _ctf_array_bitfield
+#define _ctf_array_bitfield(_type, _item, _src, _length, _user, _nowrite) \
+	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(_type));	\
+	if (_user) {							\
+		__chan->ops->event_write_from_user(&__ctx, _src, sizeof(_type) * (_length)); \
+	} else {							\
+		__chan->ops->event_write(&__ctx, _src, sizeof(_type) * (_length)); \
+	}
+#else /* #if (__BYTE_ORDER == __LITTLE_ENDIAN) */
+/*
+ * For big endian, we need to byteswap into little endian.
+ */
+#undef _ctf_array_bitfield
+#define _ctf_array_bitfield(_type, _item, _src, _length, _user, _nowrite) \
+	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(_type));	\
+	{								\
+		size_t _i;						\
+									\
+		for (_i = 0; _i < (_length); _i++) {			\
+			_type _tmp;					\
+									\
+			if (_user) {					\
+				if (get_user(_tmp, (_type *) _src + _i)) \
+					_tmp = 0;			\
+			} else {					\
+				_tmp = ((_type *) _src)[_i];		\
+			}						\
+			switch (sizeof(_type)) {			\
+			case 1:						\
+				break;					\
+			case 2:						\
+				_tmp = cpu_to_le16(_tmp);		\
+				break;					\
+			case 4:						\
+				_tmp = cpu_to_le32(_tmp);		\
+				break;					\
+			case 8:						\
+				_tmp = cpu_to_le64(_tmp);		\
+				break;					\
+			default:					\
+				BUG_ON(1);				\
+			}						\
+			__chan->ops->event_write(&__ctx, &_tmp, sizeof(_type)); \
+		}							\
+	}
+#endif /* #else #if (__BYTE_ORDER == __LITTLE_ENDIAN) */
+
 #undef _ctf_sequence_encoded
 #define _ctf_sequence_encoded(_type, _item, _src, _length_type,		\
 			_src_length, _encoding, _byte_order, _base, _user, _nowrite) \
@@ -651,6 +778,71 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 		__chan->ops->event_write(&__ctx, _src,			\
 			sizeof(_type) * __get_dynamic_len(dest));	\
 	}
+
+#if (__BYTE_ORDER == __LITTLE_ENDIAN)
+#undef _ctf_sequence_bitfield
+#define _ctf_sequence_bitfield(_type, _item, _src,		\
+			_length_type, _src_length,		\
+			_user, _nowrite)			\
+	{								\
+		_length_type __tmpl = __stackvar.__dynamic_len[__dynamic_len_idx] * sizeof(_type) * CHAR_BIT; \
+		lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(_length_type));\
+		__chan->ops->event_write(&__ctx, &__tmpl, sizeof(_length_type));\
+	}								\
+	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(_type));	\
+	if (_user) {							\
+		__chan->ops->event_write_from_user(&__ctx, _src,	\
+			sizeof(_type) * __get_dynamic_len(dest));	\
+	} else {							\
+		__chan->ops->event_write(&__ctx, _src,			\
+			sizeof(_type) * __get_dynamic_len(dest));	\
+	}
+#else /* #if (__BYTE_ORDER == __LITTLE_ENDIAN) */
+/*
+ * For big endian, we need to byteswap into little endian.
+ */
+#undef _ctf_sequence_bitfield
+#define _ctf_sequence_bitfield(_type, _item, _src,		\
+			_length_type, _src_length,		\
+			_user, _nowrite)			\
+	{							\
+		_length_type __tmpl = __stackvar.__dynamic_len[__dynamic_len_idx] * sizeof(_type) * CHAR_BIT; \
+		lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(_length_type));\
+		__chan->ops->event_write(&__ctx, &__tmpl, sizeof(_length_type));\
+	}								\
+	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(_type));	\
+	{								\
+		size_t _i, _length;					\
+									\
+		_length = __get_dynamic_len(dest);			\
+		for (_i = 0; _i < _length; _i++) {			\
+			_type _tmp;					\
+									\
+			if (_user) {					\
+				if (get_user(_tmp, (_type *) _src + _i)) \
+					_tmp = 0;			\
+			} else {					\
+				_tmp = ((_type *) _src)[_i];		\
+			}						\
+			switch (sizeof(_type)) {			\
+			case 1:						\
+				break;					\
+			case 2:						\
+				_tmp = cpu_to_le16(_tmp);		\
+				break;					\
+			case 4:						\
+				_tmp = cpu_to_le32(_tmp);		\
+				break;					\
+			case 8:						\
+				_tmp = cpu_to_le64(_tmp);		\
+				break;					\
+			default:					\
+				BUG_ON(1);				\
+			}						\
+			__chan->ops->event_write(&__ctx, &_tmp, sizeof(_type)); \
+		}							\
+	}
+#endif /* #else #if (__BYTE_ORDER == __LITTLE_ENDIAN) */
 
 #undef _ctf_string
 #define _ctf_string(_item, _src, _user, _nowrite)		        \

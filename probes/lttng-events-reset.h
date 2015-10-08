@@ -67,9 +67,16 @@
 #define _ctf_array_encoded(_type, _item, _src, _length, _encoding, \
 			_user, _nowrite)
 
+#undef _ctf_array_bitfield
+#define _ctf_array_bitfield(_type, _item, _src, _length, _user, _nowrite)
+
 #undef _ctf_sequence_encoded
 #define _ctf_sequence_encoded(_type, _item, _src, _length_type, \
 			_src_length, _encoding, _byte_order, _base, _user, _nowrite)
+
+#undef _ctf_sequence_bitfield
+#define _ctf_sequence_bitfield(_type, _item, _src, _length_type, \
+			_src_length, _byte_order, _user, _nowrite)
 
 #undef _ctf_string
 #define _ctf_string(_item, _src, _user, _nowrite)
@@ -99,6 +106,9 @@
 #undef ctf_array_text
 #define ctf_array_text(_type, _item, _src, _length)
 
+#undef ctf_array_bitfield
+#define ctf_array_bitfield(_type, _item, _src, _length)
+
 #undef ctf_sequence
 #define ctf_sequence(_type, _item, _src, _length_type, _src_length)
 
@@ -110,6 +120,9 @@
 
 #undef ctf_sequence_text
 #define ctf_sequence_text(_type, _item, _src, _length_type, _src_length)
+
+#undef ctf_sequence_bitfield
+#define ctf_sequence_bitfield(_type, _item, _src, _length_type, _src_length)
 
 #undef ctf_string
 #define ctf_string(_item, _src)
@@ -127,11 +140,17 @@
 #undef ctf_array_text_nowrite
 #define ctf_array_text_nowrite(_type, _item, _src, _length)
 
+#undef ctf_array_bitfield_nowrite
+#define ctf_array_bitfield_nowrite(_type, _item, _src, _length)
+
 #undef ctf_sequence_nowrite
 #define ctf_sequence_nowrite(_type, _item, _src, _length_type, _src_length)
 
 #undef ctf_sequence_text_nowrite
 #define ctf_sequence_text_nowrite(_type, _item, _src, _length_type, _src_length)
+
+#undef ctf_sequence_bitfield_nowrite
+#define ctf_sequence_bitfield_nowrite(_type, _item, _src, _length_type, _src_length)
 
 #undef ctf_string_nowrite
 #define ctf_string_nowrite(_item, _src)
@@ -158,11 +177,17 @@
 #undef ctf_user_array_text
 #define ctf_user_array_text(_type, _item, _user_src, _length)
 
+#undef ctf_user_array_bitfield
+#define ctf_user_array_bitfield(_type, _item, _src, _length)
+
 #undef ctf_user_sequence
 #define ctf_user_sequence(_type, _item, _user_src, _length_type, _user_src_length)
 
 #undef ctf_user_sequence_text
 #define ctf_user_sequence_text(_type, _item, _user_src, _length_type, _user_src_length)
+
+#undef ctf_user_sequence_bitfield
+#define ctf_user_sequence_bitfield(_type, _item, _src, _length_type, _src_length)
 
 #undef ctf_user_string
 #define ctf_user_string(_item, _user_src)
@@ -180,11 +205,17 @@
 #undef ctf_user_array_text_nowrite
 #define ctf_user_array_text_nowrite(_type, _item, _user_src, _length)
 
+#undef ctf_user_array_bitfield_nowrite
+#define ctf_user_array_bitfield_nowrite(_type, _item, _src, _length)
+
 #undef ctf_user_sequence_nowrite
 #define ctf_user_sequence_nowrite(_type, _item, _user_src, _length_type, _user_src_length)
 
 #undef ctf_user_sequence_text_nowrite
 #define ctf_user_sequence_text_nowrite(_type, _item, _user_src, _length_type, _user_src_length)
+
+#undef ctf_user_sequence_bitfield_nowrite
+#define ctf_user_sequence_bitfield_nowrite(_type, _item, _src, _length_type, _src_length)
 
 #undef ctf_user_string_nowrite
 #define ctf_user_string_nowrite(_item, _user_src)

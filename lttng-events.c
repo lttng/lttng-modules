@@ -1695,6 +1695,14 @@ int _lttng_field_statedump(struct lttng_session *session,
 		const struct lttng_basic_type *elem_type;
 
 		elem_type = &field->type.u.array.elem_type;
+		if (field->type.u.array.elem_alignment) {
+			ret = lttng_metadata_printf(session,
+			"		struct { } align(%u) _%s_padding;\n",
+					field->type.u.array.elem_alignment * CHAR_BIT,
+					field->name);
+			if (ret)
+				return ret;
+		}
 		ret = lttng_metadata_printf(session,
 			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } _%s[%u];\n",
 			elem_type->u.basic.integer.size,
@@ -1741,6 +1749,14 @@ int _lttng_field_statedump(struct lttng_session *session,
 		if (ret)
 			return ret;
 
+		if (field->type.u.sequence.elem_alignment) {
+			ret = lttng_metadata_printf(session,
+			"		struct { } align(%u) _%s_padding;\n",
+					field->type.u.sequence.elem_alignment * CHAR_BIT,
+					field->name);
+			if (ret)
+				return ret;
+		}
 		ret = lttng_metadata_printf(session,
 			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } _%s[ __%s_length ];\n",
 			elem_type->u.basic.integer.size,

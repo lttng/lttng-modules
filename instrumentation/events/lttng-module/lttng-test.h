@@ -25,6 +25,8 @@ LTTNG_TRACEPOINT_EVENT(lttng_test_filter_event,
 		ctf_sequence_text(char, seqfield2, text, size_t, textlen)
 		ctf_string(stringfield, text)
 		ctf_string(stringfield2, etext)
+		ctf_sequence_bitfield(long, bitfield_seq, values, uint8_t, 3)
+		ctf_array_bitfield(long, bitfield_array, values, 3)
 	)
 )
 

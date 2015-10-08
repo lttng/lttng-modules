@@ -68,7 +68,7 @@
 #define TRACE_EVENT_TYPE___enum(_name, _container_type)			\
 		{							\
 		  .name = #_name,					\
-		  .container_type = __type_integer(_container_type, __BYTE_ORDER, 10, none), \
+		  .container_type = __type_integer(_container_type, 0, 0, -1, __BYTE_ORDER, 10, none), \
 		  .entries = __trace_event_enum_##_name, \
 		  .len = ARRAY_SIZE(__trace_event_enum_##_name), \
 		},

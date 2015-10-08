@@ -71,15 +71,16 @@ struct lttng_enum_entry {
 	const char *string;
 };
 
-#define __type_integer(_type, _byte_order, _base, _encoding)	\
+#define __type_integer(_type, _size, _alignment, _signedness,	\
+		_byte_order, _base, _encoding)	\
 	{							\
 	    .atype = atype_integer,				\
 	    .u.basic.integer =					\
 		{						\
-		  .size = sizeof(_type) * CHAR_BIT,		\
-		  .alignment = lttng_alignof(_type) * CHAR_BIT,	\
-		  .signedness = lttng_is_signed_type(_type),	\
-		  .reverse_byte_order = _byte_order != __BYTE_ORDER,	\
+		  .size = (_size) ? : sizeof(_type) * CHAR_BIT,	\
+		  .alignment = (_alignment) ? : lttng_alignof(_type) * CHAR_BIT, \
+		  .signedness = (_signedness) >= 0 ? (_signedness) : lttng_is_signed_type(_type), \
+		  .reverse_byte_order = _byte_order != __BYTE_ORDER, \
 		  .base = _base,				\
 		  .encoding = lttng_encode_##_encoding,		\
 		},						\
@@ -118,10 +119,12 @@ struct lttng_type {
 		struct {
 			struct lttng_basic_type elem_type;
 			unsigned int length;		/* num. elems. */
+			unsigned int elem_alignment;	/* alignment override */
 		} array;
 		struct {
 			struct lttng_basic_type length_type;
 			struct lttng_basic_type elem_type;
+			unsigned int elem_alignment;	/* alignment override */
 		} sequence;
 	} u;
 };
