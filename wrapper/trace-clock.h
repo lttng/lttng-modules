@@ -93,7 +93,7 @@ static inline u64 trace_clock_fixup(u64 src_now, u64 last)
 #endif /* #else #if (BITS_PER_LONG == 32) */
 
 /*
- * Always called with preemption disabled. Can be interrupted.
+ * Sometimes called with preemption enabled. Can be interrupted.
  */
 static inline u64 trace_clock_monotonic_wrapper(void)
 {
@@ -102,6 +102,7 @@ static inline u64 trace_clock_monotonic_wrapper(void)
 	local_t *last_tsc;
 
 	/* Use fast nmi-safe monotonic clock provided by the Linux kernel. */
+	preempt_disable();
 	last_tsc = lttng_this_cpu_ptr(&lttng_last_tsc);
 	last = local_read(last_tsc);
 	/*
@@ -115,6 +116,7 @@ static inline u64 trace_clock_monotonic_wrapper(void)
 	if (((long) now - (long) last) < 0)
 		now = trace_clock_fixup(now, last);
 	result = local_cmpxchg(last_tsc, last, (unsigned long) now);
+	preempt_enable();
 	if (result == last) {
 		/* Update done. */
 		return now;
