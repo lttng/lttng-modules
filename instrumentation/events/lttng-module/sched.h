@@ -349,7 +349,7 @@ LTTNG_TRACEPOINT_EVENT_CODE(sched_process_fork,
 		unsigned int ns_level;
 	),
 
-	TP_code(
+	TP_code_pre(
 		if (child) {
 			struct pid *child_pid;
 			unsigned int i;
@@ -403,7 +403,9 @@ LTTNG_TRACEPOINT_EVENT_CODE(sched_process_fork,
 				child_ns_inum;
 			}))
 #endif
-	)
+	),
+
+	TP_code_post()
 )
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,33))

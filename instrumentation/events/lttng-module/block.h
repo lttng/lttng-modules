@@ -135,7 +135,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq_with_error,
 		size_t cmd_len;
 	),
 
-	TP_code(
+	TP_code_pre(
 		if (rq->cmd_type == REQ_TYPE_BLOCK_PC) {
 			tp_locvar->sector = 0;
 			tp_locvar->nr_sector = 0;
@@ -159,7 +159,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq_with_error,
 			rq->cmd_flags, blk_rq_bytes(rq))
 		ctf_sequence_hex(unsigned char, cmd,
 			tp_locvar->cmd, size_t, tp_locvar->cmd_len)
-	)
+	),
+
+	TP_code_post()
 )
 
 /**
@@ -227,7 +229,7 @@ LTTNG_TRACEPOINT_EVENT_CODE(block_rq_complete,
 		size_t cmd_len;
 	),
 
-	TP_code(
+	TP_code_pre(
 		if (rq->cmd_type == REQ_TYPE_BLOCK_PC) {
 			tp_locvar->cmd = rq->cmd;
 			tp_locvar->cmd_len = rq->cmd_len;
@@ -247,7 +249,9 @@ LTTNG_TRACEPOINT_EVENT_CODE(block_rq_complete,
 			rq->cmd_flags, nr_bytes)
 		ctf_sequence_hex(unsigned char, cmd,
 			tp_locvar->cmd, size_t, tp_locvar->cmd_len)
-	)
+	),
+
+	TP_code_post()
 )
 
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
@@ -286,7 +290,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq,
 		size_t cmd_len;
 	),
 
-	TP_code(
+	TP_code_pre(
 		if (rq->cmd_type == REQ_TYPE_BLOCK_PC) {
 			tp_locvar->sector = 0;
 			tp_locvar->nr_sector = 0;
@@ -314,7 +318,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq,
 		ctf_sequence_hex(unsigned char, cmd,
 			tp_locvar->cmd, size_t, tp_locvar->cmd_len)
 		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
-	)
+	),
+
+	TP_code_post()
 )
 
 /**

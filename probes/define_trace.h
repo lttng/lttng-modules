@@ -56,10 +56,10 @@
 #define LTTNG_TRACEPOINT_EVENT(name, proto, args, fields)
 
 #undef LTTNG_TRACEPOINT_EVENT_CODE
-#define LTTNG_TRACEPOINT_EVENT_CODE(name, proto, args, _locvar, _code, fields)
+#define LTTNG_TRACEPOINT_EVENT_CODE(name, proto, args, _locvar, _code_pre, fields, _code_post)
 
 #undef LTTNG_TRACEPOINT_EVENT_CODE_MAP
-#define LTTNG_TRACEPOINT_EVENT_CODE_MAP(name, map, proto, args, _locvar, _code, fields)
+#define LTTNG_TRACEPOINT_EVENT_CODE_MAP(name, map, proto, args, _locvar, _code_pre, fields, _code_post)
 
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE(template, name, proto, args)

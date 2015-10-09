@@ -114,7 +114,7 @@ LTTNG_TRACEPOINT_EVENT_CODE_MAP(mm_compaction_migratepages,
 		unsigned long nr_failed;
 	),
 
-	TP_code(
+	TP_code_pre(
 		tp_locvar->nr_failed = 0;
 
 		{
@@ -131,7 +131,9 @@ LTTNG_TRACEPOINT_EVENT_CODE_MAP(mm_compaction_migratepages,
 	TP_FIELDS(
 		ctf_integer(unsigned long, nr_migrated, nr_all - tp_locvar->nr_failed)
 		ctf_integer(unsigned long, nr_failed, tp_locvar->nr_failed)
-	)
+	),
+
+	TP_code_post()
 )
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0)) */
 LTTNG_TRACEPOINT_EVENT_MAP(mm_compaction_migratepages,

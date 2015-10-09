@@ -11,7 +11,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(connect,
 		uint16_t v6addr[8];
 		unsigned int v4addr_len, v6addr_len;
 	),
-	TP_code(
+	TP_code_pre(
 		sc_in(
 			memset(tp_locvar, 0, sizeof(*tp_locvar));
 			if (addrlen < sizeof(struct sockaddr))
@@ -48,7 +48,8 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(connect,
 		sc_in(ctf_integer_network(uint16_t, dport, tp_locvar->dport))
 		sc_in(ctf_sequence_network(uint8_t, v4addr, &tp_locvar->v4addr, unsigned int, tp_locvar->v4addr_len))
 		sc_in(ctf_sequence_network(uint16_t, v6addr, &tp_locvar->v6addr, unsigned int, tp_locvar->v6addr_len))
-	)
+	),
+	TP_code_post()
 )
 
 #define OVERRIDE_64_accept
@@ -63,7 +64,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(accept,
 		int v4addr_len, v6addr_len;
 		int uaddr_len;
 	),
-	TP_code(
+	TP_code_pre(
 		sc_inout(
 			memset(tp_locvar, 0, sizeof(*tp_locvar));
 			(void) get_user(tp_locvar->uaddr_len, upeer_addrlen);
@@ -103,7 +104,8 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(accept,
 		sc_out(ctf_integer_network(uint16_t, sport, tp_locvar->sport))
 		sc_in(ctf_sequence_network(uint8_t, v4addr, &tp_locvar->v4addr, unsigned int, tp_locvar->v4addr_len))
 		sc_in(ctf_sequence_network(uint16_t, v6addr, &tp_locvar->v6addr, unsigned int, tp_locvar->v6addr_len))
-	)
+	),
+	TP_code_post()
 )
 
 #define OVERRIDE_64_pipe

@@ -55,23 +55,25 @@
 	LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(map, name, map)
 
 #undef LTTNG_TRACEPOINT_EVENT_CODE_MAP
-#define LTTNG_TRACEPOINT_EVENT_CODE_MAP(name, map, proto, args, _locvar, _code, fields) \
+#define LTTNG_TRACEPOINT_EVENT_CODE_MAP(name, map, proto, args, _locvar, _code_pre, fields, _code_post) \
 	LTTNG_TRACEPOINT_EVENT_CLASS_CODE(map,				\
 			     PARAMS(proto),				\
 			     PARAMS(args),				\
 			     PARAMS(_locvar),				\
-			     PARAMS(_code),				\
-			     PARAMS(fields))				\
+			     PARAMS(_code_pre),				\
+			     PARAMS(fields),				\
+			     PARAMS(_code_post))			\
 	LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(map, name, map, PARAMS(proto), PARAMS(args))
 
 #undef LTTNG_TRACEPOINT_EVENT_CODE
-#define LTTNG_TRACEPOINT_EVENT_CODE(name, proto, args, _locvar, _code, fields) \
+#define LTTNG_TRACEPOINT_EVENT_CODE(name, proto, args, _locvar, _code_pre, fields, _code_post) \
 	LTTNG_TRACEPOINT_EVENT_CODE_MAP(name, name,			\
 			     PARAMS(proto),				\
 			     PARAMS(args),				\
 			     PARAMS(_locvar),				\
-			     PARAMS(_code),				\
-			     PARAMS(fields))
+			     PARAMS(_code_pre),				\
+			     PARAMS(fields),				\
+			     PARAMS(_code_post))
 
 /*
  * LTTNG_TRACEPOINT_EVENT_CLASS can be used to add a generic function
@@ -106,11 +108,11 @@
 #undef LTTNG_TRACEPOINT_EVENT_CLASS
 #define LTTNG_TRACEPOINT_EVENT_CLASS(_name, _proto, _args, _fields) \
 	LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, PARAMS(_proto), PARAMS(_args), , , \
-		PARAMS(_fields))
+		PARAMS(_fields), )
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS
 #define LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(_name, _fields) \
-	LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, , , PARAMS(_fields))
+	LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, , , PARAMS(_fields), )
 
 
 /*
@@ -165,11 +167,11 @@ void __event_template_proto___##_template(_proto);
 void __event_template_proto___##_template(void);
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _fields) \
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
 void __event_template_proto___##_name(_proto);
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _fields) \
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
 void __event_template_proto___##_name(void);
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
@@ -302,14 +304,14 @@ void __event_template_proto___##_name(void);
 #define TP_FIELDS(...)	__VA_ARGS__	/* Only one used in this phase */
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _fields) \
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
 	static const struct lttng_event_field __event_fields___##_name[] = { \
 		_fields							     \
 	};
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _fields) \
-	LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, PARAMS(_fields))
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
+	LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, PARAMS(_fields), _code_post)
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
@@ -326,11 +328,11 @@ void __event_template_proto___##_name(void);
 #define TP_PROTO(...)	__VA_ARGS__
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _fields) \
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
 static void __event_probe__##_name(void *__data, _proto);
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _fields) \
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
 static void __event_probe__##_name(void *__data);
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
@@ -399,7 +401,7 @@ static void __event_probe__##_name(void *__data);
 #define TP_locvar(...)	__VA_ARGS__
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _fields) \
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
 static inline size_t __event_get_size__##_name(size_t *__dynamic_len,	      \
 		void *__tp_locvar, _proto)				      \
 {									      \
@@ -412,7 +414,7 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len,	      \
 }
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _fields) \
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
 static inline size_t __event_get_size__##_name(size_t *__dynamic_len,	      \
 		void *__tp_locvar)					      \
 {									      \
@@ -575,7 +577,7 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len,	      \
 #define TP_locvar(...)	__VA_ARGS__
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _fields) \
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
 static inline								      \
 void __event_prepare_filter_stack__##_name(char *__stack_data,		      \
 		void *__tp_locvar)					      \
@@ -586,7 +588,7 @@ void __event_prepare_filter_stack__##_name(char *__stack_data,		      \
 }
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _fields) \
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
 static inline								      \
 void __event_prepare_filter_stack__##_name(char *__stack_data,		      \
 		void *__tp_locvar, _proto)				      \
@@ -646,7 +648,7 @@ void __event_prepare_filter_stack__##_name(char *__stack_data,		      \
 #define TP_locvar(...)	__VA_ARGS__
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _fields) \
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
 static inline size_t __event_get_align__##_name(void *__tp_locvar, _proto)    \
 {									      \
 	size_t __event_align = 1;					      \
@@ -657,7 +659,7 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar, _proto)    \
 }
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _fields) \
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
 static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 {									      \
 	size_t __event_align = 1;					      \
@@ -871,8 +873,11 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 #undef TP_locvar
 #define TP_locvar(...)	__VA_ARGS__
 
-#undef TP_code
-#define TP_code(...)	__VA_ARGS__
+#undef TP_code_pre
+#define TP_code_pre(...)	__VA_ARGS__
+
+#undef TP_code_post
+#define TP_code_post(...)	__VA_ARGS__
 
 /*
  * For state dump, check that "session" argument (mandatory) matches the
@@ -893,7 +898,7 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
  * Perform UNION (||) of filter runtime list.
  */
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _fields) \
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
 static void __event_probe__##_name(void *__data, _proto)		      \
 {									      \
 	struct probe_local_vars { _locvar };				      \
@@ -924,7 +929,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	__lpf = lttng_rcu_dereference(__session->pid_tracker);		      \
 	if (__lpf && likely(!lttng_pid_tracker_lookup(__lpf, current->pid)))  \
 		return;							      \
-	_code								      \
+	_code_pre							      \
 	if (unlikely(!list_empty(&__event->bytecode_runtime_head))) {	      \
 		struct lttng_bytecode_runtime *bc_runtime;		      \
 		int __filter_record = __event->has_enablers_without_bytecode; \
@@ -937,7 +942,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 				__filter_record = 1;			      \
 		}							      \
 		if (likely(!__filter_record))				      \
-			return;						      \
+			goto __post;					      \
 	}								      \
 	__event_len = __event_get_size__##_name(__stackvar.__dynamic_len,     \
 				tp_locvar, _args);			      \
@@ -946,13 +951,16 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 				 __event_align, -1);			      \
 	__ret = __chan->ops->event_reserve(&__ctx, __event->id);	      \
 	if (__ret < 0)							      \
-		return;							      \
+		goto __post;						      \
 	_fields								      \
 	__chan->ops->event_commit(&__ctx);				      \
+__post:									      \
+	_code_post							      \
+	return;								      \
 }
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _fields) \
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
 static void __event_probe__##_name(void *__data)			      \
 {									      \
 	struct probe_local_vars { _locvar };				      \
@@ -983,7 +991,7 @@ static void __event_probe__##_name(void *__data)			      \
 	__lpf = lttng_rcu_dereference(__session->pid_tracker);		      \
 	if (__lpf && likely(!lttng_pid_tracker_lookup(__lpf, current->pid)))  \
 		return;							      \
-	_code								      \
+	_code_pre							      \
 	if (unlikely(!list_empty(&__event->bytecode_runtime_head))) {	      \
 		struct lttng_bytecode_runtime *bc_runtime;		      \
 		int __filter_record = __event->has_enablers_without_bytecode; \
@@ -996,7 +1004,7 @@ static void __event_probe__##_name(void *__data)			      \
 				__filter_record = 1;			      \
 		}							      \
 		if (likely(!__filter_record))				      \
-			return;						      \
+			goto __post;					      \
 	}								      \
 	__event_len = __event_get_size__##_name(__stackvar.__dynamic_len, tp_locvar); \
 	__event_align = __event_get_align__##_name(tp_locvar);		      \
@@ -1004,9 +1012,12 @@ static void __event_probe__##_name(void *__data)			      \
 				 __event_align, -1);			      \
 	__ret = __chan->ops->event_reserve(&__ctx, __event->id);	      \
 	if (__ret < 0)							      \
-		return;							      \
+		goto __post;						      \
 	_fields								      \
 	__chan->ops->event_commit(&__ctx);				      \
+__post:									      \
+	_code_post							      \
+	return;								      \
 }
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)

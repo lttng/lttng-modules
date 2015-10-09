@@ -118,10 +118,10 @@ struct file_handle;
 #define SC_LTTNG_TRACEPOINT_EVENT(_name, _proto, _args, _fields) \
 	LTTNG_TRACEPOINT_EVENT(syscall_entry_##_name, PARAMS(_proto), PARAMS(_args), \
 		PARAMS(_fields))
-#define SC_LTTNG_TRACEPOINT_EVENT_CODE(_name, _proto, _args, _locvar, _code, _fields) \
+#define SC_LTTNG_TRACEPOINT_EVENT_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
 	LTTNG_TRACEPOINT_EVENT_CODE(syscall_entry_##_name, PARAMS(_proto), PARAMS(_args), \
-		PARAMS(_locvar), PARAMS(_code),					\
-		PARAMS(_fields))
+		PARAMS(_locvar), PARAMS(_code_pre),				\
+		PARAMS(_fields), PARAMS(_code_post))
 #define SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(_name, _fields) \
 	LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(syscall_entry_##_name, PARAMS(_fields))
 #define SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(_template, _name)		\
@@ -150,9 +150,9 @@ struct file_handle;
 #define SC_LTTNG_TRACEPOINT_EVENT(_name, _proto, _args, _fields) \
 	LTTNG_TRACEPOINT_EVENT(compat_syscall_entry_##_name, PARAMS(_proto), PARAMS(_args), \
 		PARAMS(_fields))
-#define SC_LTTNG_TRACEPOINT_EVENT_CODE(_name, _proto, _args, _locvar, _code, _fields) \
+#define SC_LTTNG_TRACEPOINT_EVENT_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
 	LTTNG_TRACEPOINT_EVENT_CODE(compat_syscall_entry_##_name, PARAMS(_proto), PARAMS(_args), \
-		PARAMS(_locvar), PARAMS(_code), PARAMS(_fields))
+		PARAMS(_locvar), PARAMS(_code_pre), PARAMS(_fields), PARAMS(_code_post))
 #define SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(_name, _fields) \
 	LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(compat_syscall_entry_##_name, PARAMS(_fields))
 #define SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(_template, _name)		\
@@ -194,9 +194,9 @@ struct file_handle;
 #define SC_LTTNG_TRACEPOINT_EVENT(_name, _proto, _args, _fields) \
 	LTTNG_TRACEPOINT_EVENT(syscall_exit_##_name, PARAMS(_proto), PARAMS(_args), \
 		PARAMS(_fields))
-#define SC_LTTNG_TRACEPOINT_EVENT_CODE(_name, _proto, _args, _locvar, _code, _fields) \
+#define SC_LTTNG_TRACEPOINT_EVENT_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
 	LTTNG_TRACEPOINT_EVENT_CODE(syscall_exit_##_name, PARAMS(_proto), PARAMS(_args), \
-		PARAMS(_locvar), PARAMS(_code), PARAMS(_fields))
+		PARAMS(_locvar), PARAMS(_code_pre), PARAMS(_fields), PARAMS(_code_post))
 #define SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(_name, _fields) \
 	LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(syscall_exit_##_name, PARAMS(_fields))
 #define SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(_template, _name) 		\
@@ -226,9 +226,9 @@ struct file_handle;
 #define SC_LTTNG_TRACEPOINT_EVENT(_name, _proto, _args, _fields) \
 	LTTNG_TRACEPOINT_EVENT(compat_syscall_exit_##_name, PARAMS(_proto), PARAMS(_args), \
 		PARAMS(_fields))
-#define SC_LTTNG_TRACEPOINT_EVENT_CODE(_name, _proto, _args, _locvar, _code, _fields) \
+#define SC_LTTNG_TRACEPOINT_EVENT_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
 	LTTNG_TRACEPOINT_EVENT_CODE(compat_syscall_exit_##_name, PARAMS(_proto), PARAMS(_args), \
-		PARAMS(_locvar), PARAMS(_code), PARAMS(_fields))
+		PARAMS(_locvar), PARAMS(_code_pre), PARAMS(_fields), PARAMS(_code_post))
 #define SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(_name, _fields) \
 	LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(compat_syscall_exit_##_name, PARAMS(_fields))
 #define SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(_template, _name)		\

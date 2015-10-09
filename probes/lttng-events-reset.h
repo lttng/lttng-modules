@@ -21,10 +21,10 @@
 /* Reset macros used within LTTNG_TRACEPOINT_EVENT to "nothing" */
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code, _fields)
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post)
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code, _fields)
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post)
 
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(_template, _name, _map, _proto, _args)
@@ -41,8 +41,11 @@
 #undef TP_locvar
 #define TP_locvar(...)
 
-#undef TP_code
-#define TP_code(...)
+#undef TP_code_pre
+#define TP_code_pre(...)
+
+#undef TP_code_post
+#define TP_code_post(...)
 
 #undef TP_FIELDS
 #define TP_FIELDS(args...)

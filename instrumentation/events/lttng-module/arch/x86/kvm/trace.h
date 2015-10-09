@@ -122,7 +122,7 @@ LTTNG_TRACEPOINT_EVENT_CODE(kvm_exit,
 		u64 info1, info2;
 	),
 
-	TP_code(
+	TP_code_pre(
 		kvm_x86_ops->get_exit_info(vcpu, &tp_locvar->info1,
 				&tp_locvar->info2);
 	),
@@ -133,7 +133,9 @@ LTTNG_TRACEPOINT_EVENT_CODE(kvm_exit,
 		ctf_integer(u32, isa, isa)
 		ctf_integer(u64, info1, tp_locvar->info1)
 		ctf_integer(u64, info2, tp_locvar->info2)
-	)
+	),
+
+	TP_code_post()
 )
 
 /*
