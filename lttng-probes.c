@@ -251,10 +251,12 @@ static
 void *tp_list_start(struct seq_file *m, loff_t *pos)
 {
 	struct lttng_probe_desc *probe_desc;
+	struct list_head *probe_list;
 	int iter = 0, i;
 
 	lttng_lock_sessions();
-	list_for_each_entry(probe_desc, &_probe_list, head) {
+	probe_list = lttng_get_probe_list_head();
+	list_for_each_entry(probe_desc, probe_list, head) {
 		for (i = 0; i < probe_desc->nr_events; i++) {
 			if (iter++ >= *pos)
 				return (void *) probe_desc->event_desc[i];
@@ -268,10 +270,12 @@ static
 void *tp_list_next(struct seq_file *m, void *p, loff_t *ppos)
 {
 	struct lttng_probe_desc *probe_desc;
+	struct list_head *probe_list;
 	int iter = 0, i;
 
 	(*ppos)++;
-	list_for_each_entry(probe_desc, &_probe_list, head) {
+	probe_list = lttng_get_probe_list_head();
+	list_for_each_entry(probe_desc, probe_list, head) {
 		for (i = 0; i < probe_desc->nr_events; i++) {
 			if (iter++ >= *ppos)
 				return (void *) probe_desc->event_desc[i];
