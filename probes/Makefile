@@ -49,10 +49,17 @@ endif
 endif
 
 ifneq ($(CONFIG_X86),)
+
 x86_irq_vectors_dep = $(srctree)/arch/x86/include/asm/trace/irq_vectors.h
 ifneq ($(wildcard $(x86_irq_vectors_dep)),)
 obj-m += lttng-probe-x86-irq-vectors.o
 endif
+
+x86_exceptions_dep = $(srctree)/arch/x86/include/asm/trace/exceptions.h
+ifneq ($(wildcard $(x86_exceptions_dep)),)
+obj-m += lttng-probe-x86-exceptions.o
+endif
+
 endif
 
 obj-m +=  $(shell \
