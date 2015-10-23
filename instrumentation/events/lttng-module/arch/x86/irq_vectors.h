@@ -5,7 +5,7 @@
 #include <linux/version.h>
 
 #undef TRACE_SYSTEM
-#define TRACE_SYSTEM irq_vectors
+#define TRACE_SYSTEM x86_irq_vectors
 
 LTTNG_TRACEPOINT_EVENT_CLASS(x86_irq_vectors_vector_class,
 	TP_PROTO(int vector),
