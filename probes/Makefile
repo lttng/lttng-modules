@@ -48,6 +48,13 @@ endif
 endif
 endif
 
+ifneq ($(CONFIG_X86),)
+x86_irq_vectors_dep = $(srctree)/arch/x86/include/asm/trace/irq_vectors.h
+ifneq ($(wildcard $(x86_irq_vectors_dep)),)
+obj-m += lttng-probe-x86-irq-vectors.o
+endif
+endif
+
 obj-m +=  $(shell \
 	if [ $(VERSION) -ge 3 \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 33 \) ] ; then \
