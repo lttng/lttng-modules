@@ -61,15 +61,20 @@
 #include "wrapper/vmalloc.h"
 #include "lttng-tracer.h"
 
-#define MAX_ENTRIES 25 /* BUG: saving more than 30 entries causes trace corruption */
+#define MAX_ENTRIES 25
+
+struct lttng_cs_nesting {
+	struct stack_trace stack_trace;
+	unsigned long entries[MAX_ENTRIES];
+};
 
 struct lttng_cs {
-	struct stack_trace items[RING_BUFFER_MAX_NESTING];
+	struct lttng_cs_nesting level[RING_BUFFER_MAX_NESTING];
 };
 
 struct field_data {
-	int mode;
 	struct lttng_cs __percpu *cs_percpu;
+	int mode;
 };
 
 struct lttng_cs_type {
@@ -85,14 +90,14 @@ enum lttng_cs_ctx_modes {
 
 static struct lttng_cs_type cs_types[] = {
 	{
-	  .name           = "callstack_kernel",
-	  .save_func_name = "save_stack_trace",
-	  .save_func      = NULL,
+		.name		= "callstack_kernel",
+		.save_func_name	= "save_stack_trace",
+		.save_func	= NULL,
 	},
 	{
-	  .name           = "callstack_user",
-	  .save_func_name = "save_stack_trace_user",
-	  .save_func      = NULL,
+		.name		= "callstack_user",
+		.save_func_name	= "save_stack_trace_user",
+		.save_func	= NULL,
 	},
 };
 
@@ -133,7 +138,7 @@ struct stack_trace *stack_trace_context(struct lttng_ctx_field *field,
 	if (nesting >= RING_BUFFER_MAX_NESTING) {
 		return NULL;
 	}
-	return &cs->items[nesting];
+	return &cs->level[nesting].stack_trace;
 }
 
 /*
@@ -180,8 +185,8 @@ size_t lttng_callstack_get_size(size_t offset, struct lttng_ctx_field *field,
 
 static
 void lttng_callstack_record(struct lttng_ctx_field *field,
-			    struct lib_ring_buffer_ctx *ctx,
-			    struct lttng_channel *chan)
+			struct lib_ring_buffer_ctx *ctx,
+			struct lttng_channel *chan)
 {
 	struct stack_trace *trace = stack_trace_context(field, ctx);
 	unsigned int nr_seq_entries;
@@ -207,31 +212,20 @@ void lttng_callstack_record(struct lttng_ctx_field *field,
 static
 void field_data_free(struct field_data *fdata)
 {
-	int cpu, i;
-	struct lttng_cs *cs;
-
 	if (!fdata)
 		return;
-	for_each_possible_cpu(cpu) {
-		cs = per_cpu_ptr(fdata->cs_percpu, cpu);
-		for (i = 0; i < RING_BUFFER_MAX_NESTING; i++) {
-			kfree(cs->items[i].entries);
-		}
-	}
 	free_percpu(fdata->cs_percpu);
 	kfree(fdata);
 }
 
 static
-struct field_data __percpu *field_data_create(unsigned int entries, int type)
+struct field_data __percpu *field_data_create(int type)
 {
 	int cpu, i;
-	struct stack_trace *item;
-	struct lttng_cs *cs;
 	struct lttng_cs __percpu *cs_set;
-	struct field_data* fdata;
+	struct field_data *fdata;
 
-	fdata = kzalloc(sizeof(unsigned long) * entries, GFP_KERNEL);
+	fdata = kzalloc(sizeof(*fdata), GFP_KERNEL);
 	if (!fdata)
 		return NULL;
 	cs_set = alloc_percpu(struct lttng_cs);
@@ -240,14 +234,15 @@ struct field_data __percpu *field_data_create(unsigned int entries, int type)
 
 	fdata->cs_percpu = cs_set;
 	for_each_possible_cpu(cpu) {
+		struct lttng_cs *cs;
+
 		cs = per_cpu_ptr(cs_set, cpu);
 		for (i = 0; i < RING_BUFFER_MAX_NESTING; i++) {
-			item = &cs->items[i];
-			item->entries = kzalloc(sizeof(unsigned long) * entries, GFP_KERNEL);
-			if (!item->entries) {
-				goto error_alloc;
-			}
-			item->max_entries = entries;
+			struct lttng_cs_nesting *level;
+
+			level = &cs->level[i];
+			level->stack_trace.entries = level->entries;
+			level->stack_trace.max_entries = MAX_ENTRIES;
 		}
 	}
 	fdata->mode = type;
@@ -284,7 +279,7 @@ int __lttng_add_callstack_generic(struct lttng_ctx **ctx, int mode)
 		ret = -EEXIST;
 		goto error_find;
 	}
-	fdata = field_data_create(MAX_ENTRIES, mode);
+	fdata = field_data_create(mode);
 	if (!fdata) {
 		ret = -ENOMEM;
 		goto error_create;
