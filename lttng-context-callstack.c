@@ -159,10 +159,22 @@ size_t lttng_callstack_get_size(size_t offset, struct lttng_ctx_field *field,
 
 	/* do the real work and reserve space */
 	cs_types[fdata->mode].save_func(trace);
+	/*
+	 * Remove final ULONG_MAX delimiter. If we cannot find it, add
+	 * our own marker to show that the stack is incomplete. This is
+	 * more compact for a trace.
+	 */
+	if (trace->nr_entries > 0
+			&& trace->entries[trace->nr_entries - 1] == ULONG_MAX) {
+		trace->nr_entries--;
+	}
 	size += lib_ring_buffer_align(offset, lttng_alignof(unsigned int));
 	size += sizeof(unsigned int);
 	size += lib_ring_buffer_align(offset, lttng_alignof(unsigned long));
 	size += sizeof(unsigned long) * trace->nr_entries;
+	/* Add our own ULONG_MAX delimiter to show incomplete stack. */
+	if (trace->nr_entries == trace->max_entries)
+		size += sizeof(unsigned long);
 	return size;
 }
 
@@ -172,14 +184,24 @@ void lttng_callstack_record(struct lttng_ctx_field *field,
 			    struct lttng_channel *chan)
 {
 	struct stack_trace *trace = stack_trace_context(field, ctx);
+	unsigned int nr_seq_entries;
 
 	if (!trace)
 		return;
 	lib_ring_buffer_align_ctx(ctx, lttng_alignof(unsigned int));
-	chan->ops->event_write(ctx, &trace->nr_entries, sizeof(unsigned int));
+	nr_seq_entries = trace->nr_entries;
+	if (trace->nr_entries == trace->max_entries)
+		nr_seq_entries++;
+	chan->ops->event_write(ctx, &nr_seq_entries, sizeof(unsigned int));
 	lib_ring_buffer_align_ctx(ctx, lttng_alignof(unsigned long));
 	chan->ops->event_write(ctx, trace->entries,
 			sizeof(unsigned long) * trace->nr_entries);
+	/* Add our own ULONG_MAX delimiter to show incomplete stack. */
+	if (trace->nr_entries == trace->max_entries) {
+		unsigned long delim = ULONG_MAX;
+
+		chan->ops->event_write(ctx, &delim, sizeof(unsigned long));
+	}
 }
 
 static
