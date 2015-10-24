@@ -156,8 +156,12 @@ size_t lttng_callstack_get_size(size_t offset, struct lttng_ctx_field *field,
 
 	/* do not write data if no space is available */
 	trace = stack_trace_context(field, ctx);
-	if (!trace)
-		return 0;
+	if (unlikely(!trace)) {
+		size += lib_ring_buffer_align(offset, lttng_alignof(unsigned int));
+		size += sizeof(unsigned int);
+		size += lib_ring_buffer_align(offset, lttng_alignof(unsigned long));
+		return size;
+	}
 
 	/* reset stack trace, no need to clear memory */
 	trace->nr_entries = 0;
@@ -191,8 +195,13 @@ void lttng_callstack_record(struct lttng_ctx_field *field,
 	struct stack_trace *trace = stack_trace_context(field, ctx);
 	unsigned int nr_seq_entries;
 
-	if (!trace)
+	if (unlikely(!trace)) {
+		nr_seq_entries = 0;
+		lib_ring_buffer_align_ctx(ctx, lttng_alignof(unsigned int));
+		chan->ops->event_write(ctx, &nr_seq_entries, sizeof(unsigned int));
+		lib_ring_buffer_align_ctx(ctx, lttng_alignof(unsigned long));
 		return;
+	}
 	lib_ring_buffer_align_ctx(ctx, lttng_alignof(unsigned int));
 	nr_seq_entries = trace->nr_entries;
 	if (trace->nr_entries == trace->max_entries)
