@@ -119,7 +119,7 @@ struct stack_trace *stack_trace_context(struct lttng_ctx_field *field,
 {
 	int nesting;
 	struct lttng_cs *cs;
-	struct field_data *fdata = field->private;
+	struct field_data *fdata = field->priv;
 
 	/*
 	 * get_cpu() is not required, preemption is already
@@ -147,7 +147,7 @@ size_t lttng_callstack_get_size(size_t offset, struct lttng_ctx_field *field,
 {
 	size_t size = 0;
 	struct stack_trace *trace;
-	struct field_data *fdata = field->private;
+	struct field_data *fdata = field->priv;
 
 	/* do not write data if no space is available */
 	trace = stack_trace_context(field, ctx);
@@ -239,7 +239,7 @@ error_alloc:
 static
 void lttng_callstack_destroy(struct lttng_ctx_field *field)
 {
-	struct field_data *fdata = field->private;
+	struct field_data *fdata = field->priv;
 
 	field_data_free(fdata);
 }
@@ -259,7 +259,6 @@ int __lttng_add_callstack_generic(struct lttng_ctx **ctx, int mode)
 	if (!field)
 		return -ENOMEM;
 	if (lttng_find_context(*ctx, ctx_name)) {
-		printk("%s lttng_find_context failed\n", ctx_name);
 		ret = -EEXIST;
 		goto error_find;
 	}
@@ -289,10 +288,9 @@ int __lttng_add_callstack_generic(struct lttng_ctx **ctx, int mode)
 
 	field->get_size_arg = lttng_callstack_get_size;
 	field->record = lttng_callstack_record;
-	field->private = fdata;
+	field->priv = fdata;
 	field->destroy = lttng_callstack_destroy;
 	wrapper_vmalloc_sync_all();
-	printk("lttng add-context %s\n", ctx_name);
 	return 0;
 
 error_create:

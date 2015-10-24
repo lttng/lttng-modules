@@ -217,8 +217,12 @@ struct lttng_ctx_field {
 		struct lttng_perf_counter_field *perf_counter;
 	} u;
 	void (*destroy)(struct lttng_ctx_field *field);
-	/* private data to keep state between get_size and record */
-	void *private;
+	/*
+	 * Private data to keep state between get_size and record.
+	 * User must perform its own synchronization to protect against
+	 * concurrent and reentrant contexts.
+	 */
+	void *priv;
 };
 
 struct lttng_ctx {
