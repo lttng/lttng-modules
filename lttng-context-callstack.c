@@ -20,31 +20,32 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  *
- * The callstack context can be added to any kernel
- * event. It records either the kernel or the userspace callstack, up to a
- * max depth. The context is a CTF sequence, such that it uses only the space
- * required for the number of callstack entries.
+ * The callstack context can be added to any kernel event. It records
+ * either the kernel or the userspace callstack, up to a max depth. The
+ * context is a CTF sequence, such that it uses only the space required
+ * for the number of callstack entries.
  *
- * It allocates callstack buffers per-CPU up to 4 interrupt nesting. This
- * nesting limit is the same as defined in the ring buffer. It therefore uses a
- * fixed amount of memory, proportional to the number of CPUs:
+ * It allocates callstack buffers per-CPU up to 4 interrupt nesting.
+ * This nesting limit is the same as defined in the ring buffer. It
+ * therefore uses a fixed amount of memory, proportional to the number
+ * of CPUs:
  *
  *   size = cpus * nest * depth * sizeof(unsigned long)
  *
- * Which is about 800 bytes per-CPUs on 64-bit host and a depth of 25. The
- * allocation is done at the initialization to avoid memory allocation
- * overhead while tracing, using a shallow stack.
+ * Which is about 800 bytes per CPU on 64-bit host and a depth of 25.
+ * The allocation is done at the initialization to avoid memory
+ * allocation overhead while tracing, using a shallow stack.
  *
  * The kernel callstack is recovered using save_stack_trace(), and the
  * userspace callstack uses save_stack_trace_user(). They rely on frame
- * pointers. These are usually available for the kernel, but the compiler
- * option -fomit-frame-pointer frequently used in popular Linux distributions
- * may cause the userspace callstack to be unreliable, and is a known
- * limitation of this approach. If frame pointers are not available, it
- * produces no error, but the callstack will be empty. We still provide the
- * feature, because it works well for runtime environments having frame
- * pointers. In the future, unwind support and/or last branch record may
- * provide a solution to this problem.
+ * pointers. These are usually available for the kernel, but the
+ * compiler option -fomit-frame-pointer frequently used in popular Linux
+ * distributions may cause the userspace callstack to be unreliable, and
+ * is a known limitation of this approach. If frame pointers are not
+ * available, it produces no error, but the callstack will be empty. We
+ * still provide the feature, because it works well for runtime
+ * environments having frame pointers. In the future, unwind support
+ * and/or last branch record may provide a solution to this problem.
  *
  * The symbol name resolution is left to the trace reader.
  */
@@ -63,29 +64,30 @@
 
 #define MAX_ENTRIES 25
 
-struct lttng_cs_nesting {
+enum lttng_cs_ctx_modes {
+	CALLSTACK_KERNEL = 0,
+	CALLSTACK_USER = 1,
+	NR_CALLSTACK_MODES,
+};
+
+struct lttng_cs_dispatch {
 	struct stack_trace stack_trace;
 	unsigned long entries[MAX_ENTRIES];
 };
 
 struct lttng_cs {
-	struct lttng_cs_nesting level[RING_BUFFER_MAX_NESTING];
+	struct lttng_cs_dispatch dispatch[RING_BUFFER_MAX_NESTING];
 };
 
 struct field_data {
 	struct lttng_cs __percpu *cs_percpu;
-	int mode;
+	enum lttng_cs_ctx_modes mode;
 };
 
 struct lttng_cs_type {
 	const char *name;
 	const char *save_func_name;
 	void (*save_func)(struct stack_trace *trace);
-};
-
-enum lttng_cs_ctx_modes {
-	CALLSTACK_KERNEL = 0,
-	CALLSTACK_USER = 1,
 };
 
 static struct lttng_cs_type cs_types[] = {
@@ -102,7 +104,7 @@ static struct lttng_cs_type cs_types[] = {
 };
 
 static
-int init_type(int mode)
+int init_type(enum lttng_cs_ctx_modes mode)
 {
 	unsigned long func;
 
@@ -138,7 +140,7 @@ struct stack_trace *stack_trace_context(struct lttng_ctx_field *field,
 	if (nesting >= RING_BUFFER_MAX_NESTING) {
 		return NULL;
 	}
-	return &cs->level[nesting].stack_trace;
+	return &cs->dispatch[nesting].stack_trace;
 }
 
 /*
@@ -228,7 +230,7 @@ void field_data_free(struct field_data *fdata)
 }
 
 static
-struct field_data __percpu *field_data_create(int type)
+struct field_data __percpu *field_data_create(enum lttng_cs_ctx_modes mode)
 {
 	int cpu, i;
 	struct lttng_cs __percpu *cs_set;
@@ -247,14 +249,14 @@ struct field_data __percpu *field_data_create(int type)
 
 		cs = per_cpu_ptr(cs_set, cpu);
 		for (i = 0; i < RING_BUFFER_MAX_NESTING; i++) {
-			struct lttng_cs_nesting *level;
+			struct lttng_cs_dispatch *dispatch;
 
-			level = &cs->level[i];
-			level->stack_trace.entries = level->entries;
-			level->stack_trace.max_entries = MAX_ENTRIES;
+			dispatch = &cs->dispatch[i];
+			dispatch->stack_trace.entries = dispatch->entries;
+			dispatch->stack_trace.max_entries = MAX_ENTRIES;
 		}
 	}
-	fdata->mode = type;
+	fdata->mode = mode;
 	return fdata;
 
 error_alloc:
@@ -271,7 +273,8 @@ void lttng_callstack_destroy(struct lttng_ctx_field *field)
 }
 
 static
-int __lttng_add_callstack_generic(struct lttng_ctx **ctx, int mode)
+int __lttng_add_callstack_generic(struct lttng_ctx **ctx,
+		enum lttng_cs_ctx_modes mode)
 {
 	const char *ctx_name = cs_types[mode].name;
 	struct lttng_ctx_field *field;
