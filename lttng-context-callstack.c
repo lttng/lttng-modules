@@ -152,17 +152,17 @@ size_t lttng_callstack_get_size(size_t offset, struct lttng_ctx_field *field,
 				struct lib_ring_buffer_ctx *ctx,
 				struct lttng_channel *chan)
 {
-	size_t size = 0;
 	struct stack_trace *trace;
 	struct field_data *fdata = field->priv;
+	size_t orig_offset = offset;
 
 	/* do not write data if no space is available */
 	trace = stack_trace_context(field, ctx);
 	if (unlikely(!trace)) {
-		size += lib_ring_buffer_align(offset, lttng_alignof(unsigned int));
-		size += sizeof(unsigned int);
-		size += lib_ring_buffer_align(offset, lttng_alignof(unsigned long));
-		return size;
+		offset += lib_ring_buffer_align(offset, lttng_alignof(unsigned int));
+		offset += sizeof(unsigned int);
+		offset += lib_ring_buffer_align(offset, lttng_alignof(unsigned long));
+		return offset - orig_offset;
 	}
 
 	/* reset stack trace, no need to clear memory */
@@ -179,14 +179,14 @@ size_t lttng_callstack_get_size(size_t offset, struct lttng_ctx_field *field,
 			&& trace->entries[trace->nr_entries - 1] == ULONG_MAX) {
 		trace->nr_entries--;
 	}
-	size += lib_ring_buffer_align(offset, lttng_alignof(unsigned int));
-	size += sizeof(unsigned int);
-	size += lib_ring_buffer_align(offset, lttng_alignof(unsigned long));
-	size += sizeof(unsigned long) * trace->nr_entries;
+	offset += lib_ring_buffer_align(offset, lttng_alignof(unsigned int));
+	offset += sizeof(unsigned int);
+	offset += lib_ring_buffer_align(offset, lttng_alignof(unsigned long));
+	offset += sizeof(unsigned long) * trace->nr_entries;
 	/* Add our own ULONG_MAX delimiter to show incomplete stack. */
 	if (trace->nr_entries == trace->max_entries)
-		size += sizeof(unsigned long);
-	return size;
+		offset += sizeof(unsigned long);
+	return offset - orig_offset;
 }
 
 static
