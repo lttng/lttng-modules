@@ -32,7 +32,7 @@
  *
  *   size = cpus * nest * depth * sizeof(unsigned long)
  *
- * Which is about 800 bytes per CPU on 64-bit host and a depth of 25.
+ * Which is 4096 bytes per CPU on 64-bit host and a depth of 128.
  * The allocation is done at the initialization to avoid memory
  * allocation overhead while tracing, using a shallow stack.
  *
@@ -62,7 +62,7 @@
 #include "wrapper/vmalloc.h"
 #include "lttng-tracer.h"
 
-#define MAX_ENTRIES 25
+#define MAX_ENTRIES 128
 
 enum lttng_cs_ctx_modes {
 	CALLSTACK_KERNEL = 0,
