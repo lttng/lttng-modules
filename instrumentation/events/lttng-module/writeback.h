@@ -227,9 +227,15 @@ LTTNG_TRACEPOINT_EVENT_WRITEBACK_WRITE_INODE(writeback_write_inode)
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
 	TP_PROTO(struct bdi_writeback *wb, struct wb_writeback_work *work),
 	TP_ARGS(wb, work),
-	TP_FIELDS(
-		ctf_array_text(char, name, wb->bdi->dev ? dev_name(wb->bdi->dev) :
+	TP_STRUCT__entry(
+		__array_text(char, name, 32)
+	),
+	TP_fast_assign(
+		tp_memcpy(name, wb->bdi->dev ? dev_name(wb->bdi->dev) :
 				"(unknown)", 32)
+	),
+	TP_printk("bdi %s",
+		  __entry->name
 	)
 )
 
@@ -311,9 +317,14 @@ LTTNG_TRACEPOINT_EVENT(writeback_pages_written,
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_class,
 	TP_PROTO(struct bdi_writeback *wb),
 	TP_ARGS(wb),
-	TP_FIELDS(
-		ctf_array_text(char, name,
-			dev_name(wb->bdi->dev), 32)
+	TP_STRUCT__entry(
+		__array_text(char, name, 32)
+	),
+	TP_fast_assign(
+		tp_memcpy(name, dev_name(wb->bdi->dev), 32)
+	),
+	TP_printk("bdi %s",
+		  __entry->name
 	)
 )
 
@@ -331,9 +342,14 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(writeback_class, name, map, \
 LTTNG_TRACEPOINT_EVENT(writeback_bdi_register,
 	TP_PROTO(struct backing_dev_info *bdi),
 	TP_ARGS(bdi),
-	TP_FIELDS(
-		ctf_array_text(char, name,
-			dev_name(bdi->dev), 32)
+	TP_STRUCT__entry(
+		__array_text(char, name, 32)
+	),
+	TP_fast_assign(
+		tp_memcpy(name, dev_name(bdi->dev), 32)
+	),
+	TP_printk("bdi %s",
+		  __entry->name
 	)
 )
 
@@ -595,15 +611,38 @@ LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 
 	TP_ARGS(wb, dirty_rate, task_ratelimit),
 
-	TP_FIELDS(
-		ctf_array_text(char, bdi, dev_name(wb->bdi->dev), 32)
-		ctf_integer(unsigned long, write_bw, KBps(wb->bdi->wb.write_bandwidth))
-		ctf_integer(unsigned long, avg_write_bw, KBps(wb->bdi->wb.avg_write_bandwidth))
-		ctf_integer(unsigned long, dirty_rate, KBps(dirty_rate))
-		ctf_integer(unsigned long, dirty_ratelimit, KBps(wb->bdi->wb.dirty_ratelimit))
-		ctf_integer(unsigned long, task_ratelimit, KBps(task_ratelimit))
-		ctf_integer(unsigned long, balanced_dirty_ratelimit,
+	TP_STRUCT__entry(
+		__array(char,		bdi, 32)
+		__field(unsigned long,	write_bw)
+		__field(unsigned long,	avg_write_bw)
+		__field(unsigned long,	dirty_rate)
+		__field(unsigned long,	dirty_ratelimit)
+		__field(unsigned long,	task_ratelimit)
+		__field(unsigned long,	balanced_dirty_ratelimit)
+	),
+
+	TP_fast_assign(
+		tp_memcpy(bdi, dev_name(wb->bdi->dev), 32)
+		tp_assign(write_bw, KBps(wb->bdi->wb.write_bandwidth))
+		tp_assign(avg_write_bw, KBps(wb->bdi->wb.avg_write_bandwidth))
+		tp_assign(dirty_rate, KBps(dirty_rate))
+		tp_assign(dirty_ratelimit, KBps(wb->bdi->wb.dirty_ratelimit))
+		tp_assign(task_ratelimit, KBps(task_ratelimit))
+		tp_assign(balanced_dirty_ratelimit,
 					KBps(wb->bdi->wb.balanced_dirty_ratelimit))
+	),
+
+	TP_printk("bdi %s: "
+		  "write_bw=%lu awrite_bw=%lu dirty_rate=%lu "
+		  "dirty_ratelimit=%lu task_ratelimit=%lu "
+		  "balanced_dirty_ratelimit=%lu",
+		  __entry->bdi,
+		  __entry->write_bw,		/* write bandwidth */
+		  __entry->avg_write_bw,	/* avg write bandwidth */
+		  __entry->dirty_rate,		/* bdi dirty rate */
+		  __entry->dirty_ratelimit,	/* base ratelimit */
+		  __entry->task_ratelimit, /* ratelimit with position control */
+		  __entry->balanced_dirty_ratelimit /* the balanced ratelimit */
 	)
 )
 
@@ -727,32 +766,66 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 		dirtied, period, pause, start_time
 	),
 
-	TP_FIELDS(
-		ctf_array_text(char, bdi, dev_name(wb->bdi->dev), 32)
-		ctf_integer(unsigned long, limit, global_dirty_limit)
-		ctf_integer(unsigned long, setpoint,
+	TP_STRUCT__entry(
+		__array(	 char,	bdi, 32)
+		__field(unsigned long,	limit)
+		__field(unsigned long,	setpoint)
+		__field(unsigned long,	dirty)
+		__field(unsigned long,	bdi_setpoint)
+		__field(unsigned long,	bdi_dirty)
+		__field(unsigned long,	dirty_ratelimit)
+		__field(unsigned long,	task_ratelimit)
+		__field(unsigned int,	dirtied)
+		__field(unsigned int,	dirtied_pause)
+		__field(unsigned long,	paused)
+		__field(	 long,	pause)
+		__field(unsigned long,	period)
+		__field(	 long,	think)
+	),
+
+	TP_fast_assign(
+		tp_memcpy(bdi, dev_name(wb->bdi->dev), 32)
+		tp_assign(limit, global_dirty_limit)
+		tp_assign(setpoint,
 			(global_dirty_limit + (thresh + bg_thresh) / 2) / 2)
-		ctf_integer(unsigned long, dirty, dirty)
-		ctf_integer(unsigned long, bdi_setpoint,
+		tp_assign(dirty, dirty)
+		tp_assign(bdi_setpoint,
 			((global_dirty_limit + (thresh + bg_thresh) / 2) / 2) *
-				bdi_thresh / (thresh + 1))
-		ctf_integer(unsigned long, bdi_dirty, bdi_dirty)
-		ctf_integer(unsigned long, dirty_ratelimit,
-			KBps(dirty_ratelimit))
-		ctf_integer(unsigned long, task_ratelimit,
-			KBps(task_ratelimit))
-		ctf_integer(unsigned int, dirtied, dirtied)
-		ctf_integer(unsigned int, dirtied_pause,
-			current->nr_dirtied_pause)
-		ctf_integer(unsigned long, paused,
-			(jiffies - start_time) * 1000 / HZ)
-		ctf_integer(long, pause, pause * 1000 / HZ)
-		ctf_integer(unsigned long, period,
-			period * 1000 / HZ)
-		ctf_integer(long, think,
-			current->dirty_paused_when == 0 ? 0 :
-				(long)(jiffies - current->dirty_paused_when) * 1000/HZ)
-	)
+			bdi_thresh / (thresh + 1))
+		tp_assign(bdi_dirty, bdi_dirty)
+		tp_assign(dirty_ratelimit, KBps(dirty_ratelimit))
+		tp_assign(task_ratelimit, KBps(task_ratelimit))
+		tp_assign(dirtied, dirtied)
+		tp_assign(dirtied_pause, current->nr_dirtied_pause)
+		tp_assign(think, current->dirty_paused_when == 0 ? 0 :
+			(long)(jiffies - current->dirty_paused_when) * 1000/HZ)
+		tp_assign(period, period * 1000 / HZ)
+		tp_assign(pause, pause * 1000 / HZ)
+		tp_assign(paused, (jiffies - start_time) * 1000 / HZ)
+	),
+
+
+	TP_printk("bdi %s: "
+		  "limit=%lu setpoint=%lu dirty=%lu "
+		  "bdi_setpoint=%lu bdi_dirty=%lu "
+		  "dirty_ratelimit=%lu task_ratelimit=%lu "
+		  "dirtied=%u dirtied_pause=%u "
+		  "paused=%lu pause=%ld period=%lu think=%ld",
+		  __entry->bdi,
+		  __entry->limit,
+		  __entry->setpoint,
+		  __entry->dirty,
+		  __entry->bdi_setpoint,
+		  __entry->bdi_dirty,
+		  __entry->dirty_ratelimit,
+		  __entry->task_ratelimit,
+		  __entry->dirtied,
+		  __entry->dirtied_pause,
+		  __entry->paused,	/* ms */
+		  __entry->pause,	/* ms */
+		  __entry->period,	/* ms */
+		  __entry->think	/* ms */
+	  )
 )
 
 #else /* #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0)) */
