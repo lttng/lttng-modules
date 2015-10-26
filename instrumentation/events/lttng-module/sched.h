@@ -142,12 +142,26 @@ LTTNG_TRACEPOINT_EVENT_CLASS(sched_wakeup_template,
 
 	TP_ARGS(p),
 
-	TP_FIELDS(
-		ctf_array_text(char, comm, p->comm, TASK_COMM_LEN)
-		ctf_integer(pid_t, tid, p->pid)
-		ctf_integer(int, prio, p->prio)
-		ctf_integer(int, target_cpu, task_cpu(p))
+	TP_STRUCT__entry(
+		__array_text(	char,	comm,	TASK_COMM_LEN	)
+		__field(	pid_t,	tid			)
+		__field(	int,	prio			)
+		__field(	int,	target_cpu		)
+	),
+
+	TP_fast_assign(
+		tp_memcpy(comm, p->comm, TASK_COMM_LEN)
+		tp_assign(tid, p->pid)
+		tp_assign(prio, p->prio)
+		tp_assign(target_cpu, task_cpu(p))
 	)
+	TP_perf_assign(
+		__perf_task(p)
+	),
+
+	TP_printk("comm=%s tid=%d prio=%d target_cpu=%03d",
+		  __entry->comm, __entry->tid, __entry->prio,
+		  __entry->target_cpu)
 )
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0)) */
 LTTNG_TRACEPOINT_EVENT_CLASS(sched_wakeup_template,
