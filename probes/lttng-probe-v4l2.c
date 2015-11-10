@@ -23,8 +23,8 @@
 
 #include <linux/module.h>
 #include <linux/videodev2.h>
+#include <media/videobuf2-core.h>
 #include "../lttng-tracer.h"
-
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
  * trace event macros match the kernel we run on.
