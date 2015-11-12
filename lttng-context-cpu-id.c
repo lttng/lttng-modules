@@ -52,6 +52,7 @@ void cpu_id_record(struct lttng_ctx_field *field,
 
 static
 void cpu_id_get_value(struct lttng_ctx_field *field,
+		struct lttng_probe_ctx *lttng_probe_ctx,
 		union lttng_ctx_value *value)
 {
 	value->s64 = smp_processor_id();

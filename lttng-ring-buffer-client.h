@@ -130,7 +130,8 @@ size_t record_header_size(const struct lib_ring_buffer_config *config,
 				 struct lib_ring_buffer_ctx *ctx)
 {
 	struct lttng_channel *lttng_chan = channel_get_private(chan);
-	struct lttng_event *event = ctx->priv;
+	struct lttng_probe_ctx *lttng_probe_ctx = ctx->priv;
+	struct lttng_event *event = lttng_probe_ctx->event;
 	size_t orig_offset = offset;
 	size_t padding;
 
@@ -198,7 +199,8 @@ void lttng_write_event_header(const struct lib_ring_buffer_config *config,
 			    uint32_t event_id)
 {
 	struct lttng_channel *lttng_chan = channel_get_private(ctx->chan);
-	struct lttng_event *event = ctx->priv;
+	struct lttng_probe_ctx *lttng_probe_ctx = ctx->priv;
+	struct lttng_event *event = lttng_probe_ctx->event;
 
 	if (unlikely(ctx->rflags))
 		goto slow_path;
@@ -249,7 +251,8 @@ void lttng_write_event_header_slow(const struct lib_ring_buffer_config *config,
 				 uint32_t event_id)
 {
 	struct lttng_channel *lttng_chan = channel_get_private(ctx->chan);
-	struct lttng_event *event = ctx->priv;
+	struct lttng_probe_ctx *lttng_probe_ctx = ctx->priv;
+	struct lttng_event *event = lttng_probe_ctx->event;
 
 	switch (lttng_chan->header_type) {
 	case 1:	/* compact */

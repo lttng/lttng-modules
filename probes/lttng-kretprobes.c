@@ -27,6 +27,7 @@
 #include "../lttng-events.h"
 #include "../wrapper/ringbuffer/frontend_types.h"
 #include "../wrapper/vmalloc.h"
+#include "../wrapper/irqflags.h"
 #include "../lttng-tracer.h"
 
 enum lttng_kretprobe_type {
@@ -50,6 +51,10 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 		container_of(krpi->rp, struct lttng_krp, krp);
 	struct lttng_event *event =
 		lttng_krp->event[type];
+	struct lttng_probe_ctx lttng_probe_ctx = {
+		.event = event,
+		.interruptible = lttng_regs_irqs_disabled(regs),
+	};
 	struct lttng_channel *chan = event->chan;
 	struct lib_ring_buffer_ctx ctx;
 	int ret;
@@ -68,7 +73,7 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 	payload.ip = (unsigned long) krpi->rp->kp.addr;
 	payload.parent_ip = (unsigned long) krpi->ret_addr;
 
-	lib_ring_buffer_ctx_init(&ctx, chan->chan, event, sizeof(payload),
+	lib_ring_buffer_ctx_init(&ctx, chan->chan, &lttng_probe_ctx, sizeof(payload),
 				 lttng_alignof(payload), -1);
 	ret = chan->ops->event_reserve(&ctx, event->id);
 	if (ret < 0)

@@ -58,6 +58,7 @@ void vtid_record(struct lttng_ctx_field *field,
 
 static
 void vtid_get_value(struct lttng_ctx_field *field,
+		struct lttng_probe_ctx *lttng_probe_ctx,
 		union lttng_ctx_value *value)
 {
 	pid_t vtid;

@@ -903,6 +903,10 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 {									      \
 	struct probe_local_vars { _locvar };				      \
 	struct lttng_event *__event = __data;				      \
+	struct lttng_probe_ctx __lttng_probe_ctx = {				      \
+		.event = __event,				              \
+		.interruptible = irqs_disabled(),			      \
+	};								      \
 	struct lttng_channel *__chan = __event->chan;			      \
 	struct lttng_session *__session = __chan->session;		      \
 	struct lib_ring_buffer_ctx __ctx;				      \
@@ -937,7 +941,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data, \
 				tp_locvar, _args);				      \
 		lttng_list_for_each_entry_rcu(bc_runtime, &__event->bytecode_runtime_head, node) { \
-			if (unlikely(bc_runtime->filter(bc_runtime,	      \
+			if (unlikely(bc_runtime->filter(bc_runtime, &__lttng_probe_ctx,	      \
 					__stackvar.__filter_stack_data) & LTTNG_FILTER_RECORD_FLAG)) \
 				__filter_record = 1;			      \
 		}							      \
@@ -947,7 +951,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	__event_len = __event_get_size__##_name(__stackvar.__dynamic_len,     \
 				tp_locvar, _args);			      \
 	__event_align = __event_get_align__##_name(tp_locvar, _args);         \
-	lib_ring_buffer_ctx_init(&__ctx, __chan->chan, __event, __event_len,  \
+	lib_ring_buffer_ctx_init(&__ctx, __chan->chan, &__lttng_probe_ctx, __event_len,  \
 				 __event_align, -1);			      \
 	__ret = __chan->ops->event_reserve(&__ctx, __event->id);	      \
 	if (__ret < 0)							      \
@@ -965,6 +969,10 @@ static void __event_probe__##_name(void *__data)			      \
 {									      \
 	struct probe_local_vars { _locvar };				      \
 	struct lttng_event *__event = __data;				      \
+	struct lttng_probe_ctx __lttng_probe_ctx = {				      \
+		.event = __event,				              \
+		.interruptible = irqs_disabled(),			      \
+	};								      \
 	struct lttng_channel *__chan = __event->chan;			      \
 	struct lttng_session *__session = __chan->session;		      \
 	struct lib_ring_buffer_ctx __ctx;				      \
@@ -999,7 +1007,7 @@ static void __event_probe__##_name(void *__data)			      \
 		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data, \
 				tp_locvar);				      \
 		lttng_list_for_each_entry_rcu(bc_runtime, &__event->bytecode_runtime_head, node) { \
-			if (unlikely(bc_runtime->filter(bc_runtime,	      \
+			if (unlikely(bc_runtime->filter(bc_runtime, &__lttng_probe_ctx,	\
 					__stackvar.__filter_stack_data) & LTTNG_FILTER_RECORD_FLAG)) \
 				__filter_record = 1;			      \
 		}							      \
@@ -1008,7 +1016,7 @@ static void __event_probe__##_name(void *__data)			      \
 	}								      \
 	__event_len = __event_get_size__##_name(__stackvar.__dynamic_len, tp_locvar); \
 	__event_align = __event_get_align__##_name(tp_locvar);		      \
-	lib_ring_buffer_ctx_init(&__ctx, __chan->chan, __event, __event_len,  \
+	lib_ring_buffer_ctx_init(&__ctx, __chan->chan, &__lttng_probe_ctx, __event_len,  \
 				 __event_align, -1);			      \
 	__ret = __chan->ops->event_reserve(&__ctx, __event->id);	      \
 	if (__ret < 0)							      \

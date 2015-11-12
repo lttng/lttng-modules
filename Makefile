@@ -41,7 +41,8 @@ lttng-tracer-objs :=  lttng-events.o lttng-abi.o \
 			lttng-context-vpid.o lttng-context-tid.o \
 			lttng-context-vtid.o lttng-context-ppid.o \
 			lttng-context-vppid.o lttng-context-cpu-id.o \
-			lttng-calibrate.o \
+			lttng-context-interruptible.o \
+			lttng-context-need-reschedule.o lttng-calibrate.o \
 			lttng-context-hostname.o wrapper/random.o \
 			probes/lttng.o wrapper/trace-clock.o \
 			wrapper/page_alloc.o \
@@ -65,6 +66,15 @@ lttng-tracer-objs += $(shell \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 33 \) ] ; then \
 		echo "lttng-context-perf-counters.o" ; fi;)
 endif # CONFIG_PERF_EVENTS
+
+ifneq ($(CONFIG_PREEMPT_RT_FULL),)
+lttng-tracer-objs += lttng-context-migratable.o
+lttng-tracer-objs += lttng-context-preemptible.o
+endif # CONFIG_PREEMPT_RT_FULL
+
+ifneq ($(CONFIG_PREEMPT),)
+lttng-tracer-objs += lttng-context-preemptible.o
+endif
 
 lttng-tracer-objs += $(shell \
 	if [ $(VERSION) -ge 4 \

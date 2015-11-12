@@ -52,6 +52,7 @@ void nice_record(struct lttng_ctx_field *field,
 
 static
 void nice_get_value(struct lttng_ctx_field *field,
+		struct lttng_probe_ctx *lttng_probe_ctx,
 		union lttng_ctx_value *value)
 {
 	value->s64 = task_nice(current);

@@ -162,6 +162,11 @@ struct lttng_perf_counter_field {
 	struct perf_event **e;	/* per-cpu array */
 };
 
+struct lttng_probe_ctx {
+	struct lttng_event *event;
+	uint8_t interruptible;
+};
+
 struct lttng_ctx_field {
 	struct lttng_event_field event_field;
 	size_t (*get_size)(size_t offset);
@@ -169,6 +174,7 @@ struct lttng_ctx_field {
 		       struct lib_ring_buffer_ctx *ctx,
 		       struct lttng_channel *chan);
 	void (*get_value)(struct lttng_ctx_field *field,
+			 struct lttng_probe_ctx *lttng_probe_ctx,
 			 union lttng_ctx_value *value);
 	union {
 		struct lttng_perf_counter_field *perf_counter;
@@ -231,7 +237,8 @@ enum lttng_filter_ret {
 struct lttng_bytecode_runtime {
 	/* Associated bytecode */
 	struct lttng_filter_bytecode_node *bc;
-	uint64_t (*filter)(void *filter_data, const char *filter_stack_data);
+	uint64_t (*filter)(void *filter_data, struct lttng_probe_ctx *lttng_probe_ctx,
+			const char *filter_stack_data);
 	int link_failed;
 	struct list_head node;	/* list of bytecode runtime in event */
 };
@@ -630,6 +637,26 @@ int lttng_add_vtid_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_ppid_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_vppid_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_hostname_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_interruptible_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_need_reschedule_to_ctx(struct lttng_ctx **ctx);
+#if defined(CONFIG_PREEMPT_RT_FULL) || defined(CONFIG_PREEMPT)
+int lttng_add_preemptible_to_ctx(struct lttng_ctx **ctx);
+#else
+static inline
+int lttng_add_preemptible_to_ctx(struct lttng_ctx **ctx)
+{
+	return -ENOSYS;
+}
+#endif
+#ifdef CONFIG_PREEMPT_RT_FULL
+int lttng_add_migratable_to_ctx(struct lttng_ctx **ctx);
+#else
+static inline
+int lttng_add_migratable_to_ctx(struct lttng_ctx **ctx)
+{
+	return -ENOSYS;
+}
+#endif
 #if defined(CONFIG_PERF_EVENTS) && (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
 int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  uint64_t config,

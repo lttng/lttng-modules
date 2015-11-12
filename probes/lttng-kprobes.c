@@ -26,6 +26,7 @@
 #include "../lttng-events.h"
 #include "../wrapper/ringbuffer/frontend_types.h"
 #include "../wrapper/vmalloc.h"
+#include "../wrapper/irqflags.h"
 #include "../lttng-tracer.h"
 
 static
@@ -33,6 +34,10 @@ int lttng_kprobes_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	struct lttng_event *event =
 		container_of(p, struct lttng_event, u.kprobe.kp);
+	struct lttng_probe_ctx lttng_probe_ctx = {
+		.event = event,
+		.interruptible = lttng_regs_irqs_disabled(regs),
+	};
 	struct lttng_channel *chan = event->chan;
 	struct lib_ring_buffer_ctx ctx;
 	int ret;
@@ -45,7 +50,7 @@ int lttng_kprobes_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	if (unlikely(!ACCESS_ONCE(event->enabled)))
 		return 0;
 
-	lib_ring_buffer_ctx_init(&ctx, chan->chan, event, sizeof(data),
+	lib_ring_buffer_ctx_init(&ctx, chan->chan, &lttng_probe_ctx, sizeof(data),
 				 lttng_alignof(data), -1);
 	ret = chan->ops->event_reserve(&ctx, event->id);
 	if (ret < 0)

@@ -268,6 +268,26 @@ int lttng_context_init(void)
 	if (ret) {
 		printk(KERN_WARNING "Cannot add context lttng_add_cpu_id_to_ctx");
 	}
+	ret = lttng_add_interruptible_to_ctx(&lttng_static_ctx);
+	if (ret) {
+		printk(KERN_WARNING "Cannot add context lttng_add_interruptible_to_ctx");
+	}
+	ret = lttng_add_need_reschedule_to_ctx(&lttng_static_ctx);
+	if (ret) {
+		printk(KERN_WARNING "Cannot add context lttng_add_need_reschedule_to_ctx");
+	}
+#if defined(CONFIG_PREEMPT_RT_FULL) || defined(CONFIG_PREEMPT)
+	ret = lttng_add_preemptible_to_ctx(&lttng_static_ctx);
+	if (ret != -ENOSYS) {
+		printk(KERN_WARNING "Cannot add context lttng_add_preemptible_to_ctx");
+	}
+#endif
+#ifdef CONFIG_PREEMPT_RT_FULL
+	ret = lttng_add_migratable_to_ctx(&lttng_static_ctx);
+	if (ret != -ENOSYS) {
+		printk(KERN_WARNING "Cannot add context lttng_add_migratable_to_ctx");
+	}
+#endif
 	/* TODO: perf counters for filtering */
 	return 0;
 }
