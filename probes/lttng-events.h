@@ -905,7 +905,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	struct lttng_event *__event = __data;				      \
 	struct lttng_probe_ctx __lttng_probe_ctx = {				      \
 		.event = __event,				              \
-		.interruptible = irqs_disabled(),			      \
+		.interruptible = !irqs_disabled(),			      \
 	};								      \
 	struct lttng_channel *__chan = __event->chan;			      \
 	struct lttng_session *__session = __chan->session;		      \
@@ -971,7 +971,7 @@ static void __event_probe__##_name(void *__data)			      \
 	struct lttng_event *__event = __data;				      \
 	struct lttng_probe_ctx __lttng_probe_ctx = {				      \
 		.event = __event,				              \
-		.interruptible = irqs_disabled(),			      \
+		.interruptible = !irqs_disabled(),			      \
 	};								      \
 	struct lttng_channel *__chan = __event->chan;			      \
 	struct lttng_session *__session = __chan->session;		      \

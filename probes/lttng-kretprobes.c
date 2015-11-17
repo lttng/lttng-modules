@@ -1,5 +1,5 @@
 /*
- * probes/lttng-kretprobes.c
+* probes/lttng-kretprobes.c
  *
  * LTTng kretprobes integration module.
  *
@@ -53,7 +53,7 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 		lttng_krp->event[type];
 	struct lttng_probe_ctx lttng_probe_ctx = {
 		.event = event,
-		.interruptible = lttng_regs_irqs_disabled(regs),
+		.interruptible = !lttng_regs_irqs_disabled(regs),
 	};
 	struct lttng_channel *chan = event->chan;
 	struct lib_ring_buffer_ctx ctx;

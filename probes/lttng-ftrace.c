@@ -45,7 +45,7 @@ void lttng_ftrace_handler(unsigned long ip, unsigned long parent_ip, void **data
 	struct lttng_event *event = *data;
 	struct lttng_probe_ctx lttng_probe_ctx = {
 		.event = event,
-		.interruptible = irqs_disabled(),
+		.interruptible = !irqs_disabled(),
 	};
 	struct lttng_channel *chan = event->chan;
 	struct lib_ring_buffer_ctx ctx;
