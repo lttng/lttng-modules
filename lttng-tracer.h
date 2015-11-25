@@ -40,13 +40,12 @@
 #include "lttng-events.h"
 
 #define LTTNG_MODULES_MAJOR_VERSION 2
-#define LTTNG_MODULES_MINOR_VERSION 7
+#define LTTNG_MODULES_MINOR_VERSION 8
 #define LTTNG_MODULES_PATCHLEVEL_VERSION 0
-#define LTTNG_MODULES_EXTRAVERSION "-rc1"
+#define LTTNG_MODULES_EXTRAVERSION "-pre0"
 
-#define LTTNG_VERSION_NAME		"Herbe à Détourne"
-#define LTTNG_VERSION_DESCRIPTION	\
-	"Brewed with unrestrained amounts of Citra hop, the Herbe à Détourne is a fantastic New World Tripel brewed by \"Dieu du Ciel!\". Aromas of mango, cantaloupe melon and passion fruit, combined with a controlled bitter finish, unite in making this smooth golden-orange beer stand apart."
+#define LTTNG_VERSION_NAME		"TBD"
+#define LTTNG_VERSION_DESCRIPTION	"TBD"
 
 #ifndef CHAR_BIT
 #define CHAR_BIT 8
