@@ -155,7 +155,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(sched_wakeup_template,
 	TP_FIELDS(
 		ctf_array_text(char, comm, p->comm, TASK_COMM_LEN)
 		ctf_integer(pid_t, tid, p->pid)
-		ctf_integer(int, prio, p->prio)
+		ctf_integer(int, prio, p->prio - MAX_RT_PRIO)
 		ctf_integer(int, target_cpu, task_cpu(p))
 	)
 )
@@ -175,7 +175,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(sched_wakeup_template,
 	TP_FIELDS(
 		ctf_array_text(char, comm, p->comm, TASK_COMM_LEN)
 		ctf_integer(pid_t, tid, p->pid)
-		ctf_integer(int, prio, p->prio)
+		ctf_integer(int, prio, p->prio - MAX_RT_PRIO)
 		ctf_integer(int, success, success)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
 		ctf_integer(int, target_cpu, task_cpu(p))
