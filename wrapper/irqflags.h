@@ -33,7 +33,7 @@ int lttng_regs_irqs_disabled(struct pt_regs *regs)
 {
 	unsigned long flags = regs->flags;
 
-	return arch_irqs_disabled_flags(flags);
+	return raw_irqs_disabled_flags(flags);
 }
 
 #else
