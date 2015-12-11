@@ -25,16 +25,16 @@ endif
 
 include $(MAKEFILEDIR)/Makefile.ABI.workarounds
 
-obj-m += lttng-ring-buffer-client-discard.o
-obj-m += lttng-ring-buffer-client-overwrite.o
-obj-m += lttng-ring-buffer-metadata-client.o
-obj-m += lttng-ring-buffer-client-mmap-discard.o
-obj-m += lttng-ring-buffer-client-mmap-overwrite.o
-obj-m += lttng-ring-buffer-metadata-mmap-client.o
-obj-m += lttng-clock.o
+obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-discard.o
+obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-overwrite.o
+obj-$(CONFIG_LTTNG) += lttng-ring-buffer-metadata-client.o
+obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-mmap-discard.o
+obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-mmap-overwrite.o
+obj-$(CONFIG_LTTNG) += lttng-ring-buffer-metadata-mmap-client.o
+obj-$(CONFIG_LTTNG) += lttng-clock.o
 
-obj-m += lttng-tracer.o
-lttng-tracer-objs :=  lttng-events.o lttng-abi.o \
+obj-$(CONFIG_LTTNG) += lttng-tracer.o
+lttng-tracer-objs := lttng-events.o lttng-abi.o \
 			lttng-probes.o lttng-context.o \
 			lttng-context-pid.o lttng-context-procname.o \
 			lttng-context-prio.o lttng-context-nice.o \
@@ -52,7 +52,7 @@ lttng-tracer-objs :=  lttng-events.o lttng-abi.o \
 			lttng-filter-validator.o \
 			probes/lttng-probe-user.o
 
-obj-m += lttng-statedump.o
+obj-$(CONFIG_LTTNG) += lttng-statedump.o
 lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o \
 			wrapper/fdtable.o
 
@@ -81,8 +81,8 @@ lttng-tracer-objs += $(shell \
 		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 15 -a $(SUBLEVEL) -ge 0 \) ] ; then \
 		echo "lttng-tracepoint.o" ; fi;)
 
-obj-m += probes/
-obj-m += lib/
+obj-$(CONFIG_LTTNG) += probes/
+obj-$(CONFIG_LTTNG) += lib/
 
 endif # CONFIG_TRACEPOINTS
 
@@ -92,7 +92,7 @@ else # KERNELRELEASE
 	CFLAGS = $(EXTCFLAGS)
 
 default:
-	LTTNG_KERNELDIR=$(KERNELDIR) $(MAKE) -C $(KERNELDIR) M=$(PWD) modules
+	LTTNG_KERNELDIR=$(KERNELDIR) $(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m modules
 
 modules_install:
 	LTTNG_KERNELDIR=$(KERNELDIR) $(MAKE) -C $(KERNELDIR) M=$(PWD) modules_install

@@ -11,19 +11,19 @@ MAKEFILEDIR = $(shell dirname $(lastword $(MAKEFILE_LIST)))
 include $(MAKEFILEDIR)/../Makefile.ABI.workarounds
 
 ccflags-y += -I$(PWD)/probes
-obj-m += lttng-types.o
+obj-$(CONFIG_LTTNG) += lttng-types.o
 
-obj-m += lttng-probe-sched.o
-obj-m += lttng-probe-irq.o
-obj-m += lttng-probe-timer.o
-obj-m += lttng-probe-kmem.o
-obj-m += lttng-probe-module.o
-obj-m += lttng-probe-power.o
+obj-$(CONFIG_LTTNG) += lttng-probe-sched.o
+obj-$(CONFIG_LTTNG) += lttng-probe-irq.o
+obj-$(CONFIG_LTTNG) += lttng-probe-timer.o
+obj-$(CONFIG_LTTNG) += lttng-probe-kmem.o
+obj-$(CONFIG_LTTNG) += lttng-probe-module.o
+obj-$(CONFIG_LTTNG) += lttng-probe-power.o
 
-obj-m += lttng-probe-statedump.o
+obj-$(CONFIG_LTTNG) += lttng-probe-statedump.o
 
 ifneq ($(CONFIG_KVM),)
-obj-m += lttng-probe-kvm.o
+obj-$(CONFIG_LTTNG) += lttng-probe-kvm.o
 ifneq ($(CONFIG_X86),)
 kvm_dep_lapic = $(srctree)/arch/x86/kvm/lapic.h
 ifneq ($(wildcard $(kvm_dep_lapic)),)
@@ -31,11 +31,11 @@ kvm_dep = $(srctree)/virt/kvm/iodev.h $(srctree)/include/kvm/iodev.h
 ifneq ($(wildcard $(kvm_dep)),)
 CFLAGS_lttng-probe-kvm-x86.o += -I$(srctree)/virt/kvm
 CFLAGS_lttng-probe-kvm-x86-mmu.o += -I$(srctree)/virt/kvm
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 3 \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
 		echo "lttng-probe-kvm-x86.o" ; fi;)
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 3 \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
 		echo "lttng-probe-kvm-x86-mmu.o" ; fi;)
@@ -52,46 +52,46 @@ ifneq ($(CONFIG_X86),)
 
 x86_irq_vectors_dep = $(srctree)/arch/x86/include/asm/trace/irq_vectors.h
 ifneq ($(wildcard $(x86_irq_vectors_dep)),)
-obj-m += lttng-probe-x86-irq-vectors.o
+obj-$(CONFIG_LTTNG) += lttng-probe-x86-irq-vectors.o
 endif
 
 x86_exceptions_dep = $(srctree)/arch/x86/include/asm/trace/exceptions.h
 ifneq ($(wildcard $(x86_exceptions_dep)),)
-obj-m += lttng-probe-x86-exceptions.o
+obj-$(CONFIG_LTTNG) += lttng-probe-x86-exceptions.o
 endif
 
 endif
 
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 3 \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 33 \) ] ; then \
 		echo "lttng-probe-signal.o" ; fi;)
 
 ifneq ($(CONFIG_BLOCK),)
 ifneq ($(CONFIG_EVENT_TRACING),)	# need blk_cmd_buf_len
-obj-m += lttng-probe-block.o
+obj-$(CONFIG_LTTNG) += lttng-probe-block.o
 endif
 endif
 
 ifneq ($(CONFIG_NET),)
-obj-m += lttng-probe-napi.o
-obj-m += lttng-probe-skb.o
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) += lttng-probe-napi.o
+obj-$(CONFIG_LTTNG) += lttng-probe-skb.o
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 3 \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 37 \) ] ; then \
 		echo "lttng-probe-net.o" ; fi;)
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 4 \
 		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 1 \) ] ; then \
 		echo "lttng-probe-sock.o" ; fi;)
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 4 \
 		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 1 \) ] ; then \
 		echo "lttng-probe-udp.o" ; fi;)
 endif
 
 ifneq ($(CONFIG_SND_SOC),)
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 3 \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
 		echo "lttng-probe-asoc.o" ; fi;)
@@ -113,35 +113,35 @@ ifeq ($(ext3),warn)
 $(warning Files $(ext3_dep) not found. Probe "ext3" is disabled. Use full kernel source tree to enable it.)
 ext3 =
 endif
-obj-m += $(ext3)
+obj-$(CONFIG_LTTNG) += $(ext3)
 endif
 
 ifneq ($(CONFIG_GPIOLIB),)
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 3 ] ; then \
 		echo "lttng-probe-gpio.o" ; fi;)
 endif
 
 ifneq ($(CONFIG_JBD2),)
-obj-m += lttng-probe-jbd2.o
+obj-$(CONFIG_LTTNG) += lttng-probe-jbd2.o
 endif
 
 ifneq ($(CONFIG_JBD),)
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 4 \
 		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 1 \) ] ; then \
 		echo "lttng-probe-jbd.o" ; fi;)
 endif
 
 ifneq ($(CONFIG_REGULATOR),)
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 3 \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
 		echo "lttng-probe-regulator.o" ; fi;)
 endif
 
 ifneq ($(CONFIG_SCSI),)
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 3 \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 35 \) ] ; then \
 		echo "lttng-probe-scsi.o" ; fi;)
@@ -152,16 +152,16 @@ vmscan = $(shell \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 36 \) ] ; then \
 		echo "lttng-probe-vmscan.o" ; fi;)
 ifneq ($(CONFIG_SWAP),)
-	obj-m += $(vmscan)
+	obj-$(CONFIG_LTTNG) += $(vmscan)
 else
 ifneq ($(CONFIG_CGROUP_MEM_RES_CTLR),)
-	obj-m += $(vmscan)
+	obj-$(CONFIG_LTTNG) += $(vmscan)
 endif
 endif
 
 # lock probe does not work, so disabling it for now
 #ifneq ($(CONFIG_LOCKDEP),)
-#obj-m += lttng-probe-lock.o
+#obj-$(CONFIG_LTTNG) += lttng-probe-lock.o
 #endif
 
 ifneq ($(CONFIG_BTRFS_FS),)
@@ -176,10 +176,10 @@ $(warning Files $(btrfs_dep) not found. Probe "btrfs" is disabled. Use full kern
 btrfs =
 endif
 endif
-obj-m += $(btrfs)
+obj-$(CONFIG_LTTNG) += $(btrfs)
 endif
 
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 3 \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
 		echo "lttng-probe-compaction.o" ; fi;)
@@ -191,10 +191,10 @@ ifeq ($(wildcard $(ext4_dep)),)
 $(warning Files $(ext4_dep) not found. Probe "ext4" is disabled. Use full kernel source tree to enable it.)
 ext4 =
 endif
-obj-m += $(ext4)
+obj-$(CONFIG_LTTNG) += $(ext4)
 endif
 
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 4 \
 		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 4 \) ] ; then \
 		echo "lttng-probe-printk.o" ; fi;)
@@ -202,7 +202,7 @@ ifneq ($(CONFIG_FRAME_WARN),0)
 CFLAGS_lttng-probe-printk.o += -Wframe-larger-than=2200
 endif
 
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 4 \
 		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 6 \) \
 		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 5 -a $(SUBLEVEL) -ge 2 \) \
@@ -210,7 +210,7 @@ obj-m +=  $(shell \
 		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 0 -a $(SUBLEVEL) -ge 41 \) ] ; then \
 		echo "lttng-probe-random.o" ; fi;)
 
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 4 \
 		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 2 \) ] ; then \
 		echo "lttng-probe-rcu.o" ; fi;)
@@ -218,37 +218,37 @@ obj-m +=  $(shell \
 ifneq ($(CONFIG_REGMAP),)
 regmap_dep_4_1 = $(srctree)/drivers/base/regmap/trace.h
 ifneq ($(wildcard $(regmap_dep_4_1)),)
-obj-m += lttng-probe-regmap.o
+obj-$(CONFIG_LTTNG) += lttng-probe-regmap.o
 else
 $(warning File $(regmap_dep_4_1) not found. Probe "regmap" is disabled. Need Linux 4.1+ kernel source tree to enable it.)
 endif
 endif
 
 ifneq ($(CONFIG_PM_RUNTIME),)
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 4 \
 		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 2 \) ] ; then \
 		echo "lttng-probe-rpm.o" ; fi;)
 endif
 
 ifneq ($(CONFIG_SUNRPC),)
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 4 \
 		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 4 \) ] ; then \
 		echo "lttng-probe-sunrpc.o" ; fi;)
 endif
 
 ifneq ($(CONFIG_VIDEO_V4L2),)
-obj-m += $(shell \
+obj-$(CONFIG_LTTNG) += $(shell \
 	if [ $(VERSION) -ge 4 \
 		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 14 \) ] ; then \
 		echo "lttng-probe-v4l2.o" ; fi;)
 endif
 
-obj-m += lttng-probe-workqueue.o
+obj-$(CONFIG_LTTNG) += lttng-probe-workqueue.o
 
 ifneq ($(CONFIG_KALLSYMS_ALL),)
-obj-m +=  $(shell \
+obj-$(CONFIG_LTTNG) +=  $(shell \
 	if [ $(VERSION) -ge 3 \
 		-o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 36 \) ] ; then \
 		echo "lttng-probe-writeback.o" ; fi;)
@@ -258,21 +258,21 @@ endif
 
 
 ifneq ($(CONFIG_KPROBES),)
-obj-m += lttng-kprobes.o
+obj-$(CONFIG_LTTNG) += lttng-kprobes.o
 endif
 
 
 ifneq ($(CONFIG_KRETPROBES),)
-obj-m += lttng-kretprobes.o
+obj-$(CONFIG_LTTNG) += lttng-kretprobes.o
 endif
 
 ifneq ($(CONFIG_DYNAMIC_FTRACE),)
-obj-m += lttng-ftrace.o
+obj-$(CONFIG_LTTNG) += lttng-ftrace.o
 endif
 
 endif
 
-obj-m += lttng-test.o
+obj-$(CONFIG_LTTNG) += lttng-test.o
 
 else
 	KERNELDIR ?= /lib/modules/$(shell uname -r)/build
