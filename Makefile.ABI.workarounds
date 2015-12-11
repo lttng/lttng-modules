@@ -7,5 +7,5 @@
 DEB_API_VERSION=$(shell $(MAKEFILEDIR)/abi-debian-version.sh $(KERNELDIR))
 
 ifneq ($(DEB_API_VERSION), 0)
-ccflags-y += -DDEBIAN_API_VERSION=$(DEB_API_VERSION)
+  ccflags-y += -DDEBIAN_API_VERSION=$(DEB_API_VERSION)
 endif
