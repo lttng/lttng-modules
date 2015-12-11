@@ -3,7 +3,7 @@ MAKEFILEDIR = $(shell dirname $(lastword $(MAKEFILE_LIST)))
 
 include $(MAKEFILEDIR)/../Makefile.ABI.workarounds
 
-obj-m += lttng-lib-ring-buffer.o
+obj-$(CONFIG_LTTNG) += lttng-lib-ring-buffer.o
 
 lttng-lib-ring-buffer-objs := \
 	ringbuffer/ring_buffer_backend.o \
