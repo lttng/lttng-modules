@@ -13,3 +13,5 @@ lttng-lib-ring-buffer-objs := \
   ringbuffer/ring_buffer_mmap.o \
   prio_heap/lttng_prio_heap.o \
   ../wrapper/splice.o
+
+# vim:syntax=make
