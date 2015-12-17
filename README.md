@@ -42,6 +42,16 @@ kernel, do:
     sudo depmod -a kernel_version
 
 
+### Kernel built-in support
+
+It is also possible to build these modules as part of a kernel image. Simply
+run the [`built-in.sh`](built-in.sh) script with the path to your kernel
+source directory as an argument.  It will symlink the lttng-modules directory
+in the kernel sources and add an include in the kernel Makefile.
+
+Then configure your kernel as usual and enable the `CONFIG_LTTNG` option.
+
+
 ### Required kernel config options
 
 Make sure your target kernel has the following config options enabled:
@@ -83,7 +93,7 @@ available from LTTng:
     number and name
 
 
-Using
+Usage
 -----
 
 Use [LTTng-tools](https://lttng.org/download) to control the tracer.
