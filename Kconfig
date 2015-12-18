@@ -6,6 +6,7 @@ config LTTNG
 
 	  See https://lttng.org/
 
-	  To compile as a module, choose M here.
+	  To compile as a set of modules, choose M here. To compile into
+	  the Linux kernel image, choose Y.
 
 	  If unsure, say N.
