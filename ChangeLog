@@ -1,3 +1,11 @@
+2016-01-05 LTTng modules 2.7.1
+	* Fix: Use MAX_RT_PRIO offset in sched_wakeup_template
+	* Fix: update sched instrumentation for kernel 4.4.0
+	* Fix: instrumentation: v4lv2 missing include
+	* Fix: header size larger than 256 bytes
+	* Fix: tracepoint listing misses last loaded probe
+	* Fix: lttng trace-clock needs to disable preemption
+
 2015-09-24 LTTng modules 2.7.0
 	* Fix: writeback instrumentation update for 4.3 Linux kernel
 	* Fix: update sched wakeup instrumentation for 4.3 kernel
