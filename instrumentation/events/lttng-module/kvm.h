@@ -111,7 +111,8 @@ LTTNG_TRACEPOINT_EVENT(kvm_fpu,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0) \
+	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,7,2, 3,11,0,0,0))
 
 LTTNG_TRACEPOINT_EVENT(kvm_age_page,
 	TP_PROTO(ulong gfn, int level, struct kvm_memory_slot *slot, int ref),
