@@ -224,9 +224,9 @@ int lttng_kretprobes_register(const char *name,
 	 * unregistered. Same for memory allocation.
 	 */
 	kref_init(&lttng_krp->kref_alloc);
-	kref_get(&lttng_krp->kref_alloc);	/* inc refcount to 2 */
+	kref_get(&lttng_krp->kref_alloc);	/* inc refcount to 2, no overflow. */
 	kref_init(&lttng_krp->kref_register);
-	kref_get(&lttng_krp->kref_register);	/* inc refcount to 2 */
+	kref_get(&lttng_krp->kref_register);	/* inc refcount to 2, no overflow. */
 
 	/*
 	 * Ensure the memory we just allocated don't trigger page faults.

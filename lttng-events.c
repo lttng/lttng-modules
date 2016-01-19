@@ -1085,17 +1085,22 @@ int lttng_session_list_tracker_pids(struct lttng_session *session)
 		ret = PTR_ERR(tracker_pids_list_file);
 		goto file_error;
 	}
+	if (atomic_long_add_unless(&session->file->f_count,
+		1, INT_MAX) == INT_MAX) {
+		goto refcount_error;
+	}
 	ret = lttng_tracker_pids_list_fops.open(NULL, tracker_pids_list_file);
 	if (ret < 0)
 		goto open_error;
 	m = tracker_pids_list_file->private_data;
 	m->private = session;
 	fd_install(file_fd, tracker_pids_list_file);
-	atomic_long_inc(&session->file->f_count);
 
 	return file_fd;
 
 open_error:
+	atomic_long_dec(&session->file->f_count);
+refcount_error:
 	fput(tracker_pids_list_file);
 file_error:
 	put_unused_fd(file_fd);

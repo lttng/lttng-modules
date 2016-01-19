@@ -50,6 +50,7 @@
 #include "wrapper/ringbuffer/frontend.h"
 #include "wrapper/poll.h"
 #include "wrapper/file.h"
+#include "wrapper/kref.h"
 #include "lttng-abi.h"
 #include "lttng-abi-old.h"
 #include "lttng-events.h"
@@ -427,6 +428,10 @@ int lttng_abi_create_channel(struct file *session_file,
 		transport_name = "<unknown>";
 		break;
 	}
+	if (atomic_long_add_unless(&session_file->f_count,
+		1, INT_MAX) == INT_MAX) {
+		goto refcount_error;
+	}
 	/*
 	 * We tolerate no failure path after channel creation. It will stay
 	 * invariant for the rest of the session.
@@ -444,11 +449,12 @@ int lttng_abi_create_channel(struct file *session_file,
 	chan->file = chan_file;
 	chan_file->private_data = chan;
 	fd_install(chan_fd, chan_file);
-	atomic_long_inc(&session_file->f_count);
 
 	return chan_fd;
 
 chan_error:
+	atomic_long_dec(&session_file->f_count);
+refcount_error:
 	fput(chan_file);
 file_error:
 	put_unused_fd(chan_fd);
@@ -951,17 +957,20 @@ int lttng_abi_open_metadata_stream(struct file *channel_file)
 		goto notransport;
 	}
 
+	if (!lttng_kref_get(&session->metadata_cache->refcount))
+		goto kref_error;
 	ret = lttng_abi_create_stream_fd(channel_file, stream_priv,
 			&lttng_metadata_ring_buffer_file_operations);
 	if (ret < 0)
 		goto fd_error;
 
-	kref_get(&session->metadata_cache->refcount);
 	list_add(&metadata_stream->list,
 		&session->metadata_cache->metadata_stream);
 	return ret;
 
 fd_error:
+	kref_put(&session->metadata_cache->refcount, metadata_cache_destroy);
+kref_error:
 	module_put(metadata_stream->transport->owner);
 notransport:
 	kfree(metadata_stream);
@@ -1005,6 +1014,11 @@ int lttng_abi_create_event(struct file *channel_file,
 		ret = PTR_ERR(event_file);
 		goto file_error;
 	}
+	/* The event holds a reference on the channel */
+	if (atomic_long_add_unless(&channel_file->f_count,
+		1, INT_MAX) == INT_MAX) {
+		goto refcount_error;
+	}
 	if (event_param->instrumentation == LTTNG_KERNEL_TRACEPOINT
 			|| event_param->instrumentation == LTTNG_KERNEL_SYSCALL) {
 		struct lttng_enabler *enabler;
@@ -1036,11 +1050,11 @@ int lttng_abi_create_event(struct file *channel_file,
 	}
 	event_file->private_data = priv;
 	fd_install(event_fd, event_file);
-	/* The event holds a reference on the channel */
-	atomic_long_inc(&channel_file->f_count);
 	return event_fd;
 
 event_error:
+	atomic_long_dec(&channel_file->f_count);
+refcount_error:
 	fput(event_file);
 file_error:
 	put_unused_fd(event_fd);
