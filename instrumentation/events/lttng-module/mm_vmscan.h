@@ -26,6 +26,23 @@ typedef int isolate_mode_t;
 
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,5,0))
+
+#include <linux/mm_inline.h>
+
+#define trace_reclaim_flags(page) ( \
+	(page_is_file_cache(page) ? RECLAIM_WB_FILE : RECLAIM_WB_ANON) | \
+	(RECLAIM_WB_ASYNC) \
+	)
+
+#define trace_shrink_flags(file) \
+	( \
+		(file ? RECLAIM_WB_FILE : RECLAIM_WB_ANON) | \
+		(RECLAIM_WB_ASYNC) \
+	)
+
+#endif
+
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_kswapd_sleep,
 
 	TP_PROTO(int nid),
@@ -316,6 +333,19 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_lru_isolate_template, mm_vmscan_memcg_
 	)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,5,0))
+LTTNG_TRACEPOINT_EVENT(mm_vmscan_writepage,
+
+	TP_PROTO(struct page *page),
+
+	TP_ARGS(page),
+
+	TP_FIELDS(
+		ctf_integer(struct page *, page, page)
+		ctf_integer(int, reclaim_flags, trace_reclaim_flags(page))
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_writepage,
 
 	TP_PROTO(struct page *page,
@@ -328,8 +358,27 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_writepage,
 		ctf_integer(int, reclaim_flags, reclaim_flags)
 	)
 )
+#endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,5,0))
+LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
+
+	TP_PROTO(struct zone *zone,
+		unsigned long nr_scanned, unsigned long nr_reclaimed,
+		int priority, int file),
+
+	TP_ARGS(zone, nr_scanned, nr_reclaimed, priority, file),
+
+	TP_FIELDS(
+		ctf_integer(int, nid, zone_to_nid(zone))
+		ctf_integer(int, zid, zone_idx(zone))
+		ctf_integer(unsigned long, nr_scanned, nr_scanned)
+		ctf_integer(unsigned long, nr_reclaimed, nr_reclaimed)
+		ctf_integer(int, priority, priority)
+		ctf_integer(int, reclaim_flags, trace_shrink_flags(file))
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 
 	TP_PROTO(int nid, int zid,
