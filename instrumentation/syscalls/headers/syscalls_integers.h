@@ -17,3 +17,7 @@
 #ifdef CONFIG_CPU_MIPS32
 #include "mips-32-syscalls-3.18.0_integers.h"
 #endif
+
+#ifdef CONFIG_ARM64
+#include "arm-64-syscalls-4.4.0_integers.h"
+#endif
