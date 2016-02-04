@@ -56,14 +56,20 @@ EXPORT_SYMBOL_GPL(lttng_find_context);
 int lttng_get_context_index(struct lttng_ctx *ctx, const char *name)
 {
 	unsigned int i;
+	const char *subname;
 
 	if (!ctx)
 		return -1;
+	if (strncmp(name, "$ctx.", strlen("$ctx.")) == 0) {
+		subname = name + strlen("$ctx.");
+	} else {
+		subname = name;
+	}
 	for (i = 0; i < ctx->nr_fields; i++) {
 		/* Skip allocated (but non-initialized) contexts */
 		if (!ctx->fields[i].event_field.name)
 			continue;
-		if (!strcmp(ctx->fields[i].event_field.name, name))
+		if (!strcmp(ctx->fields[i].event_field.name, subname))
 			return i;
 	}
 	return -1;
