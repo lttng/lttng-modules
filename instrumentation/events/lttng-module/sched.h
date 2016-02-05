@@ -145,7 +145,8 @@ LTTNG_TRACEPOINT_EVENT(sched_kthread_stop_ret,
 /*
  * Tracepoint for waking up a task:
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0) || \
+	LTTNG_RT_KERNEL_RANGE(4,1,10,11, 4,2,0,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(sched_wakeup_template,
 
 	TP_PROTO(struct task_struct *p),
@@ -184,7 +185,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(sched_wakeup_template,
 )
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0)) */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0) || \
+	LTTNG_RT_KERNEL_RANGE(4,1,10,11, 4,2,0,0))
 
 /*
  * Tracepoint called when waking a task; this tracepoint is guaranteed to be
