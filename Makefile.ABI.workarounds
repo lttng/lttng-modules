@@ -4,8 +4,14 @@
 # the kernel EXTRAVERSION to figure it out. Translate this information
 # into a define visible from the C preprocessor.
 
-DEB_API_VERSION=$(shell $(MAKEFILEDIR)/abi-debian-version.sh $(KERNELDIR))
+DEB_API_VERSION:=$(shell $(MAKEFILEDIR)/abi-debian-version.sh $(KERNELDIR))
 
 ifneq ($(DEB_API_VERSION), 0)
   ccflags-y += -DDEBIAN_API_VERSION=$(DEB_API_VERSION)
+endif
+
+RT_PATCH_VERSION:=$(shell $(MAKEFILEDIR)/rt-patch-version.sh $(KERNELDIR))
+
+ifneq ($(RT_PATCH_VERSION), 0)
+  ccflags-y += -DRT_PATCH_VERSION=$(RT_PATCH_VERSION)
 endif

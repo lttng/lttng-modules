@@ -90,4 +90,21 @@
 		LTTNG_RHEL_VERSION_CODE < \
 		LTTNG_RHEL_KERNEL_VERSION(a_high, b_high, c_high, d_high, e_high))
 
+#define LTTNG_RT_KERNEL_VERSION(a, b, c, d) \
+	(((a) << 24) + ((b) << 16) + ((c) << 8) + (d))
+
+#ifdef RT_PATCH_VERSION
+#define LTTNG_RT_VERSION_CODE \
+	((LINUX_VERSION_CODE << 8) + RT_PATCH_VERSION)
+#else
+#define LTTNG_RT_VERSION_CODE 	0
+#endif
+
+#define LTTNG_RT_KERNEL_RANGE(a_low, b_low, c_low, d_low, \
+		a_high, b_high, c_high, d_high) \
+	(LTTNG_RT_VERSION_CODE >= \
+		LTTNG_RT_KERNEL_VERSION(a_low, b_low, c_low, d_low) && \
+		LTTNG_RT_VERSION_CODE < \
+		LTTNG_RT_KERNEL_VERSION(a_high, b_high, c_high, d_high))
+
 #endif /* _LTTNG_KERNEL_VERSION_H */
