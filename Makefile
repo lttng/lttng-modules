@@ -9,7 +9,6 @@ ifneq ($(KERNELRELEASE),)
 
   ifneq ($(CONFIG_TRACEPOINTS),)
 
-    KERNELDIR = ${LTTNG_KERNELDIR}
     MAKEFILEDIR = $(shell dirname $(lastword $(MAKEFILE_LIST)))
 
     lttng_check_linux_version = $(shell pwd)/include/linux/version.h
@@ -101,15 +100,15 @@ PWD := $(shell pwd)
 CFLAGS = $(EXTCFLAGS)
 
 default:
-	LTTNG_KERNELDIR=$(KERNELDIR) $(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m modules
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m modules
 
 modules_install:
-	LTTNG_KERNELDIR=$(KERNELDIR) $(MAKE) -C $(KERNELDIR) M=$(PWD) modules_install
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules_install
 
 clean:
-	LTTNG_KERNELDIR=$(KERNELDIR) $(MAKE) -C $(KERNELDIR) M=$(PWD) clean
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
 
 %.i: %.c
-	LTTNG_KERNELDIR=$(KERNELDIR) $(MAKE) -C $(KERNELDIR) M=$(PWD) $@
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) $@
 
 endif # KERNELRELEASE
