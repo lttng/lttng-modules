@@ -2023,12 +2023,15 @@ int _lttng_event_header_declare(struct lttng_session *session)
  * taken at start of trace.
  * Yes, this is only an approximation. Yes, we can (and will) do better
  * in future versions.
+ * Return 0 if offset is negative. It may happen if the system sets
+ * the REALTIME clock to 0 after boot.
  */
 static
 uint64_t measure_clock_offset(void)
 {
-	uint64_t offset, monotonic[2], realtime;
+	uint64_t monotonic_avg, monotonic[2], realtime;
 	uint64_t tcf = trace_clock_freq();
+	int64_t offset;
 	struct timespec rts = { 0, 0 };
 	unsigned long flags;
 
@@ -2039,7 +2042,7 @@ uint64_t measure_clock_offset(void)
 	monotonic[1] = trace_clock_read64();
 	local_irq_restore(flags);
 
-	offset = (monotonic[0] + monotonic[1]) >> 1;
+	monotonic_avg = (monotonic[0] + monotonic[1]) >> 1;
 	realtime = (uint64_t) rts.tv_sec * tcf;
 	if (tcf == NSEC_PER_SEC) {
 		realtime += rts.tv_nsec;
@@ -2049,7 +2052,9 @@ uint64_t measure_clock_offset(void)
 		do_div(n, NSEC_PER_SEC);
 		realtime += n;
 	}
-	offset = realtime - offset;
+	offset = (int64_t) realtime - monotonic_avg;
+	if (offset < 0)
+		return 0;
 	return offset;
 }
 
