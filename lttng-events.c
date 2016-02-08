@@ -2027,7 +2027,7 @@ int _lttng_event_header_declare(struct lttng_session *session)
  * the REALTIME clock to 0 after boot.
  */
 static
-uint64_t measure_clock_offset(void)
+int64_t measure_clock_offset(void)
 {
 	uint64_t monotonic_avg, monotonic[2], realtime;
 	uint64_t tcf = trace_clock_freq();
@@ -2053,8 +2053,6 @@ uint64_t measure_clock_offset(void)
 		realtime += n;
 	}
 	offset = (int64_t) realtime - monotonic_avg;
-	if (offset < 0)
-		return 0;
 	return offset;
 }
 
@@ -2166,11 +2164,11 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 		"	description = \"%s\";\n"
 		"	freq = %llu; /* Frequency, in Hz */\n"
 		"	/* clock value offset from Epoch is: offset * (1/freq) */\n"
-		"	offset = %llu;\n"
+		"	offset = %lld;\n"
 		"};\n\n",
 		trace_clock_description(),
 		(unsigned long long) trace_clock_freq(),
-		(unsigned long long) measure_clock_offset()
+		(long long) measure_clock_offset()
 		);
 	if (ret)
 		goto end;
