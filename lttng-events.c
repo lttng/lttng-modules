@@ -2023,8 +2023,8 @@ int _lttng_event_header_declare(struct lttng_session *session)
  * taken at start of trace.
  * Yes, this is only an approximation. Yes, we can (and will) do better
  * in future versions.
- * Return 0 if offset is negative. It may happen if the system sets
- * the REALTIME clock to 0 after boot.
+ * This function may return a negative offset. It may happen if the
+ * system sets the REALTIME clock to 0 after boot.
  */
 static
 int64_t measure_clock_offset(void)
