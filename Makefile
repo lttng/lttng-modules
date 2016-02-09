@@ -103,12 +103,12 @@ default:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m modules
 
 modules_install:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules_install
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m modules_install
 
 clean:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
 
 %.i: %.c
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) $@
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m $@
 
 endif # KERNELRELEASE
