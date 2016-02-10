@@ -55,10 +55,6 @@ ifneq ($(KERNELRELEASE),)
                          lttng-filter-validator.o \
                          probes/lttng-probe-user.o
 
-    obj-$(CONFIG_LTTNG) += lttng-statedump.o
-    lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o \
-                            wrapper/fdtable.o
-
     ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
       lttng-tracer-objs += lttng-syscalls.o
     endif # CONFIG_HAVE_SYSCALL_TRACEPOINTS
@@ -83,6 +79,10 @@ ifneq ($(KERNELRELEASE),)
       if [ $(VERSION) -ge 4 \
         -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 15 -a $(SUBLEVEL) -ge 0 \) ] ; then \
         echo "lttng-tracepoint.o" ; fi;)
+
+    obj-$(CONFIG_LTTNG) += lttng-statedump.o
+    lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o \
+                            wrapper/fdtable.o
 
     obj-$(CONFIG_LTTNG) += probes/
     obj-$(CONFIG_LTTNG) += lib/

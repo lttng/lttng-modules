@@ -85,11 +85,3 @@ int lttng_add_pid_to_ctx(struct lttng_ctx **ctx)
 	return 0;
 }
 EXPORT_SYMBOL_GPL(lttng_add_pid_to_ctx);
-
-MODULE_LICENSE("GPL and additional rights");
-MODULE_AUTHOR("Mathieu Desnoyers");
-MODULE_DESCRIPTION("Linux Trace Toolkit PID Context");
-MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
-	__stringify(LTTNG_MODULES_MINOR_VERSION) "."
-	__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION)
-	LTTNG_MODULES_EXTRAVERSION);
