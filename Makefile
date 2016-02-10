@@ -50,10 +50,6 @@ lttng-tracer-objs :=  lttng-events.o lttng-abi.o \
 			lttng-filter-validator.o \
 			probes/lttng-probe-user.o
 
-obj-m += lttng-statedump.o
-lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o \
-			wrapper/fdtable.o
-
 ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
 lttng-tracer-objs += lttng-syscalls.o
 endif # CONFIG_HAVE_SYSCALL_TRACEPOINTS
@@ -69,6 +65,10 @@ lttng-tracer-objs += $(shell \
 	if [ $(VERSION) -ge 4 \
 		-o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 15 -a $(SUBLEVEL) -ge 0 \) ] ; then \
 		echo "lttng-tracepoint.o" ; fi;)
+
+obj-m += lttng-statedump.o
+lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o \
+			wrapper/fdtable.o
 
 obj-m += probes/
 obj-m += lib/
