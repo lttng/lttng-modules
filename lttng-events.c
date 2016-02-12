@@ -2271,6 +2271,9 @@ static int __init lttng_events_init(void)
 	ret = wrapper_get_pfnblock_flags_mask_init();
 	if (ret)
 		return ret;
+	ret = wrapper_get_pageblock_flags_mask_init();
+	if (ret)
+		return ret;
 	ret = lttng_context_init();
 	if (ret)
 		return ret;
