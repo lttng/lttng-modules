@@ -3,7 +3,6 @@ MAKEFILEDIR = $(shell dirname $(lastword $(MAKEFILE_LIST)))
 include $(MAKEFILEDIR)/../Makefile.ABI.workarounds
 
 ccflags-y += -I$(PWD)/probes
-obj-$(CONFIG_LTTNG) += lttng-types.o
 
 obj-$(CONFIG_LTTNG) += lttng-probe-sched.o
 obj-$(CONFIG_LTTNG) += lttng-probe-irq.o

@@ -43,7 +43,6 @@ struct lib_ring_buffer_config;
 
 /* Type description */
 
-/* Update the astract_types name table in lttng-types.c along with this enum */
 enum abstract_types {
 	atype_integer,
 	atype_enum,
@@ -53,7 +52,6 @@ enum abstract_types {
 	NR_ABSTRACT_TYPES,
 };
 
-/* Update the string_encodings name table in lttng-types.c along with this enum */
 enum lttng_string_encodings {
 	lttng_encode_none = 0,
 	lttng_encode_UTF8 = 1,
