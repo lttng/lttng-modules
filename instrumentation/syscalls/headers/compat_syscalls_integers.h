@@ -5,3 +5,7 @@
 #ifdef CONFIG_ARM64
 #include "arm-32-syscalls-3.4.25_integers.h"
 #endif
+
+#ifdef CONFIG_PPC64
+#include "powerpc-32-syscalls-3.0.34_integers.h"
+#endif
