@@ -1,8 +1,7 @@
-#define OVERRIDE_32_execve
-#define OVERRIDE_64_execve
-
 #ifndef CREATE_SYSCALL_TABLE
 
+#define OVERRIDE_32_execve
+#define OVERRIDE_64_execve
 SC_LTTNG_TRACEPOINT_EVENT(execve,
 	TP_PROTO(sc_exit(long ret,) const char *filename, char *const *argv, char *const *envp),
 	TP_ARGS(sc_exit(ret,) filename, argv, envp),
@@ -13,6 +12,8 @@ SC_LTTNG_TRACEPOINT_EVENT(execve,
 	)
 )
 
+#define OVERRIDE_32_clone
+#define OVERRIDE_64_clone
 SC_LTTNG_TRACEPOINT_EVENT(clone,
 	TP_PROTO(sc_exit(long ret,) unsigned long clone_flags, unsigned long newsp,
 		void __user *parent_tid,
