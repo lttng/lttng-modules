@@ -28,6 +28,16 @@
 
 #include <linux/kallsyms.h>
 
+/*
+ * PowerPC ABIv1 needs KALLSYMS_ALL to get the function descriptor,
+ * which is needed to perform the function call.
+ */
+#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF < 2)
+# ifndef CONFIG_KALLSYMS_ALL
+#  error "LTTng-modules requires CONFIG_KALLSYMS_ALL on PowerPC ABIv1"
+# endif
+#endif
+
 static inline
 unsigned long kallsyms_lookup_funcptr(const char *name)
 {
