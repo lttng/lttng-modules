@@ -25,7 +25,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(workqueue_work,
 	TP_ARGS(work),
 
 	TP_FIELDS(
-		ctf_integer(void *, work, work)
+		ctf_integer_hex(void *, work, work)
 	)
 )
 
@@ -55,8 +55,8 @@ LTTNG_TRACEPOINT_EVENT(workqueue_queue_work,
 #endif
 
 	TP_FIELDS(
-		ctf_integer(void *, work, work)
-		ctf_integer(void *, function, work->func)
+		ctf_integer_hex(void *, work, work)
+		ctf_integer_hex(void *, function, work->func)
 		ctf_integer(unsigned int, req_cpu, req_cpu)
 	)
 )
@@ -90,8 +90,8 @@ LTTNG_TRACEPOINT_EVENT(workqueue_execute_start,
 	TP_ARGS(work),
 
 	TP_FIELDS(
-		ctf_integer(void *, work, work)
-		ctf_integer(void *, function, work->func)
+		ctf_integer_hex(void *, work, work)
+		ctf_integer_hex(void *, function, work->func)
 	)
 )
 
@@ -119,7 +119,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(workqueue,
 	TP_FIELDS(
 		ctf_array(char, thread_comm, wq_thread->comm, TASK_COMM_LEN)
 		ctf_integer(pid_t, thread_pid, wq_thread->pid)
-		ctf_integer(work_func_t, func, work->func)
+		ctf_integer_hex(work_func_t, func, work->func)
 	)
 )
 

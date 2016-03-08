@@ -31,7 +31,7 @@ LTTNG_TRACEPOINT_EVENT(lock_acquire,
 		ctf_integer(unsigned int, flags, (trylock ? 1 : 0) | (read ? 2 : 0))
 		ctf_string(name, lock->name)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
-		ctf_integer(void *, lockdep_addr, lock)
+		ctf_integer_hex(void *, lockdep_addr, lock)
 #endif
 	)
 )
@@ -46,7 +46,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(lock,
 
 	TP_FIELDS(
 		ctf_string(name, lock->name)
-		ctf_integer(void *, lockdep_addr, lock)
+		ctf_integer_hex(void *, lockdep_addr, lock)
 	)
 )
 
@@ -86,7 +86,7 @@ LTTNG_TRACEPOINT_EVENT(lock_release,
 	TP_FIELDS(
 		ctf_string(name, lock->name)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
-		ctf_integer(void *, lockdep_addr, lock)
+		ctf_integer_hex(void *, lockdep_addr, lock)
 #endif
 	)
 )
@@ -102,7 +102,7 @@ LTTNG_TRACEPOINT_EVENT(lock_contended,
 	TP_FIELDS(
 		ctf_string(name, lock->name)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
-		ctf_integer(void *, lockdep_addr, lock)
+		ctf_integer_hex(void *, lockdep_addr, lock)
 #endif
 	)
 )
@@ -117,7 +117,7 @@ LTTNG_TRACEPOINT_EVENT(lock_acquired,
 		ctf_string(name, lock->name)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
 		ctf_integer(s64, wait_nsec, wait_nsec)
-		ctf_integer(void *, lockdep_addr, lock)
+		ctf_integer_hex(void *, lockdep_addr, lock)
 #else
 		ctf_integer(unsigned long, wait_usec, (unsigned long) waittime)
 		ctf_integer(unsigned long, wait_nsec_rem, do_div(waittime, NSEC_PER_USEC))

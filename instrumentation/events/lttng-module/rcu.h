@@ -312,8 +312,8 @@ LTTNG_TRACEPOINT_EVENT(rcu_callback,
 
 	TP_FIELDS(
 		ctf_string(rcuname, rcuname)
-		ctf_integer(void *, rhp, rhp)
-		ctf_integer(void *, func, rhp->func)
+		ctf_integer_hex(void *, rhp, rhp)
+		ctf_integer_hex(void *, func, rhp->func)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 		ctf_integer(long, qlen_lazy, qlen_lazy)
 #endif
@@ -351,8 +351,8 @@ LTTNG_TRACEPOINT_EVENT(rcu_kfree_callback,
 
 	TP_FIELDS(
 		ctf_string(rcuname, rcuname)
-		ctf_integer(void *, rhp, rhp)
-		ctf_integer(unsigned long, offset, offset)
+		ctf_integer_hex(void *, rhp, rhp)
+		ctf_integer_hex(unsigned long, offset, offset)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 		ctf_integer(long, qlen_lazy, qlen_lazy)
 #endif
@@ -418,8 +418,8 @@ LTTNG_TRACEPOINT_EVENT(rcu_invoke_callback,
 
 	TP_FIELDS(
 		ctf_string(rcuname, rcuname)
-		ctf_integer(void *, rhp, rhp)
-		ctf_integer(void *, func, rhp->func)
+		ctf_integer_hex(void *, rhp, rhp)
+		ctf_integer_hex(void *, func, rhp->func)
 	)
 )
 
@@ -442,7 +442,7 @@ LTTNG_TRACEPOINT_EVENT(rcu_invoke_kfree_callback,
 
 	TP_FIELDS(
 		ctf_string(rcuname, rcuname)
-		ctf_integer(void *, rhp, rhp)
+		ctf_integer_hex(void *, rhp, rhp)
 		ctf_integer(unsigned long, offset, offset)
 	)
 )
@@ -524,7 +524,7 @@ LTTNG_TRACEPOINT_EVENT(rcu_torture_read,
 
 	TP_FIELDS(
 		ctf_string(rcutorturename, rcutorturename)
-		ctf_integer(struct rcu_head *, rhp, rhp)
+		ctf_integer_hex(struct rcu_head *, rhp, rhp)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
 		ctf_integer(unsigned long, secs, secs)
 		ctf_integer(unsigned long, c_old, c_old)

@@ -21,8 +21,8 @@ LTTNG_TRACEPOINT_EVENT_MAP(kfree_skb,
 	TP_ARGS(skb, location),
 
 	TP_FIELDS(
-		ctf_integer(void *, skbaddr, skb)
-		ctf_integer(void *, location, location)
+		ctf_integer_hex(void *, skbaddr, skb)
+		ctf_integer_hex(void *, location, location)
 		ctf_integer_network(unsigned short, protocol, skb->protocol)
 	)
 )
@@ -37,7 +37,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(consume_skb,
 	TP_ARGS(skb),
 
 	TP_FIELDS(
-		ctf_integer(void *, skbaddr, skb)
+		ctf_integer_hex(void *, skbaddr, skb)
 	)
 )
 #endif
@@ -50,7 +50,7 @@ LTTNG_TRACEPOINT_EVENT(skb_copy_datagram_iovec,
 	TP_ARGS(skb, len),
 
 	TP_FIELDS(
-		ctf_integer(const void *, skbaddr, skb)
+		ctf_integer_hex(const void *, skbaddr, skb)
 		ctf_integer(int, len, len)
 	)
 )

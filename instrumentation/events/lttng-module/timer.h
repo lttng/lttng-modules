@@ -23,7 +23,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(timer_class,
 	TP_ARGS(timer),
 
 	TP_FIELDS(
-		ctf_integer(void *, timer, timer)
+		ctf_integer_hex(void *, timer, timer)
 	)
 )
 
@@ -53,8 +53,8 @@ LTTNG_TRACEPOINT_EVENT(timer_start,
 	TP_ARGS(timer, expires, flags),
 
 	TP_FIELDS(
-		ctf_integer(void *, timer, timer)
-		ctf_integer(void *, function, timer->function)
+		ctf_integer_hex(void *, timer, timer)
+		ctf_integer_hex(void *, function, timer->function)
 		ctf_integer(unsigned long, expires, expires)
 		ctf_integer(unsigned long, now, jiffies)
 		ctf_integer(unsigned int, flags, flags)
@@ -73,8 +73,8 @@ LTTNG_TRACEPOINT_EVENT(timer_start,
 	TP_ARGS(timer, expires),
 
 	TP_FIELDS(
-		ctf_integer(void *, timer, timer)
-		ctf_integer(void *, function, timer->function)
+		ctf_integer_hex(void *, timer, timer)
+		ctf_integer_hex(void *, function, timer->function)
 		ctf_integer(unsigned long, expires, expires)
 		ctf_integer(unsigned long, now, jiffies)
 	)
@@ -94,9 +94,9 @@ LTTNG_TRACEPOINT_EVENT(timer_expire_entry,
 	TP_ARGS(timer),
 
 	TP_FIELDS(
-		ctf_integer(void *, timer, timer)
+		ctf_integer_hex(void *, timer, timer)
 		ctf_integer(unsigned long, now, jiffies)
-		ctf_integer(void *, function, timer->function)
+		ctf_integer_hex(void *, function, timer->function)
 	)
 )
 
@@ -144,7 +144,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_init,
 	TP_ARGS(hrtimer, clockid, mode),
 
 	TP_FIELDS(
-		ctf_integer(void *, hrtimer, hrtimer)
+		ctf_integer_hex(void *, hrtimer, hrtimer)
 		ctf_integer(clockid_t, clockid, clockid)
 		ctf_integer(enum hrtimer_mode, mode, mode)
 	)
@@ -163,8 +163,8 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_start,
 	TP_ARGS(hrtimer),
 
 	TP_FIELDS(
-		ctf_integer(void *, hrtimer, hrtimer)
-		ctf_integer(void *, function, hrtimer->function)
+		ctf_integer_hex(void *, hrtimer, hrtimer)
+		ctf_integer_hex(void *, function, hrtimer->function)
 		ctf_integer(s64, expires, hrtimer_get_expires(hrtimer).tv64)
 		ctf_integer(s64, softexpires, hrtimer_get_softexpires(hrtimer).tv64)
 	)
@@ -187,9 +187,9 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_expire_entry,
 	TP_ARGS(hrtimer, now),
 
 	TP_FIELDS(
-		ctf_integer(void *, hrtimer, hrtimer)
+		ctf_integer_hex(void *, hrtimer, hrtimer)
 		ctf_integer(s64, now, now->tv64)
-		ctf_integer(void *, function, hrtimer->function)
+		ctf_integer_hex(void *, function, hrtimer->function)
 	)
 )
 
@@ -200,7 +200,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(timer_hrtimer_class,
 	TP_ARGS(hrtimer),
 
 	TP_FIELDS(
-		ctf_integer(void *, hrtimer, hrtimer)
+		ctf_integer_hex(void *, hrtimer, hrtimer)
 	)
 )
 

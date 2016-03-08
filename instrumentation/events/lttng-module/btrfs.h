@@ -499,7 +499,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(alloc_extent_state,
 	TP_ARGS(state, mask, IP),
 
 	TP_FIELDS(
-		ctf_integer(struct extent_state *, state, state)
+		ctf_integer_hex(struct extent_state *, state, state)
 		ctf_integer(gfp_t, mask, mask)
 		ctf_integer(unsigned long, ip, IP)
 	)
@@ -514,7 +514,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(free_extent_state,
 	TP_ARGS(state, IP),
 
 	TP_FIELDS(
-		ctf_integer(struct extent_state *, state, state)
+		ctf_integer_hex(struct extent_state *, state, state)
 		ctf_integer(unsigned long, ip, IP)
 	)
 )

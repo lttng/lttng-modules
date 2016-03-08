@@ -159,11 +159,11 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_start,
 		cache_items, delta, total_scan),
 
 	TP_FIELDS(
-		ctf_integer(struct shrinker *, shr, shr)
+		ctf_integer_hex(struct shrinker *, shr, shr)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
-		ctf_integer(void *, shrink, shr->scan_objects)
+		ctf_integer_hex(void *, shrink, shr->scan_objects)
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
-		ctf_integer(void *, shrink, shr->shrink)
+		ctf_integer_hex(void *, shrink, shr->shrink)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 		ctf_integer(long, nr_objects_to_shrink, nr_objects_to_shrink)
 		ctf_integer(gfp_t, gfp_flags, sc->gfp_mask)
@@ -187,9 +187,9 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_end,
 		total_scan),
 
 	TP_FIELDS(
-		ctf_integer(struct shrinker *, shr, shr)
+		ctf_integer_hex(struct shrinker *, shr, shr)
 		ctf_integer(int, nid, nid)
-		ctf_integer(void *, shrink, shr->scan_objects)
+		ctf_integer_hex(void *, shrink, shr->scan_objects)
 		ctf_integer(long, unused_scan, unused_scan_cnt)
 		ctf_integer(long, new_scan, new_scan_cnt)
 		ctf_integer(int, retval, shrinker_retval)
@@ -207,11 +207,11 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_end,
 	TP_ARGS(shr, shrinker_retval, unused_scan_cnt, new_scan_cnt),
 
 	TP_FIELDS(
-		ctf_integer(struct shrinker *, shr, shr)
+		ctf_integer_hex(struct shrinker *, shr, shr)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
-		ctf_integer(void *, shrink, shr->scan_objects)
+		ctf_integer_hex(void *, shrink, shr->scan_objects)
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
-		ctf_integer(void *, shrink, shr->shrink)
+		ctf_integer_hex(void *, shrink, shr->shrink)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 		ctf_integer(long, unused_scan, unused_scan_cnt)
 		ctf_integer(long, new_scan, new_scan_cnt)
@@ -341,7 +341,7 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_writepage,
 	TP_ARGS(page),
 
 	TP_FIELDS(
-		ctf_integer(struct page *, page, page)
+		ctf_integer_hex(struct page *, page, page)
 		ctf_integer(int, reclaim_flags, trace_reclaim_flags(page))
 	)
 )
@@ -354,7 +354,7 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_writepage,
 	TP_ARGS(page, reclaim_flags),
 
 	TP_FIELDS(
-		ctf_integer(struct page *, page, page)
+		ctf_integer_hex(struct page *, page, page)
 		ctf_integer(int, reclaim_flags, reclaim_flags)
 	)
 )
@@ -409,9 +409,9 @@ LTTNG_TRACEPOINT_EVENT_MAP(replace_swap_token,
 	TP_ARGS(old_mm, new_mm),
 
 	TP_FIELDS(
-		ctf_integer(struct mm_struct *, old_mm, old_mm)
+		ctf_integer_hex(struct mm_struct *, old_mm, old_mm)
 		ctf_integer(unsigned int, old_prio, old_mm ? old_mm->token_priority : 0)
-		ctf_integer(struct mm_struct *, new_mm, new_mm)
+		ctf_integer_hex(struct mm_struct *, new_mm, new_mm)
 		ctf_integer(unsigned int, new_prio, new_mm->token_priority)
 	)
 )
@@ -422,7 +422,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(mm_vmscan_put_swap_token_template,
 	TP_ARGS(swap_token_mm),
 
 	TP_FIELDS(
-		ctf_integer(struct mm_struct*, swap_token_mm, swap_token_mm)
+		ctf_integer_hex(struct mm_struct*, swap_token_mm, swap_token_mm)
 	)
 )
 
@@ -453,10 +453,10 @@ LTTNG_TRACEPOINT_EVENT_MAP(update_swap_token_priority,
 	TP_ARGS(mm, old_prio, swap_token_mm),
 
 	TP_FIELDS(
-		ctf_integer(struct mm_struct*, mm, mm)
+		ctf_integer_hex(struct mm_struct *, mm, mm)
 		ctf_integer(unsigned int, old_prio, old_prio)
 		ctf_integer(unsigned int, new_prio, mm->token_priority)
-		ctf_integer(struct mm_struct*, swap_token_mm, swap_token_mm)
+		ctf_integer_hex(struct mm_struct *, swap_token_mm, swap_token_mm)
 		ctf_integer(unsigned int, swap_token_prio, swap_token_mm ? swap_token_mm->token_priority : 0)
 	)
 )
