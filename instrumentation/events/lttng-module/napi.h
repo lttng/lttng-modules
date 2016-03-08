@@ -17,7 +17,7 @@ LTTNG_TRACEPOINT_EVENT(napi_poll,
 	TP_ARGS(napi),
 
 	TP_FIELDS(
-		ctf_integer(struct napi_struct *, napi, napi)
+		ctf_integer_hex(struct napi_struct *, napi, napi)
 		ctf_string(dev_name, napi->dev ? napi->dev->name : NO_DEV)
 	)
 )

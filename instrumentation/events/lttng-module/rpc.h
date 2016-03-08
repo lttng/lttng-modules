@@ -15,8 +15,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_status,
 	TP_ARGS(task),
 
 	TP_FIELDS(
-		ctf_integer(const struct rpc_task *, task, task)
-		ctf_integer(const struct rpc_clnt *, clnt, task->tk_client)
+		ctf_integer_hex(const struct rpc_task *, task, task)
+		ctf_integer_hex(const struct rpc_clnt *, clnt, task->tk_client)
 		ctf_integer(int, status, task->tk_status)
 	)
 )
@@ -39,8 +39,8 @@ LTTNG_TRACEPOINT_EVENT(rpc_connect_status,
 	TP_ARGS(task, status),
 
 	TP_FIELDS(
-		ctf_integer(const struct rpc_task *, task, task)
-		ctf_integer(const struct rpc_clnt *, clnt, task->tk_client)
+		ctf_integer_hex(const struct rpc_task *, task, task)
+		ctf_integer_hex(const struct rpc_clnt *, clnt, task->tk_client)
 		ctf_integer(int, status, status)
 	)
 )
@@ -52,9 +52,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_running,
 	TP_ARGS(clnt, task, action),
 
 	TP_FIELDS(
-		ctf_integer(const struct rpc_clnt *, clnt, clnt)
-		ctf_integer(const struct rpc_task *, task, task)
-		ctf_integer(const void *, action, action)
+		ctf_integer_hex(const struct rpc_clnt *, clnt, clnt)
+		ctf_integer_hex(const struct rpc_task *, task, task)
+		ctf_integer_hex(const void *, action, action)
 		ctf_integer(unsigned long, runstate, task->tk_runstate)
 		ctf_integer(int, status, task->tk_status)
 		ctf_integer(unsigned short, flags, task->tk_flags)
@@ -92,8 +92,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_queued,
 	TP_ARGS(clnt, task, q),
 
 	TP_FIELDS(
-		ctf_integer(const struct rpc_clnt *, clnt, clnt)
-		ctf_integer(const struct rpc_task *, task, task)
+		ctf_integer_hex(const struct rpc_clnt *, clnt, clnt)
+		ctf_integer_hex(const struct rpc_task *, task, task)
 		ctf_integer(unsigned long, timeout, task->tk_timeout)
 		ctf_integer(unsigned long, runstate, task->tk_runstate)
 		ctf_integer(int, status, task->tk_status)

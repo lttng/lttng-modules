@@ -147,7 +147,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(
 	TP_ARGS(sptep, gfn, access, gen),
 
 	TP_FIELDS(
-		ctf_integer(void *, sptep, sptep)
+		ctf_integer_hex(void *, sptep, sptep)
 		ctf_integer(gfn_t, gfn, gfn)
 		ctf_integer(unsigned, access, access)
 		ctf_integer(unsigned int, gen, gen)
@@ -165,7 +165,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(
 	TP_ARGS(sptep, gfn, access),
 
 	TP_FIELDS(
-		ctf_integer(void *, sptep, sptep)
+		ctf_integer_hex(void *, sptep, sptep)
 		ctf_integer(gfn_t, gfn, gfn)
 		ctf_integer(unsigned, access, access)
 	)
@@ -201,7 +201,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(
 		ctf_integer(int, vcpu_id, vcpu->vcpu_id)
 		ctf_integer(gva_t, gva, gva)
 		ctf_integer(u32, error_code, error_code)
-		ctf_integer(u64 *, sptep, sptep)
+		ctf_integer_hex(u64 *, sptep, sptep)
 		ctf_integer(u64, old_spte, old_spte)
 		ctf_integer(u64, new_spte, *sptep)
 		ctf_integer(bool, retry, retry)
