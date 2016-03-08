@@ -818,7 +818,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 			dbg_printk("load field ref offset %u type user string\n",
 				ref->offset);
 			estack_push(stack, top, ax, bx);
-			estack_ax(stack, top)->u.s.str =
+			estack_ax(stack, top)->u.s.user_str =
 				*(const char * const *) &filter_stack_data[ref->offset];
 			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
 				dbg_printk("Filter warning: loading a NULL string.\n");
@@ -843,7 +843,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 			estack_push(stack, top, ax, bx);
 			estack_ax(stack, top)->u.s.seq_len =
 				*(unsigned long *) &filter_stack_data[ref->offset];
-			estack_ax(stack, top)->u.s.str =
+			estack_ax(stack, top)->u.s.user_str =
 				*(const char **) (&filter_stack_data[ref->offset
 								+ sizeof(unsigned long)]);
 			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
