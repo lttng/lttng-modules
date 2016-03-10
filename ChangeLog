@@ -1,3 +1,22 @@
+2016-03-09 LTTng modules 2.7.2
+	* Fix: filter interpreter with userspace strings
+	* Fix: rename kvm x86 TRACE_SYSTEM to avoid name clash
+	* Fix: format address fields as hexadecimal
+	* PowerPC-64 ABIv1: add build error if KALLSYMS_ALL is missing
+	* Fix: system call instrumentation overrides
+	* Fix: page_alloc wrapper incorrect parenthesis
+	* Fix: add missing versions and init call for page_alloc wrapper
+	* Fix: Define lttng-tracer metadata only once
+	* Fix: handle negative clock offset
+	* Fix: sched instrumentation for 4.1-rt11
+	* Add RT patch version macros
+	* Fix: Ubuntu kernel range for block_rq_complete
+	* Fix: Ubuntu kernel range for mm_page_alloc_extfrag
+	* Fix: update vmscan instrumentation for kernel 4.5
+	* Fix: check reference counts for overflow
+	* Fix: RHEL 7.2 scsi instrumentation
+	* Fix: RHEL 7.2 kvm instrumentation
+
 2016-01-05 LTTng modules 2.7.1
 	* Fix: Use MAX_RT_PRIO offset in sched_wakeup_template
 	* Fix: update sched instrumentation for kernel 4.4.0
