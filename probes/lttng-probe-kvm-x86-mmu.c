@@ -22,8 +22,8 @@
 
 #include <linux/module.h>
 #include <linux/kvm_host.h>
-#include "../lttng-tracer.h"
-#include "../lttng-kernel-version.h"
+#include <lttng-tracer.h>
+#include <lttng-kernel-version.h>
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
 #include <kvm/iodev.h>
@@ -35,7 +35,7 @@
  * Create the tracepoint static inlines from the kernel to validate that our
  * trace event macros match the kernel we run on.
  */
-#include "../wrapper/tracepoint.h"
+#include <wrapper/tracepoint.h>
 
 #include <../../arch/x86/kvm/mmutrace.h>
 
@@ -48,8 +48,8 @@
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
 
-#define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module/arch/x86/kvm
-#include "../instrumentation/events/lttng-module/arch/x86/kvm/mmutrace.h"
+#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module/arch/x86/kvm
+#include <instrumentation/events/lttng-module/arch/x86/kvm/mmutrace.h>
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");

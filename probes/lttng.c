@@ -28,8 +28,8 @@
 #include <linux/proc_fs.h>
 #include <linux/slab.h>
 #include <linux/mm.h>
-#include "../wrapper/vmalloc.h"
-#include "../lttng-events.h"
+#include <wrapper/vmalloc.h>
+#include <lttng-events.h>
 
 #define TP_MODULE_NOAUTOLOAD
 #define LTTNG_PACKAGE_BUILD
@@ -38,7 +38,7 @@
 #define TRACE_INCLUDE_FILE lttng
 #define LTTNG_INSTRUMENTATION
 
-#include "../instrumentation/events/lttng-module/lttng.h"
+#include <instrumentation/events/lttng-module/lttng.h>
 
 /* Events written through logger are truncated at 1024 bytes */
 #define LTTNG_LOGGER_COUNT_MAX	1024

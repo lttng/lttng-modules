@@ -24,7 +24,7 @@
 #include <linux/module.h>
 #include <sound/jack.h>
 #include <sound/soc.h>
-#include "../lttng-tracer.h"
+#include <lttng-tracer.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
@@ -37,9 +37,9 @@
  */
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module
+#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module
 
-#include "../instrumentation/events/lttng-module/asoc.h"
+#include <instrumentation/events/lttng-module/asoc.h>
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com>, Paul Woegerer <paul_woegerer@mentor.com>, and Andrew Gabbasov <andrew_gabbasov@mentor.com>");

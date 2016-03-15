@@ -25,18 +25,18 @@
 #include <linux/proc_fs.h>
 #include <linux/byteorder/generic.h>
 
-#include "../lttng-events.h"
-#include "../lttng-tracer.h"
-#include "../wrapper/tracepoint.h"
-#include "../wrapper/kstrtox.h"
+#include <lttng-events.h>
+#include <lttng-tracer.h>
+#include <wrapper/tracepoint.h>
+#include <wrapper/kstrtox.h>
 
 #define TP_MODULE_NOAUTOLOAD
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module
+#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module
 #define TRACE_INCLUDE_FILE lttng-test
 #define LTTNG_INSTRUMENTATION
-#include "../instrumentation/events/lttng-module/lttng-test.h"
+#include <instrumentation/events/lttng-module/lttng-test.h>
 
 DEFINE_TRACE(lttng_test_filter_event);
 

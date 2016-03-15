@@ -28,8 +28,8 @@
 #include <linux/netdevice.h>
 #include <linux/inetdevice.h>
 #include <linux/sched.h>
-#include "../lttng-events.h"
-#include "../lttng-tracer.h"
+#include <lttng-events.h>
+#include <lttng-tracer.h>
 
 /*
  * Create LTTng tracepoint probes.
@@ -37,10 +37,10 @@
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
 #define TP_SESSION_CHECK
-#define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module
+#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module
 #define TRACE_INCLUDE_FILE lttng-statedump
 
-#include "../instrumentation/events/lttng-module/lttng-statedump.h"
+#include <instrumentation/events/lttng-module/lttng-statedump.h>
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");

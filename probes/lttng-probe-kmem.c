@@ -25,10 +25,10 @@
  * This page_alloc.h wrapper needs to be included before gfpflags.h because it
  * overrides a function with a define.
  */
-#include "../wrapper/page_alloc.h"
+#include <wrapper/page_alloc.h>
 #include <linux/module.h>
 #include <linux/mm.h>
-#include "../lttng-tracer.h"
+#include <lttng-tracer.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
@@ -36,16 +36,16 @@
  */
 #include <trace/events/kmem.h>
 
-#include "../wrapper/tracepoint.h"
+#include <wrapper/tracepoint.h>
 
 /*
  * Create LTTng tracepoint probes.
  */
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module
+#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module
 
-#include "../instrumentation/events/lttng-module/kmem.h"
+#include <instrumentation/events/lttng-module/kmem.h>
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com> and Andrew Gabbasov <andrew_gabbasov@mentor.com>");

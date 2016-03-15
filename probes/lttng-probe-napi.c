@@ -22,7 +22,7 @@
  */
 
 #include <linux/module.h>
-#include "../lttng-tracer.h"
+#include <lttng-tracer.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
@@ -30,16 +30,16 @@
  */
 #include <trace/events/napi.h>
 
-#include "../wrapper/tracepoint.h"
+#include <wrapper/tracepoint.h>
 
 /*
  * Create LTTng tracepoint probes.
  */
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module
+#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module
 
-#include "../instrumentation/events/lttng-module/napi.h"
+#include <instrumentation/events/lttng-module/napi.h>
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com>");

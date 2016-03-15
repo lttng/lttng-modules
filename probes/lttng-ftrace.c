@@ -33,11 +33,11 @@
 #include <linux/module.h>
 #include <linux/ftrace.h>
 #include <linux/slab.h>
-#include "../lttng-events.h"
-#include "../wrapper/ringbuffer/frontend_types.h"
-#include "../wrapper/ftrace.h"
-#include "../wrapper/vmalloc.h"
-#include "../lttng-tracer.h"
+#include <lttng-events.h>
+#include <wrapper/ringbuffer/frontend_types.h>
+#include <wrapper/ftrace.h>
+#include <wrapper/vmalloc.h>
+#include <lttng-tracer.h>
 
 static
 void lttng_ftrace_handler(unsigned long ip, unsigned long parent_ip, void **data)

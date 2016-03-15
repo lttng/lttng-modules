@@ -20,7 +20,7 @@
 
 #include <linux/uaccess.h>
 #include <linux/module.h>
-#include "lttng-probe-user.h"
+#include <probes/lttng-probe-user.h>
 
 /*
  * Calculate string length. Include final null terminating character if there is

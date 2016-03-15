@@ -25,7 +25,7 @@
 #include <linux/fs.h>
 #include <linux/dcache.h>
 #include <linux/version.h>
-#include "../lttng-tracer.h"
+#include <lttng-tracer.h>
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 #include <../fs/ext3/ext3.h>
@@ -44,9 +44,9 @@
  */
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module
+#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module
 
-#include "../instrumentation/events/lttng-module/ext3.h"
+#include <instrumentation/events/lttng-module/ext3.h>
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com>, Paul Woegerer <paul_woegerer@mentor.com>, and Andrew Gabbasov <andrew_gabbasov@mentor.com>");

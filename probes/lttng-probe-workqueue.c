@@ -23,7 +23,7 @@
 
 #include <linux/module.h>
 #include <linux/idr.h>
-#include "../lttng-tracer.h"
+#include <lttng-tracer.h>
 
 struct cpu_workqueue_struct;
 struct pool_workqueue;
@@ -34,16 +34,16 @@ struct pool_workqueue;
  */
 #include <trace/events/workqueue.h>
 
-#include "../wrapper/tracepoint.h"
+#include <wrapper/tracepoint.h>
 
 /*
  * Create LTTng tracepoint probes.
  */
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module
+#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module
 
-#include "../instrumentation/events/lttng-module/workqueue.h"
+#include <instrumentation/events/lttng-module/workqueue.h>
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Andrew Gabbasov <andrew_gabbasov@mentor.com>");

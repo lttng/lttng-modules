@@ -27,7 +27,7 @@
 #include <../fs/ext4/mballoc.h>
 #include <../fs/ext4/ext4_extents.h>
 #include <linux/dcache.h>
-#include "../lttng-tracer.h"
+#include <lttng-tracer.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
@@ -35,17 +35,17 @@
  */
 #include <trace/events/ext4.h>
 
-#include "../lttng-kernel-version.h"
-#include "../wrapper/tracepoint.h"
+#include <lttng-kernel-version.h>
+#include <wrapper/tracepoint.h>
 
 /*
  * Create LTTng tracepoint probes.
  */
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module
+#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module
 
-#include "../instrumentation/events/lttng-module/ext4.h"
+#include <instrumentation/events/lttng-module/ext4.h>
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Andrew Gabbasov <andrew_gabbasov@mentor.com>");

@@ -24,7 +24,7 @@
 #include <linux/module.h>
 #include <linux/device.h>
 #include <linux/mm.h>
-#include "../lttng-tracer.h"
+#include <lttng-tracer.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
@@ -32,8 +32,8 @@
  */
 #include <trace/events/writeback.h>
 
-#include "../lttng-kernel-version.h"
-#include "../wrapper/writeback.h"
+#include <lttng-kernel-version.h>
+#include <wrapper/writeback.h>
 
 /* #if <check version number if global_dirty_limit will be exported> */
 
@@ -46,9 +46,9 @@
  */
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module
+#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module
 
-#include "../instrumentation/events/lttng-module/writeback.h"
+#include <instrumentation/events/lttng-module/writeback.h>
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Andrew Gabbasov <andrew_gabbasov@mentor.com>");

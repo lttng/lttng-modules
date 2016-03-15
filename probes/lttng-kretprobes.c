@@ -24,11 +24,11 @@
 #include <linux/kprobes.h>
 #include <linux/slab.h>
 #include <linux/kref.h>
-#include "../lttng-events.h"
-#include "../wrapper/ringbuffer/frontend_types.h"
-#include "../wrapper/vmalloc.h"
-#include "../wrapper/irqflags.h"
-#include "../lttng-tracer.h"
+#include <lttng-events.h>
+#include <wrapper/ringbuffer/frontend_types.h>
+#include <wrapper/vmalloc.h>
+#include <wrapper/irqflags.h>
+#include <lttng-tracer.h>
 
 enum lttng_kretprobe_type {
 	EVENT_ENTRY = 0,
