@@ -23,14 +23,15 @@
 #include <linux/debugfs.h>
 #include <linux/rculist.h>
 #include <asm/byteorder.h>
-#include "lttng.h"
-#include "lttng-types.h"
-#include "lttng-probe-user.h"
-#include "../wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
-#include "../wrapper/ringbuffer/frontend_types.h"
-#include "../wrapper/rcu.h"
-#include "../lttng-events.h"
-#include "../lttng-tracer-core.h"
+
+#include <probes/lttng.h>
+#include <probes/lttng-types.h>
+#include <probes/lttng-probe-user.h>
+#include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
+#include <wrapper/ringbuffer/frontend_types.h>
+#include <wrapper/rcu.h>
+#include <lttng-events.h>
+#include <lttng-tracer-core.h>
 
 /*
  * Macro declarations used for all stages.
