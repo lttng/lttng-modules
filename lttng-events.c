@@ -36,21 +36,21 @@
 #include <linux/seq_file.h>
 #include <linux/file.h>
 #include <linux/anon_inodes.h>
-#include "wrapper/file.h"
+#include <wrapper/file.h>
 #include <linux/jhash.h>
 #include <linux/uaccess.h>
 #include <linux/vmalloc.h>
 
-#include "wrapper/uuid.h"
-#include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
-#include "wrapper/random.h"
-#include "wrapper/tracepoint.h"
-#include "wrapper/list.h"
-#include "lttng-kernel-version.h"
-#include "lttng-events.h"
-#include "lttng-tracer.h"
-#include "lttng-abi-old.h"
-#include "wrapper/vzalloc.h"
+#include <wrapper/uuid.h>
+#include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
+#include <wrapper/random.h>
+#include <wrapper/tracepoint.h>
+#include <wrapper/list.h>
+#include <lttng-kernel-version.h>
+#include <lttng-events.h>
+#include <lttng-tracer.h>
+#include <lttng-abi-old.h>
+#include <wrapper/vzalloc.h>
 
 #define METADATA_CACHE_DEFAULT_SIZE 4096
 

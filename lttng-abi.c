@@ -44,18 +44,18 @@
 #include <linux/uaccess.h>
 #include <linux/slab.h>
 #include <linux/err.h>
-#include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
-#include "wrapper/ringbuffer/vfs.h"
-#include "wrapper/ringbuffer/backend.h"
-#include "wrapper/ringbuffer/frontend.h"
-#include "wrapper/poll.h"
-#include "wrapper/file.h"
-#include "wrapper/kref.h"
-#include "lttng-abi.h"
-#include "lttng-abi-old.h"
-#include "lttng-events.h"
-#include "lttng-tracer.h"
-#include "lib/ringbuffer/frontend_types.h"
+#include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
+#include <wrapper/ringbuffer/vfs.h>
+#include <wrapper/ringbuffer/backend.h>
+#include <wrapper/ringbuffer/frontend.h>
+#include <wrapper/poll.h>
+#include <wrapper/file.h>
+#include <wrapper/kref.h>
+#include <lttng-abi.h>
+#include <lttng-abi-old.h>
+#include <lttng-events.h>
+#include <lttng-tracer.h>
+#include <lib/ringbuffer/frontend_types.h>
 
 /*
  * This is LTTng's own personal way to create a system call as an external

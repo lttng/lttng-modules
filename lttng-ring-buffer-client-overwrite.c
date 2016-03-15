@@ -21,7 +21,7 @@
  */
 
 #include <linux/module.h>
-#include "lttng-tracer.h"
+#include <lttng-tracer.h>
 
 #define RING_BUFFER_MODE_TEMPLATE		RING_BUFFER_OVERWRITE
 #define RING_BUFFER_MODE_TEMPLATE_STRING	"overwrite"

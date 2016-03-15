@@ -22,7 +22,7 @@
 
 #include <linux/uaccess.h>
 
-#include "lttng-filter.h"
+#include <lttng-filter.h>
 
 /*
  * get_char should be called with page fault handler disabled if it is expected

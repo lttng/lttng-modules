@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "lttng-abi.h"
-#include "lttng-events.h"
+#include <lttng-abi.h>
+#include <lttng-events.h>
 
 noinline
 void lttng_calibrate_kretprobe(void)

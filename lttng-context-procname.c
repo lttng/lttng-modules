@@ -23,10 +23,10 @@
 #include <linux/module.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
-#include "lttng-events.h"
-#include "wrapper/ringbuffer/frontend_types.h"
-#include "wrapper/vmalloc.h"
-#include "lttng-tracer.h"
+#include <lttng-events.h>
+#include <wrapper/ringbuffer/frontend_types.h>
+#include <wrapper/vmalloc.h>
+#include <lttng-tracer.h>
 
 static
 size_t procname_get_size(size_t offset)
