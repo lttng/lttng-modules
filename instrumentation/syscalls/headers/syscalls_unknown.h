@@ -1,7 +1,7 @@
 #if !defined(_TRACE_SYSCALLS_UNKNOWN_H) || defined(TRACE_HEADER_MULTI_READ)
 #define _TRACE_SYSCALLS_UNKNOWN_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/syscalls.h>
 
 #define UNKNOWN_SYSCALL_NRARGS	6
@@ -50,4 +50,4 @@ LTTNG_TRACEPOINT_EVENT(compat_syscall_exit_unknown,
 #endif /*  _TRACE_SYSCALLS_UNKNOWN_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

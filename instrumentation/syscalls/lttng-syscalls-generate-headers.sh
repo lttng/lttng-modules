@@ -76,7 +76,7 @@ echo \
 #if !defined(_TRACE_SYSCALLS_${CLASSCAP}_H) || defined(TRACE_HEADER_MULTI_READ)
 #define _TRACE_SYSCALLS_${CLASSCAP}_H
 
-#include \"../../../probes/lttng-tracepoint-event.h\"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/syscalls.h>
 #include \"${INPUTFILE}_${CLASS}_override.h\"
 #include \"syscalls_${CLASS}_override.h\"
@@ -303,7 +303,7 @@ echo \
 #endif /*  _TRACE_SYSCALLS_${CLASSCAP}_H */
 
 /* This part must be outside protection */
-#include \"../../../probes/define_trace.h\"
+#include <probes/define_trace.h>
 
 #else /* CREATE_SYSCALL_TABLE */
 
