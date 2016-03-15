@@ -42,7 +42,9 @@ cscope.*
 /vmlinuz
 /System.map
 /Module.markers
-/Module.symvers
+
+# ignore across tree
+Module.symvers
 
 #
 # git files that we don't want to ignore even it they are dot-files
