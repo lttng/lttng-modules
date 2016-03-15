@@ -23,7 +23,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "../lttng-kernel-version.h"
+#include <lttng-kernel-version.h>
 
 #if (defined(CONFIG_KALLSYMS) \
 	&& (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,2)	\
@@ -35,8 +35,8 @@
 #include <linux/kallsyms.h>
 #include <linux/mm_types.h>
 #include <linux/module.h>
-#include "kallsyms.h"
-#include "page_alloc.h"
+#include <wrapper/kallsyms.h>
+#include <wrapper/page_alloc.h>
 
 static
 unsigned long (*get_pfnblock_flags_mask_sym)(struct page *page,
@@ -79,8 +79,8 @@ int wrapper_get_pfnblock_flags_mask_init(void)
 #include <linux/kallsyms.h>
 #include <linux/mm_types.h>
 #include <linux/module.h>
-#include "kallsyms.h"
-#include "page_alloc.h"
+#include <wrapper/kallsyms.h>
+#include <wrapper/page_alloc.h>
 
 static
 unsigned long (*get_pageblock_flags_mask_sym)(struct page *page,

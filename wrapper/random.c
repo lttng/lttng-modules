@@ -29,7 +29,7 @@
 #include <linux/file.h>
 #include <linux/sched.h>
 #include <linux/uaccess.h>
-#include "random.h"
+#include <wrapper/random.h>
 
 /*
  * Returns string boot id.

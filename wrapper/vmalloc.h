@@ -28,7 +28,7 @@
 #ifdef CONFIG_KALLSYMS
 
 #include <linux/kallsyms.h>
-#include "kallsyms.h"
+#include <wrapper/kallsyms.h>
 
 static inline
 void wrapper_vmalloc_sync_all(void)

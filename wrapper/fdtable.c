@@ -20,7 +20,7 @@
 
 #include <linux/version.h>
 #include <linux/spinlock.h>
-#include "fdtable.h"
+#include <wrapper/fdtable.h>
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
 

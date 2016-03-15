@@ -27,8 +27,8 @@
 #include <linux/kallsyms.h>
 #include <linux/interrupt.h>
 #include <linux/irqnr.h>
-#include "kallsyms.h"
-#include "irqdesc.h"
+#include <wrapper/kallsyms.h>
+#include <wrapper/irqdesc.h>
 
 static
 struct irq_desc *(*irq_to_desc_sym)(unsigned int irq);

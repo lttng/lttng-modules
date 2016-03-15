@@ -30,7 +30,7 @@
 #ifdef CONFIG_KALLSYMS
 
 #include <linux/kallsyms.h>
-#include "kallsyms.h"
+#include <wrapper/kallsyms.h>
 
 static inline
 int wrapper_register_ftrace_function_probe(char *glob,

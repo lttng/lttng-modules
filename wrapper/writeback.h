@@ -28,7 +28,7 @@
 #ifdef CONFIG_KALLSYMS_ALL
 
 #include <linux/kallsyms.h>
-#include "kallsyms.h"
+#include <wrapper/kallsyms.h>
 
 static unsigned long *global_dirty_limit_sym;
 

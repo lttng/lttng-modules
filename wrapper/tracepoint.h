@@ -42,7 +42,7 @@
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
 
-#include "../lttng-tracepoint.h"
+#include <lttng-tracepoint.h>
 
 #define lttng_wrapper_tracepoint_probe_register lttng_tracepoint_probe_register
 #define lttng_wrapper_tracepoint_probe_unregister lttng_tracepoint_probe_unregister
@@ -68,7 +68,7 @@ void lttng_tracepoint_exit(void)
 #ifdef CONFIG_MODULE_SIG
 
 #include <linux/kallsyms.h>
-#include "kallsyms.h"
+#include <wrapper/kallsyms.h>
 
 static inline
 int wrapper_tracepoint_module_notify(struct notifier_block *nb,

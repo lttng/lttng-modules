@@ -30,7 +30,7 @@
 #ifdef CONFIG_KALLSYMS
 
 #include <linux/kallsyms.h>
-#include "kallsyms.h"
+#include <wrapper/kallsyms.h>
 
 static inline
 char *wrapper_disk_name(struct gendisk *hd, int partno, char *buf)

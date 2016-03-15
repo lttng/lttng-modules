@@ -25,7 +25,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "../lttng-kernel-version.h"
+#include <lttng-kernel-version.h>
 
 /*
  * We need to redefine get_pfnblock_flags_mask to our wrapper, because

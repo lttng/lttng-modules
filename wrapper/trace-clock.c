@@ -21,7 +21,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "trace-clock.h"
+#include <wrapper/trace-clock.h>
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0))
 DEFINE_PER_CPU(local_t, lttng_last_tsc);

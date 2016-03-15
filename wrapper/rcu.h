@@ -26,7 +26,7 @@
 #include <linux/version.h>
 #include <linux/rculist.h>
 #include <linux/rcupdate.h>
-#include "list.h"
+#include <wrapper/list.h>
 
 #ifndef rcu_dereference_raw_notrace
 #define rcu_dereference_raw_notrace(p)	rcu_dereference_raw(p)

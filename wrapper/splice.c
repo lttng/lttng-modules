@@ -27,7 +27,7 @@
 #include <linux/kallsyms.h>
 #include <linux/fs.h>
 #include <linux/splice.h>
-#include "kallsyms.h"
+#include <wrapper/kallsyms.h>
 
 static
 ssize_t (*splice_to_pipe_sym)(struct pipe_inode_info *pipe,

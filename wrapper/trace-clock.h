@@ -35,10 +35,10 @@
 #include <linux/percpu.h>
 #include <linux/version.h>
 #include <asm/local.h>
-#include "../lttng-kernel-version.h"
-#include "../lttng-clock.h"
-#include "percpu-defs.h"
-#include "random.h"
+#include <lttng-kernel-version.h>
+#include <lttng-clock.h>
+#include <wrapper/percpu-defs.h>
+#include <wrapper/random.h>
 
 #if ((LTTNG_KERNEL_RANGE(3,10,0, 3,10,14) && !LTTNG_RHEL_KERNEL_RANGE(3,10,0,7,0, 3,10,14,0,0)) \
 	|| LTTNG_KERNEL_RANGE(3,11,0, 3,11,3))
