@@ -92,7 +92,7 @@ struct user_msghdr;
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
 #define TP_MODULE_NOINIT
-#define TRACE_INCLUDE_PATH ../instrumentation/syscalls/headers
+#define TRACE_INCLUDE_PATH instrumentation/syscalls/headers
 
 #define PARAMS(args...)	args
 

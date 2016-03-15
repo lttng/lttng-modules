@@ -55,14 +55,14 @@
 #include <linux/module.h>
 #include <linux/percpu.h>
 
-#include "../../wrapper/ringbuffer/config.h"
-#include "../../wrapper/ringbuffer/backend.h"
-#include "../../wrapper/ringbuffer/frontend.h"
-#include "../../wrapper/ringbuffer/iterator.h"
-#include "../../wrapper/ringbuffer/nohz.h"
-#include "../../wrapper/atomic.h"
-#include "../../wrapper/kref.h"
-#include "../../wrapper/percpu-defs.h"
+#include <wrapper/ringbuffer/config.h>
+#include <wrapper/ringbuffer/backend.h>
+#include <wrapper/ringbuffer/frontend.h>
+#include <wrapper/ringbuffer/iterator.h>
+#include <wrapper/ringbuffer/nohz.h>
+#include <wrapper/atomic.h>
+#include <wrapper/kref.h>
+#include <wrapper/percpu-defs.h>
 
 /*
  * Internal structure representing offsets to use at a sub-buffer switch.

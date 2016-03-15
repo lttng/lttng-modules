@@ -107,7 +107,7 @@ LTTNG_IRQ_VECTOR_TRACEPOINT_EVENT_INSTANCE_MAP(thermal_apic,
 #endif /* LTTNG_TRACE_IRQ_VECTORS_H */
 
 #undef TRACE_INCLUDE_PATH
-#define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module/arch/x86
+#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module/arch/x86
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE irq_vectors
 

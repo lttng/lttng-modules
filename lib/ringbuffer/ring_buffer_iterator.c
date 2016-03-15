@@ -25,8 +25,8 @@
  *	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */
 
-#include "../../wrapper/ringbuffer/iterator.h"
-#include "../../wrapper/file.h"
+#include <wrapper/ringbuffer/iterator.h>
+#include <wrapper/file.h>
 #include <linux/jiffies.h>
 #include <linux/delay.h>
 #include <linux/module.h>

@@ -34,7 +34,7 @@
 #define TP_MODULE_NOAUTOLOAD
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module
+#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module
 #define TRACE_INCLUDE_FILE lttng
 #define LTTNG_INSTRUMENTATION
 

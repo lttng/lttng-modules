@@ -1,1 +1,1 @@
-#include "../../lib/ringbuffer/frontend_api.h"
+#include <lib/ringbuffer/frontend_api.h>

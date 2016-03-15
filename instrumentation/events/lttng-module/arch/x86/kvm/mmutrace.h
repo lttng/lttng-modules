@@ -210,7 +210,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(
 #endif /* LTTNG_TRACE_KVM_MMU_H */
 
 #undef TRACE_INCLUDE_PATH
-#define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module/arch/x86/kvm
+#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module/arch/x86/kvm
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE mmutrace
 

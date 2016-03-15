@@ -1,1 +1,1 @@
-#include "../../lib/ringbuffer/vatomic.h"
+#include <lib/ringbuffer/vatomic.h>

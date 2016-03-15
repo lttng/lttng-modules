@@ -25,9 +25,9 @@
 #include <linux/module.h>
 #include <linux/mm.h>
 
-#include "../../wrapper/ringbuffer/backend.h"
-#include "../../wrapper/ringbuffer/frontend.h"
-#include "../../wrapper/ringbuffer/vfs.h"
+#include <wrapper/ringbuffer/backend.h>
+#include <wrapper/ringbuffer/frontend.h>
+#include <wrapper/ringbuffer/vfs.h>
 
 /*
  * fault() vm_op implementation for ring buffer file mapping.

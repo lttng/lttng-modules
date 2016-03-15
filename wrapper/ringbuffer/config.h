@@ -1,1 +1,1 @@
-#include "../../lib/ringbuffer/config.h"
+#include <lib/ringbuffer/config.h>

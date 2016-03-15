@@ -1,1 +1,1 @@
-#include "../../lib/ringbuffer/frontend_types.h"
+#include <lib/ringbuffer/frontend_types.h>

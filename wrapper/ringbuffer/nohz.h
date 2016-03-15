@@ -1,1 +1,1 @@
-#include "../../lib/ringbuffer/nohz.h"
+#include <lib/ringbuffer/nohz.h>

@@ -27,10 +27,10 @@
 #include <linux/fs.h>
 #include <linux/version.h>
 
-#include "../../wrapper/splice.h"
-#include "../../wrapper/ringbuffer/backend.h"
-#include "../../wrapper/ringbuffer/frontend.h"
-#include "../../wrapper/ringbuffer/vfs.h"
+#include <wrapper/splice.h>
+#include <wrapper/ringbuffer/backend.h>
+#include <wrapper/ringbuffer/frontend.h>
+#include <wrapper/ringbuffer/vfs.h>
 
 #if 0
 #define printk_dbg(fmt, args...) printk(fmt, args)

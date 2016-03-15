@@ -39,7 +39,7 @@
  */
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module/arch/x86
+#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module/arch/x86
 
 #include <instrumentation/events/lttng-module/arch/x86/irq_vectors.h>
 

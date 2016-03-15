@@ -44,7 +44,7 @@ LTTNG_EXCEPTIONS_TRACEPOINT_EVENT_INSTANCE_MAP(page_fault_kernel,
 #endif /* LTTNG_TRACE_EXCEPTIONS_H */
 
 #undef TRACE_INCLUDE_PATH
-#define TRACE_INCLUDE_PATH ../instrumentation/events/lttng-module/arch/x86
+#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module/arch/x86
 #undef TRACE_INCLUDE_FILE
 #define TRACE_INCLUDE_FILE exceptions
 
