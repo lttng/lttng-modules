@@ -1,5 +1,5 @@
 /*
- * lttng-events.h
+ * lttng-tracepoint-event-impl.h
  *
  * Copyright (C) 2009 Steven Rostedt <rostedt@goodmis.org>
  * Copyright (C) 2009-2014 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
