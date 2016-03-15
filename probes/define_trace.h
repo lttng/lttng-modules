@@ -97,7 +97,7 @@
 #define DECLARE_TRACE(name, proto, args)
 
 #ifdef LTTNG_PACKAGE_BUILD
-#include "lttng-tracepoint-event-impl.h"
+#include <probes/lttng-tracepoint-event-impl.h>
 #endif
 
 #undef LTTNG_TRACEPOINT_EVENT
