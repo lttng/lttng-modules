@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_COMPACTION_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_COMPACTION_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/types.h>
 #include <linux/version.h>
 #include <trace/events/gfpflags.h>
@@ -155,4 +155,4 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_compaction_migratepages,
 #endif /* LTTNG_TRACE_COMPACTION_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

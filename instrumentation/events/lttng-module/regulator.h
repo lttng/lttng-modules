@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_REGULATOR_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_REGULATOR_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/ktime.h>
 
 /*
@@ -114,4 +114,4 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(regulator_value, regulator_set_voltage_complete,
 #endif /* _TRACE_POWER_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

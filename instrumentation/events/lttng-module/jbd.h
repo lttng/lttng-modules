@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_JBD_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_JBD_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/jbd.h>
 #include <linux/version.h>
 
@@ -153,4 +153,4 @@ LTTNG_TRACEPOINT_EVENT(jbd_update_superblock_end,
 #endif /* LTTNG_TRACE_JBD_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

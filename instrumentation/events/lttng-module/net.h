@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_NET_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_NET_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
 #include <linux/ip.h>
@@ -83,4 +83,4 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_template,
 #endif /* LTTNG_TRACE_NET_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

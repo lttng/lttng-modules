@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_NAPI_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_NAPI_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/netdevice.h>
 #include <linux/ftrace.h>
 
@@ -27,4 +27,4 @@ LTTNG_TRACEPOINT_EVENT(napi_poll,
 #endif /* LTTNG_TRACE_NAPI_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

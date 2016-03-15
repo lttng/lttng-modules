@@ -1,7 +1,7 @@
 #if !defined(LTTNG_TRACE_EXCEPTIONS_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_EXCEPTIONS_H
 
-#include "../../../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/version.h>
 
 #undef TRACE_SYSTEM
@@ -49,4 +49,4 @@ LTTNG_EXCEPTIONS_TRACEPOINT_EVENT_INSTANCE_MAP(page_fault_kernel,
 #define TRACE_INCLUDE_FILE exceptions
 
 /* This part must be outside protection */
-#include "../../../../../probes/define_trace.h"
+#include <probes/define_trace.h>

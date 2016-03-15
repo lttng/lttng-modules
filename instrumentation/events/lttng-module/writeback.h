@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_WRITEBACK_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_WRITEBACK_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/tracepoint.h>
 #include <linux/backing-dev.h>
 #include <linux/writeback.h>
@@ -688,4 +688,4 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_single_inode_template, writeback_singl
 #endif /* LTTNG_TRACE_WRITEBACK_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

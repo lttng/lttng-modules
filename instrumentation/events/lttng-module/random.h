@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_RANDOM_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_RANDOM_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/writeback.h>
 
 LTTNG_TRACEPOINT_EVENT_CLASS(random__mix_pool_bytes,
@@ -109,4 +109,4 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(random__extract_entropy, extract_entropy_use
 #endif /* LTTNG_TRACE_RANDOM_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

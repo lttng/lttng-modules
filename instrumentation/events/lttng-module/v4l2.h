@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_V4L2_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_V4L2_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 
 LTTNG_TRACEPOINT_EVENT_CLASS(v4l2_class,
 
@@ -51,4 +51,4 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(v4l2_class,
 #endif /* if !defined(LTTNG_TRACE_V4L2_H) || defined(TRACE_HEADER_MULTI_READ) */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

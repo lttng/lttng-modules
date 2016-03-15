@@ -1,7 +1,7 @@
 #if !defined(LTTNG_TRACE_KVM_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_KVM_H
 
-#include "../../../../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <asm/vmx.h>
 #include <asm/svm.h>
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
@@ -520,4 +520,4 @@ LTTNG_TRACEPOINT_EVENT_MAP(kvm_track_tsc, kvm_x86_track_tsc,
 #define TRACE_INCLUDE_FILE trace
 
 /* This part must be outside protection */
-#include "../../../../../../probes/define_trace.h"
+#include <probes/define_trace.h>

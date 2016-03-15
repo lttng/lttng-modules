@@ -15,7 +15,7 @@
 #define LTTNG_TRACE_LOCK_H
 
 #include <linux/lockdep.h>
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 
 #ifdef CONFIG_LOCKDEP
 
@@ -134,4 +134,4 @@ LTTNG_TRACEPOINT_EVENT(lock_acquired,
 #endif /* LTTNG_TRACE_LOCK_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

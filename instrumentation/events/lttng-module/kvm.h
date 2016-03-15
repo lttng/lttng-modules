@@ -1,7 +1,7 @@
 #if !defined(LTTNG_TRACE_KVM_MAIN_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_KVM_MAIN_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/version.h>
 
 #undef TRACE_SYSTEM
@@ -235,4 +235,4 @@ LTTNG_TRACEPOINT_EVENT(
 #endif /* LTTNG_TRACE_KVM_MAIN_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

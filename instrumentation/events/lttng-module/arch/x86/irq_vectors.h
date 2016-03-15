@@ -1,7 +1,7 @@
 #if !defined(LTTNG_TRACE_IRQ_VECTORS_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_IRQ_VECTORS_H
 
-#include "../../../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/version.h>
 
 #undef TRACE_SYSTEM
@@ -112,4 +112,4 @@ LTTNG_IRQ_VECTOR_TRACEPOINT_EVENT_INSTANCE_MAP(thermal_apic,
 #define TRACE_INCLUDE_FILE irq_vectors
 
 /* This part must be outside protection */
-#include "../../../../../probes/define_trace.h"
+#include <probes/define_trace.h>

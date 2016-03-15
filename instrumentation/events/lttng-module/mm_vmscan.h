@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_MM_VMSCAN_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_MM_VMSCAN_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/types.h>
 #include <linux/mm.h>
 #include <linux/memcontrol.h>
@@ -465,4 +465,4 @@ LTTNG_TRACEPOINT_EVENT_MAP(update_swap_token_priority,
 #endif /* LTTNG_TRACE_MM_VMSCAN_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

@@ -5,7 +5,7 @@
 #if !defined(LTTNG_TRACE_RUNTIME_POWER_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_RUNTIME_POWER_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/ktime.h>
 
 #ifndef _TRACE_RPM_DEF_
@@ -70,4 +70,4 @@ LTTNG_TRACEPOINT_EVENT(rpm_return_int,
 #endif /* LTTNG_TRACE_RUNTIME_POWER_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

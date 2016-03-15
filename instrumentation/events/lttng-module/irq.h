@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_IRQ_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_IRQ_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 
 #ifndef _TRACE_IRQ_DEF_
 #define _TRACE_IRQ_DEF_
@@ -186,4 +186,4 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(irq_softirq, softirq_raise,
 #endif /*  LTTNG_TRACE_IRQ_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_KMEM_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_KMEM_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/types.h>
 #include <linux/version.h>
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
@@ -320,4 +320,4 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
 #endif /* LTTNG_TRACE_KMEM_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_UDP_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_UDP_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/udp.h>
 
 LTTNG_TRACEPOINT_EVENT(udp_fail_queue_rcv_skb,
@@ -22,4 +22,4 @@ LTTNG_TRACEPOINT_EVENT(udp_fail_queue_rcv_skb,
 #endif /* LTTNG_TRACE_UDP_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

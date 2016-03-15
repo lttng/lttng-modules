@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_SOCK_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_SOCK_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <net/sock.h>
 
 LTTNG_TRACEPOINT_EVENT(sock_rcvqueue_full,
@@ -38,4 +38,4 @@ LTTNG_TRACEPOINT_EVENT(sock_exceed_buf_limit,
 #endif /* LTTNG_TRACE_SOCK_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

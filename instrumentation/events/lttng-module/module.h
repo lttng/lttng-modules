@@ -14,7 +14,7 @@
 #if !defined(LTTNG_TRACE_MODULE_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_MODULE_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/version.h>
 
 #ifdef CONFIG_MODULES
@@ -121,4 +121,4 @@ LTTNG_TRACEPOINT_EVENT(module_request,
 #endif /* LTTNG_TRACE_MODULE_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

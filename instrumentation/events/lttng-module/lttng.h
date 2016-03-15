@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_LTTNG_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_LTTNG_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 
 LTTNG_TRACEPOINT_EVENT(lttng_logger,
 	TP_PROTO(const char __user *text, size_t len),
@@ -17,4 +17,4 @@ LTTNG_TRACEPOINT_EVENT(lttng_logger,
 #endif /* LTTNG_TRACE_LTTNG_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

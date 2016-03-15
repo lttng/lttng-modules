@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_RPC_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_RPC_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/sunrpc/sched.h>
 #include <linux/sunrpc/clnt.h>
 
@@ -120,4 +120,4 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_queued, rpc_task_wakeup,
 
 #endif /* LTTNG_TRACE_RPC_H */
 
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

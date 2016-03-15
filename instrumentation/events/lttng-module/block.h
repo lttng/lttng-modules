@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_BLOCK_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_BLOCK_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/blktrace_api.h>
 #include <linux/blkdev.h>
 #include <linux/trace_seq.h>
@@ -839,5 +839,4 @@ LTTNG_TRACEPOINT_EVENT(block_rq_remap,
 #endif /* LTTNG_TRACE_BLOCK_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
-
+#include <probes/define_trace.h>

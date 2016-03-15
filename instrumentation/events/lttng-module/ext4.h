@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_EXT4_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_EXT4_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/writeback.h>
 #include <linux/version.h>
 
@@ -1842,4 +1842,4 @@ LTTNG_TRACEPOINT_EVENT(ext4_es_shrink_exit,
 #endif /* LTTNG_TRACE_EXT4_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>

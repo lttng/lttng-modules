@@ -4,7 +4,7 @@
 #if !defined(LTTNG_TRACE_POWER_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_POWER_H
 
-#include "../../../probes/lttng-tracepoint-event.h"
+#include <probes/lttng-tracepoint-event.h>
 #include <linux/ktime.h>
 #include <linux/version.h>
 
@@ -278,4 +278,4 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(power_domain, power_domain_target,
 #endif /* LTTNG_TRACE_POWER_H */
 
 /* This part must be outside protection */
-#include "../../../probes/define_trace.h"
+#include <probes/define_trace.h>
