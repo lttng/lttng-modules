@@ -24,7 +24,7 @@
  */
 
 #include <linux/fs.h>
-#include "lttng-abi.h"
+#include <lttng-abi.h>
 
 /*
  * LTTng DebugFS ABI structures.

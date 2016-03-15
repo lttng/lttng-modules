@@ -34,10 +34,10 @@
 #include <asm/atomic.h>
 #include <asm/local.h>
 
-#include "wrapper/trace-clock.h"
-#include "wrapper/compiler.h"
-#include "lttng-tracer-core.h"
-#include "lttng-events.h"
+#include <wrapper/trace-clock.h>
+#include <wrapper/compiler.h>
+#include <lttng-tracer-core.h>
+#include <lttng-events.h>
 
 #define LTTNG_MODULES_MAJOR_VERSION 2
 #define LTTNG_MODULES_MINOR_VERSION 8

@@ -22,9 +22,9 @@
 
 #include <linux/module.h>
 #include <linux/types.h>
-#include "wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
-#include "lttng-events.h"
-#include "lttng-tracer.h"
+#include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
+#include <lttng-events.h>
+#include <lttng-tracer.h>
 
 static struct lttng_transport lttng_relay_transport;
 
@@ -63,7 +63,7 @@ size_t record_header_size(const struct lib_ring_buffer_config *config,
 	return 0;
 }
 
-#include "wrapper/ringbuffer/api.h"
+#include <wrapper/ringbuffer/api.h>
 
 static u64 client_ring_buffer_clock_read(struct channel *chan)
 {

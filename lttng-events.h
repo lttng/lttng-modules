@@ -27,9 +27,9 @@
 #include <linux/list.h>
 #include <linux/kprobes.h>
 #include <linux/kref.h>
-#include "wrapper/uuid.h"
-#include "lttng-abi.h"
-#include "lttng-abi-old.h"
+#include <wrapper/uuid.h>
+#include <lttng-abi.h>
+#include <lttng-abi-old.h>
 
 #define lttng_is_signed_type(type)	(((type)(-1)) < 0)
 
