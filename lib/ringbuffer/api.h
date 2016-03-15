@@ -23,15 +23,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "../../wrapper/ringbuffer/backend.h"
-#include "../../wrapper/ringbuffer/frontend.h"
-#include "../../wrapper/ringbuffer/vfs.h"
+#include <wrapper/ringbuffer/backend.h>
+#include <wrapper/ringbuffer/frontend.h>
+#include <wrapper/ringbuffer/vfs.h>
 
 /*
  * ring_buffer_frontend_api.h contains static inline functions that depend on
- * client static inlines. Hence the inclusion of this "api" header only
+ * client static inlines. Hence the inclusion of this >api> header only
  * within the client.
  */
-#include "../../wrapper/ringbuffer/frontend_api.h"
+#include <wrapper/ringbuffer/frontend_api.h>
 
 #endif /* _LIB_RING_BUFFER_API_H */

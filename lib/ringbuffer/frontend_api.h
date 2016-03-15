@@ -29,8 +29,8 @@
  * See linux/ringbuffer/frontend.h for channel allocation and read-side API.
  */
 
-#include "../../wrapper/ringbuffer/frontend.h"
-#include "../../wrapper/percpu-defs.h"
+#include <wrapper/ringbuffer/frontend.h>
+#include <wrapper/percpu-defs.h>
 #include <linux/errno.h>
 #include <linux/prefetch.h>
 

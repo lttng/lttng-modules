@@ -24,7 +24,7 @@
 #ifdef __KERNEL__
 
 #include <linux/types.h>
-#include "bug.h"
+#include <lib/bug.h>
 
 #define ALIGN_FLOOR(x, a)	__ALIGN_FLOOR_MASK(x, (typeof(x)) (a) - 1)
 #define __ALIGN_FLOOR_MASK(x, mask)	((x) & ~(mask))

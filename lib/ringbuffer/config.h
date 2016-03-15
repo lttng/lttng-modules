@@ -26,8 +26,8 @@
 
 #include <linux/types.h>
 #include <linux/percpu.h>
-#include "../align.h"
-#include "../../lttng-tracer-core.h"
+#include <lib/align.h>
+#include <lttng-tracer-core.h>
 
 struct lib_ring_buffer;
 struct channel;

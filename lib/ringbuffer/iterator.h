@@ -26,9 +26,9 @@
  *	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */
 
-#include "../../wrapper/ringbuffer/backend.h"
-#include "../../wrapper/ringbuffer/frontend.h"
-#include "../../wrapper/ringbuffer/vfs.h"
+#include <wrapper/ringbuffer/backend.h>
+#include <wrapper/ringbuffer/frontend.h>
+#include <wrapper/ringbuffer/vfs.h>
 
 /*
  * lib_ring_buffer_get_next_record advances the buffer read position to the next

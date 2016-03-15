@@ -25,7 +25,7 @@
  */
 
 #include <linux/slab.h>
-#include "lttng_prio_heap.h"
+#include <lib/prio_heap/lttng_prio_heap.h>
 
 #ifdef DEBUG_HEAP
 void lttng_check_heap(const struct lttng_ptr_heap *heap)

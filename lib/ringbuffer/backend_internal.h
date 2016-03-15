@@ -23,9 +23,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include "../../wrapper/ringbuffer/config.h"
-#include "../../wrapper/ringbuffer/backend_types.h"
-#include "../../wrapper/ringbuffer/frontend_types.h"
+#include <wrapper/ringbuffer/config.h>
+#include <wrapper/ringbuffer/backend_types.h>
+#include <wrapper/ringbuffer/frontend_types.h>
 #include <linux/string.h>
 #include <linux/uaccess.h>
 

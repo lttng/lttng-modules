@@ -28,10 +28,10 @@
  * See ring_buffer_frontend.c for more information on wait-free algorithms.
  */
 
-#include "../../wrapper/ringbuffer/config.h"
-#include "../../wrapper/ringbuffer/backend_types.h"
-#include "../../wrapper/ringbuffer/frontend_types.h"
-#include "../../lib/prio_heap/lttng_prio_heap.h"	/* For per-CPU read-side iterator */
+#include <wrapper/ringbuffer/config.h>
+#include <wrapper/ringbuffer/backend_types.h>
+#include <wrapper/ringbuffer/frontend_types.h>
+#include <lib/prio_heap/lttng_prio_heap.h>	/* For per-CPU read-side iterator */
 
 /* Buffer offset macros */
 
