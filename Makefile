@@ -27,6 +27,8 @@ ifneq ($(KERNELRELEASE),)
 
     include $(MAKEFILEDIR)/Makefile.ABI.workarounds
 
+    ccflags-y += -I$(PWD)
+
     obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-discard.o
     obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-overwrite.o
     obj-$(CONFIG_LTTNG) += lttng-ring-buffer-metadata-client.o
