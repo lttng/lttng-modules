@@ -28,10 +28,10 @@
  */
 
 #include <linux/seq_file.h>
-#include "lttng.h"
-#include "../lttng-events.h"
-#include "../lttng-tracer.h"
-#include "../lttng-endian.h"
+#include <probes/lttng.h>
+#include <lttng-events.h>
+#include <lttng-tracer.h>
+#include <lttng-endian.h>
 
 #endif /* _LTTNG_PROBES_LTTNG_TYPES_H */
 
