@@ -9,7 +9,7 @@ ifneq ($(KERNELRELEASE),)
 
   ifneq ($(CONFIG_TRACEPOINTS),)
 
-    MAKEFILEDIR = $(shell dirname $(lastword $(MAKEFILE_LIST)))
+    TOP_LTTNG_MODULES_DIR := $(shell dirname $(lastword $(MAKEFILE_LIST)))
 
     lttng_check_linux_version = $(shell pwd)/include/linux/version.h
     lttng_check_generated_linux_version = $(shell pwd)/include/generated/uapi/linux/version.h
@@ -25,9 +25,9 @@ ifneq ($(KERNELRELEASE),)
       endif
     endif
 
-    include $(MAKEFILEDIR)/Makefile.ABI.workarounds
+    include $(TOP_LTTNG_MODULES_DIR)/Makefile.ABI.workarounds
 
-    ccflags-y += -I$(PWD)
+    ccflags-y += -I$(TOP_LTTNG_MODULES_DIR)
 
     obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-discard.o
     obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-overwrite.o

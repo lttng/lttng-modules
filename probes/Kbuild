@@ -1,8 +1,8 @@
-MAKEFILEDIR = $(shell dirname $(lastword $(MAKEFILE_LIST)))
+TOP_LTTNG_MODULES_DIR := $(shell dirname $(lastword $(MAKEFILE_LIST)))/..
 
-include $(MAKEFILEDIR)/../Makefile.ABI.workarounds
+include $(TOP_LTTNG_MODULES_DIR)/Makefile.ABI.workarounds
 
-ccflags-y += -I$(PWD)
+ccflags-y += -I$(TOP_LTTNG_MODULES_DIR)
 
 obj-$(CONFIG_LTTNG) += lttng-probe-sched.o
 obj-$(CONFIG_LTTNG) += lttng-probe-irq.o
