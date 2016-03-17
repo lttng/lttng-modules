@@ -141,6 +141,9 @@ void lttng_context_update(struct lttng_ctx *ctx)
 
 			case atype_array:
 			case atype_sequence:
+			case atype_struct:
+			case atype_array_compound:
+			case atype_sequence_compound:
 			default:
 				WARN_ON_ONCE(1);
 				break;
@@ -160,6 +163,9 @@ void lttng_context_update(struct lttng_ctx *ctx)
 			case atype_string:
 			case atype_array:
 			case atype_sequence:
+			case atype_struct:
+			case atype_array_compound:
+			case atype_sequence_compound:
 			default:
 				WARN_ON_ONCE(1);
 				break;
@@ -178,6 +184,9 @@ void lttng_context_update(struct lttng_ctx *ctx)
 
 			case atype_array:
 			case atype_sequence:
+			case atype_struct:
+			case atype_array_compound:
+			case atype_sequence_compound:
 			default:
 				WARN_ON_ONCE(1);
 				break;
@@ -185,6 +194,11 @@ void lttng_context_update(struct lttng_ctx *ctx)
 			break;
 		}
 		case atype_string:
+			break;
+
+		case atype_struct:
+		case atype_array_compound:
+		case atype_sequence_compound:
 			break;
 
 		case atype_enum:

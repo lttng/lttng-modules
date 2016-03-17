@@ -49,6 +49,9 @@ enum abstract_types {
 	atype_array,
 	atype_sequence,
 	atype_string,
+	atype_struct,
+	atype_array_compound,		/* Array of compound types. */
+	atype_sequence_compound,	/* Sequence of compound types. */
 	NR_ABSTRACT_TYPES,
 };
 
@@ -124,6 +127,18 @@ struct lttng_type {
 			struct lttng_basic_type elem_type;
 			unsigned int elem_alignment;	/* alignment override */
 		} sequence;
+		struct {
+			uint32_t nr_fields;
+			struct lttng_event_field *fields; /* Array of fields. */
+		} _struct;
+		struct {
+			struct lttng_type *elem_type;
+			unsigned int length;		/* num. elems. */
+		} array_compound;
+		struct {
+			struct lttng_type *elem_type;
+			const char *length_name;
+		} sequence_compound;
 	} u;
 };
 

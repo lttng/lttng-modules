@@ -78,6 +78,10 @@ static
 int _lttng_session_metadata_statedump(struct lttng_session *session);
 static
 void _lttng_metadata_channel_hangup(struct lttng_metadata_stream *stream);
+static
+int _lttng_field_statedump(struct lttng_session *session,
+		const struct lttng_event_field *field,
+		size_t nesting);
 
 void synchronize_trace(void)
 {
@@ -1661,19 +1665,155 @@ err:
 	return -ENOMEM;
 }
 
+static
+int print_tabs(struct lttng_session *session, size_t nesting)
+{
+	size_t i;
+
+	for (i = 0; i < nesting; i++) {
+		int ret;
+
+		ret = lttng_metadata_printf(session, "	");
+		if (ret) {
+			return ret;
+		}
+	}
+	return 0;
+}
+
+/*
+ * Must be called with sessions_mutex held.
+ */
+static
+int _lttng_struct_type_statedump(struct lttng_session *session,
+		const struct lttng_type *type,
+		size_t nesting)
+{
+	int ret;
+	uint32_t i, nr_fields;
+
+	ret = print_tabs(session, nesting);
+	if (ret)
+		return ret;
+	ret = lttng_metadata_printf(session,
+		"struct {\n");
+	if (ret)
+		return ret;
+	nr_fields = type->u._struct.nr_fields;
+	for (i = 0; i < nr_fields; i++) {
+		const struct lttng_event_field *iter_field;
+
+		iter_field = &type->u._struct.fields[i];
+		ret = _lttng_field_statedump(session, iter_field, nesting + 1);
+		if (ret)
+			return ret;
+	}
+	ret = print_tabs(session, nesting);
+	if (ret)
+		return ret;
+	ret = lttng_metadata_printf(session,
+		"}");
+	return ret;
+}
+
+/*
+ * Must be called with sessions_mutex held.
+ */
+static
+int _lttng_struct_statedump(struct lttng_session *session,
+		const struct lttng_event_field *field,
+		size_t nesting)
+{
+	int ret;
+
+	ret = _lttng_struct_type_statedump(session,
+			&field->type, nesting);
+	if (ret)
+		return ret;
+	ret = lttng_metadata_printf(session,
+		"_%s;\n",
+		field->name);
+	return ret;
+}
+
+/*
+ * Must be called with sessions_mutex held.
+ */
+static
+int _lttng_array_compound_statedump(struct lttng_session *session,
+		const struct lttng_event_field *field,
+		size_t nesting)
+{
+	int ret;
+	const struct lttng_type *elem_type;
+
+	/* Only array of structures are currently supported. */
+	elem_type = field->type.u.array_compound.elem_type;
+	switch (elem_type->atype) {
+	case atype_struct:
+		ret = _lttng_struct_type_statedump(session, elem_type, nesting);
+		if (ret)
+			return ret;
+		break;
+	default:
+		return -EINVAL;
+	}
+	ret = lttng_metadata_printf(session,
+		" _%s[%u];\n",
+		field->name,
+		field->type.u.array_compound.length);
+	return ret;
+}
+
+/*
+ * Must be called with sessions_mutex held.
+ */
+static
+int _lttng_sequence_compound_statedump(struct lttng_session *session,
+		const struct lttng_event_field *field,
+		size_t nesting)
+{
+	int ret;
+	const char *length_name;
+	const struct lttng_type *elem_type;
+
+	length_name = field->type.u.sequence_compound.length_name;
+
+	/* Only array of structures are currently supported. */
+	elem_type = field->type.u.sequence_compound.elem_type;
+	switch (elem_type->atype) {
+	case atype_struct:
+		ret = _lttng_struct_type_statedump(session, elem_type, nesting);
+		if (ret)
+			return ret;
+		break;
+	default:
+		return -EINVAL;
+	}
+	ret = lttng_metadata_printf(session,
+		" _%s[ _%s ];\n",
+		field->name,
+		length_name);
+	return ret;
+}
+
 /*
  * Must be called with sessions_mutex held.
  */
 static
 int _lttng_field_statedump(struct lttng_session *session,
-			 const struct lttng_event_field *field)
+		const struct lttng_event_field *field,
+		size_t nesting)
 {
 	int ret = 0;
 
 	switch (field->type.atype) {
 	case atype_integer:
+		ret = print_tabs(session, nesting);
+		if (ret)
+			return ret;
 		ret = lttng_metadata_printf(session,
-			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } _%s;\n",
+			"integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } _%s;\n",
 			field->type.u.basic.integer.size,
 			field->type.u.basic.integer.alignment,
 			field->type.u.basic.integer.signedness,
@@ -1691,8 +1831,11 @@ int _lttng_field_statedump(struct lttng_session *session,
 			field->name);
 		break;
 	case atype_enum:
+		ret = print_tabs(session, nesting);
+		if (ret)
+			return ret;
 		ret = lttng_metadata_printf(session,
-			"		%s _%s;\n",
+			"%s _%s;\n",
 			field->type.u.basic.enumeration.name,
 			field->name);
 		break;
@@ -1702,15 +1845,21 @@ int _lttng_field_statedump(struct lttng_session *session,
 
 		elem_type = &field->type.u.array.elem_type;
 		if (field->type.u.array.elem_alignment) {
+			ret = print_tabs(session, nesting);
+			if (ret)
+				return ret;
 			ret = lttng_metadata_printf(session,
-			"		struct { } align(%u) _%s_padding;\n",
+			"struct { } align(%u) _%s_padding;\n",
 					field->type.u.array.elem_alignment * CHAR_BIT,
 					field->name);
 			if (ret)
 				return ret;
 		}
+		ret = print_tabs(session, nesting);
+		if (ret)
+			return ret;
 		ret = lttng_metadata_printf(session,
-			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } _%s[%u];\n",
+			"integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } _%s[%u];\n",
 			elem_type->u.basic.integer.size,
 			elem_type->u.basic.integer.alignment,
 			elem_type->u.basic.integer.signedness,
@@ -1735,8 +1884,11 @@ int _lttng_field_statedump(struct lttng_session *session,
 
 		elem_type = &field->type.u.sequence.elem_type;
 		length_type = &field->type.u.sequence.length_type;
+		ret = print_tabs(session, nesting);
+		if (ret)
+			return ret;
 		ret = lttng_metadata_printf(session,
-			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } __%s_length;\n",
+			"integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } __%s_length;\n",
 			length_type->u.basic.integer.size,
 			(unsigned int) length_type->u.basic.integer.alignment,
 			length_type->u.basic.integer.signedness,
@@ -1756,15 +1908,21 @@ int _lttng_field_statedump(struct lttng_session *session,
 			return ret;
 
 		if (field->type.u.sequence.elem_alignment) {
+			ret = print_tabs(session, nesting);
+			if (ret)
+				return ret;
 			ret = lttng_metadata_printf(session,
-			"		struct { } align(%u) _%s_padding;\n",
+			"struct { } align(%u) _%s_padding;\n",
 					field->type.u.sequence.elem_alignment * CHAR_BIT,
 					field->name);
 			if (ret)
 				return ret;
 		}
+		ret = print_tabs(session, nesting);
+		if (ret)
+			return ret;
 		ret = lttng_metadata_printf(session,
-			"		integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } _%s[ __%s_length ];\n",
+			"integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } _%s[ __%s_length ];\n",
 			elem_type->u.basic.integer.size,
 			(unsigned int) elem_type->u.basic.integer.alignment,
 			elem_type->u.basic.integer.signedness,
@@ -1786,12 +1944,25 @@ int _lttng_field_statedump(struct lttng_session *session,
 
 	case atype_string:
 		/* Default encoding is UTF8 */
+		ret = print_tabs(session, nesting);
+		if (ret)
+			return ret;
 		ret = lttng_metadata_printf(session,
-			"		string%s _%s;\n",
+			"string%s _%s;\n",
 			field->type.u.basic.string.encoding == lttng_encode_ASCII ?
 				" { encoding = ASCII; }" : "",
 			field->name);
 		break;
+	case atype_struct:
+		ret = _lttng_struct_statedump(session, field, nesting);
+		break;
+	case atype_array_compound:
+		ret = _lttng_array_compound_statedump(session, field, nesting);
+		break;
+	case atype_sequence_compound:
+		ret = _lttng_sequence_compound_statedump(session, field, nesting);
+		break;
+
 	default:
 		WARN_ON_ONCE(1);
 		return -EINVAL;
@@ -1811,7 +1982,7 @@ int _lttng_context_metadata_statedump(struct lttng_session *session,
 	for (i = 0; i < ctx->nr_fields; i++) {
 		const struct lttng_ctx_field *field = &ctx->fields[i];
 
-		ret = _lttng_field_statedump(session, &field->event_field);
+		ret = _lttng_field_statedump(session, &field->event_field, 2);
 		if (ret)
 			return ret;
 	}
@@ -1829,7 +2000,7 @@ int _lttng_fields_metadata_statedump(struct lttng_session *session,
 	for (i = 0; i < desc->nr_fields; i++) {
 		const struct lttng_event_field *field = &desc->fields[i];
 
-		ret = _lttng_field_statedump(session, field);
+		ret = _lttng_field_statedump(session, field, 2);
 		if (ret)
 			return ret;
 	}
