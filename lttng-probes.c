@@ -44,6 +44,10 @@ static LIST_HEAD(lazy_probe_init);
  */
 static int lazy_nesting;
 
+DEFINE_PER_CPU(struct lttng_dynamic_len_stack, lttng_dynamic_len_stack);
+
+EXPORT_PER_CPU_SYMBOL_GPL(lttng_dynamic_len_stack);
+
 /*
  * Called under sessions lock.
  */
@@ -322,3 +326,12 @@ const struct file_operations lttng_tracepoint_list_fops = {
 	.llseek = seq_lseek,
 	.release = seq_release,
 };
+
+int lttng_probes_init(void)
+{
+	int cpu;
+
+	for_each_possible_cpu(cpu)
+		per_cpu_ptr(&lttng_dynamic_len_stack, cpu)->offset = 0;
+	return 0;
+}

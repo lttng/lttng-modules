@@ -447,6 +447,14 @@ struct lttng_metadata_stream {
 	uint64_t version;		/* Current version of the metadata cache */
 };
 
+#define LTTNG_DYNAMIC_LEN_STACK_SIZE	128
+
+struct lttng_dynamic_len_stack {
+	size_t stack[LTTNG_DYNAMIC_LEN_STACK_SIZE];
+	size_t offset;
+};
+
+DECLARE_PER_CPU(struct lttng_dynamic_len_stack, lttng_dynamic_len_stack);
 
 /*
  * struct lttng_pid_tracker declared in header due to deferencing of *v
@@ -627,6 +635,8 @@ int lttng_enabler_attach_bytecode(struct lttng_enabler *enabler,
 		struct lttng_kernel_filter_bytecode __user *bytecode);
 void lttng_enabler_event_link_bytecode(struct lttng_event *event,
 		struct lttng_enabler *enabler);
+
+int lttng_probes_init(void);
 
 extern struct lttng_ctx *lttng_static_ctx;
 
