@@ -1,4 +1,101 @@
-2015-07-15 (Pet Fire Safety Day) lttng-ust 2.7.0-rc1
+2016-03-18 (Awkward Moments Day) LTTng modules 2.8.0-rc1
+	* Bump minor tracer ABI version
+	* Fix: build against out-of-tree kernel build
+	* probes/Kbuild: remove upper level header path
+	* Move leftover relative include paths to system paths
+	* syscall instrumentation: use system headers
+	* tracepoint event instrumentation: use system headers
+	* Use system include path in wrappers
+	* libs: use system include paths
+	* Use system header paths in core implementation files
+	* Use system include paths in root directory headers
+	* Use system include paths in probes
+	* Update gitignore
+	* Use system include paths in lttng-types.h
+	* Use system include paths in lttng-tracepoint-event-impl.h
+	* Use system include path in probes/define_trace.h
+	* Use system include paths in probes/lttng-tracepoint-event-impl.h
+	* Rename probes/lttng-events.h to probes/lttng-tracepoint-event-impl.h
+	* Add makefile directory to include path
+	* Fix: event ctx get size should be after chan ctx
+	* Fix: filter interpreter with userspace strings
+	* Fix: rename kvm x86 TRACE_SYSTEM to avoid name clash
+	* Fix: format address fields as hexadecimal
+	* PowerPC-64 ABIv1: add build error if KALLSYMS_ALL is missing
+	* Fix: system call instrumentation overrides
+	* Fix: page_alloc wrapper incorrect parenthesis
+	* Fix: system call tracing for arm-64 compat !CONFIG_UID16
+	* Fix: add struct user_msghdr forward declaration for older kernels
+	* Cleanup: Remove unused lttng-types module
+	* Fix: add missing versions and init call for page_alloc wrapper
+	* Fix: Define lttng-tracer metadata only once
+	* Fix: Add CONFIG_LTTNG to modules_install target
+	* Fix: Use kbuild env instead of a custom var KERNELDIR
+	* Update clock offset comment
+	* clock offset: print negative value in metadata
+	* Fix: handle negative clock offset
+	* Fix: sched instrumentation for 4.1-rt11
+	* Add RT patch version macros
+	* Expect filter context identifiers starting with $ctx.
+	* ARM64: wire up compat system calls
+	* Add support for arm64 syscalls
+	* Fix: Ubuntu kernel range for block_rq_complete
+	* Fix: Ubuntu kernel range for mm_page_alloc_extfrag
+	* Fix: update vmscan instrumentation for kernel 4.5
+	* Fix: check reference counts for overflow
+	* Fix: RHEL 7.2 scsi instrumentation
+	* Fix: RHEL 7.2 kvm instrumentation
+	* Kconfig: describe both module and in-kernel compilation options
+	* Add comments and indentation to Makefile
+	* Add support for built-in kernel build
+	* Rename sub makefiles to Kbuild
+	* Cleanup sub makefiles
+	* Make goals configurable with CONFIG_LTTNG
+	* Fix: Use generic raw_irqs_disabled_flags
+	* Fix: Use MAX_RT_PRIO offset in sched_wakeup_template
+	* Fix: update sched instrumentation for kernel 4.4.0
+	* Bump version number for development branch
+	* Fix: interruptible context: reversed logic
+	* Contexts for RT debugging
+	* Fix: instrumentation: v4lv2 missing include
+	* Fix: header size larger than 256 bytes
+	* Instrument x86 page faults
+	* Fix: irq_vectors TRACE_SYSTEM name
+	* Instrument x86_irq_vectors
+	* Fix: tracepoint listing misses last loaded probe
+	* Fix: lttng trace-clock needs to disable preemption
+	* Tracepoint event: add "TP_code_post()"
+	* Implement array and sequence bitfields
+	* Fix: kmem: add mm.h include
+	* Add page frame number (pfn) to kmem page events
+	* Use pfn rather than struct page in ring buffer array
+	* Implement clock plugin support
+	* Command to regenerate the metadata of a session
+	* Fix: writeback instrumentation update for 4.3 Linux kernel
+	* Fix: update sched wakeup instrumentation for 4.3 kernel
+	* Fix: lttng-test build failure for kernels < 3.0
+	* Use 3.18 syscall instrumentation for MIPS32
+	* Update the MIPS32 syscall instrumentation to 3.18
+	* Fix: Move pipe override to the arch specific pointers_override.h
+	* Implement lttng test module
+	* Cleanup: remove logically dead code
+	* Fix: filter validator use after free
+	* Fix: use after free in channel release
+	* Fix: non-enabler events should be disabled by default
+	* Fix: build failure on 2.6.36
+	* Cleanup: split bdi_dirty_ratelimit with ifdef into separate macros
+	* Fix: writeback instrumentation for 4.2 kernels
+	* Fix: mm_page_alloc_extfrag instrumentation for kernel 3.18.10
+	* Add stream instance id to the packet header
+	* Add a packet sequence number
+	* Fix: kmem probe with Ubuntu 3.13 kernels
+	* Fix: disable kvm probe if lapic.h isn't found
+	* Fix: timer instrumentation for 4.2 kernels
+	* Fix: ext4 instrumentation for 4.2 kernels
+	* Fix: kvm instrumentation for 4.2 kernels
+	* Fix: allow LTTng to be built within kernel tree
+
+2015-07-15 (Pet Fire Safety Day) LTTng modules 2.7.0-rc1
 	* Fix: Building the event list fails on fragmented memory
 	* Fix: use after free on metadata cache reallocation
 	* Fix: version checks for kernel 4.0
