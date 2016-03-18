@@ -1740,6 +1740,62 @@ int _lttng_struct_statedump(struct lttng_session *session,
  * Must be called with sessions_mutex held.
  */
 static
+int _lttng_variant_type_statedump(struct lttng_session *session,
+		const struct lttng_type *type,
+		size_t nesting)
+{
+	int ret;
+	uint32_t i, nr_choices;
+
+	ret = print_tabs(session, nesting);
+	if (ret)
+		return ret;
+	ret = lttng_metadata_printf(session,
+		"variant <_%s> {\n",
+		type->u.variant.tag_name);
+	if (ret)
+		return ret;
+	nr_choices = type->u.variant.nr_choices;
+	for (i = 0; i < nr_choices; i++) {
+		const struct lttng_event_field *iter_field;
+
+		iter_field = &type->u.variant.choices[i];
+		ret = _lttng_field_statedump(session, iter_field, nesting + 1);
+		if (ret)
+			return ret;
+	}
+	ret = print_tabs(session, nesting);
+	if (ret)
+		return ret;
+	ret = lttng_metadata_printf(session,
+		"}");
+	return ret;
+}
+
+/*
+ * Must be called with sessions_mutex held.
+ */
+static
+int _lttng_variant_statedump(struct lttng_session *session,
+		const struct lttng_event_field *field,
+		size_t nesting)
+{
+	int ret;
+
+	ret = _lttng_variant_type_statedump(session,
+			&field->type, nesting);
+	if (ret)
+		return ret;
+	ret = lttng_metadata_printf(session,
+		"_%s;\n",
+		field->name);
+	return ret;
+}
+
+/*
+ * Must be called with sessions_mutex held.
+ */
+static
 int _lttng_array_compound_statedump(struct lttng_session *session,
 		const struct lttng_event_field *field,
 		size_t nesting)
@@ -1747,11 +1803,16 @@ int _lttng_array_compound_statedump(struct lttng_session *session,
 	int ret;
 	const struct lttng_type *elem_type;
 
-	/* Only array of structures are currently supported. */
+	/* Only array of structures and variants are currently supported. */
 	elem_type = field->type.u.array_compound.elem_type;
 	switch (elem_type->atype) {
 	case atype_struct:
 		ret = _lttng_struct_type_statedump(session, elem_type, nesting);
+		if (ret)
+			return ret;
+		break;
+	case atype_variant:
+		ret = _lttng_variant_type_statedump(session, elem_type, nesting);
 		if (ret)
 			return ret;
 		break;
@@ -1779,11 +1840,16 @@ int _lttng_sequence_compound_statedump(struct lttng_session *session,
 
 	length_name = field->type.u.sequence_compound.length_name;
 
-	/* Only array of structures are currently supported. */
+	/* Only array of structures and variants are currently supported. */
 	elem_type = field->type.u.sequence_compound.elem_type;
 	switch (elem_type->atype) {
 	case atype_struct:
 		ret = _lttng_struct_type_statedump(session, elem_type, nesting);
+		if (ret)
+			return ret;
+		break;
+	case atype_variant:
+		ret = _lttng_variant_type_statedump(session, elem_type, nesting);
 		if (ret)
 			return ret;
 		break;
@@ -1961,6 +2027,9 @@ int _lttng_field_statedump(struct lttng_session *session,
 		break;
 	case atype_sequence_compound:
 		ret = _lttng_sequence_compound_statedump(session, field, nesting);
+		break;
+	case atype_variant:
+		ret = _lttng_variant_statedump(session, field, nesting);
 		break;
 
 	default:

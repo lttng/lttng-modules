@@ -52,6 +52,7 @@ enum abstract_types {
 	atype_struct,
 	atype_array_compound,		/* Array of compound types. */
 	atype_sequence_compound,	/* Sequence of compound types. */
+	atype_variant,
 	NR_ABSTRACT_TYPES,
 };
 
@@ -139,6 +140,11 @@ struct lttng_type {
 			struct lttng_type *elem_type;
 			const char *length_name;
 		} sequence_compound;
+		struct {
+			const char *tag_name;
+			struct lttng_event_field *choices; /* Array of fields. */
+			uint32_t nr_choices;
+		} variant;
 	} u;
 };
 

@@ -186,6 +186,7 @@ int apply_field_reloc(struct lttng_event *event,
 		case atype_struct:		/* Unsupported. */
 		case atype_array_compound:	/* Unsupported. */
 		case atype_sequence_compound:	/* Unsupported. */
+		case atype_variant:		/* Unsupported. */
 		default:
 			return -EINVAL;
 		}
@@ -221,6 +222,7 @@ int apply_field_reloc(struct lttng_event *event,
 	case atype_struct:		/* Unsupported. */
 	case atype_array_compound:	/* Unsupported. */
 	case atype_sequence_compound:	/* Unsupported. */
+	case atype_variant:		/* Unsupported. */
 	default:
 		return -EINVAL;
 	}
@@ -271,6 +273,7 @@ int apply_context_reloc(struct lttng_event *event,
 	case atype_struct:	/* Unsupported. */
 	case atype_array_compound:	/* Unsupported. */
 	case atype_sequence_compound:	/* Unsupported. */
+	case atype_variant:		/* Unsupported. */
 	default:
 		return -EINVAL;
 	}
