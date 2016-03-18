@@ -32,6 +32,9 @@
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map)
 
+#undef LTTNG_TRACEPOINT_ENUM
+#define LTTNG_TRACEPOINT_ENUM(_name, _values)
+
 #undef TP_PROTO
 #define TP_PROTO(args...)
 
@@ -84,6 +87,9 @@
 #undef _ctf_string
 #define _ctf_string(_item, _src, _user, _nowrite)
 
+#undef _ctf_enum
+#define _ctf_enum(_name, _type, _item, _src, _nowrite)
+
 /* "write" */
 #undef ctf_integer
 #define ctf_integer(_type, _item, _src)
@@ -130,6 +136,9 @@
 #undef ctf_string
 #define ctf_string(_item, _src)
 
+#undef ctf_enum
+#define ctf_enum(_name, _type, _item, _src)
+
 #undef ctf_custom_field
 #define ctf_custom_field(_type, _item, _code)
 
@@ -170,6 +179,9 @@
 #undef ctf_string_nowrite
 #define ctf_string_nowrite(_item, _src)
 
+#undef ctf_enum_nowrite
+#define ctf_enum_nowrite(_name, _type, _item, _src)
+
 /* "user" - "write" */
 #undef ctf_user_integer
 #define ctf_user_integer(_type, _item, _user_src)
@@ -207,6 +219,9 @@
 #undef ctf_user_string
 #define ctf_user_string(_item, _user_src)
 
+#undef ctf_user_enum
+#define ctf_user_enum(_name, _type, _item, _src)
+
 /* "user" - "nowrite" */
 #undef ctf_user_integer_nowrite
 #define ctf_user_integer_nowrite(_type, _item, _user_src)
@@ -234,3 +249,6 @@
 
 #undef ctf_user_string_nowrite
 #define ctf_user_string_nowrite(_item, _user_src)
+
+#undef ctf_user_enum_nowrite
+#define ctf_user_enum_nowrite(_name, _type, _item, _src)

@@ -1867,6 +1867,110 @@ int _lttng_sequence_compound_statedump(struct lttng_session *session,
  * Must be called with sessions_mutex held.
  */
 static
+int _lttng_enum_statedump(struct lttng_session *session,
+		const struct lttng_event_field *field,
+		size_t nesting)
+{
+	const struct lttng_enum_desc *enum_desc;
+	const struct lttng_integer_type *container_type;
+	int ret;
+	unsigned int i, nr_entries;
+
+	enum_desc = field->type.u.basic.enumeration.desc;
+	container_type = &field->type.u.basic.enumeration.container_type;
+	nr_entries = enum_desc->nr_entries;
+
+	ret = print_tabs(session, nesting);
+	if (ret)
+		goto end;
+	ret = lttng_metadata_printf(session,
+		"enum : integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u; } {\n",
+		container_type->size,
+		container_type->alignment,
+		container_type->signedness,
+		(container_type->encoding == lttng_encode_none)
+			? "none"
+			: (container_type->encoding == lttng_encode_UTF8)
+				? "UTF8"
+				: "ASCII",
+		container_type->base);
+	if (ret)
+	        goto end;
+	/* Dump all entries */
+	for (i = 0; i < nr_entries; i++) {
+		const struct lttng_enum_entry *entry = &enum_desc->entries[i];
+		int j, len;
+
+		ret = print_tabs(session, nesting + 1);
+		if (ret)
+			goto end;
+		ret = lttng_metadata_printf(session,
+				"\"");
+		if (ret)
+			goto end;
+		len = strlen(entry->string);
+		/* Escape the character '"' */
+		for (j = 0; j < len; j++) {
+			char c = entry->string[j];
+
+			switch (c) {
+			case '"':
+				ret = lttng_metadata_printf(session,
+						"\\\"");
+				break;
+			case '\\':
+				ret = lttng_metadata_printf(session,
+						"\\\\");
+				break;
+			default:
+				ret = lttng_metadata_printf(session,
+						"%c", c);
+				break;
+			}
+			if (ret)
+				goto end;
+		}
+		ret = lttng_metadata_printf(session,
+				"\" = ");
+		if (ret)
+			goto end;
+		if (entry->start.signedness)
+			ret = lttng_metadata_printf(session,
+				"%lld", (long long) entry->start.value);
+		else
+			ret = lttng_metadata_printf(session,
+				"%llu", entry->start.value);
+		if (ret)
+			goto end;
+		if (entry->start.signedness == entry->end.signedness &&
+				entry->start.value == entry->end.value) {
+			ret = lttng_metadata_printf(session,
+				",\n");
+		} else {
+			if (entry->end.signedness) {
+				ret = lttng_metadata_printf(session,
+					" ... %lld,\n", (long long) entry->end.value);
+			} else {
+				ret = lttng_metadata_printf(session,
+					" ... %llu,\n", entry->end.value);
+			}
+		}
+		if (ret)
+			goto end;
+	}
+	ret = print_tabs(session, nesting);
+	if (ret)
+		goto end;
+	ret = lttng_metadata_printf(session, "} _%s;\n",
+			field->name);
+end:
+	return ret;
+}
+
+/*
+ * Must be called with sessions_mutex held.
+ */
+static
 int _lttng_field_statedump(struct lttng_session *session,
 		const struct lttng_event_field *field,
 		size_t nesting)
@@ -1897,13 +2001,7 @@ int _lttng_field_statedump(struct lttng_session *session,
 			field->name);
 		break;
 	case atype_enum:
-		ret = print_tabs(session, nesting);
-		if (ret)
-			return ret;
-		ret = lttng_metadata_printf(session,
-			"%s _%s;\n",
-			field->type.u.basic.enumeration.name,
-			field->name);
+		ret = _lttng_enum_statedump(session, field, nesting);
 		break;
 	case atype_array:
 	{

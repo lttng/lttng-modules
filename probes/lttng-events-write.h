@@ -79,6 +79,10 @@
 #define ctf_string(_item, _src)					\
 	_ctf_string(_item, _src, 0, 0)
 
+#undef ctf_enum
+#define ctf_enum(_name, _type, _item, _src)			\
+	_ctf_enum(_name, _type, _item, _src, 0, 0)
+
 /* user src */
 #undef ctf_user_integer
 #define ctf_user_integer(_type, _item, _src)				\
@@ -131,6 +135,10 @@
 #undef ctf_user_string
 #define ctf_user_string(_item, _src)					\
 	_ctf_string(_item, _src, 1, 0)
+
+#undef ctf_user_enum
+#define ctf_user_enum(_name, _type, _item, _src)			\
+	_ctf_enum(_name, _type, _item, _src, 1, 0)
 
 /* types */
 #undef ctf_integer_type
@@ -189,6 +197,10 @@
 #define ctf_string_type(_src)						\
 	ctf_string(unused, _src)
 
+#undef ctf_enum_type
+#define ctf_enum_type(_name, _type, _src)				\
+	ctf_enum(_name, _type, unused, _src)
+
 /* user src types */
 #undef ctf_user_integer_type
 #define ctf_user_integer_type(_type, _src)				\
@@ -245,3 +257,7 @@
 #undef ctf_user_string_type
 #define ctf_user_string_type(_src)					\
 	ctf_user_string(unused, _src)
+
+#undef ctf_user_enum_type
+#define ctf_user_enum_type(_name, _type, _src)				\
+	ctf_user_enum(_name, _type, unused, _src)

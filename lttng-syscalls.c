@@ -132,6 +132,9 @@ struct user_msghdr;
 	LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(syscall_entry_##_name, PARAMS(_fields))
 #define SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(_template, _name)		\
 	LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscall_entry_##_template, syscall_entry_##_name)
+/* Enumerations only defined at first inclusion. */
+#define SC_LTTNG_TRACEPOINT_ENUM(_name, _values) \
+	LTTNG_TRACEPOINT_ENUM(_name, PARAMS(_values))
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM syscall_entry_integers
 #define TRACE_INCLUDE_FILE syscalls_integers
@@ -143,6 +146,7 @@ struct user_msghdr;
 #include <instrumentation/syscalls/headers/syscalls_pointers.h>
 #undef TRACE_INCLUDE_FILE
 #undef TRACE_SYSTEM
+#undef SC_LTTNG_TRACEPOINT_ENUM
 #undef SC_LTTNG_TRACEPOINT_EVENT_CODE
 #undef SC_LTTNG_TRACEPOINT_EVENT
 #undef SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS
@@ -164,6 +168,8 @@ struct user_msghdr;
 #define SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(_template, _name)		\
 	LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(compat_syscall_entry_##_template, \
 		compat_syscall_entry_##_name)
+/* Enumerations only defined at inital inclusion (not here). */
+#define SC_LTTNG_TRACEPOINT_ENUM(_name, _values)
 #define TRACE_SYSTEM compat_syscall_entry_integers
 #define TRACE_INCLUDE_FILE compat_syscalls_integers
 #include <instrumentation/syscalls/headers/compat_syscalls_integers.h>
@@ -174,6 +180,7 @@ struct user_msghdr;
 #include <instrumentation/syscalls/headers/compat_syscalls_pointers.h>
 #undef TRACE_INCLUDE_FILE
 #undef TRACE_SYSTEM
+#undef SC_LTTNG_TRACEPOINT_ENUM
 #undef SC_LTTNG_TRACEPOINT_EVENT_CODE
 #undef SC_LTTNG_TRACEPOINT_EVENT
 #undef SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS
@@ -208,6 +215,8 @@ struct user_msghdr;
 #define SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(_template, _name) 		\
 	LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(syscall_exit_##_template,	\
 		syscall_exit_##_name)
+/* Enumerations only defined at inital inclusion (not here). */
+#define SC_LTTNG_TRACEPOINT_ENUM(_name, _values)
 #define TRACE_SYSTEM syscall_exit_integers
 #define TRACE_INCLUDE_FILE syscalls_integers
 #include <instrumentation/syscalls/headers/syscalls_integers.h>
@@ -218,6 +227,7 @@ struct user_msghdr;
 #include <instrumentation/syscalls/headers/syscalls_pointers.h>
 #undef TRACE_INCLUDE_FILE
 #undef TRACE_SYSTEM
+#undef SC_LTTNG_TRACEPOINT_ENUM
 #undef SC_LTTNG_TRACEPOINT_EVENT_CODE
 #undef SC_LTTNG_TRACEPOINT_EVENT
 #undef SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS
@@ -240,6 +250,8 @@ struct user_msghdr;
 #define SC_LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(_template, _name)		\
 	LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(compat_syscall_exit_##_template, \
 		compat_syscall_exit_##_name)
+/* Enumerations only defined at inital inclusion (not here). */
+#define SC_LTTNG_TRACEPOINT_ENUM(_name, _values)
 #define TRACE_SYSTEM compat_syscall_exit_integers
 #define TRACE_INCLUDE_FILE compat_syscalls_integers
 #include <instrumentation/syscalls/headers/compat_syscalls_integers.h>
@@ -250,6 +262,7 @@ struct user_msghdr;
 #include <instrumentation/syscalls/headers/compat_syscalls_pointers.h>
 #undef TRACE_INCLUDE_FILE
 #undef TRACE_SYSTEM
+#undef SC_LTTNG_TRACEPOINT_ENUM
 #undef SC_LTTNG_TRACEPOINT_EVENT_CODE
 #undef SC_LTTNG_TRACEPOINT_EVENT
 #undef SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS

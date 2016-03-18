@@ -180,6 +180,59 @@ void __event_template_proto___##_name(void);
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
 /*
+ * Stage 1.2 of tracepoint event generation
+ *
+ * Unfolding the enums
+ */
+#include <probes/lttng-events-reset.h>	/* Reset all macros within TRACE_EVENT */
+
+/* Enumeration entry (single value) */
+#undef ctf_enum_value
+#define ctf_enum_value(_string, _value)					\
+	{								\
+		.start = {						\
+			.signedness = lttng_is_signed_type(__typeof__(_value)), \
+			.value = lttng_is_signed_type(__typeof__(_value)) ? \
+				(long long) (_value) : (_value),	\
+		},							\
+		.end = {						\
+			.signedness = lttng_is_signed_type(__typeof__(_value)), \
+			.value = lttng_is_signed_type(__typeof__(_value)) ? \
+				(long long) (_value) : (_value),	\
+		},							\
+		.string = (_string),					\
+	},
+
+/* Enumeration entry (range) */
+#undef ctf_enum_range
+#define ctf_enum_range(_string, _range_start, _range_end)		\
+	{								\
+		.start = {						\
+			.signedness = lttng_is_signed_type(__typeof__(_range_start)), \
+			.value = lttng_is_signed_type(__typeof__(_range_start)) ? \
+				(long long) (_range_start) : (_range_start), \
+		},							\
+		.end = {						\
+			.signedness = lttng_is_signed_type(__typeof__(_range_end)), \
+			.value = lttng_is_signed_type(__typeof__(_range_end)) ? \
+				(long long) (_range_end) : (_range_end), \
+		},							\
+		.string = (_string),					\
+	},
+
+#undef TP_ENUM_VALUES
+#define TP_ENUM_VALUES(...)						\
+	__VA_ARGS__
+
+#undef LTTNG_TRACEPOINT_ENUM
+#define LTTNG_TRACEPOINT_ENUM(_name, _values)				\
+	const struct lttng_enum_entry __enum_values__##_name[] = { \
+		_values							\
+	};
+
+#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+
+/*
  * Stage 2 of the trace events.
  *
  * Create event field type metadata section.
@@ -303,6 +356,31 @@ void __event_template_proto___##_name(void);
 	  .user = _user,					\
 	},
 
+#undef _ctf_enum
+#define _ctf_enum(_name, _type, _item, _src, _user, _nowrite)	\
+	{							\
+		.name = #_item,					\
+		.type = {					\
+			.atype = atype_enum,			\
+			.u = {					\
+				.basic = {			\
+					.enumeration = {	\
+						.desc = &__enum_##_name, \
+						.container_type = { \
+							.size = sizeof(_type) * CHAR_BIT, \
+							.alignment = lttng_alignof(_type) * CHAR_BIT, \
+							.signedness = lttng_is_signed_type(_type), \
+							.reverse_byte_order = 0, \
+							.base = 10, \
+							.encoding = lttng_encode_none, \
+						},		\
+					},			\
+				 },				\
+			},					\
+		},						\
+		.nowrite = _nowrite,				\
+		.user = _user,					\
+	},
 
 #undef ctf_custom_field
 #define ctf_custom_field(_type, _item, _code)			\
@@ -328,6 +406,14 @@ void __event_template_proto___##_name(void);
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
 #define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
 	LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, PARAMS(_fields), _code_post)
+
+#undef LTTNG_TRACEPOINT_ENUM
+#define LTTNG_TRACEPOINT_ENUM(_name, _values)						\
+	static const struct lttng_enum_desc __enum_##_name = {				\
+		.name = #_name,								\
+		.entries = __enum_values__##_name,					\
+		.nr_entries = ARRAY_SIZE(__enum_values__##_name),			\
+	};
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
@@ -416,6 +502,10 @@ static void __event_probe__##_name(void *__data);
 		__event_len += this_cpu_ptr(&lttng_dynamic_len_stack)->stack[this_cpu_ptr(&lttng_dynamic_len_stack)->offset - 1] = \
 			strlen(_src) + 1;				       \
 	}
+
+#undef _ctf_enum
+#define _ctf_enum(_name, _type, _item, _src, _user, _nowrite)		       \
+	_ctf_integer_ext(_type, _item, _src, __BYTE_ORDER, 10, _user, _nowrite)
 
 #undef ctf_align
 #define ctf_align(_type)						\
@@ -628,6 +718,10 @@ error:									      \
 		__stack_data += sizeof(void *);				       \
 	}
 
+#undef _ctf_enum
+#define _ctf_enum(_name, _type, _item, _src, _user, _nowrite)		       \
+	_ctf_integer_ext(_type, _item, _src, __BYTE_ORDER, 10, _user, _nowrite)
+
 #undef TP_PROTO
 #define TP_PROTO(...) __VA_ARGS__
 
@@ -698,6 +792,10 @@ void __event_prepare_filter_stack__##_name(char *__stack_data,		      \
 
 #undef _ctf_string
 #define _ctf_string(_item, _src, _user, _nowrite)
+
+#undef _ctf_enum
+#define _ctf_enum(_name, _type, _item, _src, _user, _nowrite)	\
+	_ctf_integer_ext(_type, _item, _src, __BYTE_ORDER, 10, _user, _nowrite)
 
 #undef ctf_align
 #define ctf_align(_type)						\
@@ -935,6 +1033,9 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 			__get_dynamic_len(dest));			\
 	}
 
+#undef _ctf_enum
+#define _ctf_enum(_name, _type, _item, _src, _user, _nowrite)		\
+	_ctf_integer_ext(_type, _item, _src, __BYTE_ORDER, 10, _user, _nowrite)
 
 #undef ctf_align
 #define ctf_align(_type)						\

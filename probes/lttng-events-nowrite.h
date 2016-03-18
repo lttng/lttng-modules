@@ -69,6 +69,10 @@
 #define ctf_string_nowrite(_item, _user_src)			\
 	_ctf_string(_item, _user_src, 0, 1)
 
+#undef ctf_enum_nowrite
+#define ctf_enum_nowrite(_name, _type, _item, _src)		\
+	_ctf_enum(_name, _type, _item, _src, 0, 1)
+
 /* user src */
 #undef ctf_user_integer_nowrite
 #define ctf_user_integer_nowrite(_type, _item, _user_src)	\
@@ -116,3 +120,7 @@
 #undef ctf_user_string_nowrite
 #define ctf_user_string_nowrite(_item, _user_src)		\
 	_ctf_string(_item, _user_src, 1, 1)
+
+#undef ctf_user_enum_nowrite
+#define ctf_user_enum_nowrite(_name, _type, _item, _src)	\
+	_ctf_enum(_name, _type, _item, _src, 1, 1)
