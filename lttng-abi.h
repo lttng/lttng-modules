@@ -30,7 +30,7 @@
  * should be increased when an incompatible ABI change is done.
  */
 #define LTTNG_MODULES_ABI_MAJOR_VERSION		2
-#define LTTNG_MODULES_ABI_MINOR_VERSION		0
+#define LTTNG_MODULES_ABI_MINOR_VERSION		1
 
 #define LTTNG_KERNEL_SYM_NAME_LEN	256
 
