@@ -1743,6 +1743,25 @@ retry:
 	return 0;
 }
 
+static struct lib_ring_buffer *get_current_buf(struct channel *chan, int cpu)
+{
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
+
+	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
+		return per_cpu_ptr(chan->backend.buf, cpu);
+	else
+		return chan->backend.buf;
+}
+
+void lib_ring_buffer_lost_event_too_big(struct channel *chan)
+{
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
+	struct lib_ring_buffer *buf = get_current_buf(chan, smp_processor_id());
+
+	v_inc(config, &buf->records_lost_big);
+}
+EXPORT_SYMBOL_GPL(lib_ring_buffer_lost_event_too_big);
+
 /**
  * lib_ring_buffer_reserve_slow - Atomic slot reservation in a buffer.
  * @ctx: ring buffer context.
@@ -1759,12 +1778,7 @@ int lib_ring_buffer_reserve_slow(struct lib_ring_buffer_ctx *ctx)
 	struct switch_offsets offsets;
 	int ret;
 
-	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
-		buf = per_cpu_ptr(chan->backend.buf, ctx->cpu);
-	else
-		buf = chan->backend.buf;
-	ctx->buf = buf;
-
+	ctx->buf = buf = get_current_buf(chan, ctx->cpu);
 	offsets.size = 0;
 
 	do {

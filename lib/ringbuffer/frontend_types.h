@@ -161,6 +161,8 @@ void *channel_get_private(struct channel *chan)
 	return chan->backend.priv;
 }
 
+void lib_ring_buffer_lost_event_too_big(struct channel *chan);
+
 /*
  * Issue warnings and disable channels upon internal error.
  * Can receive struct lib_ring_buffer or struct lib_ring_buffer_backend
