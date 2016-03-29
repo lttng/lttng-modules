@@ -10,6 +10,12 @@ ifneq ($(DEB_API_VERSION), 0)
   ccflags-y += -DDEBIAN_API_VERSION=$(DEB_API_VERSION)
 endif
 
+RHEL_API_VERSION:=$(shell $(TOP_LTTNG_MODULES_DIR)/abi-rhel-version.sh $(CURDIR))
+
+ifneq ($(RHEL_API_VERSION), 0)
+  ccflags-y += -DRHEL_API_VERSION=$(RHEL_API_VERSION)
+endif
+
 RT_PATCH_VERSION:=$(shell $(TOP_LTTNG_MODULES_DIR)/rt-patch-version.sh $(CURDIR))
 
 ifneq ($(RT_PATCH_VERSION), 0)

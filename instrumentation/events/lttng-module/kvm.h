@@ -112,7 +112,7 @@ LTTNG_TRACEPOINT_EVENT(kvm_fpu,
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0) \
-	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,7,2, 3,11,0,0,0))
+	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,327,0,0, 3,11,0,0,0,0))
 
 LTTNG_TRACEPOINT_EVENT(kvm_age_page,
 	TP_PROTO(ulong gfn, int level, struct kvm_memory_slot *slot, int ref),
@@ -199,7 +199,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_async_pf_nopresent_ready, kvm_async_pf_ready
 )
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0) \
-	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,7,1, 3,11,0,0,0))
+	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,229,0,0, 3,11,0,0,0,0))
 
 LTTNG_TRACEPOINT_EVENT(
 	kvm_async_pf_completed,

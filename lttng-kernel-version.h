@@ -39,6 +39,8 @@
 	(LINUX_VERSION_CODE >= KERNEL_VERSION(a_low, b_low, c_low) && \
 	 LINUX_VERSION_CODE < KERNEL_VERSION(a_high, b_high, c_high))
 
+/* Ubuntu */
+
 #define LTTNG_UBUNTU_KERNEL_VERSION(a, b, c, d) \
 	(((a) << 24) + ((b) << 16) + ((c) << 8) + (d))
 
@@ -55,6 +57,8 @@
 		LTTNG_UBUNTU_KERNEL_VERSION(a_low, b_low, c_low, d_low) && \
 		LTTNG_UBUNTU_VERSION_CODE < \
 		LTTNG_UBUNTU_KERNEL_VERSION(a_high, b_high, c_high, d_high))
+
+/* Debian */
 
 #define LTTNG_DEBIAN_KERNEL_VERSION(a, b, c, d, e, f) \
 	(((((a) << 16) + ((b) << 8) + (c)) * 1000000ULL) + ((d) * 10000) + ((e) * 100) + (f))
@@ -73,22 +77,26 @@
 		LTTNG_DEBIAN_VERSION_CODE < \
 		LTTNG_DEBIAN_KERNEL_VERSION(a_high, b_high, c_high, d_high, e_high, f_high))
 
-#define LTTNG_RHEL_KERNEL_VERSION(a, b, c, d, e) \
-	(((a) * (1ULL << 32)) + ((b) << 24) + ((c) << 16) + ((d) << 8) + (e))
+#define LTTNG_RHEL_KERNEL_VERSION(a, b, c, d, e, f) \
+	(((((a) << 16) + ((b) << 8) + (c)) * 10000000ULL) + ((d) * 10000) + ((e) * 100) + (f))
 
-#ifdef RHEL_RELEASE_CODE
+/* RHEL */
+
+#ifdef RHEL_API_VERSION
 #define LTTNG_RHEL_VERSION_CODE \
-	((LINUX_VERSION_CODE * (1ULL << 16)) + RHEL_RELEASE_CODE)
+	((LINUX_VERSION_CODE * 10000000ULL) + RHEL_API_VERSION)
 #else
 #define LTTNG_RHEL_VERSION_CODE		0
 #endif
 
-#define LTTNG_RHEL_KERNEL_RANGE(a_low, b_low, c_low, d_low, e_low, \
-		a_high, b_high, c_high, d_high, e_high) \
+#define LTTNG_RHEL_KERNEL_RANGE(a_low, b_low, c_low, d_low, e_low, f_low, \
+		a_high, b_high, c_high, d_high, e_high, f_high) \
 	(LTTNG_RHEL_VERSION_CODE >= \
-		LTTNG_RHEL_KERNEL_VERSION(a_low, b_low, c_low, d_low, e_low) && \
+		LTTNG_RHEL_KERNEL_VERSION(a_low, b_low, c_low, d_low, e_low, f_low) && \
 		LTTNG_RHEL_VERSION_CODE < \
-		LTTNG_RHEL_KERNEL_VERSION(a_high, b_high, c_high, d_high, e_high))
+		LTTNG_RHEL_KERNEL_VERSION(a_high, b_high, c_high, d_high, e_high, f_high))
+
+/* RT patch */
 
 #define LTTNG_RT_KERNEL_VERSION(a, b, c, d) \
 	(((a) << 24) + ((b) << 16) + ((c) << 8) + (d))
