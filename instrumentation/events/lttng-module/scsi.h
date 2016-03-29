@@ -16,7 +16,7 @@
 #define scsi_opcode_name(opcode)	{ opcode, #opcode }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0) \
-	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,7,2, 3,11,0,0,0))
+	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,327,0,0, 3,11,0,0,0,0))
 
 #define show_opcode_name(val)					\
 	__print_symbolic(val,					\
