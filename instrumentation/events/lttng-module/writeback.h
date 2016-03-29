@@ -13,7 +13,8 @@
 #ifndef _TRACE_WRITEBACK_DEF_
 #define _TRACE_WRITEBACK_DEF_
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,0,0))
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,0,0) && \
+	LTTNG_RHEL_VERSION_CODE < LTTNG_RHEL_KERNEL_VERSION(3,10,0,327,10,1))
 static inline struct backing_dev_info *inode_to_bdi(struct inode *inode)
 {
 	struct super_block *sb = inode->i_sb;
