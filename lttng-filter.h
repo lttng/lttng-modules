@@ -139,19 +139,19 @@ struct estack {
 
 #define estack_ax(stack, top)					\
 	({							\
-		WARN_ON_ONCE((top) <= FILTER_STACK_EMPTY);	\
+		BUG_ON((top) <= FILTER_STACK_EMPTY);		\
 		&(stack)->e[top];				\
 	})
 
 #define estack_bx(stack, top)					\
 	({							\
-		WARN_ON_ONCE((top) <= FILTER_STACK_EMPTY + 1);	\
+		BUG_ON((top) <= FILTER_STACK_EMPTY + 1);	\
 		&(stack)->e[(top) - 1];				\
 	})
 
 #define estack_push(stack, top, ax, bx)				\
 	do {							\
-		WARN_ON_ONCE((top) >= FILTER_STACK_LEN - 1);	\
+		BUG_ON((top) >= FILTER_STACK_LEN - 1);		\
 		(stack)->e[(top) - 1].u.v = (bx);		\
 		(bx) = (ax);					\
 		++(top);					\
@@ -159,7 +159,7 @@ struct estack {
 
 #define estack_pop(stack, top, ax, bx)				\
 	do {							\
-		WARN_ON_ONCE((top) <= FILTER_STACK_EMPTY);	\
+		BUG_ON((top) <= FILTER_STACK_EMPTY);		\
 		(ax) = (bx);					\
 		(bx) = (stack)->e[(top) - 2].u.v;		\
 		(top)--;					\
