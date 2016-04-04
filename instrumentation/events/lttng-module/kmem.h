@@ -7,9 +7,6 @@
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/types.h>
 #include <linux/version.h>
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
-#include <trace/events/gfpflags.h>
-#endif
 
 LTTNG_TRACEPOINT_EVENT_CLASS(kmem_alloc,
 
