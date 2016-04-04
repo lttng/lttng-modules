@@ -46,6 +46,11 @@
 # endif
 #endif
 
+/* in_compat_syscall appears in kernel 4.6. */
+#ifndef in_compat_syscall
+ #define in_compat_syscall()	is_compat_task()
+#endif
+
 enum sc_type {
 	SC_TYPE_ENTRY,
 	SC_TYPE_EXIT,
@@ -355,7 +360,7 @@ static void syscall_entry_unknown(struct lttng_event *event,
 	unsigned long args[UNKNOWN_SYSCALL_NRARGS];
 
 	syscall_get_arguments(current, regs, 0, UNKNOWN_SYSCALL_NRARGS, args);
-	if (unlikely(is_compat_task()))
+	if (unlikely(in_compat_syscall()))
 		__event_probe__compat_syscall_entry_unknown(event, id, args);
 	else
 		__event_probe__syscall_entry_unknown(event, id, args);
@@ -368,7 +373,7 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 	const struct trace_syscall_entry *table, *entry;
 	size_t table_len;
 
-	if (unlikely(is_compat_task())) {
+	if (unlikely(in_compat_syscall())) {
 		struct lttng_syscall_filter *filter;
 
 		filter = lttng_rcu_dereference(chan->sc_filter);
@@ -401,7 +406,7 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 		syscall_entry_unknown(unknown_event, regs, id);
 		return;
 	}
-	if (unlikely(is_compat_task()))
+	if (unlikely(in_compat_syscall()))
 		event = chan->compat_sc_table[id];
 	else
 		event = chan->sc_table[id];
@@ -506,7 +511,7 @@ static void syscall_exit_unknown(struct lttng_event *event,
 	unsigned long args[UNKNOWN_SYSCALL_NRARGS];
 
 	syscall_get_arguments(current, regs, 0, UNKNOWN_SYSCALL_NRARGS, args);
-	if (unlikely(is_compat_task()))
+	if (unlikely(in_compat_syscall()))
 		__event_probe__compat_syscall_exit_unknown(event, id, ret,
 			args);
 	else
@@ -522,7 +527,7 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 	long id;
 
 	id = syscall_get_nr(current, regs);
-	if (unlikely(is_compat_task())) {
+	if (unlikely(in_compat_syscall())) {
 		struct lttng_syscall_filter *filter;
 
 		filter = lttng_rcu_dereference(chan->sc_filter);
@@ -555,7 +560,7 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 		syscall_exit_unknown(unknown_event, regs, id, ret);
 		return;
 	}
-	if (unlikely(is_compat_task()))
+	if (unlikely(in_compat_syscall()))
 		event = chan->compat_sc_exit_table[id];
 	else
 		event = chan->sc_exit_table[id];
