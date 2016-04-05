@@ -8,7 +8,6 @@
 #include <linux/types.h>
 #include <linux/mm.h>
 #include <linux/memcontrol.h>
-#include <trace/events/gfpflags.h>
 #include <linux/version.h>
 
 #ifndef _TRACE_VMSCAN_DEF
