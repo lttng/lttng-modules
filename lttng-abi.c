@@ -1017,6 +1017,7 @@ int lttng_abi_create_event(struct file *channel_file,
 	/* The event holds a reference on the channel */
 	if (atomic_long_add_unless(&channel_file->f_count,
 		1, INT_MAX) == INT_MAX) {
+		ret = -EOVERFLOW;
 		goto refcount_error;
 	}
 	if (event_param->instrumentation == LTTNG_KERNEL_TRACEPOINT
