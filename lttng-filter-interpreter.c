@@ -119,21 +119,16 @@ int stack_strcmp(struct estack *stack, int top, const char *cmp_type)
 			}
 		}
 		if (unlikely(char_ax == '\0')) {
-			if (char_bx == '\0') {
-				diff = 0;
-				break;
-			} else {
-				if (estack_bx(stack, top)->u.s.literal) {
-					ret = parse_char(estack_bx(stack, top),
-						&char_bx, &offset_bx);
-					if (ret == -1) {
-						diff = 0;
-						break;
-					}
+			if (estack_bx(stack, top)->u.s.literal) {
+				ret = parse_char(estack_bx(stack, top),
+					&char_bx, &offset_bx);
+				if (ret == -1) {
+					diff = 0;
+					break;
 				}
-				diff = 1;
-				break;
 			}
+			diff = 1;
+			break;
 		}
 		if (estack_bx(stack, top)->u.s.literal) {
 			ret = parse_char(estack_bx(stack, top),
