@@ -6,7 +6,6 @@
 
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/writeback.h>
-#include <trace/events/gfpflags.h>
 #include <linux/version.h>
 
 #ifndef _TRACE_BTRFS_DEF_

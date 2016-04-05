@@ -7,7 +7,6 @@
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/types.h>
 #include <linux/version.h>
-#include <trace/events/gfpflags.h>
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0)
 
