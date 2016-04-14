@@ -569,6 +569,8 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return lttng_session_list_tracker_pids(session);
 	case LTTNG_KERNEL_SESSION_METADATA_REGEN:
 		return lttng_session_metadata_regenerate(session);
+	case LTTNG_KERNEL_SESSION_STATEDUMP:
+		return lttng_session_statedump(session);
 	default:
 		return -ENOIOCTLCMD;
 	}

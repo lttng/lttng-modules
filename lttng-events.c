@@ -213,6 +213,16 @@ void lttng_session_destroy(struct lttng_session *session)
 	kfree(session);
 }
 
+int lttng_session_statedump(struct lttng_session *session)
+{
+	int ret;
+
+	mutex_lock(&sessions_mutex);
+	ret = lttng_statedump_start(session);
+	mutex_unlock(&sessions_mutex);
+	return ret;
+}
+
 int lttng_session_enable(struct lttng_session *session)
 {
 	int ret = 0;
