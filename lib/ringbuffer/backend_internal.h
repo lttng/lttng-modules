@@ -451,6 +451,8 @@ do {								\
 /*
  * We use __copy_from_user_inatomic to copy userspace data since we already
  * did the access_ok for the whole range.
+ *
+ * Return 0 if OK, nonzero on error.
  */
 static inline
 unsigned long lib_ring_buffer_do_copy_from_user_inatomic(void *dest,

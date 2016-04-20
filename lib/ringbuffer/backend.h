@@ -334,8 +334,7 @@ void lib_ring_buffer_copy_from_user_inatomic(const struct lib_ring_buffer_config
 			rpages->p[index].virt + (offset & ~PAGE_MASK),
 			src, len);
 		if (unlikely(ret > 0)) {
-			len -= (pagecpy - ret);
-			offset += (pagecpy - ret);
+			/* Copy failed. */
 			goto fill_buffer;
 		}
 	} else {
