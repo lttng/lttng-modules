@@ -478,4 +478,29 @@ unsigned long lib_ring_buffer_get_records_unread(
 	return records_unread;
 }
 
+/*
+ * We use __copy_from_user_inatomic to copy userspace data after
+ * checking with access_ok() and disabling page faults.
+ *
+ * Return 0 if OK, nonzero on error.
+ */
+static inline
+unsigned long lib_ring_buffer_copy_from_user_check_nofault(void *dest,
+						const void __user *src,
+						unsigned long len)
+{
+	unsigned long ret;
+	mm_segment_t old_fs;
+
+	if (!access_ok(VERIFY_READ, src, len))
+		return 1;
+	old_fs = get_fs();
+	set_fs(KERNEL_DS);
+	pagefault_disable();
+	ret = __copy_from_user_inatomic(dest, src, len);
+	pagefault_enable();
+	set_fs(old_fs);
+	return ret;
+}
+
 #endif /* _LIB_RING_BUFFER_BACKEND_H */
