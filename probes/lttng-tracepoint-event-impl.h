@@ -29,6 +29,7 @@
 #include <probes/lttng-probe-user.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
 #include <wrapper/ringbuffer/frontend_types.h>
+#include <wrapper/ringbuffer/backend.h>
 #include <wrapper/rcu.h>
 #include <lttng-events.h>
 #include <lttng-tracer-core.h>
@@ -515,11 +516,15 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len,	      \
 
 #undef _ctf_integer_ext_isuser1
 #define _ctf_integer_ext_isuser1(_type, _item, _user_src, _byte_order, _base, _nowrite) \
-{									       \
-	__typeof__(_user_src) _src;					       \
-	if (get_user(_src, &(_user_src)))				       \
-		_src = 0;						       \
-	_ctf_integer_ext_fetched(_type, _item, _src, _byte_order, _base, _nowrite) \
+{											\
+	union {										\
+		char __array[sizeof(_user_src)];					\
+		__typeof__(_user_src) __v;						\
+	} __tmp_fetch;									\
+	if (lib_ring_buffer_copy_from_user_check_nofault(__tmp_fetch.__array,		\
+				&(_user_src), sizeof(_user_src))) 			\
+		memset(__tmp_fetch.__array, 0, sizeof(__tmp_fetch.__array));		\
+	_ctf_integer_ext_fetched(_type, _item, __tmp_fetch.__v, _byte_order, _base, _nowrite) \
 }
 
 #undef _ctf_integer_ext
@@ -698,10 +703,14 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 #undef _ctf_integer_ext_isuser1
 #define _ctf_integer_ext_isuser1(_type, _item, _user_src, _byte_order, _base, _nowrite) \
 {									       \
-	__typeof__(_user_src) _src;					       \
-	if (get_user(_src, &(_user_src)))				       \
-		_src = 0;						       \
-	_ctf_integer_ext_fetched(_type, _item, _src, _byte_order, _base, _nowrite) \
+	union {										\
+		char __array[sizeof(_user_src)];					\
+		__typeof__(_user_src) __v;						\
+	} __tmp_fetch;									\
+	if (lib_ring_buffer_copy_from_user_check_nofault(__tmp_fetch.__array,		\
+				&(_user_src), sizeof(_user_src))) 			\
+		memset(__tmp_fetch.__array, 0, sizeof(__tmp_fetch.__array));		\
+	_ctf_integer_ext_fetched(_type, _item, __tmp_fetch.__v, _byte_order, _base, _nowrite) \
 }
 
 #undef _ctf_integer_ext
