@@ -693,8 +693,7 @@ void _lib_ring_buffer_copy_from_user_inatomic(struct lib_ring_buffer_backend *bu
 							+ (offset & ~PAGE_MASK),
 							src, pagecpy) != 0;
 		if (ret > 0) {
-			offset += (pagecpy - ret);
-			len -= (pagecpy - ret);
+			/* Copy failed. */
 			_lib_ring_buffer_memset(bufb, offset, 0, len, 0);
 			break; /* stop copy */
 		}
