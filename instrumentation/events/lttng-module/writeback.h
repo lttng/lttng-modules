@@ -13,16 +13,33 @@
 #ifndef _TRACE_WRITEBACK_DEF_
 #define _TRACE_WRITEBACK_DEF_
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,0,0) && \
-	LTTNG_RHEL_VERSION_CODE < LTTNG_RHEL_KERNEL_VERSION(3,10,0,327,10,1))
-static inline struct backing_dev_info *inode_to_bdi(struct inode *inode)
+/*
+ * Vanilla kernels before 4.0 do not implement inode_to_bdi
+ * RHEL kernels before 3.10.0-327.10.1 do not implement inode_to_bdi
+ * RHEL kernel 3.10.0-327.10.1 has inode_to_bdi
+ * RHEL kernel 3.10.0-327.13.1 includes a partial merge of upstream
+ *  commit a212b105b07d75b48b1a166378282e8a77fbf53d which inlines
+ *  inode_to_bdi but not sb_is_blkdev_sb making it unusable by modules.
+ */
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,0,0))
+static inline struct backing_dev_info *lttng_inode_to_bdi(struct inode *inode)
 {
-	struct super_block *sb = inode->i_sb;
+	struct super_block *sb;
+
+	if (!inode)
+		return &noop_backing_dev_info;
+
+	sb = inode->i_sb;
 
 	if (strcmp(sb->s_type->name, "bdev") == 0)
 		return inode->i_mapping->backing_dev_info;
 
 	return sb->s_bdi;
+}
+#else
+static inline struct backing_dev_info *lttng_inode_to_bdi(struct inode *inode)
+{
+	return inode_to_bdi(inode);
 }
 #endif /* #if (LINUX_VERSION_CODE < KERNEL_VERSION(4,0,0)) */
 
@@ -65,7 +82,7 @@ LTTNG_TRACEPOINT_EVENT(writeback_dirty_page,
 	TP_ARGS(page, mapping),
 	TP_FIELDS(
 		ctf_array_text(char, name,
-			mapping ? dev_name(inode_to_bdi(mapping->host)->dev) : "(unknown)", 32)
+			mapping ? dev_name(lttng_inode_to_bdi(mapping->host)->dev) : "(unknown)", 32)
 		ctf_integer(unsigned long, ino, mapping ? mapping->host->i_ino : 0)
 		ctf_integer(pgoff_t, index, page->index)
 	)
@@ -77,8 +94,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_dirty_inode_template,
 	TP_FIELDS(
 		/* may be called for files on pseudo FSes w/ unregistered bdi */
 		ctf_array_text(char, name,
-			inode_to_bdi(inode)->dev ?
-				dev_name(inode_to_bdi(inode)->dev) : "(unknown)", 32)
+			lttng_inode_to_bdi(inode)->dev ?
+				dev_name(lttng_inode_to_bdi(inode)->dev) : "(unknown)", 32)
 		ctf_integer(unsigned long, ino, inode->i_ino)
 		ctf_integer(unsigned long, state, inode->i_state)
 		ctf_integer(unsigned long, flags, flags)
@@ -97,7 +114,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_write_inode_template,
 	TP_ARGS(inode, wbc),
 	TP_FIELDS(
 		ctf_array_text(char, name,
-			dev_name(inode_to_bdi(inode)->dev), 32)
+			dev_name(lttng_inode_to_bdi(inode)->dev), 32)
 		ctf_integer(unsigned long, ino, inode->i_ino)
 		ctf_integer(int, sync_mode, wbc->sync_mode)
 	)
@@ -609,7 +626,7 @@ LTTNG_TRACEPOINT_EVENT(writeback_sb_inodes_requeue,
 
 	TP_FIELDS(
 		ctf_array_text(char, name,
-			dev_name(inode_to_bdi(inode)->dev), 32)
+			dev_name(lttng_inode_to_bdi(inode)->dev), 32)
 		ctf_integer(unsigned long, ino, inode->i_ino)
 		ctf_integer(unsigned long, state, inode->i_state)
 		ctf_integer(unsigned long, dirtied_when, inode->dirtied_when)
@@ -657,7 +674,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_single_inode_template,
 
 	TP_FIELDS(
 		ctf_array_text(char, name,
-			dev_name(inode_to_bdi(inode)->dev), 32)
+			dev_name(lttng_inode_to_bdi(inode)->dev), 32)
 		ctf_integer(unsigned long, ino, inode->i_ino)
 		ctf_integer(unsigned long, state, inode->i_state)
 		ctf_integer(unsigned long, dirtied_when, inode->dirtied_when)
