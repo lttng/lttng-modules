@@ -31,6 +31,8 @@
 #include "../wrapper/rcu.h"
 #include "../lttng-events.h"
 #include "../lttng-tracer-core.h"
+#include <asm/byteorder.h>
+#include <linux/swab.h>
 
 /*
  * Macro declarations used for all stages.
@@ -397,18 +399,24 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len,	      \
 		case 2:							       \
 		{							       \
 			union { _type t; int16_t v; } __tmp = { (_type) (_src) }; \
+			if (_byte_order != __BYTE_ORDER)		       \
+				__swab16s(&__tmp.v);			       \
 			__ctf_tmp_int64 = (int64_t) __tmp.v;		       \
 			break;						       \
 		}							       \
 		case 4:							       \
 		{							       \
 			union { _type t; int32_t v; } __tmp = { (_type) (_src) }; \
+			if (_byte_order != __BYTE_ORDER)		       \
+				__swab32s(&__tmp.v);			       \
 			__ctf_tmp_int64 = (int64_t) __tmp.v;		       \
 			break;						       \
 		}							       \
 		case 8:							       \
 		{							       \
 			union { _type t; int64_t v; } __tmp = { (_type) (_src) }; \
+			if (_byte_order != __BYTE_ORDER)		       \
+				__swab64s(&__tmp.v);			       \
 			__ctf_tmp_int64 = (int64_t) __tmp.v;		       \
 			break;						       \
 		}							       \
@@ -428,18 +436,24 @@ static inline size_t __event_get_size__##_name(size_t *__dynamic_len,	      \
 		case 2:							       \
 		{							       \
 			union { _type t; uint16_t v; } __tmp = { (_type) (_src) }; \
+			if (_byte_order != __BYTE_ORDER)		       \
+				__swab16s(&__tmp.v);			       \
 			__ctf_tmp_uint64 = (uint64_t) __tmp.v;		       \
 			break;						       \
 		}							       \
 		case 4:							       \
 		{							       \
 			union { _type t; uint32_t v; } __tmp = { (_type) (_src) }; \
+			if (_byte_order != __BYTE_ORDER)		       \
+				__swab32s(&__tmp.v);			       \
 			__ctf_tmp_uint64 = (uint64_t) __tmp.v;		       \
 			break;						       \
 		}							       \
 		case 8:							       \
 		{							       \
 			union { _type t; uint64_t v; } __tmp = { (_type) (_src) }; \
+			if (_byte_order != __BYTE_ORDER)		       \
+				__swab64s(&__tmp.v);			       \
 			__ctf_tmp_uint64 = (uint64_t) __tmp.v;		       \
 			break;						       \
 		}							       \
