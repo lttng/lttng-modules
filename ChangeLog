@@ -1,3 +1,9 @@
+2016-04-26 LTTng modules 2.6.5
+	* Fix: make writeback instrumentation build for 4.3 kernel
+	* Fix: make sched instrumentation build for 4.3 kernel
+	* Fix: header size larger than 256 bytes
+	* Fix: lttng trace-clock needs to disable preemption
+
 2015-09-24 LTTng modules 2.6.4
 	* Fix: writeback instrumentation update for 4.3 Linux kernel
 	* Fix: update sched wakeup instrumentation for 4.3 kernel
