@@ -42,7 +42,7 @@
 #define LTTNG_MODULES_MAJOR_VERSION 2
 #define LTTNG_MODULES_MINOR_VERSION 8
 #define LTTNG_MODULES_PATCHLEVEL_VERSION 0
-#define LTTNG_MODULES_EXTRAVERSION "-rc1"
+#define LTTNG_MODULES_EXTRAVERSION "-rc2"
 
 #define LTTNG_VERSION_NAME		"Isseki Nicho"
 #define LTTNG_VERSION_DESCRIPTION	"The result of a collaboration between \"Dieu du Ciel!\" and Nagano-based \"Shiga Kogen\", Isseki Nicho is a strong Imperial Dark Saison offering a rich roasted malt flavor combined with a complex fruity finish typical of Saison yeasts."

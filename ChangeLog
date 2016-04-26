@@ -1,3 +1,19 @@
+2016-04-26 LTTng modules 2.8.0-rc2
+	* Fix: writeback probe on RHEL >= 3.10.0-327.10.1
+	* Fix: RHEL kernel 3.10.0-327.13.1 compat
+	* Fix: ctf_user_integer should not trigger page fault
+	* Fix: lib_ring_buffer_copy_from_user_inatomic error handling
+	* Add comment describing ioctl number duplication
+	* Fix: remove unused gfpflags.h from btrfs and compaction instrumentation
+	* Fix: Remove dead code from filter interpreter
+	* Fix: x86 kvm mmutrace instrumentation for kernel < 3.6
+	* Fix: mm_vmscan instrumentation: remove unused gfpflags.h include
+	* Fix: use of uninitialized ret value in lttng_abi_create_event
+	* Fix: kmem instrumentation: remove unused gfpflags.h include
+	* Fix: 4.6 kernel: use in_compat_syscall
+	* Fix: use BUG_ON instead of accessing array subscript above array bounds
+	* Fix: Add granularity to RHEL kernel version checks
+
 2016-03-18 (Awkward Moments Day) LTTng modules 2.8.0-rc1
 	* Bump minor tracer ABI version
 	* Fix: build against out-of-tree kernel build
