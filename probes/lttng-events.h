@@ -183,7 +183,9 @@ void trace_##_name(_proto);
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map) \
 void trace_##_name(void);
 
- /*
+#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+
+/*
  * Stage 1.1 of the trace events.
  *
  * Create dummy trace prototypes for each event class, and for each used
