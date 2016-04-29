@@ -22,6 +22,10 @@
 #define ctf_integer(_type, _item, _src)				\
 	_ctf_integer_ext(_type, _item, _src, __BYTE_ORDER, 10, 0, 0)
 
+#undef ctf_integer_bitfield
+#define ctf_integer_bitfield(_type, _item, _src)			\
+	_ctf_integer_ext(_type, _item, _src, __LITTLE_ENDIAN, 10, 0, 0)
+
 #undef ctf_integer_hex
 #define ctf_integer_hex(_type, _item, _src)			\
 	_ctf_integer_ext(_type, _item, _src, __BYTE_ORDER, 16, 0, 0)
@@ -144,6 +148,10 @@
 #undef ctf_integer_type
 #define ctf_integer_type(_type, _src)					\
 	ctf_integer(_type, unused, _src)
+
+#undef ctf_integer_bitfield_type
+#define ctf_integer_bitfield_type(_type, _src)				\
+	ctf_integer_bitfield(_type, unused, _src)
 
 #undef ctf_integer_hex_type
 #define ctf_integer_hex_type(_type, _src)				\
