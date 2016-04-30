@@ -693,4 +693,183 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_ctl,
 )
 #endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM) */
 
+#ifndef ONCE_LTTNG_TRACE_EPOLL_H
+#define ONCE_LTTNG_TRACE_EPOLL_H
+
+static struct lttng_event_field lttng_epoll_wait_fields[] = {
+	[0] = {
+		.name = "data_union",
+		.type = {
+			.atype = atype_struct,
+			.u._struct.nr_fields = ARRAY_SIZE(lttng_epoll_data_fields),
+			.u._struct.fields = lttng_epoll_data_fields,
+		}
+	},
+	[1] = {
+		.name = "raw_events",
+		.type = __type_integer(uint32_t, 0, 0, 0, __BYTE_ORDER, 16, none),
+	},
+	[2] = {
+		.name = "events",
+		.type = {
+			.atype = atype_struct,
+			.u._struct.nr_fields = ARRAY_SIZE(lttng_epoll_ctl_events_fields),
+			.u._struct.fields = lttng_epoll_ctl_events_fields,
+		}
+	},
+};
+
+static struct lttng_type lttng_epoll_wait_elem = {
+	.atype = atype_struct,
+	.u._struct.nr_fields = ARRAY_SIZE(lttng_epoll_wait_fields),
+	.u._struct.fields = lttng_epoll_wait_fields,
+};
+
+#endif /* ONCE_LTTNG_TRACE_EPOLL_H */
+
+#define LTTNG_SYSCALL_EPOLL_WAIT_locvar		\
+	sc_out(					\
+		unsigned int fds_length;	\
+		uint8_t overflow;		\
+		struct epoll_event *events;	\
+	)
+
+#define LTTNG_SYSCALL_EPOLL_WAIT_code_pre					\
+	BUILD_BUG_ON(((ARRAY_SIZE(lttng_epoll_ctl_events_fields) - 1) +		\
+			EPOLL_FLAGS_PADDING_SIZE) !=				\
+				sizeof(uint8_t) * BITS_PER_BYTE);		\
+	sc_out({								\
+		int err;							\
+		unsigned long maxalloc;						\
+										\
+		tp_locvar->fds_length = 0;					\
+		tp_locvar->events = NULL;					\
+		tp_locvar->overflow = 0;					\
+										\
+		if (maxevents <= 0 || ret <= 0 || ret > maxevents)		\
+			goto skip_code;						\
+										\
+		if (maxevents > PAGE_SIZE / sizeof(struct epoll_event)) {	\
+			maxalloc = PAGE_SIZE / sizeof(struct epoll_event);	\
+		} else {							\
+			maxalloc = maxevents;					\
+		}								\
+										\
+		if (ret > maxalloc) {						\
+			tp_locvar->fds_length = maxalloc;			\
+			tp_locvar->overflow = 1;				\
+		} else {							\
+			tp_locvar->fds_length = ret;				\
+		}								\
+										\
+		tp_locvar->events = kmalloc(					\
+			maxalloc * sizeof(struct epoll_event),			\
+			GFP_ATOMIC | GFP_NOWAIT);				\
+		if (!tp_locvar->events) {					\
+			tp_locvar->fds_length = 0;				\
+			goto skip_code;						\
+		}								\
+										\
+		err = lib_ring_buffer_copy_from_user_check_nofault(		\
+			tp_locvar->events, uevents,				\
+			maxevents * sizeof(struct epoll_event));		\
+		if (err != 0)							\
+			tp_locvar->fds_length = 0;				\
+	}									\
+	skip_code:								\
+	)
+
+#define LTTNG_SYSCALL_EPOLL_WAIT_fds_field						\
+	ctf_custom_field(								\
+		ctf_custom_type(							\
+			.atype = atype_sequence_compound,				\
+			.u.sequence_compound.length_name =				\
+				"fds_length",						\
+			.u.sequence_compound.elem_type =				\
+				&lttng_epoll_wait_elem,					\
+		),									\
+		fds,									\
+		ctf_custom_code(							\
+			uint32_t i;							\
+											\
+			ctf_align(uint64_t)						\
+			for (i = 0; i < tp_locvar->fds_length; i++) {			\
+				ctf_integer_type(uint64_t, tp_locvar->events[i].data)	\
+				ctf_integer_type(int, tp_locvar->events[i].data)	\
+				ctf_integer_bitfield_type(uint32_t,			\
+					tp_locvar->events[i].events)			\
+				ctf_integer_bitfield_type(uint8_t,			\
+					(uint8_t) tp_locvar->events[i].events)		\
+			}								\
+		)									\
+	)
+
+#define LTTNG_SYSCALL_EPOLL_WAIT_code_post	\
+	sc_out(					\
+		kfree(tp_locvar->events);	\
+	)
+
+
+#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64)
+#define OVERRIDE_32_epoll_wait
+#define OVERRIDE_64_epoll_wait
+SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_wait,
+	TP_PROTO(sc_exit(long ret,) int epfd, struct epoll_event __user * uevents,
+		int maxevents, int timeout),
+	TP_ARGS(sc_exit(ret,) epfd, uevents, maxevents, timeout),
+	TP_locvar(
+		LTTNG_SYSCALL_EPOLL_WAIT_locvar
+	),
+	TP_code_pre(
+		LTTNG_SYSCALL_EPOLL_WAIT_code_pre
+	),
+	TP_FIELDS(
+		sc_exit(ctf_integer(long, ret, ret))
+		sc_in(ctf_integer(int, epfd, epfd))
+		sc_in(ctf_integer(int, maxevents, maxevents))
+		sc_in(ctf_integer(int, timeout, timeout))
+		sc_out(ctf_integer(unsigned int, fds_length, tp_locvar->fds_length))
+		sc_out(ctf_integer(uint8_t, overflow, tp_locvar->overflow))
+		sc_out(
+			LTTNG_SYSCALL_EPOLL_WAIT_fds_field
+		)
+	),
+	TP_code_post(
+		LTTNG_SYSCALL_EPOLL_WAIT_code_post
+	)
+)
+#endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) */
+
+#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM)
+#define OVERRIDE_32_epoll_pwait
+#define OVERRIDE_64_epoll_pwait
+SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_pwait,
+	TP_PROTO(sc_exit(long ret,) int epfd, struct epoll_event __user * uevents,
+		int maxevents, int timeout, const sigset_t __user * sigmask, size_t sigsetsize),
+	TP_ARGS(sc_exit(ret,) epfd, uevents, maxevents, timeout, sigmask, sigsetsize),
+	TP_locvar(
+		LTTNG_SYSCALL_EPOLL_WAIT_locvar
+	),
+	TP_code_pre(
+		LTTNG_SYSCALL_EPOLL_WAIT_code_pre
+	),
+	TP_FIELDS(
+		sc_exit(ctf_integer(long, ret, ret))
+		sc_in(ctf_integer(int, epfd, epfd))
+		sc_in(ctf_integer(int, maxevents, maxevents))
+		sc_in(ctf_integer(int, timeout, timeout))
+		sc_in(ctf_integer_hex(const sigset_t *, sigmask, sigmask))
+		sc_in(ctf_integer(size_t, sigsetsize, sigsetsize))
+		sc_out(ctf_integer(unsigned int, fds_length, tp_locvar->fds_length))
+		sc_out(ctf_integer(uint8_t, overflow, tp_locvar->overflow))
+		sc_out(
+			LTTNG_SYSCALL_EPOLL_WAIT_fds_field
+		)
+	),
+	TP_code_post(
+		LTTNG_SYSCALL_EPOLL_WAIT_code_post
+	)
+)
+#endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM) */
+
 #endif /* CREATE_SYSCALL_TABLE */
