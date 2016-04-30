@@ -553,4 +553,144 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(ppoll,
 )
 #endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM) */
 
+#include <linux/eventpoll.h>
+
+SC_LTTNG_TRACEPOINT_ENUM(lttng_epoll_op,
+	TP_ENUM_VALUES(
+		ctf_enum_value("EPOLL_CTL_ADD", EPOLL_CTL_ADD)
+		ctf_enum_value("EPOLL_CTL_DEL", EPOLL_CTL_DEL)
+		ctf_enum_value("EPOLL_CTL_MOD", EPOLL_CTL_MOD)
+	)
+)
+
+#ifndef ONCE_LTTNG_TRACE_EPOLL_CTL_H
+#define ONCE_LTTNG_TRACE_EPOLL_CTL_H
+
+#define LTTNG_EPOLL_NRFLAGS (POLLHUP + 1)
+#define EPOLL_FLAGS_PADDING_SIZE (sizeof(uint8_t) * BITS_PER_BYTE) - \
+	ilog2(LTTNG_EPOLL_NRFLAGS - 1)
+
+/*
+ * Only extract the values specified by iBCS2 for now.
+ */
+static struct lttng_event_field lttng_epoll_ctl_events_fields[] = {
+	/* 0x0001 */
+	[ilog2(POLLIN)] = {
+		.name = "EPOLLIN",
+		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
+	},
+	/* 0x0002 */
+	[ilog2(POLLPRI)] = {
+		.name = "EPOLLPRI",
+		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
+	},
+	/* 0x0004 */
+	[ilog2(POLLOUT)] = {
+		.name = "EPOLLOUT",
+		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
+	},
+	/* 0x0008 */
+	[ilog2(POLLERR)] = {
+		.name = "EPOLLERR",
+		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
+	},
+	/* 0x0010 */
+	[ilog2(POLLHUP)] = {
+		.name = "EPOLLHUP",
+		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
+	},
+	[ilog2(LTTNG_EPOLL_NRFLAGS)] = {
+		.name = "padding",
+		.type = __type_integer(int, EPOLL_FLAGS_PADDING_SIZE, 1, 0,
+				__LITTLE_ENDIAN, 10, none),
+	},
+
+};
+
+static struct lttng_event_field lttng_epoll_data_fields[] = {
+	[0] = {
+		.name = "u64",
+		.type = __type_integer(uint64_t, 0, 0, 0, __BYTE_ORDER, 16, none),
+	},
+	[1] = {
+		.name = "fd",
+		.type = __type_integer(int, 0, 0, 0, __BYTE_ORDER, 10, none),
+	},
+};
+
+static struct lttng_event_field epoll_ctl_fields[] = {
+	[0] = {
+		.name = "data_union",
+		.type = {
+			.atype = atype_struct,
+			.u._struct.nr_fields = ARRAY_SIZE(lttng_epoll_data_fields),
+			.u._struct.fields = lttng_epoll_data_fields,
+		}
+	},
+	[1] = {
+		.name = "raw_events",
+		.type = __type_integer(uint32_t, 0, 0, 0, __BYTE_ORDER, 16, none),
+	},
+	[2] = {
+		.name = "events",
+		.type = {
+			.atype = atype_struct,
+			.u._struct.nr_fields = ARRAY_SIZE(lttng_epoll_ctl_events_fields),
+			.u._struct.fields = lttng_epoll_ctl_events_fields,
+		}
+	},
+};
+#endif /* ONCE_LTTNG_TRACE_EPOLL_CTL_H */
+
+#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM)
+#define OVERRIDE_32_epoll_ctl
+#define OVERRIDE_64_epoll_ctl
+SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_ctl,
+	TP_PROTO(sc_exit(long ret,) int epfd, int op, int fd,
+		struct epoll_event __user * uevent),
+	TP_ARGS(sc_exit(ret,) epfd, op, fd, uevent),
+	TP_locvar(
+		struct epoll_event event;
+		int err;
+	),
+	TP_code_pre(
+		tp_locvar->err = lib_ring_buffer_copy_from_user_check_nofault(
+			&tp_locvar->event, uevent, sizeof(struct epoll_event));
+		),
+	TP_FIELDS(
+		sc_exit(ctf_integer(long, ret, ret))
+		sc_in(ctf_integer(int, epfd, epfd))
+		sc_in(ctf_enum(lttng_epoll_op, int, op_enum, op))
+		sc_in(ctf_integer(int, fd, fd))
+		sc_in(
+			ctf_custom_field(
+				ctf_custom_type(
+					.atype = atype_struct,
+					.u._struct.nr_fields = ARRAY_SIZE(epoll_ctl_fields),
+					.u._struct.fields = epoll_ctl_fields,
+				),
+				event,
+				ctf_custom_code(
+					ctf_align(uint64_t)
+					if (!tp_locvar->err) {
+						ctf_integer_type(uint64_t, tp_locvar->event.data)
+						ctf_integer_type(int, tp_locvar->event.data)
+						ctf_integer_bitfield_type(uint32_t,
+							tp_locvar->event.events)
+						ctf_integer_bitfield_type(uint8_t,
+							(uint8_t) tp_locvar->event.events)
+					} else {
+						ctf_integer_type(uint64_t, 0)
+						ctf_integer_type(int, 0)
+						ctf_integer_bitfield_type(uint32_t, 0)
+						ctf_integer_bitfield_type(uint8_t, 0)
+					}
+				)
+			)
+		)
+	),
+	TP_code_post()
+)
+#endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM) */
+
 #endif /* CREATE_SYSCALL_TABLE */
