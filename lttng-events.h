@@ -28,6 +28,7 @@
 #include <linux/kprobes.h>
 #include <linux/kref.h>
 #include <wrapper/uuid.h>
+#include <lttng-tracer.h>
 #include <lttng-abi.h>
 #include <lttng-abi-old.h>
 

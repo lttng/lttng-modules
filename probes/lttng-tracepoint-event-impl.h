@@ -303,6 +303,19 @@ void __event_template_proto___##_name(void);
 	  .user = _user,					\
 	},
 
+
+#undef ctf_custom_field
+#define ctf_custom_field(_type, _item, _code)			\
+	{							\
+		.name = #_item,					\
+		.type = { _type },				\
+		.nowrite = 0,					\
+		.user = 0,					\
+	},
+
+#undef ctf_custom_type
+#define ctf_custom_type(...)	__VA_ARGS__
+
 #undef TP_FIELDS
 #define TP_FIELDS(...)	__VA_ARGS__	/* Only one used in this phase */
 
@@ -403,6 +416,19 @@ static void __event_probe__##_name(void *__data);
 		__event_len += this_cpu_ptr(&lttng_dynamic_len_stack)->stack[this_cpu_ptr(&lttng_dynamic_len_stack)->offset - 1] = \
 			strlen(_src) + 1;				       \
 	}
+
+#undef ctf_align
+#define ctf_align(_type)						\
+	__event_len += lib_ring_buffer_align(__event_len, lttng_alignof(_type));
+
+#undef ctf_custom_field
+#define ctf_custom_field(_type, _item, _code)				\
+	{								\
+		_code							\
+	}
+
+#undef ctf_custom_code
+#define ctf_custom_code(...)		__VA_ARGS__
 
 #undef TP_PROTO
 #define TP_PROTO(...)	__VA_ARGS__
@@ -673,6 +699,10 @@ void __event_prepare_filter_stack__##_name(char *__stack_data,		      \
 #undef _ctf_string
 #define _ctf_string(_item, _src, _user, _nowrite)
 
+#undef ctf_align
+#define ctf_align(_type)						\
+	__event_align = max_t(size_t, __event_align, lttng_alignof(_type));
+
 #undef TP_PROTO
 #define TP_PROTO(...)	__VA_ARGS__
 
@@ -681,6 +711,15 @@ void __event_prepare_filter_stack__##_name(char *__stack_data,		      \
 
 #undef TP_locvar
 #define TP_locvar(...)	__VA_ARGS__
+
+#undef ctf_custom_field
+#define ctf_custom_field(_type, _item, _code)		_code
+
+#undef ctf_custom_code
+#define ctf_custom_code(...)						\
+	{								\
+		__VA_ARGS__						\
+	}
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
 #define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
@@ -894,6 +933,20 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 	} else {							\
 		__chan->ops->event_strcpy(&__ctx, _src,			\
 			__get_dynamic_len(dest));			\
+	}
+
+
+#undef ctf_align
+#define ctf_align(_type)						\
+	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(_type));
+
+#undef ctf_custom_field
+#define ctf_custom_field(_type, _item, _code)		_code
+
+#undef ctf_custom_code
+#define ctf_custom_code(...)						\
+	{								\
+		__VA_ARGS__						\
 	}
 
 /* Beware: this get len actually consumes the len value */

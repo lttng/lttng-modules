@@ -130,6 +130,18 @@
 #undef ctf_string
 #define ctf_string(_item, _src)
 
+#undef ctf_custom_field
+#define ctf_custom_field(_type, _item, _code)
+
+#undef ctf_custom_type
+#define ctf_custom_type(...)
+
+#undef ctf_custom_code
+#define ctf_custom_code(...)
+
+#undef ctf_align
+#define ctf_align(_type)
+
 /* "nowrite" */
 #undef ctf_integer_nowrite
 #define ctf_integer_nowrite(_type, _item, _src)
