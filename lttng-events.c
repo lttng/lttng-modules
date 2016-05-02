@@ -50,6 +50,7 @@
 #include "lttng-events.h"
 #include "lttng-tracer.h"
 #include "lttng-abi-old.h"
+#include "lttng-endian.h"
 #include "wrapper/vzalloc.h"
 
 #define METADATA_CACHE_DEFAULT_SIZE 4096
@@ -1636,7 +1637,7 @@ int _lttng_field_statedump(struct lttng_session *session,
 					? "UTF8"
 					: "ASCII",
 			field->type.u.basic.integer.base,
-#ifdef __BIG_ENDIAN
+#if __BYTE_ORDER == __BIG_ENDIAN
 			field->type.u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
 #else
 			field->type.u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
@@ -1665,7 +1666,7 @@ int _lttng_field_statedump(struct lttng_session *session,
 					? "UTF8"
 					: "ASCII",
 			elem_type->u.basic.integer.base,
-#ifdef __BIG_ENDIAN
+#if __BYTE_ORDER == __BIG_ENDIAN
 			elem_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
 #else
 			elem_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
@@ -1691,7 +1692,7 @@ int _lttng_field_statedump(struct lttng_session *session,
 					? "UTF8"
 					: "ASCII"),
 			length_type->u.basic.integer.base,
-#ifdef __BIG_ENDIAN
+#if __BYTE_ORDER == __BIG_ENDIAN
 			length_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
 #else
 			length_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
@@ -1711,7 +1712,7 @@ int _lttng_field_statedump(struct lttng_session *session,
 					? "UTF8"
 					: "ASCII"),
 			elem_type->u.basic.integer.base,
-#ifdef __BIG_ENDIAN
+#if __BYTE_ORDER == __BIG_ENDIAN
 			elem_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
 #else
 			elem_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
@@ -2041,7 +2042,7 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 		CTF_SPEC_MAJOR,
 		CTF_SPEC_MINOR,
 		uuid_s,
-#ifdef __BIG_ENDIAN
+#if __BYTE_ORDER == __BIG_ENDIAN
 		"be"
 #else
 		"le"
