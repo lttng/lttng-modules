@@ -418,8 +418,7 @@ static struct lttng_type lttng_pollfd_elem = {
 		if (!tp_locvar->fds)							\
 			goto error;							\
 		err = lib_ring_buffer_copy_from_user_check_nofault(			\
-			tp_locvar->fds, ufds,						\
-			nfds * sizeof(struct pollfd));					\
+			tp_locvar->fds, ufds, tp_locvar->alloc_fds);			\
 		if (err != 0)								\
 			goto error;							\
 	}										\
@@ -772,7 +771,7 @@ static struct lttng_type lttng_epoll_wait_elem = {
 										\
 		err = lib_ring_buffer_copy_from_user_check_nofault(		\
 			tp_locvar->events, uevents,				\
-			maxevents * sizeof(struct epoll_event));		\
+			maxalloc * sizeof(struct epoll_event));			\
 		if (err != 0)							\
 			tp_locvar->fds_length = 0;				\
 	}									\
