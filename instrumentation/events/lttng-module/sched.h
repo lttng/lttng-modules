@@ -15,7 +15,21 @@
 #ifndef _TRACE_SCHED_DEF_
 #define _TRACE_SCHED_DEF_
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+
+static inline long __trace_sched_switch_state(bool preempt, struct task_struct *p)
+{
+#ifdef CONFIG_SCHED_DEBUG
+	BUG_ON(p != current);
+#endif /* CONFIG_SCHED_DEBUG */
+	/*
+	 * Preemption ignores task state, therefore preempted tasks are always RUNNING
+	 * (we will not have dequeued if state != RUNNING).
+	 */
+	return preempt ? TASK_RUNNING | TASK_STATE_MAX : p->state;
+}
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
 
 static inline long __trace_sched_switch_state(struct task_struct *p)
 {
@@ -271,7 +285,13 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_wakeup_template, sched_wakeup_new,
  */
 LTTNG_TRACEPOINT_EVENT(sched_switch,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+	TP_PROTO(bool preempt,
+		 struct task_struct *prev,
+		 struct task_struct *next),
+
+	TP_ARGS(preempt, prev, next),
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 	TP_PROTO(struct task_struct *prev,
 		 struct task_struct *next),
 
@@ -297,7 +317,9 @@ LTTNG_TRACEPOINT_EVENT(sched_switch,
 		tp_memcpy(next_comm, next->comm, TASK_COMM_LEN)
 		tp_assign(prev_tid, prev->pid)
 		tp_assign(prev_prio, prev->prio - MAX_RT_PRIO)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
+		tp_assign(prev_state, __trace_sched_switch_state(preempt, prev))
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 		tp_assign(prev_state, __trace_sched_switch_state(prev))
 #else
 		tp_assign(prev_state, prev->state)
