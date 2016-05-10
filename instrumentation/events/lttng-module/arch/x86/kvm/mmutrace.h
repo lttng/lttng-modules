@@ -55,6 +55,7 @@
 	{ PFERR_RSVD_MASK, "RSVD" },	\
 	{ PFERR_FETCH_MASK, "F" }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
 /*
  * A pagetable walk has started
  */
@@ -76,6 +77,31 @@ LTTNG_TRACEPOINT_EVENT(
 	TP_printk("addr %llx pferr %x %s", __entry->addr, __entry->pferr,
 		  __print_flags(__entry->pferr, "|", kvm_mmu_trace_pferr_flags))
 )
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)) */
+/*
+ * A pagetable walk has started
+ */
+LTTNG_TRACEPOINT_EVENT(
+	kvm_mmu_pagetable_walk,
+	TP_PROTO(u64 addr, int write_fault, int user_fault, int fetch_fault),
+	TP_ARGS(addr, write_fault, user_fault, fetch_fault),
+
+	TP_STRUCT__entry(
+		__field(__u64, addr)
+		__field(__u32, pferr)
+	),
+
+	TP_fast_assign(
+		tp_assign(addr, addr)
+		tp_assign(pferr,
+			(!!write_fault << 1) | (!!user_fault << 2)
+			| (!!fetch_fault << 4))
+	),
+
+	TP_printk("addr %llx pferr %x %s", __entry->addr, __entry->pferr,
+		  __print_flags(__entry->pferr, "|", kvm_mmu_trace_pferr_flags))
+)
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)) */
 
 
 /* We just walked a paging element */
