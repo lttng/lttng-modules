@@ -103,7 +103,9 @@ KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
 CFLAGS = $(EXTCFLAGS)
 
-default:
+default: modules
+
+modules:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m modules
 
 modules_install:
