@@ -4,9 +4,11 @@
 
 ifneq ($(KERNELRELEASE),)
 
+ifdef CONFIG_LOCALVERSION	# Check if dot-config is included.
 ifeq ($(CONFIG_TRACEPOINTS),)
 $(error The option CONFIG_TRACEPOINTS needs to be enabled in your kernel configuration)
 endif # CONFIG_TRACEPOINTS
+endif # ifdef CONFIG_LOCALVERSION
 
 KERNELDIR = ${LTTNG_KERNELDIR}
 MAKEFILEDIR = $(shell dirname $(lastword $(MAKEFILE_LIST)))
