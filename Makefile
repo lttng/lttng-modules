@@ -3,7 +3,10 @@
 #
 
 ifneq ($(KERNELRELEASE),)
-ifneq ($(CONFIG_TRACEPOINTS),)
+
+ifeq ($(CONFIG_TRACEPOINTS),)
+$(error The option CONFIG_TRACEPOINTS needs to be enabled in your kernel configuration)
+endif # CONFIG_TRACEPOINTS
 
 KERNELDIR = ${LTTNG_KERNELDIR}
 MAKEFILEDIR = $(shell dirname $(lastword $(MAKEFILE_LIST)))
@@ -66,8 +69,6 @@ lttng-tracer-objs += $(shell \
 
 obj-m += probes/
 obj-m += lib/
-
-endif # CONFIG_TRACEPOINTS
 
 else # KERNELRELEASE
 	KERNELDIR ?= /lib/modules/$(shell uname -r)/build
