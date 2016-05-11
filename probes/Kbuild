@@ -261,6 +261,4 @@ ifneq ($(CONFIG_DYNAMIC_FTRACE),)
   obj-$(CONFIG_LTTNG) += lttng-ftrace.o
 endif # CONFIG_DYNAMIC_FTRACE
 
-obj-$(CONFIG_LTTNG) += lttng-test.o
-
 # vim:syntax=make
