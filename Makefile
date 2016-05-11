@@ -77,7 +77,9 @@ else # KERNELRELEASE
 	PWD := $(shell pwd)
 	CFLAGS = $(EXTCFLAGS)
 
-default:
+default: modules
+
+modules:
 	LTTNG_KERNELDIR=$(KERNELDIR) $(MAKE) -C $(KERNELDIR) M=$(PWD) modules
 
 modules_install:
