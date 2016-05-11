@@ -7,9 +7,11 @@ ifneq ($(KERNELRELEASE),)
   # This part of the Makefile is used when called by the kernel build system
   # and defines the modules to be built.
 
-  ifeq ($(CONFIG_TRACEPOINTS),)
-    $(error The option CONFIG_TRACEPOINTS needs to be enabled in your kernel configuration)
-  endif # CONFIG_TRACEPOINTS
+  ifdef CONFIG_LOCALVERSION	# Check if dot-config is included.
+    ifeq ($(CONFIG_TRACEPOINTS),)
+      $(error The option CONFIG_TRACEPOINTS needs to be enabled in your kernel configuration)
+    endif # CONFIG_TRACEPOINTS
+  endif # ifdef CONFIG_LOCALVERSION
 
   TOP_LTTNG_MODULES_DIR := $(shell dirname $(lastword $(MAKEFILE_LIST)))
 
