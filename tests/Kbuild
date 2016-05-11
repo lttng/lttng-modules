@@ -1,0 +1,11 @@
+TOP_LTTNG_MODULES_DIR := $(shell dirname $(lastword $(MAKEFILE_LIST)))/..
+
+include $(TOP_LTTNG_MODULES_DIR)/Makefile.ABI.workarounds
+
+ccflags-y += -I$(TOP_LTTNG_MODULES_DIR)
+
+obj-$(CONFIG_LTTNG) += probes/lttng-test.o
+
+obj-$(CONFIG_LTTNG) += clock-plugin/lttng-clock-plugin-test.o
+
+# vim:syntax=make
