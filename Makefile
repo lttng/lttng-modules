@@ -7,89 +7,89 @@ ifneq ($(KERNELRELEASE),)
   # This part of the Makefile is used when called by the kernel build system
   # and defines the modules to be built.
 
-  ifneq ($(CONFIG_TRACEPOINTS),)
-
-    TOP_LTTNG_MODULES_DIR := $(shell dirname $(lastword $(MAKEFILE_LIST)))
-
-    lttng_check_linux_version = $(shell pwd)/include/linux/version.h
-    lttng_check_generated_linux_version = $(shell pwd)/include/generated/uapi/linux/version.h
-
-    #
-    # Check for stale version.h, which can be a leftover from an old Linux
-    # kernel tree moved to a newer kernel version, only pruned by make
-    # distclean.
-    #
-    ifneq ($(wildcard $(lttng_check_linux_version)),)
-      ifneq ($(wildcard $(lttng_check_generated_linux_version)),)
-        $(error Duplicate version.h files found in $(lttng_check_linux_version) and $(lttng_check_generated_linux_version). Consider running make distclean on your kernel, or removing the stale $(lttng_check_linux_version) file)
-      endif
-    endif
-
-    include $(TOP_LTTNG_MODULES_DIR)/Makefile.ABI.workarounds
-
-    ccflags-y += -I$(TOP_LTTNG_MODULES_DIR)
-
-    obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-discard.o
-    obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-overwrite.o
-    obj-$(CONFIG_LTTNG) += lttng-ring-buffer-metadata-client.o
-    obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-mmap-discard.o
-    obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-mmap-overwrite.o
-    obj-$(CONFIG_LTTNG) += lttng-ring-buffer-metadata-mmap-client.o
-    obj-$(CONFIG_LTTNG) += lttng-clock.o
-
-    obj-$(CONFIG_LTTNG) += lttng-tracer.o
-
-    lttng-tracer-objs := lttng-events.o lttng-abi.o \
-                         lttng-probes.o lttng-context.o \
-                         lttng-context-pid.o lttng-context-procname.o \
-                         lttng-context-prio.o lttng-context-nice.o \
-                         lttng-context-vpid.o lttng-context-tid.o \
-                         lttng-context-vtid.o lttng-context-ppid.o \
-                         lttng-context-vppid.o lttng-context-cpu-id.o \
-                         lttng-context-interruptible.o \
-                         lttng-context-need-reschedule.o lttng-calibrate.o \
-                         lttng-context-hostname.o wrapper/random.o \
-                         probes/lttng.o wrapper/trace-clock.o \
-                         wrapper/page_alloc.o \
-                         lttng-tracker-pid.o \
-                         lttng-filter.o lttng-filter-interpreter.o \
-                         lttng-filter-specialize.o \
-                         lttng-filter-validator.o \
-                         probes/lttng-probe-user.o
-
-    ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
-      lttng-tracer-objs += lttng-syscalls.o
-    endif # CONFIG_HAVE_SYSCALL_TRACEPOINTS
-
-    ifneq ($(CONFIG_PERF_EVENTS),)
-      lttng-tracer-objs += $(shell \
-        if [ $(VERSION) -ge 3 \
-          -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 33 \) ] ; then \
-          echo "lttng-context-perf-counters.o" ; fi;)
-    endif # CONFIG_PERF_EVENTS
-
-    ifneq ($(CONFIG_PREEMPT_RT_FULL),)
-      lttng-tracer-objs += lttng-context-migratable.o
-      lttng-tracer-objs += lttng-context-preemptible.o
-    endif # CONFIG_PREEMPT_RT_FULL
-
-    ifneq ($(CONFIG_PREEMPT),)
-      lttng-tracer-objs += lttng-context-preemptible.o
-    endif
-
-    lttng-tracer-objs += $(shell \
-      if [ $(VERSION) -ge 4 \
-        -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 15 -a $(SUBLEVEL) -ge 0 \) ] ; then \
-        echo "lttng-tracepoint.o" ; fi;)
-
-    obj-$(CONFIG_LTTNG) += lttng-statedump.o
-    lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o \
-                            wrapper/fdtable.o
-
-    obj-$(CONFIG_LTTNG) += probes/
-    obj-$(CONFIG_LTTNG) += lib/
-
+  ifeq ($(CONFIG_TRACEPOINTS),)
+    $(error The option CONFIG_TRACEPOINTS needs to be enabled in your kernel configuration)
   endif # CONFIG_TRACEPOINTS
+
+  TOP_LTTNG_MODULES_DIR := $(shell dirname $(lastword $(MAKEFILE_LIST)))
+
+  lttng_check_linux_version = $(shell pwd)/include/linux/version.h
+  lttng_check_generated_linux_version = $(shell pwd)/include/generated/uapi/linux/version.h
+
+  #
+  # Check for stale version.h, which can be a leftover from an old Linux
+  # kernel tree moved to a newer kernel version, only pruned by make
+  # distclean.
+  #
+  ifneq ($(wildcard $(lttng_check_linux_version)),)
+    ifneq ($(wildcard $(lttng_check_generated_linux_version)),)
+      $(error Duplicate version.h files found in $(lttng_check_linux_version) and $(lttng_check_generated_linux_version). Consider running make distclean on your kernel, or removing the stale $(lttng_check_linux_version) file)
+    endif
+  endif
+
+  include $(TOP_LTTNG_MODULES_DIR)/Makefile.ABI.workarounds
+
+  ccflags-y += -I$(TOP_LTTNG_MODULES_DIR)
+
+  obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-discard.o
+  obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-overwrite.o
+  obj-$(CONFIG_LTTNG) += lttng-ring-buffer-metadata-client.o
+  obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-mmap-discard.o
+  obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-mmap-overwrite.o
+  obj-$(CONFIG_LTTNG) += lttng-ring-buffer-metadata-mmap-client.o
+  obj-$(CONFIG_LTTNG) += lttng-clock.o
+
+  obj-$(CONFIG_LTTNG) += lttng-tracer.o
+
+  lttng-tracer-objs := lttng-events.o lttng-abi.o \
+                       lttng-probes.o lttng-context.o \
+                       lttng-context-pid.o lttng-context-procname.o \
+                       lttng-context-prio.o lttng-context-nice.o \
+                       lttng-context-vpid.o lttng-context-tid.o \
+                       lttng-context-vtid.o lttng-context-ppid.o \
+                       lttng-context-vppid.o lttng-context-cpu-id.o \
+                       lttng-context-interruptible.o \
+                       lttng-context-need-reschedule.o lttng-calibrate.o \
+                       lttng-context-hostname.o wrapper/random.o \
+                       probes/lttng.o wrapper/trace-clock.o \
+                       wrapper/page_alloc.o \
+                       lttng-tracker-pid.o \
+                       lttng-filter.o lttng-filter-interpreter.o \
+                       lttng-filter-specialize.o \
+                       lttng-filter-validator.o \
+                       probes/lttng-probe-user.o
+
+  ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
+    lttng-tracer-objs += lttng-syscalls.o
+  endif # CONFIG_HAVE_SYSCALL_TRACEPOINTS
+
+  ifneq ($(CONFIG_PERF_EVENTS),)
+    lttng-tracer-objs += $(shell \
+      if [ $(VERSION) -ge 3 \
+        -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 33 \) ] ; then \
+        echo "lttng-context-perf-counters.o" ; fi;)
+  endif # CONFIG_PERF_EVENTS
+
+  ifneq ($(CONFIG_PREEMPT_RT_FULL),)
+    lttng-tracer-objs += lttng-context-migratable.o
+    lttng-tracer-objs += lttng-context-preemptible.o
+  endif # CONFIG_PREEMPT_RT_FULL
+
+  ifneq ($(CONFIG_PREEMPT),)
+    lttng-tracer-objs += lttng-context-preemptible.o
+  endif
+
+  lttng-tracer-objs += $(shell \
+    if [ $(VERSION) -ge 4 \
+      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 15 -a $(SUBLEVEL) -ge 0 \) ] ; then \
+      echo "lttng-tracepoint.o" ; fi;)
+
+  obj-$(CONFIG_LTTNG) += lttng-statedump.o
+  lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o \
+                          wrapper/fdtable.o
+
+  obj-$(CONFIG_LTTNG) += probes/
+  obj-$(CONFIG_LTTNG) += lib/
 
 else # KERNELRELEASE
 
