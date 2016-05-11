@@ -56,7 +56,8 @@ Then configure your kernel as usual and enable the `CONFIG_LTTNG` option.
 
 Make sure your target kernel has the following config options enabled:
 
-  - `CONFIG_MODULES`: loadable module support
+  - `CONFIG_MODULES`: loadable module support (not strictly required
+     when built into the kernel)
   - `CONFIG_KALLSYMS`: see files in [`wrapper`](wrapper); this is
      necessary until the few required missing symbols are exported to GPL
      modules from mainline
