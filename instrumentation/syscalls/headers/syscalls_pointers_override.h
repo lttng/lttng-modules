@@ -225,7 +225,7 @@ end:	; /* Label at end of compound statement. */					\
 	kfree(tp_locvar->fds_out);	\
 	kfree(tp_locvar->fds_ex);
 
-#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64)
+#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM)
 #define OVERRIDE_32_select
 #define OVERRIDE_64_select
 SC_LTTNG_TRACEPOINT_EVENT_CODE(select,
@@ -496,7 +496,7 @@ end:											\
 #define LTTNG_SYSCALL_POLL_code_post	\
 	kfree(tp_locvar->fds);
 
-#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64)
+#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM)
 #define OVERRIDE_32_poll
 #define OVERRIDE_64_poll
 SC_LTTNG_TRACEPOINT_EVENT_CODE(poll,
@@ -809,7 +809,7 @@ static struct lttng_type lttng_epoll_wait_elem = {
 	)
 
 
-#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64)
+#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM)
 #define OVERRIDE_32_epoll_wait
 #define OVERRIDE_64_epoll_wait
 SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_wait,
