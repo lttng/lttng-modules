@@ -166,7 +166,7 @@ error_mismatch:
  */
 static
 int bytecode_validate_overflow(struct bytecode_runtime *bytecode,
-		void *start_pc, void *pc)
+		char *start_pc, char *pc)
 {
 	int ret = 0;
 
@@ -387,8 +387,8 @@ unsigned long delete_all_nodes(struct mp_table *mp_table)
 static
 int validate_instruction_context(struct bytecode_runtime *bytecode,
 		struct vstack *stack,
-		void *start_pc,
-		void *pc)
+		char *start_pc,
+		char *pc)
 {
 	int ret = 0;
 
@@ -724,8 +724,8 @@ static
 int validate_instruction_all_contexts(struct bytecode_runtime *bytecode,
 		struct mp_table *mp_table,
 		struct vstack *stack,
-		void *start_pc,
-		void *pc)
+		char *start_pc,
+		char *pc)
 {
 	int ret, found = 0;
 	unsigned long target_pc = pc - start_pc;
@@ -773,11 +773,11 @@ static
 int exec_insn(struct bytecode_runtime *bytecode,
 		struct mp_table *mp_table,
 		struct vstack *stack,
-		void **_next_pc,
-		void *pc)
+		char **_next_pc,
+		char *pc)
 {
 	int ret = 1;
-	void *next_pc = *_next_pc;
+	char *next_pc = *_next_pc;
 
 	switch (*(filter_opcode_t *) pc) {
 	case FILTER_OP_UNKNOWN:
@@ -1017,7 +1017,7 @@ end:
 int lttng_filter_validate_bytecode(struct bytecode_runtime *bytecode)
 {
 	struct mp_table *mp_table;
-	void *pc, *next_pc, *start_pc;
+	char *pc, *next_pc, *start_pc;
 	int ret = -EINVAL;
 	struct vstack stack;
 
