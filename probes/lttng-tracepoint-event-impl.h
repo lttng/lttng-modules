@@ -35,6 +35,8 @@
 #include <lttng-events.h>
 #include <lttng-tracer-core.h>
 
+#define __LTTNG_NULL_STRING	"(null)"
+
 /*
  * Macro declarations used for all stages.
  */
@@ -500,7 +502,7 @@ static void __event_probe__##_name(void *__data);
 			max_t(size_t, lttng_strlen_user_inatomic(_src), 1);    \
 	} else {							       \
 		__event_len += this_cpu_ptr(&lttng_dynamic_len_stack)->stack[this_cpu_ptr(&lttng_dynamic_len_stack)->offset - 1] = \
-			strlen(_src) + 1;				       \
+			strlen((_src) ? (_src) : __LTTNG_NULL_STRING) + 1; \
 	}
 
 #undef _ctf_enum
@@ -713,7 +715,8 @@ error:									      \
 #undef _ctf_string
 #define _ctf_string(_item, _src, _user, _nowrite)			       \
 	{								       \
-		const void *__ctf_tmp_ptr = (_src);			       \
+		const void *__ctf_tmp_ptr =				       \
+			((_src) ? (_src) : __LTTNG_NULL_STRING);	       \
 		memcpy(__stack_data, &__ctf_tmp_ptr, sizeof(void *));	       \
 		__stack_data += sizeof(void *);				       \
 	}
@@ -1024,12 +1027,16 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 
 #undef _ctf_string
 #define _ctf_string(_item, _src, _user, _nowrite)		        \
-	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(*(_src)));	\
 	if (_user) {							\
+		lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(*(_src))); \
 		__chan->ops->event_strcpy_from_user(&__ctx, _src,	\
 			__get_dynamic_len(dest));			\
 	} else {							\
-		__chan->ops->event_strcpy(&__ctx, _src,			\
+		const char *__ctf_tmp_string =				\
+			((_src) ? (_src) : __LTTNG_NULL_STRING);	\
+		lib_ring_buffer_align_ctx(&__ctx,			\
+			lttng_alignof(*__ctf_tmp_string));		\
+		__chan->ops->event_strcpy(&__ctx, __ctf_tmp_string,	\
 			__get_dynamic_len(dest));			\
 	}
 
