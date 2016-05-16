@@ -28,6 +28,8 @@
 #include "../lttng-events.h"
 #include "../lttng-tracer-core.h"
 
+#define __LTTNG_NULL_STRING	"(null)"
+
 /*
  * Macro declarations used for all stages.
  */
@@ -505,7 +507,8 @@ static __used struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 
 #undef __string
 #define __string(_item, _src)						       \
-	__event_len += __dynamic_len[__dynamic_len_idx++] = strlen(_src) + 1;
+	__event_len += __dynamic_len[__dynamic_len_idx++] =		       \
+		strlen((_src) ? (_src) : __LTTNG_NULL_STRING) + 1;
 
 /*
  * strlen_user includes \0. If returns 0, it faulted, so we set size to
@@ -814,8 +817,12 @@ __assign_##dest:							\
 __assign_##dest:							\
 	if (0)								\
 		(void) __typemap.dest;					\
-	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(__typemap.dest)); \
-	__chan->ops->event_strcpy(&__ctx, src, __get_dynamic_array_len(dest)); \
+	{								\
+		const char *__ctf_tmp_string =				\
+			((src) ? (src) : __LTTNG_NULL_STRING);		\
+		lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(__typemap.dest)); \
+		__chan->ops->event_strcpy(&__ctx, __ctf_tmp_string, __get_dynamic_array_len(dest)); \
+	}								\
 	goto __end_field_##dest;
 
 /* Named field types must be defined in lttng-types.h */
