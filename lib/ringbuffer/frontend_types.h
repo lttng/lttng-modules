@@ -152,7 +152,8 @@ struct lib_ring_buffer {
 	unsigned long cons_snapshot;	/* Consumer count snapshot */
 	unsigned int get_subbuf:1,	/* Sub-buffer being held by reader */
 		switch_timer_enabled:1,	/* Protected by ring_buffer_nohz_lock */
-		read_timer_enabled:1;	/* Protected by ring_buffer_nohz_lock */
+		read_timer_enabled:1,	/* Protected by ring_buffer_nohz_lock */
+		quiescent:1;
 };
 
 static inline
