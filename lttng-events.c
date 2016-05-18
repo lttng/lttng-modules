@@ -45,6 +45,8 @@
 #include "lttng-tracer.h"
 #include "lttng-abi-old.h"
 #include "wrapper/vzalloc.h"
+#include "wrapper/ringbuffer/backend.h"
+#include "wrapper/ringbuffer/frontend.h"
 
 #define METADATA_CACHE_DEFAULT_SIZE 4096
 
@@ -186,6 +188,10 @@ int lttng_session_enable(struct lttng_session *session)
 			chan->header_type = 2;	/* large */
 	}
 
+	/* Clear each stream's quiescent state. */
+	list_for_each_entry(chan, &session->chan, list)
+		lib_ring_buffer_clear_quiescent_channel(chan->chan);
+
 	ACCESS_ONCE(session->active) = 1;
 	ACCESS_ONCE(session->been_active) = 1;
 	ret = _lttng_session_metadata_statedump(session);
@@ -204,6 +210,7 @@ end:
 int lttng_session_disable(struct lttng_session *session)
 {
 	int ret = 0;
+	struct lttng_channel *chan;
 
 	mutex_lock(&sessions_mutex);
 	if (!session->active) {
@@ -211,6 +218,11 @@ int lttng_session_disable(struct lttng_session *session)
 		goto end;
 	}
 	ACCESS_ONCE(session->active) = 0;
+
+	/* Set each stream's quiescent state. */
+	list_for_each_entry(chan, &session->chan, list)
+		lib_ring_buffer_set_quiescent_channel(chan->chan);
+
 end:
 	mutex_unlock(&sessions_mutex);
 	return ret;
