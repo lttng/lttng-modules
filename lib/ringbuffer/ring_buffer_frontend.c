@@ -92,6 +92,9 @@ EXPORT_PER_CPU_SYMBOL(lib_ring_buffer_nesting);
 static
 void lib_ring_buffer_print_errors(struct channel *chan,
 				  struct lib_ring_buffer *buf, int cpu);
+static
+void _lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf,
+		enum switch_mode mode);
 
 /*
  * Must be called under cpu hotplug protection.
@@ -586,6 +589,63 @@ static void channel_unregister_notifiers(struct channel *chan)
 	channel_backend_unregister_notifiers(&chan->backend);
 }
 
+static void lib_ring_buffer_set_quiescent(struct lib_ring_buffer *buf)
+{
+	if (!buf->quiescent) {
+		buf->quiescent = true;
+		_lib_ring_buffer_switch_remote(buf, SWITCH_FLUSH);
+	}
+}
+
+static void lib_ring_buffer_clear_quiescent(struct lib_ring_buffer *buf)
+{
+	buf->quiescent = false;
+}
+
+void lib_ring_buffer_set_quiescent_channel(struct channel *chan)
+{
+	int cpu;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
+
+	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
+		get_online_cpus();
+		for_each_channel_cpu(cpu, chan) {
+			struct lib_ring_buffer *buf = per_cpu_ptr(chan->backend.buf,
+							      cpu);
+
+			lib_ring_buffer_set_quiescent(buf);
+		}
+		put_online_cpus();
+	} else {
+		struct lib_ring_buffer *buf = chan->backend.buf;
+
+		lib_ring_buffer_set_quiescent(buf);
+	}
+}
+EXPORT_SYMBOL_GPL(lib_ring_buffer_set_quiescent_channel);
+
+void lib_ring_buffer_clear_quiescent_channel(struct channel *chan)
+{
+	int cpu;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
+
+	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
+		get_online_cpus();
+		for_each_channel_cpu(cpu, chan) {
+			struct lib_ring_buffer *buf = per_cpu_ptr(chan->backend.buf,
+							      cpu);
+
+			lib_ring_buffer_clear_quiescent(buf);
+		}
+		put_online_cpus();
+	} else {
+		struct lib_ring_buffer *buf = chan->backend.buf;
+
+		lib_ring_buffer_clear_quiescent(buf);
+	}
+}
+EXPORT_SYMBOL_GPL(lib_ring_buffer_clear_quiescent_channel);
+
 static void channel_free(struct channel *chan)
 {
 	if (chan->backend.release_priv_ops) {
@@ -746,7 +806,7 @@ void *channel_destroy(struct channel *chan)
 							   chan->backend.priv,
 							   cpu);
 			if (buf->backend.allocated)
-				lib_ring_buffer_switch_slow(buf, SWITCH_FLUSH);
+				lib_ring_buffer_set_quiescent(buf);
 			/*
 			 * Perform flush before writing to finalized.
 			 */
@@ -760,7 +820,7 @@ void *channel_destroy(struct channel *chan)
 		if (config->cb.buffer_finalize)
 			config->cb.buffer_finalize(buf, chan->backend.priv, -1);
 		if (buf->backend.allocated)
-			lib_ring_buffer_switch_slow(buf, SWITCH_FLUSH);
+			lib_ring_buffer_set_quiescent(buf);
 		/*
 		 * Perform flush before writing to finalized.
 		 */
@@ -1550,7 +1610,8 @@ static void remote_switch(void *info)
 	lib_ring_buffer_switch_slow(buf, SWITCH_ACTIVE);
 }
 
-void lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf)
+static void _lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf,
+		enum switch_mode mode)
 {
 	struct channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
@@ -1560,7 +1621,7 @@ void lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf)
 	 * With global synchronization we don't need to use the IPI scheme.
 	 */
 	if (config->sync == RING_BUFFER_SYNC_GLOBAL) {
-		lib_ring_buffer_switch_slow(buf, SWITCH_ACTIVE);
+		lib_ring_buffer_switch_slow(buf, mode);
 		return;
 	}
 
@@ -1579,9 +1640,14 @@ void lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf)
 				 remote_switch, buf, 1);
 	if (ret) {
 		/* Remote CPU is offline, do it ourself. */
-		lib_ring_buffer_switch_slow(buf, SWITCH_ACTIVE);
+		lib_ring_buffer_switch_slow(buf, mode);
 	}
 	put_online_cpus();
+}
+
+void lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf)
+{
+	_lib_ring_buffer_switch_remote(buf, SWITCH_ACTIVE);
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_switch_remote);
 
