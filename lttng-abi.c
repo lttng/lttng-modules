@@ -757,6 +757,27 @@ long lttng_metadata_ring_buffer_compat_ioctl(struct file *filp,
 		 */
 		return -ENOSYS;
 	}
+	case RING_BUFFER_FLUSH:
+	{
+		struct lttng_metadata_stream *stream = filp->private_data;
+		struct lib_ring_buffer *buf = stream->priv;
+		struct channel *chan = buf->backend.chan;
+
+		/*
+		 * Before doing the actual ring buffer flush, write up to one
+		 * packet of metadata in the ring buffer.
+		 */
+		ret = lttng_metadata_output_channel(stream, chan);
+		if (ret < 0)
+			goto err;
+		break;
+	}
+	case RING_BUFFER_GET_METADATA_VERSION:
+	{
+		struct lttng_metadata_stream *stream = filp->private_data;
+
+		return put_u64(stream->version, arg);
+	}
 	default:
 		break;
 	}
@@ -773,12 +794,6 @@ long lttng_metadata_ring_buffer_compat_ioctl(struct file *filp,
 		lttng_metadata_ring_buffer_ioctl_put_next_subbuf(filp,
 				cmd, arg);
 		break;
-	}
-	case RING_BUFFER_GET_METADATA_VERSION:
-	{
-		struct lttng_metadata_stream *stream = filp->private_data;
-
-		return put_u64(stream->version, arg);
 	}
 	default:
 		break;
