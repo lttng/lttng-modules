@@ -1,3 +1,22 @@
+2016-05-20 (Bike-to-Work Day) LTTng modules 2.8.0
+	* Fix: ring buffer: honor switch parameter type in remote switch
+	* Fix: only flush non-metadata channels
+	* Fix: don't perform extra flush on metadata channel
+	* Fix: flush empty packets on snapshot channel
+	* Fix: do not generate packet at destroy after stop
+	* Fix: compat ioctl for flush/get metadata version
+	* Fix: ctf_string() should handle NULL pointers
+	* Fix: portability: no arith on void pointer
+	* Fix: add missing tests/Kbuild
+	* Test clock override plugin
+	* Fix: add modules target to base Makefile
+	* Fix: make clean does not include dot-config
+	* Fix: trigger build error if CONFIG_TRACEPOINTS is not set
+	* Documentation: document that CONFIG_MODULES not required when builtin
+	* Fix: mm_page_alloc_extfrag instrumentation for kernel 3.16.35
+	* Fix: integer endianness metadata generation
+	* Fix: endianness of integers received by filter
+
 2016-04-26 LTTng modules 2.8.0-rc2
 	* Fix: writeback probe on RHEL >= 3.10.0-327.10.1
 	* Fix: RHEL kernel 3.10.0-327.13.1 compat
