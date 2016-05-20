@@ -1,3 +1,19 @@
+2016-05-20 LTTng modules 2.6.6
+	* Fix: ring buffer: honor switch parameter type in remote switch
+	* Fix: only flush non-metadata channels
+	* Fix: don't perform extra flush on metadata channel
+	* Fix: flush empty packets on snapshot channel
+	* Fix: do not generate packet at destroy after stop
+	* Fix: compat ioctl for flush/get metadata version
+	* Fix: __string() and tp_strcpy() should handle NULL pointers
+	* Fix: add modules target to base Makefile
+	* Fix: make clean does not include dot-config
+	* Fix: trigger build error if CONFIG_TRACEPOINTS is not set
+	* Fix: x86 kvm mmutrace instrumentation for kernel < 3.6
+	* Fix: Ubuntu kernel range for mm_page_alloc_extfrag
+	* Fix: update sched instrumentation for kernel 4.4.0
+	* Fix: missing Tracepoint prototype checking due to bogus merge
+
 2016-04-26 LTTng modules 2.6.5
 	* Fix: make writeback instrumentation build for 4.3 kernel
 	* Fix: make sched instrumentation build for 4.3 kernel
