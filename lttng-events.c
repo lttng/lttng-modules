@@ -240,8 +240,10 @@ int lttng_session_enable(struct lttng_session *session)
 	lttng_session_sync_enablers(session);
 
 	/* Clear each stream's quiescent state. */
-	list_for_each_entry(chan, &session->chan, list)
-		lib_ring_buffer_clear_quiescent_channel(chan->chan);
+	list_for_each_entry(chan, &session->chan, list) {
+		if (chan->channel_type != METADATA_CHANNEL)
+			lib_ring_buffer_clear_quiescent_channel(chan->chan);
+	}
 
 	ACCESS_ONCE(session->active) = 1;
 	ACCESS_ONCE(session->been_active) = 1;
@@ -275,8 +277,10 @@ int lttng_session_disable(struct lttng_session *session)
 	lttng_session_sync_enablers(session);
 
 	/* Set each stream's quiescent state. */
-	list_for_each_entry(chan, &session->chan, list)
-		lib_ring_buffer_set_quiescent_channel(chan->chan);
+	list_for_each_entry(chan, &session->chan, list) {
+		if (chan->channel_type != METADATA_CHANNEL)
+			lib_ring_buffer_set_quiescent_channel(chan->chan);
+	}
 end:
 	mutex_unlock(&sessions_mutex);
 	return ret;
