@@ -1606,11 +1606,17 @@ void lib_ring_buffer_switch_slow(struct lib_ring_buffer *buf, enum switch_mode m
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_switch_slow);
 
+struct switch_param {
+	struct lib_ring_buffer *buf;
+	enum switch_mode mode;
+};
+
 static void remote_switch(void *info)
 {
-	struct lib_ring_buffer *buf = info;
+	struct switch_param *param = info;
+	struct lib_ring_buffer *buf = param->buf;
 
-	lib_ring_buffer_switch_slow(buf, SWITCH_ACTIVE);
+	lib_ring_buffer_switch_slow(buf, param->mode);
 }
 
 static void _lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf,
@@ -1619,6 +1625,7 @@ static void _lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf,
 	struct channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	int ret;
+	struct switch_param param;
 
 	/*
 	 * With global synchronization we don't need to use the IPI scheme.
@@ -1639,8 +1646,10 @@ static void _lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf,
 	 * switch.
 	 */
 	get_online_cpus();
+	param.buf = buf;
+	param.mode = mode;
 	ret = smp_call_function_single(buf->backend.cpu,
-				 remote_switch, buf, 1);
+				 remote_switch, &param, 1);
 	if (ret) {
 		/* Remote CPU is offline, do it ourself. */
 		lib_ring_buffer_switch_slow(buf, mode);
