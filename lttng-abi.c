@@ -629,6 +629,18 @@ long lttng_metadata_ring_buffer_ioctl(struct file *filp,
 			goto err;
 		break;
 	}
+	case RING_BUFFER_SNAPSHOT:
+	{
+		/*
+		 * Force the buffer to quiescent so the ring buffer
+		 * don't attempt to perform a SWITCH_FLUSH, which would
+		 * desynchronize the client accounting of the amount of
+		 * data available in the buffer from the ring buffer
+		 * view.
+		 */
+		buf->quiescent = true;
+		break;
+	}
 	default:
 		break;
 	}
@@ -697,6 +709,18 @@ long lttng_metadata_ring_buffer_compat_ioctl(struct file *filp,
 		ret = lttng_metadata_output_channel(stream, chan);
 		if (ret < 0)
 			goto err;
+		break;
+	}
+	case RING_BUFFER_SNAPSHOT:
+	{
+		/*
+		 * Force the buffer to quiescent so the ring buffer
+		 * don't attempt to perform a SWITCH_FLUSH, which would
+		 * desynchronize the client accounting of the amount of
+		 * data available in the buffer from the ring buffer
+		 * view.
+		 */
+		buf->quiescent = true;
 		break;
 	}
 	default:
