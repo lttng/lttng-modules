@@ -904,15 +904,6 @@ int lib_ring_buffer_snapshot(struct lib_ring_buffer *buf,
 	unsigned long consumed_cur, write_offset;
 	int finalized;
 
-	/*
-	 * First, ensure we perform a "final" flush onto the stream.  This will
-	 * ensure we create a packet of padding if we encounter an empty
-	 * packet. This ensures the time-stamps right before the snapshot is
-	 * used as end of packet timestamp.
-	 */
-	if (!buf->quiescent)
-		_lib_ring_buffer_switch_remote(buf, SWITCH_FLUSH);
-
 retry:
 	finalized = ACCESS_ONCE(buf->finalized);
 	/*
@@ -1662,6 +1653,13 @@ void lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf)
 	_lib_ring_buffer_switch_remote(buf, SWITCH_ACTIVE);
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_switch_remote);
+
+/* Switch sub-buffer even if current sub-buffer is empty. */
+void lib_ring_buffer_switch_remote_empty(struct lib_ring_buffer *buf)
+{
+	_lib_ring_buffer_switch_remote(buf, SWITCH_FLUSH);
+}
+EXPORT_SYMBOL_GPL(lib_ring_buffer_switch_remote_empty);
 
 /*
  * Returns :
