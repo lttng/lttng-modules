@@ -21,8 +21,11 @@
  */
 
 #include <linux/uaccess.h>
+#include <wrapper/frame.h>
 
 #include <lttng-filter.h>
+
+LTTNG_STACK_FRAME_NON_STANDARD(lttng_filter_interpret_bytecode);
 
 /*
  * get_char should be called with page fault handler disabled if it is expected
