@@ -77,6 +77,9 @@ struct lttng_enum_value {
 struct lttng_enum_entry {
 	struct lttng_enum_value start, end;	/* start and end are inclusive */
 	const char *string;
+	struct {
+		unsigned int is_auto:1;
+	} options;
 };
 
 #define __type_integer(_type, _size, _alignment, _signedness,	\

@@ -1955,8 +1955,19 @@ int _lttng_enum_statedump(struct lttng_session *session,
 			if (ret)
 				goto end;
 		}
+		ret = lttng_metadata_printf(session, "\"");
+		if (ret)
+			goto end;
+
+		if (entry->options.is_auto) {
+			ret = lttng_metadata_printf(session, ",\n");
+			if (ret)
+				goto end;
+			continue;
+		}
+
 		ret = lttng_metadata_printf(session,
-				"\" = ");
+				" = ");
 		if (ret)
 			goto end;
 		if (entry->start.signedness)
