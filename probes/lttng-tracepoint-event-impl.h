@@ -222,6 +222,24 @@ void __event_template_proto___##_name(void);
 		.string = (_string),					\
 	},
 
+/* Enumeration entry (automatic value; follows the rules of CTF) */
+#undef ctf_enum_auto
+#define ctf_enum_auto(_string)					\
+	{								\
+		.start = {						\
+			.signedness = -1,				\
+			.value = -1,					\
+		},							\
+		.end = {						\
+			.signedness = -1, 				\
+			.value = -1,					\
+		},							\
+		.string = (_string),					\
+		.options = {						\
+			.is_auto = 1,					\
+		}							\
+	},
+
 #undef TP_ENUM_VALUES
 #define TP_ENUM_VALUES(...)						\
 	__VA_ARGS__
