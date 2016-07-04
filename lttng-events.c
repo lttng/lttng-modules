@@ -2413,7 +2413,7 @@ int64_t measure_clock_offset(void)
 	/* Disable interrupts to increase correlation precision. */
 	local_irq_save(flags);
 	monotonic[0] = trace_clock_read64();
-	getnstimeofday(&rts);      
+	getnstimeofday(&rts);
 	monotonic[1] = trace_clock_read64();
 	local_irq_restore(flags);
 
