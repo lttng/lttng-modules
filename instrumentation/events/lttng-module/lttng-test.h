@@ -8,6 +8,18 @@
 #include <linux/types.h>
 #include <linux/version.h>
 
+LTTNG_TRACEPOINT_ENUM(
+	lttng_test_filter_event_enum,
+	TP_ENUM_VALUES(
+		ctf_enum_auto("AUTO: EXPECT 0")
+		ctf_enum_value("VALUE: 23", 23)
+		ctf_enum_value("VALUE: 27", 27)
+		ctf_enum_auto("AUTO: EXPECT 28")
+		ctf_enum_range("RANGE: 101 TO 303", 101, 303)
+		ctf_enum_auto("AUTO: EXPECT 304")
+	)
+)
+
 LTTNG_TRACEPOINT_EVENT(lttng_test_filter_event,
 	TP_PROTO(int anint, int netint, long *values,
 		char *text, size_t textlen,
@@ -27,6 +39,12 @@ LTTNG_TRACEPOINT_EVENT(lttng_test_filter_event,
 		ctf_string(stringfield2, etext)
 		ctf_sequence_bitfield(long, bitfield_seq, values, uint8_t, 3)
 		ctf_array_bitfield(long, bitfield_array, values, 3)
+		ctf_enum(lttng_test_filter_event_enum, int, enum0, 0)
+		ctf_enum(lttng_test_filter_event_enum, int, enum23, 23)
+		ctf_enum(lttng_test_filter_event_enum, int, enum27, 27)
+		ctf_enum(lttng_test_filter_event_enum, int, enum28, 28)
+		ctf_enum(lttng_test_filter_event_enum, int, enum202, 202)
+		ctf_enum(lttng_test_filter_event_enum, int, enum304, 304)
 	)
 )
 
