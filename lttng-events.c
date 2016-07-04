@@ -1963,36 +1963,38 @@ int _lttng_enum_statedump(struct lttng_session *session,
 			ret = lttng_metadata_printf(session, ",\n");
 			if (ret)
 				goto end;
-			continue;
-		}
-
-		ret = lttng_metadata_printf(session,
-				" = ");
-		if (ret)
-			goto end;
-		if (entry->start.signedness)
-			ret = lttng_metadata_printf(session,
-				"%lld", (long long) entry->start.value);
-		else
-			ret = lttng_metadata_printf(session,
-				"%llu", entry->start.value);
-		if (ret)
-			goto end;
-		if (entry->start.signedness == entry->end.signedness &&
-				entry->start.value == entry->end.value) {
-			ret = lttng_metadata_printf(session,
-				",\n");
 		} else {
-			if (entry->end.signedness) {
+			ret = lttng_metadata_printf(session,
+					" = ");
+			if (ret)
+				goto end;
+			if (entry->start.signedness)
 				ret = lttng_metadata_printf(session,
-					" ... %lld,\n", (long long) entry->end.value);
+					"%lld", (long long) entry->start.value);
+			else
+				ret = lttng_metadata_printf(session,
+					"%llu", entry->start.value);
+			if (ret)
+				goto end;
+			if (entry->start.signedness == entry->end.signedness &&
+					entry->start.value
+						== entry->end.value) {
+				ret = lttng_metadata_printf(session,
+					",\n");
 			} else {
-				ret = lttng_metadata_printf(session,
-					" ... %llu,\n", entry->end.value);
+				if (entry->end.signedness) {
+					ret = lttng_metadata_printf(session,
+						" ... %lld,\n",
+						(long long) entry->end.value);
+				} else {
+					ret = lttng_metadata_printf(session,
+						" ... %llu,\n",
+						entry->end.value);
+				}
 			}
+			if (ret)
+				goto end;
 		}
-		if (ret)
-			goto end;
 	}
 	ret = print_tabs(session, nesting);
 	if (ret)
