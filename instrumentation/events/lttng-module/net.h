@@ -29,6 +29,122 @@ static inline unsigned char __has_network_hdr(struct sk_buff *skb)
 static struct lttng_event_field emptyfields[] = {
 };
 
+/* Structures for transport headers. */
+
+static struct lttng_event_field tcpfields[] = {
+	[0] = {
+		.name = "source_port",
+		.type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+	},
+	[1] = {
+		.name = "dest_port",
+		.type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+	},
+	[2] = {
+		.name = "seq",
+		.type = __type_integer(uint32_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+	},
+	[3] = {
+		.name = "ack_seq",
+		.type = __type_integer(uint32_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+	},
+	[4] = {
+		.name = "data_offset",
+		.type = __type_integer(uint8_t, 4, 4, 0, __BIG_ENDIAN, 10, none),
+	},
+	[5] = {
+		.name = "reserved",
+		.type = __type_integer(uint8_t, 3, 1, 0, __BIG_ENDIAN, 10, none),
+	},
+	[6] = {
+		.name = "flags",
+		.type = __type_integer(uint8_t, 9, 1, 0, __BIG_ENDIAN, 16, none),
+	},
+	[7] = {
+		.name = "window_size",
+		.type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+	},
+	[8] = {
+		.name = "checksum",
+		.type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 16, none),
+	},
+	[9] = {
+		.name = "urg_ptr",
+		.type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+	},
+};
+
+static struct lttng_event_field transport_fields[] = {
+	[0] = {
+		.name = "unknown",
+		.type = {
+			.atype = atype_struct,
+			.u._struct.nr_fields = ARRAY_SIZE(emptyfields),
+			.u._struct.fields = emptyfields,
+		},
+	},
+	[1] = {
+		.name = "tcp",
+		.type = {
+			.atype = atype_struct,
+			.u._struct.nr_fields = ARRAY_SIZE(tcpfields),
+			.u._struct.fields = tcpfields,
+		},
+	},
+};
+
+enum transport_header_types {
+	TH_NONE,
+	TH_TCP,
+};
+
+static inline unsigned char __get_transport_header_type(struct sk_buff *skb)
+{
+	if (__has_network_hdr(skb)) {
+		/*
+		 * When both transport and network header are set, transport header
+		 * is greater than network header, otherwise it points to head.
+		 */
+		if (skb->transport_header > skb->network_header) {
+			/*
+			 * Get the transport protocol from the network header's data.
+			 * This method works both for sent and received packets.
+			 */
+			if ((skb->protocol == htons(ETH_P_IP) &&
+					ip_hdr(skb)->protocol == IPPROTO_TCP) ||
+				(skb->protocol == htons(ETH_P_IPV6) &&
+					ipv6_hdr(skb)->nexthdr == IPPROTO_TCP))
+				return TH_TCP;
+		}
+		/* Fallthrough for other cases where header is not TCP. */
+	}
+	return TH_NONE;
+}
+
+static struct lttng_enum_entry transport_enum_entries[] = {
+	[0] = {
+		.start = { .value = 0, .signedness = 0, },
+		.end = { .value = IPPROTO_TCP - 1, .signedness = 0, },
+		.string = "_unknown",
+	},
+	[1] = {
+		.start = { .value = IPPROTO_TCP, .signedness = 0, },
+		.end = { .value = IPPROTO_TCP, .signedness = 0, },
+		.string = "_tcp",
+	},
+	[2] = {
+		.start = { .value = IPPROTO_TCP + 1, .signedness = 0, },
+		.end = { .value = 255, .signedness = 0, },
+		.string = "_unknown",
+	},
+};
+
+static const struct lttng_enum_desc transport_header_type = {
+	.name = "transport_header_type",
+	.entries = transport_enum_entries,
+	.nr_entries = ARRAY_SIZE(transport_enum_entries),
+};
+
 /* Structures for network headers. */
 
 static struct lttng_event_field ipv4fields[] = {
@@ -62,7 +178,18 @@ static struct lttng_event_field ipv4fields[] = {
 	},
 	[7] = {
 		.name = "protocol",
-		.type = __type_integer(uint8_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+		.type = {
+			.atype = atype_enum,
+			.u.basic.enumeration.desc = &transport_header_type,
+			.u.basic.enumeration.container_type = {
+				.size = 8,
+				.alignment = 8,
+				.signedness = 0,
+				.reverse_byte_order = __BIG_ENDIAN != __BYTE_ORDER,
+				.base = 10,
+				.encoding = lttng_encode_none,
+			},
+		},
 	},
 	[8] = {
 		.name = "checksum",
@@ -84,6 +211,15 @@ static struct lttng_event_field ipv4fields[] = {
 			.u.array.elem_type = __type_integer(uint8_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
 			.u.array.length = 4,
 			.u.array.elem_alignment = lttng_alignof(uint8_t),
+		},
+	},
+	[11] = {
+		.name = "transport_header",
+		.type = {
+			.atype = atype_variant,
+			.u.variant.tag_name = "protocol",
+			.u.variant.choices = transport_fields,
+			.u.variant.nr_choices = ARRAY_SIZE(transport_fields),
 		},
 	},
 };
@@ -112,7 +248,18 @@ static struct lttng_event_field ipv6fields[] = {
 	},
 	[4] = {
 		.name = "nexthdr",
-		.type = __type_integer(uint8_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+		.type = {
+			.atype = atype_enum,
+			.u.basic.enumeration.desc = &transport_header_type,
+			.u.basic.enumeration.container_type = {
+				.size = 8,
+				.alignment = 8,
+				.signedness = 0,
+				.reverse_byte_order = __BIG_ENDIAN != __BYTE_ORDER,
+				.base = 10,
+				.encoding = lttng_encode_none,
+			},
+		},
 	},
 	[5] = {
 		.name = "hop_limit",
@@ -134,6 +281,15 @@ static struct lttng_event_field ipv6fields[] = {
 			.u.array.elem_type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 16, none),
 			.u.array.length = 8,
 			.u.array.elem_alignment = lttng_alignof(uint16_t),
+		},
+	},
+	[8] = {
+		.name = "transport_header",
+		.type = {
+			.atype = atype_variant,
+			.u.variant.tag_name = "nexthdr",
+			.u.variant.choices = transport_fields,
+			.u.variant.nr_choices = ARRAY_SIZE(transport_fields),
 		},
 	},
 };
@@ -243,6 +399,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(net_dev_template,
 			),
 			network_header,
 			ctf_custom_code(
+				/* Copy the network header */
 				switch (__get_network_header_type(skb)) {
 				case NH_IPV4: {
 					ctf_align(uint16_t)
@@ -260,6 +417,14 @@ LTTNG_TRACEPOINT_EVENT_CLASS(net_dev_template,
 					/* For any other header type, there is nothing to do. */
 					break;
 				}
+
+				/* Copy the transport header */
+				if (__get_transport_header_type(skb) == TH_TCP) {
+					ctf_align(uint32_t)
+					ctf_array_type(uint8_t, tcp_hdr(skb),
+							sizeof(struct tcphdr))
+				}
+				/* For any other header type, there is nothing to do. */
 			)
 		)
 	)
