@@ -20,8 +20,8 @@
 static inline unsigned char __has_network_hdr(struct sk_buff *skb)
 {
 	/*
-	 * If the header is not set yet,
-	 * the network header will point to the head.
+	 * If the header is not set yet, the network header will point
+	 * to the head.
 	 */
 	return skb_network_header(skb) != skb->head;
 }
@@ -34,43 +34,53 @@ static struct lttng_event_field emptyfields[] = {
 static struct lttng_event_field tcpfields[] = {
 	[0] = {
 		.name = "source_port",
-		.type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint16_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 	[1] = {
 		.name = "dest_port",
-		.type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint16_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 	[2] = {
 		.name = "seq",
-		.type = __type_integer(uint32_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint32_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 	[3] = {
 		.name = "ack_seq",
-		.type = __type_integer(uint32_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint32_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 	[4] = {
 		.name = "data_offset",
-		.type = __type_integer(uint8_t, 4, 4, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint8_t, 4, 4, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 	[5] = {
 		.name = "reserved",
-		.type = __type_integer(uint8_t, 3, 1, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint8_t, 3, 1, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 	[6] = {
 		.name = "flags",
-		.type = __type_integer(uint8_t, 9, 1, 0, __BIG_ENDIAN, 16, none),
+		.type = __type_integer(uint8_t, 9, 1, 0,
+				__BIG_ENDIAN, 16, none),
 	},
 	[7] = {
 		.name = "window_size",
-		.type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint16_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 	[8] = {
 		.name = "checksum",
-		.type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 16, none),
+		.type = __type_integer(uint16_t, 0, 0, 0,
+				__BIG_ENDIAN, 16, none),
 	},
 	[9] = {
 		.name = "urg_ptr",
-		.type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint16_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 };
 
@@ -102,13 +112,15 @@ static inline unsigned char __get_transport_header_type(struct sk_buff *skb)
 {
 	if (__has_network_hdr(skb)) {
 		/*
-		 * When both transport and network header are set, transport header
-		 * is greater than network header, otherwise it points to head.
+		 * When both transport and network headers are set,
+		 * transport header is greater than network header,
+		 * otherwise it points to head.
 		 */
 		if (skb->transport_header > skb->network_header) {
 			/*
-			 * Get the transport protocol from the network header's data.
-			 * This method works both for sent and received packets.
+			 * Get the transport protocol from the network
+			 * header's data. This method works both for
+			 * sent and received packets.
 			 */
 			if ((skb->protocol == htons(ETH_P_IP) &&
 					ip_hdr(skb)->protocol == IPPROTO_TCP) ||
@@ -150,31 +162,38 @@ static const struct lttng_enum_desc transport_header_type = {
 static struct lttng_event_field ipv4fields[] = {
 	[0] = {
 		.name = "version",
-		.type = __type_integer(uint8_t, 4, 4, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint8_t, 4, 4, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 	[1] = {
 		.name = "ihl",
-		.type = __type_integer(uint8_t, 4, 4, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint8_t, 4, 4, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 	[2] = {
 		.name = "tos",
-		.type = __type_integer(uint8_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint8_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 	[3] = {
 		.name = "tot_len",
-		.type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint16_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 	[4] = {
 		.name = "id",
-		.type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 16, none),
+		.type = __type_integer(uint16_t, 0, 0, 0,
+				__BIG_ENDIAN, 16, none),
 	},
 	[5] = {
 		.name = "frag_off",
-		.type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint16_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 	[6] = {
 		.name = "ttl",
-		.type = __type_integer(uint8_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint8_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 	[7] = {
 		.name = "protocol",
@@ -185,7 +204,8 @@ static struct lttng_event_field ipv4fields[] = {
 				.size = 8,
 				.alignment = 8,
 				.signedness = 0,
-				.reverse_byte_order = __BIG_ENDIAN != __BYTE_ORDER,
+				.reverse_byte_order =
+					__BIG_ENDIAN != __BYTE_ORDER,
 				.base = 10,
 				.encoding = lttng_encode_none,
 			},
@@ -193,13 +213,16 @@ static struct lttng_event_field ipv4fields[] = {
 	},
 	[8] = {
 		.name = "checksum",
-		.type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 16, none),
+		.type = __type_integer(uint16_t, 0, 0, 0,
+				__BIG_ENDIAN, 16, none),
 	},
 	[9] = {
 		.name = "saddr",
 		.type = {
 			.atype = atype_array,
-			.u.array.elem_type = __type_integer(uint8_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+			.u.array.elem_type =
+				__type_integer(uint8_t, 0, 0, 0,
+					__BIG_ENDIAN, 10, none),
 			.u.array.length = 4,
 			.u.array.elem_alignment = lttng_alignof(uint8_t),
 		},
@@ -208,7 +231,9 @@ static struct lttng_event_field ipv4fields[] = {
 		.name = "daddr",
 		.type = {
 			.atype = atype_array,
-			.u.array.elem_type = __type_integer(uint8_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+			.u.array.elem_type =
+				__type_integer(uint8_t, 0, 0, 0,
+					__BIG_ENDIAN, 10, none),
 			.u.array.length = 4,
 			.u.array.elem_alignment = lttng_alignof(uint8_t),
 		},
@@ -227,24 +252,29 @@ static struct lttng_event_field ipv4fields[] = {
 static struct lttng_event_field ipv6fields[] = {
 	[0] = {
 		.name = "version",
-		.type = __type_integer(uint8_t, 4, 4, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint8_t, 4, 4, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 	[1] = {
 		.name = "prio",
-		.type = __type_integer(uint8_t, 4, 4, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint8_t, 4, 4, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 	[2] = {
 		.name = "flow_lbl",
 		.type = {
 			.atype = atype_array,
-			.u.array.elem_type = __type_integer(uint8_t, 0, 0, 0, __BIG_ENDIAN, 16, none),
+			.u.array.elem_type =
+				__type_integer(uint8_t, 0, 0, 0,
+					__BIG_ENDIAN, 16, none),
 			.u.array.length = 3,
 			.u.array.elem_alignment = lttng_alignof(uint8_t),
 		},
 	},
 	[3] = {
 		.name = "payload_len",
-		.type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint16_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 	[4] = {
 		.name = "nexthdr",
@@ -255,7 +285,8 @@ static struct lttng_event_field ipv6fields[] = {
 				.size = 8,
 				.alignment = 8,
 				.signedness = 0,
-				.reverse_byte_order = __BIG_ENDIAN != __BYTE_ORDER,
+				.reverse_byte_order =
+					__BIG_ENDIAN != __BYTE_ORDER,
 				.base = 10,
 				.encoding = lttng_encode_none,
 			},
@@ -263,13 +294,16 @@ static struct lttng_event_field ipv6fields[] = {
 	},
 	[5] = {
 		.name = "hop_limit",
-		.type = __type_integer(uint8_t, 0, 0, 0, __BIG_ENDIAN, 10, none),
+		.type = __type_integer(uint8_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
 	},
 	[6] = {
 		.name = "saddr",
 		.type = {
 			.atype = atype_array,
-			.u.array.elem_type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 16, none),
+			.u.array.elem_type =
+				__type_integer(uint16_t, 0, 0, 0,
+					__BIG_ENDIAN, 16, none),
 			.u.array.length = 8,
 			.u.array.elem_alignment = lttng_alignof(uint16_t),
 		},
@@ -278,7 +312,9 @@ static struct lttng_event_field ipv6fields[] = {
 		.name = "daddr",
 		.type = {
 			.atype = atype_array,
-			.u.array.elem_type = __type_integer(uint16_t, 0, 0, 0, __BIG_ENDIAN, 16, none),
+			.u.array.elem_type =
+				__type_integer(uint16_t, 0, 0, 0,
+					__BIG_ENDIAN, 16, none),
 			.u.array.length = 8,
 			.u.array.elem_alignment = lttng_alignof(uint16_t),
 		},
@@ -361,7 +397,7 @@ LTTNG_TRACEPOINT_EVENT(net_dev_xmit,
 #else
 	TP_PROTO(struct sk_buff *skb,
 		 int rc),
-	
+
 	TP_ARGS(skb, rc),
 #endif
 
@@ -395,11 +431,12 @@ LTTNG_TRACEPOINT_EVENT_CLASS(net_dev_template,
 				.atype = atype_variant,
 				.u.variant.tag_name = "network_header_type",
 				.u.variant.choices = network_fields,
-				.u.variant.nr_choices = ARRAY_SIZE(network_fields),
+				.u.variant.nr_choices =
+					ARRAY_SIZE(network_fields),
 			),
 			network_header,
 			ctf_custom_code(
-				/* Copy the network header */
+				/* Copy the network header. */
 				switch (__get_network_header_type(skb)) {
 				case NH_IPV4: {
 					ctf_align(uint16_t)
@@ -414,17 +451,24 @@ LTTNG_TRACEPOINT_EVENT_CLASS(net_dev_template,
 					break;
 				}
 				default:
-					/* For any other header type, there is nothing to do. */
+					/*
+					 * For any other network header
+					 * type, there is nothing to do.
+					 */
 					break;
 				}
 
-				/* Copy the transport header */
-				if (__get_transport_header_type(skb) == TH_TCP) {
+				/* Copy the transport header. */
+				if (__get_transport_header_type(skb)
+						== TH_TCP) {
 					ctf_align(uint32_t)
 					ctf_array_type(uint8_t, tcp_hdr(skb),
 							sizeof(struct tcphdr))
 				}
-				/* For any other header type, there is nothing to do. */
+				/*
+				 * For any other transport header type,
+				 * there is nothing to do.
+				 */
 			)
 		)
 	)
