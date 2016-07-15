@@ -1130,7 +1130,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	struct lib_ring_buffer_ctx __ctx;				      \
 	ssize_t __event_len;						      \
 	size_t __event_align;						      \
-	size_t __orig_dynamic_len_offset, __dynamic_len_idx;		      \
+	size_t __orig_dynamic_len_offset, __dynamic_len_idx __attribute__((unused)); \
 	union {								      \
 		size_t __dynamic_len_removed[ARRAY_SIZE(__event_fields___##_name)];   \
 		char __filter_stack_data[2 * sizeof(unsigned long) * ARRAY_SIZE(__event_fields___##_name)]; \
@@ -1204,7 +1204,7 @@ static void __event_probe__##_name(void *__data)			      \
 	struct lib_ring_buffer_ctx __ctx;				      \
 	ssize_t __event_len;						      \
 	size_t __event_align;						      \
-	size_t __orig_dynamic_len_offset, __dynamic_len_idx;		      \
+	size_t __orig_dynamic_len_offset, __dynamic_len_idx __attribute__((unused)); \
 	union {								      \
 		size_t __dynamic_len_removed[ARRAY_SIZE(__event_fields___##_name)];   \
 		char __filter_stack_data[2 * sizeof(unsigned long) * ARRAY_SIZE(__event_fields___##_name)]; \
