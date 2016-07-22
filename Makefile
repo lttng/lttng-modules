@@ -107,15 +107,15 @@ CFLAGS = $(EXTCFLAGS)
 default: modules
 
 modules:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m modules
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m CONFIG_LTTNG_CLOCK_PLUGIN_TEST=m modules
 
 modules_install:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m modules_install
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m CONFIG_LTTNG_CLOCK_PLUGIN_TEST=m modules_install
 
 clean:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
 
 %.i: %.c
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m $@
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m CONFIG_LTTNG_CLOCK_PLUGIN_TEST=m $@
 
 endif # KERNELRELEASE

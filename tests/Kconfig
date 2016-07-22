@@ -1,0 +1,8 @@
+config LTTNG_CLOCK_PLUGIN_TEST
+       tristate "Use test plugin as trace clock"
+       depends on LTTNG
+       help
+	 Use the test clock as trace clock. This plugin freezes the
+	 time with 1 KHz for regression test.
+	 It's recommended to build this as a module to work with the
+	 lttng-tools test suite.
