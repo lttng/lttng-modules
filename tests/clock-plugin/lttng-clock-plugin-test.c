@@ -67,7 +67,7 @@ int lttng_clock_plugin_init(void)
 {
 	return lttng_clock_register_plugin(&ltc, THIS_MODULE);
 }
-module_init(lttng_clock_plugin_init);
+rootfs_initcall(lttng_clock_plugin_init);
 
 static __exit
 void lttng_clock_plugin_exit(void)
