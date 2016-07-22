@@ -10,3 +10,5 @@ config LTTNG
 	  the Linux kernel image, choose Y.
 
 	  If unsure, say N.
+
+source "lttng/tests/Kconfig"
