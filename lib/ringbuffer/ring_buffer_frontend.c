@@ -63,6 +63,7 @@
 #include <wrapper/atomic.h>
 #include <wrapper/kref.h>
 #include <wrapper/percpu-defs.h>
+#include <wrapper/timer.h>
 
 /*
  * Internal structure representing offsets to use at a sub-buffer switch.
@@ -281,7 +282,7 @@ static void switch_buffer_timer(unsigned long data)
 		lib_ring_buffer_switch_slow(buf, SWITCH_ACTIVE);
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
-		mod_timer_pinned(&buf->switch_timer,
+		lttng_mod_timer_pinned(&buf->switch_timer,
 				 jiffies + chan->switch_timer_interval);
 	else
 		mod_timer(&buf->switch_timer,
@@ -298,7 +299,12 @@ static void lib_ring_buffer_start_switch_timer(struct lib_ring_buffer *buf)
 
 	if (!chan->switch_timer_interval || buf->switch_timer_enabled)
 		return;
-	init_timer(&buf->switch_timer);
+
+	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
+		lttng_init_timer_pinned(&buf->switch_timer);
+	else
+		init_timer(&buf->switch_timer);
+
 	buf->switch_timer.function = switch_buffer_timer;
 	buf->switch_timer.expires = jiffies + chan->switch_timer_interval;
 	buf->switch_timer.data = (unsigned long)buf;
@@ -341,7 +347,7 @@ static void read_buffer_timer(unsigned long data)
 	}
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
-		mod_timer_pinned(&buf->read_timer,
+		lttng_mod_timer_pinned(&buf->read_timer,
 				 jiffies + chan->read_timer_interval);
 	else
 		mod_timer(&buf->read_timer,
@@ -361,7 +367,11 @@ static void lib_ring_buffer_start_read_timer(struct lib_ring_buffer *buf)
 	    || buf->read_timer_enabled)
 		return;
 
-	init_timer(&buf->read_timer);
+	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
+		lttng_init_timer_pinned(&buf->read_timer);
+	else
+		init_timer(&buf->read_timer);
+
 	buf->read_timer.function = read_buffer_timer;
 	buf->read_timer.expires = jiffies + chan->read_timer_interval;
 	buf->read_timer.data = (unsigned long)buf;
