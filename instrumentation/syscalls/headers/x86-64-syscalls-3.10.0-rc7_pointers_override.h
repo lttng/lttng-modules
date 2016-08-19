@@ -102,8 +102,8 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(accept,
 		sc_inout(ctf_integer(int, upeer_addrlen, tp_locvar->uaddr_len))
 		sc_out(ctf_integer(int, family, tp_locvar->sa_family))
 		sc_out(ctf_integer_network(uint16_t, sport, tp_locvar->sport))
-		sc_in(ctf_sequence_network(uint8_t, v4addr, &tp_locvar->v4addr, unsigned int, tp_locvar->v4addr_len))
-		sc_in(ctf_sequence_network(uint16_t, v6addr, &tp_locvar->v6addr, unsigned int, tp_locvar->v6addr_len))
+		sc_out(ctf_sequence_network(uint8_t, v4addr, &tp_locvar->v4addr, unsigned int, tp_locvar->v4addr_len))
+		sc_out(ctf_sequence_network(uint16_t, v6addr, &tp_locvar->v6addr, unsigned int, tp_locvar->v6addr_len))
 	),
 	TP_code_post()
 )
