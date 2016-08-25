@@ -28,7 +28,8 @@
 #include <lttng-kernel-version.h>
 
 
-#if (LTTNG_RT_VERSION_CODE >= LTTNG_RT_KERNEL_VERSION(4,6,4,8))
+#if (LTTNG_RT_VERSION_CODE >= LTTNG_RT_KERNEL_VERSION(4,6,4,8) \
+	|| LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
 
 #define lttng_init_timer_pinned(timer)					\
 	init_timer_pinned(timer)
@@ -39,7 +40,7 @@ static inline int lttng_mod_timer_pinned(struct timer_list *timer,
 	return mod_timer(timer, expires);
 }
 
-#else /* #if (LTTNG_RT_VERSION_CODE >= LTTNG_RT_KERNEL_VERSION(4,6,4,8)) */
+#else
 
 #define lttng_init_timer_pinned(timer)					\
 	init_timer(timer)
@@ -50,6 +51,6 @@ static inline int lttng_mod_timer_pinned(struct timer_list *timer,
 	return mod_timer_pinned(timer, expires);
 }
 
-#endif /* #else #if (LTTNG_RT_VERSION_CODE >= LTTNG_RT_KERNEL_VERSION(4,6,4,8)) */
+#endif
 
 #endif /* _LTTNG_WRAPPER_TIMER_H */
