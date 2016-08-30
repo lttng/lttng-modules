@@ -24,13 +24,40 @@ enum {
 	RWBS_FLAG_SECURE	= (1 << 7),
 	RWBS_FLAG_FLUSH		= (1 << 8),
 	RWBS_FLAG_FUA		= (1 << 9),
+	RWBS_FLAG_PREFLUSH	= (1 << 10),
 };
 
 #endif /* _TRACE_BLOCK_DEF_ */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
 
-#define blk_rwbs_ctf_integer(type, rwbs, rw, bytes)			      \
+#define lttng_req_op(rq)	req_op(rq)
+#define lttng_req_rw(rq)	((rq)->cmd_flags)
+#define lttng_bio_op(bio)	bio_op(bio)
+#define lttng_bio_rw(bio)	((bio)->bi_opf)
+
+#define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
+		ctf_integer(type, rwbs,					      \
+			(((op) == REQ_OP_WRITE || (op) == REQ_OP_WRITE_SAME) ? RWBS_FLAG_WRITE : \
+			( (op) == REQ_OP_DISCARD ? RWBS_FLAG_DISCARD :	      \
+			( (op) == REQ_OP_SECURE_ERASE ? (RWBS_FLAG_DISCARD | RWBS_FLAG_SECURE) : \
+			( (op) == REQ_OP_FLUSH ? RWBS_FLAG_FLUSH :	      \
+			( (op) == REQ_OP_READ ? RWBS_FLAG_READ :	      \
+			( 0 ))))))					      \
+			| ((rw) & REQ_RAHEAD ? RWBS_FLAG_RAHEAD : 0)	      \
+			| ((rw) & REQ_SYNC ? RWBS_FLAG_SYNC : 0)	      \
+			| ((rw) & REQ_META ? RWBS_FLAG_META : 0)	      \
+			| ((rw) & REQ_PREFLUSH ? RWBS_FLAG_PREFLUSH : 0)      \
+			| ((rw) & REQ_FUA ? RWBS_FLAG_FUA : 0))
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
+
+#define lttng_req_op(rq)
+#define lttng_req_rw(rq)	((rq)->cmd_flags)
+#define lttng_bio_op(bio)
+#define lttng_bio_rw(bio)	((bio)->bi_rw)
+
+#define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
 		ctf_integer(type, rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :     \
 			( (rw) & REQ_DISCARD ? RWBS_FLAG_DISCARD :	      \
 			( (bytes) ? RWBS_FLAG_READ :			      \
@@ -44,7 +71,12 @@ enum {
 
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 
-#define blk_rwbs_ctf_integer(type, rwbs, rw, bytes)			      \
+#define lttng_req_op(rq)
+#define lttng_req_rw(rq)	((rq)->cmd_flags)
+#define lttng_bio_op(bio)
+#define lttng_bio_rw(bio)	((bio)->bi_rw)
+
+#define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
 		ctf_integer(type, rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :     \
 			( (rw) & REQ_DISCARD ? RWBS_FLAG_DISCARD :	      \
 			( (bytes) ? RWBS_FLAG_READ :			      \
@@ -56,7 +88,12 @@ enum {
 
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
 
-#define blk_rwbs_ctf_integer(type, rwbs, rw, bytes)			      \
+#define lttng_req_op(rq)
+#define lttng_req_rw(rq)	((rq)->cmd_flags)
+#define lttng_bio_op(bio)
+#define lttng_bio_rw(bio)	((bio)->bi_rw)
+
+#define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
 		ctf_integer(type, rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :     \
 			( (rw) & REQ_DISCARD ? RWBS_FLAG_DISCARD :	      \
 			( (bytes) ? RWBS_FLAG_READ :			      \
@@ -69,7 +106,12 @@ enum {
 
 #else
 
-#define blk_rwbs_ctf_integer(type, rwbs, rw, bytes)			      \
+#define lttng_req_op(rq)
+#define lttng_req_rw(rq)	((rq)->cmd_flags)
+#define lttng_bio_op(bio)
+#define lttng_bio_rw(bio)	((bio)->bi_rw)
+
+#define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
 		ctf_integer(type, rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :     \
 			( (rw) & (1 << BIO_RW_DISCARD) ? RWBS_FLAG_DISCARD :  \
 			( (bytes) ? RWBS_FLAG_READ :			      \
@@ -156,7 +198,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq_with_error,
 		ctf_integer(unsigned int, nr_sector, tp_locvar->nr_sector)
 		ctf_integer(int, errors, rq->errors)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			rq->cmd_flags, blk_rq_bytes(rq))
+			lttng_req_op(rq), lttng_req_rw(rq), blk_rq_bytes(rq))
 		ctf_sequence_hex(unsigned char, cmd,
 			tp_locvar->cmd, size_t, tp_locvar->cmd_len)
 	),
@@ -246,7 +288,7 @@ LTTNG_TRACEPOINT_EVENT_CODE(block_rq_complete,
 		ctf_integer(unsigned int, nr_sector, nr_bytes >> 9)
 		ctf_integer(int, errors, rq->errors)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			rq->cmd_flags, nr_bytes)
+			lttng_req_op(rq), lttng_req_rw(rq), nr_bytes)
 		ctf_sequence_hex(unsigned char, cmd,
 			tp_locvar->cmd, size_t, tp_locvar->cmd_len)
 	),
@@ -314,7 +356,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq,
 		ctf_integer(unsigned int, bytes, tp_locvar->bytes)
 		ctf_integer(pid_t, tid, current->pid)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			rq->cmd_flags, blk_rq_bytes(rq))
+			lttng_req_op(rq), lttng_req_rw(rq), blk_rq_bytes(rq))
 		ctf_sequence_hex(unsigned char, cmd,
 			tp_locvar->cmd, size_t, tp_locvar->cmd_len)
 		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
@@ -378,12 +420,14 @@ LTTNG_TRACEPOINT_EVENT(block_bio_bounce,
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			bio->bi_rw, bio->bi_iter.bi_size)
+			lttng_bio_op(bio), lttng_bio_rw(bio),
+			bio->bi_iter.bi_size)
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		ctf_integer(sector_t, sector, bio->bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			bio->bi_rw, bio->bi_size)
+			lttng_bio_op(bio), lttng_bio_rw(bio),
+			bio->bi_size)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		ctf_integer(pid_t, tid, current->pid)
 		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
@@ -418,7 +462,8 @@ LTTNG_TRACEPOINT_EVENT(block_bio_complete,
 		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
 		ctf_integer(int, error, error)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			bio->bi_rw, bio->bi_iter.bi_size)
+			lttng_bio_op(bio), lttng_bio_rw(bio),
+			bio->bi_iter.bi_size)
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		ctf_integer(sector_t, sector, bio->bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
@@ -428,7 +473,7 @@ LTTNG_TRACEPOINT_EVENT(block_bio_complete,
 		ctf_integer(int, error, 0)
 #endif
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			bio->bi_rw, bio->bi_size)
+			lttng_bio_op(bio), lttng_bio_rw(bio), bio->bi_size)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 	)
 )
@@ -446,12 +491,13 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_bio_merge,
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			bio->bi_rw, bio->bi_iter.bi_size)
+			lttng_bio_op(bio), lttng_bio_rw(bio),
+			bio->bi_iter.bi_size)
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		ctf_integer(sector_t, sector, bio->bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			bio->bi_rw, bio->bi_size)
+			lttng_bio_op(bio), lttng_bio_rw(bio), bio->bi_size)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		ctf_integer(pid_t, tid, current->pid)
 		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
@@ -507,12 +553,13 @@ LTTNG_TRACEPOINT_EVENT(block_bio_queue,
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			bio->bi_rw, bio->bi_iter.bi_size)
+			lttng_bio_op(bio), lttng_bio_rw(bio),
+			bio->bi_iter.bi_size)
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		ctf_integer(sector_t, sector, bio->bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			bio->bi_rw, bio->bi_size)
+			lttng_bio_op(bio), lttng_bio_rw(bio), bio->bi_size)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		ctf_integer(pid_t, tid, current->pid)
 		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
@@ -530,7 +577,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_bio,
 		ctf_integer(sector_t, sector, bio->bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			bio->bi_rw, bio->bi_size)
+			lttng_bio_op(bio), lttng_bio_rw(bio), bio->bi_size)
 		ctf_integer(pid_t, tid, current->pid)
 		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
 	)
@@ -594,14 +641,16 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_get_rq,
 		ctf_integer(unsigned int, nr_sector,
 			bio ? bio_sectors(bio) : 0)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			bio ? bio->bi_rw : 0,
+			bio ? lttng_bio_op(bio) : 0,
+			bio ? lttng_bio_rw(bio) : 0,
 			bio ? bio->bi_iter.bi_size : 0)
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		ctf_integer(sector_t, sector, bio ? bio->bi_sector : 0)
 		ctf_integer(unsigned int, nr_sector,
 			bio ? bio->bi_size >> 9 : 0)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			bio ? bio->bi_rw : 0,
+			bio ? lttng_bio_op(bio) : 0,
+			bio ? lttng_bio_rw(bio) : 0,
 			bio ? bio->bi_size : 0)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		ctf_integer(pid_t, tid, current->pid)
@@ -751,11 +800,12 @@ LTTNG_TRACEPOINT_EVENT(block_split,
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			bio->bi_rw, bio->bi_iter.bi_size)
+			lttng_bio_op(bio), lttng_bio_rw(bio),
+			bio->bi_iter.bi_size)
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		ctf_integer(sector_t, sector, bio->bi_sector)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			bio->bi_rw, bio->bi_size)
+			lttng_bio_op(bio), lttng_bio_rw(bio), bio->bi_size)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		ctf_integer(sector_t, new_sector, new_sector)
 		ctf_integer(pid_t, tid, current->pid)
@@ -790,12 +840,13 @@ LTTNG_TRACEPOINT_EVENT(block_remap,
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			bio->bi_rw, bio->bi_iter.bi_size)
+			lttng_bio_op(bio), lttng_bio_rw(bio),
+			bio->bi_iter.bi_size)
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		ctf_integer(sector_t, sector, bio->bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			bio->bi_rw, bio->bi_size)
+			lttng_bio_op(bio), lttng_bio_rw(bio), bio->bi_size)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		ctf_integer(dev_t, old_dev, dev)
 		ctf_integer(sector_t, old_sector, from)
@@ -828,7 +879,7 @@ LTTNG_TRACEPOINT_EVENT(block_rq_remap,
 		ctf_integer(dev_t, old_dev, dev)
 		ctf_integer(sector_t, old_sector, from)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			rq->cmd_flags, blk_rq_bytes(rq))
+			lttng_req_op(rq), lttng_req_rw(rq), blk_rq_bytes(rq))
 	)
 )
 #endif
