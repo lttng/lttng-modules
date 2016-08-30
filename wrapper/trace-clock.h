@@ -175,13 +175,13 @@ static inline const char *trace_clock_description_monotonic(void)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0))
 static inline int get_trace_clock(void)
 {
-	printk(KERN_WARNING "LTTng: Using mainline kernel monotonic fast clock, which is NMI-safe.\n");
+	printk_once(KERN_WARNING "LTTng: Using mainline kernel monotonic fast clock, which is NMI-safe.\n");
 	return 0;
 }
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)) */
 static inline int get_trace_clock(void)
 {
-	printk(KERN_WARNING "LTTng: Using mainline kernel monotonic clock. NMIs will not be traced.\n");
+	printk_once(KERN_WARNING "LTTng: Using mainline kernel monotonic clock. NMIs will not be traced.\n");
 	return 0;
 }
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)) */

@@ -43,7 +43,7 @@ int wrapper_register_ftrace_function_probe(char *glob,
 	if (register_ftrace_function_probe_sym) {
 		return register_ftrace_function_probe_sym(glob, ops, data);
 	} else {
-		printk(KERN_WARNING "LTTng: register_ftrace_function_probe symbol lookup failed.\n");
+		printk_once(KERN_WARNING "LTTng: register_ftrace_function_probe symbol lookup failed.\n");
 		return -EINVAL;
 	}
 }
@@ -59,7 +59,7 @@ void wrapper_unregister_ftrace_function_probe(char *glob,
 	if (unregister_ftrace_function_probe_sym) {
 		unregister_ftrace_function_probe_sym(glob, ops, data);
 	} else {
-		printk(KERN_WARNING "LTTng: unregister_ftrace_function_probe symbol lookup failed.\n");
+		printk_once(KERN_WARNING "LTTng: unregister_ftrace_function_probe symbol lookup failed.\n");
 		WARN_ON(1);
 	}
 }
