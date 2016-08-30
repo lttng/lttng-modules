@@ -40,7 +40,7 @@ struct irq_desc *wrapper_irq_to_desc(unsigned int irq)
 	if (irq_to_desc_sym) {
 		return irq_to_desc_sym(irq);
 	} else {
-		printk(KERN_WARNING "LTTng: irq_to_desc symbol lookup failed.\n");
+		printk_once(KERN_WARNING "LTTng: irq_to_desc symbol lookup failed.\n");
 		return NULL;
 	}
 }

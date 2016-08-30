@@ -44,8 +44,8 @@ void wrapper_vmalloc_sync_all(void)
 		 * Only x86 needs vmalloc_sync_all to make sure LTTng does not
 		 * trigger recursive page faults.
 		 */
-		printk(KERN_WARNING "LTTng: vmalloc_sync_all symbol lookup failed.\n");
-		printk(KERN_WARNING "Page fault handler and NMI tracing might trigger faults.\n");
+		printk_once(KERN_WARNING "LTTng: vmalloc_sync_all symbol lookup failed.\n");
+		printk_once(KERN_WARNING "Page fault handler and NMI tracing might trigger faults.\n");
 #endif
 	}
 }

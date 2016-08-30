@@ -41,7 +41,7 @@ char *wrapper_disk_name(struct gendisk *hd, int partno, char *buf)
 	if (disk_name_sym) {
 		return disk_name_sym(hd, partno, buf);
 	} else {
-		printk(KERN_WARNING "LTTng: disk_name symbol lookup failed.\n");
+		printk_once(KERN_WARNING "LTTng: disk_name symbol lookup failed.\n");
 		return NULL;
 	}
 }
@@ -65,7 +65,7 @@ struct class *wrapper_get_block_class(void)
 
 	ptr_block_class = (struct class *) kallsyms_lookup_dataptr("block_class");
 	if (!ptr_block_class) {
-		printk(KERN_WARNING "LTTng: block_class symbol lookup failed.\n");
+		printk_once(KERN_WARNING "LTTng: block_class symbol lookup failed.\n");
 		return NULL;
 	}
 	return ptr_block_class;
@@ -78,7 +78,7 @@ struct device_type *wrapper_get_disk_type(void)
 
 	ptr_disk_type = (struct device_type *) kallsyms_lookup_dataptr("disk_type");
 	if (!ptr_disk_type) {
-		printk(KERN_WARNING "LTTng: disk_type symbol lookup failed.\n");
+		printk_once(KERN_WARNING "LTTng: disk_type symbol lookup failed.\n");
 		return NULL;
 	}
 	return ptr_disk_type;

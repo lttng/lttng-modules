@@ -82,7 +82,7 @@ int wrapper_tracepoint_module_notify(struct notifier_block *nb,
 	if (tracepoint_module_notify_sym) {
 		return tracepoint_module_notify_sym(nb, val, mod);
 	} else {
-		printk(KERN_WARNING "LTTng: tracepoint_module_notify symbol lookup failed. It probably means you kernel don't need this work-around. Please consider upgrading LTTng modules to make this warning go away.\n");
+		printk_once(KERN_WARNING "LTTng: tracepoint_module_notify symbol lookup failed. It probably means you kernel don't need this work-around. Please consider upgrading LTTng modules to make this warning go away.\n");
 		return -ENOSYS;
 	}
 }

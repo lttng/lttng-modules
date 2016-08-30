@@ -41,7 +41,7 @@ ssize_t wrapper_splice_to_pipe(struct pipe_inode_info *pipe,
 	if (splice_to_pipe_sym) {
 		return splice_to_pipe_sym(pipe, spd);
 	} else {
-		printk(KERN_WARNING "LTTng: splice_to_pipe symbol lookup failed.\n");
+		printk_once(KERN_WARNING "LTTng: splice_to_pipe symbol lookup failed.\n");
 		return -ENOSYS;
 	}
 }
