@@ -14,7 +14,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(connect,
 	TP_code_pre(
 		sc_in(
 			memset(tp_locvar, 0, sizeof(*tp_locvar));
-			if (addrlen < sizeof(struct sockaddr))
+			if (addrlen < sizeof(tp_locvar->sa_family))
 				goto skip_code;
 			(void) get_user(tp_locvar->sa_family, &uservaddr->sa_family);
 			switch (tp_locvar->sa_family) {
@@ -66,7 +66,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(connect,
 		(void) get_user(tp_locvar->uaddr_len, upeer_addrlen);							\
 	)														\
 	sc_out(														\
-		if (tp_locvar->uaddr_len < sizeof(struct sockaddr))							\
+		if (tp_locvar->uaddr_len < sizeof(tp_locvar->sa_family))						\
 			goto skip_code;											\
 		(void) get_user(tp_locvar->sa_family, &upeer_sockaddr->sa_family);					\
 		switch (tp_locvar->sa_family) {										\
