@@ -27,6 +27,7 @@
 #include <linux/slab.h>
 #include <linux/cpu.h>
 #include <linux/mm.h>
+#include <linux/vmalloc.h>
 
 #include "../../wrapper/vmalloc.h"	/* for wrapper_vmalloc_sync_all() */
 #include "../../wrapper/ringbuffer/config.h"
@@ -65,28 +66,29 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 		num_subbuf_alloc++;
 	}
 
-	pages = kmalloc_node(ALIGN(sizeof(*pages) * num_pages,
+	pages = vmalloc_node(ALIGN(sizeof(*pages) * num_pages,
 				   1 << INTERNODE_CACHE_SHIFT),
-			GFP_KERNEL, cpu_to_node(max(bufb->cpu, 0)));
+			cpu_to_node(max(bufb->cpu, 0)));
 	if (unlikely(!pages))
 		goto pages_error;
 
-	virt = kmalloc_node(ALIGN(sizeof(*virt) * num_pages,
+	virt = vmalloc_node(ALIGN(sizeof(*virt) * num_pages,
 				  1 << INTERNODE_CACHE_SHIFT),
-			GFP_KERNEL, cpu_to_node(max(bufb->cpu, 0)));
+			cpu_to_node(max(bufb->cpu, 0)));
 	if (unlikely(!virt))
 		goto virt_error;
 
 	bufb->array = kmalloc_node(ALIGN(sizeof(*bufb->array)
 					 * num_subbuf_alloc,
 				  1 << INTERNODE_CACHE_SHIFT),
-			GFP_KERNEL, cpu_to_node(max(bufb->cpu, 0)));
+			GFP_KERNEL | __GFP_NOWARN,
+			cpu_to_node(max(bufb->cpu, 0)));
 	if (unlikely(!bufb->array))
 		goto array_error;
 
 	for (i = 0; i < num_pages; i++) {
 		pages[i] = alloc_pages_node(cpu_to_node(max(bufb->cpu, 0)),
-					    GFP_KERNEL | __GFP_ZERO, 0);
+				GFP_KERNEL | __GFP_NOWARN | __GFP_ZERO, 0);
 		if (unlikely(!pages[i]))
 			goto depopulate;
 		virt[i] = page_address(pages[i]);
@@ -101,7 +103,8 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 				sizeof(struct lib_ring_buffer_backend_page)
 				* num_pages_per_subbuf,
 				1 << INTERNODE_CACHE_SHIFT),
-				GFP_KERNEL, cpu_to_node(max(bufb->cpu, 0)));
+				GFP_KERNEL | __GFP_NOWARN,
+				cpu_to_node(max(bufb->cpu, 0)));
 		if (!bufb->array[i])
 			goto free_array;
 	}
@@ -111,7 +114,8 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 				sizeof(struct lib_ring_buffer_backend_subbuffer)
 				* num_subbuf,
 				1 << INTERNODE_CACHE_SHIFT),
-				GFP_KERNEL, cpu_to_node(max(bufb->cpu, 0)));
+				GFP_KERNEL | __GFP_NOWARN,
+				cpu_to_node(max(bufb->cpu, 0)));
 	if (unlikely(!bufb->buf_wsb))
 		goto free_array;
 
@@ -144,8 +148,8 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 	 * will not fault.
 	 */
 	wrapper_vmalloc_sync_all();
-	kfree(virt);
-	kfree(pages);
+	vfree(virt);
+	vfree(pages);
 	return 0;
 
 free_array:
@@ -157,9 +161,9 @@ depopulate:
 		__free_page(pages[i]);
 	kfree(bufb->array);
 array_error:
-	kfree(virt);
+	vfree(virt);
 virt_error:
-	kfree(pages);
+	vfree(pages);
 pages_error:
 	return -ENOMEM;
 }
