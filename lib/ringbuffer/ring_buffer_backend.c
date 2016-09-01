@@ -422,6 +422,7 @@ free_bufs:
 		}
 #ifdef CONFIG_HOTPLUG_CPU
 		put_online_cpus();
+		unregister_hotcpu_notifier(&chanb->cpu_hp_notifier);
 #endif
 		free_percpu(chanb->buf);
 	} else
