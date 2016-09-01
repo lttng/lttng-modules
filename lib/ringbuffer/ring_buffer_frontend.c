@@ -206,7 +206,8 @@ int lib_ring_buffer_create(struct lib_ring_buffer *buf,
 		kzalloc_node(ALIGN(sizeof(*buf->commit_hot)
 				   * chan->backend.num_subbuf,
 				   1 << INTERNODE_CACHE_SHIFT),
-			GFP_KERNEL, cpu_to_node(max(cpu, 0)));
+			GFP_KERNEL | __GFP_NOWARN,
+			cpu_to_node(max(cpu, 0)));
 	if (!buf->commit_hot) {
 		ret = -ENOMEM;
 		goto free_chanbuf;
@@ -216,7 +217,8 @@ int lib_ring_buffer_create(struct lib_ring_buffer *buf,
 		kzalloc_node(ALIGN(sizeof(*buf->commit_cold)
 				   * chan->backend.num_subbuf,
 				   1 << INTERNODE_CACHE_SHIFT),
-			GFP_KERNEL, cpu_to_node(max(cpu, 0)));
+			GFP_KERNEL | __GFP_NOWARN,
+			cpu_to_node(max(cpu, 0)));
 	if (!buf->commit_cold) {
 		ret = -ENOMEM;
 		goto free_commit;
