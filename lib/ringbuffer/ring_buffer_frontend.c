@@ -1982,6 +1982,33 @@ void lib_ring_buffer_vmcore_check_deliver(const struct lib_ring_buffer_config *c
 		v_set(config, &buf->commit_hot[idx].seq, commit_count);
 }
 
+/*
+ * The ring buffer can count events recorded and overwritten per buffer,
+ * but it is disabled by default due to its performance overhead.
+ */
+#ifdef LTTNG_RING_BUFFER_COUNT_EVENTS
+static
+void deliver_count_events(const struct lib_ring_buffer_config *config,
+		struct lib_ring_buffer *buf,
+		unsigned long idx)
+{
+	v_add(config, subbuffer_get_records_count(config,
+			&buf->backend, idx),
+		&buf->records_count);
+	v_add(config, subbuffer_count_records_overrun(config,
+			&buf->backend, idx),
+		&buf->records_overrun);
+}
+#else /* LTTNG_RING_BUFFER_COUNT_EVENTS */
+static
+void deliver_count_events(const struct lib_ring_buffer_config *config,
+		struct lib_ring_buffer *buf,
+		unsigned long idx)
+{
+}
+#endif /* #else LTTNG_RING_BUFFER_COUNT_EVENTS */
+
+
 void lib_ring_buffer_check_deliver_slow(const struct lib_ring_buffer_config *config,
 				   struct lib_ring_buffer *buf,
 			           struct channel *chan,
@@ -2034,15 +2061,7 @@ void lib_ring_buffer_check_deliver_slow(const struct lib_ring_buffer_config *con
 		 * and any other writer trying to access this subbuffer
 		 * in this state is required to drop records.
 		 */
-		v_add(config,
-		      subbuffer_get_records_count(config,
-						  &buf->backend, idx),
-		      &buf->records_count);
-		v_add(config,
-		      subbuffer_count_records_overrun(config,
-						      &buf->backend,
-						      idx),
-		      &buf->records_overrun);
+		deliver_count_events(config, buf, idx);
 		config->cb.buffer_end(buf, tsc, idx,
 				      lib_ring_buffer_get_data_size(config,
 								buf,
