@@ -16,6 +16,7 @@
 #include <linux/kref.h>
 #include <lttng-cpuhotplug.h>
 #include <wrapper/uuid.h>
+#include <wrapper/uprobes.h>
 #include <lttng-tracer.h>
 #include <lttng-abi.h>
 #include <lttng-abi-old.h>
@@ -309,6 +310,11 @@ struct lttng_event {
 		struct {
 			char *symbol_name;
 		} ftrace;
+		struct {
+			struct uprobe_consumer up_consumer;
+			struct inode *inode;
+			loff_t offset;
+		} uprobe;
 	} u;
 	struct list_head list;		/* Event list in session */
 	unsigned int metadata_dumped:1;
@@ -767,6 +773,34 @@ void lttng_kprobes_unregister(struct lttng_event *event)
 
 static inline
 void lttng_kprobes_destroy_private(struct lttng_event *event)
+{
+}
+#endif
+
+#ifdef CONFIG_UPROBES
+int lttng_uprobes_register(const char *name,
+		const char *path,
+		uint64_t offset,
+		struct lttng_event *event);
+void lttng_uprobes_unregister(struct lttng_event *event);
+void lttng_uprobes_destroy_private(struct lttng_event *event);
+#else
+static inline
+int lttng_uprobes_register(const char *name,
+		const char *path,
+		uint64_t offset,
+		struct lttng_event *event)
+{
+	return -ENOSYS;
+}
+
+static inline
+void lttng_uprobes_unregister(struct lttng_event *event)
+{
+}
+
+static inline
+void lttng_uprobes_destroy_private(struct lttng_event *event)
 {
 }
 #endif
