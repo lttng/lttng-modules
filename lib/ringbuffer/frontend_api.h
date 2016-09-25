@@ -162,14 +162,14 @@ int lib_ring_buffer_reserve(const struct lib_ring_buffer_config *config,
 	unsigned long o_begin, o_end, o_old;
 	size_t before_hdr_pad = 0;
 
-	if (atomic_read(&chan->record_disabled))
+	if (unlikely(atomic_read(&chan->record_disabled)))
 		return -EAGAIN;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
 		buf = per_cpu_ptr(chan->backend.buf, ctx->cpu);
 	else
 		buf = chan->backend.buf;
-	if (atomic_read(&buf->record_disabled))
+	if (unlikely(atomic_read(&buf->record_disabled)))
 		return -EAGAIN;
 	ctx->buf = buf;
 
