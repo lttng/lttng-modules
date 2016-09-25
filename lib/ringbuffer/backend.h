@@ -83,7 +83,7 @@ lib_ring_buffer_read_offset_address(struct lib_ring_buffer_backend *bufb,
  * backend-specific memcpy() operation. Calls the slow path (_ring_buffer_write)
  * if copy is crossing a page boundary.
  */
-static inline
+static inline __attribute__((always_inline))
 void lib_ring_buffer_write(const struct lib_ring_buffer_config *config,
 			   struct lib_ring_buffer_ctx *ctx,
 			   const void *src, size_t len)
