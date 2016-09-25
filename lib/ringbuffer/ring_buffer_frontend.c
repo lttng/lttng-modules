@@ -1380,9 +1380,9 @@ void lib_ring_buffer_switch_old_start(struct lib_ring_buffer *buf,
 	/* Check if the written buffer has to be delivered */
 	lib_ring_buffer_check_deliver(config, buf, chan, offsets->old,
 				      commit_count, oldidx, tsc);
-	lib_ring_buffer_write_commit_counter(config, buf, chan, oldidx,
+	lib_ring_buffer_write_commit_counter(config, buf, chan,
 			offsets->old + config->cb.subbuffer_header_size(),
-			commit_count);
+			commit_count, &buf->commit_hot[oldidx]);
 }
 
 /*
@@ -1424,8 +1424,9 @@ void lib_ring_buffer_switch_old_end(struct lib_ring_buffer *buf,
 	commit_count = v_read(config, &buf->commit_hot[oldidx].cc);
 	lib_ring_buffer_check_deliver(config, buf, chan, offsets->old - 1,
 				      commit_count, oldidx, tsc);
-	lib_ring_buffer_write_commit_counter(config, buf, chan, oldidx,
-			offsets->old + padding_size, commit_count);
+	lib_ring_buffer_write_commit_counter(config, buf, chan,
+			offsets->old + padding_size, commit_count,
+			&buf->commit_hot[oldidx]);
 }
 
 /*
@@ -1466,9 +1467,9 @@ void lib_ring_buffer_switch_new_start(struct lib_ring_buffer *buf,
 	/* Check if the written buffer has to be delivered */
 	lib_ring_buffer_check_deliver(config, buf, chan, offsets->begin,
 				      commit_count, beginidx, tsc);
-	lib_ring_buffer_write_commit_counter(config, buf, chan, beginidx,
+	lib_ring_buffer_write_commit_counter(config, buf, chan,
 			offsets->begin + config->cb.subbuffer_header_size(),
-			commit_count);
+			commit_count, &buf->commit_hot[beginidx]);
 }
 
 /*

@@ -250,6 +250,7 @@ void lib_ring_buffer_commit(const struct lib_ring_buffer_config *config,
 	unsigned long offset_end = ctx->buf_offset;
 	unsigned long endidx = subbuf_index(offset_end - 1, chan);
 	unsigned long commit_count;
+	struct commit_counters_hot *cc_hot = &buf->commit_hot[endidx];
 
 	/*
 	 * Must count record before incrementing the commit count.
@@ -270,7 +271,7 @@ void lib_ring_buffer_commit(const struct lib_ring_buffer_config *config,
 	} else
 		smp_wmb();
 
-	v_add(config, ctx->slot_size, &buf->commit_hot[endidx].cc);
+	v_add(config, ctx->slot_size, &cc_hot->cc);
 
 	/*
 	 * commit count read can race with concurrent OOO commit count updates.
@@ -290,7 +291,7 @@ void lib_ring_buffer_commit(const struct lib_ring_buffer_config *config,
 	 *   count reaches back the reserve offset for a specific sub-buffer,
 	 *   which is completely independent of the order.
 	 */
-	commit_count = v_read(config, &buf->commit_hot[endidx].cc);
+	commit_count = v_read(config, &cc_hot->cc);
 
 	lib_ring_buffer_check_deliver(config, buf, chan, offset_end - 1,
 				      commit_count, endidx, ctx->tsc);
@@ -298,8 +299,8 @@ void lib_ring_buffer_commit(const struct lib_ring_buffer_config *config,
 	 * Update used size at each commit. It's needed only for extracting
 	 * ring_buffer buffers from vmcore, after crash.
 	 */
-	lib_ring_buffer_write_commit_counter(config, buf, chan, endidx,
-			offset_end, commit_count);
+	lib_ring_buffer_write_commit_counter(config, buf, chan,
+			offset_end, commit_count, cc_hot);
 }
 
 /**
