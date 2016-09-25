@@ -200,6 +200,8 @@ struct lib_ring_buffer_ctx {
 					 */
 	u64 tsc;			/* time-stamp counter value */
 	unsigned int rflags;		/* reservation flags */
+	/* Cache backend pages pointer chasing. */
+	struct lib_ring_buffer_backend_pages *backend_pages;
 };
 
 /**
@@ -223,6 +225,7 @@ void lib_ring_buffer_ctx_init(struct lib_ring_buffer_ctx *ctx,
 	ctx->largest_align = largest_align;
 	ctx->cpu = cpu;
 	ctx->rflags = 0;
+	ctx->backend_pages = NULL;
 }
 
 /*

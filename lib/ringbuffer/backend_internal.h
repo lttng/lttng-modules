@@ -201,6 +201,37 @@ int subbuffer_id_check_index(const struct lib_ring_buffer_config *config,
 		return 0;
 }
 
+static inline
+void lib_ring_buffer_backend_get_pages(const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer_ctx *ctx,
+			struct lib_ring_buffer_backend_pages **backend_pages)
+{
+	struct lib_ring_buffer_backend *bufb = &ctx->buf->backend;
+	struct channel_backend *chanb = &ctx->chan->backend;
+	size_t sbidx, offset = ctx->buf_offset;
+	unsigned long sb_bindex, id;
+	struct lib_ring_buffer_backend_pages *rpages;
+
+	offset &= chanb->buf_size - 1;
+	sbidx = offset >> chanb->subbuf_size_order;
+	id = bufb->buf_wsb[sbidx].id;
+	sb_bindex = subbuffer_id_get_index(config, id);
+	rpages = bufb->array[sb_bindex];
+	CHAN_WARN_ON(ctx->chan,
+		     config->mode == RING_BUFFER_OVERWRITE
+		     && subbuffer_id_is_noref(config, id));
+	*backend_pages = rpages;
+}
+
+/* Get backend pages from cache. */
+static inline
+struct lib_ring_buffer_backend_pages *
+	lib_ring_buffer_get_backend_pages_from_ctx(const struct lib_ring_buffer_config *config,
+		struct lib_ring_buffer_ctx *ctx)
+{
+	return ctx->backend_pages;
+}
+
 /*
  * The ring buffer can count events recorded and overwritten per buffer,
  * but it is disabled by default due to its performance overhead.

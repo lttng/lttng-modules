@@ -626,6 +626,8 @@ int lttng_event_reserve(struct lib_ring_buffer_ctx *ctx,
 	ret = lib_ring_buffer_reserve(&client_config, ctx);
 	if (ret)
 		goto put;
+	lib_ring_buffer_backend_get_pages(&client_config, ctx,
+			&ctx->backend_pages);
 	lttng_write_event_header(&client_config, ctx, event_id);
 	return 0;
 put:
