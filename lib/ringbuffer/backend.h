@@ -168,7 +168,7 @@ void lib_ring_buffer_memset(const struct lib_ring_buffer_config *config,
  * terminating character is found in @src. Returns the number of bytes
  * copied. Does *not* terminate @dest with NULL terminating character.
  */
-static inline
+static inline __attribute__((always_inline))
 size_t lib_ring_buffer_do_strcpy(const struct lib_ring_buffer_config *config,
 		char *dest, const char *src, size_t len)
 {
@@ -199,7 +199,7 @@ size_t lib_ring_buffer_do_strcpy(const struct lib_ring_buffer_config *config,
  * directly without having the src pointer checked with access_ok()
  * previously.
  */
-static inline
+static inline __attribute__((always_inline))
 size_t lib_ring_buffer_do_strcpy_from_user_inatomic(const struct lib_ring_buffer_config *config,
 		char *dest, const char __user *src, size_t len)
 {
@@ -297,7 +297,7 @@ void lib_ring_buffer_strcpy(const struct lib_ring_buffer_config *config,
  * (_ring_buffer_write_from_user_inatomic) if copy is crossing a page boundary.
  * Disable the page fault handler to ensure we never try to take the mmap_sem.
  */
-static inline
+static inline __attribute__((always_inline))
 void lib_ring_buffer_copy_from_user_inatomic(const struct lib_ring_buffer_config *config,
 				    struct lib_ring_buffer_ctx *ctx,
 				    const void __user *src, size_t len)
