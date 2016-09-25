@@ -478,6 +478,28 @@ int update_read_sb_index(const struct lib_ring_buffer_config *config,
 	return 0;
 }
 
+static inline __attribute__((always_inline))
+void lttng_inline_memcpy(void *dest, const void __user *src,
+		unsigned long len)
+{
+	switch (len) {
+	case 1:
+		*(uint8_t *) dest = *(const uint8_t *) src;
+		break;
+	case 2:
+		*(uint16_t *) dest = *(const uint16_t *) src;
+		break;
+	case 4:
+		*(uint32_t *) dest = *(const uint32_t *) src;
+		break;
+	case 8:
+		*(uint64_t *) dest = *(const uint64_t *) src;
+		break;
+	default:
+		inline_memcpy(dest, src, len);
+	}
+}
+
 /*
  * Use the architecture-specific memcpy implementation for constant-sized
  * inputs, but rely on an inline memcpy for length statically unknown.
@@ -489,7 +511,7 @@ do {								\
 	if (__builtin_constant_p(len))				\
 		memcpy(dest, src, __len);			\
 	else							\
-		inline_memcpy(dest, src, __len);		\
+		lttng_inline_memcpy(dest, src, __len);		\
 } while (0)
 
 /*
