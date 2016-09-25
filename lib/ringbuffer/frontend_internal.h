@@ -307,9 +307,8 @@ void lib_ring_buffer_write_commit_counter(const struct lib_ring_buffer_config *c
 		return;
 
 	commit_seq_old = v_read(config, &buf->commit_hot[idx].seq);
-	while ((long) (commit_seq_old - commit_count) < 0)
-		commit_seq_old = v_cmpxchg(config, &buf->commit_hot[idx].seq,
-					   commit_seq_old, commit_count);
+	if (likely((long) (commit_seq_old - commit_count) < 0))
+		v_set(config, &buf->commit_hot[idx].seq, commit_count);
 }
 
 extern int lib_ring_buffer_create(struct lib_ring_buffer *buf,
