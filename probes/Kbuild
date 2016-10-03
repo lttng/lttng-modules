@@ -23,11 +23,11 @@ ifneq ($(CONFIG_KVM),)
         CFLAGS_lttng-probe-kvm-x86-mmu.o += -I$(srctree)/virt/kvm
         obj-$(CONFIG_LTTNG) +=  $(shell \
           if [ $(VERSION) -ge 3 \
-            -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
+            -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -eq 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
             echo "lttng-probe-kvm-x86.o" ; fi;)
         obj-$(CONFIG_LTTNG) +=  $(shell \
           if [ $(VERSION) -ge 3 \
-            -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
+            -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -eq 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
             echo "lttng-probe-kvm-x86-mmu.o" ; fi;)
       else
         $(warning File $(kvm_dep) not found. Probe "kvm" x86-specific is disabled. Use full kernel source tree to enable it.)
@@ -54,7 +54,7 @@ endif # CONFIG_X86
 
 obj-$(CONFIG_LTTNG) +=  $(shell \
   if [ $(VERSION) -ge 3 \
-    -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 33 \) ] ; then \
+    -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -eq 6 -a $(SUBLEVEL) -ge 33 \) ] ; then \
     echo "lttng-probe-signal.o" ; fi;)
 
 ifneq ($(CONFIG_BLOCK),)
@@ -69,7 +69,7 @@ ifneq ($(CONFIG_NET),)
   obj-$(CONFIG_LTTNG) += lttng-probe-skb.o
   obj-$(CONFIG_LTTNG) +=  $(shell \
     if [ $(VERSION) -ge 3 \
-      -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 37 \) ] ; then \
+      -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -eq 6 -a $(SUBLEVEL) -ge 37 \) ] ; then \
       echo "lttng-probe-net.o" ; fi;)
   obj-$(CONFIG_LTTNG) +=  $(shell \
     if [ $(VERSION) -ge 4 \
@@ -84,7 +84,7 @@ endif # CONFIG_NET
 ifneq ($(CONFIG_SND_SOC),)
   obj-$(CONFIG_LTTNG) +=  $(shell \
     if [ $(VERSION) -ge 3 \
-      -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
+      -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -eq 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
       echo "lttng-probe-asoc.o" ; fi;)
 endif # CONFIG_SND_SOC
 
@@ -127,20 +127,20 @@ endif # CONFIG_JBD
 ifneq ($(CONFIG_REGULATOR),)
   obj-$(CONFIG_LTTNG) +=  $(shell \
     if [ $(VERSION) -ge 3 \
-      -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
+      -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -eq 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
       echo "lttng-probe-regulator.o" ; fi;)
 endif # CONFIG_REGULATOR
 
 ifneq ($(CONFIG_SCSI),)
   obj-$(CONFIG_LTTNG) +=  $(shell \
     if [ $(VERSION) -ge 3 \
-      -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 35 \) ] ; then \
+      -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -eq 6 -a $(SUBLEVEL) -ge 35 \) ] ; then \
       echo "lttng-probe-scsi.o" ; fi;)
 endif # CONFIG_SCSI
 
 vmscan = $(shell \
   if [ $(VERSION) -ge 3 \
-    -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 36 \) ] ; then \
+    -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -eq 6 -a $(SUBLEVEL) -ge 36 \) ] ; then \
     echo "lttng-probe-vmscan.o" ; fi;)
 
 ifneq ($(CONFIG_SWAP),)
@@ -160,7 +160,7 @@ ifneq ($(CONFIG_BTRFS_FS),)
   btrfs_dep = $(srctree)/fs/btrfs/*.h
   btrfs = $(shell \
     if [ $(VERSION) -ge 3 \
-      -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 39 \) ] ; then \
+      -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -eq 6 -a $(SUBLEVEL) -ge 39 \) ] ; then \
       echo "lttng-probe-btrfs.o" ; fi;)
   ifneq ($(btrfs),)
     ifeq ($(wildcard $(btrfs_dep)),)
@@ -173,7 +173,7 @@ endif # CONFIG_BTRFS_FS
 
 obj-$(CONFIG_LTTNG) +=  $(shell \
   if [ $(VERSION) -ge 3 \
-    -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
+    -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -eq 6 -a $(SUBLEVEL) -ge 38 \) ] ; then \
     echo "lttng-probe-compaction.o" ; fi;)
 
 ifneq ($(CONFIG_EXT4_FS),)
@@ -243,7 +243,7 @@ obj-$(CONFIG_LTTNG) += lttng-probe-workqueue.o
 ifneq ($(CONFIG_KALLSYMS_ALL),)
   obj-$(CONFIG_LTTNG) +=  $(shell \
     if [ $(VERSION) -ge 3 \
-      -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 36 \) ] ; then \
+      -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -eq 6 -a $(SUBLEVEL) -ge 36 \) ] ; then \
       echo "lttng-probe-writeback.o" ; fi;)
 else
   $(warning CONFIG_KALLSYMS_ALL is disabled, therefore probe "writeback" is disabled. Rebuild your kernel with this configuration option enabled in order to trace this subsystem.)

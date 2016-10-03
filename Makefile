@@ -68,7 +68,7 @@ ifneq ($(KERNELRELEASE),)
   ifneq ($(CONFIG_PERF_EVENTS),)
     lttng-tracer-objs += $(shell \
       if [ $(VERSION) -ge 3 \
-        -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -ge 6 -a $(SUBLEVEL) -ge 33 \) ] ; then \
+        -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -eq 6 -a $(SUBLEVEL) -ge 33 \) ] ; then \
         echo "lttng-context-perf-counters.o" ; fi;)
   endif # CONFIG_PERF_EVENTS
 
@@ -83,7 +83,7 @@ ifneq ($(KERNELRELEASE),)
 
   lttng-tracer-objs += $(shell \
     if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 15 -a $(SUBLEVEL) -ge 0 \) ] ; then \
+      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 15 \) ] ; then \
       echo "lttng-tracepoint.o" ; fi;)
 
   obj-$(CONFIG_LTTNG) += lttng-statedump.o
