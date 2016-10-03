@@ -1,3 +1,25 @@
+2016-10-03 (National Techies Day) LTTng modules 2.8.1
+	* Fix: handle large number of pages or subbuffers per buffer
+	* Fix: unregister cpu hotplug notifier on buffer alloc error
+	* Fix: sa_family is of type unsigned short
+	* Fix: check for sizeof sa_family to save sa_family in accept and connect
+	* Cleanup: reuse code in accept() and accept4() instrumentation
+	* Add x86-64 override for accept4 syscall
+	* Fix: use printk_once() for wrapper warning messages
+	* Fix: btrfs instrumentation for 4.8 kernel
+	* Fix: update mm_vmscan instrumentation for kernel 4.8
+	* Fix: napi instrumentation for 4.8 kernels
+	* Fix: update block instrumentation to compile on 4.8 kernels
+	* Fix: timer wrapper: support kernels >= 4.8
+	* Fix: x86-64 accept instrumentation
+	* Fix: Add support for 4.6.4-rt8 kernel
+	* Fix: update scsi instrumentation for 4.7+ kernels
+	* Fix: Use fs_initcall instead of rootfs_initcall
+	* Fix: Add kernel configuration for lttng clock plugin
+	* Fix: the clock plugin must be initiated before first use of the clock
+	* Fix: tests/Kbuild for older kernels
+	* Fix: annotate bytecode interpreter for kernel stack validator
+
 2016-05-20 (Bike-to-Work Day) LTTng modules 2.8.0
 	* Fix: ring buffer: honor switch parameter type in remote switch
 	* Fix: only flush non-metadata channels
