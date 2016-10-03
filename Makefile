@@ -28,6 +28,13 @@ $(error Duplicate version.h files found in $(lttng_check_linux_version) and $(lt
 endif
 endif
 
+ifneq ($(shell \
+	if [ $(VERSION) -ge 5 \
+		-o \( $(VERSION) -eq 4 -a $(PATCHLEVEL) -ge 8 \) ] ; then \
+		echo "true" ; fi;),)
+$(warning You are entering uncharted territories adventurer! Proceed with utmost caution (also, lttng-modules 2.7 does not support Linux >= 4.8. You should upgrade to a newer lttng-modules version.))
+endif
+
 include $(MAKEFILEDIR)/Makefile.ABI.workarounds
 
 obj-m += lttng-ring-buffer-client-discard.o
