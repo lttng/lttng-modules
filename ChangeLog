@@ -1,3 +1,7 @@
+2016-10-03 (National Techies Day) LTTng modules 2.7.5
+	* Fix: handle large number of pages or subbuffers per buffer
+	* Fix: unregister cpu hotplug notifier on buffer alloc error
+
 2016-05-20 (Bike-to-Work Day) LTTng modules 2.7.4
 	* Fix: ring buffer: honor switch parameter type in remote switch
 	* Fix: only flush non-metadata channels
