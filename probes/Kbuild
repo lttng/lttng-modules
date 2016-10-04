@@ -5,6 +5,7 @@ include $(TOP_LTTNG_MODULES_DIR)/Makefile.ABI.workarounds
 ccflags-y += -I$(TOP_LTTNG_MODULES_DIR)
 
 obj-$(CONFIG_LTTNG) += lttng-probe-sched.o
+obj-$(CONFIG_LTTNG) += lttng-probe-i2c.o
 obj-$(CONFIG_LTTNG) += lttng-probe-irq.o
 obj-$(CONFIG_LTTNG) += lttng-probe-timer.o
 obj-$(CONFIG_LTTNG) += lttng-probe-kmem.o
