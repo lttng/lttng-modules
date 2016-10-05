@@ -47,7 +47,16 @@
 
 extern struct lttng_trace_clock *lttng_trace_clock;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0))
+/*
+ * Upstream Linux commit 27727df240c7 ("Avoid taking lock in NMI path with
+ * CONFIG_DEBUG_TIMEKEEPING") introduces a buggy ktime_get_mono_fast_ns().
+ * This is fixed by patch "timekeeping: Fix __ktime_get_fast_ns() regression".
+ */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0) \
+	&& !LTTNG_KERNEL_RANGE(4,8,0, 4,8,1) \
+	&& !LTTNG_KERNEL_RANGE(4,7,4, 4,7,7) \
+	&& !LTTNG_KERNEL_RANGE(4,4,20, 4,4,24) \
+	&& !LTTNG_KERNEL_RANGE(4,1,32, 4,1,34))
 
 DECLARE_PER_CPU(local_t, lttng_last_tsc);
 
