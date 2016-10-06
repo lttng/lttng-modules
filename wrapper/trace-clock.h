@@ -49,11 +49,15 @@
  * CONFIG_DEBUG_TIMEKEEPING") introduces a buggy ktime_get_mono_fast_ns().
  * This is fixed by patch "timekeeping: Fix __ktime_get_fast_ns() regression".
  */
+#if (LTTNG_KERNEL_RANGE(4,8,0, 4,8,1) \
+	|| LTTNG_KERNEL_RANGE(4,7,4, 4,7,7) \
+	|| LTTNG_KERNEL_RANGE(4,4,20, 4,4,24) \
+	|| LTTNG_KERNEL_RANGE(4,1,32, 4,1,34))
+#define LTTNG_CLOCK_NMI_SAFE_BROKEN
+#endif
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0) \
-	&& !LTTNG_KERNEL_RANGE(4,8,0, 4,8,1) \
-	&& !LTTNG_KERNEL_RANGE(4,7,4, 4,7,7) \
-	&& !LTTNG_KERNEL_RANGE(4,4,20, 4,4,24) \
-	&& !LTTNG_KERNEL_RANGE(4,1,32, 4,1,34))
+	&& !defined(LTTNG_CLOCK_NMI_SAFE_BROKEN))
 
 DECLARE_PER_CPU(local_t, lttng_last_tsc);
 
