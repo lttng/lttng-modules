@@ -1,3 +1,7 @@
+2016-10-07 (National Frappé Day) LTTng modules 2.8.2
+	* Fix: show warning for broken clock work-around
+	* Fix: work-around upstream Linux timekeeping bug
+
 2016-10-03 (National Techies Day) LTTng modules 2.8.1
 	* Fix: handle large number of pages or subbuffers per buffer
 	* Fix: unregister cpu hotplug notifier on buffer alloc error
