@@ -1,3 +1,100 @@
+2016-10-07 (National Frappé Day) LTTng modules 2.9.0-rc1
+	* Fix: i2c: support kernels < 3.15
+	* Fix: show warning for broken clock work-around
+	* Bump minor ABI version
+	* Fix: work-around upstream Linux timekeeping bug
+	* Add support for i2c tracepoints
+	* Cleanup: makefile version checks with single "ge"
+	* Performance: special-case NULL in lttng_strlen_user_inatomic
+	* Fix: lttng_inline_memcpy does not take a __user argument
+	* Performance: implement lttng_inline_memcpy
+	* Performance: cache the backend pages pointer in context
+	* Cleanup: libringbuffer: remove duplicate pointer chasing in slow paths
+	* Performance: Only dereference commit index once
+	* Performance: Mark channel and buffer event disabled check unlikely
+	* Performance: Relax atomicity constraints for crash handling
+	* Performance: mark ring buffer do_copy callers always inline
+	* Performance: mark lib_ring_buffer_write always inline
+	* Kconfig: select TRACEPOINTS when built-in
+	* Performance: disable event counting by default
+	* Fix: handle large number of pages or subbuffers per buffer
+	* Fix: unregister cpu hotplug notifier on buffer alloc error
+	* Fix: sa_family is of type unsigned short
+	* Fix: check for sizeof sa_family to save sa_family in accept and connect
+	* Fix: use printk_once() for wrapper warning messages
+	* Fix: btrfs instrumentation for 4.8 kernel
+	* Fix: update mm_vmscan instrumentation for kernel 4.8
+	* Fix: napi instrumentation for 4.8 kernels
+	* Fix: update block instrumentation to compile on 4.8 kernels
+	* Cleanup: reuse code in accept() and accept4() instrumentation
+	* Add x86-64 override for accept4 syscall
+	* Fix: timer wrapper: support kernels >= 4.8
+	* Performance: split check deliver fast/slow paths
+	* Fix: x86-64 accept instrumentation
+	* Fix: Add support for 4.6.4-rt8 kernel
+	* Fix: update scsi instrumentation for 4.7+ kernels
+	* Fix: Use fs_initcall instead of rootfs_initcall
+	* Fix: Add kernel configuration for lttng clock plugin
+	* Fix: the clock plugin must be initiated before first use of the clock
+	* Fix: tests/Kbuild for older kernels
+	* Cleanup: __dynamic_len_idx set but not used warning
+	* Cleanup: coding style and comments of net.h
+	* net: Add TCP header data to net_* tracepoints
+	* net: Add IPv4/IPv6 header data to net_* tracepoints
+	* Fix: endianness for the container type of enum
+	* enumeration autoincrement: use if/else logic
+	* Cleanup trailing whitespaces
+	* lttng-test probe: test ctf_enum_auto()
+	* Add ctf_enum_auto() for autoincrementing enumeration values
+	* Implement session statedump command
+	* Fix: annotate bytecode interpreter for kernel stack validator
+	* Update version to 2.9.0-pre
+	* Fix: ring buffer: honor switch parameter type in remote switch
+	* Fix: only flush non-metadata channels
+	* Fix: don't perform extra flush on metadata channel
+	* select, poll and epoll_wait overrides on ARM 32-bit
+	* Fix: flush empty packets on snapshot channel
+	* Fix: do not generate packet at destroy after stop
+	* Fix: compat ioctl for flush/get metadata version
+	* Fix: ctf_string() should handle NULL pointers
+	* Fix: portability: no arith on void pointer
+	* Fix: add missing tests/Kbuild
+	* Test clock override plugin
+	* Fix: add modules target to base Makefile
+	* Fix: make clean does not include dot-config
+	* Fix: trigger build error if CONFIG_TRACEPOINTS is not set
+	* Documentation: document that CONFIG_MODULES not required when builtin
+	* Fix: add missing errno include in random wrapper
+	* Fix: mm_page_alloc_extfrag instrumentation for kernel 3.16.35
+	* Fix: copy_from_user size when limited allocation
+	* Extract the payload of epoll_wait/epoll_pwait
+	* Extract the payload for epoll_ctl
+	* Extract the FDs and flags from poll and ppoll
+	* Extract the FD sets in select and pselect6
+	* Add ctf_integer_bitfield_type
+	* Implement enumeration type
+	* Implement custom field support
+	* Implement variant type
+	* Implement shadow stack for dynamic len
+	* libringbuffer: implement event too big API
+	* Implement structure, compound array/sequence types
+	* Fix: integer endianness metadata generation
+	* Fix: endianness of integers received by filter
+	* Fix: writeback probe on RHEL >= 3.10.0-327.10.1
+	* Fix: RHEL kernel 3.10.0-327.13.1 compat
+	* Fix: ctf_user_integer should not trigger page fault
+	* Fix: lib_ring_buffer_copy_from_user_inatomic error handling
+	* Add comment describing ioctl number duplication
+	* Fix: remove unused gfpflags.h from btrfs and compaction instrumentation
+	* Fix: Remove dead code from filter interpreter
+	* Fix: x86 kvm mmutrace instrumentation for kernel < 3.6
+	* Fix: mm_vmscan instrumentation: remove unused gfpflags.h include
+	* Fix: use of uninitialized ret value in lttng_abi_create_event
+	* Fix: kmem instrumentation: remove unused gfpflags.h include
+	* Fix: 4.6 kernel: use in_compat_syscall
+	* Fix: use BUG_ON instead of accessing array subscript above array bounds
+	* Fix: Add granularity to RHEL kernel version checks
+
 2016-03-18 (Awkward Moments Day) LTTng modules 2.8.0-rc1
 	* Bump minor tracer ABI version
 	* Fix: build against out-of-tree kernel build

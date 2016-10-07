@@ -42,10 +42,10 @@
 #define LTTNG_MODULES_MAJOR_VERSION 2
 #define LTTNG_MODULES_MINOR_VERSION 9
 #define LTTNG_MODULES_PATCHLEVEL_VERSION 0
-#define LTTNG_MODULES_EXTRAVERSION "-pre"
+#define LTTNG_MODULES_EXTRAVERSION "-rc1"
 
-#define LTTNG_VERSION_NAME		"J-TBD"
-#define LTTNG_VERSION_DESCRIPTION	""
+#define LTTNG_VERSION_NAME		"Joannès"
+#define LTTNG_VERSION_DESCRIPTION	"Berliner Weisse style beer from the Trèfle Noir microbrewery in Rouyn-Noranda."
 
 #ifndef CHAR_BIT
 #define CHAR_BIT 8
