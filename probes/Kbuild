@@ -5,13 +5,17 @@ include $(TOP_LTTNG_MODULES_DIR)/Makefile.ABI.workarounds
 ccflags-y += -I$(TOP_LTTNG_MODULES_DIR)
 
 obj-$(CONFIG_LTTNG) += lttng-probe-sched.o
-obj-$(CONFIG_LTTNG) += lttng-probe-i2c.o
 obj-$(CONFIG_LTTNG) += lttng-probe-irq.o
 obj-$(CONFIG_LTTNG) += lttng-probe-timer.o
 obj-$(CONFIG_LTTNG) += lttng-probe-kmem.o
 obj-$(CONFIG_LTTNG) += lttng-probe-module.o
 obj-$(CONFIG_LTTNG) += lttng-probe-power.o
 obj-$(CONFIG_LTTNG) += lttng-probe-statedump.o
+
+i2c_dep = $(srctree)/include/trace/events/i2c.h
+ifneq ($(wildcard $(i2c_dep)),)
+  obj-$(CONFIG_LTTNG) += lttng-probe-i2c.o
+endif
 
 ifneq ($(CONFIG_KVM),)
   obj-$(CONFIG_LTTNG) += lttng-probe-kvm.o
