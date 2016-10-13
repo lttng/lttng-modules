@@ -52,10 +52,10 @@ extern struct lttng_trace_clock *lttng_trace_clock;
  * CONFIG_DEBUG_TIMEKEEPING") introduces a buggy ktime_get_mono_fast_ns().
  * This is fixed by patch "timekeeping: Fix __ktime_get_fast_ns() regression".
  */
-#if (LTTNG_KERNEL_RANGE(4,8,0, 4,8,1) \
-	|| LTTNG_KERNEL_RANGE(4,7,4, 4,7,7) \
-	|| LTTNG_KERNEL_RANGE(4,4,20, 4,4,24) \
-	|| LTTNG_KERNEL_RANGE(4,1,32, 4,1,34))
+#if (LTTNG_KERNEL_RANGE(4,8,0, 4,8,2) \
+	|| LTTNG_KERNEL_RANGE(4,7,4, 4,7,8) \
+	|| LTTNG_KERNEL_RANGE(4,4,20, 4,4,25) \
+	|| LTTNG_KERNEL_RANGE(4,1,32, 4,1,35))
 #define LTTNG_CLOCK_NMI_SAFE_BROKEN
 #endif
 
