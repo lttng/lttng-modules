@@ -1,3 +1,6 @@
+2016-10-13 (International Day for Failure) LTTng modules 2.8.3
+	* Fix: bump stable kernel version ranges for clock work-around
+
 2016-10-07 (National Frappé Day) LTTng modules 2.8.2
 	* Fix: show warning for broken clock work-around
 	* Fix: work-around upstream Linux timekeeping bug
