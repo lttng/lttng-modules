@@ -1,3 +1,6 @@
+2016-10-13 (International Day for Failure) LTTng modules 2.9.0-rc2
+	* Fix: bump stable kernel version ranges for clock work-around
+
 2016-10-07 (National Frappé Day) LTTng modules 2.9.0-rc1
 	* Fix: i2c: support kernels < 3.15
 	* Fix: show warning for broken clock work-around
