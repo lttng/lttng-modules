@@ -260,7 +260,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(select,
 		LTTNG_SYSCALL_SELECT_code_post
 	)
 )
-#endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) */
+#endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM) */
 
 #if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM)
 #define OVERRIDE_32_pselect6
@@ -521,7 +521,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(poll,
 		LTTNG_SYSCALL_POLL_code_post
 	)
 )
-#endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) */
+#endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM) */
 
 #if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM)
 #define OVERRIDE_32_ppoll
@@ -837,7 +837,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_wait,
 		LTTNG_SYSCALL_EPOLL_WAIT_code_post
 	)
 )
-#endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) */
+#endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM) */
 
 #if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM)
 #define OVERRIDE_32_epoll_pwait
