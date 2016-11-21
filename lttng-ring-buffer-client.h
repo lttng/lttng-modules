@@ -606,7 +606,7 @@ int lttng_event_reserve(struct lib_ring_buffer_ctx *ctx,
 	int ret, cpu;
 
 	cpu = lib_ring_buffer_get_cpu(&client_config);
-	if (cpu < 0)
+	if (unlikely(cpu < 0))
 		return -EPERM;
 	ctx->cpu = cpu;
 
@@ -624,7 +624,7 @@ int lttng_event_reserve(struct lib_ring_buffer_ctx *ctx,
 	}
 
 	ret = lib_ring_buffer_reserve(&client_config, ctx);
-	if (ret)
+	if (unlikely(ret))
 		goto put;
 	lib_ring_buffer_backend_get_pages(&client_config, ctx,
 			&ctx->backend_pages);
