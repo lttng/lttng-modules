@@ -71,6 +71,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_state,
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
 		ctf_integer(unsigned int, ns_inum, pid_ns ? pid_ns->lttng_proc_inum : 0)
 #endif
+		ctf_integer(unsigned int, cpu, task_cpu(p))
 	)
 )
 
