@@ -27,3 +27,9 @@ for details.
 lib/prio_heap/lttng_prio_heap.h
 lib/prio_heap/lttng_prio_heap.c
 lib/bitfield.h
+filter-bytecode.h
+lttng-filter-interpreter.c
+lttng-filter-specialize.c
+lttng-filter-validator.c
+lttng-filter.c
+lttng-filter.h
