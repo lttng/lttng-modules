@@ -1,3 +1,7 @@
+2016-11-29 (National Square Dance Day) LTTng modules 2.9.0
+	* Performance: add missing unlikely in reserve
+	* Fix: preemptible and migratable context error handling
+
 2016-10-13 (International Day for Failure) LTTng modules 2.9.0-rc2
 	* Fix: bump stable kernel version ranges for clock work-around
 
