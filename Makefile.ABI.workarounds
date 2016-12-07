@@ -16,6 +16,12 @@ ifneq ($(RHEL_API_VERSION), 0)
   ccflags-y += -DRHEL_API_VERSION=$(RHEL_API_VERSION)
 endif
 
+SLE_API_VERSION:=$(shell $(TOP_LTTNG_MODULES_DIR)/abi-sle-version.sh $(CURDIR))
+
+ifneq ($(SLE_API_VERSION), 0)
+  ccflags-y += -DSLE_API_VERSION=$(SLE_API_VERSION)
+endif
+
 RT_PATCH_VERSION:=$(shell $(TOP_LTTNG_MODULES_DIR)/rt-patch-version.sh $(CURDIR))
 
 ifneq ($(RT_PATCH_VERSION), 0)
