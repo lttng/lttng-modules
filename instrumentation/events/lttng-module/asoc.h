@@ -21,7 +21,8 @@ struct snd_soc_card;
 struct snd_soc_dapm_widget;
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0) \
+	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,514,0,0, 3,11,0,0,0,0))
 #define CODEC_NAME_FIELD component.name
 #define CODEC_ID_FIELD component.id
 #else
