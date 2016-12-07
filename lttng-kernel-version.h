@@ -96,6 +96,25 @@
 		LTTNG_RHEL_VERSION_CODE < \
 		LTTNG_RHEL_KERNEL_VERSION(a_high, b_high, c_high, d_high, e_high, f_high))
 
+/* SUSE Linux enterprise */
+
+#define LTTNG_SLE_KERNEL_VERSION(a, b, c, d, e, f) \
+	(((((a) << 16) + ((b) << 8) + (c)) * 10000000ULL) + ((d) * 10000) + ((e) * 100) + (f))
+
+#ifdef SLE_API_VERSION
+#define LTTNG_SLE_VERSION_CODE \
+	((LINUX_VERSION_CODE * 10000000ULL) + SLE_API_VERSION)
+#else
+#define LTTNG_SLE_VERSION_CODE 	0
+#endif
+
+#define LTTNG_SLE_KERNEL_RANGE(a_low, b_low, c_low, d_low, e_low, f_low, \
+		a_high, b_high, c_high, d_high, e_high, f_high) \
+	(LTTNG_SLE_VERSION_CODE >= \
+		LTTNG_SLE_KERNEL_VERSION(a_low, b_low, c_low, d_low, e_low, f_low) && \
+		LTTNG_SLE_VERSION_CODE < \
+		LTTNG_SLE_KERNEL_VERSION(a_high, b_high, c_high, d_high, e_high, f_high))
+
 /* RT patch */
 
 #define LTTNG_RT_KERNEL_VERSION(a, b, c, d) \
