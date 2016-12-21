@@ -40,12 +40,12 @@
 #include <lttng-events.h>
 
 #define LTTNG_MODULES_MAJOR_VERSION 2
-#define LTTNG_MODULES_MINOR_VERSION 9
+#define LTTNG_MODULES_MINOR_VERSION 10
 #define LTTNG_MODULES_PATCHLEVEL_VERSION 0
-#define LTTNG_MODULES_EXTRAVERSION "-rc1"
+#define LTTNG_MODULES_EXTRAVERSION "-pre"
 
-#define LTTNG_VERSION_NAME		"Joannès"
-#define LTTNG_VERSION_DESCRIPTION	"Berliner Weisse style beer from the Trèfle Noir microbrewery in Rouyn-Noranda."
+#define LTTNG_VERSION_NAME		"K-Beer"
+#define LTTNG_VERSION_DESCRIPTION	"An alcoholic drink made from yeast-fermented malt flavored with hops"
 
 #ifndef CHAR_BIT
 #define CHAR_BIT 8
