@@ -2677,6 +2677,12 @@ static int __init lttng_events_init(void)
 	ret = lttng_logger_init();
 	if (ret)
 		goto error_logger;
+	printk(KERN_NOTICE "LTTng: Loaded modules v%s.%s.%s%s (%s)\n",
+		__stringify(LTTNG_MODULES_MAJOR_VERSION),
+		__stringify(LTTNG_MODULES_MINOR_VERSION),
+		__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION),
+		LTTNG_MODULES_EXTRAVERSION,
+		LTTNG_VERSION_NAME);
 	return 0;
 
 error_logger:
@@ -2687,6 +2693,12 @@ error_kmem:
 	lttng_tracepoint_exit();
 error_tp:
 	lttng_context_exit();
+	printk(KERN_NOTICE "LTTng: Failed to load modules v%s.%s.%s%s (%s)\n",
+		__stringify(LTTNG_MODULES_MAJOR_VERSION),
+		__stringify(LTTNG_MODULES_MINOR_VERSION),
+		__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION),
+		LTTNG_MODULES_EXTRAVERSION,
+		LTTNG_VERSION_NAME);
 	return ret;
 }
 
@@ -2703,6 +2715,12 @@ static void __exit lttng_events_exit(void)
 	kmem_cache_destroy(event_cache);
 	lttng_tracepoint_exit();
 	lttng_context_exit();
+	printk(KERN_NOTICE "LTTng: Unloaded modules v%s.%s.%s%s (%s)\n",
+		__stringify(LTTNG_MODULES_MAJOR_VERSION),
+		__stringify(LTTNG_MODULES_MINOR_VERSION),
+		__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION),
+		LTTNG_MODULES_EXTRAVERSION,
+		LTTNG_VERSION_NAME);
 }
 
 module_exit(lttng_events_exit);
