@@ -33,6 +33,7 @@
 #include <wrapper/ringbuffer/backend_types.h>
 #include <wrapper/spinlock.h>
 #include <lib/prio_heap/lttng_prio_heap.h>	/* For per-CPU read-side iterator */
+#include <lttng-cpuhotplug.h>
 
 /*
  * A switch is done during tracing or as a final flush after tracing (so it
@@ -69,11 +70,17 @@ struct channel {
 
 	unsigned long switch_timer_interval;	/* Buffer flush (jiffies) */
 	unsigned long read_timer_interval;	/* Reader wakeup (jiffies) */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+	struct lttng_cpuhp_node cpuhp_prepare;
+	struct lttng_cpuhp_node cpuhp_online;
+	struct lttng_cpuhp_node cpuhp_iter_online;
+#else
 	struct notifier_block cpu_hp_notifier;	/* CPU hotplug notifier */
-	struct notifier_block tick_nohz_notifier; /* CPU nohz notifier */
 	struct notifier_block hp_iter_notifier;	/* hotplug iterator notifier */
 	unsigned int cpu_hp_enable:1;		/* Enable CPU hotplug notif. */
 	unsigned int hp_iter_enable:1;		/* Enable hp iter notif. */
+#endif
+	struct notifier_block tick_nohz_notifier; /* CPU nohz notifier */
 	wait_queue_head_t read_wait;		/* reader wait queue */
 	wait_queue_head_t hp_wait;		/* CPU hotplug wait queue */
 	int finalized;				/* Has channel been finalized */

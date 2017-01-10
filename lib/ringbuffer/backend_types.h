@@ -25,6 +25,8 @@
 
 #include <linux/cpumask.h>
 #include <linux/types.h>
+#include <lttng-kernel-version.h>
+#include <lttng-cpuhotplug.h>
 
 struct lib_ring_buffer_backend_page {
 	void *virt;			/* page virtual address (cached) */
@@ -97,7 +99,11 @@ struct channel_backend {
 	void *priv;			/* Client-specific information */
 	void *priv_ops;			/* Client-specific ops pointer */
 	void (*release_priv_ops)(void *priv_ops);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+	struct lttng_cpuhp_node cpuhp_prepare;	/* CPU hotplug prepare */
+#else
 	struct notifier_block cpu_hp_notifier;	 /* CPU hotplug notifier */
+#endif
 	/*
 	 * We need to copy config because the module containing the
 	 * source config can vanish before the last reference to this

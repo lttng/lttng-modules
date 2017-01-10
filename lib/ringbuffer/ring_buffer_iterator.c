@@ -350,6 +350,25 @@ void lib_ring_buffer_iterator_init(struct channel *chan, struct lib_ring_buffer 
 		list_add(&buf->iter.empty_node, &chan->iter.empty_head);
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+
+int lttng_cpuhp_rb_iter_online(unsigned int cpu,
+		struct lttng_cpuhp_node *node)
+{
+	struct channel *chan = container_of(node, struct channel,
+					    cpuhp_iter_online);
+	struct lib_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
+
+	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_GLOBAL);
+
+	lib_ring_buffer_iterator_init(chan, buf);
+	return 0;
+}
+EXPORT_SYMBOL_GPL(lttng_cpuhp_rb_iter_online);
+
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+
 #ifdef CONFIG_HOTPLUG_CPU
 static
 int channel_iterator_cpu_hotplug(struct notifier_block *nb,
@@ -380,13 +399,15 @@ int channel_iterator_cpu_hotplug(struct notifier_block *nb,
 }
 #endif
 
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+
 int channel_iterator_init(struct channel *chan)
 {
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	struct lib_ring_buffer *buf;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
-		int cpu, ret;
+		int ret;
 
 		INIT_LIST_HEAD(&chan->iter.empty_head);
 		ret = lttng_heap_init(&chan->iter.heap,
@@ -394,29 +415,43 @@ int channel_iterator_init(struct channel *chan)
 				GFP_KERNEL, buf_is_higher);
 		if (ret)
 			return ret;
-		/*
-		 * In case of non-hotplug cpu, if the ring-buffer is allocated
-		 * in early initcall, it will not be notified of secondary cpus.
-		 * In that off case, we need to allocate for all possible cpus.
-		 */
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+		chan->cpuhp_iter_online.component = LTTNG_RING_BUFFER_ITER;
+		ret = cpuhp_state_add_instance(lttng_rb_hp_online,
+			&chan->cpuhp_iter_online.node);
+		if (ret)
+			return ret;
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+		{
+			int cpu;
+
+			/*
+			 * In case of non-hotplug cpu, if the ring-buffer is allocated
+			 * in early initcall, it will not be notified of secondary cpus.
+			 * In that off case, we need to allocate for all possible cpus.
+			 */
 #ifdef CONFIG_HOTPLUG_CPU
-		chan->hp_iter_notifier.notifier_call =
-			channel_iterator_cpu_hotplug;
-		chan->hp_iter_notifier.priority = 10;
-		register_cpu_notifier(&chan->hp_iter_notifier);
-		get_online_cpus();
-		for_each_online_cpu(cpu) {
-			buf = per_cpu_ptr(chan->backend.buf, cpu);
-			lib_ring_buffer_iterator_init(chan, buf);
-		}
-		chan->hp_iter_enable = 1;
-		put_online_cpus();
+			chan->hp_iter_notifier.notifier_call =
+				channel_iterator_cpu_hotplug;
+			chan->hp_iter_notifier.priority = 10;
+			register_cpu_notifier(&chan->hp_iter_notifier);
+
+			get_online_cpus();
+			for_each_online_cpu(cpu) {
+				buf = per_cpu_ptr(chan->backend.buf, cpu);
+				lib_ring_buffer_iterator_init(chan, buf);
+			}
+			chan->hp_iter_enable = 1;
+			put_online_cpus();
 #else
-		for_each_possible_cpu(cpu) {
-			buf = per_cpu_ptr(chan->backend.buf, cpu);
-			lib_ring_buffer_iterator_init(chan, buf);
-		}
+			for_each_possible_cpu(cpu) {
+				buf = per_cpu_ptr(chan->backend.buf, cpu);
+				lib_ring_buffer_iterator_init(chan, buf);
+			}
 #endif
+		}
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 	} else {
 		buf = channel_get_ring_buffer(config, chan, 0);
 		lib_ring_buffer_iterator_init(chan, buf);
@@ -429,8 +464,18 @@ void channel_iterator_unregister_notifiers(struct channel *chan)
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+		{
+			int ret;
+
+			ret = cpuhp_state_remove_instance(lttng_rb_hp_online,
+				&chan->cpuhp_iter_online.node);
+			WARN_ON(ret);
+		}
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 		chan->hp_iter_enable = 0;
 		unregister_cpu_notifier(&chan->hp_iter_notifier);
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 	}
 }
 
