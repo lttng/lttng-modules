@@ -27,6 +27,7 @@
 #include <linux/list.h>
 #include <linux/kprobes.h>
 #include <linux/kref.h>
+#include <lttng-cpuhotplug.h>
 #include <wrapper/uuid.h>
 #include <lttng-tracer.h>
 #include <lttng-abi.h>
@@ -184,8 +185,13 @@ union lttng_ctx_value {
  * lttng_ctx_field because cpu hotplug needs fixed-location addresses.
  */
 struct lttng_perf_counter_field {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+	struct lttng_cpuhp_node cpuhp_prepare;
+	struct lttng_cpuhp_node cpuhp_online;
+#else
 	struct notifier_block nb;
 	int hp_enable;
+#endif
 	struct perf_event_attr *attr;
 	struct perf_event **e;	/* per-cpu array */
 };
@@ -701,6 +707,10 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  uint64_t config,
 				  const char *name,
 				  struct lttng_ctx **ctx);
+int lttng_cpuhp_perf_counter_online(unsigned int cpu,
+		struct lttng_cpuhp_node *node);
+int lttng_cpuhp_perf_counter_dead(unsigned int cpu,
+		struct lttng_cpuhp_node *node);
 #else
 static inline
 int lttng_add_perf_counter_to_ctx(uint32_t type,
@@ -709,6 +719,18 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  struct lttng_ctx **ctx)
 {
 	return -ENOSYS;
+}
+static inline
+int lttng_cpuhp_perf_counter_online(unsigned int cpu,
+		struct lttng_cpuhp_node *node)
+{
+	return 0;
+}
+static inline
+int lttng_cpuhp_perf_counter_dead(unsigned int cpu,
+		struct lttng_cpuhp_node *node)
+{
+	return 0;
 }
 #endif
 

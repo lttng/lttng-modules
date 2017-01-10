@@ -2644,6 +2644,133 @@ void lttng_transport_unregister(struct lttng_transport *transport)
 }
 EXPORT_SYMBOL_GPL(lttng_transport_unregister);
 
+#if (defined(CONFIG_HOTPLUG_CPU) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)))
+
+enum cpuhp_state lttng_hp_prepare;
+enum cpuhp_state lttng_hp_online;
+
+static int lttng_hotplug_prepare(unsigned int cpu, struct hlist_node *node)
+{
+	struct lttng_cpuhp_node *lttng_node;
+
+	lttng_node = container_of(node, struct lttng_cpuhp_node, node);
+	switch (lttng_node->component) {
+	case LTTNG_RING_BUFFER_FRONTEND:
+		return 0;
+	case LTTNG_RING_BUFFER_BACKEND:
+		return lttng_cpuhp_rb_backend_prepare(cpu, lttng_node);
+	case LTTNG_RING_BUFFER_ITER:
+		return 0;
+	case LTTNG_CONTEXT_PERF_COUNTERS:
+		return 0;
+	default:
+		return -EINVAL;
+	}
+}
+
+static int lttng_hotplug_dead(unsigned int cpu, struct hlist_node *node)
+{
+	struct lttng_cpuhp_node *lttng_node;
+
+	lttng_node = container_of(node, struct lttng_cpuhp_node, node);
+	switch (lttng_node->component) {
+	case LTTNG_RING_BUFFER_FRONTEND:
+		return lttng_cpuhp_rb_frontend_dead(cpu, lttng_node);
+	case LTTNG_RING_BUFFER_BACKEND:
+		return 0;
+	case LTTNG_RING_BUFFER_ITER:
+		return 0;
+	case LTTNG_CONTEXT_PERF_COUNTERS:
+		return lttng_cpuhp_perf_counter_dead(cpu, lttng_node);
+	default:
+		return -EINVAL;
+	}
+}
+
+static int lttng_hotplug_online(unsigned int cpu, struct hlist_node *node)
+{
+	struct lttng_cpuhp_node *lttng_node;
+
+	lttng_node = container_of(node, struct lttng_cpuhp_node, node);
+	switch (lttng_node->component) {
+	case LTTNG_RING_BUFFER_FRONTEND:
+		return lttng_cpuhp_rb_frontend_online(cpu, lttng_node);
+	case LTTNG_RING_BUFFER_BACKEND:
+		return 0;
+	case LTTNG_RING_BUFFER_ITER:
+		return lttng_cpuhp_rb_iter_online(cpu, lttng_node);
+	case LTTNG_CONTEXT_PERF_COUNTERS:
+		return lttng_cpuhp_perf_counter_online(cpu, lttng_node);
+	default:
+		return -EINVAL;
+	}
+}
+
+static int lttng_hotplug_offline(unsigned int cpu, struct hlist_node *node)
+{
+	struct lttng_cpuhp_node *lttng_node;
+
+	lttng_node = container_of(node, struct lttng_cpuhp_node, node);
+	switch (lttng_node->component) {
+	case LTTNG_RING_BUFFER_FRONTEND:
+		return lttng_cpuhp_rb_frontend_offline(cpu, lttng_node);
+	case LTTNG_RING_BUFFER_BACKEND:
+		return 0;
+	case LTTNG_RING_BUFFER_ITER:
+		return 0;
+	case LTTNG_CONTEXT_PERF_COUNTERS:
+		return 0;
+	default:
+		return -EINVAL;
+	}
+}
+
+static int __init lttng_init_cpu_hotplug(void)
+{
+	int ret;
+
+	ret = cpuhp_setup_state_multi(CPUHP_BP_PREPARE_DYN, "lttng:prepare",
+			lttng_hotplug_prepare,
+			lttng_hotplug_dead);
+	if (ret < 0) {
+		return ret;
+	}
+	lttng_hp_prepare = ret;
+	lttng_rb_set_hp_prepare(ret);
+
+	ret = cpuhp_setup_state_multi(CPUHP_AP_ONLINE_DYN, "lttng:online",
+			lttng_hotplug_online,
+			lttng_hotplug_offline);
+	if (ret < 0) {
+		cpuhp_remove_multi_state(lttng_hp_prepare);
+		lttng_hp_prepare = 0;
+		return ret;
+	}
+	lttng_hp_online = ret;
+	lttng_rb_set_hp_online(ret);
+
+	return 0;
+}
+
+static void __exit lttng_exit_cpu_hotplug(void)
+{
+	lttng_rb_set_hp_online(0);
+	cpuhp_remove_multi_state(lttng_hp_online);
+	lttng_rb_set_hp_prepare(0);
+	cpuhp_remove_multi_state(lttng_hp_prepare);
+}
+
+#else /* #if (CONFIG_HOTPLUG_CPU && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))) */
+static int lttng_init_cpu_hotplug(void)
+{
+	return 0;
+}
+static void lttng_exit_cpu_hotplug(void)
+{
+}
+#endif /* #else #if (CONFIG_HOTPLUG_CPU && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))) */
+
+
 static int __init lttng_events_init(void)
 {
 	int ret;
@@ -2677,6 +2804,9 @@ static int __init lttng_events_init(void)
 	ret = lttng_logger_init();
 	if (ret)
 		goto error_logger;
+	ret = lttng_init_cpu_hotplug();
+	if (ret)
+		goto error_hotplug;
 	printk(KERN_NOTICE "LTTng: Loaded modules v%s.%s.%s%s (%s)\n",
 		__stringify(LTTNG_MODULES_MAJOR_VERSION),
 		__stringify(LTTNG_MODULES_MINOR_VERSION),
@@ -2685,6 +2815,8 @@ static int __init lttng_events_init(void)
 		LTTNG_VERSION_NAME);
 	return 0;
 
+error_hotplug:
+	lttng_logger_exit();
 error_logger:
 	lttng_abi_exit();
 error_abi:
@@ -2708,6 +2840,7 @@ static void __exit lttng_events_exit(void)
 {
 	struct lttng_session *session, *tmpsession;
 
+	lttng_exit_cpu_hotplug();
 	lttng_logger_exit();
 	lttng_abi_exit();
 	list_for_each_entry_safe(session, tmpsession, &sessions, list)
