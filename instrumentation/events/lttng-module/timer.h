@@ -16,6 +16,12 @@ struct timer_list;
 
 #endif /* _TRACE_TIMER_DEF_ */
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#define lttng_ktime_get_tv64(kt)	(kt)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#define lttng_ktime_get_tv64(kt)	((kt).tv64)
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+
 LTTNG_TRACEPOINT_EVENT_CLASS(timer_class,
 
 	TP_PROTO(struct timer_list *timer),
@@ -165,8 +171,10 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_start,
 	TP_FIELDS(
 		ctf_integer_hex(void *, hrtimer, hrtimer)
 		ctf_integer_hex(void *, function, hrtimer->function)
-		ctf_integer(s64, expires, hrtimer_get_expires(hrtimer).tv64)
-		ctf_integer(s64, softexpires, hrtimer_get_softexpires(hrtimer).tv64)
+		ctf_integer(s64, expires,
+			lttng_ktime_get_tv64(hrtimer_get_expires(hrtimer)))
+		ctf_integer(s64, softexpires,
+			lttng_ktime_get_tv64(hrtimer_get_softexpires(hrtimer)))
 	)
 )
 
@@ -188,7 +196,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_expire_entry,
 
 	TP_FIELDS(
 		ctf_integer_hex(void *, hrtimer, hrtimer)
-		ctf_integer(s64, now, now->tv64)
+		ctf_integer(s64, now, lttng_ktime_get_tv64(*now))
 		ctf_integer_hex(void *, function, hrtimer->function)
 	)
 )
