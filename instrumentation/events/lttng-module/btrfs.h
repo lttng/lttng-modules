@@ -85,12 +85,14 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__inode, btrfs_inode_evict,
 
 LTTNG_TRACEPOINT_EVENT(btrfs_get_extent,
 
-	TP_PROTO(struct btrfs_root *root, struct extent_map *map),
+	TP_PROTO(struct btrfs_root *root, struct inode *inode,
+		struct extent_map *map),
 
-	TP_ARGS(root, map),
+	TP_ARGS(root, inode, map),
 
 	TP_FIELDS(
 		ctf_integer(u64, root_objectid, root->root_key.objectid)
+		ctf_integer(u64, ino, btrfs_ino(inode))
 		ctf_integer(u64, start, map->start)
 		ctf_integer(u64, len, map->len)
 		ctf_integer(u64, orig_start, map->orig_start)
