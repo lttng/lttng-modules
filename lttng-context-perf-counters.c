@@ -350,14 +350,18 @@ cpuhp_prepare_error:
 #else	/* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 counter_busy:
 counter_error:
-	for_each_online_cpu(cpu) {
-		if (events[cpu] && !IS_ERR(events[cpu]))
-			perf_event_release_kernel(events[cpu]);
-	}
-	put_online_cpus();
+	{
+		int cpu;
+
+		for_each_online_cpu(cpu) {
+			if (events[cpu] && !IS_ERR(events[cpu]))
+				perf_event_release_kernel(events[cpu]);
+		}
+		put_online_cpus();
 #ifdef CONFIG_HOTPLUG_CPU
-	unregister_cpu_notifier(&perf_field->nb);
+		unregister_cpu_notifier(&perf_field->nb);
 #endif
+	}
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 find_error:
 	lttng_remove_context_field(ctx, field);
