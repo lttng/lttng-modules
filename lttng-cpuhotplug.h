@@ -21,11 +21,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <linux/cpuhotplug.h>
-
 struct lttng_cpuhp_node;
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+
+#include <linux/cpuhotplug.h>
+
 enum lttng_cpuhp_component {
 	LTTNG_RING_BUFFER_FRONTEND,
 	LTTNG_RING_BUFFER_BACKEND,
