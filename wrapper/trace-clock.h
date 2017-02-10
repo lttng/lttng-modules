@@ -59,65 +59,36 @@ extern struct lttng_trace_clock *lttng_trace_clock;
 #define LTTNG_CLOCK_NMI_SAFE_BROKEN
 #endif
 
+/*
+ * We need clock values to be monotonically increasing per-cpu, which is
+ * not strictly guaranteed by ktime_get_mono_fast_ns(). It is
+ * straightforward to do on architectures with a 64-bit cmpxchg(), but
+ * not so on architectures without 64-bit cmpxchg. For now, only enable
+ * this feature on 64-bit architectures.
+ */
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0) \
+	&& BITS_PER_LONG == 64 \
 	&& !defined(LTTNG_CLOCK_NMI_SAFE_BROKEN))
+#define LTTNG_USE_NMI_SAFE_CLOCK
+#endif
 
-DECLARE_PER_CPU(local_t, lttng_last_tsc);
+#ifdef LTTNG_USE_NMI_SAFE_CLOCK
 
-#if (BITS_PER_LONG == 32)
-/*
- * Fixup "src_now" using the 32 LSB from "last". We need to handle overflow and
- * underflow of the 32nd bit. "last" can be above, below or equal to the 32 LSB
- * of "src_now".
- */
-static inline u64 trace_clock_fixup(u64 src_now, u32 last)
-{
-	u64 now;
-
-	now = src_now & 0xFFFFFFFF00000000ULL;
-	now |= (u64) last;
-	/* Detect overflow or underflow between now and last. */
-	if ((src_now & 0x80000000U) && !(last & 0x80000000U)) {
-		/*
-		 * If 32nd bit transitions from 1 to 0, and we move forward in
-		 * time from "now" to "last", then we have an overflow.
-		 */
-		if (((s32) now - (s32) last) < 0)
-			now += 0x0000000100000000ULL;
-	} else if (!(src_now & 0x80000000U) && (last & 0x80000000U)) {
-		/*
-		 * If 32nd bit transitions from 0 to 1, and we move backward in
-		 * time from "now" to "last", then we have an underflow.
-		 */
-		if (((s32) now - (s32) last) > 0)
-			now -= 0x0000000100000000ULL;
-	}
-	return now;
-}
-#else /* #if (BITS_PER_LONG == 32) */
-/*
- * The fixup is pretty easy on 64-bit architectures: "last" is a 64-bit
- * value, so we can use last directly as current time.
- */
-static inline u64 trace_clock_fixup(u64 src_now, u64 last)
-{
-	return last;
-}
-#endif /* #else #if (BITS_PER_LONG == 32) */
+DECLARE_PER_CPU(u64, lttng_last_tsc);
 
 /*
  * Sometimes called with preemption enabled. Can be interrupted.
  */
 static inline u64 trace_clock_monotonic_wrapper(void)
 {
-	u64 now;
-	unsigned long last, result;
-	local_t *last_tsc;
+	u64 now, last, result;
+	u64 *last_tsc_ptr;
 
 	/* Use fast nmi-safe monotonic clock provided by the Linux kernel. */
 	preempt_disable();
-	last_tsc = lttng_this_cpu_ptr(&lttng_last_tsc);
-	last = local_read(last_tsc);
+	last_tsc_ptr = lttng_this_cpu_ptr(&lttng_last_tsc);
+	last = *last_tsc_ptr;
 	/*
 	 * Read "last" before "now". It is not strictly required, but it ensures
 	 * that an interrupt coming in won't artificially trigger a case where
@@ -126,9 +97,9 @@ static inline u64 trace_clock_monotonic_wrapper(void)
 	 */
 	barrier();
 	now = ktime_get_mono_fast_ns();
-	if (((long) now - (long) last) < 0)
-		now = trace_clock_fixup(now, last);
-	result = local_cmpxchg(last_tsc, last, (unsigned long) now);
+	if (U64_MAX / 2 < now - last)
+		now = last;
+	result = cmpxchg64_local(last_tsc_ptr, last, now);
 	preempt_enable();
 	if (result == last) {
 		/* Update done. */
@@ -139,11 +110,11 @@ static inline u64 trace_clock_monotonic_wrapper(void)
 		 * "result", since it has been sampled concurrently with our
 		 * time read, so it should not be far from "now".
 		 */
-		return trace_clock_fixup(now, result);
+		return result;
 	}
 }
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)) */
+#else /* #ifdef LTTNG_USE_NMI_SAFE_CLOCK */
 static inline u64 trace_clock_monotonic_wrapper(void)
 {
 	ktime_t ktime;
@@ -158,7 +129,7 @@ static inline u64 trace_clock_monotonic_wrapper(void)
 	ktime = ktime_get();
 	return ktime_to_ns(ktime);
 }
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)) */
+#endif /* #else #ifdef LTTNG_USE_NMI_SAFE_CLOCK */
 
 static inline u64 trace_clock_read64_monotonic(void)
 {
@@ -185,19 +156,19 @@ static inline const char *trace_clock_description_monotonic(void)
 	return "Monotonic Clock";
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0))
+#ifdef LTTNG_USE_NMI_SAFE_CLOCK
 static inline int get_trace_clock(void)
 {
 	printk_once(KERN_WARNING "LTTng: Using mainline kernel monotonic fast clock, which is NMI-safe.\n");
 	return 0;
 }
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)) */
+#else /* #ifdef LTTNG_USE_NMI_SAFE_CLOCK */
 static inline int get_trace_clock(void)
 {
 	printk_once(KERN_WARNING "LTTng: Using mainline kernel monotonic clock. NMIs will not be traced.\n");
 	return 0;
 }
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)) */
+#endif /* #else #ifdef LTTNG_USE_NMI_SAFE_CLOCK */
 
 static inline void put_trace_clock(void)
 {
