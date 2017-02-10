@@ -23,10 +23,10 @@
 
 #include <wrapper/trace-clock.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0))
-DEFINE_PER_CPU(local_t, lttng_last_tsc);
+#ifdef LTTNG_USE_NMI_SAFE_CLOCK
+DEFINE_PER_CPU(u64, lttng_last_tsc);
 EXPORT_PER_CPU_SYMBOL(lttng_last_tsc);
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0)) */
+#endif /* #ifdef LTTNG_USE_NMI_SAFE_CLOCK */
 
 #ifdef LTTNG_CLOCK_NMI_SAFE_BROKEN
 #warning "Your kernel implements a bogus nmi-safe clock source. Falling back to the non-nmi-safe clock source, which discards events traced from NMI context. Upgrade your kernel to resolve this situation."
