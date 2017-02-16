@@ -157,6 +157,7 @@ struct user_msghdr;
 
 /* Hijack probe callback for compat system call enter */
 #define TP_PROBE_CB(_template)		&syscall_entry_probe
+#define LTTNG_SC_COMPAT
 #define SC_LTTNG_TRACEPOINT_EVENT(_name, _proto, _args, _fields) \
 	LTTNG_TRACEPOINT_EVENT(compat_syscall_entry_##_name, PARAMS(_proto), PARAMS(_args), \
 		PARAMS(_fields))
@@ -188,6 +189,7 @@ struct user_msghdr;
 #undef TP_PROBE_CB
 #undef _TRACE_SYSCALLS_INTEGERS_H
 #undef _TRACE_SYSCALLS_POINTERS_H
+#undef LTTNG_SC_COMPAT
 
 #undef SC_ENTER
 
@@ -239,6 +241,7 @@ struct user_msghdr;
 
 /* Hijack probe callback for compat system call exit */
 #define TP_PROBE_CB(_template)		&syscall_exit_probe
+#define LTTNG_SC_COMPAT
 #define SC_LTTNG_TRACEPOINT_EVENT(_name, _proto, _args, _fields) \
 	LTTNG_TRACEPOINT_EVENT(compat_syscall_exit_##_name, PARAMS(_proto), PARAMS(_args), \
 		PARAMS(_fields))
@@ -270,6 +273,7 @@ struct user_msghdr;
 #undef TP_PROBE_CB
 #undef _TRACE_SYSCALLS_INTEGERS_H
 #undef _TRACE_SYSCALLS_POINTERS_H
+#undef LTTNG_SC_COMPAT
 
 #undef SC_EXIT
 

@@ -871,4 +871,20 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_pwait,
 )
 #endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM) */
 
+#if (defined(CONFIG_X86_64) && !defined(LTTNG_SC_COMPAT)) || defined(CONFIG_ARM64) || defined(CONFIG_ARM)
+#define OVERRIDE_32_socketpair
+#define OVERRIDE_64_socketpair
+SC_LTTNG_TRACEPOINT_EVENT(socketpair,
+	TP_PROTO(sc_exit(long ret,) int family, int type, int protocol, int *usockvec),
+	TP_ARGS(sc_exit(ret,) family, type, protocol, usockvec),
+	TP_FIELDS(
+		sc_exit(ctf_integer(long, ret, ret))
+		sc_in(ctf_integer(int, family, family))
+		sc_in(ctf_integer(int, type, type))
+		sc_in(ctf_integer(int, protocol, protocol))
+		sc_out(ctf_user_array(int, socket, usockvec, 2))
+	)
+)
+#endif /* (defined(CONFIG_X86_64) && !defined(LTTNG_SC_COMPAT)) || defined(CONFIG_ARM64) || defined(CONFIG_ARM) */
+
 #endif /* CREATE_SYSCALL_TABLE */
