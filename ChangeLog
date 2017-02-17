@@ -1,3 +1,16 @@
+2017-02-17 (National Cabbage Day) LTTng modules 2.9.1
+	* Fix: nmi-safe clock on 32-bit systems
+	* Fix: only include linux/cpuhotplug.h for kernels >= 4.10
+	* Fix: 4.10 hotplug adaptation backward compat
+	* Adapt lttng-modules to Linux 4.10 cpu hotplug state machine
+	* Fix: 4.10 btrfs instrumentation update backward compat
+	* Update btrfs instrumentation for 4.10 kernel
+	* btrfs instrumentation: update to 4.10 kernel
+	* timer instrumentation: adapt to ktime_t without union
+	* Fix: asoc instrumentation for RHEL 7.3
+	* Fix: SCSI instrumentation for SLES12 SP2
+	* Add SUSE Linux Enterprise kernel version tests
+
 2016-11-29 (National Square Dance Day) LTTng modules 2.9.0
 	* Performance: add missing unlikely in reserve
 	* Fix: preemptible and migratable context error handling
