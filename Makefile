@@ -43,7 +43,7 @@ ifneq ($(KERNELRELEASE),)
 
   obj-$(CONFIG_LTTNG) += lttng-tracer.o
 
-  lttng-tracer-objs := lttng-events.o lttng-abi.o \
+  lttng-tracer-objs := lttng-events.o lttng-abi.o lttng-string-utils.o \
                        lttng-probes.o lttng-context.o \
                        lttng-context-pid.o lttng-context-procname.o \
                        lttng-context-prio.o lttng-context-nice.o \
