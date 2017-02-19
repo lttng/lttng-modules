@@ -396,7 +396,7 @@ int lttng_abi_create_channel(struct file *session_file,
 		fops = &lttng_metadata_fops;
 		break;
 	}
-		
+
 	chan_file = anon_inode_getfile("[lttng_channel]",
 				       fops,
 				       NULL, O_RDWR);
@@ -1746,7 +1746,7 @@ int __init lttng_abi_init(void)
 	lttng_clock_ref();
 	lttng_proc_dentry = proc_create_data("lttng", S_IRUSR | S_IWUSR, NULL,
 					&lttng_fops, NULL);
-	
+
 	if (!lttng_proc_dentry) {
 		printk(KERN_ERR "Error creating LTTng control file\n");
 		ret = -ENOMEM;
