@@ -118,7 +118,8 @@ int merge_point_add_check(struct mp_table *mp_table, unsigned long target_pc,
  * Binary comparators use top of stack and top of stack -1.
  */
 static
-int bin_op_compare_check(struct vstack *stack, const char *str)
+int bin_op_compare_check(struct vstack *stack, const filter_opcode_t opcode,
+		const char *str)
 {
 	if (unlikely(!vstack_ax(stack) || !vstack_bx(stack)))
 		goto error_unknown;
@@ -136,6 +137,27 @@ int bin_op_compare_check(struct vstack *stack, const char *str)
 
 		case REG_STRING:
 			break;
+		case REG_STAR_GLOB_STRING:
+			if (opcode != FILTER_OP_EQ && opcode != FILTER_OP_NE) {
+				goto error_mismatch;
+			}
+			break;
+		case REG_S64:
+			goto error_mismatch;
+		}
+		break;
+	case REG_STAR_GLOB_STRING:
+		switch (vstack_bx(stack)->type) {
+		default:
+		case REG_DOUBLE:
+			goto error_unknown;
+
+		case REG_STRING:
+			if (opcode != FILTER_OP_EQ && opcode != FILTER_OP_NE) {
+				goto error_mismatch;
+			}
+			break;
+		case REG_STAR_GLOB_STRING:
 		case REG_S64:
 			goto error_mismatch;
 		}
@@ -147,6 +169,7 @@ int bin_op_compare_check(struct vstack *stack, const char *str)
 			goto error_unknown;
 
 		case REG_STRING:
+		case REG_STAR_GLOB_STRING:
 			goto error_mismatch;
 
 		case REG_S64:
@@ -249,6 +272,8 @@ int bytecode_validate_overflow(struct bytecode_runtime *bytecode,
 	case FILTER_OP_LT_STRING:
 	case FILTER_OP_GE_STRING:
 	case FILTER_OP_LE_STRING:
+	case FILTER_OP_EQ_STAR_GLOB_STRING:
+	case FILTER_OP_NE_STAR_GLOB_STRING:
 	case FILTER_OP_EQ_S64:
 	case FILTER_OP_NE_S64:
 	case FILTER_OP_GT_S64:
@@ -320,6 +345,7 @@ int bytecode_validate_overflow(struct bytecode_runtime *bytecode,
 
 	/* load from immediate operand */
 	case FILTER_OP_LOAD_STRING:
+	case FILTER_OP_LOAD_STAR_GLOB_STRING:
 	{
 		struct load_op *insn = (struct load_op *) pc;
 		uint32_t str_len, maxlen;
@@ -395,8 +421,9 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 		char *pc)
 {
 	int ret = 0;
+	const filter_opcode_t opcode = *(filter_opcode_t *) pc;
 
-	switch (*(filter_opcode_t *) pc) {
+	switch (opcode) {
 	case FILTER_OP_UNKNOWN:
 	default:
 	{
@@ -457,42 +484,42 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 
 	case FILTER_OP_EQ:
 	{
-		ret = bin_op_compare_check(stack, "==");
+		ret = bin_op_compare_check(stack, opcode, "==");
 		if (ret)
 			goto end;
 		break;
 	}
 	case FILTER_OP_NE:
 	{
-		ret = bin_op_compare_check(stack, "!=");
+		ret = bin_op_compare_check(stack, opcode, "!=");
 		if (ret)
 			goto end;
 		break;
 	}
 	case FILTER_OP_GT:
 	{
-		ret = bin_op_compare_check(stack, ">");
+		ret = bin_op_compare_check(stack, opcode, ">");
 		if (ret)
 			goto end;
 		break;
 	}
 	case FILTER_OP_LT:
 	{
-		ret = bin_op_compare_check(stack, "<");
+		ret = bin_op_compare_check(stack, opcode, "<");
 		if (ret)
 			goto end;
 		break;
 	}
 	case FILTER_OP_GE:
 	{
-		ret = bin_op_compare_check(stack, ">=");
+		ret = bin_op_compare_check(stack, opcode, ">=");
 		if (ret)
 			goto end;
 		break;
 	}
 	case FILTER_OP_LE:
 	{
-		ret = bin_op_compare_check(stack, "<=");
+		ret = bin_op_compare_check(stack, opcode, "<=");
 		if (ret)
 			goto end;
 		break;
@@ -513,6 +540,24 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 		if (vstack_ax(stack)->type != REG_STRING
 				|| vstack_bx(stack)->type != REG_STRING) {
 			printk(KERN_WARNING "Unexpected register type for string comparator\n");
+			ret = -EINVAL;
+			goto end;
+		}
+		break;
+	}
+
+
+	case FILTER_OP_EQ_STAR_GLOB_STRING:
+	case FILTER_OP_NE_STAR_GLOB_STRING:
+	{
+		if (!vstack_ax(stack) || !vstack_bx(stack)) {
+			printk(KERN_WARNING "Empty stack\n");
+			ret = -EINVAL;
+			goto end;
+		}
+		if (vstack_ax(stack)->type != REG_STAR_GLOB_STRING
+				&& vstack_bx(stack)->type != REG_STAR_GLOB_STRING) {
+			printk(KERN_WARNING "Unexpected register type for globbing pattern comparator\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -558,6 +603,7 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 			goto end;
 
 		case REG_STRING:
+		case REG_STAR_GLOB_STRING:
 			printk(KERN_WARNING "Unary op can only be applied to numeric or floating point registers\n");
 			ret = -EINVAL;
 			goto end;
@@ -642,6 +688,7 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 
 	/* load from immediate operand */
 	case FILTER_OP_LOAD_STRING:
+	case FILTER_OP_LOAD_STAR_GLOB_STRING:
 	{
 		break;
 	}
@@ -668,6 +715,7 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 			goto end;
 
 		case REG_STRING:
+		case REG_STAR_GLOB_STRING:
 			printk(KERN_WARNING "Cast op can only be applied to numeric or floating point registers\n");
 			ret = -EINVAL;
 			goto end;
@@ -860,6 +908,8 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	case FILTER_OP_LT_STRING:
 	case FILTER_OP_GE_STRING:
 	case FILTER_OP_LE_STRING:
+	case FILTER_OP_EQ_STAR_GLOB_STRING:
+	case FILTER_OP_NE_STAR_GLOB_STRING:
 	case FILTER_OP_EQ_S64:
 	case FILTER_OP_NE_S64:
 	case FILTER_OP_GT_S64:
@@ -975,6 +1025,19 @@ int exec_insn(struct bytecode_runtime *bytecode,
 			goto end;
 		}
 		vstack_ax(stack)->type = REG_STRING;
+		next_pc += sizeof(struct load_op) + strlen(insn->data) + 1;
+		break;
+	}
+
+	case FILTER_OP_LOAD_STAR_GLOB_STRING:
+	{
+		struct load_op *insn = (struct load_op *) pc;
+
+		if (vstack_push(stack)) {
+			ret = -EINVAL;
+			goto end;
+		}
+		vstack_ax(stack)->type = REG_STAR_GLOB_STRING;
 		next_pc += sizeof(struct load_op) + strlen(insn->data) + 1;
 		break;
 	}

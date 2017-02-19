@@ -61,6 +61,7 @@ enum entry_type {
 	REG_S64,
 	REG_DOUBLE,
 	REG_STRING,
+	REG_STAR_GLOB_STRING,
 	REG_TYPE_UNKNOWN,
 };
 
@@ -119,6 +120,12 @@ int vstack_pop(struct vstack *stack)
 }
 
 /* Execution stack */
+enum estack_string_literal_type {
+	ESTACK_STRING_LITERAL_TYPE_NONE,
+	ESTACK_STRING_LITERAL_TYPE_PLAIN,
+	ESTACK_STRING_LITERAL_TYPE_STAR_GLOB,
+};
+
 struct estack_entry {
 	union {
 		int64_t v;
@@ -127,7 +134,7 @@ struct estack_entry {
 			const char *str;
 			const char __user *user_str;
 			size_t seq_len;
-			int literal;		/* is string literal ? */
+			enum estack_string_literal_type literal_type;
 			int user;		/* is string from userspace ? */
 		} s;
 	} u;
