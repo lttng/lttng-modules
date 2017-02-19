@@ -51,6 +51,7 @@
 #include <wrapper/poll.h>
 #include <wrapper/file.h>
 #include <wrapper/kref.h>
+#include <lttng-string-utils.h>
 #include <lttng-abi.h>
 #include <lttng-abi-old.h>
 #include <lttng-events.h>
@@ -1068,8 +1069,12 @@ int lttng_abi_create_event(struct file *channel_file,
 			|| event_param->instrumentation == LTTNG_KERNEL_SYSCALL) {
 		struct lttng_enabler *enabler;
 
-		if (event_param->name[strlen(event_param->name) - 1] == '*') {
-			enabler = lttng_enabler_create(LTTNG_ENABLER_WILDCARD,
+		if (strutils_is_star_glob_pattern(event_param->name)) {
+			/*
+			 * If the event name is a star globbing pattern,
+			 * we create the special star globbing enabler.
+			 */
+			enabler = lttng_enabler_create(LTTNG_ENABLER_STAR_GLOB,
 				event_param, channel);
 		} else {
 			enabler = lttng_enabler_create(LTTNG_ENABLER_NAME,

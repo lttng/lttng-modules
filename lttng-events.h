@@ -324,7 +324,7 @@ struct lttng_event {
 };
 
 enum lttng_enabler_type {
-	LTTNG_ENABLER_WILDCARD,
+	LTTNG_ENABLER_STAR_GLOB,
 	LTTNG_ENABLER_NAME,
 };
 
