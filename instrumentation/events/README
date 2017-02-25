@@ -1,10 +1,7 @@
 * Workflow for updating patches from newer kernel:
 
-Diff mainline/ and lttng-module/ directories.
-
-Pull the new headers from mainline kernel to mainline/.
-Copy them into lttng-modules.
-Apply diff. Fix conflicts.
+Pull the new headers from mainline kernel to lttng-modules/.
+Update those headers to fix the lttng-modules instrumentation style.
 
 
 * Workflow to add new Tracepoint instrumentation to newer kernel,
@@ -13,10 +10,10 @@ Apply diff. Fix conflicts.
 a) instrument the kernel with new trace events headers. If you want that
    instrumentation distributed, you will have to push those changes into
    the upstream Linux kernel first,
-b) copy those headers into lttng mainline/ directory,
-c) look at a diff from other headers between mainline/ and 
-   lttng/, and use that as a recipe to create a new lttng/
-   header from the mainline/ header,
+b) copy those headers into lttng-modules/ directory,
+c) look at a diff from other headers between mainline kernel version and 
+   lttng-modules/, and use that as a recipe to alter the new
+   lttng-modules/ headers.
 d) create a new file in probes/ for the new trace event header you added,
 e) add it to probes/Makefile,
 f) build, make modules_install,
