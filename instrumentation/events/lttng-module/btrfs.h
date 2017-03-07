@@ -83,7 +83,30 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__inode, btrfs_inode_evict,
 	TP_ARGS(inode)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+
+LTTNG_TRACEPOINT_EVENT(btrfs_get_extent,
+
+	TP_PROTO(struct btrfs_root *root, struct btrfs_inode *inode,
+		struct extent_map *map),
+
+	TP_ARGS(root, inode, map),
+
+	TP_FIELDS(
+		ctf_integer(u64, root_objectid, root->root_key.objectid)
+		ctf_integer(u64, ino, btrfs_ino(inode))
+		ctf_integer(u64, start, map->start)
+		ctf_integer(u64, len, map->len)
+		ctf_integer(u64, orig_start, map->orig_start)
+		ctf_integer(u64, block_start, map->block_start)
+		ctf_integer(u64, block_len, map->block_len)
+		ctf_integer(unsigned long, flags, map->flags)
+		ctf_integer(int, refs, atomic_read(&map->refs))
+		ctf_integer(unsigned int, compress_type, map->compress_type)
+	)
+)
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
 
 LTTNG_TRACEPOINT_EVENT(btrfs_get_extent,
 
