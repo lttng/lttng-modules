@@ -281,8 +281,35 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_end,
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0)) */
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_isolate,
 
+	TP_PROTO(int classzone_idx,
+		int order,
+		unsigned long nr_requested,
+		unsigned long nr_scanned,
+		unsigned long nr_skipped,
+		unsigned long nr_taken,
+		isolate_mode_t isolate_mode,
+		int lru
+	),
+
+	TP_ARGS(classzone_idx, order, nr_requested, nr_scanned, nr_skipped,
+		nr_taken, isolate_mode, lru
+	),
+
+	TP_FIELDS(
+		ctf_integer(int, classzone_idx, classzone_idx)
+		ctf_integer(int, order, order)
+		ctf_integer(unsigned long, nr_requested, nr_requested)
+		ctf_integer(unsigned long, nr_scanned, nr_scanned)
+		ctf_integer(unsigned long, nr_skipped, nr_skipped)
+		ctf_integer(unsigned long, nr_taken, nr_taken)
+		ctf_integer(isolate_mode_t, isolate_mode, isolate_mode)
+		ctf_integer(int, lru, lru)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(mm_vmscan_lru_isolate_template,
 
 	TP_PROTO(int classzone_idx,
@@ -342,9 +369,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_lru_isolate_template, mm_vmscan_memcg_
 		isolate_mode, file
 	)
 )
-
 #else
-
 LTTNG_TRACEPOINT_EVENT_CLASS(mm_vmscan_lru_isolate_template,
 
 	TP_PROTO(int order,
@@ -455,7 +480,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_lru_isolate_template, mm_vmscan_memcg_
 #endif
 	)
 )
-
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,5,0))
@@ -485,7 +509,37 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_writepage,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
+
+	TP_PROTO(int nid,
+		unsigned long nr_scanned, unsigned long nr_reclaimed,
+		unsigned long nr_dirty, unsigned long nr_writeback,
+		unsigned long nr_congested, unsigned long nr_immediate,
+		unsigned long nr_activate, unsigned long nr_ref_keep,
+		unsigned long nr_unmap_fail,
+		int priority, int file),
+
+	TP_ARGS(nid, nr_scanned, nr_reclaimed, nr_dirty, nr_writeback,
+		nr_congested, nr_immediate, nr_activate, nr_ref_keep,
+		nr_unmap_fail, priority, file),
+
+	TP_FIELDS(
+		ctf_integer(int, nid, nid)
+		ctf_integer(unsigned long, nr_scanned, nr_scanned)
+		ctf_integer(unsigned long, nr_reclaimed, nr_reclaimed)
+		ctf_integer(unsigned long, nr_dirty, nr_dirty)
+		ctf_integer(unsigned long, nr_writeback, nr_writeback)
+		ctf_integer(unsigned long, nr_congested, nr_congested)
+		ctf_integer(unsigned long, nr_immediate, nr_immediate)
+		ctf_integer(unsigned long, nr_activate, nr_activate)
+		ctf_integer(unsigned long, nr_ref_keep, nr_ref_keep)
+		ctf_integer(unsigned long, nr_unmap_fail, nr_unmap_fail)
+		ctf_integer(int, priority, priority)
+		ctf_integer(int, reclaim_flags, trace_shrink_flags(file))
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 
 	TP_PROTO(int nid,
