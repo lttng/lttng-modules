@@ -248,6 +248,26 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(timer_hrtimer_class, hrtimer_cancel,
  *		zero, otherwise it is started
  * @expires:	the itimers expiry time
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
+
+	timer_itimer_state,
+
+	TP_PROTO(int which, const struct itimerval *const value,
+		 unsigned long long expires),
+
+	TP_ARGS(which, value, expires),
+
+	TP_FIELDS(
+		ctf_integer(int, which, which)
+		ctf_integer(unsigned long long, expires, expires)
+		ctf_integer(long, value_sec, value->it_value.tv_sec)
+		ctf_integer(long, value_usec, value->it_value.tv_usec)
+		ctf_integer(long, interval_sec, value->it_interval.tv_sec)
+		ctf_integer(long, interval_usec, value->it_interval.tv_usec)
+	)
+)
+#else /* if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
 LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
 
 	timer_itimer_state,
@@ -266,6 +286,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
 		ctf_integer(long, interval_usec, value->it_interval.tv_usec)
 	)
 )
+#endif /* #else (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
 
 /**
  * itimer_expire - called when itimer expires
@@ -273,6 +294,22 @@ LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
  * @pid:	pid of the process which owns the timer
  * @now:	current time, used to calculate the latency of itimer
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+LTTNG_TRACEPOINT_EVENT_MAP(itimer_expire,
+
+	timer_itimer_expire,
+
+	TP_PROTO(int which, struct pid *pid, unsigned long long now),
+
+	TP_ARGS(which, pid, now),
+
+	TP_FIELDS(
+		ctf_integer(int , which, which)
+		ctf_integer(pid_t, pid, pid_nr(pid))
+		ctf_integer(unsigned long long, now, now)
+	)
+)
+#else /* if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
 LTTNG_TRACEPOINT_EVENT_MAP(itimer_expire,
 
 	timer_itimer_expire,
@@ -287,6 +324,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(itimer_expire,
 		ctf_integer(cputime_t, now, now)
 	)
 )
+#endif /* #else (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
 
 #endif /*  LTTNG_TRACE_TIMER_H */
 
