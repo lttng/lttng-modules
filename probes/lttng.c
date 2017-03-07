@@ -129,7 +129,7 @@ error:
 	return ret;
 }
 
-void __exit lttng_logger_exit(void)
+void lttng_logger_exit(void)
 {
 	__lttng_events_exit__lttng();
 	if (lttng_logger_dentry)
