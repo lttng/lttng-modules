@@ -10,6 +10,10 @@
 #include <linux/trace_seq.h>
 #include <linux/version.h>
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+#include <scsi/scsi_request.h>
+#endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
+
 #ifndef _TRACE_BLOCK_DEF_
 #define _TRACE_BLOCK_DEF_
 
@@ -164,6 +168,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_buffer, block_dirty_buffer,
 )
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
 LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq_with_error,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
@@ -178,6 +183,50 @@ LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq_with_error,
 	),
 
 	TP_code_pre(
+		if (blk_rq_is_scsi(rq)) {
+			struct scsi_request *scsi_rq = scsi_req(rq);
+			tp_locvar->sector = 0;
+			tp_locvar->nr_sector = 0;
+			tp_locvar->cmd = scsi_rq->cmd;
+			tp_locvar->cmd_len = scsi_rq->cmd_len;
+		} else {
+			tp_locvar->sector = blk_rq_pos(rq);
+			tp_locvar->nr_sector = blk_rq_sectors(rq);
+			tp_locvar->cmd = NULL;
+			tp_locvar->cmd_len = 0;
+		}
+	),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev,
+			rq->rq_disk ? disk_devt(rq->rq_disk) : 0)
+		ctf_integer(sector_t, sector, tp_locvar->sector)
+		ctf_integer(unsigned int, nr_sector, tp_locvar->nr_sector)
+		ctf_integer(int, errors, rq->errors)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			lttng_req_op(rq), lttng_req_rw(rq), blk_rq_bytes(rq))
+		ctf_sequence_hex(unsigned char, cmd,
+			tp_locvar->cmd, size_t, tp_locvar->cmd_len)
+	),
+
+	TP_code_post()
+)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
+LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq_with_error,
+
+	TP_PROTO(struct request_queue *q, struct request *rq),
+
+	TP_ARGS(q, rq),
+
+	TP_locvar(
+		sector_t sector;
+		unsigned int nr_sector;
+		unsigned char *cmd;
+		size_t cmd_len;
+	),
+
+	TP_code_pre(
+
 		if (rq->cmd_type == REQ_TYPE_BLOCK_PC) {
 			tp_locvar->sector = 0;
 			tp_locvar->nr_sector = 0;
@@ -205,6 +254,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq_with_error,
 
 	TP_code_post()
 )
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
 
 /**
  * block_rq_abort - abort block operation request
@@ -239,14 +289,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_requeue,
 	TP_ARGS(q, rq)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,5)	\
-	|| LTTNG_KERNEL_RANGE(3,12,21, 3,13,0)		\
-	|| LTTNG_KERNEL_RANGE(3,10,41, 3,11,0)		\
-	|| LTTNG_KERNEL_RANGE(3,4,91, 3,5,0)		\
-	|| LTTNG_KERNEL_RANGE(3,2,58, 3,3,0)		\
-	|| LTTNG_UBUNTU_KERNEL_RANGE(3,13,11,28, 3,14,0,0)	\
-	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,229,0,0, 3,11,0,0,0,0))
-
 /**
  * block_rq_complete - block IO operation completed by device driver
  * @q: queue containing the block operation request
@@ -259,6 +301,52 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_requeue,
  * do for the request. If @rq->bio is non-NULL then there is
  * additional work required to complete the request.
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+LTTNG_TRACEPOINT_EVENT_CODE(block_rq_complete,
+
+	TP_PROTO(struct request_queue *q, struct request *rq,
+		 unsigned int nr_bytes),
+
+	TP_ARGS(q, rq, nr_bytes),
+
+	TP_locvar(
+		unsigned char *cmd;
+		size_t cmd_len;
+	),
+
+	TP_code_pre(
+		if (blk_rq_is_scsi(rq)) {
+			struct scsi_request *scsi_rq = scsi_req(rq);
+			tp_locvar->cmd = scsi_rq->cmd;
+			tp_locvar->cmd_len = scsi_rq->cmd_len;
+		} else {
+			tp_locvar->cmd = NULL;
+			tp_locvar->cmd_len = 0;
+		}
+	),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev,
+			rq->rq_disk ? disk_devt(rq->rq_disk) : 0)
+		ctf_integer(sector_t, sector, blk_rq_pos(rq))
+		ctf_integer(unsigned int, nr_sector, nr_bytes >> 9)
+		ctf_integer(int, errors, rq->errors)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			lttng_req_op(rq), lttng_req_rw(rq), nr_bytes)
+		ctf_sequence_hex(unsigned char, cmd,
+			tp_locvar->cmd, size_t, tp_locvar->cmd_len)
+	),
+
+	TP_code_post()
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,5)	\
+	|| LTTNG_KERNEL_RANGE(3,12,21, 3,13,0)		\
+	|| LTTNG_KERNEL_RANGE(3,10,41, 3,11,0)		\
+	|| LTTNG_KERNEL_RANGE(3,4,91, 3,5,0)		\
+	|| LTTNG_KERNEL_RANGE(3,2,58, 3,3,0)		\
+	|| LTTNG_UBUNTU_KERNEL_RANGE(3,13,11,28, 3,14,0,0)	\
+	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,229,0,0, 3,11,0,0,0,0))
+
 LTTNG_TRACEPOINT_EVENT_CODE(block_rq_complete,
 
 	TP_PROTO(struct request_queue *q, struct request *rq,
@@ -318,6 +406,55 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_complete,
 
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq,
+
+	TP_PROTO(struct request_queue *q, struct request *rq),
+
+	TP_ARGS(q, rq),
+
+	TP_locvar(
+		sector_t sector;
+		unsigned int nr_sector;
+		unsigned int bytes;
+		unsigned char *cmd;
+		size_t cmd_len;
+	),
+
+	TP_code_pre(
+		if (blk_rq_is_scsi(rq)) {
+			struct scsi_request *scsi_rq = scsi_req(rq);
+			tp_locvar->sector = 0;
+			tp_locvar->nr_sector = 0;
+			tp_locvar->bytes = scsi_rq->resid_len;
+			tp_locvar->cmd = scsi_rq->cmd;
+			tp_locvar->cmd_len = scsi_rq->cmd_len;
+		} else {
+			tp_locvar->sector = blk_rq_pos(rq);
+			tp_locvar->nr_sector = blk_rq_sectors(rq);
+			tp_locvar->bytes = 0;
+			tp_locvar->cmd = NULL;
+			tp_locvar->cmd_len = 0;
+		}
+	),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev,
+			rq->rq_disk ? disk_devt(rq->rq_disk) : 0)
+		ctf_integer(sector_t, sector, tp_locvar->sector)
+		ctf_integer(unsigned int, nr_sector, tp_locvar->nr_sector)
+		ctf_integer(unsigned int, bytes, tp_locvar->bytes)
+		ctf_integer(pid_t, tid, current->pid)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			lttng_req_op(rq), lttng_req_rw(rq), blk_rq_bytes(rq))
+		ctf_sequence_hex(unsigned char, cmd,
+			tp_locvar->cmd, size_t, tp_locvar->cmd_len)
+		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
+	),
+
+	TP_code_post()
+)
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
 LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
@@ -364,6 +501,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq,
 
 	TP_code_post()
 )
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
 
 /**
  * block_rq_insert - insert block operation request into queue
