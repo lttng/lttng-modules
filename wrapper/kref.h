@@ -36,11 +36,7 @@
  */
 static inline int lttng_kref_get(struct kref *kref)
 {
-	if (atomic_add_unless(&kref->refcount, 1, INT_MAX) != INT_MAX) {
-		return 1;
-	} else {
-		return 0;
-	}
+	return atomic_add_unless(&kref->refcount, 1, INT_MAX);
 }
 
 #endif /* _LTTNG_WRAPPER_KREF_H */
