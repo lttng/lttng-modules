@@ -998,8 +998,11 @@ int lttng_abi_open_metadata_stream(struct file *channel_file)
 		goto notransport;
 	}
 
-	if (!lttng_kref_get(&session->metadata_cache->refcount))
+	if (!lttng_kref_get(&session->metadata_cache->refcount)) {
+		ret = -EOVERFLOW;
 		goto kref_error;
+	}
+
 	ret = lttng_abi_create_stream_fd(channel_file, stream_priv,
 			&lttng_metadata_ring_buffer_file_operations);
 	if (ret < 0)
