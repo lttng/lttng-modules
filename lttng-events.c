@@ -46,6 +46,7 @@
 #include <wrapper/random.h>
 #include <wrapper/tracepoint.h>
 #include <wrapper/list.h>
+#include <wrapper/types.h>
 #include <lttng-kernel-version.h>
 #include <lttng-events.h>
 #include <lttng-tracer.h>
@@ -1146,7 +1147,8 @@ static
 int lttng_match_enabler_star_glob(const char *desc_name,
 		const char *pattern)
 {
-	if (!strutils_star_glob_match(pattern, SIZE_MAX, desc_name, SIZE_MAX))
+	if (!strutils_star_glob_match(pattern, LTTNG_SIZE_MAX,
+			desc_name, LTTNG_SIZE_MAX))
 		return 0;
 	return 1;
 }
