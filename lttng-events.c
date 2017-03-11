@@ -1146,7 +1146,7 @@ static
 int lttng_match_enabler_star_glob(const char *desc_name,
 		const char *pattern)
 {
-	if (!strutils_star_glob_match(pattern, -1ULL, desc_name, -1ULL))
+	if (!strutils_star_glob_match(pattern, SIZE_MAX, desc_name, SIZE_MAX))
 		return 0;
 	return 1;
 }
