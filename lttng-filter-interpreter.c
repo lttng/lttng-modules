@@ -726,7 +726,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 				ret = -EINVAL;
 				goto end;
 			}
-			estack_ax(stack, top)->u.s.seq_len = UINT_MAX;
+			estack_ax(stack, top)->u.s.seq_len = SIZE_MAX;
 			estack_ax(stack, top)->u.s.literal_type =
 				ESTACK_STRING_LITERAL_TYPE_NONE;
 			estack_ax(stack, top)->u.s.user = 0;
@@ -790,7 +790,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 			dbg_printk("load string %s\n", insn->data);
 			estack_push(stack, top, ax, bx);
 			estack_ax(stack, top)->u.s.str = insn->data;
-			estack_ax(stack, top)->u.s.seq_len = UINT_MAX;
+			estack_ax(stack, top)->u.s.seq_len = SIZE_MAX;
 			estack_ax(stack, top)->u.s.literal_type =
 				ESTACK_STRING_LITERAL_TYPE_PLAIN;
 			estack_ax(stack, top)->u.s.user = 0;
@@ -805,7 +805,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 			dbg_printk("load globbing pattern %s\n", insn->data);
 			estack_push(stack, top, ax, bx);
 			estack_ax(stack, top)->u.s.str = insn->data;
-			estack_ax(stack, top)->u.s.seq_len = UINT_MAX;
+			estack_ax(stack, top)->u.s.seq_len = SIZE_MAX;
 			estack_ax(stack, top)->u.s.literal_type =
 				ESTACK_STRING_LITERAL_TYPE_STAR_GLOB;
 			estack_ax(stack, top)->u.s.user = 0;
@@ -870,7 +870,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 				ret = -EINVAL;
 				goto end;
 			}
-			estack_ax(stack, top)->u.s.seq_len = UINT_MAX;
+			estack_ax(stack, top)->u.s.seq_len = SIZE_MAX;
 			estack_ax(stack, top)->u.s.literal_type =
 				ESTACK_STRING_LITERAL_TYPE_NONE;
 			estack_ax(stack, top)->u.s.user = 0;
@@ -920,7 +920,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 				ret = -EINVAL;
 				goto end;
 			}
-			estack_ax(stack, top)->u.s.seq_len = UINT_MAX;
+			estack_ax(stack, top)->u.s.seq_len = SIZE_MAX;
 			estack_ax(stack, top)->u.s.literal_type =
 				ESTACK_STRING_LITERAL_TYPE_NONE;
 			estack_ax(stack, top)->u.s.user = 1;
