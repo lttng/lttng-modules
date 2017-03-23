@@ -173,6 +173,12 @@ struct lttng_kernel_filter_bytecode {
 	uint64_t seqnum;
 	char data[0];
 } __attribute__((packed));
+#define LTTNG_KERNEL_EXCLUSION_PADDING	32
+struct lttng_kernel_event_exclusion {
+	uint32_t count;
+	char padding[LTTNG_KERNEL_EXCLUSION_PADDING];
+	char names[LTTNG_KERNEL_SYM_NAME_LEN][0];
+} __attribute__((packed));
 
 /* LTTng file descriptor ioctl */
 #define LTTNG_KERNEL_SESSION			_IO(0xF6, 0x45)
@@ -224,6 +230,7 @@ struct lttng_kernel_filter_bytecode {
 
 /* Event FD ioctl */
 #define LTTNG_KERNEL_FILTER			_IO(0xF6, 0x90)
+#define LTTNG_KERNEL_EXCLUSION			_IO(0xF6, 0x91)
 
 /* LTTng-specific ioctls for the lib ringbuffer */
 /* returns the timestamp begin of the current sub-buffer */

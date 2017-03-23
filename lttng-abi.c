@@ -1463,6 +1463,18 @@ long lttng_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		}
 
 		}
+	case LTTNG_KERNEL_EXCLUSION:
+		switch (*evtype) {
+		case LTTNG_TYPE_EVENT:
+			return -EINVAL;
+		case LTTNG_TYPE_ENABLER:
+		{
+			enabler = file->private_data;
+			return lttng_enabler_attach_exclusion(enabler,
+				(struct lttng_kernel_event_exclusion __user *) arg);
+		}
+
+		}
 	default:
 		return -ENOIOCTLCMD;
 	}
