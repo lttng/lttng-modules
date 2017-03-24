@@ -48,6 +48,22 @@ LTTNG_TRACEPOINT_EVENT(lttng_test_filter_event,
 	)
 )
 
+LTTNG_TRACEPOINT_EVENT(lttng_test_event_a,
+	TP_PROTO(int id),
+	TP_ARGS(id),
+	TP_FIELDS(
+		ctf_integer(int, id, id)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT(lttng_test_event_b,
+	TP_PROTO(int id),
+	TP_ARGS(id),
+	TP_FIELDS(
+		ctf_integer(int, id, id)
+	)
+)
+
 #endif /*  LTTNG_TRACE_LTTNG_TEST_H */
 
 /* This part must be outside protection */
