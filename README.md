@@ -106,8 +106,7 @@ to print traces as a human-readable text log.
 Support
 -------
 
-Linux kernels >= 2.6.36 and < 4.10 are supported by LTTng modules 2.8.
-Upgrade to a newer LTTng modules for more recent kernels.
+Linux kernels >= 2.6.36 are supported.
 
 
 Notes

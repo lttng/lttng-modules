@@ -29,13 +29,6 @@ ifneq ($(KERNELRELEASE),)
     endif
   endif
 
-  ifneq ($(shell \
-    if [ $(VERSION) -ge 5 \
-      -o \( $(VERSION) -eq 4 -a $(PATCHLEVEL) -ge 10 \) ] ; then \
-      echo "true" ; fi;),)
-    $(warning You are entering uncharted territories adventurer! Proceed with utmost caution (also, lttng-modules 2.8 does not support Linux >= 4.10. You should upgrade to a newer lttng-modules version.))
-  endif
-
   include $(TOP_LTTNG_MODULES_DIR)/Makefile.ABI.workarounds
 
   ccflags-y += -I$(TOP_LTTNG_MODULES_DIR)
