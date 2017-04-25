@@ -1,3 +1,23 @@
+2017-04-25 (National Zucchini Bread Day) LTTng modules 2.8.5
+	* Revert "Documentation: lttng-modules 2.8 supports Linux < 4.10"
+	* Fix: kref changes for kernel 4.11
+	* Fix: timers cputime_t arguments replaced by ull in kernel 4.11
+	* Fix: update scsi instrumentation for kernel 4.11
+	* Fix: changes to the vm_op fault cb prototype in libringbuffer
+	* Fix: update btrfs instrumentation for kernel 4.11
+	* Fix: update mm_vmscan instrumentation for kernel 4.11
+	* Fix: only include linux/cpuhotplug.h for kernels >= 4.10
+	* Fix: 4.10 hotplug adaptation backward compat
+	* Adapt lttng-modules to Linux 4.10 cpu hotplug state machine
+	* Fix: 4.10 btrfs instrumentation update backward compat
+	* Update btrfs instrumentation for 4.10 kernel
+	* btrfs instrumentation: update to 4.10 kernel
+	* timer instrumentation: adapt to ktime_t without union
+	* Fix: Always build vmscan probe
+	* Fix: use of uninitialized ret value in lttng_abi_open_metadata_stream
+	* Fix: atomic_add_unless() returns true/false rather than prior value
+	* Documentation: lttng-modules 2.8 supports Linux < 4.10
+
 2017-02-17 (National Cabbage Day) LTTng modules 2.8.4
 	* Fix: nmi-safe clock on 32-bit systems
 	* Fix: asoc instrumentation for RHEL 7.3
