@@ -1,3 +1,15 @@
+2017-04-25 (National Zucchini Bread Day) LTTng modules 2.9.2
+	* Fix: Always build vmscan probe
+	* Fix: use of uninitialized ret value in lttng_abi_open_metadata_stream
+	* Fix: kref changes for kernel 4.11
+	* Fix: atomic_add_unless() returns true/false rather than prior value
+	* Fix: timers cputime_t arguments replaced by ull in kernel 4.11
+	* Fix: update scsi instrumentation for kernel 4.11
+	* Fix: changes to the vm_op fault cb prototype in libringbuffer
+	* Fix: update btrfs instrumentation for kernel 4.11
+	* Fix: update mm_vmscan instrumentation for kernel 4.11
+	* Fix: section mismatch warning caused by __exit annotation
+
 2017-02-17 (National Cabbage Day) LTTng modules 2.9.1
 	* Fix: nmi-safe clock on 32-bit systems
 	* Fix: only include linux/cpuhotplug.h for kernels >= 4.10
