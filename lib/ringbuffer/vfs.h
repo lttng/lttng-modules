@@ -115,6 +115,12 @@ ssize_t vfs_lib_ring_buffer_splice_read(struct file *in, loff_t *ppos,
 #define RING_BUFFER_FLUSH			_IO(0xF6, 0x0C)
 /* Get the current version of the metadata cache (after a get_next). */
 #define RING_BUFFER_GET_METADATA_VERSION	_IOR(0xF6, 0x0D, uint64_t)
+/*
+ * Get a snapshot of the current ring buffer producer and consumer positions,
+ * regardless of whether or not the two positions are contained within the same
+ * sub-buffer.
+ */
+#define RING_BUFFER_SNAPSHOT_SAMPLE_POSITIONS	_IO(0xF6, 0x0E)
 
 #ifdef CONFIG_COMPAT
 /* Get a snapshot of the current ring buffer producer and consumer positions */
@@ -149,6 +155,13 @@ ssize_t vfs_lib_ring_buffer_splice_read(struct file *in, loff_t *ppos,
 #define RING_BUFFER_COMPAT_FLUSH		RING_BUFFER_FLUSH
 /* Get the current version of the metadata cache (after a get_next). */
 #define RING_BUFFER_COMPAT_GET_METADATA_VERSION	RING_BUFFER_GET_METADATA_VERSION
+/*
+ * Get a snapshot of the current ring buffer producer and consumer positions,
+ * regardless of whether or not the two positions are contained within the same
+ * sub-buffer.
+ */
+#define RING_BUFFER_COMPAT_SNAPSHOT_SAMPLE_POSITIONS	\
+	RING_BUFFER_SNAPSHOT_SAMPLE_POSITIONS
 #endif /* CONFIG_COMPAT */
 
 #endif /* _LIB_RING_BUFFER_VFS_H */

@@ -106,6 +106,10 @@ extern void lib_ring_buffer_release_read(struct lib_ring_buffer *buf);
 extern int lib_ring_buffer_snapshot(struct lib_ring_buffer *buf,
 				    unsigned long *consumed,
 				    unsigned long *produced);
+extern int lib_ring_buffer_snapshot_sample_positions(
+				    struct lib_ring_buffer *buf,
+				    unsigned long *consumed,
+				    unsigned long *produced);
 extern void lib_ring_buffer_move_consumer(struct lib_ring_buffer *buf,
 					  unsigned long consumed_new);
 

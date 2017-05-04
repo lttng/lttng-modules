@@ -1120,6 +1120,37 @@ nodata:
 EXPORT_SYMBOL_GPL(lib_ring_buffer_snapshot);
 
 /**
+ * Performs the same function as lib_ring_buffer_snapshot(), but the positions
+ * are saved regardless of whether the consumed and produced positions are
+ * in the same subbuffer.
+ * @buf: ring buffer
+ * @consumed: consumed byte count indicating the last position read
+ * @produced: produced byte count indicating the last position written
+ *
+ * This function is meant to provide information on the exact producer and
+ * consumer positions without regard for the "snapshot" feature.
+ */
+int lib_ring_buffer_snapshot_sample_positions(struct lib_ring_buffer *buf,
+		unsigned long *consumed, unsigned long *produced)
+{
+	struct channel *chan = buf->backend.chan;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
+
+	smp_rmb();
+	*consumed = atomic_long_read(&buf->consumed);
+	/*
+	 * No need to issue a memory barrier between consumed count read and
+	 * write offset read, because consumed count can only change
+	 * concurrently in overwrite mode, and we keep a sequence counter
+	 * identifier derived from the write offset to check we are getting
+	 * the same sub-buffer we are expecting (the sub-buffers are atomically
+	 * "tagged" upon writes, tags are checked upon read).
+	 */
+	*produced = v_read(config, &buf->offset);
+	return 0;
+}
+
+/**
  * lib_ring_buffer_put_snapshot - move consumed counter forward
  *
  * Should only be called from consumer context.
