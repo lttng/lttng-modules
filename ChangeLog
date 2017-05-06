@@ -1,3 +1,47 @@
+2017-05-05 (International Tuba Day) LTTng modules 2.10.0-rc1
+	* Fix: remove CONFIG_KALLSYMS_ALL warning on clean
+	* Add RING_BUFFER_SNAPSHOT_SAMPLE_POSITIONS command
+	* Fix: Always build vmscan probe
+	* Cleanup: formatting in strutils_star_glob_match explanation
+	* Fix: introduce LTTNG_SIZE_MAX for older kernels
+	* Use SIZE_MAX instead of -1ULL for size_t parameter
+	* filter: use SIZE_MAX for size_t
+	* Fix: out of bound array access in filter code
+	* Add support for star globbing patterns in event names
+	* Filtering: add support for star-only globbing patterns
+	* Add string utilities
+	* lttng-abi.c: cleanup whitespaces
+	* Fix: use of uninitialized ret value in lttng_abi_open_metadata_stream
+	* Fix: kref changes for kernel 4.11
+	* Fix: atomic_add_unless() returns true/false rather than prior value
+	* Fix: timers cputime_t arguments replaced by ull in kernel 4.11
+	* Fix: update scsi instrumentation for kernel 4.11
+	* Fix: changes to the vm_op fault cb prototype in libringbuffer
+	* Fix: update btrfs instrumentation for kernel 4.11
+	* Fix: update mm_vmscan instrumentation for kernel 4.11
+	* Fix: section mismatch warning caused by __exit annotation
+	* socketpair: extend syscall socketpair tracing information
+	* Remove events/mainline unused headers
+	* update event README
+	* Fix: nmi-safe clock on 32-bit systems
+	* Fix: only include linux/cpuhotplug.h for kernels >= 4.10
+	* Fix: 4.10 hotplug adaptation backward compat
+	* Fix: 4.10 btrfs instrumentation update backward compat
+	* Update btrfs instrumentation for 4.10 kernel
+	* Adapt lttng-modules to Linux 4.10 cpu hotplug state machine
+	* btrfs instrumentation: update to 4.10 kernel
+	* timer instrumentation: adapt to ktime_t without union
+	* Add load/unload messages to kernel log
+	* Update version to 2.10.0-pre
+	* Fix: asoc instrumentation for RHEL 7.3
+	* Fix: SCSI instrumentation for SLES12 SP2
+	* Add SUSE Linux Enterprise kernel version tests
+	* Filter code relicensing to MIT license
+	* Add task cpu in process statedump
+	* Performance: add missing unlikely in reserve
+	* Fix: preemptible and migratable context error handling
+	* Fix: bump stable kernel version ranges for clock work-around
+
 2016-10-07 (National Frappé Day) LTTng modules 2.9.0-rc1
 	* Fix: i2c: support kernels < 3.15
 	* Fix: show warning for broken clock work-around
