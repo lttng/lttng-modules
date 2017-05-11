@@ -167,6 +167,8 @@ void lib_ring_buffer_check_deliver_slow(const struct lib_ring_buffer_config *con
 
 extern
 void lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf);
+extern
+void lib_ring_buffer_switch_remote_empty(struct lib_ring_buffer *buf);
 
 /* Buffer write helpers */
 

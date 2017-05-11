@@ -111,10 +111,13 @@ ssize_t vfs_lib_ring_buffer_splice_read(struct file *in, loff_t *ppos,
 #define RING_BUFFER_GET_MMAP_LEN		_IOR(0xF6, 0x0A, unsigned long)
 /* returns the offset of the subbuffer belonging to the mmap reader. */
 #define RING_BUFFER_GET_MMAP_READ_OFFSET	_IOR(0xF6, 0x0B, unsigned long)
-/* flush the current sub-buffer */
+/* Flush the current sub-buffer, if non-empty. */
 #define RING_BUFFER_FLUSH			_IO(0xF6, 0x0C)
 /* Get the current version of the metadata cache (after a get_next). */
 #define RING_BUFFER_GET_METADATA_VERSION	_IOR(0xF6, 0x0D, uint64_t)
+/* Reserved: (0xF6, 0x0E). */
+/* Flush the current sub-buffer, even if empty. */
+#define RING_BUFFER_FLUSH_EMPTY			_IO(0xF6, 0x0F)
 
 #ifdef CONFIG_COMPAT
 /* Get a snapshot of the current ring buffer producer and consumer positions */
@@ -145,10 +148,13 @@ ssize_t vfs_lib_ring_buffer_splice_read(struct file *in, loff_t *ppos,
 #define RING_BUFFER_COMPAT_GET_MMAP_LEN		_IOR(0xF6, 0x0A, compat_ulong_t)
 /* returns the offset of the subbuffer belonging to the mmap reader. */
 #define RING_BUFFER_COMPAT_GET_MMAP_READ_OFFSET	_IOR(0xF6, 0x0B, compat_ulong_t)
-/* flush the current sub-buffer */
+/* Flush the current sub-buffer, if non-empty. */
 #define RING_BUFFER_COMPAT_FLUSH		RING_BUFFER_FLUSH
 /* Get the current version of the metadata cache (after a get_next). */
 #define RING_BUFFER_COMPAT_GET_METADATA_VERSION	RING_BUFFER_GET_METADATA_VERSION
+/* Flush the current sub-buffer, even if empty. */
+#define RING_BUFFER_COMPAT_FLUSH_EMPTY			\
+	RING_BUFFER_FLUSH_EMPTY
 #endif /* CONFIG_COMPAT */
 
 #endif /* _LIB_RING_BUFFER_VFS_H */
