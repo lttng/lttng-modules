@@ -1784,11 +1784,19 @@ static void _lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf,
 	put_online_cpus();
 }
 
+/* Switch sub-buffer if current sub-buffer is non-empty. */
 void lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf)
 {
 	_lib_ring_buffer_switch_remote(buf, SWITCH_ACTIVE);
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_switch_remote);
+
+/* Switch sub-buffer even if current sub-buffer is empty. */
+void lib_ring_buffer_switch_remote_empty(struct lib_ring_buffer *buf)
+{
+	_lib_ring_buffer_switch_remote(buf, SWITCH_FLUSH);
+}
+EXPORT_SYMBOL_GPL(lib_ring_buffer_switch_remote_empty);
 
 /*
  * Returns :
