@@ -702,18 +702,6 @@ long lttng_metadata_ring_buffer_ioctl(struct file *filp,
 
 		return put_u64(stream->version, arg);
 	}
-	case RING_BUFFER_SNAPSHOT:
-	{
-		/*
-		 * Force the buffer to quiescent so the ring buffer
-		 * don't attempt to perform a SWITCH_FLUSH, which would
-		 * desynchronize the client accounting of the amount of
-		 * data available in the buffer from the ring buffer
-		 * view.
-		 */
-		buf->quiescent = true;
-		break;
-	}
 	default:
 		break;
 	}
@@ -789,18 +777,6 @@ long lttng_metadata_ring_buffer_compat_ioctl(struct file *filp,
 		struct lttng_metadata_stream *stream = filp->private_data;
 
 		return put_u64(stream->version, arg);
-	}
-	case RING_BUFFER_SNAPSHOT:
-	{
-		/*
-		 * Force the buffer to quiescent so the ring buffer
-		 * don't attempt to perform a SWITCH_FLUSH, which would
-		 * desynchronize the client accounting of the amount of
-		 * data available in the buffer from the ring buffer
-		 * view.
-		 */
-		buf->quiescent = true;
-		break;
 	}
 	default:
 		break;
