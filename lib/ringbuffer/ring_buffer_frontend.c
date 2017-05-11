@@ -1034,15 +1034,6 @@ int lib_ring_buffer_snapshot(struct lib_ring_buffer *buf,
 	unsigned long consumed_cur, write_offset;
 	int finalized;
 
-	/*
-	 * First, ensure we perform a "final" flush onto the stream.  This will
-	 * ensure we create a packet of padding if we encounter an empty
-	 * packet. This ensures the time-stamps right before the snapshot is
-	 * used as end of packet timestamp.
-	 */
-	if (!buf->quiescent)
-		_lib_ring_buffer_switch_remote(buf, SWITCH_FLUSH);
-
 retry:
 	finalized = ACCESS_ONCE(buf->finalized);
 	/*
@@ -1432,8 +1423,7 @@ void lib_ring_buffer_print_errors(struct channel *chan,
 /*
  * lib_ring_buffer_switch_old_start: Populate old subbuffer header.
  *
- * Only executed by SWITCH_FLUSH, which can be issued while tracing is active
- * or at buffer finalization (destroy).
+ * Only executed when the buffer is finalized, in SWITCH_FLUSH.
  */
 static
 void lib_ring_buffer_switch_old_start(struct lib_ring_buffer *buf,
@@ -1624,14 +1614,12 @@ int lib_ring_buffer_try_switch_slow(enum switch_mode mode,
 		unsigned long sb_index, commit_count;
 
 		/*
-		 * We are performing a SWITCH_FLUSH. There may be concurrent
-		 * writes into the buffer if e.g. invoked while performing a
-		 * snapshot on an active trace.
+		 * We are performing a SWITCH_FLUSH. At this stage, there are no
+		 * concurrent writes into the buffer.
 		 *
-		 * If the client does not save any header information (sub-buffer
-		 * header size == 0), don't switch empty subbuffer on finalize,
-		 * because it is invalid to deliver a completely empty
-		 * subbuffer.
+		 * The client does not save any header information.  Don't
+		 * switch empty subbuffer on finalize, because it is invalid to
+		 * deliver a completely empty subbuffer.
 		 */
 		if (!config->cb.subbuffer_header_size())
 			return -1;
