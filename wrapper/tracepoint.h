@@ -87,6 +87,10 @@ int wrapper_tracepoint_module_notify(struct notifier_block *nb,
 	}
 }
 
+#endif /* CONFIG_MODULE_SIG */
+
+#if defined(CONFIG_MODULE_SIG) && defined(MODULE)
+
 static inline
 int wrapper_lttng_fixup_sig(struct module *mod)
 {
@@ -106,7 +110,7 @@ int wrapper_lttng_fixup_sig(struct module *mod)
 	return ret;
 }
 
-#else /* CONFIG_MODULE_SIG */
+#else /* #if defined(CONFIG_MODULE_SIG) && defined(MODULE) */
 
 static inline
 int wrapper_lttng_fixup_sig(struct module *mod)
@@ -114,6 +118,6 @@ int wrapper_lttng_fixup_sig(struct module *mod)
 	return 0;
 }
 
-#endif /* #else CONFIG_MODULE_SIG */
+#endif /*#else #if defined(CONFIG_MODULE_SIG) && defined(MODULE) */
 
 #endif /* _LTTNG_WRAPPER_TRACEPOINT_H */
