@@ -95,7 +95,9 @@ static int subbuf_splice_actor(struct file *in,
 		.pages = pages,
 		.nr_pages = 0,
 		.partial = partial,
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,12,0))
 		.flags = flags,
+#endif
 		.ops = &ring_buffer_pipe_buf_ops,
 		.spd_release = lib_ring_buffer_page_release,
 	};
