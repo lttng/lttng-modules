@@ -97,13 +97,15 @@ ifneq ($(CONFIG_EXT3_FS),)
   ext3_dep = $(srctree)/fs/ext3/*.h
   ext3_dep_check = $(wildcard $(ext3_dep))
   ext3 = $(shell \
-    if [ $(VERSION) -ge 4 -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 1 \) ] ; then \
-      if [ \( $(VERSION) -ge 4 -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 4 \) \) -a \
-        -z "$(ext3_dep_check)" ] ; then \
-        echo "warn" ; \
-        exit ; \
+    if [ $(VERSION) -lt 4 -o \( $(VERSION) -eq 4 -a $(PATCHLEVEL) -lt 3 \) ] ; then \
+      if [ $(VERSION) -ge 4 -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 1 \) ] ; then \
+        if [ \( $(VERSION) -ge 4 -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 4 \) \) -a \
+          -z "$(ext3_dep_check)" ] ; then \
+          echo "warn" ; \
+          exit ; \
+        fi; \
+        echo "lttng-probe-ext3.o" ; \
       fi; \
-      echo "lttng-probe-ext3.o" ; \
     fi;)
   ifeq ($(ext3),warn)
     $(warning Files $(ext3_dep) not found. Probe "ext3" is disabled. Use full kernel source tree to enable it.)
