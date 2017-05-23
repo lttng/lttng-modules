@@ -540,7 +540,25 @@ LTTNG_TRACEPOINT_EVENT(sched_stat_runtime,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+/*
+ * Tracepoint for showing priority inheritance modifying a tasks
+ * priority.
+ */
+LTTNG_TRACEPOINT_EVENT(sched_pi_setprio,
+
+	TP_PROTO(struct task_struct *tsk, struct task_struct *pi_task),
+
+	TP_ARGS(tsk, pi_task),
+
+	TP_FIELDS(
+		ctf_array_text(char, comm, tsk->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, tid, tsk->pid)
+		ctf_integer(int, oldprio, tsk->prio - MAX_RT_PRIO)
+		ctf_integer(int, newprio, pi_task ? pi_task->prio - MAX_RT_PRIO : tsk->prio - MAX_RT_PRIO)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 /*
  * Tracepoint for showing priority inheritance modifying a tasks
  * priority.
