@@ -83,7 +83,30 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__inode, btrfs_inode_evict,
 	TP_ARGS(inode)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+
+LTTNG_TRACEPOINT_EVENT(btrfs_get_extent,
+
+	TP_PROTO(struct btrfs_root *root, struct btrfs_inode *inode,
+		struct extent_map *map),
+
+	TP_ARGS(root, inode, map),
+
+	TP_FIELDS(
+		ctf_integer(u64, root_objectid, root->root_key.objectid)
+		ctf_integer(u64, ino, btrfs_ino(inode))
+		ctf_integer(u64, start, map->start)
+		ctf_integer(u64, len, map->len)
+		ctf_integer(u64, orig_start, map->orig_start)
+		ctf_integer(u64, block_start, map->block_start)
+		ctf_integer(u64, block_len, map->block_len)
+		ctf_integer(unsigned long, flags, map->flags)
+		ctf_integer(int, refs, refcount_read(&map->refs))
+		ctf_integer(unsigned int, compress_type, map->compress_type)
+	)
+)
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
 
 LTTNG_TRACEPOINT_EVENT(btrfs_get_extent,
 
@@ -152,6 +175,28 @@ LTTNG_TRACEPOINT_EVENT(btrfs_get_extent,
 
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__ordered_extent,
+
+	TP_PROTO(struct inode *inode, struct btrfs_ordered_extent *ordered),
+
+	TP_ARGS(inode, ordered),
+
+	TP_FIELDS(
+		ctf_integer(ino_t, ino, inode->i_ino)
+		ctf_integer(u64, file_offset, ordered->file_offset)
+		ctf_integer(u64, start, ordered->start)
+		ctf_integer(u64, len, ordered->len)
+		ctf_integer(u64, disk_len, ordered->disk_len)
+		ctf_integer(u64, bytes_left, ordered->bytes_left)
+		ctf_integer(unsigned long, flags, ordered->flags)
+		ctf_integer(int, compress_type, ordered->compress_type)
+		ctf_integer(int, refs, refcount_read(&ordered->refs))
+		ctf_integer(u64, root_objectid,
+				BTRFS_I(inode)->root->root_key.objectid)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__ordered_extent,
 
 	TP_PROTO(struct inode *inode, struct btrfs_ordered_extent *ordered),
@@ -172,6 +217,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__ordered_extent,
 				BTRFS_I(inode)->root->root_key.objectid)
 	)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__ordered_extent, btrfs_ordered_extent_add,
 
