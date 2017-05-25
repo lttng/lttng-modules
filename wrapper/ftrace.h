@@ -26,6 +26,10 @@
  */
 
 #include <linux/ftrace.h>
+#include <linux/version.h>
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+#include <../kernel/trace/trace.h>
+#endif
 
 #ifdef CONFIG_KALLSYMS
 
