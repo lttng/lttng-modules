@@ -168,7 +168,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_buffer, block_dirty_buffer,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+/* block_rq_with_error event class removed in kernel 4.12 */
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
 LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq_with_error,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
@@ -256,6 +258,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq_with_error,
 )
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,12,0))
 /**
  * block_rq_abort - abort block operation request
  * @q: queue containing the block operation request
@@ -272,6 +275,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_abort,
 
 	TP_ARGS(q, rq)
 )
+#endif
 
 /**
  * block_rq_requeue - place block IO request back on a queue
@@ -282,12 +286,30 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_abort,
  * @q.  For some reason the request was not completed and needs to be
  * put back in the queue.
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+LTTNG_TRACEPOINT_EVENT(block_rq_requeue,
+
+	TP_PROTO(struct request_queue *q, struct request *rq),
+
+	TP_ARGS(q, rq),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev,
+			rq->rq_disk ? disk_devt(rq->rq_disk) : 0)
+		ctf_integer(sector_t, sector, blk_rq_trace_sector(rq))
+		ctf_integer(unsigned int, nr_sector, blk_rq_trace_nr_sectors(rq))
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			lttng_req_op(rq), lttng_req_rw(rq), blk_rq_bytes(rq))
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_requeue,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
 
 	TP_ARGS(q, rq)
 )
+#endif
 
 /**
  * block_rq_complete - block IO operation completed by device driver
@@ -301,7 +323,24 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_requeue,
  * do for the request. If @rq->bio is non-NULL then there is
  * additional work required to complete the request.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+LTTNG_TRACEPOINT_EVENT(block_rq_complete,
+
+	TP_PROTO(struct request *rq, int error, unsigned int nr_bytes),
+
+	TP_ARGS(rq, error, nr_bytes),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev,
+			rq->rq_disk ? disk_devt(rq->rq_disk) : 0)
+		ctf_integer(sector_t, sector, blk_rq_pos(rq))
+		ctf_integer(unsigned int, nr_sector, nr_bytes >> 9)
+		ctf_integer(int, error, error)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			lttng_req_op(rq), lttng_req_rw(rq), nr_bytes)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
 LTTNG_TRACEPOINT_EVENT_CODE(block_rq_complete,
 
 	TP_PROTO(struct request_queue *q, struct request *rq,
@@ -406,7 +445,26 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_complete,
 
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(block_rq,
+
+	TP_PROTO(struct request_queue *q, struct request *rq),
+
+	TP_ARGS(q, rq),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev,
+			rq->rq_disk ? disk_devt(rq->rq_disk) : 0)
+		ctf_integer(sector_t, sector, blk_rq_trace_sector(rq))
+		ctf_integer(unsigned int, nr_sector, blk_rq_trace_nr_sectors(rq))
+		ctf_integer(unsigned int, bytes, blk_rq_bytes(rq))
+		ctf_integer(pid_t, tid, current->pid)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			lttng_req_op(rq), lttng_req_rw(rq), blk_rq_bytes(rq))
+		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
 LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
