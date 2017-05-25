@@ -259,7 +259,21 @@ ifneq ($(CONFIG_KRETPROBES),)
 endif # CONFIG_KRETPROBES
 
 ifneq ($(CONFIG_DYNAMIC_FTRACE),)
-  obj-$(CONFIG_LTTNG) += lttng-ftrace.o
+  ftrace_dep = $(srctree)/kernel/trace/trace.h
+  ftrace_dep_check = $(wildcard $(ftrace_dep))
+  ftrace = $(shell \
+    if [ $(VERSION) -ge 5 -o \( $(VERSION) -eq 4 -a $(PATCHLEVEL) -ge 12 \) ] ; then \
+      if [ -z "$(ftrace_dep_check)" ] ; then \
+        echo "warn" ; \
+        exit ; \
+      fi; \
+      echo "lttng-ftrace.o" ; \
+    fi;)
+  ifeq ($(ftrace),warn)
+    $(warning Files $(ftrace_dep) not found. Probe "ftrace" is disabled. Use full kernel source tree to enable it.)
+    ftrace =
+  endif # $(ftrace),warn
+  obj-$(CONFIG_LTTNG) += $(ftrace)
 endif # CONFIG_DYNAMIC_FTRACE
 
 # vim:syntax=make
