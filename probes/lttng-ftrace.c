@@ -39,6 +39,45 @@
 #include <wrapper/vmalloc.h>
 #include <lttng-tracer.h>
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+static
+void lttng_ftrace_handler(unsigned long ip, unsigned long parent_ip,
+		struct trace_array *tr, struct ftrace_probe_ops *ops,
+		void *data)
+{
+	struct lttng_event *event = data;
+	struct lttng_probe_ctx lttng_probe_ctx = {
+		.event = event,
+		.interruptible = !irqs_disabled(),
+	};
+	struct lttng_channel *chan = event->chan;
+	struct lib_ring_buffer_ctx ctx;
+	struct {
+		unsigned long ip;
+		unsigned long parent_ip;
+	} payload;
+	int ret;
+
+	if (unlikely(!ACCESS_ONCE(chan->session->active)))
+		return;
+	if (unlikely(!ACCESS_ONCE(chan->enabled)))
+		return;
+	if (unlikely(!ACCESS_ONCE(event->enabled)))
+		return;
+
+	lib_ring_buffer_ctx_init(&ctx, chan->chan, &lttng_probe_ctx,
+				 sizeof(payload), lttng_alignof(payload), -1);
+	ret = chan->ops->event_reserve(&ctx, event->id);
+	if (ret < 0)
+		return;
+	payload.ip = ip;
+	payload.parent_ip = parent_ip;
+	lib_ring_buffer_align_ctx(&ctx, lttng_alignof(payload));
+	chan->ops->event_write(&ctx, &payload, sizeof(payload));
+	chan->ops->event_commit(&ctx);
+	return;
+}
+#else
 static
 void lttng_ftrace_handler(unsigned long ip, unsigned long parent_ip, void **data)
 {
@@ -74,6 +113,7 @@ void lttng_ftrace_handler(unsigned long ip, unsigned long parent_ip, void **data
 	chan->ops->event_commit(&ctx);
 	return;
 }
+#endif
 
 /*
  * Create event description
