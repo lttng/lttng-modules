@@ -48,7 +48,8 @@ struct lib_ring_buffer_client_cb {
 	size_t (*record_header_size) (const struct lib_ring_buffer_config *config,
 				      struct channel *chan, size_t offset,
 				      size_t *pre_header_padding,
-				      struct lib_ring_buffer_ctx *ctx);
+				      struct lib_ring_buffer_ctx *ctx,
+				      void *client_ctx);
 
 	/* Slow path only, at subbuffer switch */
 	size_t (*subbuffer_header_size) (void);

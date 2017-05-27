@@ -58,7 +58,8 @@ static inline
 size_t record_header_size(const struct lib_ring_buffer_config *config,
 				 struct channel *chan, size_t offset,
 				 size_t *pre_header_padding,
-				 struct lib_ring_buffer_ctx *ctx)
+				 struct lib_ring_buffer_ctx *ctx,
+				 void *client_ctx)
 {
 	return 0;
 }
@@ -74,7 +75,8 @@ static
 size_t client_record_header_size(const struct lib_ring_buffer_config *config,
 				 struct channel *chan, size_t offset,
 				 size_t *pre_header_padding,
-				 struct lib_ring_buffer_ctx *ctx)
+				 struct lib_ring_buffer_ctx *ctx,
+				 void *client_ctx)
 {
 	return 0;
 }
@@ -314,7 +316,7 @@ int lttng_event_reserve(struct lib_ring_buffer_ctx *ctx, uint32_t event_id)
 {
 	int ret;
 
-	ret = lib_ring_buffer_reserve(&client_config, ctx);
+	ret = lib_ring_buffer_reserve(&client_config, ctx, NULL);
 	if (ret)
 		return ret;
 	lib_ring_buffer_backend_get_pages(&client_config, ctx,
