@@ -120,13 +120,25 @@ int init_type(enum lttng_cs_ctx_modes mode)
 	return 0;
 }
 
+/* Keep track of nesting inside userspace callstack context code */
+DEFINE_PER_CPU(int, callstack_user_nesting);
+
 static
 struct stack_trace *stack_trace_context(struct lttng_ctx_field *field,
 					struct lib_ring_buffer_ctx *ctx)
 {
-	int nesting;
+	int buffer_nesting, cs_user_nesting;
 	struct lttng_cs *cs;
 	struct field_data *fdata = field->priv;
+
+	/*
+	 * Do not gather the userspace callstack context when the event was
+	 * triggered by the userspace callstack context saving mechanism.
+	 */
+	cs_user_nesting = per_cpu(callstack_user_nesting, ctx->cpu);
+
+	if (fdata->mode == CALLSTACK_USER && cs_user_nesting >= 1)
+		return NULL;
 
 	/*
 	 * get_cpu() is not required, preemption is already
@@ -136,11 +148,11 @@ struct stack_trace *stack_trace_context(struct lttng_ctx_field *field,
 	 * Check it again as a safety net.
 	 */
 	cs = per_cpu_ptr(fdata->cs_percpu, ctx->cpu);
-	nesting = per_cpu(lib_ring_buffer_nesting, ctx->cpu) - 1;
-	if (nesting >= RING_BUFFER_MAX_NESTING) {
+	buffer_nesting = per_cpu(lib_ring_buffer_nesting, ctx->cpu) - 1;
+	if (buffer_nesting >= RING_BUFFER_MAX_NESTING)
 		return NULL;
-	}
-	return &cs->dispatch[nesting].stack_trace;
+
+	return &cs->dispatch[buffer_nesting].stack_trace;
 }
 
 /*
@@ -168,8 +180,15 @@ size_t lttng_callstack_get_size(size_t offset, struct lttng_ctx_field *field,
 	/* reset stack trace, no need to clear memory */
 	trace->nr_entries = 0;
 
+	if (fdata->mode == CALLSTACK_USER)
+		++per_cpu(callstack_user_nesting, ctx->cpu);
+
 	/* do the real work and reserve space */
 	cs_types[fdata->mode].save_func(trace);
+
+	if (fdata->mode == CALLSTACK_USER)
+		per_cpu(callstack_user_nesting, ctx->cpu)--;
+
 	/*
 	 * Remove final ULONG_MAX delimiter. If we cannot find it, add
 	 * our own marker to show that the stack is incomplete. This is
