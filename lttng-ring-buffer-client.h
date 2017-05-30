@@ -100,7 +100,8 @@ size_t ctx_get_aligned_size(size_t offset, struct lttng_ctx *ctx,
 }
 
 static inline
-void ctx_get_struct_size(struct lttng_ctx *ctx, size_t *ctx_len)
+void ctx_get_struct_size(struct lttng_ctx *ctx, size_t *ctx_len,
+		struct lttng_channel *chan, struct lib_ring_buffer_ctx *bufctx)
 {
 	int i;
 	size_t offset = 0;
@@ -109,8 +110,13 @@ void ctx_get_struct_size(struct lttng_ctx *ctx, size_t *ctx_len)
 		*ctx_len = 0;
 		return;
 	}
-	for (i = 0; i < ctx->nr_fields; i++)
-		offset += ctx->fields[i].get_size(offset);
+	for (i = 0; i < ctx->nr_fields; i++) {
+		if (ctx->fields[i].get_size)
+			offset += ctx->fields[i].get_size(offset);
+		if (ctx->fields[i].get_size_arg)
+			offset += ctx->fields[i].get_size_arg(offset,
+					&ctx->fields[i], bufctx, chan);
+	}
 	*ctx_len = offset;
 }
 
@@ -631,8 +637,8 @@ int lttng_event_reserve(struct lib_ring_buffer_ctx *ctx,
 	int ret, cpu;
 
 	/* Compute internal size of context structures. */
-	ctx_get_struct_size(lttng_chan->ctx, &client_ctx.packet_context_len);
-	ctx_get_struct_size(event->ctx, &client_ctx.event_context_len);
+	ctx_get_struct_size(lttng_chan->ctx, &client_ctx.packet_context_len, lttng_chan, ctx);
+	ctx_get_struct_size(event->ctx, &client_ctx.event_context_len, lttng_chan, ctx);
 
 	cpu = lib_ring_buffer_get_cpu(&client_config);
 	if (unlikely(cpu < 0))
