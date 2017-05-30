@@ -262,8 +262,9 @@ ifneq ($(CONFIG_DYNAMIC_FTRACE),)
         echo "warn" ; \
         exit ; \
       fi; \
-      echo "lttng-ftrace.o" ; \
-    fi;)
+    fi; \
+    echo "lttng-ftrace.o" ; \
+    )
   ifeq ($(ftrace),warn)
     $(warning Files $(ftrace_dep) not found. Probe "ftrace" is disabled. Use full kernel source tree to enable it.)
     ftrace =
