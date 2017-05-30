@@ -636,14 +636,14 @@ int lttng_event_reserve(struct lib_ring_buffer_ctx *ctx,
 	struct lttng_client_ctx client_ctx;
 	int ret, cpu;
 
-	/* Compute internal size of context structures. */
-	ctx_get_struct_size(lttng_chan->ctx, &client_ctx.packet_context_len, lttng_chan, ctx);
-	ctx_get_struct_size(event->ctx, &client_ctx.event_context_len, lttng_chan, ctx);
-
 	cpu = lib_ring_buffer_get_cpu(&client_config);
 	if (unlikely(cpu < 0))
 		return -EPERM;
 	ctx->cpu = cpu;
+
+	/* Compute internal size of context structures. */
+	ctx_get_struct_size(lttng_chan->ctx, &client_ctx.packet_context_len, lttng_chan, ctx);
+	ctx_get_struct_size(event->ctx, &client_ctx.event_context_len, lttng_chan, ctx);
 
 	switch (lttng_chan->header_type) {
 	case 1:	/* compact */
