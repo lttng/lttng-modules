@@ -1,7 +1,7 @@
 /*
  * lttng-tracker-pid.c
  *
- * LTTng Process ID trackering.
+ * LTTng Process ID tracking.
  *
  * Copyright (C) 2014 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
