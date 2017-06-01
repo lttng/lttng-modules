@@ -961,7 +961,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	if (unlikely(!ACCESS_ONCE(__event->enabled)))			      \
 		return;							      \
 	__lpf = lttng_rcu_dereference(__session->pid_tracker);		      \
-	if (__lpf && likely(!lttng_pid_tracker_lookup(__lpf, current->pid)))  \
+	if (__lpf && likely(!lttng_pid_tracker_lookup(__lpf, current->tgid))) \
 		return;							      \
 	_code_pre							      \
 	if (unlikely(!list_empty(&__event->bytecode_runtime_head))) {	      \
