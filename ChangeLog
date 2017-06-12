@@ -1,3 +1,19 @@
+2017-06-12 (National Peanut Butter Cookie Day) LTTng modules 2.9.3
+	* Fix: pid tracker should track "pgid"
+	* Fix: Build ftrace probe on kernels prior to 4.12
+	* Fix: update ftrace probe for kernel 4.12
+	* Fix: update block instrumentation for kernel 4.12
+	* Fix: Add support for 4.9.27-rt18 kernel
+	* Fix: update btrfs instrumentation for kernel 4.12
+	* Fix: update ringbuffer for kernel 4.12
+	* Fix: update sched instrumentation for kernel 4.12
+	* Fix: ext3 was completely removed from the kernel in v4.3
+	* Fix: NULL pointer dereference of THIS_MODULE with built-in modules
+	* Fix: add "flush empty" ioctl for stream intersection
+	* Revert "Fix: flush empty packets on snapshot channel"
+	* Revert "Fix: don't perform extra flush on metadata channel"
+	* Fix: remove CONFIG_KALLSYMS_ALL warning on clean
+
 2017-04-25 (National Zucchini Bread Day) LTTng modules 2.9.2
 	* Fix: Always build vmscan probe
 	* Fix: use of uninitialized ret value in lttng_abi_open_metadata_stream
