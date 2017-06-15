@@ -743,6 +743,17 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		}
 		break;
 	case LTTNG_KERNEL_UPROBE:
+		/*
+		 * Needs to be explicitly enabled after creation, since
+		 * we may want to apply filters.
+		 */
+		event->enabled = 0;
+		event->registered = 1;
+		/*
+		 * Populate lttng_event structure before event
+		 * registration.
+		 */
+		smp_wmb();
 
 		ret = lttng_uprobes_register(event_param->name,
 				event_param->u.uprobe.path,
@@ -815,6 +826,7 @@ void register_event(struct lttng_event *event)
 			desc->name);
 		break;
 	case LTTNG_KERNEL_KPROBE:
+	case LTTNG_KERNEL_UPROBE:
 	case LTTNG_KERNEL_KRETPROBE:
 	case LTTNG_KERNEL_FUNCTION:
 	case LTTNG_KERNEL_NOOP:
