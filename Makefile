@@ -29,7 +29,7 @@ ifneq ($(KERNELRELEASE),)
     endif
   endif
 
-  include $(TOP_LTTNG_MODULES_DIR)/Makefile.ABI.workarounds
+  include $(TOP_LTTNG_MODULES_DIR)/Kbuild.common
 
   ccflags-y += -I$(TOP_LTTNG_MODULES_DIR)
 
