@@ -48,3 +48,5 @@ ifneq ($(CONFIG_DYNAMIC_FTRACE),)
     ccflags-y += -DLTTNG_FTRACE_MISSING_HEADER
   endif
 endif
+
+# vim:syntax=make
