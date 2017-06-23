@@ -769,7 +769,7 @@ int lttng_kretprobes_event_enable_state(struct lttng_event *event,
 }
 #endif
 
-#ifdef CONFIG_DYNAMIC_FTRACE
+#if defined(CONFIG_DYNAMIC_FTRACE) && !defined(LTTNG_FTRACE_MISSING_HEADER)
 int lttng_ftrace_register(const char *name,
 			  const char *symbol_name,
 			  struct lttng_event *event);
