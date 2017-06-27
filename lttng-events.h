@@ -779,7 +779,7 @@ void lttng_kprobes_destroy_private(struct lttng_event *event)
 
 #ifdef CONFIG_UPROBES
 int lttng_uprobes_register(const char *name,
-		const char *path,
+		int fd,
 		uint64_t offset,
 		struct lttng_event *event);
 void lttng_uprobes_unregister(struct lttng_event *event);
@@ -787,7 +787,7 @@ void lttng_uprobes_destroy_private(struct lttng_event *event);
 #else
 static inline
 int lttng_uprobes_register(const char *name,
-		const char *path,
+		int fd,
 		uint64_t offset,
 		struct lttng_event *event)
 {

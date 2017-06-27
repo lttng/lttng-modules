@@ -47,7 +47,7 @@ int lttng_uprobes_handler_pre(struct uprobe_consumer *uc, struct pt_regs *regs)
 
 	struct {
 		unsigned long ip;
-	 } payload;
+	} payload;
 
 	if (unlikely(!ACCESS_ONCE(chan->session->active)))
 		return 0;
@@ -65,6 +65,7 @@ int lttng_uprobes_handler_pre(struct uprobe_consumer *uc, struct pt_regs *regs)
 
 	/* Event payload. */
 	payload.ip = regs->ip;
+
 	lib_ring_buffer_align_ctx(&ctx, lttng_alignof(payload));
 	chan->ops->event_write(&ctx, &payload, sizeof(payload));
 	chan->ops->event_commit(&ctx);
@@ -119,38 +120,65 @@ error_str:
 	return ret;
 }
 
+/*
+ * Returns the inode struct from the current task and an fd. The inode is
+ * grabbed by this function and must be put once we are done with it using
+ * iput().
+ */
+static struct inode *get_inode_from_fd(int fd)
+{
+	struct file *file;
+	struct inode *inode;
+
+	rcu_read_lock();
+	/*
+	 * Returns the file backing the given fd. Needs to be done inside an RCU
+	 * critical section.
+	 */
+	file = fcheck(fd);
+	if (file == NULL) {
+		printk(KERN_WARNING "Cannot access file backing the fd(%d)\n", fd);
+		inode = NULL;
+		goto error;
+	}
+
+	/* Grab a reference on the inode. */
+	inode = igrab(file->f_path.dentry->d_inode);
+	if (inode == NULL)
+		printk(KERN_WARNING "Cannot grab a reference on the inode.\n");
+error:
+	rcu_read_unlock();
+	return inode;
+}
+
 int lttng_uprobes_register(const char *name,
-			   const char *path_name,
+			   int fd,
 			   uint64_t offset,
 			   struct lttng_event *event)
 {
 	int ret;
-
-	/* Shoudl we fail if the path is empty, it should be checked before */
-	if (path_name[0] == '\0')
-		path_name = NULL;
+	struct inode *inode;
 
 	ret = lttng_create_uprobe_event(name, event);
 	if (ret)
 		goto error;
 
+	inode = get_inode_from_fd(fd);
+	if (!inode) {
+		printk(KERN_WARNING "Cannot get inode from fd\n");
+		ret = -EBADF;
+		goto inode_error;
+	}
+
 	memset(&event->u.uprobe.up_consumer, 0,
 	       sizeof(event->u.uprobe.up_consumer));
 
 	event->u.uprobe.up_consumer.handler = lttng_uprobes_handler_pre;
-	if (path_name) {
-		struct path path;
-		ret = kern_path(path_name, LOOKUP_FOLLOW, &path);
-		if (ret)
-			goto path_error;
-
-		event->u.uprobe.inode = igrab(path.dentry->d_inode);
-	}
+	event->u.uprobe.inode = inode;
 	event->u.uprobe.offset = offset;
 
 	 /* Ensure the memory we just allocated don't trigger page faults. */
 	wrapper_vmalloc_sync_all();
-	printk(KERN_WARNING "Registering probe on inode %lu and offset %llu\n", event->u.uprobe.inode->i_ino, event->u.uprobe.offset);
 	ret = wrapper_uprobe_register(event->u.uprobe.inode,
 			event->u.uprobe.offset,
 			&event->u.uprobe.up_consumer);
@@ -164,7 +192,7 @@ int lttng_uprobes_register(const char *name,
 
 register_error:
 	iput(event->u.uprobe.inode);
-path_error:
+inode_error:
 	kfree(event->desc->name);
 	kfree(event->desc);
 error:
