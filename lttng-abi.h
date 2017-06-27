@@ -88,7 +88,7 @@ struct lttng_kernel_function_tracer {
 } __attribute__((packed));
 
 struct lttng_kernel_uprobe {
-	char path[LTTNG_KERNEL_SYM_NAME_LEN];
+	int fd;
 	uint64_t offset;
 } __attribute__((packed));
 

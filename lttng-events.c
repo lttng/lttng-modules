@@ -769,7 +769,7 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		smp_wmb();
 
 		ret = lttng_uprobes_register(event_param->name,
-				event_param->u.uprobe.path,
+				event_param->u.uprobe.fd,
 				event_param->u.uprobe.offset,
 				event);
 		if (ret)
