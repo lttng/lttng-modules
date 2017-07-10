@@ -541,7 +541,8 @@ LTTNG_TRACEPOINT_EVENT(sched_stat_runtime,
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0) || \
-	LTTNG_RT_KERNEL_RANGE(4,9,27,18, 4,10,0,0))
+	LTTNG_RT_KERNEL_RANGE(4,9,27,18, 4,10,0,0) || \
+	LTTNG_RT_KERNEL_RANGE(4,11,5,1, 4,12,0,0))
 /*
  * Tracepoint for showing priority inheritance modifying a tasks
  * priority.
