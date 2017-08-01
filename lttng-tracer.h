@@ -42,7 +42,7 @@
 #define LTTNG_MODULES_MAJOR_VERSION 2
 #define LTTNG_MODULES_MINOR_VERSION 10
 #define LTTNG_MODULES_PATCHLEVEL_VERSION 0
-#define LTTNG_MODULES_EXTRAVERSION "-rc2"
+#define LTTNG_MODULES_EXTRAVERSION ""
 
 #define LTTNG_VERSION_NAME		"KeKriek"
 #define LTTNG_VERSION_DESCRIPTION	"From Brasserie Dunham, a sour mashed golden wheat ale fermented with local sour cherries from Tougas orchards. Fresh sweet cherry notes with some tartness, lively carbonation with a dry finish."
