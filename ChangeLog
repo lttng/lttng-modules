@@ -1,3 +1,8 @@
+2017-08-02 (National Coloring Book Day) LTTng modules 2.8.7
+	* Fix: Sleeping function called from invalid context
+	* Fix: sched for v4.11.5-rt1
+	* Fix: handle missing ftrace header on v4.12
+
 2017-06-12 (National Peanut Butter Cookie Day) LTTng modules 2.8.6
 	* Fix: pid tracker should track "pgid"
 	* Fix: Build ftrace probe on kernels prior to 4.12
