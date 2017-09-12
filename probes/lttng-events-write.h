@@ -44,11 +44,28 @@
 
 #undef ctf_array
 #define ctf_array(_type, _item, _src, _length)			\
-	_ctf_array_encoded(_type, _item, _src, _length, none, 0, 0)
+	_ctf_array_encoded(_type, _item, _src,			\
+			_length, none, __BYTE_ORDER, 10, 0, 0)
+
+#undef ctf_array_hex
+#define ctf_array_hex(_type, _item, _src, _length)		\
+	_ctf_array_encoded(_type, _item, _src,			\
+			_length, none, __BYTE_ORDER, 16, 0, 0)
+
+#undef ctf_array_network
+#define ctf_array_network(_type, _item, _src, _length)		\
+	_ctf_array_encoded(_type, _item, _src,			\
+			_length, none, __BIG_ENDIAN, 10, 0, 0)
+
+#undef ctf_array_network_hex
+#define ctf_array_network_hex(_type, _item, _src, _length)	\
+	_ctf_array_encoded(_type, _item, _src,			\
+			_length, none, __BIG_ENDIAN, 16, 0, 0)
 
 #undef ctf_array_text
 #define ctf_array_text(_type, _item, _src, _length)		\
-	_ctf_array_encoded(_type, _item, _src, _length, UTF8, 0, 0)
+	_ctf_array_encoded(_type, _item, _src,			\
+			_length, UTF8, __BYTE_ORDER, 10, 0, 0)
 
 #undef ctf_array_bitfield
 #define ctf_array_bitfield(_type, _item, _src, _length)		\
@@ -68,6 +85,11 @@
 #define ctf_sequence_network(_type, _item, _src, _length_type, _src_length) \
 	_ctf_sequence_encoded(_type, _item, _src,		\
 			_length_type, _src_length, none, __BIG_ENDIAN, 10, 0, 0)
+
+#undef ctf_sequence_network_hex
+#define ctf_sequence_network_hex(_type, _item, _src, _length_type, _src_length) \
+	_ctf_sequence_encoded(_type, _item, _src,		\
+			_length_type, _src_length, none, __BIG_ENDIAN, 16, 0, 0)
 
 #undef ctf_sequence_text
 #define ctf_sequence_text(_type, _item, _src, _length_type, _src_length) \
@@ -105,15 +127,32 @@
 	_ctf_integer_ext(_type, _item, _src, __BIG_ENDIAN, 16, 1, 0)
 
 #undef ctf_user_array
-#define ctf_user_array(_type, _item, _src, _length)			\
-	_ctf_array_encoded(_type, _item, _src, _length, none, 1, 0)
+#define ctf_user_array(_type, _item, _src, _length)		\
+	_ctf_array_encoded(_type, _item, _src,			\
+			_length, none, __BYTE_ORDER, 10, 1, 0)
+
+#undef ctf_user_array_hex
+#define ctf_user_array_hex(_type, _item, _src, _length)		\
+	_ctf_array_encoded(_type, _item, _src,			\
+			_length, none, __BYTE_ORDER, 16, 1, 0)
+
+#undef ctf_user_array_network
+#define ctf_user_array_network(_type, _item, _src, _length)	\
+	_ctf_array_encoded(_type, _item, _src,			\
+			_length, none, __BIG_ENDIAN, 10, 1, 0)
+
+#undef ctf_user_array_network_hex
+#define ctf_user_array_network_hex(_type, _item, _src, _length)	\
+	_ctf_array_encoded(_type, _item, _src,			\
+			_length, none, __BIG_ENDIAN, 16, 1, 0)
 
 #undef ctf_user_array_text
-#define ctf_user_array_text(_type, _item, _src, _length)		\
-	_ctf_array_encoded(_type, _item, _src, _length, UTF8, 1, 0)
+#define ctf_user_array_text(_type, _item, _src, _length)	\
+	_ctf_array_encoded(_type, _item, _src,			\
+			_length, UTF8, __BYTE_ORDER, 10, 1, 0)
 
 #undef ctf_user_array_bitfield
-#define ctf_user_array_bitfield(_type, _item, _src, _length)		\
+#define ctf_user_array_bitfield(_type, _item, _src, _length)	\
 	_ctf_array_bitfield(_type, _item, _src, _length, 1, 0)
 
 #undef ctf_user_sequence
@@ -125,6 +164,16 @@
 #define ctf_user_sequence_hex(_type, _item, _src, _length_type, _src_length) \
 	_ctf_sequence_encoded(_type, _item, _src,		\
 			_length_type, _src_length, none, __BYTE_ORDER, 16, 1, 0)
+
+#undef ctf_user_sequence_network
+#define ctf_user_sequence_network(_type, _item, _src, _length_type, _src_length) \
+	_ctf_sequence_encoded(_type, _item, _src,		\
+			_length_type, _src_length, none, __BIG_ENDIAN, 10, 1, 0)
+
+#undef ctf_user_sequence_network_hex
+#define ctf_user_sequence_network_hex(_type, _item, _src, _length_type, _src_length) \
+	_ctf_sequence_encoded(_type, _item, _src,		\
+			_length_type, _src_length, none, __BIG_ENDIAN, 16, 1, 0)
 
 #undef ctf_user_sequence_text
 #define ctf_user_sequence_text(_type, _item, _src, _length_type, _src_length) \
@@ -173,6 +222,18 @@
 #define ctf_array_type(_type, _src, _length)				\
 	ctf_array(_type, unused, _src, _length)
 
+#undef ctf_array_hex_type
+#define ctf_array_hex_type(_type, _src, _length)			\
+	ctf_array_hex(_type, unused, _src, _length)
+
+#undef ctf_array_network_type
+#define ctf_array_network_type(_type, _src, _length)			\
+	ctf_array_network(_type, unused, _src, _length)
+
+#undef ctf_array_network_hex_type
+#define ctf_array_network_hex_type(_type, _src, _length)		\
+	ctf_array_network_hex(_type, unused, _src, _length)
+
 #undef ctf_array_text_type
 #define ctf_array_text_type(_type, _src, _length)			\
 	ctf_array_text(_type, unused, _src, _length)
@@ -192,6 +253,10 @@
 #undef ctf_sequence_network_type
 #define ctf_sequence_network_type(_type, _src, _length_type, _src_length) \
 	ctf_sequence_network(_type, unused, _src, _length_type, _src_length)
+
+#undef ctf_sequence_network_hex_type
+#define ctf_sequence_network_hex_type(_type, _src, _length_type, _src_length) \
+	ctf_sequence_network_hex(_type, unused, _src, _length_type, _src_length)
 
 #undef ctf_sequence_text_type
 #define ctf_sequence_text_type(_type, _src, _length_type, _src_length) \
@@ -234,6 +299,18 @@
 #define ctf_user_array_type(_type, _src, _length)			\
 	ctf_user_array(_type, unused, _src, _length)
 
+#undef ctf_user_array_hex_type
+#define ctf_user_array_hex_type(_type, _src, _length)			\
+	ctf_user_array_hex(_type, unused, _src, _length)
+
+#undef ctf_user_array_network_type
+#define ctf_user_array_network_type(_type, _src, _length)		\
+	ctf_user_array_network(_type, unused, _src, _length)
+
+#undef ctf_user_array_network_hex_type
+#define ctf_user_array_network_hex_type(_type, _src, _length)		\
+	ctf_user_array_network_hex(_type, unused, _src, _length)
+
 #undef ctf_user_array_text_type
 #define ctf_user_array_text_type(_type, _src, _length)			\
 	ctf_user_array_text(_type, unused, _src, _length)
@@ -253,6 +330,10 @@
 #undef ctf_user_sequence_network_type
 #define ctf_user_sequence_network_type(_type, _src, _length_type, _src_length) \
 	ctf_user_sequence_network(_type, unused, _src, _length_type, _src_length)
+
+#undef ctf_user_sequence_network_hex_type
+#define ctf_user_sequence_network_hex_type(_type, _src, _length_type, _src_length) \
+	ctf_user_sequence_network_hex(_type, unused, _src, _length_type, _src_length)
 
 #undef ctf_user_sequence_text_type
 #define ctf_user_sequence_text_type(_type, _src, _length_type, _src_length) \

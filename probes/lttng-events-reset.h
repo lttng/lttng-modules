@@ -71,7 +71,7 @@
 
 #undef _ctf_array_encoded
 #define _ctf_array_encoded(_type, _item, _src, _length, _encoding, \
-			_user, _nowrite)
+			_byte_order, _base, _user, _nowrite)
 
 #undef _ctf_array_bitfield
 #define _ctf_array_bitfield(_type, _item, _src, _length, _user, _nowrite)
@@ -112,6 +112,15 @@
 #undef ctf_array
 #define ctf_array(_type, _item, _src, _length)
 
+#undef ctf_array_hex
+#define ctf_array_hex(_type, _item, _src, _length)
+
+#undef ctf_array_network
+#define ctf_array_network(_type, _item, _src, _length)
+
+#undef ctf_array_network_hex
+#define ctf_array_network_hex(_type, _item, _src, _length)
+
 #undef ctf_array_text
 #define ctf_array_text(_type, _item, _src, _length)
 
@@ -126,6 +135,9 @@
 
 #undef ctf_sequence_network
 #define ctf_sequence_network(_type, _item, _src, _length_type, _src_length)
+
+#undef ctf_sequence_network_hex
+#define ctf_sequence_network_hex(_type, _item, _src, _length_type, _src_length)
 
 #undef ctf_sequence_text
 #define ctf_sequence_text(_type, _item, _src, _length_type, _src_length)
@@ -161,6 +173,9 @@
 #undef ctf_array_nowrite
 #define ctf_array_nowrite(_type, _item, _src, _length)
 
+#undef ctf_array_network_nowrite
+#define ctf_array_network_nowrite(_type, _item, _src, _length)
+
 #undef ctf_array_text_nowrite
 #define ctf_array_text_nowrite(_type, _item, _src, _length)
 
@@ -169,6 +184,9 @@
 
 #undef ctf_sequence_nowrite
 #define ctf_sequence_nowrite(_type, _item, _src, _length_type, _src_length)
+
+#undef ctf_sequence_network_nowrite
+#define ctf_sequence_network_nowrite(_type, _item, _src, _length_type, _src_length)
 
 #undef ctf_sequence_text_nowrite
 #define ctf_sequence_text_nowrite(_type, _item, _src, _length_type, _src_length)
@@ -201,6 +219,15 @@
 #undef ctf_user_array
 #define ctf_user_array(_type, _item, _user_src, _length)
 
+#undef ctf_user_array_hex
+#define ctf_user_array_hex(_type, _item, _user_src, _length)
+
+#undef ctf_user_array_network
+#define ctf_user_array_network(_type, _item, _user_src, _length)
+
+#undef ctf_user_array_network_hex
+#define ctf_user_array_network_hex(_type, _item, _user_src, _length)
+
 #undef ctf_user_array_text
 #define ctf_user_array_text(_type, _item, _user_src, _length)
 
@@ -209,6 +236,15 @@
 
 #undef ctf_user_sequence
 #define ctf_user_sequence(_type, _item, _user_src, _length_type, _user_src_length)
+
+#undef ctf_user_sequence_hex
+#define ctf_user_sequence_hex(_type, _item, _user_src, _length_type, _user_src_length)
+
+#undef ctf_user_sequence_network
+#define ctf_user_sequence_network(_type, _item, _user_src, _length_type, _user_src_length)
+
+#undef ctf_user_sequence_network_hex
+#define ctf_user_sequence_network_hex(_type, _item, _user_src, _length_type, _user_src_length)
 
 #undef ctf_user_sequence_text
 #define ctf_user_sequence_text(_type, _item, _user_src, _length_type, _user_src_length)
@@ -232,6 +268,9 @@
 #undef ctf_user_array_nowrite
 #define ctf_user_array_nowrite(_type, _item, _user_src, _length)
 
+#undef ctf_user_array_network_nowrite
+#define ctf_user_array_network_nowrite(_type, _item, _user_src, _length)
+
 #undef ctf_user_array_text_nowrite
 #define ctf_user_array_text_nowrite(_type, _item, _user_src, _length)
 
@@ -240,6 +279,9 @@
 
 #undef ctf_user_sequence_nowrite
 #define ctf_user_sequence_nowrite(_type, _item, _user_src, _length_type, _user_src_length)
+
+#undef ctf_user_sequence_network_nowrite
+#define ctf_user_sequence_network_nowrite(_type, _item, _user_src, _length_type, _user_src_length)
 
 #undef ctf_user_sequence_text_nowrite
 #define ctf_user_sequence_text_nowrite(_type, _item, _user_src, _length_type, _user_src_length)

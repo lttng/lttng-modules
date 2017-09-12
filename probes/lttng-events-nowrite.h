@@ -39,12 +39,19 @@
 	_ctf_integer_ext(_type, _item, _user_src, __BIG_ENDIAN, 16, 0, 1)
 
 #undef ctf_array_nowrite
-#define ctf_array_nowrite(_type, _item, _user_src, _length)	\
-	_ctf_array_encoded(_type, _item, _user_src, _length, none, 0, 1)
+#define ctf_array_nowrite(_type, _item, _src, _length)		\
+	_ctf_array_encoded(_type, _item, _src,			\
+			_length, none, __BYTE_ORDER, 10, 0, 1)
+
+#undef ctf_array_network_nowrite
+#define ctf_array_network_nowrite(_type, _item, _src, _length)	\
+	_ctf_array_encoded(_type, _item, _src,			\
+			_length, none, __BIG_ENDIAN, 10, 0, 1)
 
 #undef ctf_array_text_nowrite
-#define ctf_array_text_nowrite(_type, _item, _user_src, _length) \
-	_ctf_array_encoded(_type, _item, _user_src, _length, UTF8, 0, 1)
+#define ctf_array_text_nowrite(_type, _item, _src, _length)	\
+	_ctf_array_encoded(_type, _item, _src,			\
+			_length, UTF8, __BYTE_ORDER, 10, 0, 1)
 
 #undef ctf_array_bitfield_nowrite
 #define ctf_array_bitfield_nowrite(_type, _item, _src, _length)	\
@@ -54,6 +61,11 @@
 #define ctf_sequence_nowrite(_type, _item, _user_src, _length_type, _user_src_length) \
 	_ctf_sequence_encoded(_type, _item, _user_src,		\
 			_length_type, _user_src_length, none, __BYTE_ORDER, 10, 0, 1)
+
+#undef ctf_sequence_network_nowrite
+#define ctf_sequence_network_nowrite(_type, _item, _user_src, _length_type, _user_src_length) \
+	_ctf_sequence_encoded(_type, _item, _user_src,		\
+			_length_type, _user_src_length, none, __BIG_ENDIAN, 10, 0, 1)
 
 #undef ctf_sequence_text_nowrite
 #define ctf_sequence_text_nowrite(_type, _item, _user_src, _length_type, _user_src_length) \
@@ -91,12 +103,19 @@
 	_ctf_integer_ext(_type, _item, _user_src, __BIG_ENDIAN, 16, 1, 1)
 
 #undef ctf_user_array_nowrite
-#define ctf_user_array_nowrite(_type, _item, _user_src, _length) \
-	_ctf_array_encoded(_type, _item, _user_src, _length, none, 1, 1)
+#define ctf_user_array_nowrite(_type, _item, _src, _length)	\
+	_ctf_array_encoded(_type, _item, _src,			\
+			_length, none, __BYTE_ORDER, 10, 1, 1)
+
+#undef ctf_user_array_network_nowrite
+#define ctf_user_array_network_nowrite(_type, _item, _src, _length) \
+	_ctf_array_encoded(_type, _item, _src,			\
+			_length, none, __BIG_ENDIAN, 10, 1, 1)
 
 #undef ctf_user_array_text_nowrite
-#define ctf_user_array_text_nowrite(_type, _item, _user_src, _length) \
-	_ctf_array_encoded(_type, _item, _user_src, _length, UTF8, 1, 1)
+#define ctf_user_array_text_nowrite(_type, _item, _src, _length) \
+	_ctf_array_encoded(_type, _item, _src,			\
+			_length, UTF8, __BYTE_ORDER, 10, 1, 1)
 
 #undef ctf_user_array_bitfield_nowrite
 #define ctf_user_array_bitfield_nowrite(_type, _item, _src, _length)	\
@@ -106,6 +125,11 @@
 #define ctf_user_sequence_nowrite(_type, _item, _user_src, _length_type, _user_src_length) \
 	_ctf_sequence_encoded(_type, _item, _user_src,		\
 			_length_type, _user_src_length, none, __BYTE_ORDER, 10, 1, 1)
+
+#undef ctf_user_sequence_network_nowrite
+#define ctf_user_sequence_network_nowrite(_type, _item, _user_src, _length_type, _user_src_length) \
+	_ctf_sequence_encoded(_type, _item, _user_src,		\
+			_length_type, _user_src_length, none, __BIG_ENDIAN, 10, 1, 1)
 
 #undef ctf_user_sequence_text_nowrite
 #define ctf_user_sequence_text_nowrite(_type, _item, _user_src, _length_type, _user_src_length) \

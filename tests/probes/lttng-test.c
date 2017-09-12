@@ -24,6 +24,7 @@
 #include <linux/module.h>
 #include <linux/proc_fs.h>
 #include <linux/byteorder/generic.h>
+#include <asm/byteorder.h>
 
 #include <lttng-events.h>
 #include <lttng-tracer.h>
@@ -51,12 +52,16 @@ void trace_test_event(unsigned int nr_iter)
 {
 	int i, netint;
 	long values[] = { 1, 2, 3 };
+	uint32_t net_values[] = { 1, 2, 3 };
 	char text[10] = "test";
 	char escape[10] = "\\*";
 
+	for (i = 0; i < 3; i++) {
+		net_values[i] = htonl(net_values[i]);
+	}
 	for (i = 0; i < nr_iter; i++) {
 		netint = htonl(i);
-		trace_lttng_test_filter_event(i, netint, values, text, strlen(text), escape);
+		trace_lttng_test_filter_event(i, netint, values, text, strlen(text), escape, net_values);
 	}
 }
 

@@ -128,6 +128,7 @@ void lttng_context_update(struct lttng_ctx *ctx)
 			field_align = type->u.basic.integer.alignment;
 			break;
 		case atype_array:
+		case atype_array_bitfield:
 		{
 			struct lttng_basic_type *btype;
 
@@ -141,6 +142,8 @@ void lttng_context_update(struct lttng_ctx *ctx)
 
 			case atype_array:
 			case atype_sequence:
+			case atype_array_bitfield:
+			case atype_sequence_bitfield:
 			case atype_struct:
 			case atype_array_compound:
 			case atype_sequence_compound:
@@ -152,6 +155,7 @@ void lttng_context_update(struct lttng_ctx *ctx)
 			break;
 		}
 		case atype_sequence:
+		case atype_sequence_bitfield:
 		{
 			struct lttng_basic_type *btype;
 
@@ -164,6 +168,8 @@ void lttng_context_update(struct lttng_ctx *ctx)
 			case atype_string:
 			case atype_array:
 			case atype_sequence:
+			case atype_array_bitfield:
+			case atype_sequence_bitfield:
 			case atype_struct:
 			case atype_array_compound:
 			case atype_sequence_compound:
@@ -186,6 +192,8 @@ void lttng_context_update(struct lttng_ctx *ctx)
 
 			case atype_array:
 			case atype_sequence:
+			case atype_array_bitfield:
+			case atype_sequence_bitfield:
 			case atype_struct:
 			case atype_array_compound:
 			case atype_sequence_compound:

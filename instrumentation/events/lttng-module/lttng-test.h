@@ -23,8 +23,8 @@ LTTNG_TRACEPOINT_ENUM(
 LTTNG_TRACEPOINT_EVENT(lttng_test_filter_event,
 	TP_PROTO(int anint, int netint, long *values,
 		char *text, size_t textlen,
-		char *etext),
-	TP_ARGS(anint, netint, values, text, textlen, etext),
+		char *etext, uint32_t * net_values),
+	TP_ARGS(anint, netint, values, text, textlen, etext, net_values),
 	TP_FIELDS(
 		ctf_integer(int, intfield, anint)
 		ctf_integer_hex(int, intfield2, anint)
@@ -33,8 +33,11 @@ LTTNG_TRACEPOINT_EVENT(lttng_test_filter_event,
 		ctf_integer_network_hex(int, netintfieldhex, netint)
 		ctf_array(long, arrfield1, values, 3)
 		ctf_array_text(char, arrfield2, text, 10)
+		ctf_array_network(uint32_t, arrfield3, net_values, 3)
 		ctf_sequence(char, seqfield1, text, size_t, textlen)
 		ctf_sequence_text(char, seqfield2, text, size_t, textlen)
+		ctf_sequence_network(uint32_t, seqfield3, net_values, size_t, 3)
+		ctf_sequence(long, seqfield4, values, size_t, 3)
 		ctf_string(stringfield, text)
 		ctf_string(stringfield2, etext)
 		ctf_sequence_bitfield(long, bitfield_seq, values, uint8_t, 3)

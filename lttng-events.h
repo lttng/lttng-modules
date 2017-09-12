@@ -55,6 +55,8 @@ enum abstract_types {
 	atype_array_compound,		/* Array of compound types. */
 	atype_sequence_compound,	/* Sequence of compound types. */
 	atype_variant,
+	atype_array_bitfield,
+	atype_sequence_bitfield,
 	NR_ABSTRACT_TYPES,
 };
 
@@ -275,6 +277,7 @@ struct lttng_bytecode_runtime {
 			const char *filter_stack_data);
 	int link_failed;
 	struct list_head node;	/* list of bytecode runtime in event */
+	struct lttng_event *event;
 };
 
 /*
