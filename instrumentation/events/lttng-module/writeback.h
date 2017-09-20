@@ -400,6 +400,31 @@ LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 	)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
+
+	writeback_global_dirty_state,
+
+	TP_PROTO(unsigned long background_thresh,
+		 unsigned long dirty_thresh
+	),
+
+	TP_ARGS(background_thresh,
+		dirty_thresh
+	),
+
+	TP_FIELDS(
+		ctf_integer(unsigned long, nr_dirty, global_node_page_state(NR_FILE_DIRTY))
+		ctf_integer(unsigned long, nr_writeback, global_node_page_state(NR_WRITEBACK))
+		ctf_integer(unsigned long, nr_unstable, global_node_page_state(NR_UNSTABLE_NFS))
+		ctf_integer(unsigned long, nr_dirtied, global_node_page_state(NR_DIRTIED))
+		ctf_integer(unsigned long, nr_written, global_node_page_state(NR_WRITTEN))
+		ctf_integer(unsigned long, background_thresh, background_thresh)
+		ctf_integer(unsigned long, dirty_thresh, dirty_thresh)
+		ctf_integer(unsigned long, dirty_limit, global_dirty_limit)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 
 	writeback_global_dirty_state,
@@ -423,6 +448,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 		ctf_integer(unsigned long, dirty_limit, global_dirty_limit)
 	)
 )
+#endif
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
