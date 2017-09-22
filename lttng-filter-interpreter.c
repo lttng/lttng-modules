@@ -990,6 +990,11 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 		{
 			int64_t res;
 
+			/* Catch undefined behavior. */
+			if (unlikely(estack_ax_v < 0 || estack_ax_v >= 64)) {
+				ret = -EINVAL;
+				goto end;
+			}
 			res = (estack_bx_v >> estack_ax_v);
 			estack_pop(stack, top, ax, bx);
 			estack_ax_v = res;
@@ -1000,6 +1005,11 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 		{
 			int64_t res;
 
+			/* Catch undefined behavior. */
+			if (unlikely(estack_ax_v < 0 || estack_ax_v >= 64)) {
+				ret = -EINVAL;
+				goto end;
+			}
 			res = (estack_bx_v << estack_ax_v);
 			estack_pop(stack, top, ax, bx);
 			estack_ax_v = res;
