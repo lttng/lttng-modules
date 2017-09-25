@@ -130,7 +130,7 @@ struct lttng_session *lttng_session_create(void)
 	int i;
 
 	mutex_lock(&sessions_mutex);
-	session = kzalloc(sizeof(struct lttng_session), GFP_KERNEL);
+	session = lttng_kvzalloc(sizeof(struct lttng_session), GFP_KERNEL);
 	if (!session)
 		goto err;
 	INIT_LIST_HEAD(&session->chan);
@@ -161,7 +161,7 @@ struct lttng_session *lttng_session_create(void)
 err_free_cache:
 	kfree(metadata_cache);
 err_free_session:
-	kfree(session);
+	lttng_kvfree(session);
 err:
 	mutex_unlock(&sessions_mutex);
 	return NULL;
@@ -210,7 +210,7 @@ void lttng_session_destroy(struct lttng_session *session)
 	kref_put(&session->metadata_cache->refcount, metadata_cache_destroy);
 	list_del(&session->list);
 	mutex_unlock(&sessions_mutex);
-	kfree(session);
+	lttng_kvfree(session);
 }
 
 int lttng_session_statedump(struct lttng_session *session)
