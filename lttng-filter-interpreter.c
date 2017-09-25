@@ -771,6 +771,8 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 		[ FILTER_OP_LOAD_FIELD_DOUBLE ] = &&LABEL_FILTER_OP_LOAD_FIELD_DOUBLE,
 
 		[ FILTER_OP_UNARY_BIT_NOT ] = &&LABEL_FILTER_OP_UNARY_BIT_NOT,
+
+		[ FILTER_OP_RETURN_S64 ] = &&LABEL_FILTER_OP_RETURN_S64,
 	};
 #endif /* #ifndef INTERPRETER_USE_SWITCH */
 
@@ -788,6 +790,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 			goto end;
 
 		OP(FILTER_OP_RETURN):
+		OP(FILTER_OP_RETURN_S64):
 			/* LTTNG_FILTER_DISCARD  or LTTNG_FILTER_RECORD_FLAG */
 			retval = !!estack_ax_v;
 			ret = 0;

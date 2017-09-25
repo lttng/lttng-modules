@@ -518,6 +518,7 @@ int lttng_filter_specialize_bytecode(struct lttng_event *event,
 			goto end;
 
 		case FILTER_OP_RETURN:
+		case FILTER_OP_RETURN_S64:
 			ret = 0;
 			goto end;
 

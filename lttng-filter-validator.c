@@ -303,6 +303,7 @@ int bytecode_validate_overflow(struct bytecode_runtime *bytecode,
 	}
 
 	case FILTER_OP_RETURN:
+	case FILTER_OP_RETURN_S64:
 	{
 		if (unlikely(pc + sizeof(struct return_op)
 				> start_pc + bytecode->len)) {
@@ -586,6 +587,7 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 	}
 
 	case FILTER_OP_RETURN:
+	case FILTER_OP_RETURN_S64:
 	{
 		goto end;
 	}
@@ -1173,6 +1175,28 @@ int exec_insn(struct bytecode_runtime *bytecode,
 		case REG_TYPE_UNKNOWN:
 			break;
 		default:
+			printk(KERN_WARNING "Unexpected register type %d at end of bytecode\n",
+				(int) vstack_ax(stack)->type);
+			ret = -EINVAL;
+			goto end;
+		}
+
+		ret = 0;
+		goto end;
+	}
+
+	case FILTER_OP_RETURN_S64:
+	{
+		if (!vstack_ax(stack)) {
+			printk(KERN_WARNING "Empty stack\n");
+			ret = -EINVAL;
+			goto end;
+		}
+		switch (vstack_ax(stack)->type) {
+		case REG_S64:
+			break;
+		default:
+		case REG_TYPE_UNKNOWN:
 			printk(KERN_WARNING "Unexpected register type %d at end of bytecode\n",
 				(int) vstack_ax(stack)->type);
 			ret = -EINVAL;
