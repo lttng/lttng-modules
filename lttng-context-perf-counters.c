@@ -119,7 +119,7 @@ void lttng_destroy_perf_counter_field(struct lttng_ctx_field *field)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 	kfree(field->event_field.name);
 	kfree(field->u.perf_counter->attr);
-	kfree(events);
+	lttng_kvfree(events);
 	kfree(field->u.perf_counter);
 }
 
@@ -237,7 +237,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	int ret;
 	char *name_alloc;
 
-	events = kzalloc(num_possible_cpus() * sizeof(*events), GFP_KERNEL);
+	events = lttng_kvzalloc(num_possible_cpus() * sizeof(*events), GFP_KERNEL);
 	if (!events)
 		return -ENOMEM;
 
@@ -372,6 +372,6 @@ name_alloc_error:
 error_alloc_perf_field:
 	kfree(attr);
 error_attr:
-	kfree(events);
+	lttng_kvfree(events);
 	return ret;
 }

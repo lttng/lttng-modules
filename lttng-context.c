@@ -95,12 +95,12 @@ struct lttng_ctx_field *lttng_append_context(struct lttng_ctx **ctx_p)
 		struct lttng_ctx_field *new_fields;
 
 		ctx->allocated_fields = max_t(size_t, 1, 2 * ctx->allocated_fields);
-		new_fields = kzalloc(ctx->allocated_fields * sizeof(struct lttng_ctx_field), GFP_KERNEL);
+		new_fields = lttng_kvzalloc(ctx->allocated_fields * sizeof(struct lttng_ctx_field), GFP_KERNEL);
 		if (!new_fields)
 			return NULL;
 		if (ctx->fields)
 			memcpy(new_fields, ctx->fields, sizeof(*ctx->fields) * ctx->nr_fields);
-		kfree(ctx->fields);
+		lttng_kvfree(ctx->fields);
 		ctx->fields = new_fields;
 	}
 	field = &ctx->fields[ctx->nr_fields];
@@ -240,7 +240,7 @@ void lttng_destroy_context(struct lttng_ctx *ctx)
 		if (ctx->fields[i].destroy)
 			ctx->fields[i].destroy(&ctx->fields[i]);
 	}
-	kfree(ctx->fields);
+	lttng_kvfree(ctx->fields);
 	kfree(ctx);
 }
 
