@@ -65,6 +65,7 @@
 #include <wrapper/kref.h>
 #include <wrapper/percpu-defs.h>
 #include <wrapper/timer.h>
+#include <wrapper/vmalloc.h>
 
 /*
  * Internal structure representing offsets to use at a sub-buffer switch.
@@ -147,8 +148,8 @@ void lib_ring_buffer_free(struct lib_ring_buffer *buf)
 	struct channel *chan = buf->backend.chan;
 
 	lib_ring_buffer_print_errors(chan, buf, buf->backend.cpu);
-	kfree(buf->commit_hot);
-	kfree(buf->commit_cold);
+	lttng_kvfree(buf->commit_hot);
+	lttng_kvfree(buf->commit_cold);
 
 	lib_ring_buffer_backend_free(&buf->backend);
 }
@@ -245,7 +246,7 @@ int lib_ring_buffer_create(struct lib_ring_buffer *buf,
 		return ret;
 
 	buf->commit_hot =
-		kzalloc_node(ALIGN(sizeof(*buf->commit_hot)
+		lttng_kvzalloc_node(ALIGN(sizeof(*buf->commit_hot)
 				   * chan->backend.num_subbuf,
 				   1 << INTERNODE_CACHE_SHIFT),
 			GFP_KERNEL | __GFP_NOWARN,
@@ -256,7 +257,7 @@ int lib_ring_buffer_create(struct lib_ring_buffer *buf,
 	}
 
 	buf->commit_cold =
-		kzalloc_node(ALIGN(sizeof(*buf->commit_cold)
+		lttng_kvzalloc_node(ALIGN(sizeof(*buf->commit_cold)
 				   * chan->backend.num_subbuf,
 				   1 << INTERNODE_CACHE_SHIFT),
 			GFP_KERNEL | __GFP_NOWARN,
@@ -305,9 +306,9 @@ int lib_ring_buffer_create(struct lib_ring_buffer *buf,
 
 	/* Error handling */
 free_init:
-	kfree(buf->commit_cold);
+	lttng_kvfree(buf->commit_cold);
 free_commit:
-	kfree(buf->commit_hot);
+	lttng_kvfree(buf->commit_hot);
 free_chanbuf:
 	lib_ring_buffer_backend_free(&buf->backend);
 	return ret;
