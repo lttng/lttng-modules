@@ -27,6 +27,7 @@
 
 #include <linux/version.h>
 #include <linux/vmalloc.h>
+#include <linux/mm.h>
 
 #ifdef CONFIG_KALLSYMS
 
@@ -105,7 +106,6 @@ void lttng_kvfree(const void *addr)
 #else
 
 #include <linux/slab.h>
-#include <linux/mm.h>
 
 /*
  * kallsyms wrapper of __vmalloc_node with a fallback to kmalloc_node.
