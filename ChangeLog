@@ -1,3 +1,14 @@
+2017-10-03 (National Techies Day) LTTng modules 2.10.1
+	* Fix: version check error in btrfs instrumentation
+	* Fix: update btrfs instrumentation for kernel 4.14
+	* Fix: update writeback instrumentation for kernel 4.14
+	* Fix: update block instrumentation for kernel 4.14
+	* Fix: vmalloc wrapper on kernel < 2.6.38
+	* Fix: vmalloc wrapper on kernel >= 4.12
+	* Add kmalloc failover to vmalloc
+	* Fix: mmap: caches aliased on virtual addresses
+	* Fix: update ext4 instrumentation for kernel 4.13
+
 2017-08-01 (World Wide Web Day) LTTng modules 2.10.0
 	* Fix: Sleeping function called from invalid context
 	* Fix: sched for v4.11.5-rt1
