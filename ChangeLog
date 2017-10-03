@@ -1,3 +1,17 @@
+2017-10-03 (National Techies Day) LTTng modules 2.9.4
+	* Fix: version check error in btrfs instrumentation
+	* Fix: update btrfs instrumentation for kernel 4.14
+	* Fix: update writeback instrumentation for kernel 4.14
+	* Fix: update block instrumentation for kernel 4.14
+	* Fix: vmalloc wrapper on kernel < 2.6.38
+	* Fix: vmalloc wrapper on kernel >= 4.12
+	* Add kmalloc failover to vmalloc
+	* Fix: mmap: caches aliased on virtual addresses
+	* Fix: update ext4 instrumentation for kernel 4.13
+	* Fix: Sleeping function called from invalid context
+	* Fix: sched for v4.11.5-rt1
+	* Fix: handle missing ftrace header on v4.12
+
 2017-06-12 (National Peanut Butter Cookie Day) LTTng modules 2.9.3
 	* Fix: pid tracker should track "pgid"
 	* Fix: Build ftrace probe on kernels prior to 4.12
