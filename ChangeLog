@@ -1,3 +1,7 @@
+2017-10-05 (National Techies Day) LTTng modules 2.10.2
+	* Fix: update block instrumentation for 4.14 kernel
+	* Revert "Fix: update block instrumentation for kernel 4.14"
+
 2017-10-03 (National Techies Day) LTTng modules 2.10.1
 	* Fix: version check error in btrfs instrumentation
 	* Fix: update btrfs instrumentation for kernel 4.14
