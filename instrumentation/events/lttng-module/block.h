@@ -611,7 +611,11 @@ LTTNG_TRACEPOINT_EVENT(block_bio_bounce,
 	TP_ARGS(q, bio),
 
 	TP_FIELDS(
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+		ctf_integer(dev_t, dev, bio_dev(bio))
+#else
 		ctf_integer(dev_t, dev, bio->bi_bdev ? bio->bi_bdev->bd_dev : 0)
+#endif
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
@@ -652,7 +656,11 @@ LTTNG_TRACEPOINT_EVENT(block_bio_complete,
 #endif
 
 	TP_FIELDS(
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+		ctf_integer(dev_t, dev, bio_dev(bio))
+#else
 		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
+#endif
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
@@ -682,7 +690,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_bio_merge,
 	TP_ARGS(q, rq, bio),
 
 	TP_FIELDS(
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+		ctf_integer(dev_t, dev, bio_dev(bio))
+#else
 		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
+#endif
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
@@ -744,7 +756,11 @@ LTTNG_TRACEPOINT_EVENT(block_bio_queue,
 	TP_ARGS(q, bio),
 
 	TP_FIELDS(
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+		ctf_integer(dev_t, dev, bio_dev(bio))
+#else
 		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
+#endif
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
@@ -831,7 +847,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_get_rq,
 	TP_ARGS(q, bio, rw),
 
 	TP_FIELDS(
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+		ctf_integer(dev_t, dev, bio_dev(bio))
+#else
 		ctf_integer(dev_t, dev, bio ? bio->bi_bdev->bd_dev : 0)
+#endif
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		ctf_integer(sector_t, sector, bio ? bio->bi_iter.bi_sector : 0)
 		ctf_integer(unsigned int, nr_sector,
@@ -992,7 +1012,11 @@ LTTNG_TRACEPOINT_EVENT(block_split,
 	TP_ARGS(q, bio, new_sector),
 
 	TP_FIELDS(
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+		ctf_integer(dev_t, dev, bio_dev(bio))
+#else
 		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
+#endif
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
@@ -1031,7 +1055,11 @@ LTTNG_TRACEPOINT_EVENT(block_remap,
 	TP_ARGS(q, bio, dev, from),
 
 	TP_FIELDS(
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+		ctf_integer(dev_t, dev, bio_dev(bio))
+#else
 		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
+#endif
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
