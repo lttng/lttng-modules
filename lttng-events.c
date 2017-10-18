@@ -342,8 +342,6 @@ end:
 	return ret;
 }
 
-
-
 int lttng_channel_enable(struct lttng_channel *channel)
 {
 	int ret = 0;

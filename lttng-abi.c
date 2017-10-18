@@ -654,6 +654,38 @@ void lttng_metadata_ring_buffer_ioctl_put_next_subbuf(struct file *filp,
 	stream->metadata_out = stream->metadata_in;
 }
 
+/*
+ * Reset the counter of how much metadata has been consumed to 0. That way,
+ * the consumer receives the content of the metadata cache unchanged. This is
+ * different from the metadata_regenerate where the offset from epoch is
+ * resampled, here we want the exact same content as the last time the metadata
+ * was generated. This command is only possible if all the metadata written
+ * in the cache has been output to the metadata stream to avoid corrupting the
+ * metadata file.
+ *
+ * Return 0 on success, a negative value on error.
+ */
+static
+int lttng_metadata_cache_dump(struct lttng_metadata_stream *stream)
+{
+	int ret;
+	struct lttng_metadata_cache *cache = stream->metadata_cache;
+
+	mutex_lock(&cache->lock);
+	if (stream->metadata_out != cache->metadata_written) {
+		ret = -EBUSY;
+		goto end;
+	}
+	stream->metadata_out = 0;
+	stream->metadata_in = 0;
+	wake_up_interruptible(&stream->read_wait);
+	ret = 0;
+
+end:
+	mutex_unlock(&cache->lock);
+	return ret;
+}
+
 static
 long lttng_metadata_ring_buffer_ioctl(struct file *filp,
 		unsigned int cmd, unsigned long arg)
@@ -705,6 +737,12 @@ long lttng_metadata_ring_buffer_ioctl(struct file *filp,
 		struct lttng_metadata_stream *stream = filp->private_data;
 
 		return put_u64(stream->version, arg);
+	}
+	case RING_BUFFER_METADATA_CACHE_DUMP:
+	{
+		struct lttng_metadata_stream *stream = filp->private_data;
+
+		return lttng_metadata_cache_dump(stream);
 	}
 	default:
 		break;
@@ -782,6 +820,12 @@ long lttng_metadata_ring_buffer_compat_ioctl(struct file *filp,
 		struct lttng_metadata_stream *stream = filp->private_data;
 
 		return put_u64(stream->version, arg);
+	}
+	case RING_BUFFER_METADATA_CACHE_DUMP:
+	{
+		struct lttng_metadata_stream *stream = filp->private_data;
+
+		return lttng_metadata_cache_dump(stream);
 	}
 	default:
 		break;
