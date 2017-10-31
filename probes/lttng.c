@@ -65,7 +65,7 @@ static
 ssize_t lttng_logger_write(struct file *file, const char __user *user_buf,
 		    size_t count, loff_t *ppos)
 {
-	unsigned int nr_pages = 1, i;
+	int nr_pages = 1, i;
 	unsigned long uaddr = (unsigned long) user_buf;
 	struct page *pages[2];
 	ssize_t written;
