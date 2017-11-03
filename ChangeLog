@@ -1,3 +1,6 @@
+2017-11-03 (National Sandwich Day) LTTng modules 2.9.6
+	* Fix: lttng-logger get_user_pages_fast error handling
+
 2017-10-05 LTTng modules 2.9.5
 	* Fix: update block instrumentation for 4.14 kernel
 	* Revert "Fix: update block instrumentation for kernel 4.14"
