@@ -107,32 +107,40 @@ void lttng_kvfree(const void *addr)
 
 #include <linux/slab.h>
 
+static inline
+void print_vmalloc_node_range_warning(void)
+{
+	printk_once(KERN_WARNING "LTTng: __vmalloc_node_range symbol lookup failed.\n");
+	printk_once(KERN_WARNING "Tracer performance will be degraded on NUMA systems.\n");
+	printk_once(KERN_WARNING "Please rebuild your kernel with CONFIG_KALLSYMS enabled.\n");
+}
+
 /*
  * kallsyms wrapper of __vmalloc_node with a fallback to kmalloc_node.
  */
 static inline
-void *__lttng_vmalloc_node_fallback(unsigned long size, unsigned long align,
-                         gfp_t gfp_mask, pgprot_t prot, int node, void *caller)
+void *__lttng_vmalloc_node_range(unsigned long size, unsigned long align,
+			unsigned long start, unsigned long end, gfp_t gfp_mask,
+			pgprot_t prot, unsigned long vm_flags, int node,
+			const void *caller)
 {
-	void *ret;
-
 #ifdef CONFIG_KALLSYMS
 	/*
-	 * If we have KALLSYMS, get * __vmalloc_node which is not exported.
+	 * If we have KALLSYMS, get * __vmalloc_node_range which is not exported.
 	 */
-	void *(*lttng__vmalloc_node)(unsigned long size, unsigned long align,
-			gfp_t gfp_mask, pgprot_t prot, int node, void *caller);
+	void *(*lttng__vmalloc_node_range)(unsigned long size, unsigned long align,
+			unsigned long start, unsigned long end, gfp_t gfp_mask,
+			pgprot_t prot, unsigned long vm_flags, int node,
+			const void *caller);
 
-	lttng__vmalloc_node = (void *) kallsyms_lookup_funcptr("__vmalloc_node");
-	ret = lttng__vmalloc_node(size, align, gfp_mask, prot, node, caller);
-#else
-	/*
-	 * If we don't have KALLSYMS, fallback to kmalloc_node.
-	 */
-	ret = kmalloc_node(size, flags, node);
+	lttng__vmalloc_node_range = (void *) kallsyms_lookup_funcptr("__vmalloc_node_range");
+	if (lttng__vmalloc_node_range)
+		return lttng__vmalloc_node_range(size, align, start, end, gfp_mask, prot,
+				vm_flags, node, caller);
 #endif
-
-	return ret;
+	if (node != NUMA_NO_NODE)
+		print_vmalloc_node_range_warning();
+	return __vmalloc(size, gfp_mask, prot);
 }
 
 /**
@@ -170,23 +178,10 @@ void *lttng_kvmalloc_node(unsigned long size, gfp_t flags, int node)
 	 */
 	ret = kmalloc_node(size, flags | __GFP_NOWARN | __GFP_NORETRY, node);
 	if (!ret) {
-		if (node == NUMA_NO_NODE) {
-			/*
-			 * If no node was specified, use __vmalloc which is
-			 * always exported.
-			 */
-			ret = __vmalloc(size, flags | __GFP_HIGHMEM, PAGE_KERNEL);
-		} else {
-			/*
-			 * Otherwise, we need to select a node but __vmalloc_node
-			 * is not exported, use this fallback wrapper which uses
-			 * kallsyms if available or falls back to kmalloc_node.
-			 */
-			ret = __lttng_vmalloc_node_fallback(size, 1,
-					flags | __GFP_HIGHMEM, PAGE_KERNEL, node,
-					__builtin_return_address(0));
-		}
-
+		ret = __lttng_vmalloc_node_range(size, 1,
+				VMALLOC_START, VMALLOC_END,
+				flags | __GFP_HIGHMEM, PAGE_KERNEL, 0,
+				node, __builtin_return_address(0));
 		/*
 		 * Make sure we don't trigger recursive page faults in the
 		 * tracing fast path.
