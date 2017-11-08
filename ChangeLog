@@ -1,3 +1,6 @@
+2017-11-08 (National Cappuccino Day) LTTng modules 2.10.4
+	* Fix: lttng_kvmalloc helper NULL pointer OOP
+
 2017-11-03 (National Sandwich) LTTng modules 2.10.3
 	* Fix: lttng-logger get_user_pages_fast error handling
 
