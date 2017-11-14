@@ -749,6 +749,7 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		 */
 		event->enabled = 0;
 		event->registered = 1;
+
 		/*
 		 * Populate lttng_event structure before event
 		 * registration.
@@ -757,7 +758,6 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 
 		ret = lttng_uprobes_register(event_param->name,
 				event_param->u.uprobe.fd,
-				event_param->u.uprobe.offset,
 				event);
 		if (ret)
 			goto register_error;
@@ -1464,6 +1464,18 @@ int lttng_enabler_attach_bytecode(struct lttng_enabler *enabler,
 error_free:
 	kfree(bytecode_node);
 	return ret;
+}
+
+int lttng_event_add_callsite(struct lttng_event *event,
+		struct lttng_kernel_event_callsite __user *callsite)
+{
+
+	switch (event->instrumentation) {
+	case LTTNG_KERNEL_UPROBE:
+		return lttng_uprobes_add_callsite(event, callsite);
+	default:
+		return -EINVAL;
+	}
 }
 
 int lttng_enabler_attach_context(struct lttng_enabler *enabler,
