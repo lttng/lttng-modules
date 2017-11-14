@@ -298,6 +298,13 @@ struct lttng_enabler_ref {
 	struct lttng_enabler *ref;		/* backward ref */
 };
 
+struct lttng_uprobe_handler {
+	struct lttng_event *event;
+	loff_t offset;
+	struct uprobe_consumer up_consumer;
+	struct list_head node;
+};
+
 /*
  * lttng_event structure is referred to by the tracing fast path. It must be
  * kept small.
@@ -324,9 +331,8 @@ struct lttng_event {
 			char *symbol_name;
 		} ftrace;
 		struct {
-			struct uprobe_consumer up_consumer;
 			struct inode *inode;
-			loff_t offset;
+			struct list_head head;
 		} uprobe;
 	} u;
 	struct list_head list;		/* Event list in session */
@@ -790,19 +796,26 @@ void lttng_kprobes_destroy_private(struct lttng_event *event)
 }
 #endif
 
+int lttng_event_add_callsite(struct lttng_event *event,
+	struct lttng_kernel_event_callsite *callsite);
 #ifdef CONFIG_UPROBES
 int lttng_uprobes_register(const char *name,
-		int fd,
-		uint64_t offset,
-		struct lttng_event *event);
+	int fd, struct lttng_event *event);
+int lttng_uprobes_add_callsite(struct lttng_event *event,
+	struct lttng_kernel_event_callsite *callsite);
 void lttng_uprobes_unregister(struct lttng_event *event);
 void lttng_uprobes_destroy_private(struct lttng_event *event);
 #else
 static inline
 int lttng_uprobes_register(const char *name,
-		int fd,
-		uint64_t offset,
-		struct lttng_event *event)
+	int fd, struct lttng_event *event)
+{
+	return -ENOSYS;
+}
+
+static inline
+int lttng_uprobes_add_callsite(struct lttng_event *event,
+	struct lttng_kernel_callsite_uprobe *callsite)
 {
 	return -ENOSYS;
 }

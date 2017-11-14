@@ -22,9 +22,11 @@
  */
 
 #include <linux/fdtable.h>
+#include <linux/list.h>
 #include <linux/module.h>
 #include <linux/namei.h>
 #include <linux/slab.h>
+#include <linux/uaccess.h>
 #include <lttng-events.h>
 #include <lttng-tracer.h>
 #include <wrapper/irqflags.h>
@@ -35,8 +37,9 @@
 static
 int lttng_uprobes_handler_pre(struct uprobe_consumer *uc, struct pt_regs *regs)
 {
-	struct lttng_event *event =
-		container_of(uc, struct lttng_event, u.uprobe.up_consumer);
+	struct lttng_uprobe_handler *uprobe_handler =
+		container_of(uc, struct lttng_uprobe_handler, up_consumer);
+	struct lttng_event *event = uprobe_handler->event;
 	struct lttng_probe_ctx lttng_probe_ctx = {
 		.event = event,
 		.interruptible = !lttng_regs_irqs_disabled(regs),
@@ -151,12 +154,59 @@ error:
 	return inode;
 }
 
-int lttng_uprobes_register(const char *name,
-			   int fd,
-			   uint64_t offset,
-			   struct lttng_event *event)
+int lttng_uprobes_add_callsite(struct lttng_event *event,
+	struct lttng_kernel_event_callsite __user *callsite)
 {
-	int ret;
+	int ret = 0;
+	struct lttng_uprobe_handler *uprobe_handler;
+
+	if (!event) {
+		ret = -EINVAL;
+		goto end;
+	}
+
+	uprobe_handler = kzalloc(sizeof(struct lttng_uprobe_handler), GFP_KERNEL);
+	if (!uprobe_handler) {
+		printk(KERN_WARNING "Error allocating uprobe_uprobe_handlers");
+		ret = -ENOMEM;
+		goto end;
+	}
+
+	/* Ensure the memory we just allocated don't trigger page faults. */
+	wrapper_vmalloc_sync_all();
+
+	uprobe_handler->event = event;
+	uprobe_handler->up_consumer.handler = lttng_uprobes_handler_pre;
+
+	ret = copy_from_user(&uprobe_handler->offset, &callsite->u.uprobe.offset, sizeof(uint64_t));
+	if (ret) {
+		goto register_error;
+	}
+
+	ret = wrapper_uprobe_register(event->u.uprobe.inode,
+		      uprobe_handler->offset, &uprobe_handler->up_consumer);
+	if (ret) {
+		printk(KERN_WARNING "Error registering probe on inode %lu "
+		       "and offset 0x%llx\n", event->u.uprobe.inode->i_ino,
+		       uprobe_handler->offset);
+		ret = -1;
+		goto register_error;
+	}
+
+	list_add(&uprobe_handler->node, &event->u.uprobe.head);
+
+	return ret;
+
+register_error:
+	kfree(uprobe_handler);
+end:
+	return ret;
+}
+EXPORT_SYMBOL_GPL(lttng_uprobes_add_callsite);
+
+int lttng_uprobes_register(const char *name, int fd, struct lttng_event *event)
+{
+	int ret = 0;
 	struct inode *inode;
 
 	ret = lttng_create_uprobe_event(name, event);
@@ -169,29 +219,11 @@ int lttng_uprobes_register(const char *name,
 		ret = -EBADF;
 		goto inode_error;
 	}
-
-	memset(&event->u.uprobe.up_consumer, 0,
-	       sizeof(event->u.uprobe.up_consumer));
-
-	event->u.uprobe.up_consumer.handler = lttng_uprobes_handler_pre;
 	event->u.uprobe.inode = inode;
-	event->u.uprobe.offset = offset;
+	INIT_LIST_HEAD(&event->u.uprobe.head);
 
-	 /* Ensure the memory we just allocated don't trigger page faults. */
-	wrapper_vmalloc_sync_all();
-	ret = wrapper_uprobe_register(event->u.uprobe.inode,
-			event->u.uprobe.offset,
-			&event->u.uprobe.up_consumer);
-	if (ret) {
-		printk(KERN_WARNING "Error registering probe on inode %lu "
-		       "and offset %llu\n", event->u.uprobe.inode->i_ino,
-		       event->u.uprobe.offset);
-		goto register_error;
-	}
 	return 0;
 
-register_error:
-	iput(event->u.uprobe.inode);
 inode_error:
 	kfree(event->desc->name);
 	kfree(event->desc);
@@ -202,9 +234,18 @@ EXPORT_SYMBOL_GPL(lttng_uprobes_register);
 
 void lttng_uprobes_unregister(struct lttng_event *event)
 {
-	wrapper_uprobe_unregister(event->u.uprobe.inode,
-			event->u.uprobe.offset,
-			&event->u.uprobe.up_consumer);
+	struct lttng_uprobe_handler *iter, *tmp;
+
+	/*
+	 * Iterate over the list of handler, remove each handler from the list
+	 * and free the struct.
+	 */
+	list_for_each_entry_safe(iter, tmp, &event->u.uprobe.head, node) {
+		wrapper_uprobe_unregister(event->u.uprobe.inode, iter->offset,
+			&iter->up_consumer);
+		list_del(&iter->node);
+		kfree(iter);
+	}
 }
 EXPORT_SYMBOL_GPL(lttng_uprobes_unregister);
 

@@ -89,7 +89,16 @@ struct lttng_kernel_function_tracer {
 
 struct lttng_kernel_uprobe {
 	int fd;
+} __attribute__((packed));
+
+struct lttng_kernel_event_callsite_uprobe {
 	uint64_t offset;
+} __attribute__((packed));
+
+struct lttng_kernel_event_callsite {
+	union {
+		struct lttng_kernel_event_callsite_uprobe uprobe;
+	} u;
 } __attribute__((packed));
 
 /*
@@ -233,6 +242,7 @@ struct lttng_kernel_filter_bytecode {
 
 /* Event FD ioctl */
 #define LTTNG_KERNEL_FILTER			_IO(0xF6, 0x90)
+#define LTTNG_KERNEL_ADD_CALLSITE		_IO(0xF6, 0x91)
 
 /* LTTng-specific ioctls for the lib ringbuffer */
 /* returns the timestamp begin of the current sub-buffer */

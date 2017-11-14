@@ -1488,6 +1488,15 @@ long lttng_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		}
 
 		}
+	case LTTNG_KERNEL_ADD_CALLSITE:
+		switch (*evtype) {
+		case LTTNG_TYPE_EVENT:
+			event = file->private_data;
+			return lttng_event_add_callsite(event,
+				(struct lttng_kernel_event_callsite __user *) arg);
+		case LTTNG_TYPE_ENABLER:
+			return -EINVAL;
+		}
 	default:
 		return -ENOIOCTLCMD;
 	}
