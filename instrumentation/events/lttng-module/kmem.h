@@ -132,11 +132,20 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_free_direct, kmem_mm_page_free_direct,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
 LTTNG_TRACEPOINT_EVENT_MAP(mm_page_free_batched, kmem_mm_page_free_batched,
-#else
-LTTNG_TRACEPOINT_EVENT_MAP(mm_pagevec_free, kmem_pagevec_free,
-#endif
+
+	TP_PROTO(struct page *page),
+
+	TP_ARGS(page),
+
+	TP_FIELDS(
+		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(unsigned long, pfn, page_to_pfn(page))
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+LTTNG_TRACEPOINT_EVENT_MAP(mm_page_free_batched, kmem_mm_page_free_batched,
 
 	TP_PROTO(struct page *page, int cold),
 
@@ -148,6 +157,20 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_pagevec_free, kmem_pagevec_free,
 		ctf_integer(int, cold, cold)
 	)
 )
+#else
+LTTNG_TRACEPOINT_EVENT_MAP(mm_pagevec_free, kmem_pagevec_free,
+
+	TP_PROTO(struct page *page, int cold),
+
+	TP_ARGS(page, cold),
+
+	TP_FIELDS(
+		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(unsigned long, pfn, page_to_pfn(page))
+		ctf_integer(int, cold, cold)
+	)
+)
+#endif
 
 LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc, kmem_mm_page_alloc,
 
