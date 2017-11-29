@@ -314,9 +314,9 @@ free_chanbuf:
 	return ret;
 }
 
-static void switch_buffer_timer(unsigned long data)
+static void switch_buffer_timer(LTTNG_TIMER_FUNC_ARG_TYPE t)
 {
-	struct lib_ring_buffer *buf = (struct lib_ring_buffer *)data;
+	struct lib_ring_buffer *buf = lttng_from_timer(buf, t, switch_timer);
 	struct channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
@@ -341,22 +341,22 @@ static void lib_ring_buffer_start_switch_timer(struct lib_ring_buffer *buf)
 {
 	struct channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
+	unsigned int flags = 0;
 
 	if (!chan->switch_timer_interval || buf->switch_timer_enabled)
 		return;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
-		lttng_init_timer_pinned(&buf->switch_timer);
-	else
-		init_timer(&buf->switch_timer);
+		flags = LTTNG_TIMER_PINNED;
 
-	buf->switch_timer.function = switch_buffer_timer;
+	lttng_timer_setup(&buf->switch_timer, switch_buffer_timer, flags, buf);
 	buf->switch_timer.expires = jiffies + chan->switch_timer_interval;
-	buf->switch_timer.data = (unsigned long)buf;
+
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
 		add_timer_on(&buf->switch_timer, buf->backend.cpu);
 	else
 		add_timer(&buf->switch_timer);
+
 	buf->switch_timer_enabled = 1;
 }
 
@@ -377,9 +377,9 @@ static void lib_ring_buffer_stop_switch_timer(struct lib_ring_buffer *buf)
 /*
  * Polling timer to check the channels for data.
  */
-static void read_buffer_timer(unsigned long data)
+static void read_buffer_timer(LTTNG_TIMER_FUNC_ARG_TYPE t)
 {
-	struct lib_ring_buffer *buf = (struct lib_ring_buffer *)data;
+	struct lib_ring_buffer *buf = lttng_from_timer(buf, t, read_timer);
 	struct channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
@@ -406,6 +406,7 @@ static void lib_ring_buffer_start_read_timer(struct lib_ring_buffer *buf)
 {
 	struct channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
+	unsigned int flags;
 
 	if (config->wakeup != RING_BUFFER_WAKEUP_BY_TIMER
 	    || !chan->read_timer_interval
@@ -413,18 +414,16 @@ static void lib_ring_buffer_start_read_timer(struct lib_ring_buffer *buf)
 		return;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
-		lttng_init_timer_pinned(&buf->read_timer);
-	else
-		init_timer(&buf->read_timer);
+		flags = LTTNG_TIMER_PINNED;
 
-	buf->read_timer.function = read_buffer_timer;
+	lttng_timer_setup(&buf->read_timer, read_buffer_timer, flags, buf);
 	buf->read_timer.expires = jiffies + chan->read_timer_interval;
-	buf->read_timer.data = (unsigned long)buf;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
 		add_timer_on(&buf->read_timer, buf->backend.cpu);
 	else
 		add_timer(&buf->read_timer);
+
 	buf->read_timer_enabled = 1;
 }
 
