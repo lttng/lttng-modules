@@ -1255,7 +1255,7 @@ long lttng_channel_syscall_mask(struct lttng_channel *channel,
 	filter = channel->sc_filter;
 
 	for (bit = 0; bit < ARRAY_SIZE(sc_table); bit++) {
-		bool state;
+		char state;
 
 		if (channel->sc_table) {
 			if (filter)
@@ -1268,7 +1268,7 @@ long lttng_channel_syscall_mask(struct lttng_channel *channel,
 		bt_bitfield_write_be(tmp_mask, char, bit, 1, state);
 	}
 	for (; bit < sc_tables_len; bit++) {
-		bool state;
+		char state;
 
 		if (channel->compat_sc_table) {
 			if (filter)
