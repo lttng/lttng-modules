@@ -1885,16 +1885,14 @@ static void _lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf,
 	}
 
 	/*
-	 * Taking lock on CPU hotplug to ensure two things: first, that the
+	 * Disabling preemption ensures two things: first, that the
 	 * target cpu is not taken concurrently offline while we are within
-	 * smp_call_function_single() (I don't trust that get_cpu() on the
-	 * _local_ CPU actually inhibit CPU hotplug for the _remote_ CPU (to be
-	 * confirmed)). Secondly, if it happens that the CPU is not online, our
-	 * own call to lib_ring_buffer_switch_slow() needs to be protected from
-	 * CPU hotplug handlers, which can also perform a remote subbuffer
-	 * switch.
+	 * smp_call_function_single(). Secondly, if it happens that the
+	 * CPU is not online, our own call to lib_ring_buffer_switch_slow()
+	 * needs to be protected from CPU hotplug handlers, which can
+	 * also perform a remote subbuffer switch.
 	 */
-	get_online_cpus();
+	preempt_disable();
 	param.buf = buf;
 	param.mode = mode;
 	ret = smp_call_function_single(buf->backend.cpu,
@@ -1903,7 +1901,7 @@ static void _lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf,
 		/* Remote CPU is offline, do it ourself. */
 		lib_ring_buffer_switch_slow(buf, mode);
 	}
-	put_online_cpus();
+	preempt_enable();
 }
 
 /* Switch sub-buffer if current sub-buffer is non-empty. */
