@@ -146,7 +146,13 @@ LTTNG_TRACEPOINT_EVENT(sched_kthread_stop_ret,
  * Tracepoint for waking up a task:
  */
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0) || \
-	LTTNG_RT_KERNEL_RANGE(4,1,10,11, 4,2,0,0))
+	LTTNG_RT_KERNEL_RANGE(4,1,10,11, 4,2,0,0) || \
+	LTTNG_RT_KERNEL_RANGE(3,18,27,26, 3,19,0,0) || \
+	LTTNG_RT_KERNEL_RANGE(3,14,61,63, 3,15,0,0) || \
+	LTTNG_RT_KERNEL_RANGE(3,12,54,73, 3,13,0,0) || \
+	LTTNG_RT_KERNEL_RANGE(3,10,97,106, 3,11,0,0) || \
+	LTTNG_RT_KERNEL_RANGE(3,4,110,139, 3,5,0,0) || \
+	LTTNG_RT_KERNEL_RANGE(3,2,77,111, 3,3,0,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(sched_wakeup_template,
 
 	TP_PROTO(struct task_struct *p),
@@ -186,7 +192,13 @@ LTTNG_TRACEPOINT_EVENT_CLASS(sched_wakeup_template,
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0)) */
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0) || \
-	LTTNG_RT_KERNEL_RANGE(4,1,10,11, 4,2,0,0))
+	LTTNG_RT_KERNEL_RANGE(4,1,10,11, 4,2,0,0) || \
+	LTTNG_RT_KERNEL_RANGE(3,18,27,26, 3,19,0,0) || \
+	LTTNG_RT_KERNEL_RANGE(3,14,61,63, 3,15,0,0) || \
+	LTTNG_RT_KERNEL_RANGE(3,12,54,73, 3,13,0,0) || \
+	LTTNG_RT_KERNEL_RANGE(3,10,97,106, 3,11,0,0) || \
+	LTTNG_RT_KERNEL_RANGE(3,4,110,139, 3,5,0,0) || \
+	LTTNG_RT_KERNEL_RANGE(3,2,77,111, 3,3,0,0))
 
 /*
  * Tracepoint called when waking a task; this tracepoint is guaranteed to be
