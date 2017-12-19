@@ -983,7 +983,7 @@ void *channel_destroy(struct channel *chan)
 			 * Perform flush before writing to finalized.
 			 */
 			smp_wmb();
-			ACCESS_ONCE(buf->finalized) = 1;
+			WRITE_ONCE(buf->finalized, 1);
 			wake_up_interruptible(&buf->read_wait);
 		}
 	} else {
@@ -997,10 +997,10 @@ void *channel_destroy(struct channel *chan)
 		 * Perform flush before writing to finalized.
 		 */
 		smp_wmb();
-		ACCESS_ONCE(buf->finalized) = 1;
+		WRITE_ONCE(buf->finalized, 1);
 		wake_up_interruptible(&buf->read_wait);
 	}
-	ACCESS_ONCE(chan->finalized) = 1;
+	WRITE_ONCE(chan->finalized, 1);
 	wake_up_interruptible(&chan->hp_wait);
 	wake_up_interruptible(&chan->read_wait);
 	priv = chan->backend.priv;
@@ -1077,7 +1077,7 @@ int lib_ring_buffer_snapshot(struct lib_ring_buffer *buf,
 	int finalized;
 
 retry:
-	finalized = ACCESS_ONCE(buf->finalized);
+	finalized = READ_ONCE(buf->finalized);
 	/*
 	 * Read finalized before counters.
 	 */
@@ -1248,7 +1248,7 @@ int lib_ring_buffer_get_subbuf(struct lib_ring_buffer *buf,
 		return -EBUSY;
 	}
 retry:
-	finalized = ACCESS_ONCE(buf->finalized);
+	finalized = READ_ONCE(buf->finalized);
 	/*
 	 * Read finalized before counters.
 	 */

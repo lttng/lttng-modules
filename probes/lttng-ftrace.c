@@ -58,11 +58,11 @@ void lttng_ftrace_handler(unsigned long ip, unsigned long parent_ip,
 	} payload;
 	int ret;
 
-	if (unlikely(!ACCESS_ONCE(chan->session->active)))
+	if (unlikely(!READ_ONCE(chan->session->active)))
 		return;
-	if (unlikely(!ACCESS_ONCE(chan->enabled)))
+	if (unlikely(!READ_ONCE(chan->enabled)))
 		return;
-	if (unlikely(!ACCESS_ONCE(event->enabled)))
+	if (unlikely(!READ_ONCE(event->enabled)))
 		return;
 
 	lib_ring_buffer_ctx_init(&ctx, chan->chan, &lttng_probe_ctx,
@@ -94,11 +94,11 @@ void lttng_ftrace_handler(unsigned long ip, unsigned long parent_ip, void **data
 	} payload;
 	int ret;
 
-	if (unlikely(!ACCESS_ONCE(chan->session->active)))
+	if (unlikely(!READ_ONCE(chan->session->active)))
 		return;
-	if (unlikely(!ACCESS_ONCE(chan->enabled)))
+	if (unlikely(!READ_ONCE(chan->enabled)))
 		return;
-	if (unlikely(!ACCESS_ONCE(event->enabled)))
+	if (unlikely(!READ_ONCE(event->enabled)))
 		return;
 
 	lib_ring_buffer_ctx_init(&ctx, chan->chan, &lttng_probe_ctx,

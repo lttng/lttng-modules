@@ -37,6 +37,7 @@
 #include <asm/local.h>
 #include <lttng-kernel-version.h>
 #include <lttng-clock.h>
+#include <wrapper/compiler.h>
 #include <wrapper/percpu-defs.h>
 #include <wrapper/random.h>
 
@@ -176,7 +177,7 @@ static inline void put_trace_clock(void)
 
 static inline u64 trace_clock_read64(void)
 {
-	struct lttng_trace_clock *ltc = ACCESS_ONCE(lttng_trace_clock);
+	struct lttng_trace_clock *ltc = READ_ONCE(lttng_trace_clock);
 
 	if (likely(!ltc)) {
 		return trace_clock_read64_monotonic();
@@ -188,7 +189,7 @@ static inline u64 trace_clock_read64(void)
 
 static inline u64 trace_clock_freq(void)
 {
-	struct lttng_trace_clock *ltc = ACCESS_ONCE(lttng_trace_clock);
+	struct lttng_trace_clock *ltc = READ_ONCE(lttng_trace_clock);
 
 	if (!ltc) {
 		return trace_clock_freq_monotonic();
@@ -200,7 +201,7 @@ static inline u64 trace_clock_freq(void)
 
 static inline int trace_clock_uuid(char *uuid)
 {
-	struct lttng_trace_clock *ltc = ACCESS_ONCE(lttng_trace_clock);
+	struct lttng_trace_clock *ltc = READ_ONCE(lttng_trace_clock);
 
 	read_barrier_depends();	/* load ltc before content */
 	/* Use default UUID cb when NULL */
@@ -213,7 +214,7 @@ static inline int trace_clock_uuid(char *uuid)
 
 static inline const char *trace_clock_name(void)
 {
-	struct lttng_trace_clock *ltc = ACCESS_ONCE(lttng_trace_clock);
+	struct lttng_trace_clock *ltc = READ_ONCE(lttng_trace_clock);
 
 	if (!ltc) {
 		return trace_clock_name_monotonic();
@@ -225,7 +226,7 @@ static inline const char *trace_clock_name(void)
 
 static inline const char *trace_clock_description(void)
 {
-	struct lttng_trace_clock *ltc = ACCESS_ONCE(lttng_trace_clock);
+	struct lttng_trace_clock *ltc = READ_ONCE(lttng_trace_clock);
 
 	if (!ltc) {
 		return trace_clock_description_monotonic();
