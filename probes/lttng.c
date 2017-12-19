@@ -28,6 +28,7 @@
 #include <linux/proc_fs.h>
 #include <linux/slab.h>
 #include <linux/mm.h>
+#include <linux/miscdevice.h>
 #include <wrapper/vmalloc.h>
 #include <lttng-events.h>
 
@@ -105,19 +106,37 @@ static const struct file_operations lttng_logger_operations = {
 	.write = lttng_logger_write,
 };
 
+static struct miscdevice logger_dev = {
+	.minor = MISC_DYNAMIC_MINOR,
+	.name = "lttng-logger",
+	.mode = 0666,
+	.fops = &lttng_logger_operations
+};
+
 int __init lttng_logger_init(void)
 {
 	int ret = 0;
 
 	wrapper_vmalloc_sync_all();
+
+	/* /dev/lttng-logger */
+	ret = misc_register(&logger_dev);
+	if (ret) {
+		printk(KERN_ERR "Error creating LTTng logger device\n");
+		goto error;
+	}
+
+	/* /proc/lttng-logger */
 	lttng_logger_dentry = proc_create_data(LTTNG_LOGGER_FILE,
 				S_IRUGO | S_IWUGO, NULL,
 				&lttng_logger_operations, NULL);
 	if (!lttng_logger_dentry) {
-		printk(KERN_ERR "Error creating LTTng logger file\n");
+		printk(KERN_ERR "Error creating LTTng logger proc file\n");
 		ret = -ENOMEM;
-		goto error;
+		goto error_proc;
 	}
+
+	/* Init */
 	ret = __lttng_events_init__lttng();
 	if (ret)
 		goto error_events;
@@ -125,6 +144,8 @@ int __init lttng_logger_init(void)
 
 error_events:
 	remove_proc_entry("lttng-logger", NULL);
+error_proc:
+	misc_deregister(&logger_dev);
 error:
 	return ret;
 }
@@ -134,4 +155,5 @@ void lttng_logger_exit(void)
 	__lttng_events_exit__lttng();
 	if (lttng_logger_dentry)
 		remove_proc_entry("lttng-logger", NULL);
+	misc_deregister(&logger_dev);
 }
