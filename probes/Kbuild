@@ -266,4 +266,8 @@ ifneq ($(CONFIG_DYNAMIC_FTRACE),)
   endif
 endif # CONFIG_DYNAMIC_FTRACE
 
+ifneq ($(CONFIG_PREEMPTIRQ_EVENTS),)
+  obj-$(CONFIG_LTTNG) += lttng-probe-preemptirq.o
+endif # CONFIG_PREEMPTIRQ_EVENTS
+
 # vim:syntax=make
