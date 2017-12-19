@@ -168,7 +168,7 @@ static inline
 int lib_ring_buffer_is_finalized(const struct lib_ring_buffer_config *config,
 				 struct lib_ring_buffer *buf)
 {
-	int finalized = ACCESS_ONCE(buf->finalized);
+	int finalized = READ_ONCE(buf->finalized);
 	/*
 	 * Read finalized before counters.
 	 */

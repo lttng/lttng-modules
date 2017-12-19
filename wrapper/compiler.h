@@ -39,4 +39,17 @@
 # endif
 #endif
 
+/*
+ * READ/WRITE_ONCE were introduced in kernel 3.19 and ACCESS_ONCE
+ * was removed in 4.15. Prefer READ/WRITE but fallback to ACCESS
+ * when they are not available.
+ */
+#ifndef READ_ONCE
+# define READ_ONCE(x)		ACCESS_ONCE(x)
+#endif
+
+#ifndef WRITE_ONCE
+# define WRITE_ONCE(x, val)	({ ACCESS_ONCE(x) = val; })
+#endif
+
 #endif /* _LTTNG_WRAPPER_COMPILER_H */
