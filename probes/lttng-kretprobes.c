@@ -63,11 +63,11 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 		unsigned long parent_ip;
 	} payload;
 
-	if (unlikely(!ACCESS_ONCE(chan->session->active)))
+	if (unlikely(!READ_ONCE(chan->session->active)))
 		return 0;
-	if (unlikely(!ACCESS_ONCE(chan->enabled)))
+	if (unlikely(!READ_ONCE(chan->enabled)))
 		return 0;
-	if (unlikely(!ACCESS_ONCE(event->enabled)))
+	if (unlikely(!READ_ONCE(event->enabled)))
 		return 0;
 
 	payload.ip = (unsigned long) krpi->rp->kp.addr;
@@ -304,8 +304,8 @@ int lttng_kretprobes_event_enable_state(struct lttng_event *event,
 	}
 	lttng_krp = event->u.kretprobe.lttng_krp;
 	event_return = lttng_krp->event[EVENT_RETURN];
-	ACCESS_ONCE(event->enabled) = enable;
-	ACCESS_ONCE(event_return->enabled) = enable;
+	WRITE_ONCE(event->enabled, enable);
+	WRITE_ONCE(event_return->enabled, enable);
 	return 0;
 }
 EXPORT_SYMBOL_GPL(lttng_kretprobes_event_enable_state);

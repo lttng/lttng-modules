@@ -48,7 +48,7 @@ int lttng_clock_register_plugin(struct lttng_trace_clock *ltc,
 		goto end;
 	}
 	/* set clock */
-	ACCESS_ONCE(lttng_trace_clock) = ltc;
+	WRITE_ONCE(lttng_trace_clock, ltc);
 	lttng_trace_clock_mod = mod;
 end:
 	mutex_unlock(&clock_mutex);
@@ -66,7 +66,7 @@ void lttng_clock_unregister_plugin(struct lttng_trace_clock *ltc,
 	}
 	WARN_ON_ONCE(lttng_trace_clock_mod != mod);
 
-	ACCESS_ONCE(lttng_trace_clock) = NULL;
+	WRITE_ONCE(lttng_trace_clock, NULL);
 	lttng_trace_clock_mod = NULL;
 end:
 	mutex_unlock(&clock_mutex);
@@ -83,7 +83,7 @@ void lttng_clock_ref(void)
 		ret = try_module_get(lttng_trace_clock_mod);
 		if (!ret) {
 			printk(KERN_ERR "LTTng-clock cannot get clock plugin module\n");
-			ACCESS_ONCE(lttng_trace_clock) = NULL;
+			WRITE_ONCE(lttng_trace_clock, NULL);
 			lttng_trace_clock_mod = NULL;
 		}
 	}

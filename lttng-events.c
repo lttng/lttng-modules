@@ -184,7 +184,7 @@ void lttng_session_destroy(struct lttng_session *session)
 	int ret;
 
 	mutex_lock(&sessions_mutex);
-	ACCESS_ONCE(session->active) = 0;
+	WRITE_ONCE(session->active, 0);
 	list_for_each_entry(chan, &session->chan, list) {
 		ret = lttng_syscalls_unregister(chan);
 		WARN_ON(ret);
@@ -259,16 +259,16 @@ int lttng_session_enable(struct lttng_session *session)
 			lib_ring_buffer_clear_quiescent_channel(chan->chan);
 	}
 
-	ACCESS_ONCE(session->active) = 1;
-	ACCESS_ONCE(session->been_active) = 1;
+	WRITE_ONCE(session->active, 1);
+	WRITE_ONCE(session->been_active, 1);
 	ret = _lttng_session_metadata_statedump(session);
 	if (ret) {
-		ACCESS_ONCE(session->active) = 0;
+		WRITE_ONCE(session->active, 0);
 		goto end;
 	}
 	ret = lttng_statedump_start(session);
 	if (ret)
-		ACCESS_ONCE(session->active) = 0;
+		WRITE_ONCE(session->active, 0);
 end:
 	mutex_unlock(&sessions_mutex);
 	return ret;
@@ -284,7 +284,7 @@ int lttng_session_disable(struct lttng_session *session)
 		ret = -EBUSY;
 		goto end;
 	}
-	ACCESS_ONCE(session->active) = 0;
+	WRITE_ONCE(session->active, 0);
 
 	/* Set transient enabler state to "disabled" */
 	session->tstate = 0;
@@ -359,7 +359,7 @@ int lttng_channel_enable(struct lttng_channel *channel)
 	channel->tstate = 1;
 	lttng_session_sync_enablers(channel->session);
 	/* Set atomically the state to "enabled" */
-	ACCESS_ONCE(channel->enabled) = 1;
+	WRITE_ONCE(channel->enabled, 1);
 end:
 	mutex_unlock(&sessions_mutex);
 	return ret;
@@ -379,7 +379,7 @@ int lttng_channel_disable(struct lttng_channel *channel)
 		goto end;
 	}
 	/* Set atomically the state to "disabled" */
-	ACCESS_ONCE(channel->enabled) = 0;
+	WRITE_ONCE(channel->enabled, 0);
 	/* Set transient enabler state to "enabled" */
 	channel->tstate = 0;
 	lttng_session_sync_enablers(channel->session);
@@ -409,7 +409,7 @@ int lttng_event_enable(struct lttng_event *event)
 	case LTTNG_KERNEL_KPROBE:
 	case LTTNG_KERNEL_FUNCTION:
 	case LTTNG_KERNEL_NOOP:
-		ACCESS_ONCE(event->enabled) = 1;
+		WRITE_ONCE(event->enabled, 1);
 		break;
 	case LTTNG_KERNEL_KRETPROBE:
 		ret = lttng_kretprobes_event_enable_state(event, 1);
@@ -444,7 +444,7 @@ int lttng_event_disable(struct lttng_event *event)
 	case LTTNG_KERNEL_KPROBE:
 	case LTTNG_KERNEL_FUNCTION:
 	case LTTNG_KERNEL_NOOP:
-		ACCESS_ONCE(event->enabled) = 0;
+		WRITE_ONCE(event->enabled, 0);
 		break;
 	case LTTNG_KERNEL_KRETPROBE:
 		ret = lttng_kretprobes_event_enable_state(event, 0);
@@ -1515,7 +1515,7 @@ void lttng_session_sync_enablers(struct lttng_session *session)
 		 */
 		enabled = enabled && session->tstate && event->chan->tstate;
 
-		ACCESS_ONCE(event->enabled) = enabled;
+		WRITE_ONCE(event->enabled, enabled);
 		/*
 		 * Sync tracepoint registration with event enabled
 		 * state.
@@ -1641,7 +1641,7 @@ int lttng_metadata_printf(struct lttng_session *session,
 	va_list ap;
 	struct lttng_metadata_stream *stream;
 
-	WARN_ON_ONCE(!ACCESS_ONCE(session->active));
+	WARN_ON_ONCE(!READ_ONCE(session->active));
 
 	va_start(ap, fmt);
 	str = kvasprintf(GFP_KERNEL, fmt, ap);
@@ -2228,7 +2228,7 @@ int _lttng_event_metadata_statedump(struct lttng_session *session,
 {
 	int ret = 0;
 
-	if (event->metadata_dumped || !ACCESS_ONCE(session->active))
+	if (event->metadata_dumped || !READ_ONCE(session->active))
 		return 0;
 	if (chan->channel_type == METADATA_CHANNEL)
 		return 0;
@@ -2295,7 +2295,7 @@ int _lttng_channel_metadata_statedump(struct lttng_session *session,
 {
 	int ret = 0;
 
-	if (chan->metadata_dumped || !ACCESS_ONCE(session->active))
+	if (chan->metadata_dumped || !READ_ONCE(session->active))
 		return 0;
 
 	if (chan->channel_type == METADATA_CHANNEL)
@@ -2452,7 +2452,7 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 	struct lttng_event *event;
 	int ret = 0;
 
-	if (!ACCESS_ONCE(session->active))
+	if (!READ_ONCE(session->active))
 		return 0;
 	if (session->metadata_dumped)
 		goto skip_session;

@@ -23,6 +23,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include <wrapper/compiler.h>
 #include <wrapper/ringbuffer/config.h>
 #include <wrapper/ringbuffer/backend_types.h>
 #include <wrapper/ringbuffer/frontend_types.h>
@@ -171,7 +172,7 @@ void subbuffer_id_set_noref_offset(const struct lib_ring_buffer_config *config,
 		tmp |= offset << SB_ID_OFFSET_SHIFT;
 		tmp |= SB_ID_NOREF_MASK;
 		/* Volatile store, read concurrently by readers. */
-		ACCESS_ONCE(*id) = tmp;
+		WRITE_ONCE(*id, tmp);
 	}
 }
 
@@ -379,7 +380,7 @@ void lib_ring_buffer_clear_noref(const struct lib_ring_buffer_config *config,
 	 * Performing a volatile access to read the sb_pages, because we want to
 	 * read a coherent version of the pointer and the associated noref flag.
 	 */
-	id = ACCESS_ONCE(bufb->buf_wsb[idx].id);
+	id = READ_ONCE(bufb->buf_wsb[idx].id);
 	for (;;) {
 		/* This check is called on the fast path for each record. */
 		if (likely(!subbuffer_id_is_noref(config, id))) {
@@ -448,7 +449,7 @@ int update_read_sb_index(const struct lib_ring_buffer_config *config,
 	if (config->mode == RING_BUFFER_OVERWRITE) {
 		/*
 		 * Exchange the target writer subbuffer with our own unused
-		 * subbuffer. No need to use ACCESS_ONCE() here to read the
+		 * subbuffer. No need to use READ_ONCE() here to read the
 		 * old_wpage, because the value read will be confirmed by the
 		 * following cmpxchg().
 		 */

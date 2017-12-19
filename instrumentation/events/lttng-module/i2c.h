@@ -22,7 +22,7 @@ LTTNG_TRACEPOINT_EVENT_CODE(i2c_write,
 
 	TP_code_pre(
 		tp_locvar->extract_sensitive_payload =
-			ACCESS_ONCE(extract_sensitive_payload);
+			READ_ONCE(extract_sensitive_payload);
 	),
 
 	TP_FIELDS(
@@ -77,7 +77,7 @@ LTTNG_TRACEPOINT_EVENT_CODE(i2c_reply,
 
 	TP_code_pre(
 		tp_locvar->extract_sensitive_payload =
-			ACCESS_ONCE(extract_sensitive_payload);
+			READ_ONCE(extract_sensitive_payload);
 	),
 
 	TP_FIELDS(
