@@ -5,6 +5,7 @@
 #define LTTNG_TRACE_SOCK_H
 
 #include <probes/lttng-tracepoint-event.h>
+#include <linux/version.h>
 #include <net/sock.h>
 
 LTTNG_TRACEPOINT_EVENT(sock_rcvqueue_full,
@@ -20,6 +21,25 @@ LTTNG_TRACEPOINT_EVENT(sock_rcvqueue_full,
 	)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+
+LTTNG_TRACEPOINT_EVENT(sock_exceed_buf_limit,
+
+	TP_PROTO(struct sock *sk, struct proto *prot, long allocated),
+
+	TP_ARGS(sk, prot, allocated),
+
+	TP_FIELDS(
+		ctf_string(name, prot->name)
+		ctf_array(long, sysctl_mem, prot->sysctl_mem, 3)
+		ctf_integer(long, allocated, allocated)
+		ctf_integer(int, sysctl_rmem, sk_get_rmem0(sk, prot))
+		ctf_integer(int, rmem_alloc, atomic_read(&sk->sk_rmem_alloc))
+	)
+)
+
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0)) */
+
 LTTNG_TRACEPOINT_EVENT(sock_exceed_buf_limit,
 
 	TP_PROTO(struct sock *sk, struct proto *prot, long allocated),
@@ -34,6 +54,8 @@ LTTNG_TRACEPOINT_EVENT(sock_exceed_buf_limit,
 		ctf_integer(int, rmem_alloc, atomic_read(&sk->sk_rmem_alloc))
 	)
 )
+
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0)) */
 
 #endif /* LTTNG_TRACE_SOCK_H */
 
