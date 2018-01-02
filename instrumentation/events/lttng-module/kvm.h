@@ -84,7 +84,9 @@ LTTNG_TRACEPOINT_EVENT(kvm_ack_irq,
 	{ KVM_TRACE_MMIO_READ, "read" }, \
 	{ KVM_TRACE_MMIO_WRITE, "write" }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0) \
+	|| LTTNG_KERNEL_RANGE(3,16,52, 3,17,0) \
+	|| LTTNG_KERNEL_RANGE(3,2,97, 3,3,0))
 
 LTTNG_TRACEPOINT_EVENT(kvm_mmio,
 	TP_PROTO(int type, int len, u64 gpa, void *val),
@@ -98,7 +100,7 @@ LTTNG_TRACEPOINT_EVENT(kvm_mmio,
 	)
 )
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0)) */
+#else
 
 LTTNG_TRACEPOINT_EVENT(kvm_mmio,
 	TP_PROTO(int type, int len, u64 gpa, u64 val),
@@ -112,7 +114,7 @@ LTTNG_TRACEPOINT_EVENT(kvm_mmio,
 	)
 )
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0)) */
+#endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
 
