@@ -848,7 +848,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_get_rq,
 
 	TP_FIELDS(
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
-		ctf_integer(dev_t, dev, bio_dev(bio))
+		ctf_integer(dev_t, dev, bio ? bio_dev(bio) : 0)
 #else
 		ctf_integer(dev_t, dev, bio ? bio->bi_bdev->bd_dev : 0)
 #endif
@@ -877,7 +877,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_get_rq,
 /**
  * block_getrq - get a free request entry in queue for block IO operations
  * @q: queue for operations
- * @bio: pending block IO operation
+ * @bio: pending block IO operation (can be %NULL)
  * @rw: low bit indicates a read (%0) or a write (%1)
  *
  * A request struct for queue @q has been allocated to handle the
@@ -893,7 +893,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_get_rq, block_getrq,
 /**
  * block_sleeprq - waiting to get a free request entry in queue for block IO operation
  * @q: queue for operation
- * @bio: pending block IO operation
+ * @bio: pending block IO operation (can be %NULL)
  * @rw: low bit indicates a read (%0) or a write (%1)
  *
  * In the case where a request struct cannot be provided for queue @q
