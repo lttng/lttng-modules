@@ -25,10 +25,32 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifdef CONFIG_KALLSYMS_ALL
+#include <lttng-kernel-version.h>
 
+#ifdef CONFIG_KALLSYMS_ALL
 #include <linux/kallsyms.h>
 #include <wrapper/kallsyms.h>
+
+
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)
+
+static struct wb_domain *global_wb_domain_sym;
+
+static inline
+unsigned long wrapper_global_dirty_limit(void)
+{
+	if (!global_wb_domain_sym)
+		global_wb_domain_sym =
+			(void *) kallsyms_lookup_dataptr("global_wb_domain");
+	if (global_wb_domain_sym) {
+		return global_wb_domain_sym->dirty_limit;
+	} else {
+		printk_once(KERN_WARNING "LTTng: global_wb_domain symbol lookup failed.\n");
+		return 0;
+	}
+}
+#else
 
 static unsigned long *global_dirty_limit_sym;
 
@@ -45,8 +67,9 @@ unsigned long wrapper_global_dirty_limit(void)
 		return 0;
 	}
 }
+#endif
 
-#else
+#else /* CONFIG_KALLSYMS_ALL */
 
 #include <linux/writeback.h>
 
