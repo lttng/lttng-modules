@@ -133,6 +133,30 @@ static inline enum transport_header_types __get_transport_header_type(struct sk_
 	return TH_NONE;
 }
 
+static struct lttng_enum_entry proto_transport_enum_entries[] = {
+	[0] = {
+		.start = { .value = 0, .signedness = 0, },
+		.end = { .value = IPPROTO_TCP - 1, .signedness = 0, },
+		.string = "_unknown",
+	},
+	[1] = {
+		.start = { .value = IPPROTO_TCP, .signedness = 0, },
+		.end = { .value = IPPROTO_TCP, .signedness = 0, },
+		.string = "_tcp",
+	},
+	[2] = {
+		.start = { .value = IPPROTO_TCP + 1, .signedness = 0, },
+		.end = { .value = 255, .signedness = 0, },
+		.string = "_unknown",
+	},
+};
+
+static const struct lttng_enum_desc proto_transport_header_type = {
+	.name = "proto_transport_header_type",
+	.entries = proto_transport_enum_entries,
+	.nr_entries = ARRAY_SIZE(proto_transport_enum_entries),
+};
+
 static struct lttng_enum_entry transport_enum_entries[] = {
 	[0] = {
 		.start = { .value = TH_NONE, .signedness = 0, },
@@ -194,7 +218,8 @@ static struct lttng_event_field ipv4fields[] = {
 		.name = "protocol",
 		.type = {
 			.atype = atype_enum,
-			.u.basic.enumeration.desc = &transport_header_type,
+			.u.basic.enumeration.desc =
+				&proto_transport_header_type,
 			.u.basic.enumeration.container_type = {
 				.size = 8,
 				.alignment = 8,
@@ -290,7 +315,8 @@ static struct lttng_event_field ipv6fields[] = {
 		.name = "nexthdr",
 		.type = {
 			.atype = atype_enum,
-			.u.basic.enumeration.desc = &transport_header_type,
+			.u.basic.enumeration.desc =
+				&proto_transport_header_type,
 			.u.basic.enumeration.container_type = {
 				.size = 8,
 				.alignment = 8,
