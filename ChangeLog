@@ -1,3 +1,26 @@
+2018-01-30 (National Croissant Day) LTTng modules 2.9.8
+	* Fix: network instrumentation protocol enum
+	* Fix: update btrfs instrumentation for SuSE 4.4.103-6
+	* Fix: update block instrumentation for SuSE 4.4.73-5
+	* Fix: global_dirty_limit for kernel v4.2 and up
+	* Fix: network instrumentation handling of corrupted TCP headers
+	* Fix: add missing uaccess.h include from kstrtox.h wrapper
+	* Update: kvm instrumentation for 4.14.14+, 4.9.77+, 4.4.112+
+	* Fix: btrfs_delayed_ref_head was unwired since v3.12
+	* Update kvm instrumentation for debian kernel 4.9.65-3
+	* Fix: debian kernel version parsing
+	* Fix: block instrumentation 4.14+ NULL pointer dereference
+	* Update: kvm instrumentation for 3.16.52 and 3.2.97
+	* Fix: kvm instrumentation for 4.15
+	* Update sock instrumentation for 4.15
+	* Update kvm instrumentation for 4.15
+	* Fix: ACCESS_ONCE() removed in kernel 4.15
+	* Fix: sched instrumentation on stable RT kernels
+	* timer API transition for kernel 4.15
+	* Fix: Don't nest get online cpus
+	* Fix: lttng_channel_syscall_mask() bool use in bitfield
+	* Fix: update kmem instrumentation for kernel 4.15
+
 2017-11-08 (National Cappuccino Day) LTTng modules 2.9.7
 	* Fix: lttng_kvmalloc helper NULL pointer OOPS
 
