@@ -28,6 +28,7 @@
 #include <linux/uaccess.h>
 #include <linux/vmalloc.h>
 #include <linux/uuid.h>
+#include <linux/dmi.h>
 
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
 #include <wrapper/random.h>
@@ -2542,6 +2543,7 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 {
 	unsigned char *uuid_c = session->uuid.b;
 	unsigned char uuid_s[37], clock_uuid_s[BOOT_ID_LEN];
+	const char *product_uuid;
 	struct lttng_channel *chan;
 	struct lttng_event *event;
 	int ret = 0;
@@ -2628,7 +2630,18 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 	if (ret)
 		goto end;
 
-	/* Close env */
+	/* Add the product UUID to the 'env' section */
+	product_uuid = dmi_get_system_info(DMI_PRODUCT_UUID);
+	if (product_uuid) {
+		ret = lttng_metadata_printf(session,
+				"	product_uuid = \"%s\";\n",
+				product_uuid
+				);
+		if (ret)
+			goto end;
+	}
+
+	/* Close the 'env' section */
 	ret = lttng_metadata_printf(session, "};\n\n");
 	if (ret)
 		goto end;
