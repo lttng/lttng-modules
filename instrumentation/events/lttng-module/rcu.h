@@ -220,31 +220,60 @@ LTTNG_TRACEPOINT_EVENT(rcu_fqs,
  * events use the upper bits of each number, while interrupt-related
  * events use the lower bits.
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,16,0))
 LTTNG_TRACEPOINT_EVENT(rcu_dyntick,
 
+	TP_PROTO(const char *polarity, long oldnesting, long newnesting, atomic_t dynticks),
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
-	TP_PROTO(const char *polarity, long long oldnesting, long long newnesting),
-
-	TP_ARGS(polarity, oldnesting, newnesting),
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
-	TP_PROTO(char *polarity, long long oldnesting, long long newnesting),
-
-	TP_ARGS(polarity, oldnesting, newnesting),
-#else
-	TP_PROTO(char *polarity),
-
-	TP_ARGS(polarity),
-#endif
+	TP_ARGS(polarity, oldnesting, newnesting, dynticks),
 
 	TP_FIELDS(
 		ctf_string(polarity, polarity)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
-		ctf_integer(long long, oldnesting, oldnesting)
-		ctf_integer(long long, newnesting, newnesting)
-#endif
+		ctf_integer(long, oldnesting, oldnesting)
+		ctf_integer(long, newnesting, newnesting)
+		ctf_integer(int, dynticks, atomic_read(&dynticks))
 	)
 )
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+LTTNG_TRACEPOINT_EVENT(rcu_dyntick,
+
+	TP_PROTO(const char *polarity, long long oldnesting, long long newnesting),
+
+	TP_ARGS(polarity, oldnesting, newnesting),
+
+	TP_FIELDS(
+		ctf_string(polarity, polarity)
+		ctf_integer(long long, oldnesting, oldnesting)
+		ctf_integer(long long, newnesting, newnesting)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+LTTNG_TRACEPOINT_EVENT(rcu_dyntick,
+
+	TP_PROTO(char *polarity, long long oldnesting, long long newnesting),
+
+	TP_ARGS(polarity, oldnesting, newnesting),
+
+	TP_FIELDS(
+		ctf_string(polarity, polarity)
+		ctf_integer(long long, oldnesting, oldnesting)
+		ctf_integer(long long, newnesting, newnesting)
+	)
+)
+#else
+LTTNG_TRACEPOINT_EVENT(rcu_dyntick,
+
+	TP_PROTO(char *polarity),
+
+	TP_ARGS(polarity),
+
+	TP_FIELDS(
+		ctf_string(polarity, polarity)
+	)
+)
+#endif
+
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
 /*
