@@ -160,6 +160,27 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_init,
  * hrtimer_start - called when the hrtimer is started
  * @timer: pointer to struct hrtimer
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,16,0) || \
+	LTTNG_RT_KERNEL_RANGE(4,14,0,0, 4,15,0,0))
+LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_start,
+
+	timer_hrtimer_start,
+
+	TP_PROTO(struct hrtimer *hrtimer, enum hrtimer_mode mode),
+
+	TP_ARGS(hrtimer, mode),
+
+	TP_FIELDS(
+		ctf_integer_hex(void *, hrtimer, hrtimer)
+		ctf_integer_hex(void *, function, hrtimer->function)
+		ctf_integer(s64, expires,
+			lttng_ktime_get_tv64(hrtimer_get_expires(hrtimer)))
+		ctf_integer(s64, softexpires,
+			lttng_ktime_get_tv64(hrtimer_get_softexpires(hrtimer)))
+		ctf_integer(enum hrtimer_mode, mode, mode)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_start,
 
 	timer_hrtimer_start,
@@ -177,6 +198,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_start,
 			lttng_ktime_get_tv64(hrtimer_get_softexpires(hrtimer)))
 	)
 )
+#endif
 
 /**
  * htimmer_expire_entry - called immediately before the hrtimer callback
