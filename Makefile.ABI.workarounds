@@ -22,6 +22,12 @@ ifneq ($(SLE_API_VERSION), 0)
   ccflags-y += -DSLE_API_VERSION=$(SLE_API_VERSION)
 endif
 
+FEDORA_REVISION_VERSION:=$(shell $(TOP_LTTNG_MODULES_DIR)/abi-fedora-version.sh $(CURDIR))
+
+ifneq ($(FEDORA_REVISION_VERSION), 0)
+  ccflags-y += -DFEDORA_REVISION_VERSION=$(FEDORA_REVISION_VERSION)
+endif
+
 RT_PATCH_VERSION:=$(shell $(TOP_LTTNG_MODULES_DIR)/rt-patch-version.sh $(CURDIR))
 
 ifneq ($(RT_PATCH_VERSION), 0)
