@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # First argument is the path to the kernel headers.
-KPATH=$1
+KPATH="$1"
 
 VERSIONFILE=""
 
@@ -22,4 +22,4 @@ if [ "x${RT_PATCH_VERSION}" = "x" ]; then
 	exit 0
 fi
 
-echo ${RT_PATCH_VERSION}
+echo "${RT_PATCH_VERSION}"
