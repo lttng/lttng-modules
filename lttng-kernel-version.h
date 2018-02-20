@@ -115,6 +115,25 @@
 		LTTNG_SLE_VERSION_CODE < \
 		LTTNG_SLE_KERNEL_VERSION(a_high, b_high, c_high, d_high, e_high, f_high))
 
+/* Fedora */
+
+#define LTTNG_FEDORA_KERNEL_VERSION(a, b, c, d) \
+        (((((a) << 16) + ((b) << 8) + (c)) * 10000ULL) + (d))
+
+#ifdef FEDORA_REVISION_VERSION
+#define LTTNG_FEDORA_VERSION_CODE \
+        ((LINUX_VERSION_CODE * 10000ULL) + FEDORA_REVISION_VERSION)
+#else
+#define LTTNG_FEDORA_VERSION_CODE         0
+#endif
+
+#define LTTNG_FEDORA_KERNEL_RANGE(a_low, b_low, c_low, d_low, \
+                a_high, b_high, c_high, d_high) \
+        (LTTNG_FEDORA_VERSION_CODE >= \
+                LTTNG_FEDORA_KERNEL_VERSION(a_low, b_low, c_low, d_low) && \
+                LTTNG_FEDORA_VERSION_CODE < \
+                LTTNG_FEDORA_KERNEL_VERSION(a_high, b_high, c_high, d_high))
+
 /* RT patch */
 
 #define LTTNG_RT_KERNEL_VERSION(a, b, c, d) \
