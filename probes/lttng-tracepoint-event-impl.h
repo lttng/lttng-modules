@@ -34,6 +34,7 @@
 #include <wrapper/rcu.h>
 #include <lttng-events.h>
 #include <lttng-tracer-core.h>
+#include <lttng-tp-mempool.h>
 
 #define __LTTNG_NULL_STRING	"(null)"
 
