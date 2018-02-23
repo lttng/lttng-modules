@@ -100,9 +100,8 @@ SC_LTTNG_TRACEPOINT_EVENT(pipe2,
 		}									\
 											\
 		if (inp) {								\
-			tp_locvar->fds_in = kmalloc(					\
-					tp_locvar->nr_ulong * sizeof(unsigned long),	\
-					GFP_ATOMIC | GFP_NOWAIT);			\
+			tp_locvar->fds_in = lttng_tp_mempool_alloc(				\
+					tp_locvar->nr_ulong * sizeof(unsigned long));			\
 			if (!tp_locvar->fds_in)						\
 				goto error;						\
 											\
@@ -113,9 +112,8 @@ SC_LTTNG_TRACEPOINT_EVENT(pipe2,
 				goto error;						\
 		}									\
 		if (outp) {								\
-			tp_locvar->fds_out = kmalloc(					\
-					tp_locvar->nr_ulong * sizeof(unsigned long),	\
-					GFP_ATOMIC | GFP_NOWAIT);			\
+			tp_locvar->fds_out = lttng_tp_mempool_alloc(				\
+					tp_locvar->nr_ulong * sizeof(unsigned long));	\
 			if (!tp_locvar->fds_out)					\
 				goto error;						\
 											\
@@ -126,9 +124,8 @@ SC_LTTNG_TRACEPOINT_EVENT(pipe2,
 				goto error;						\
 		}									\
 		if (exp) {								\
-			tp_locvar->fds_ex = kmalloc(					\
-					tp_locvar->nr_ulong * sizeof(unsigned long),	\
-					GFP_ATOMIC | GFP_NOWAIT);			\
+			tp_locvar->fds_ex = lttng_tp_mempool_alloc(				\
+					tp_locvar->nr_ulong * sizeof(unsigned long));	\
 			if (!tp_locvar->fds_ex)						\
 				goto error;						\
 											\
@@ -221,9 +218,9 @@ end:	; /* Label at end of compound statement. */					\
 	)
 
 #define LTTNG_SYSCALL_SELECT_code_post	\
-	kfree(tp_locvar->fds_in);	\
-	kfree(tp_locvar->fds_out);	\
-	kfree(tp_locvar->fds_ex);
+	lttng_tp_mempool_free(tp_locvar->fds_in);	\
+	lttng_tp_mempool_free(tp_locvar->fds_out);	\
+	lttng_tp_mempool_free(tp_locvar->fds_ex);
 
 #if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM)
 #define OVERRIDE_32_select
@@ -413,8 +410,7 @@ static struct lttng_type lttng_pollfd_elem = {
 	{										\
 		int err;								\
 											\
-		tp_locvar->fds = kmalloc(tp_locvar->alloc_fds,				\
-				GFP_ATOMIC | GFP_NOWAIT);				\
+		tp_locvar->fds = lttng_tp_mempool_alloc(tp_locvar->alloc_fds);		\
 		if (!tp_locvar->fds)							\
 			goto error;							\
 		err = lib_ring_buffer_copy_from_user_check_nofault(			\
@@ -494,7 +490,7 @@ end:											\
 	)
 
 #define LTTNG_SYSCALL_POLL_code_post	\
-	kfree(tp_locvar->fds);
+	lttng_tp_mempool_free(tp_locvar->fds);
 
 #if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM)
 #define OVERRIDE_32_poll
@@ -761,9 +757,8 @@ static struct lttng_type lttng_epoll_wait_elem = {
 			tp_locvar->fds_length = ret;				\
 		}								\
 										\
-		tp_locvar->events = kmalloc(					\
-			maxalloc * sizeof(struct epoll_event),			\
-			GFP_ATOMIC | GFP_NOWAIT);				\
+		tp_locvar->events = lttng_tp_mempool_alloc(				\
+			maxalloc * sizeof(struct epoll_event));			\
 		if (!tp_locvar->events) {					\
 			tp_locvar->fds_length = 0;				\
 			goto skip_code;						\
@@ -805,7 +800,7 @@ static struct lttng_type lttng_epoll_wait_elem = {
 
 #define LTTNG_SYSCALL_EPOLL_WAIT_code_post	\
 	sc_out(					\
-		kfree(tp_locvar->events);	\
+		lttng_tp_mempool_free(tp_locvar->events);	\
 	)
 
 
