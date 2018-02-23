@@ -56,6 +56,7 @@
 #include <lttng-abi-old.h>
 #include <lttng-events.h>
 #include <lttng-tracer.h>
+#include <lttng-tp-mempool.h>
 #include <lib/ringbuffer/frontend_types.h>
 
 /*
@@ -1727,6 +1728,12 @@ int __init lttng_abi_init(void)
 
 	wrapper_vmalloc_sync_all();
 	lttng_clock_ref();
+
+	ret = lttng_tp_mempool_init();
+	if (ret) {
+		goto error;
+	}
+
 	lttng_proc_dentry = proc_create_data("lttng", S_IRUSR | S_IWUSR, NULL,
 					&lttng_fops, NULL);
 
@@ -1739,6 +1746,7 @@ int __init lttng_abi_init(void)
 	return 0;
 
 error:
+	lttng_tp_mempool_destroy();
 	lttng_clock_unref();
 	return ret;
 }
@@ -1746,6 +1754,7 @@ error:
 /* No __exit annotation because used by init error path too. */
 void lttng_abi_exit(void)
 {
+	lttng_tp_mempool_destroy();
 	lttng_clock_unref();
 	if (lttng_proc_dentry)
 		remove_proc_entry("lttng", NULL);
