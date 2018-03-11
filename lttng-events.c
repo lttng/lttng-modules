@@ -2644,7 +2644,7 @@ void lttng_transport_unregister(struct lttng_transport *transport)
 }
 EXPORT_SYMBOL_GPL(lttng_transport_unregister);
 
-#if (defined(CONFIG_HOTPLUG_CPU) && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
 
 enum cpuhp_state lttng_hp_prepare;
 enum cpuhp_state lttng_hp_online;
