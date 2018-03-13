@@ -2762,7 +2762,7 @@ static void __exit lttng_exit_cpu_hotplug(void)
 	cpuhp_remove_multi_state(lttng_hp_prepare);
 }
 
-#else /* #if (CONFIG_HOTPLUG_CPU && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))) */
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 static int lttng_init_cpu_hotplug(void)
 {
 	return 0;
@@ -2770,7 +2770,7 @@ static int lttng_init_cpu_hotplug(void)
 static void lttng_exit_cpu_hotplug(void)
 {
 }
-#endif /* #else #if (CONFIG_HOTPLUG_CPU && (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))) */
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 
 
 static int __init lttng_events_init(void)
