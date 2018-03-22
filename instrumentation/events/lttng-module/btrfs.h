@@ -743,7 +743,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(btrfs_delayed_ref_head,
 	)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_ref_head, add_delayed_ref_head,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_ref_head,
+
+	add_delayed_ref_head,
+
+	btrfs_add_delayed_ref_head,
 
 	TP_PROTO(const struct btrfs_fs_info *fs_info,
 		 const struct btrfs_delayed_ref_head *head_ref,
@@ -752,7 +756,11 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_ref_head, add_delayed_ref_head,
 	TP_ARGS(fs_info, head_ref, action)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_ref_head, run_delayed_ref_head,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_ref_head,
+
+	run_delayed_ref_head,
+
+	btrfs_run_delayed_ref_head,
 
 	TP_PROTO(const struct btrfs_fs_info *fs_info,
 		 const struct btrfs_delayed_ref_head *head_ref,
@@ -780,7 +788,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(btrfs_delayed_ref_head,
 	)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_ref_head, add_delayed_ref_head,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_ref_head,
+
+	add_delayed_ref_head,
+
+	btrfs_add_delayed_ref_head,
 
 	TP_PROTO(const struct btrfs_fs_info *fs_info,
 		 const struct btrfs_delayed_ref_node *ref,
@@ -790,7 +802,11 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_ref_head, add_delayed_ref_head,
 	TP_ARGS(fs_info, ref, head_ref, action)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_ref_head, run_delayed_ref_head,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_ref_head,
+
+	run_delayed_ref_head,
+
+	btrfs_run_delayed_ref_head,
 
 	TP_PROTO(const struct btrfs_fs_info *fs_info,
 		 const struct btrfs_delayed_ref_node *ref,
@@ -818,7 +834,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(btrfs_delayed_ref_head,
 	)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_ref_head, add_delayed_ref_head,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_ref_head,
+
+	add_delayed_ref_head,
+
+	btrfs_add_delayed_ref_head,
 
 	TP_PROTO(struct btrfs_fs_info *fs_info,
 		 struct btrfs_delayed_ref_node *ref,
@@ -828,7 +848,11 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_ref_head, add_delayed_ref_head,
 	TP_ARGS(fs_info, ref, head_ref, action)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_ref_head, run_delayed_ref_head,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_ref_head,
+
+	run_delayed_ref_head,
+
+	btrfs_run_delayed_ref_head,
 
 	TP_PROTO(struct btrfs_fs_info *fs_info,
 		 struct btrfs_delayed_ref_node *ref,
@@ -855,7 +879,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(btrfs_delayed_ref_head,
 	)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_ref_head, add_delayed_ref_head,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_ref_head,
+
+	add_delayed_ref_head,
+
+	btrfs_add_delayed_ref_head,
 
 	TP_PROTO(const struct btrfs_delayed_ref_node *ref,
 		 const struct btrfs_delayed_ref_head *head_ref,
@@ -864,7 +892,11 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_ref_head, add_delayed_ref_head,
 	TP_ARGS(ref, head_ref, action)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_ref_head, run_delayed_ref_head,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_ref_head,
+
+	run_delayed_ref_head,
+
+	btrfs_run_delayed_ref_head,
 
 	TP_PROTO(const struct btrfs_delayed_ref_node *ref,
 		 const struct btrfs_delayed_ref_head *head_ref,
@@ -890,7 +922,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(btrfs_delayed_ref_head,
 	)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_ref_head, add_delayed_ref_head,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_ref_head,
+
+	add_delayed_ref_head,
+
+	btrfs_add_delayed_ref_head,
 
 	TP_PROTO(struct btrfs_delayed_ref_node *ref,
 		 struct btrfs_delayed_ref_head *head_ref,
@@ -899,7 +935,11 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_ref_head, add_delayed_ref_head,
 	TP_ARGS(ref, head_ref, action)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_ref_head, run_delayed_ref_head,
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_ref_head,
+
+	run_delayed_ref_head,
+
+	btrfs_run_delayed_ref_head,
 
 	TP_PROTO(struct btrfs_delayed_ref_node *ref,
 		 struct btrfs_delayed_ref_head *head_ref,
