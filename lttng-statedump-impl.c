@@ -46,6 +46,11 @@
 #include <linux/wait.h>
 #include <linux/mutex.h>
 #include <linux/device.h>
+#include <linux/kvm_host.h>
+#include <linux/dcache.h>
+#include <linux/fs.h>
+#include <linux/mm.h>
+#include <linux/uaccess.h>
 
 #include <lttng-events.h>
 #include <lttng-tracer.h>
@@ -76,6 +81,7 @@ DEFINE_TRACE(lttng_statedump_file_descriptor);
 DEFINE_TRACE(lttng_statedump_start);
 DEFINE_TRACE(lttng_statedump_process_state);
 DEFINE_TRACE(lttng_statedump_network_interface);
+DEFINE_TRACE(lttng_statedump_kvm_guest);
 
 struct lttng_fd_ctx {
 	char *page;
@@ -120,6 +126,9 @@ enum lttng_process_status {
 	LTTNG_RUN = 6,
 	LTTNG_DEAD = 7,
 };
+
+#define QEMU_KVM_UUID_LEN	37
+#define QEMU_KVM_UUID_ARG_LEN QEMU_KVM_UUID_LEN + 6
 
 static
 int lttng_enumerate_block_devices(struct lttng_session *session)
@@ -461,6 +470,118 @@ int lttng_enumerate_process_states(struct lttng_session *session)
 }
 
 static
+int lttng_get_kvm_pid(const char* name, char *pid) {
+	int i = 0;
+	const char *s = name;
+
+	/* If the file name has format (\d{1,5})-(.*), copy the first numeric
+	 * part in the pid string, that would be the guest pid
+	 *
+	 * FIXME: Have the pid string internal only and have the actual pid
+	 * numeric value in the parameters */
+	while ((*s != '\0') && (i < 5) && (*s != '-')
+			&& (*s >= '0' && *s <= '9')) {
+		pid[i] = *s;
+		i++;
+		s++;
+	}
+	pid[i] = '\0';
+	if (*s == '-')
+		return 0;
+
+	return 1;
+}
+
+/**
+ * Get the -uuid argument from a command line file. The filename should be
+ * in the form of /proc/<pid>/cmdline
+ *
+ * FIXME: Receive the numeric pid in parameter instead of the filename
+ */
+static
+int lttng_get_uuid_from_proc_cmdline(const char* filename, char *uuid) {
+	struct file *file;
+	int ret, i = 0, j;
+	ssize_t len;
+	mm_segment_t old_fs;
+	char content[1920];
+	uuid[0] = '\0';
+
+	// Open the cmdline file
+	file = filp_open(filename, O_RDONLY, 0);
+	if (IS_ERR(file))
+		return PTR_ERR(file);
+
+	old_fs = get_fs();
+	set_fs(KERNEL_DS);
+
+	if (!file->f_op || !file->f_op->read) {
+		ret = -EINVAL;
+		goto end;
+	}
+
+	// Read the content of the file
+	len = file->f_op->read(file, content, 1920 - 1, &file->f_pos);
+	if (len < 0) {
+		ret = -EINVAL;
+		goto end;
+	}
+	ret = -ENODEV;
+	while (i < len - QEMU_KVM_UUID_ARG_LEN - 1) {
+		/* Look for the -uuid string and copy the uuid characters
+		 * to the uuid string */
+		if (content[i] == '-' && content[i+1] == 'u' && content[i+2] == 'u'
+				&& content[i+3] == 'i' && content[i+4] == 'd') {
+			i+=6;
+			j = 0;
+			for (j = 0; j < QEMU_KVM_UUID_LEN - 1; j++, i++) {
+				uuid[j] = content[i];
+			}
+			uuid[QEMU_KVM_UUID_LEN - 1] = '\0';
+			ret = 0;
+		}
+		i++;
+	}
+
+end:
+	set_fs(old_fs);
+	filp_close(file, current->files);
+	return ret;
+}
+
+static
+int lttng_enumerate_kvm_guests(struct lttng_session *session)
+{
+	struct dentry *kvm_debugfs;
+	struct list_head *q, *n;
+	struct dentry *kvm_child;
+	char pidstr[6];
+	char uuid[QEMU_KVM_UUID_LEN];
+	unsigned int pid;
+	char cmdline_file[64];
+
+	rcu_read_lock();
+
+	kvm_debugfs = kvm_debugfs_dir;
+
+	if (kvm_debugfs != NULL) {
+		list_for_each_safe(q, n, &kvm_debugfs->d_subdirs) {
+			kvm_child = list_entry(q, struct dentry, d_child);
+			if (!lttng_get_kvm_pid(kvm_child->d_name.name, pidstr)) {
+				if (!kstrtouint(pidstr, 10, &pid)) {
+					sprintf(cmdline_file, "/proc/%s/cmdline", pidstr);
+					lttng_get_uuid_from_proc_cmdline(cmdline_file, uuid);
+					trace_lttng_statedump_kvm_guest(session, pid, uuid);
+				}
+			}
+		}
+	}
+	rcu_read_unlock();
+
+	return 0;
+}
+
+static
 void lttng_statedump_work_func(struct work_struct *work)
 {
 	if (atomic_dec_and_test(&kernel_threads_to_run))
@@ -502,6 +623,9 @@ int do_lttng_statedump(struct lttng_session *session)
 	default:
 		return ret;
 	}
+	ret = lttng_enumerate_kvm_guests(session);
+	if (ret)
+		return ret;
 
 	/* TODO lttng_dump_idt_table(session); */
 	/* TODO lttng_dump_softirq_vec(session); */

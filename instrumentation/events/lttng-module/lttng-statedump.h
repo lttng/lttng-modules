@@ -138,6 +138,16 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_interrupt,
 	)
 )
 
+LTTNG_TRACEPOINT_EVENT(lttng_statedump_kvm_guest,
+	TP_PROTO(struct lttng_session *session,
+		int pid, const char *guest_uuid),
+	TP_ARGS(session, pid, guest_uuid),
+	TP_FIELDS(
+		ctf_integer(int, pid, pid)
+		ctf_string(uuid, guest_uuid)
+	)
+)
+
 #endif /*  LTTNG_TRACE_LTTNG_STATEDUMP_H */
 
 /* This part must be outside protection */

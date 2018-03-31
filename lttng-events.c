@@ -40,6 +40,7 @@
 #include <linux/jhash.h>
 #include <linux/uaccess.h>
 #include <linux/vmalloc.h>
+#include <linux/dmi.h>
 
 #include <wrapper/uuid.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
@@ -2448,6 +2449,7 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 {
 	unsigned char *uuid_c = session->uuid.b;
 	unsigned char uuid_s[37], clock_uuid_s[BOOT_ID_LEN];
+	const char *product_uuid;
 	struct lttng_channel *chan;
 	struct lttng_event *event;
 	int ret = 0;
@@ -2463,6 +2465,8 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 		uuid_c[4], uuid_c[5], uuid_c[6], uuid_c[7],
 		uuid_c[8], uuid_c[9], uuid_c[10], uuid_c[11],
 		uuid_c[12], uuid_c[13], uuid_c[14], uuid_c[15]);
+
+	product_uuid = dmi_get_system_info(DMI_PRODUCT_UUID);
 
 	ret = lttng_metadata_printf(session,
 		"typealias integer { size = 8; align = %u; signed = false; } := uint8_t;\n"
@@ -2514,6 +2518,7 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 		"	tracer_major = %d;\n"
 		"	tracer_minor = %d;\n"
 		"	tracer_patchlevel = %d;\n"
+		"	product_uuid = \"%s\";\n"
 		"};\n\n",
 		current->nsproxy->uts_ns->name.nodename,
 		utsname()->sysname,
@@ -2521,7 +2526,8 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 		utsname()->version,
 		LTTNG_MODULES_MAJOR_VERSION,
 		LTTNG_MODULES_MINOR_VERSION,
-		LTTNG_MODULES_PATCHLEVEL_VERSION
+		LTTNG_MODULES_PATCHLEVEL_VERSION,
+		product_uuid
 		);
 	if (ret)
 		goto end;
