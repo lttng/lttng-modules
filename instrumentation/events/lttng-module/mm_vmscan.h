@@ -84,6 +84,21 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_kswapd_wake,
 
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,17,0))
+LTTNG_TRACEPOINT_EVENT(mm_vmscan_wakeup_kswapd,
+
+	TP_PROTO(int nid, int zid, int order, gfp_t gfp_flags),
+
+	TP_ARGS(nid, zid, order, gfp_flags),
+
+	TP_FIELDS(
+		ctf_integer(int, nid, nid)
+		ctf_integer(int, zid, zid)
+		ctf_integer(int, order, order)
+		ctf_integer(gfp_t, gfp_flags, gfp_flags)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_wakeup_kswapd,
 
 	TP_PROTO(int nid, int zid, int order),
@@ -96,6 +111,7 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_wakeup_kswapd,
 		ctf_integer(int, order, order)
 	)
 )
+#endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
 
