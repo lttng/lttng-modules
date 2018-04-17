@@ -550,7 +550,31 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_writepage,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,17,0))
+LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
+
+	TP_PROTO(int nid,
+		unsigned long nr_scanned, unsigned long nr_reclaimed,
+		struct reclaim_stat *stat, int priority, int file),
+
+	TP_ARGS(nid, nr_scanned, nr_reclaimed, stat, priority, file),
+
+	TP_FIELDS(
+		ctf_integer(int, nid, nid)
+		ctf_integer(unsigned long, nr_scanned, nr_scanned)
+		ctf_integer(unsigned long, nr_reclaimed, nr_reclaimed)
+		ctf_integer(unsigned long, nr_dirty, stat->nr_dirty)
+		ctf_integer(unsigned long, nr_writeback, stat->nr_writeback)
+		ctf_integer(unsigned long, nr_congested, stat->nr_congested)
+		ctf_integer(unsigned long, nr_immediate, stat->nr_immediate)
+		ctf_integer(unsigned long, nr_activate, stat->nr_activate)
+		ctf_integer(unsigned long, nr_ref_keep, stat->nr_ref_keep)
+		ctf_integer(unsigned long, nr_unmap_fail, stat->nr_unmap_fail)
+		ctf_integer(int, priority, priority)
+		ctf_integer(int, reclaim_flags, trace_shrink_flags(file))
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 
 	TP_PROTO(int nid,
