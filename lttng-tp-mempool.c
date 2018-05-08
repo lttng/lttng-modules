@@ -70,8 +70,8 @@ int lttng_tp_mempool_init(void)
 		for (i = 0; i < LTTNG_TP_MEMPOOL_NR_BUF_PER_CPU; i++) {
 			struct lttng_tp_buf_entry *entry;
 
-			entry = kzalloc(sizeof(struct lttng_tp_buf_entry),
-					GFP_KERNEL);
+			entry = kzalloc_node(sizeof(struct lttng_tp_buf_entry),
+					GFP_KERNEL, cpu_to_node(cpu));
 			if (!entry) {
 				ret = -ENOMEM;
 				goto error_free_pool;
