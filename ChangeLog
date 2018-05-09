@@ -1,3 +1,27 @@
+2018-05-09 (Lost Sock Memorial Day) LTTng modules 2.9.9
+	* Fix: update RCU instrumentation for 4.17
+	* Fix: sunrpc instrumentation for 4.17
+	* Fix: use struct reclaim_stat in mm_vmscan_lru_shrink_inactive for 4.17
+	* Fix: Add gfp_flags arg to mm_vmscan_kswapd_wake for 4.17
+	* Update: kvm instrumentation for ubuntu 4.13.0-38
+	* Fix: update kvm instrumentation for Ubuntu 3.13.0-144
+	* Fix: btrfs instrumentation namespacing
+	* Cleanup: comment about CONFIG_HOTPLUG_CPU ifdef
+	* Fix: do not use CONFIG_HOTPLUG_CPU for the new hotplug API
+	* Fix: update kvm instrumentation for 4.1.50+
+	* Use the memory pool instead of kmalloc
+	* Create a memory pool for temporary tracepoint probes storage
+	* Fix: use proper pid_ns in the process statedump
+	* Fix: add variable quoting to shell scripts
+	* Update: kvm instrumentation for fedora 4.14.13-300
+	* Fix: Add Fedora version macros
+	* Fix: update btrfs instrumentation for SuSE 4.4.114-92
+	* Fix: update block instrumentation for SuSE 4.4.114-92
+	* Fix: update rcu instrumentation for v4.16
+	* Fix: update vmscan instrumentation for v4.16
+	* Fix: update timer instrumentation on 4.16 and 4.14-rt
+	* Update kvm instrumentation for debian kernel 4.14.0-3
+
 2018-01-30 (National Croissant Day) LTTng modules 2.9.8
 	* Fix: network instrumentation protocol enum
 	* Fix: update btrfs instrumentation for SuSE 4.4.103-6
