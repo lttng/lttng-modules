@@ -154,6 +154,8 @@ extern
 void lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf);
 extern
 void lib_ring_buffer_switch_remote_empty(struct lib_ring_buffer *buf);
+extern
+void lib_ring_buffer_clear(struct lib_ring_buffer *buf);
 
 /* Buffer write helpers */
 
@@ -179,6 +181,30 @@ void lib_ring_buffer_reserve_push_reader(struct lib_ring_buffer *buf,
 			      - subbuf_trunc(consumed_old, chan)
 			     >= chan->backend.buf_size))
 			consumed_new = subbuf_align(consumed_old, chan);
+		else
+			return;
+	} while (unlikely(atomic_long_cmpxchg(&buf->consumed, consumed_old,
+					      consumed_new) != consumed_old));
+}
+
+/*
+ * Move consumed position to the beginning of subbuffer in which the
+ * write offset is.
+ */
+static inline
+void lib_ring_buffer_clear_reader(struct lib_ring_buffer *buf,
+				  struct channel *chan)
+{
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
+	unsigned long offset, consumed_old, consumed_new;
+
+	do {
+		offset = v_read(config, &buf->offset);
+		consumed_old = atomic_long_read(&buf->consumed);
+		if (unlikely(subbuf_trunc(offset, chan)
+			      - subbuf_trunc(consumed_old, chan)
+			     > 0))
+			consumed_new = subbuf_trunc(offset, chan);
 		else
 			return;
 	} while (unlikely(atomic_long_cmpxchg(&buf->consumed, consumed_old,

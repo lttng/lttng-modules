@@ -112,6 +112,8 @@ ssize_t vfs_lib_ring_buffer_splice_read(struct file *in, loff_t *ppos,
  * so it can be read again.
  */
 #define RING_BUFFER_METADATA_CACHE_DUMP		_IO(0xF6, 0x10)
+/* Clear ring buffer content. */
+#define RING_BUFFER_CLEAR			_IO(0xF6, 0x11)
 
 #ifdef CONFIG_COMPAT
 /* Get a snapshot of the current ring buffer producer and consumer positions */
@@ -156,6 +158,9 @@ ssize_t vfs_lib_ring_buffer_splice_read(struct file *in, loff_t *ppos,
 /* Flush the current sub-buffer, even if empty. */
 #define RING_BUFFER_COMPAT_FLUSH_EMPTY			\
 	RING_BUFFER_FLUSH_EMPTY
+/* Clear ring buffer content. */
+#define RING_BUFFER_COMPAT_CLEAR			\
+	RING_BUFFER_CLEAR
 #endif /* CONFIG_COMPAT */
 
 #endif /* _LIB_RING_BUFFER_VFS_H */

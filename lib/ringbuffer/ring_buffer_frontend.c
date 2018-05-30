@@ -1957,6 +1957,16 @@ void lib_ring_buffer_switch_remote_empty(struct lib_ring_buffer *buf)
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_switch_remote_empty);
 
+void lib_ring_buffer_clear(struct lib_ring_buffer *buf)
+{
+	struct lib_ring_buffer_backend *bufb = &buf->backend;
+	struct channel *chan = bufb->chan;
+
+	lib_ring_buffer_switch_remote(buf);
+	lib_ring_buffer_clear_reader(buf, chan);
+}
+EXPORT_SYMBOL_GPL(lib_ring_buffer_clear);
+
 /*
  * Returns :
  * 0 if ok
