@@ -739,7 +739,7 @@ LTTNG_TRACEPOINT_EVENT(btrfs_add_block_group,
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
-LTTNG_TRACEPOINT_EVENT(btrfs_delayed_tree_ref,
+LTTNG_TRACEPOINT_EVENT_CLASS(btrfs_delayed_tree_ref,
 
 	TP_PROTO(const struct btrfs_fs_info *fs_info,
 		 const struct btrfs_delayed_ref_node *ref,
@@ -747,6 +747,89 @@ LTTNG_TRACEPOINT_EVENT(btrfs_delayed_tree_ref,
 		 int action),
 
 	TP_ARGS(fs_info, ref, full_ref, action),
+
+	TP_FIELDS(
+		ctf_array(u8, fsid, fs_info->fsid, BTRFS_UUID_SIZE)
+		ctf_integer(u64, bytenr, ref->bytenr)
+		ctf_integer(u64, num_bytes, ref->num_bytes)
+		ctf_integer(int, action, action)
+		ctf_integer(u64, parent, full_ref->parent)
+		ctf_integer(u64, ref_root, full_ref->root)
+		ctf_integer(int, level, full_ref->level)
+		ctf_integer(int, type, ref->type)
+		ctf_integer(u64, seq, ref->seq)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_tree_ref, add_delayed_tree_ref,
+
+	TP_PROTO(const struct btrfs_fs_info *fs_info,
+		 const struct btrfs_delayed_ref_node *ref,
+		 const struct btrfs_delayed_tree_ref *full_ref,
+		 int action),
+
+	TP_ARGS(fs_info, ref, full_ref, action)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_tree_ref, run_delayed_tree_ref,
+
+	TP_PROTO(const struct btrfs_fs_info *fs_info,
+		 const struct btrfs_delayed_ref_node *ref,
+		 const struct btrfs_delayed_tree_ref *full_ref,
+		 int action),
+
+	TP_ARGS(fs_info, ref, full_ref, action)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(btrfs_delayed_tree_ref,
+
+	TP_PROTO(struct btrfs_fs_info *fs_info,
+		 struct btrfs_delayed_ref_node *ref,
+		 struct btrfs_delayed_tree_ref *full_ref,
+		 int action),
+
+	TP_ARGS(fs_info, ref, full_ref, action),
+
+	TP_FIELDS(
+		ctf_array(u8, fsid, fs_info->fsid, BTRFS_UUID_SIZE)
+		ctf_integer(u64, bytenr, ref->bytenr)
+		ctf_integer(u64, num_bytes, ref->num_bytes)
+		ctf_integer(int, action, action)
+		ctf_integer(u64, parent, full_ref->parent)
+		ctf_integer(u64, ref_root, full_ref->root)
+		ctf_integer(int, level, full_ref->level)
+		ctf_integer(int, type, ref->type)
+		ctf_integer(u64, seq, ref->seq)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_tree_ref, add_delayed_tree_ref,
+
+	TP_PROTO(struct btrfs_fs_info *fs_info,
+		 struct btrfs_delayed_ref_node *ref,
+		 struct btrfs_delayed_tree_ref *full_ref,
+		 int action),
+
+	TP_ARGS(fs_info, ref, full_ref, action)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_tree_ref, run_delayed_tree_ref,
+
+	TP_PROTO(struct btrfs_fs_info *fs_info,
+		 struct btrfs_delayed_ref_node *ref,
+		 struct btrfs_delayed_tree_ref *full_ref,
+		 int action),
+
+	TP_ARGS(fs_info, ref, full_ref, action)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(btrfs_delayed_tree_ref,
+
+	TP_PROTO(struct btrfs_delayed_ref_node *ref,
+		 struct btrfs_delayed_tree_ref *full_ref,
+		 int action),
+
+	TP_ARGS(ref, full_ref, action),
 
 	TP_FIELDS(
 		ctf_integer(u64, bytenr, ref->bytenr)
@@ -759,15 +842,32 @@ LTTNG_TRACEPOINT_EVENT(btrfs_delayed_tree_ref,
 		ctf_integer(u64, seq, ref->seq)
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
-LTTNG_TRACEPOINT_EVENT(btrfs_delayed_tree_ref,
 
-	TP_PROTO(struct btrfs_fs_info *fs_info,
-		 struct btrfs_delayed_ref_node *ref,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_tree_ref, add_delayed_tree_ref,
+
+	TP_PROTO(struct btrfs_delayed_ref_node *ref,
 		 struct btrfs_delayed_tree_ref *full_ref,
 		 int action),
 
-	TP_ARGS(fs_info, ref, full_ref, action),
+	TP_ARGS(ref, full_ref, action)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_tree_ref, run_delayed_tree_ref,
+
+	TP_PROTO(struct btrfs_delayed_ref_node *ref,
+		 struct btrfs_delayed_tree_ref *full_ref,
+		 int action),
+
+	TP_ARGS(ref, full_ref, action)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,0))
+LTTNG_TRACEPOINT_EVENT(btrfs_delayed_tree_ref,
+
+	TP_PROTO(struct btrfs_delayed_ref_node *ref,
+		 struct btrfs_delayed_tree_ref *full_ref,
+		 int action),
+
+	TP_ARGS(ref, full_ref, action),
 
 	TP_FIELDS(
 		ctf_integer(u64, bytenr, ref->bytenr)
@@ -797,13 +897,136 @@ LTTNG_TRACEPOINT_EVENT(btrfs_delayed_tree_ref,
 		ctf_integer(u64, ref_root, full_ref->root)
 		ctf_integer(int, level, full_ref->level)
 		ctf_integer(int, type, ref->type)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,0))
-		ctf_integer(u64, seq, ref->seq)
-#endif
 	)
 )
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(btrfs_delayed_data_ref,
+
+	TP_PROTO(const struct btrfs_fs_info *fs_info,
+		 const struct btrfs_delayed_ref_node *ref,
+		 const struct btrfs_delayed_data_ref *full_ref,
+		 int action),
+
+	TP_ARGS(fs_info, ref, full_ref, action),
+
+	TP_FIELDS(
+		ctf_array(u8, fsid, fs_info->fsid, BTRFS_UUID_SIZE)
+		ctf_integer(u64, bytenr, ref->bytenr)
+		ctf_integer(u64, num_bytes, ref->num_bytes)
+		ctf_integer(int, action, action)
+		ctf_integer(u64, parent, full_ref->parent)
+		ctf_integer(u64, ref_root, full_ref->root)
+		ctf_integer(u64, owner, full_ref->objectid)
+		ctf_integer(u64, offset, full_ref->offset)
+		ctf_integer(int, type, ref->type)
+		ctf_integer(u64, seq, ref->seq)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_data_ref, add_delayed_data_ref,
+
+	TP_PROTO(const struct btrfs_fs_info *fs_info,
+		 const struct btrfs_delayed_ref_node *ref,
+		 const struct btrfs_delayed_data_ref *full_ref,
+		 int action),
+
+	TP_ARGS(fs_info, ref, full_ref, action)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_data_ref, run_delayed_data_ref,
+
+	TP_PROTO(const struct btrfs_fs_info *fs_info,
+		 const struct btrfs_delayed_ref_node *ref,
+		 const struct btrfs_delayed_data_ref *full_ref,
+		 int action),
+
+	TP_ARGS(fs_info, ref, full_ref, action)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(btrfs_delayed_data_ref,
+
+	TP_PROTO(struct btrfs_fs_info *fs_info,
+		 struct btrfs_delayed_ref_node *ref,
+		 struct btrfs_delayed_data_ref *full_ref,
+		 int action),
+
+	TP_ARGS(fs_info, ref, full_ref, action),
+
+	TP_FIELDS(
+		ctf_array(u8, fsid, fs_info->fsid, BTRFS_UUID_SIZE)
+		ctf_integer(u64, bytenr, ref->bytenr)
+		ctf_integer(u64, num_bytes, ref->num_bytes)
+		ctf_integer(int, action, action)
+		ctf_integer(u64, parent, full_ref->parent)
+		ctf_integer(u64, ref_root, full_ref->root)
+		ctf_integer(u64, owner, full_ref->objectid)
+		ctf_integer(u64, offset, full_ref->offset)
+		ctf_integer(int, type, ref->type)
+		ctf_integer(u64, seq, ref->seq)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_data_ref, add_delayed_data_ref,
+
+	TP_PROTO(struct btrfs_fs_info *fs_info,
+		 struct btrfs_delayed_ref_node *ref,
+		 struct btrfs_delayed_data_ref *full_ref,
+		 int action),
+
+	TP_ARGS(fs_info, ref, full_ref, action)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_data_ref, run_delayed_data_ref,
+
+	TP_PROTO(struct btrfs_fs_info *fs_info,
+		 struct btrfs_delayed_ref_node *ref,
+		 struct btrfs_delayed_data_ref *full_ref,
+		 int action),
+
+	TP_ARGS(fs_info, ref, full_ref, action)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(btrfs_delayed_data_ref,
+
+	TP_PROTO(struct btrfs_delayed_ref_node *ref,
+		 struct btrfs_delayed_data_ref *full_ref,
+		 int action),
+
+	TP_ARGS(ref, full_ref, action),
+
+	TP_FIELDS(
+		ctf_integer(u64, bytenr, ref->bytenr)
+		ctf_integer(u64, num_bytes, ref->num_bytes)
+		ctf_integer(int, action, action)
+		ctf_integer(u64, parent, full_ref->parent)
+		ctf_integer(u64, ref_root, full_ref->root)
+		ctf_integer(u64, owner, full_ref->objectid)
+		ctf_integer(u64, offset, full_ref->offset)
+		ctf_integer(int, type, ref->type)
+		ctf_integer(u64, seq, ref->seq)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_data_ref, add_delayed_data_ref,
+
+	TP_PROTO(struct btrfs_delayed_ref_node *ref,
+		 struct btrfs_delayed_data_ref *full_ref,
+		 int action),
+
+	TP_ARGS(fs_info, ref, full_ref, action)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs_delayed_data_ref, run_delayed_data_ref,
+
+	TP_PROTO(struct btrfs_delayed_ref_node *ref,
+		 struct btrfs_delayed_data_ref *full_ref,
+		 int action),
+
+	TP_ARGS(fs_info, ref, full_ref, action)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,0))
 LTTNG_TRACEPOINT_EVENT(btrfs_delayed_data_ref,
 
 	TP_PROTO(struct btrfs_delayed_ref_node *ref,
@@ -821,11 +1044,30 @@ LTTNG_TRACEPOINT_EVENT(btrfs_delayed_data_ref,
 		ctf_integer(u64, owner, full_ref->objectid)
 		ctf_integer(u64, offset, full_ref->offset)
 		ctf_integer(int, type, ref->type)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,7,0))
 		ctf_integer(u64, seq, ref->seq)
-#endif
 	)
 )
+#else
+LTTNG_TRACEPOINT_EVENT(btrfs_delayed_data_ref,
+
+	TP_PROTO(struct btrfs_delayed_ref_node *ref,
+		 struct btrfs_delayed_data_ref *full_ref,
+		 int action),
+
+	TP_ARGS(ref, full_ref, action),
+
+	TP_FIELDS(
+		ctf_integer(u64, bytenr, ref->bytenr)
+		ctf_integer(u64, num_bytes, ref->num_bytes)
+		ctf_integer(int, action, action)
+		ctf_integer(u64, parent, full_ref->parent)
+		ctf_integer(u64, ref_root, full_ref->root)
+		ctf_integer(u64, owner, full_ref->objectid)
+		ctf_integer(u64, offset, full_ref->offset)
+		ctf_integer(int, type, ref->type)
+	)
+)
+#endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(btrfs_delayed_ref_head,
