@@ -291,6 +291,89 @@ LTTNG_TRACEPOINT_EVENT(btrfs_handle_em_exist,
 )
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__file_extent_item_regular,
+
+	TP_PROTO(struct btrfs_inode *bi, struct extent_buffer *l,
+		 struct btrfs_file_extent_item *fi, u64 start),
+
+	TP_ARGS(bi, l, fi, start),
+
+	TP_FIELDS(
+		ctf_array(u8, fsid, bi->root->fs_info, BTRFS_FSID_SIZE)
+		ctf_integer(u64, root_obj, bi->root->objectid)
+		ctf_integer(u64, ino, btrfs_ino(bi))
+		ctf_integer(loff_t, isize, bi->vfs_inode.i_size)
+		ctf_integer(u64, disk_isize, bi->disk_i_size)
+		ctf_integer(u64, num_bytes, btrfs_file_extent_num_bytes(l, fi))
+		ctf_integer(u64, ram_bytes, btrfs_file_extent_ram_bytes(l, fi))
+		ctf_integer(u64, disk_bytenr, btrfs_file_extent_disk_bytenr(l, fi))
+		ctf_integer(u64, disk_num_bytes, btrfs_file_extent_disk_num_bytes(l, fi))
+		ctf_integer(u64, extent_offset, btrfs_file_extent_offset(l, fi))
+		ctf_integer(u8, extent_type, btrfs_file_extent_type(l, fi))
+		ctf_integer(u8, compression, btrfs_file_extent_compression(l, fi))
+		ctf_integer(u64, extent_start, start)
+		ctf_integer(u64, extent_end, (start + btrfs_file_extent_num_bytes(l, fi)))
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__file_extent_item_inline,
+
+	TP_PROTO(struct btrfs_inode *bi, struct extent_buffer *l,
+		 struct btrfs_file_extent_item *fi, int slot, u64 start),
+
+	TP_ARGS(bi, l, fi, slot, start),
+
+	TP_FIELDS(
+		ctf_array(u8, fsid, bi->root->fs_info, BTRFS_FSID_SIZE)
+		ctf_integer(u64, root_obj, bi->root->objectid)
+		ctf_integer(u64, ino, btrfs_ino(bi))
+		ctf_integer(loff_t, isize, bi->vfs_inode.i_size)
+		ctf_integer(u64, disk_isize, bi->disk_i_size)
+		ctf_integer(u8, extent_type, btrfs_file_extent_type(l, fi))
+		ctf_integer(u8, compression, btrfs_file_extent_compression(l, fi))
+		ctf_integer(u64, extent_start, start)
+		ctf_integer(u64, extent_end, (start + btrfs_file_extent_inline_len(l, slot, fi)))
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(
+	btrfs__file_extent_item_regular, btrfs_get_extent_show_fi_regular,
+
+	TP_PROTO(struct btrfs_inode *bi, struct extent_buffer *l,
+		 struct btrfs_file_extent_item *fi, u64 start),
+
+	TP_ARGS(bi, l, fi, start)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(
+	btrfs__file_extent_item_regular, btrfs_truncate_show_fi_regular,
+
+	TP_PROTO(struct btrfs_inode *bi, struct extent_buffer *l,
+		 struct btrfs_file_extent_item *fi, u64 start),
+
+	TP_ARGS(bi, l, fi, start)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(
+	btrfs__file_extent_item_inline, btrfs_get_extent_show_fi_inline,
+
+	TP_PROTO(struct btrfs_inode *bi, struct extent_buffer *l,
+		 struct btrfs_file_extent_item *fi, int slot, u64 start),
+
+	TP_ARGS(bi, l, fi, slot, start)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(
+	btrfs__file_extent_item_inline, btrfs_truncate_show_fi_inline,
+
+	TP_PROTO(struct btrfs_inode *bi, struct extent_buffer *l,
+		 struct btrfs_file_extent_item *fi, int slot, u64 start),
+
+	TP_ARGS(bi, l, fi, slot, start)
+)
+#endif
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__ordered_extent,
 
