@@ -612,7 +612,7 @@ LTTNG_TRACEPOINT_EVENT(rcu_barrier,
 					 grplo, grphi, gp_tasks) do { } \
 	while (0)
 #define trace_rcu_fqs(rcuname, gpnum, cpu, qsevent) do { } while (0)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,17,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,16,0))
 #define trace_rcu_dyntick(polarity, oldnesting, newnesting, dyntick) do { } while (0)
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
 #define trace_rcu_dyntick(polarity, oldnesting, newnesting) do { } while (0)
