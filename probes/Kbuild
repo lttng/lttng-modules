@@ -12,6 +12,13 @@ obj-$(CONFIG_LTTNG) += lttng-probe-module.o
 obj-$(CONFIG_LTTNG) += lttng-probe-power.o
 obj-$(CONFIG_LTTNG) += lttng-probe-statedump.o
 
+ifneq ($(CONFIG_NET_9P),)
+  obj-$(CONFIG_LTTNG) +=  $(shell \
+    if [ $(VERSION) -ge 4 \
+      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 10 \) ] ; then \
+      echo "lttng-probe-9p.o" ; fi;)
+endif # CONFIG_NET_9P
+
 i2c_dep = $(srctree)/include/trace/events/i2c.h
 ifneq ($(wildcard $(i2c_dep)),)
   obj-$(CONFIG_LTTNG) += lttng-probe-i2c.o
