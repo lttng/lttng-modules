@@ -13,7 +13,9 @@
 #ifndef _TRACE_ASOC_DEF
 #define _TRACE_ASOC_DEF
 struct snd_soc_jack;
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,19,0))
 struct snd_soc_codec;
+#endif
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0) && \
 	LINUX_VERSION_CODE < KERNEL_VERSION(3,16,0))
 struct snd_soc_platform;
@@ -386,6 +388,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_notify,
 )
 #endif
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,19,0))
 LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_cache_sync,
 
 	asoc_snd_soc_cache_sync,
@@ -402,6 +405,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_cache_sync,
 		ctf_integer(int, id, codec->CODEC_ID_FIELD)
 	)
 )
+#endif
 
 #endif /* LTTNG_TRACE_ASOC_H */
 
