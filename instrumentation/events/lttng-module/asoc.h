@@ -14,7 +14,8 @@
 #define _TRACE_ASOC_DEF
 struct snd_soc_jack;
 struct snd_soc_codec;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0) && \
+	LINUX_VERSION_CODE < KERNEL_VERSION(3,16,0))
 struct snd_soc_platform;
 #endif
 struct snd_soc_card;
@@ -30,6 +31,7 @@ struct snd_soc_dapm_widget;
 #define CODEC_ID_FIELD id
 #endif
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,16,0))
 /*
  * Log register events
  */
@@ -69,8 +71,10 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_reg, snd_soc_reg_read,
 	TP_ARGS(codec, reg, val)
 
 )
+#endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0) && \
+	LINUX_VERSION_CODE < KERNEL_VERSION(3,16,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_preg,
 
 	TP_PROTO(struct snd_soc_platform *platform, unsigned int reg,
