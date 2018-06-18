@@ -326,6 +326,36 @@ LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_irq,
 	)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_report,
+
+	asoc_snd_soc_jack_report,
+
+	TP_PROTO(struct snd_soc_jack *jack, int mask, int val),
+
+	TP_ARGS(jack, mask, val),
+
+	TP_FIELDS(
+		ctf_string(name, jack->jack->id)
+		ctf_integer(int, mask, mask)
+		ctf_integer(int, val, val)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_notify,
+
+	asoc_snd_soc_jack_notify,
+
+	TP_PROTO(struct snd_soc_jack *jack, int val),
+
+	TP_ARGS(jack, val),
+
+	TP_FIELDS(
+		ctf_string(name, jack->jack->id)
+		ctf_integer(int, val, val)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_report,
 
 	asoc_snd_soc_jack_report,
@@ -354,6 +384,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_notify,
 		ctf_integer(int, val, val)
 	)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_cache_sync,
 
