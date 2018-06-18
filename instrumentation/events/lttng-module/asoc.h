@@ -20,6 +20,9 @@ struct snd_soc_platform;
 #endif
 struct snd_soc_card;
 struct snd_soc_dapm_widget;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+struct snd_soc_dapm_path;
+#endif
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0) \
@@ -236,7 +239,27 @@ LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_walk_done,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0))
+LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_path,
+
+	asoc_snd_soc_dapm_path,
+
+	TP_PROTO(struct snd_soc_dapm_widget *widget,
+		enum snd_soc_dapm_direction dir,
+		struct snd_soc_dapm_path *path),
+
+	TP_ARGS(widget, dir, path),
+
+	TP_FIELDS(
+		ctf_string(wname, widget->name)
+		ctf_string(pname, path->name ? path->name : DAPM_DIRECT)
+		ctf_string(pnname, path->node[dir]->name)
+		ctf_integer(int, path_node, (long) path->node[dir])
+		ctf_integer(int, path_connect, path->connect)
+		ctf_integer(int, path_dir, dir)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_output_path,
 
 	asoc_snd_soc_dapm_output_path,
@@ -272,7 +295,9 @@ LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_input_path,
 		ctf_integer(int, path_connect, path->connect)
 	)
 )
+#endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_connected,
 
 	asoc_snd_soc_dapm_connected,
