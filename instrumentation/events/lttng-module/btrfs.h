@@ -273,7 +273,26 @@ LTTNG_TRACEPOINT_EVENT(btrfs_get_extent,
 
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,17,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,18,0))
+LTTNG_TRACEPOINT_EVENT(btrfs_handle_em_exist,
+
+	TP_PROTO(struct btrfs_fs_info *fs_info,
+		const struct extent_map *existing, const struct extent_map *map,
+		u64 start, u64 len),
+
+	TP_ARGS(fs_info, existing, map, start, len),
+
+	TP_FIELDS(
+		ctf_array(u8, fsid, fs_info->fsid, BTRFS_UUID_SIZE)
+		ctf_integer(u64, e_start, existing->start)
+		ctf_integer(u64, e_len, existing->len)
+		ctf_integer(u64, map_start, map->start)
+		ctf_integer(u64, map_len, map->len)
+		ctf_integer(u64, start, start)
+		ctf_integer(u64, len, len)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,17,0))
 LTTNG_TRACEPOINT_EVENT(btrfs_handle_em_exist,
 
 	TP_PROTO(const struct extent_map *existing, const struct extent_map *map, u64 start, u64 len),
