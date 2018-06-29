@@ -2809,12 +2809,22 @@ static int __init lttng_events_init(void)
 	ret = lttng_init_cpu_hotplug();
 	if (ret)
 		goto error_hotplug;
-	printk(KERN_NOTICE "LTTng: Loaded modules v%s.%s.%s%s (%s)\n",
+	printk(KERN_NOTICE "LTTng: Loaded modules v%s.%s.%s%s (%s)%s%s\n",
 		__stringify(LTTNG_MODULES_MAJOR_VERSION),
 		__stringify(LTTNG_MODULES_MINOR_VERSION),
 		__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION),
 		LTTNG_MODULES_EXTRAVERSION,
-		LTTNG_VERSION_NAME);
+		LTTNG_VERSION_NAME,
+#ifdef LTTNG_EXTRA_VERSION_GIT
+		LTTNG_EXTRA_VERSION_GIT[0] == '\0' ? "" : " - " LTTNG_EXTRA_VERSION_GIT,
+#else
+		"",
+#endif
+#ifdef LTTNG_EXTRA_VERSION_NAME
+		LTTNG_EXTRA_VERSION_NAME[0] == '\0' ? "" : " - " LTTNG_EXTRA_VERSION_NAME);
+#else
+		"");
+#endif
 	return 0;
 
 error_hotplug:
@@ -2827,12 +2837,22 @@ error_kmem:
 	lttng_tracepoint_exit();
 error_tp:
 	lttng_context_exit();
-	printk(KERN_NOTICE "LTTng: Failed to load modules v%s.%s.%s%s (%s)\n",
+	printk(KERN_NOTICE "LTTng: Failed to load modules v%s.%s.%s%s (%s)%s%s\n",
 		__stringify(LTTNG_MODULES_MAJOR_VERSION),
 		__stringify(LTTNG_MODULES_MINOR_VERSION),
 		__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION),
 		LTTNG_MODULES_EXTRAVERSION,
-		LTTNG_VERSION_NAME);
+		LTTNG_VERSION_NAME,
+#ifdef LTTNG_EXTRA_VERSION_GIT
+		LTTNG_EXTRA_VERSION_GIT[0] == '\0' ? "" : " - " LTTNG_EXTRA_VERSION_GIT,
+#else
+		"",
+#endif
+#ifdef LTTNG_EXTRA_VERSION_NAME
+		LTTNG_EXTRA_VERSION_NAME[0] == '\0' ? "" : " - " LTTNG_EXTRA_VERSION_NAME);
+#else
+		"");
+#endif
 	return ret;
 }
 
@@ -2850,16 +2870,33 @@ static void __exit lttng_events_exit(void)
 	kmem_cache_destroy(event_cache);
 	lttng_tracepoint_exit();
 	lttng_context_exit();
-	printk(KERN_NOTICE "LTTng: Unloaded modules v%s.%s.%s%s (%s)\n",
+	printk(KERN_NOTICE "LTTng: Unloaded modules v%s.%s.%s%s (%s)%s%s\n",
 		__stringify(LTTNG_MODULES_MAJOR_VERSION),
 		__stringify(LTTNG_MODULES_MINOR_VERSION),
 		__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION),
 		LTTNG_MODULES_EXTRAVERSION,
-		LTTNG_VERSION_NAME);
+		LTTNG_VERSION_NAME,
+#ifdef LTTNG_EXTRA_VERSION_GIT
+		LTTNG_EXTRA_VERSION_GIT[0] == '\0' ? "" : " - " LTTNG_EXTRA_VERSION_GIT,
+#else
+		"",
+#endif
+#ifdef LTTNG_EXTRA_VERSION_NAME
+		LTTNG_EXTRA_VERSION_NAME[0] == '\0' ? "" : " - " LTTNG_EXTRA_VERSION_NAME);
+#else
+		"");
+#endif
 }
 
 module_exit(lttng_events_exit);
 
+#include "extra_version/patches.i"
+#ifdef LTTNG_EXTRA_VERSION_GIT
+MODULE_INFO(extra_version_git, LTTNG_EXTRA_VERSION_GIT);
+#endif
+#ifdef LTTNG_EXTRA_VERSION_NAME
+MODULE_INFO(extra_version_name, LTTNG_EXTRA_VERSION_NAME);
+#endif
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");
 MODULE_DESCRIPTION("LTTng Events");
