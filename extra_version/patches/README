@@ -1,0 +1,2 @@
+The name of each file in this directory except this README will be used to
+populate a "extra_version_path" modinfo key for each built module.
