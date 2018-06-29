@@ -1,26 +1,13 @@
-/*
+/* SPDX-License-Identifier: GPL-2.0
+ *
  * ring_buffer_splice.c
  *
  * Copyright (C) 2002-2005 - Tom Zanussi <zanussi@us.ibm.com>, IBM Corp
  * Copyright (C) 1999-2005 - Karim Yaghmour <karim@opersys.com>
  * Copyright (C) 2008-2012 - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; only
- * version 2.1 of the License.
- *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
- *
  * Re-using code from kernel/relay.c, which is why it is licensed under
- * the GPLv2.
+ * the GPL-2.0.
  */
 
 #include <linux/module.h>

@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 /*
  * Because linux/module.h has tracepoints in the header, and ftrace.h
  * eventually includes this file, define_trace.h includes linux/module.h

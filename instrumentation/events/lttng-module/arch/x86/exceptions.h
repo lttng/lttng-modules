@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #if !defined(LTTNG_TRACE_EXCEPTIONS_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_EXCEPTIONS_H
 

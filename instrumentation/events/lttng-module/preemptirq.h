@@ -1,3 +1,4 @@
+/* SPDX-License-Identifier: GPL-2.0 */
 #ifdef CONFIG_PREEMPTIRQ_EVENTS
 
 #undef TRACE_SYSTEM

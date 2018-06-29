@@ -1,12 +1,11 @@
-/*
+/* SPDX-License-Identifier: (GPL-2.0 or LGPL-2.1)
+ *
  * probes/lttng-probe-9p.c
  *
  * LTTng 9p probes.
  *
  * Copyright (C) 2010-2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  * Copyright (C) 2018 Michael Jeanson <mjeanson@efficios.com>
- *
- * SPDX-License-Identifier: (GPL-2.0 OR LGPL-2.1)
  */
 
 #include <linux/module.h>

@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: (GPL-2.0 OR LGPL-2.1) */
+/* SPDX-License-Identifier: GPL-2.0 */
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM 9p
 

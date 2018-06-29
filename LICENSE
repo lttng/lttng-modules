@@ -2,26 +2,25 @@ LTTng modules licensing
 Mathieu Desnoyers
 June 2, 2011
 
-* LGPLv2.1/GPLv2 dual-license
+* LGPL-2.1 / GPL-2.0 dual-license
 
 The files contained within this package are licensed under
-LGPLv2.1/GPLv2 dual-license (see lgpl-2.1.txt and gpl-2.0.txt for
+LGPL-2.1 / GPL-2.0 dual-license (see LICENSES/LGPL-2.1 and LICENSES/GPL-2.0 for
 details), except for files identified by the following sections.
 
-* GPLv2 license
+* GPL-2.0 license
 
-These files are licensed exclusively under the GPLv2 license. See
-gpl-2.0.txt for details.
+These files are licensed exclusively under the GPL-2.0 license. See
+LICENSES/GPL-2.0 for details.
 
 lib/ringbuffer/ring_buffer_splice.c
 lib/ringbuffer/ring_buffer_mmap.c
-instrumentation/events/mainline/*.h
-instrumentation/events/lttng-modules/*.h
+instrumentation/events/lttng-module/*.h
 wrapper/list.h
 
 * MIT-style license
 
-These files are licensed under an MIT-style license. See mit-license.txt
+These files are licensed under an MIT-style license. See LICENSES/MIT
 for details.
 
 lib/prio_heap/lttng_prio_heap.h
