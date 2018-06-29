@@ -27,11 +27,3 @@
 #define RING_BUFFER_MODE_TEMPLATE_STRING	"metadata"
 #define RING_BUFFER_OUTPUT_TEMPLATE		RING_BUFFER_SPLICE
 #include "lttng-ring-buffer-metadata-client.h"
-
-MODULE_LICENSE("GPL and additional rights");
-MODULE_AUTHOR("Mathieu Desnoyers");
-MODULE_DESCRIPTION("LTTng Ring Buffer Metadata Client");
-MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
-	__stringify(LTTNG_MODULES_MINOR_VERSION) "."
-	__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION)
-	LTTNG_MODULES_EXTRAVERSION);

@@ -560,7 +560,7 @@ module_exit(lttng_statedump_exit);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Jean-Hugues Deschenes");
-MODULE_DESCRIPTION("Linux Trace Toolkit Next Generation Statedump");
+MODULE_DESCRIPTION("LTTng statedump provider");
 MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
 	__stringify(LTTNG_MODULES_MINOR_VERSION) "."
 	__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION)

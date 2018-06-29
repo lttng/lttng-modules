@@ -42,7 +42,8 @@
 #include <instrumentation/events/lttng-module/jbd2.h>
 
 MODULE_LICENSE("GPL and additional rights");
-MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com> and Andrew Gabbasov <andrew_gabbasov@mentor.com>");
+MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com>");
+MODULE_AUTHOR("Andrew Gabbasov <andrew_gabbasov@mentor.com>");
 MODULE_DESCRIPTION("LTTng jbd2 probes");
 MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
 	__stringify(LTTNG_MODULES_MINOR_VERSION) "."

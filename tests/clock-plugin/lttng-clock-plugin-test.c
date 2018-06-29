@@ -23,6 +23,7 @@
 #include <linux/hrtimer.h>
 #include <linux/time.h>
 
+#include <lttng-tracer.h>
 #include <lttng-clock.h>	/* From lttng-modules */
 
 static u64 trace_clock_read64_example(void)
@@ -79,3 +80,7 @@ module_exit(lttng_clock_plugin_exit);
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");
 MODULE_DESCRIPTION("LTTng Clock Plugin Example");
+MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
+	__stringify(LTTNG_MODULES_MINOR_VERSION) "."
+	__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION)
+	LTTNG_MODULES_EXTRAVERSION);

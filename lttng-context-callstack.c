@@ -376,7 +376,3 @@ int lttng_add_callstack_to_ctx(struct lttng_ctx **ctx, int type)
 	}
 }
 EXPORT_SYMBOL_GPL(lttng_add_callstack_to_ctx);
-
-MODULE_LICENSE("GPL and additional rights");
-MODULE_AUTHOR("Francis Giraldeau");
-MODULE_DESCRIPTION("Linux Trace Toolkit Callstack Support");

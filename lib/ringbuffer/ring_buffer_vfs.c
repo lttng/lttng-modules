@@ -459,8 +459,8 @@ const struct file_operations lib_ring_buffer_file_operations = {
 EXPORT_SYMBOL_GPL(lib_ring_buffer_file_operations);
 
 MODULE_LICENSE("GPL and additional rights");
-MODULE_AUTHOR("Mathieu Desnoyers");
-MODULE_DESCRIPTION("Ring Buffer Library VFS");
+MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");
+MODULE_DESCRIPTION("LTTng ring buffer library");
 MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
 	__stringify(LTTNG_MODULES_MINOR_VERSION) "."
 	__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION)
