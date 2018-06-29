@@ -45,9 +45,10 @@ kernel, do:
 ### Kernel built-in support
 
 It is also possible to build these modules as part of a kernel image. Simply
-run the [`built-in.sh`](built-in.sh) script with the path to your kernel
-source directory as an argument.  It will symlink the lttng-modules directory
-in the kernel sources and add an include in the kernel Makefile.
+run the [`scripts/built-in.sh`](scripts/built-in.sh) script with the path to
+your kernel source directory as an argument.  It will symlink the
+lttng-modules directory in the kernel sources and add an include in the kernel
+Makefile.
 
 Then configure your kernel as usual and enable the `CONFIG_LTTNG` option.
 

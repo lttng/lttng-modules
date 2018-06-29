@@ -1,4 +1,5 @@
 #!/bin/sh
+# SPDX-License-Identifier: (GPL-2.0 OR LGPL-2.1)
 
 # First argument is the path to the kernel headers.
 KPATH="$1"
