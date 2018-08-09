@@ -1,3 +1,17 @@
+2018-08-09 (National Book Lovers Day) LTTng modules 2.9.10
+	* Fix: adjust SLE version ranges to build with SP2 and SP3
+	* Fix: Allow alphanumeric characters in SLE version
+	* Fix: Adjust range for SuSE 4.4.103-92 kernels
+	* Add extra version information framework
+	* Fix: btrfs: Remove unnecessary fs_info parameter
+	* Fix: asoc: Remove snd_soc_cache_sync() implementation
+	* Fix: asoc: fix printing jack name
+	* Fix: asoc: Consolidate path trace events
+	* Fix: ASoC level IO tracing removed upstream
+	* Fix: dyntick field added to trace_rcu_dyntick in v4.16
+	* Fix: BUILD_BUG_ON with compile time constant on < v2.6.38
+	* Fix: pid tracker should track "pgid" for noargs probes
+
 2018-05-09 (Lost Sock Memorial Day) LTTng modules 2.9.9
 	* Fix: update RCU instrumentation for 4.17
 	* Fix: sunrpc instrumentation for 4.17
