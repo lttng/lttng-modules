@@ -22,7 +22,7 @@ if [ ! -f "${KPATH}/include/generated/utsrelease.h" ]; then
 	exit 0
 fi
 
-SLE_RELEASE="$(sed -rn 's/^#define UTS_RELEASE "(.*)-([0-9\.]+)-(.*)"/\2/p' "${KPATH}/include/generated/utsrelease.h")"
+SLE_RELEASE="$(sed -rn 's/^#define UTS_RELEASE "(.*)-([0-9a-zA-Z\.]+)-(.*)"/\2/p' "${KPATH}/include/generated/utsrelease.h")"
 
 SLE_RELEASE_MAJOR="$(echo "${SLE_RELEASE}" | sed -rn 's/^([0-9]+)(.*)$/\1/p')"
 SLE_RELEASE_MINOR="$(echo "${SLE_RELEASE}" | sed -rn 's/^([0-9]+)\.([0-9]+)(.*)$/\2/p')"
