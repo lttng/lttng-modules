@@ -35,7 +35,13 @@ enum {
 #endif /* _TRACE_BLOCK_DEF_ */
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0) || \
-	LTTNG_SLE_KERNEL_RANGE(4,4,73,5,0,0, 4,4,103,92,0,0))
+	LTTNG_SLE_KERNEL_RANGE(4,4,73,5,0,0, 4,4,73,6,0,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,82,6,0,0, 4,4,82,7,0,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,92,6,0,0, 4,4,92,7,0,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,103,6,0,0, 4,4,103,7,0,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,114,94,0,0, 4,4,114,95,0,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,120,94,0,0, 4,4,120,95,0,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,126,94,0,0, 4,5,0,0,0,0))
 
 #define lttng_req_op(rq)	req_op(rq)
 #define lttng_req_rw(rq)	((rq)->cmd_flags)
