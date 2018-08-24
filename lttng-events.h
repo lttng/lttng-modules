@@ -256,6 +256,15 @@ struct lttng_filter_bytecode_node {
 	 */
 	struct lttng_kernel_filter_bytecode bc;
 };
+struct lttng_excluder_node {
+	struct list_head node;
+	struct lttng_enabler *enabler;
+	/*
+	 * struct lttng_kernel_event_exclusion has var. sized array, must be
+	 * last field.
+	 */
+	struct lttng_kernel_event_exclusion exclusion;
+};
 
 /*
  * Filter return value masks.
@@ -339,6 +348,7 @@ struct lttng_enabler {
 	struct list_head node;	/* per-session list of enablers */
 	/* head list of struct lttng_ust_filter_bytecode_node */
 	struct list_head filter_bytecode_head;
+	struct list_head excluder_head;
 
 	struct lttng_kernel_event event_param;
 	struct lttng_channel *chan;
@@ -654,6 +664,8 @@ static inline long lttng_channel_syscall_mask(struct lttng_channel *channel,
 void lttng_filter_sync_state(struct lttng_bytecode_runtime *runtime);
 int lttng_enabler_attach_bytecode(struct lttng_enabler *enabler,
 		struct lttng_kernel_filter_bytecode __user *bytecode);
+int lttng_enabler_attach_exclusion(struct lttng_enabler *enabler,
+		struct lttng_kernel_event_exclusion __user *exclusion);
 void lttng_enabler_event_link_bytecode(struct lttng_event *event,
 		struct lttng_enabler *enabler);
 

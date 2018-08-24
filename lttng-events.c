@@ -1129,7 +1129,7 @@ fd_error:
  * Enabler management.
  */
 static
-int lttng_match_enabler_star_glob(const char *desc_name,
+int lttng_match_event_pattern_star_glob(const char *desc_name,
 		const char *pattern)
 {
 	if (!strutils_star_glob_match(pattern, LTTNG_SIZE_MAX,
@@ -1144,6 +1144,48 @@ int lttng_match_enabler_name(const char *desc_name,
 {
 	if (strcmp(desc_name, name))
 		return 0;
+	return 1;
+}
+
+static
+int lttng_match_enabler_exclusion(const char *desc_name,
+					struct lttng_enabler *enabler)
+{
+	struct lttng_excluder_node *excluder;
+	/**
+	 * Iterate over the list of excluders of this enabler. If the
+	 * event matches with an excluder, return 'do not enable'
+	 */
+	list_for_each_entry(excluder, &enabler->excluder_head, node) {
+		int count;
+
+		for (count = 0; count < excluder->exclusion.count; count++) {
+			int len;
+			char *excluder_name;
+
+			excluder_name = (char *) (excluder->exclusion.names) +
+						(count * LTTNG_KERNEL_SYM_NAME_LEN);
+
+			len = strnlen(excluder_name, LTTNG_KERNEL_SYM_NAME_LEN);
+
+			if (len <= 0) {
+				continue;
+			}
+
+			/**
+			 * If the event name matches with the exclusion,
+			 * return 0 to signify that this event should _not_ be
+			 * enabled
+			 */
+			if (lttng_match_event_pattern_star_glob(desc_name, excluder_name)) {
+				return 0;
+			}
+		}
+	}
+	/**
+	 * If none of the exclusions match with the event name,
+	 * return 1 to signify that this event should be enabled
+	 */
 	return 1;
 }
 
@@ -1179,7 +1221,17 @@ int lttng_desc_match_enabler(const struct lttng_event_desc *desc,
 	}
 	switch (enabler->type) {
 	case LTTNG_ENABLER_STAR_GLOB:
-		return lttng_match_enabler_star_glob(desc_name, enabler_name);
+	{
+		/**
+		 * Return 'does not match' if the event name does not match with
+		 * the enabler.
+		 */
+		if (!lttng_match_event_pattern_star_glob(desc_name, enabler_name)) {
+			return 0;
+		}
+
+		return lttng_match_enabler_exclusion(desc_name, enabler);
+	}
 	case LTTNG_ENABLER_NAME:
 		return lttng_match_enabler_name(desc_name, enabler_name);
 	default:
@@ -1371,6 +1423,7 @@ struct lttng_enabler *lttng_enabler_create(enum lttng_enabler_type type,
 		return NULL;
 	enabler->type = type;
 	INIT_LIST_HEAD(&enabler->filter_bytecode_head);
+	INIT_LIST_HEAD(&enabler->excluder_head);
 	memcpy(&enabler->event_param, event_param,
 		sizeof(enabler->event_param));
 	enabler->chan = chan;
@@ -1432,6 +1485,45 @@ error_free:
 	return ret;
 }
 
+int lttng_enabler_attach_exclusion(struct lttng_enabler *enabler,
+		struct lttng_kernel_event_exclusion __user *exclusion)
+{
+	struct lttng_excluder_node *excluder_node;
+	uint32_t exclusion_count;
+	int ret;
+
+	ret = get_user(exclusion_count, &exclusion->count);
+	if (ret) {
+		goto error;
+	}
+
+	excluder_node = kzalloc(sizeof(*excluder_node) +
+				(exclusion_count * LTTNG_KERNEL_SYM_NAME_LEN),
+				GFP_KERNEL);
+	if (!excluder_node) {
+		ret = -ENOMEM;
+		goto error;
+	}
+
+	ret = copy_from_user(&excluder_node->exclusion, exclusion,
+		sizeof(*exclusion) + (exclusion_count * LTTNG_KERNEL_SYM_NAME_LEN));
+	if (ret) {
+		goto error_free;
+	}
+
+	excluder_node->enabler = enabler;
+	excluder_node->exclusion.count = exclusion_count;
+
+	list_add_tail(&excluder_node->node, &enabler->excluder_head);
+	lttng_session_lazy_sync_enablers(enabler->chan->session);
+	return 0;
+
+error_free:
+	kfree(excluder_node);
+error:
+	return ret;
+}
+
 int lttng_enabler_attach_context(struct lttng_enabler *enabler,
 		struct lttng_kernel_context *context_param)
 {
@@ -1442,11 +1534,17 @@ static
 void lttng_enabler_destroy(struct lttng_enabler *enabler)
 {
 	struct lttng_filter_bytecode_node *filter_node, *tmp_filter_node;
+	struct lttng_excluder_node *excluder_node, *tmp_excluder_node;
 
 	/* Destroy filter bytecode */
 	list_for_each_entry_safe(filter_node, tmp_filter_node,
 			&enabler->filter_bytecode_head, node) {
 		kfree(filter_node);
+	}
+
+	list_for_each_entry_safe(excluder_node, tmp_excluder_node,
+			&enabler->excluder_head, node) {
+		kfree(excluder_node);
 	}
 
 	/* Destroy contexts */
