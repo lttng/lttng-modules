@@ -28,6 +28,7 @@ enum lttng_kernel_instrumentation {
 	LTTNG_KERNEL_KRETPROBE	= 3,
 	LTTNG_KERNEL_NOOP	= 4,	/* not hooked */
 	LTTNG_KERNEL_SYSCALL	= 5,
+	LTTNG_KERNEL_UPROBE	= 6,
 };
 
 /*
@@ -73,6 +74,20 @@ struct lttng_kernel_function_tracer {
 	char symbol_name[LTTNG_KERNEL_SYM_NAME_LEN];
 } __attribute__((packed));
 
+struct lttng_kernel_uprobe {
+	int fd;
+} __attribute__((packed));
+
+struct lttng_kernel_event_callsite_uprobe {
+	uint64_t offset;
+} __attribute__((packed));
+
+struct lttng_kernel_event_callsite {
+	union {
+		struct lttng_kernel_event_callsite_uprobe uprobe;
+	} u;
+} __attribute__((packed));
+
 /*
  * For syscall tracing, name = "*" means "enable all".
  */
@@ -88,6 +103,7 @@ struct lttng_kernel_event {
 		struct lttng_kernel_kretprobe kretprobe;
 		struct lttng_kernel_kprobe kprobe;
 		struct lttng_kernel_function_tracer ftrace;
+		struct lttng_kernel_uprobe uprobe;
 		char padding[LTTNG_KERNEL_EVENT_PADDING2];
 	} u;
 } __attribute__((packed));
@@ -213,6 +229,7 @@ struct lttng_kernel_filter_bytecode {
 
 /* Event FD ioctl */
 #define LTTNG_KERNEL_FILTER			_IO(0xF6, 0x90)
+#define LTTNG_KERNEL_ADD_CALLSITE		_IO(0xF6, 0x91)
 
 /* LTTng-specific ioctls for the lib ringbuffer */
 /* returns the timestamp begin of the current sub-buffer */

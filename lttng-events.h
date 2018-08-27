@@ -16,6 +16,7 @@
 #include <linux/kref.h>
 #include <lttng-cpuhotplug.h>
 #include <wrapper/uuid.h>
+#include <wrapper/uprobes.h>
 #include <lttng-tracer.h>
 #include <lttng-abi.h>
 #include <lttng-abi-old.h>
@@ -284,6 +285,13 @@ struct lttng_enabler_ref {
 	struct lttng_enabler *ref;		/* backward ref */
 };
 
+struct lttng_uprobe_handler {
+	struct lttng_event *event;
+	loff_t offset;
+	struct uprobe_consumer up_consumer;
+	struct list_head node;
+};
+
 /*
  * lttng_event structure is referred to by the tracing fast path. It must be
  * kept small.
@@ -309,6 +317,10 @@ struct lttng_event {
 		struct {
 			char *symbol_name;
 		} ftrace;
+		struct {
+			struct inode *inode;
+			struct list_head head;
+		} uprobe;
 	} u;
 	struct list_head list;		/* Event list in session */
 	unsigned int metadata_dumped:1;
@@ -767,6 +779,41 @@ void lttng_kprobes_unregister(struct lttng_event *event)
 
 static inline
 void lttng_kprobes_destroy_private(struct lttng_event *event)
+{
+}
+#endif
+
+int lttng_event_add_callsite(struct lttng_event *event,
+	struct lttng_kernel_event_callsite *callsite);
+#ifdef CONFIG_UPROBES
+int lttng_uprobes_register(const char *name,
+	int fd, struct lttng_event *event);
+int lttng_uprobes_add_callsite(struct lttng_event *event,
+	struct lttng_kernel_event_callsite *callsite);
+void lttng_uprobes_unregister(struct lttng_event *event);
+void lttng_uprobes_destroy_private(struct lttng_event *event);
+#else
+static inline
+int lttng_uprobes_register(const char *name,
+	int fd, struct lttng_event *event)
+{
+	return -ENOSYS;
+}
+
+static inline
+int lttng_uprobes_add_callsite(struct lttng_event *event,
+	struct lttng_kernel_callsite_uprobe *callsite)
+{
+	return -ENOSYS;
+}
+
+static inline
+void lttng_uprobes_unregister(struct lttng_event *event)
+{
+}
+
+static inline
+void lttng_uprobes_destroy_private(struct lttng_event *event)
 {
 }
 #endif
