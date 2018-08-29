@@ -67,7 +67,7 @@ int lttng_uprobes_handler_pre(struct uprobe_consumer *uc, struct pt_regs *regs)
 		return 0;
 
 	/* Event payload. */
-	payload.ip = regs->ip;
+	payload.ip = (unsigned long)instruction_pointer(regs);
 
 	lib_ring_buffer_align_ctx(&ctx, lttng_alignof(payload));
 	chan->ops->event_write(&ctx, &payload, sizeof(payload));
