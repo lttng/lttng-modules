@@ -59,8 +59,7 @@ ifneq ($(KERNELRELEASE),)
                        lttng-filter-specialize.o \
                        lttng-filter-validator.o \
                        probes/lttng-probe-user.o \
-                       lttng-tp-mempool.o \
-                       probes/lttng-uprobes.o
+                       lttng-tp-mempool.o
 
   ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
     lttng-tracer-objs += lttng-syscalls.o

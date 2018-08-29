@@ -785,6 +785,7 @@ void lttng_kprobes_destroy_private(struct lttng_event *event)
 
 int lttng_event_add_callsite(struct lttng_event *event,
 	struct lttng_kernel_event_callsite *callsite);
+
 #ifdef CONFIG_UPROBES
 int lttng_uprobes_register(const char *name,
 	int fd, struct lttng_event *event);
@@ -802,7 +803,7 @@ int lttng_uprobes_register(const char *name,
 
 static inline
 int lttng_uprobes_add_callsite(struct lttng_event *event,
-	struct lttng_kernel_callsite_uprobe *callsite)
+	struct lttng_kernel_event_callsite *callsite)
 {
 	return -ENOSYS;
 }
