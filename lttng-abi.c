@@ -1472,7 +1472,9 @@ long lttng_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			return lttng_enabler_attach_bytecode(enabler,
 				(struct lttng_kernel_filter_bytecode __user *) arg);
 		}
-
+		default:
+			WARN_ON_ONCE(1);
+			return -ENOSYS;
 		}
 	case LTTNG_KERNEL_ADD_CALLSITE:
 		switch (*evtype) {
