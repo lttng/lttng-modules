@@ -30,10 +30,10 @@
 #define LTTNG_MODULES_MAJOR_VERSION 2
 #define LTTNG_MODULES_MINOR_VERSION 11
 #define LTTNG_MODULES_PATCHLEVEL_VERSION 0
-#define LTTNG_MODULES_EXTRAVERSION "-pre"
+#define LTTNG_MODULES_EXTRAVERSION "-rc1"
 
-#define LTTNG_VERSION_NAME		"L-Beer"
-#define LTTNG_VERSION_DESCRIPTION	"An alcoholic drink made from yeast-fermented malt flavored with hops."
+#define LTTNG_VERSION_NAME		"Lafontaine"
+#define LTTNG_VERSION_DESCRIPTION	"A modern Saison beer from Montréal's Oshlag microbrewery, Lafontaine is a refreshing, zesty, rice beer with hints of fruit and spices."
 
 #ifndef CHAR_BIT
 #define CHAR_BIT 8
