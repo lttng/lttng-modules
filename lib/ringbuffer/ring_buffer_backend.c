@@ -455,9 +455,11 @@ int channel_backend_init(struct channel_backend *chanb,
 free_bufs:
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
-		ret = cpuhp_state_remove_instance(lttng_rb_hp_prepare,
-				&chanb->cpuhp_prepare.node);
-		WARN_ON(ret);
+		/*
+		 * Teardown of lttng_rb_hp_prepare instance
+		 * on "add" error is handled within cpu hotplug,
+		 * no teardown to do from the caller.
+		 */
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 #ifdef CONFIG_HOTPLUG_CPU
 		put_online_cpus();
