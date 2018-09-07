@@ -21,7 +21,28 @@ LTTNG_TRACEPOINT_EVENT(sock_rcvqueue_full,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
+
+LTTNG_TRACEPOINT_EVENT(sock_exceed_buf_limit,
+
+	TP_PROTO(struct sock *sk, struct proto *prot, long allocated, int kind),
+
+	TP_ARGS(sk, prot, allocated, kind),
+
+	TP_FIELDS(
+		ctf_string(name, prot->name)
+		ctf_array(long, sysctl_mem, prot->sysctl_mem, 3)
+		ctf_integer(long, allocated, allocated)
+		ctf_integer(int, sysctl_rmem, sk_get_rmem0(sk, prot))
+		ctf_integer(int, rmem_alloc, atomic_read(&sk->sk_rmem_alloc))
+		ctf_integer(int, sysctl_wmem, sk_get_wmem0(sk, prot))
+		ctf_integer(int, wmem_alloc, refcount_read(&sk->sk_wmem_alloc))
+		ctf_integer(int, wmem_queued, sk->sk_wmem_queued)
+		ctf_integer(int, kind, kind)
+	)
+)
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
 
 LTTNG_TRACEPOINT_EVENT(sock_exceed_buf_limit,
 
