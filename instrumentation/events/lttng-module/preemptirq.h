@@ -12,6 +12,9 @@
 #include <asm/sections.h>
 #include <probes/lttng-tracepoint-event.h>
 
+/*
+ * The preemptirq probe is built when CONFIG_PREEMPTIRQ_EVENTS is defined.
+ */
 
 LTTNG_TRACEPOINT_EVENT_CLASS(preemptirq_template,
 
@@ -25,7 +28,19 @@ LTTNG_TRACEPOINT_EVENT_CLASS(preemptirq_template,
 	)
 )
 
-#ifndef CONFIG_PROVE_LOCKING
+/*
+ * Tracing of irq enable / disable events is enabled
+ *   on >= 4.19 when CONFIG_TRACE_IRQFLAGS is defined.
+ *   on previous kernels when CONFIG_PROVE_LOCKING is NOT defined.
+ */
+#if defined(CONFIG_TRACE_IRQFLAGS)
+#define LTTNG_TRACE_IRQ
+#elif (LINUX_VERSION_CODE < KERNEL_VERSION(4,19,0) && \
+	!defined(CONFIG_PROVE_LOCKING))
+#define LTTNG_TRACE_IRQ
+#endif
+
+#ifdef LTTNG_TRACE_IRQ
 LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(preemptirq_template, irq_disable,
 
 	preemptirq_irq_disable,
@@ -43,9 +58,21 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(preemptirq_template, irq_enable,
 
 	TP_ARGS(ip, parent_ip)
 )
-#endif /* !CONFIG_PROVE_LOCKING */
+#endif /* LTTNG_TRACE_IRQ */
 
-#ifdef CONFIG_DEBUG_PREEMPT
+/*
+ * Tracing of preempt enable / disable events is enabled
+ *   on >= 4.19 when CONFIG_TRACE_PREEMPT_TOGGLE is defined.
+ *   on previous kernels when CONFIG_DEBUG_PREEMPT is defined.
+ */
+#if defined(CONFIG_TRACE_PREEMPT_TOGGLE)
+#define LTTNG_TRACE_PREEMPT
+#elif (LINUX_VERSION_CODE < KERNEL_VERSION(4,19,0) && \
+	defined(CONFIG_DEBUG_PREEMPT))
+#define LTTNG_TRACE_PREEMPT
+#endif
+
+#ifdef LTTNG_TRACE_PREEMPT
 LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(preemptirq_template, preempt_disable,
 
 	preemptirq_preempt_disable,
@@ -63,7 +90,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(preemptirq_template, preempt_enable,
 
 	TP_ARGS(ip, parent_ip)
 )
-#endif /* CONFIG_DEBUG_PREEMPT */
+#endif /* LTTNG_TRACE_PREEMPT */
 
 #endif /* LTTNG_TRACE_PREEMPTIRQ_H */
 
