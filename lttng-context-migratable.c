@@ -44,7 +44,7 @@ void migratable_record(struct lttng_ctx_field *field,
 		struct lib_ring_buffer_ctx *ctx,
 		struct lttng_channel *chan)
 {
-	uint8_t migratable = !__migrate_disabled(current);
+	uint8_t migratable = !current->migrate_disable;
 
 	lib_ring_buffer_align_ctx(ctx, lttng_alignof(migratable));
 	chan->ops->event_write(ctx, &migratable, sizeof(migratable));
@@ -55,7 +55,7 @@ void migratable_get_value(struct lttng_ctx_field *field,
 		struct lttng_probe_ctx *lttng_probe_ctx,
 		union lttng_ctx_value *value)
 {
-	value->s64 = !__migrate_disabled(current);
+	value->s64 = !current->migrate_disable;
 }
 
 int lttng_add_migratable_to_ctx(struct lttng_ctx **ctx)
