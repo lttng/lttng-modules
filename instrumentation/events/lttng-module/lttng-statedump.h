@@ -136,6 +136,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_interrupt,
 		ctf_integer(unsigned int, irq, irq)
 		ctf_string(name, chip_name)
 		ctf_string(action, action->name ? : "")
+		ctf_integer(pid_t, thread, action->thread != NULL ? action->thread->pid : 0)
 	)
 )
 
