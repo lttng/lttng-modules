@@ -49,13 +49,23 @@ LTTNG_TRACEPOINT_EVENT(rcu_utilization,
  * and "cpuofl", respectively), and a CPU being kicked for being too
  * long in dyntick-idle mode ("kick").
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
 LTTNG_TRACEPOINT_EVENT(rcu_grace_period,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, unsigned long gp_seq, const char *gpevent),
+
+	TP_ARGS(rcuname, gp_seq, gpevent),
+
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(unsigned long, gp_seq, gp_seq)
+		ctf_string(gpevent, gpevent)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+LTTNG_TRACEPOINT_EVENT(rcu_grace_period,
+
 	TP_PROTO(const char *rcuname, unsigned long gpnum, const char *gpevent),
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
-	TP_PROTO(char *rcuname, unsigned long gpnum, char *gpevent),
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
 	TP_ARGS(rcuname, gpnum, gpevent),
 
@@ -65,6 +75,20 @@ LTTNG_TRACEPOINT_EVENT(rcu_grace_period,
 		ctf_string(gpevent, gpevent)
 	)
 )
+#else
+LTTNG_TRACEPOINT_EVENT(rcu_grace_period,
+
+	TP_PROTO(char *rcuname, unsigned long gpnum, char *gpevent),
+
+	TP_ARGS(rcuname, gpnum, gpevent),
+
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(unsigned long, gpnum, gpnum)
+		ctf_string(gpevent, gpevent)
+	)
+)
+#endif
 
 /*
  * Tracepoint for grace-period-initialization events.  These are
@@ -73,15 +97,28 @@ LTTNG_TRACEPOINT_EVENT(rcu_grace_period,
  * rcu_node structure, and the mask of CPUs that will be waited for.
  * All but the type of RCU are extracted from the rcu_node structure.
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
 LTTNG_TRACEPOINT_EVENT(rcu_grace_period_init,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, unsigned long gp_seq, u8 level,
+		 int grplo, int grphi, unsigned long qsmask),
+
+	TP_ARGS(rcuname, gp_seq, level, grplo, grphi, qsmask),
+
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(unsigned long, gp_seq, gp_seq)
+		ctf_integer(u8, level, level)
+		ctf_integer(int, grplo, grplo)
+		ctf_integer(int, grphi, grphi)
+		ctf_integer(unsigned long, qsmask, qsmask)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+LTTNG_TRACEPOINT_EVENT(rcu_grace_period_init,
+
 	TP_PROTO(const char *rcuname, unsigned long gpnum, u8 level,
 		 int grplo, int grphi, unsigned long qsmask),
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
-	TP_PROTO(char *rcuname, unsigned long gpnum, u8 level,
-		 int grplo, int grphi, unsigned long qsmask),
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
 	TP_ARGS(rcuname, gpnum, level, grplo, grphi, qsmask),
 
@@ -94,6 +131,24 @@ LTTNG_TRACEPOINT_EVENT(rcu_grace_period_init,
 		ctf_integer(unsigned long, qsmask, qsmask)
 	)
 )
+#else
+LTTNG_TRACEPOINT_EVENT(rcu_grace_period_init,
+
+	TP_PROTO(char *rcuname, unsigned long gpnum, u8 level,
+		 int grplo, int grphi, unsigned long qsmask),
+
+	TP_ARGS(rcuname, gpnum, level, grplo, grphi, qsmask),
+
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(unsigned long, gpnum, gpnum)
+		ctf_integer(u8, level, level)
+		ctf_integer(int, grplo, grplo)
+		ctf_integer(int, grphi, grphi)
+		ctf_integer(unsigned long, qsmask, qsmask)
+	)
+)
+#endif
 
 /*
  * Tracepoint for tasks blocking within preemptible-RCU read-side
@@ -101,13 +156,23 @@ LTTNG_TRACEPOINT_EVENT(rcu_grace_period_init,
  * include SRCU), the grace-period number that the task is blocking
  * (the current or the next), and the task's PID.
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
 LTTNG_TRACEPOINT_EVENT(rcu_preempt_task,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, int pid, unsigned long gp_seq),
+
+	TP_ARGS(rcuname, pid, gp_seq),
+
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(unsigned long, gp_seq, gp_seq)
+		ctf_integer(int, pid, pid)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+LTTNG_TRACEPOINT_EVENT(rcu_preempt_task,
+
 	TP_PROTO(const char *rcuname, int pid, unsigned long gpnum),
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
-	TP_PROTO(char *rcuname, int pid, unsigned long gpnum),
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
 	TP_ARGS(rcuname, pid, gpnum),
 
@@ -117,19 +182,43 @@ LTTNG_TRACEPOINT_EVENT(rcu_preempt_task,
 		ctf_integer(int, pid, pid)
 	)
 )
+#else
+LTTNG_TRACEPOINT_EVENT(rcu_preempt_task,
+
+	TP_PROTO(char *rcuname, int pid, unsigned long gpnum),
+
+	TP_ARGS(rcuname, pid, gpnum),
+
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(unsigned long, gpnum, gpnum)
+		ctf_integer(int, pid, pid)
+	)
+)
+#endif
 
 /*
  * Tracepoint for tasks that blocked within a given preemptible-RCU
  * read-side critical section exiting that critical section.  Track the
  * type of RCU (which one day might include SRCU) and the task's PID.
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
 LTTNG_TRACEPOINT_EVENT(rcu_unlock_preempted_task,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, unsigned long gp_seq, int pid),
+
+	TP_ARGS(rcuname, gp_seq, pid),
+
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(unsigned long, gp_seq, gp_seq)
+		ctf_integer(int, pid, pid)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+LTTNG_TRACEPOINT_EVENT(rcu_unlock_preempted_task,
+
 	TP_PROTO(const char *rcuname, unsigned long gpnum, int pid),
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
-	TP_PROTO(char *rcuname, unsigned long gpnum, int pid),
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
 	TP_ARGS(rcuname, gpnum, pid),
 
@@ -139,6 +228,20 @@ LTTNG_TRACEPOINT_EVENT(rcu_unlock_preempted_task,
 		ctf_integer(int, pid, pid)
 	)
 )
+#else
+LTTNG_TRACEPOINT_EVENT(rcu_unlock_preempted_task,
+
+	TP_PROTO(char *rcuname, unsigned long gpnum, int pid),
+
+	TP_ARGS(rcuname, gpnum, pid),
+
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(unsigned long, gpnum, gpnum)
+		ctf_integer(int, pid, pid)
+	)
+)
+#endif
 
 /*
  * Tracepoint for quiescent-state-reporting events.  These are
@@ -148,17 +251,32 @@ LTTNG_TRACEPOINT_EVENT(rcu_unlock_preempted_task,
  * whether there are any blocked tasks blocking the current grace period.
  * All but the type of RCU are extracted from the rcu_node structure.
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
 LTTNG_TRACEPOINT_EVENT(rcu_quiescent_state_report,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, unsigned long gp_seq,
+		 unsigned long mask, unsigned long qsmask,
+		 u8 level, int grplo, int grphi, int gp_tasks),
+
+	TP_ARGS(rcuname, gp_seq, mask, qsmask, level, grplo, grphi, gp_tasks),
+
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(unsigned long, gp_seq, gp_seq)
+		ctf_integer(unsigned long, mask, mask)
+		ctf_integer(unsigned long, qsmask, qsmask)
+		ctf_integer(u8, level, level)
+		ctf_integer(int, grplo, grplo)
+		ctf_integer(int, grphi, grphi)
+		ctf_integer(u8, gp_tasks, gp_tasks)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+LTTNG_TRACEPOINT_EVENT(rcu_quiescent_state_report,
+
 	TP_PROTO(const char *rcuname, unsigned long gpnum,
 		 unsigned long mask, unsigned long qsmask,
 		 u8 level, int grplo, int grphi, int gp_tasks),
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
-	TP_PROTO(char *rcuname, unsigned long gpnum,
-		 unsigned long mask, unsigned long qsmask,
-		 u8 level, int grplo, int grphi, int gp_tasks),
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
 	TP_ARGS(rcuname, gpnum, mask, qsmask, level, grplo, grphi, gp_tasks),
 
@@ -173,6 +291,27 @@ LTTNG_TRACEPOINT_EVENT(rcu_quiescent_state_report,
 		ctf_integer(u8, gp_tasks, gp_tasks)
 	)
 )
+#else
+LTTNG_TRACEPOINT_EVENT(rcu_quiescent_state_report,
+
+	TP_PROTO(char *rcuname, unsigned long gpnum,
+		 unsigned long mask, unsigned long qsmask,
+		 u8 level, int grplo, int grphi, int gp_tasks),
+
+	TP_ARGS(rcuname, gpnum, mask, qsmask, level, grplo, grphi, gp_tasks),
+
+	TP_FIELDS(
+		ctf_string(rcuname, rcuname)
+		ctf_integer(unsigned long, gpnum, gpnum)
+		ctf_integer(unsigned long, mask, mask)
+		ctf_integer(unsigned long, qsmask, qsmask)
+		ctf_integer(u8, level, level)
+		ctf_integer(int, grplo, grplo)
+		ctf_integer(int, grphi, grphi)
+		ctf_integer(u8, gp_tasks, gp_tasks)
+	)
+)
+#endif
 
 /*
  * Tracepoint for quiescent states detected by force_quiescent_state().
@@ -182,13 +321,24 @@ LTTNG_TRACEPOINT_EVENT(rcu_quiescent_state_report,
  * or "kick" when kicking a CPU that has been in dyntick-idle mode for
  * too long.
  */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
 LTTNG_TRACEPOINT_EVENT(rcu_fqs,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+	TP_PROTO(const char *rcuname, unsigned long gp_seq, int cpu, const char *qsevent),
+
+	TP_ARGS(rcuname, gp_seq, cpu, qsevent),
+
+	TP_FIELDS(
+		ctf_integer(unsigned long, gp_seq, gp_seq)
+		ctf_integer(int, cpu, cpu)
+		ctf_string(rcuname, rcuname)
+		ctf_string(qsevent, qsevent)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+LTTNG_TRACEPOINT_EVENT(rcu_fqs,
+
 	TP_PROTO(const char *rcuname, unsigned long gpnum, int cpu, const char *qsevent),
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
-	TP_PROTO(char *rcuname, unsigned long gpnum, int cpu, char *qsevent),
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
 
 	TP_ARGS(rcuname, gpnum, cpu, qsevent),
 
@@ -199,6 +349,21 @@ LTTNG_TRACEPOINT_EVENT(rcu_fqs,
 		ctf_string(qsevent, qsevent)
 	)
 )
+#else
+LTTNG_TRACEPOINT_EVENT(rcu_fqs,
+
+	TP_PROTO(char *rcuname, unsigned long gpnum, int cpu, char *qsevent),
+
+	TP_ARGS(rcuname, gpnum, cpu, qsevent),
+
+	TP_FIELDS(
+		ctf_integer(unsigned long, gpnum, gpnum)
+		ctf_integer(int, cpu, cpu)
+		ctf_string(rcuname, rcuname)
+		ctf_string(qsevent, qsevent)
+	)
+)
+#endif
 
 #endif	/*
 	 * #if defined(CONFIG_TREE_RCU)
@@ -603,6 +768,17 @@ LTTNG_TRACEPOINT_EVENT(rcu_barrier,
 
 #else /* #ifdef CONFIG_RCU_TRACE */
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
+#define trace_rcu_grace_period(rcuname, gp_seq, gpevent) do { } while (0)
+#define trace_rcu_grace_period_init(rcuname, gp_seq, level, grplo, grphi, \
+				    qsmask) do { } while (0)
+#define trace_rcu_preempt_task(rcuname, pid, gp_seq) do { } while (0)
+#define trace_rcu_unlock_preempted_task(rcuname, gp_seq, pid) do { } while (0)
+#define trace_rcu_quiescent_state_report(rcuname, gp_seq, mask, qsmask, level, \
+					 grplo, grphi, gp_tasks) do { } \
+	while (0)
+#define trace_rcu_fqs(rcuname, gp_seq, cpu, qsevent) do { } while (0)
+#else
 #define trace_rcu_grace_period(rcuname, gpnum, gpevent) do { } while (0)
 #define trace_rcu_grace_period_init(rcuname, gpnum, level, grplo, grphi, \
 				    qsmask) do { } while (0)
@@ -612,6 +788,8 @@ LTTNG_TRACEPOINT_EVENT(rcu_barrier,
 					 grplo, grphi, gp_tasks) do { } \
 	while (0)
 #define trace_rcu_fqs(rcuname, gpnum, cpu, qsevent) do { } while (0)
+#endif
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,16,0))
 #define trace_rcu_dyntick(polarity, oldnesting, newnesting, dyntick) do { } while (0)
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
