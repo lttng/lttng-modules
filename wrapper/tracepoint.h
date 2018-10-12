@@ -120,4 +120,16 @@ int wrapper_lttng_fixup_sig(struct module *mod)
 
 #endif /*#else #if defined(CONFIG_MODULE_SIG) && defined(MODULE) */
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
+static inline struct tracepoint *lttng_tracepoint_ptr_deref(tracepoint_ptr_t *p)
+{
+	return tracepoint_ptr_deref(p);
+}
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0)) */
+static inline struct tracepoint *lttng_tracepoint_ptr_deref(struct tracepoint **p)
+{
+	return *p;
+}
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0)) */
+
 #endif /* _LTTNG_WRAPPER_TRACEPOINT_H */
