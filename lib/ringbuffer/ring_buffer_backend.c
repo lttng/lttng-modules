@@ -12,11 +12,11 @@
 #include <linux/delay.h>
 #include <linux/errno.h>
 #include <linux/slab.h>
-#include <linux/oom.h>
 #include <linux/cpu.h>
 #include <linux/mm.h>
 #include <linux/vmalloc.h>
 
+#include <wrapper/mm.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
 #include <wrapper/ringbuffer/config.h>
 #include <wrapper/ringbuffer/backend.h>
@@ -46,11 +46,13 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 	num_pages = size >> PAGE_SHIFT;
 
 	/*
-	 * Verify that the number of pages requested for that buffer is smaller
-	 * than the number of available pages on the system. si_mem_available()
-	 * returns an _estimate_ of the number of available pages.
+	 * Verify that there is enough free pages available on the system for
+	 * the current allocation request.
+	 * wrapper_check_enough_free_pages uses si_mem_available() if available
+	 * and returns if there should be enough free pages based on the
+	 * current estimate.
 	 */
-	if (num_pages > si_mem_available())
+	if (!wrapper_check_enough_free_pages(num_pages))
 		goto not_enough_pages;
 
 	/*
@@ -59,7 +61,7 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 	 * end up running out of memory because of this buffer allocation, we
 	 * want to kill the offending app first.
 	 */
-	set_current_oom_origin();
+	wrapper_set_current_oom_origin();
 
 	num_pages_per_subbuf = num_pages >> get_count_order(num_subbuf);
 	subbuf_size = chanb->subbuf_size;
@@ -155,7 +157,7 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 	 * will not fault.
 	 */
 	wrapper_vmalloc_sync_all();
-	clear_current_oom_origin();
+	wrapper_clear_current_oom_origin();
 	vfree(pages);
 	return 0;
 
@@ -172,7 +174,7 @@ depopulate:
 array_error:
 	vfree(pages);
 pages_error:
-	clear_current_oom_origin();
+	wrapper_clear_current_oom_origin();
 not_enough_pages:
 	return -ENOMEM;
 }
