@@ -226,6 +226,9 @@ int lttng_session_enable(struct lttng_session *session)
 	/* Set transient enabler state to "enabled" */
 	session->tstate = 1;
 
+	/* We need to sync enablers with session before activation. */
+	lttng_session_sync_enablers(session);
+
 	/*
 	 * Snapshot the number of events per channel to know the type of header
 	 * we need to use.
@@ -238,9 +241,6 @@ int lttng_session_enable(struct lttng_session *session)
 		else
 			chan->header_type = 2;	/* large */
 	}
-
-	/* We need to sync enablers with session before activation. */
-	lttng_session_sync_enablers(session);
 
 	/* Clear each stream's quiescent state. */
 	list_for_each_entry(chan, &session->chan, list) {
