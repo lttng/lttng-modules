@@ -113,7 +113,7 @@ static inline struct tracepoint *lttng_tracepoint_ptr_deref(tracepoint_ptr_t *p)
 	return tracepoint_ptr_deref(p);
 }
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0)) */
-static inline struct tracepoint *lttng_tracepoint_ptr_deref(struct tracepoint **p)
+static inline struct tracepoint *lttng_tracepoint_ptr_deref(struct tracepoint * const *p)
 {
 	return *p;
 }
