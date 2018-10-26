@@ -139,6 +139,24 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_interrupt,
 	)
 )
 
+#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64)
+LTTNG_TRACEPOINT_EVENT(lttng_statedump_cpu_topology,
+	TP_PROTO(struct lttng_session *session, struct cpuinfo_x86 *c),
+	TP_ARGS(session, c),
+	TP_FIELDS(
+		ctf_string(architecture, "x86")
+		ctf_integer(uint16_t, cpu_id, c->cpu_index)
+		ctf_string(vendor, c->x86_vendor_id[0] ? c->x86_vendor_id : "unknown")
+		ctf_integer(uint8_t, family, c->x86)
+		ctf_integer(uint8_t, model, c->x86_model)
+		ctf_string(model_name, c->x86_model_id[0] ? c->x86_model_id : "unknown")
+		ctf_integer(uint16_t, physical_id, c->phys_proc_id)
+		ctf_integer(uint16_t, core_id, c->cpu_core_id)
+		ctf_integer(uint16_t, cores, c->booted_cores)
+	)
+)
+#endif /* CONFIG_X86_32 || CONFIG_X86_64 */
+
 #endif /*  LTTNG_TRACE_LTTNG_STATEDUMP_H */
 
 /* This part must be outside protection */
