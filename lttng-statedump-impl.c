@@ -63,6 +63,9 @@ DEFINE_TRACE(lttng_statedump_file_descriptor);
 DEFINE_TRACE(lttng_statedump_start);
 DEFINE_TRACE(lttng_statedump_process_state);
 DEFINE_TRACE(lttng_statedump_network_interface);
+#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64)
+DEFINE_TRACE(lttng_statedump_cpu_topology);
+#endif
 
 struct lttng_fd_ctx {
 	char *page;
@@ -279,6 +282,28 @@ int lttng_enumerate_file_descriptors(struct lttng_session *session)
 	return 0;
 }
 
+#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64)
+static
+int lttng_enumerate_cpu_topology(struct lttng_session *session)
+{
+	int cpu;
+	const cpumask_t *cpumask = cpu_possible_mask;
+
+	for (cpu = cpumask_first(cpumask); cpu < nr_cpu_ids;
+			cpu = cpumask_next(cpu, cpumask)) {
+		trace_lttng_statedump_cpu_topology(session, &cpu_data(cpu));
+	}
+
+	return 0;
+}
+#else
+static
+int lttng_enumerate_cpu_topology(struct lttng_session *session)
+{
+	return 0;
+}
+#endif
+
 #if 0
 /*
  * FIXME: we cannot take a mmap_sem while in a RCU read-side critical section
@@ -489,6 +514,9 @@ int do_lttng_statedump(struct lttng_session *session)
 	default:
 		return ret;
 	}
+	ret = lttng_enumerate_cpu_topology(session);
+	if (ret)
+		return ret;
 
 	/* TODO lttng_dump_idt_table(session); */
 	/* TODO lttng_dump_softirq_vec(session); */
