@@ -85,7 +85,8 @@ LTTNG_TRACEPOINT_EVENT(kvm_ack_irq,
 	{ KVM_TRACE_MMIO_WRITE, "write" }
 
 
-#if (LTTNG_SLE_KERNEL_RANGE(4,4,131,94,0,0, 4,5,0,0,0,0))
+#if (LTTNG_SLE_KERNEL_RANGE(4,4,121,92,92,0, 4,4,122,0,0,0) \
+	|| LTTNG_SLE_KERNEL_RANGE(4,4,131,94,0,0, 4,5,0,0,0,0))
 
 LTTNG_TRACEPOINT_EVENT(kvm_mmio,
 	TP_PROTO(int type, int len, u64 gpa, u64 val),
