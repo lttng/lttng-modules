@@ -63,7 +63,7 @@ DEFINE_TRACE(lttng_statedump_file_descriptor);
 DEFINE_TRACE(lttng_statedump_start);
 DEFINE_TRACE(lttng_statedump_process_state);
 DEFINE_TRACE(lttng_statedump_network_interface);
-#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64)
+#ifdef LTTNG_HAVE_STATEDUMP_CPU_TOPOLOGY
 DEFINE_TRACE(lttng_statedump_cpu_topology);
 #endif
 
@@ -282,7 +282,7 @@ int lttng_enumerate_file_descriptors(struct lttng_session *session)
 	return 0;
 }
 
-#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64)
+#ifdef LTTNG_HAVE_STATEDUMP_CPU_TOPOLOGY
 static
 int lttng_enumerate_cpu_topology(struct lttng_session *session)
 {

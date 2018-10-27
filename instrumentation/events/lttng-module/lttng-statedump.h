@@ -140,6 +140,9 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_interrupt,
 )
 
 #if defined(CONFIG_X86_32) || defined(CONFIG_X86_64)
+
+#define LTTNG_HAVE_STATEDUMP_CPU_TOPOLOGY
+
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_cpu_topology,
 	TP_PROTO(struct lttng_session *session, struct cpuinfo_x86 *c),
 	TP_ARGS(session, c),
