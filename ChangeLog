@@ -1,3 +1,14 @@
+2018-11-01 (National Men Make Dinner Day) LTTng modules 2.9.11
+	* Fix: update kvm instrumentation for SLES12 SP2 LTSS >= 4.4.121-92.92
+	* Fix: Add missing const to lttng_tracepoint_ptr_deref prototype
+	* Fix: adapt to kernel relative references
+	* Fix: implicit declarations caused by buffer size checks.
+	* Prevent allocation of buffers if exceeding available memory
+	* Fix: Convert rcu tracepointis to gp_seq (v4.19)
+	* Fix: net: expose sk wmem in sock_exceed_buf_limit tracepoint (4.19)
+	* Fix: access migrate_disable field directly
+	* Fix: out of memory error handling
+
 2018-08-09 (National Book Lovers Day) LTTng modules 2.9.10
 	* Fix: adjust SLE version ranges to build with SP2 and SP3
 	* Fix: Allow alphanumeric characters in SLE version
