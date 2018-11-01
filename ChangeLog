@@ -1,3 +1,16 @@
+2018-11-01 (National Men Make Dinner Day) LTTng modules 2.11.0-rc2
+	* Fix: update kvm instrumentation for SLES12 SP2 LTSS >= 4.4.121-92.92
+	* Fix: Add missing const to lttng_tracepoint_ptr_deref prototype
+	* Fix: adapt to kernel relative references
+	* Fix: implicit declarations caused by buffer size checks.
+	* Prevent allocation of buffers if exceeding available memory
+	* Fix: btrfs instrumentation namespacing
+	* Fix: Convert rcu tracepointis to gp_seq (v4.19)
+	* Fix: tracing: Centralize preemptirq tracepoints (4.19)
+	* Fix: net: expose sk wmem in sock_exceed_buf_limit tracepoint (4.19)
+	* Fix: access migrate_disable field directly
+	* Fix: out of memory error handling
+
 2018-09-05 (Be Late for Something Day) LTTng modules 2.11.0-rc1
 	* Fix: uprobes: missing break in lttng_event_ioctl()
 	* Fix: ACCESS_ONCE was removed in 4.15, use READ_ONCE instead
