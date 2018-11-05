@@ -13,6 +13,17 @@
 #include <linux/signal.h>
 #include <linux/sched.h>
 #undef LTTNG_FIELDS_SIGINFO
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0))
+#define LTTNG_FIELDS_SIGINFO(info)				\
+		ctf_integer(int, errno,				\
+			(info == SEND_SIG_NOINFO || info == SEND_SIG_PRIV) ? \
+			0 :					\
+			info->si_errno)				\
+		ctf_integer(int, code,				\
+			(info == SEND_SIG_NOINFO) ? 		\
+			SI_USER : 				\
+			((info == SEND_SIG_PRIV) ? SI_KERNEL : info->si_code))
+#else /* LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0) */
 #define LTTNG_FIELDS_SIGINFO(info)				\
 		ctf_integer(int, errno,				\
 			(info == SEND_SIG_NOINFO || info == SEND_SIG_FORCED || info == SEND_SIG_PRIV) ? \
@@ -22,6 +33,7 @@
 			(info == SEND_SIG_NOINFO || info == SEND_SIG_FORCED) ? \
 			SI_USER : 				\
 			((info == SEND_SIG_PRIV) ? SI_KERNEL : info->si_code))
+#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0) */
 #endif /* _TRACE_SIGNAL_DEF */
 
 /**
