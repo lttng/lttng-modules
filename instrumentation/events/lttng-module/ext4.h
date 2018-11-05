@@ -1602,7 +1602,30 @@ LTTNG_TRACEPOINT_EVENT(ext4_ext_show_extent,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0))
+
+LTTNG_TRACEPOINT_EVENT(ext4_remove_blocks,
+	TP_PROTO(struct inode *inode, struct ext4_extent *ex,
+		 ext4_lblk_t from, ext4_fsblk_t to,
+		 struct partial_cluster *pc),
+
+	TP_ARGS(inode, ex, from, to, pc),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
+		ctf_integer(ino_t, ino, inode->i_ino)
+		ctf_integer(ext4_lblk_t, from, from)
+		ctf_integer(ext4_lblk_t, to, to)
+		ctf_integer(ext4_fsblk_t, ee_pblk, ext4_ext_pblock(ex))
+		ctf_integer(ext4_lblk_t, ee_lblk, le32_to_cpu(ex->ee_block))
+		ctf_integer(unsigned short, ee_len, ext4_ext_get_actual_len(ex))
+		ctf_integer(ext4_fsblk_t, pc_pclu, pc->pclu)
+		ctf_integer(ext4_lblk_t, pc_lblk, pc->lblk)
+		ctf_integer(int, pc_state, pc->state)
+	)
+)
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
 
 LTTNG_TRACEPOINT_EVENT(ext4_remove_blocks,
 	    TP_PROTO(struct inode *inode, struct ext4_extent *ex,
@@ -1646,7 +1669,29 @@ LTTNG_TRACEPOINT_EVENT(ext4_remove_blocks,
 
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0))
+
+LTTNG_TRACEPOINT_EVENT(ext4_ext_rm_leaf,
+	TP_PROTO(struct inode *inode, ext4_lblk_t start,
+		 struct ext4_extent *ex,
+		 struct partial_cluster *pc),
+
+	TP_ARGS(inode, start, ex, pc),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
+		ctf_integer(ino_t, ino, inode->i_ino)
+		ctf_integer(ext4_lblk_t, start, start)
+		ctf_integer(ext4_lblk_t, ee_lblk, le32_to_cpu(ex->ee_block))
+		ctf_integer(ext4_fsblk_t, ee_pblk, ext4_ext_pblock(ex))
+		ctf_integer(short, ee_len, ext4_ext_get_actual_len(ex))
+		ctf_integer(ext4_fsblk_t, pc_pclu, pc->pclu)
+		ctf_integer(ext4_lblk_t, pc_lblk, pc->lblk)
+		ctf_integer(int, pc_state, pc->state)
+	)
+)
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
 
 LTTNG_TRACEPOINT_EVENT(ext4_ext_rm_leaf,
 	TP_PROTO(struct inode *inode, ext4_lblk_t start,
@@ -1733,7 +1778,28 @@ LTTNG_TRACEPOINT_EVENT(ext4_ext_remove_space,
 
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0))
+
+LTTNG_TRACEPOINT_EVENT(ext4_ext_remove_space_done,
+	TP_PROTO(struct inode *inode, ext4_lblk_t start, ext4_lblk_t end,
+		 int depth, struct partial_cluster *pc, __le16 eh_entries),
+
+	TP_ARGS(inode, start, end, depth, pc, eh_entries),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
+		ctf_integer(ino_t, ino, inode->i_ino)
+		ctf_integer(ext4_lblk_t, start, start)
+		ctf_integer(ext4_lblk_t, end, end)
+		ctf_integer(int, depth, depth)
+		ctf_integer(unsigned short, eh_entries, le16_to_cpu(eh_entries))
+		ctf_integer(ext4_fsblk_t, pc_pclu, pc->pclu)
+		ctf_integer(ext4_lblk_t, pc_lblk, pc->lblk)
+		ctf_integer(int, pc_state, pc->state)
+	)
+)
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
 
 LTTNG_TRACEPOINT_EVENT(ext4_ext_remove_space_done,
 	TP_PROTO(struct inode *inode, ext4_lblk_t start, ext4_lblk_t end,
