@@ -8,8 +8,6 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM kvm
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
-
 LTTNG_TRACEPOINT_EVENT(kvm_userspace_exit,
 	    TP_PROTO(__u32 reason, int errno),
 	    TP_ARGS(reason, errno),
@@ -19,7 +17,6 @@ LTTNG_TRACEPOINT_EVENT(kvm_userspace_exit,
 		ctf_integer(int, errno, errno)
 	)
 )
-#endif
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,6,0))
 #if defined(__KVM_HAVE_IOAPIC)
@@ -142,8 +139,6 @@ LTTNG_TRACEPOINT_EVENT(kvm_mmio,
 
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
-
 #define kvm_fpu_load_symbol	\
 	{0, "unload"},		\
 	{1, "load"}
@@ -187,9 +182,6 @@ LTTNG_TRACEPOINT_EVENT(kvm_age_page,
 	)
 )
 #endif
-#endif
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
 
 #ifdef CONFIG_KVM_ASYNC_PF
 LTTNG_TRACEPOINT_EVENT_CLASS(kvm_async_get_page_class,
@@ -273,8 +265,6 @@ LTTNG_TRACEPOINT_EVENT(
 )
 
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0)) */
-
-#endif
 
 #endif
 
