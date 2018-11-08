@@ -37,7 +37,6 @@
 #include <lttng-events.h>
 #include <lttng-tracer.h>
 #include <wrapper/irqdesc.h>
-#include <wrapper/spinlock.h>
 #include <wrapper/fdtable.h>
 #include <wrapper/irq.h>
 #include <wrapper/tracepoint.h>
@@ -373,12 +372,12 @@ int lttng_list_interrupts(struct lttng_session *session)
 			irq_desc_get_chip(desc)->name ? : "unnamed_irq_chip";
 
 		local_irq_save(flags);
-		wrapper_desc_spin_lock(&desc->lock);
+		raw_spin_lock(&desc->lock);
 		for (action = desc->action; action; action = action->next) {
 			trace_lttng_statedump_interrupt(session,
 				irq, irq_chip_name, action);
 		}
-		wrapper_desc_spin_unlock(&desc->lock);
+		raw_spin_unlock(&desc->lock);
 		local_irq_restore(flags);
 	}
 	return 0;
