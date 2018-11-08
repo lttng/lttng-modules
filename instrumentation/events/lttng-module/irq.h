@@ -61,7 +61,6 @@ LTTNG_TRACEPOINT_EVENT(irq_handler_exit,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 LTTNG_TRACEPOINT_EVENT_CLASS(irq_softirq,
 
 	TP_PROTO(unsigned int vec_nr),
@@ -120,69 +119,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(irq_softirq, softirq_raise,
 
 	TP_ARGS(vec_nr)
 )
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)) */
-LTTNG_TRACEPOINT_EVENT_CLASS(irq_softirq,
-
-	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
-
-	TP_ARGS(h, vec),
-
-	TP_FIELDS(
-		ctf_integer(unsigned int, vec, (int)(h - vec))
-	)
-)
-
-/**
- * softirq_entry - called immediately before the softirq handler
- * @h: pointer to struct softirq_action
- * @vec: pointer to first struct softirq_action in softirq_vec array
- *
- * When used in combination with the softirq_exit tracepoint
- * we can determine the softirq handler runtine.
- */
-LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(irq_softirq, softirq_entry,
-
-	irq_softirq_entry,
-
-	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
-
-	TP_ARGS(h, vec)
-)
-
-/**
- * softirq_exit - called immediately after the softirq handler returns
- * @h: pointer to struct softirq_action
- * @vec: pointer to first struct softirq_action in softirq_vec array
- *
- * When used in combination with the softirq_entry tracepoint
- * we can determine the softirq handler runtine.
- */
-LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(irq_softirq, softirq_exit,
-
-	irq_softirq_exit,
-
-	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
-
-	TP_ARGS(h, vec)
-)
-
-/**
- * softirq_raise - called immediately when a softirq is raised
- * @h: pointer to struct softirq_action
- * @vec: pointer to first struct softirq_action in softirq_vec array
- *
- * When used in combination with the softirq_entry tracepoint
- * we can determine the softirq raise to run latency.
- */
-LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(irq_softirq, softirq_raise,
-
-	irq_softirq_raise,
-
-	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
-
-	TP_ARGS(h, vec)
-)
-#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)) */
 
 #endif /*  LTTNG_TRACE_IRQ_H */
 
