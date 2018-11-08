@@ -353,10 +353,6 @@ int lttng_enumerate_vm_maps(struct lttng_session *session)
 
 #ifdef CONFIG_LTTNG_HAS_LIST_IRQ
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,39))
-#define irq_desc_get_chip(desc) get_irq_desc_chip(desc)
-#endif
-
 static
 int lttng_list_interrupts(struct lttng_session *session)
 {
