@@ -54,24 +54,16 @@ LTTNG_TRACEPOINT_EVENT(module_free,
 
 LTTNG_TRACEPOINT_EVENT_CLASS(module_refcnt,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 	TP_PROTO(struct module *mod, unsigned long ip),
 
 	TP_ARGS(mod, ip),
-#else
-	TP_PROTO(struct module *mod, unsigned long ip, int refcnt),
-
-	TP_ARGS(mod, ip, refcnt),
-#endif
 
 	TP_FIELDS(
 		ctf_integer(unsigned long, ip, ip)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
 		ctf_integer(int, refcnt, atomic_read(&mod->refcnt))
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
-		ctf_integer(int, refcnt, __this_cpu_read(mod->refptr->incs) + __this_cpu_read(mod->refptr->decs))
 #else
-		ctf_integer(int, refcnt, refcnt)
+		ctf_integer(int, refcnt, __this_cpu_read(mod->refptr->incs) + __this_cpu_read(mod->refptr->decs))
 #endif
 		ctf_string(name, mod->name)
 	)
@@ -79,28 +71,16 @@ LTTNG_TRACEPOINT_EVENT_CLASS(module_refcnt,
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(module_refcnt, module_get,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 	TP_PROTO(struct module *mod, unsigned long ip),
 
 	TP_ARGS(mod, ip)
-#else
-	TP_PROTO(struct module *mod, unsigned long ip, int refcnt),
-
-	TP_ARGS(mod, ip, refcnt)
-#endif
 )
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(module_refcnt, module_put,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
 	TP_PROTO(struct module *mod, unsigned long ip),
 
 	TP_ARGS(mod, ip)
-#else
-	TP_PROTO(struct module *mod, unsigned long ip, int refcnt),
-
-	TP_ARGS(mod, ip, refcnt)
-#endif
 )
 #endif /* CONFIG_MODULE_UNLOAD */
 
