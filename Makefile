@@ -66,10 +66,7 @@ ifneq ($(KERNELRELEASE),)
   endif # CONFIG_HAVE_SYSCALL_TRACEPOINTS
 
   ifneq ($(CONFIG_PERF_EVENTS),)
-    lttng-tracer-objs += $(shell \
-      if [ $(VERSION) -ge 3 \
-        -o \( $(VERSION) -eq 2 -a $(PATCHLEVEL) -eq 6 -a $(SUBLEVEL) -ge 33 \) ] ; then \
-        echo "lttng-context-perf-counters.o" ; fi;)
+    lttng-tracer-objs += lttng-context-perf-counters.o
   endif # CONFIG_PERF_EVENTS
 
   ifneq ($(CONFIG_PREEMPT_RT_FULL),)
