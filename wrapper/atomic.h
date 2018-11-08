@@ -11,11 +11,7 @@
 #define _LTTNG_WRAPPER_ATOMIC_H
 
 #include <linux/version.h>
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 #include <linux/atomic.h>
-#else
-#include <asm/atomic.h>
-#endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
 static inline void lttng_smp_mb__before_atomic(void)
