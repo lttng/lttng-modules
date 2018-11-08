@@ -388,7 +388,6 @@
 		scsi_statusbyte_name(SAM_STAT_ACA_ACTIVE),	\
 		scsi_statusbyte_name(SAM_STAT_TASK_ABORTED))
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 #define scsi_prot_op_name(result)	{ result, #result }
 #define show_prot_op_name(val)					\
 	__print_symbolic(val,					\
@@ -399,7 +398,6 @@
 		scsi_prot_op_name(SCSI_PROT_WRITE_INSERT),	\
 		scsi_prot_op_name(SCSI_PROT_READ_PASS),		\
 		scsi_prot_op_name(SCSI_PROT_WRITE_PASS))
-#endif
 
 const char *scsi_trace_parse_cdb(struct trace_seq*, unsigned char*, int);
 #define __parse_cdb(cdb, len) scsi_trace_parse_cdb(p, cdb, len)
@@ -420,9 +418,7 @@ LTTNG_TRACEPOINT_EVENT(scsi_dispatch_cmd_start,
 		ctf_integer(unsigned int, cmd_len, cmd->cmd_len)
 		ctf_integer(unsigned int, data_sglen, scsi_sg_count(cmd))
 		ctf_integer(unsigned int, prot_sglen, scsi_prot_sg_count(cmd))
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 		ctf_integer(unsigned char, prot_op, scsi_get_prot_op(cmd))
-#endif
 		ctf_sequence_hex(unsigned char, cmnd, cmd->cmnd, u32, cmd->cmd_len)
 	)
 )
@@ -443,9 +439,7 @@ LTTNG_TRACEPOINT_EVENT(scsi_dispatch_cmd_error,
 		ctf_integer(unsigned int, cmd_len, cmd->cmd_len)
 		ctf_integer(unsigned int, data_sglen, scsi_sg_count(cmd))
 		ctf_integer(unsigned int, prot_sglen, scsi_prot_sg_count(cmd))
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 		ctf_integer(unsigned char, prot_op, scsi_get_prot_op(cmd))
-#endif
 		ctf_sequence_hex(unsigned char, cmnd, cmd->cmnd, u32, cmd->cmd_len)
 	)
 )
@@ -466,9 +460,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(scsi_cmd_done_timeout_template,
 		ctf_integer(unsigned int, cmd_len, cmd->cmd_len)
 		ctf_integer(unsigned int, data_sglen, scsi_sg_count(cmd))
 		ctf_integer(unsigned int, prot_sglen, scsi_prot_sg_count(cmd))
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
 		ctf_integer(unsigned char, prot_op, scsi_get_prot_op(cmd))
-#endif
 		ctf_sequence_hex(unsigned char, cmnd, cmd->cmnd, u32, cmd->cmd_len)
 	)
 )
