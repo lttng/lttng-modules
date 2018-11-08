@@ -439,30 +439,18 @@ LTTNG_TRACEPOINT_ENUM(net_network_header,
 
 LTTNG_TRACEPOINT_EVENT(net_dev_xmit,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,40))
 	TP_PROTO(struct sk_buff *skb,
 		 int rc,
 		 struct net_device *dev,
 		 unsigned int skb_len),
 
 	TP_ARGS(skb, rc, dev, skb_len),
-#else
-	TP_PROTO(struct sk_buff *skb,
-		 int rc),
-
-	TP_ARGS(skb, rc),
-#endif
 
 	TP_FIELDS(
 		ctf_integer_hex(void *, skbaddr, skb)
 		ctf_integer(int, rc, rc)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,40))
 		ctf_integer(unsigned int, len, skb_len)
 		ctf_string(name, dev->name)
-#else
-		ctf_integer(unsigned int, len, skb->len)
-		ctf_string(name, skb->dev->name)
-#endif
 	)
 )
 
