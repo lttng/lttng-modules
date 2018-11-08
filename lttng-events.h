@@ -15,7 +15,7 @@
 #include <linux/kprobes.h>
 #include <linux/kref.h>
 #include <lttng-cpuhotplug.h>
-#include <wrapper/uuid.h>
+#include <linux/uuid.h>
 #include <wrapper/uprobes.h>
 #include <lttng-tracer.h>
 #include <lttng-abi.h>

@@ -27,8 +27,8 @@
 #include <linux/jhash.h>
 #include <linux/uaccess.h>
 #include <linux/vmalloc.h>
+#include <linux/uuid.h>
 
-#include <wrapper/uuid.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
 #include <wrapper/random.h>
 #include <wrapper/tracepoint.h>
