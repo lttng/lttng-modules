@@ -308,9 +308,7 @@ DEFINE_WRITEBACK_EVENT(writeback_bdi_register)
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0)) */
 
 DEFINE_WRITEBACK_EVENT(writeback_nowork)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
 DEFINE_WRITEBACK_EVENT(writeback_wake_background)
-#endif
 DEFINE_WRITEBACK_EVENT(writeback_wake_thread)
 DEFINE_WRITEBACK_EVENT(writeback_wake_forker_thread)
 DEFINE_WRITEBACK_EVENT(writeback_bdi_unregister)
@@ -661,7 +659,6 @@ LTTNG_TRACEPOINT_EVENT(writeback_sb_inodes_requeue,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_congest_waited_template,
 
 	TP_PROTO(unsigned int usec_timeout, unsigned int usec_delayed),
@@ -687,7 +684,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_congest_waited_template, writeback_wai
 
 	TP_ARGS(usec_timeout, usec_delayed)
 )
-#endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_single_inode_template,
