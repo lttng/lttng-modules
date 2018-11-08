@@ -9,8 +9,6 @@
 #include <linux/workqueue.h>
 #include <linux/version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
-
 #ifndef _TRACE_WORKQUEUE_DEF_
 #define _TRACE_WORKQUEUE_DEF_
 
@@ -30,7 +28,6 @@ LTTNG_TRACEPOINT_EVENT_CLASS(workqueue_work,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
 /**
  * workqueue_queue_work - called when a work gets queued
  * @req_cpu:	the requested cpu
@@ -76,7 +73,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(workqueue_work, workqueue_activate_work,
 
 	TP_ARGS(work)
 )
-#endif
 
 /**
  * workqueue_execute_start - called immediately before the workqueue callback
@@ -108,63 +104,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(workqueue_work, workqueue_execute_end,
 
 	TP_ARGS(work)
 )
-
-#else
-
-LTTNG_TRACEPOINT_EVENT_CLASS(workqueue,
-
-	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
-
-	TP_ARGS(wq_thread, work),
-
-	TP_FIELDS(
-		ctf_array(char, thread_comm, wq_thread->comm, TASK_COMM_LEN)
-		ctf_integer(pid_t, thread_pid, wq_thread->pid)
-		ctf_integer_hex(work_func_t, func, work->func)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(workqueue, workqueue_insertion,
-
-	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
-
-	TP_ARGS(wq_thread, work)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(workqueue, workqueue_execution,
-
-	TP_PROTO(struct task_struct *wq_thread, struct work_struct *work),
-
-	TP_ARGS(wq_thread, work)
-)
-
-/* Trace the creation of one workqueue thread on a cpu */
-LTTNG_TRACEPOINT_EVENT(workqueue_creation,
-
-	TP_PROTO(struct task_struct *wq_thread, int cpu),
-
-	TP_ARGS(wq_thread, cpu),
-
-	TP_FIELDS(
-		ctf_array(char, thread_comm, wq_thread->comm, TASK_COMM_LEN)
-		ctf_integer(pid_t, thread_pid, wq_thread->pid)
-		ctf_integer(int, cpu, cpu)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT(workqueue_destruction,
-
-	TP_PROTO(struct task_struct *wq_thread),
-
-	TP_ARGS(wq_thread),
-
-	TP_FIELDS(
-		ctf_array(char, thread_comm, wq_thread->comm, TASK_COMM_LEN)
-		ctf_integer(pid_t, thread_pid, wq_thread->pid)
-	)
-)
-
-#endif
 
 #endif /*  LTTNG_TRACE_WORKQUEUE_H */
 
