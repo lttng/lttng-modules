@@ -16,12 +16,7 @@
  * Create the tracepoint static inlines from the kernel to validate that our
  * trace event macros match the kernel we run on.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
 #include <trace/events/lock.h>
-#else
-#include <trace/events/lockdep.h>
-#endif
-
 #include <wrapper/tracepoint.h>
 
 /*
