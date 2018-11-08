@@ -9,12 +9,10 @@
 #include <linux/jbd2.h>
 #include <linux/version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
 #ifndef _TRACE_JBD2_DEF
 #define _TRACE_JBD2_DEF
 struct transaction_chp_stats_s;
 struct transaction_run_stats_s;
-#endif
 #endif
 
 LTTNG_TRACEPOINT_EVENT(jbd2_checkpoint,
@@ -103,7 +101,6 @@ LTTNG_TRACEPOINT_EVENT(jbd2_submit_inode_data,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
 LTTNG_TRACEPOINT_EVENT(jbd2_run_stats,
 	TP_PROTO(dev_t dev, unsigned long tid,
 		 struct transaction_run_stats_s *stats),
@@ -139,9 +136,7 @@ LTTNG_TRACEPOINT_EVENT(jbd2_checkpoint_stats,
 		ctf_integer(__u32, dropped, stats->cs_dropped)
 	)
 )
-#endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 LTTNG_TRACEPOINT_EVENT(jbd2_update_log_tail,
 #else
@@ -161,7 +156,6 @@ LTTNG_TRACEPOINT_EVENT(jbd2_cleanup_journal_tail,
 		ctf_integer(unsigned long, freed, freed)
 	)
 )
-#endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 LTTNG_TRACEPOINT_EVENT(jbd2_write_superblock,
