@@ -14,12 +14,6 @@
 #include <linux/tracepoint.h>
 #include <linux/module.h>
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,35))
-
-#define DECLARE_EVENT_CLASS(name, proto, args, tstruct, assign, print)
-
-#endif
-
 #ifndef HAVE_KABI_2635_TRACEPOINT
 
 #define kabi_2635_tracepoint_probe_register tracepoint_probe_register
