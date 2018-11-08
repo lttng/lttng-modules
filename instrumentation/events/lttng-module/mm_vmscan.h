@@ -640,7 +640,7 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 		ctf_integer(int, reclaim_flags, trace_shrink_flags(file))
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
+#else
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 
 	TP_PROTO(int nid, int zid,
