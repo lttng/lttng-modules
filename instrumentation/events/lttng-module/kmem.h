@@ -115,7 +115,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(kmem_free, kmem_cache_free,
 	TP_ARGS(call_site, ptr)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
 LTTNG_TRACEPOINT_EVENT_MAP(mm_page_free, kmem_mm_page_free,
 #else
@@ -218,11 +217,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(kmem_mm_page, mm_page_pcpu_drain,
 
 	kmem_mm_page_pcpu_drain,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
 	TP_PROTO(struct page *page, unsigned int order, int migratetype),
-#else
-	TP_PROTO(struct page *page, int order, int migratetype),
-#endif
 
 	TP_ARGS(page, order, migratetype)
 )
@@ -336,8 +331,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
 )
 
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
-
-#endif
 
 #endif /* LTTNG_TRACE_KMEM_H */
 
