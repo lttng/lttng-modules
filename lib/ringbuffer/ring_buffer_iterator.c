@@ -27,6 +27,7 @@
 
 #include <wrapper/ringbuffer/iterator.h>
 #include <wrapper/file.h>
+#include <wrapper/uaccess.h>
 #include <linux/jiffies.h>
 #include <linux/delay.h>
 #include <linux/module.h>
@@ -621,7 +622,7 @@ ssize_t channel_ring_buffer_file_read(struct file *filp,
 	ssize_t len;
 
 	might_sleep();
-	if (!access_ok(VERIFY_WRITE, user_buf, count))
+	if (!lttng_access_ok(VERIFY_WRITE, user_buf, count))
 		return -EFAULT;
 
 	/* Finish copy of previous record */
