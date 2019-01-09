@@ -8,7 +8,32 @@
 #include <linux/sunrpc/sched.h>
 #include <linux/sunrpc/clnt.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_status,
+
+	TP_PROTO(const struct rpc_task *task),
+
+	TP_ARGS(task),
+
+	TP_FIELDS(
+		ctf_integer(unsigned int, task_id, task->tk_pid)
+		ctf_integer(unsigned int, client_id, task->tk_client->cl_clid)
+		ctf_integer(int, status, task->tk_status)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_status, rpc_call_status,
+	TP_PROTO(const struct rpc_task *task),
+
+	TP_ARGS(task)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_status, rpc_bind_status,
+	TP_PROTO(const struct rpc_task *task),
+
+	TP_ARGS(task)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_status,
 
 	TP_PROTO(struct rpc_task *task),
@@ -20,6 +45,18 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_status,
 		ctf_integer(unsigned int, client_id, task->tk_client->cl_clid)
 		ctf_integer(int, status, task->tk_status)
 	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_status, rpc_call_status,
+	TP_PROTO(struct rpc_task *task),
+
+	TP_ARGS(task)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_status, rpc_bind_status,
+	TP_PROTO(struct rpc_task *task),
+
+	TP_ARGS(task)
 )
 #else
 LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_status,
@@ -34,7 +71,6 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_status,
 		ctf_integer(int, status, task->tk_status)
 	)
 )
-#endif
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_status, rpc_call_status,
 	TP_PROTO(struct rpc_task *task),
@@ -47,8 +83,15 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_status, rpc_bind_status,
 
 	TP_ARGS(task)
 )
+#endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,17,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0))
+LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_status, rpc_connect_status,
+	TP_PROTO(const struct rpc_task *task),
+
+	TP_ARGS(task)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,17,0))
 LTTNG_TRACEPOINT_EVENT(rpc_connect_status,
 	TP_PROTO(const struct rpc_task *task),
 
@@ -60,7 +103,33 @@ LTTNG_TRACEPOINT_EVENT(rpc_connect_status,
 		ctf_integer(int, status, task->tk_status)
 	)
 )
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+LTTNG_TRACEPOINT_EVENT(rpc_connect_status,
+	TP_PROTO(struct rpc_task *task, int status),
 
+	TP_ARGS(task, status),
+
+	TP_FIELDS(
+		ctf_integer(unsigned int, task_id, task->tk_pid)
+		ctf_integer(unsigned int, client_id, task->tk_client->cl_clid)
+		ctf_integer(int, status, status)
+	)
+)
+#else
+LTTNG_TRACEPOINT_EVENT(rpc_connect_status,
+	TP_PROTO(struct rpc_task *task, int status),
+
+	TP_ARGS(task, status),
+
+	TP_FIELDS(
+		ctf_integer_hex(const struct rpc_task *, task, task)
+		ctf_integer_hex(const struct rpc_clnt *, clnt, task->tk_client)
+		ctf_integer(int, status, status)
+	)
+)
+#endif
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,17,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_running,
 
 	TP_PROTO(const struct rpc_task *task, const void *action),
@@ -130,18 +199,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_queued, rpc_task_wakeup,
 )
 
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
-LTTNG_TRACEPOINT_EVENT(rpc_connect_status,
-	TP_PROTO(struct rpc_task *task, int status),
-
-	TP_ARGS(task, status),
-
-	TP_FIELDS(
-		ctf_integer(unsigned int, task_id, task->tk_pid)
-		ctf_integer(unsigned int, client_id, task->tk_client->cl_clid)
-		ctf_integer(int, status, status)
-	)
-)
-
 LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_running,
 
 	TP_PROTO(const struct rpc_clnt *clnt, const struct rpc_task *task, const void *action),
@@ -211,18 +268,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_queued, rpc_task_wakeup,
 )
 
 #else
-LTTNG_TRACEPOINT_EVENT(rpc_connect_status,
-	TP_PROTO(struct rpc_task *task, int status),
-
-	TP_ARGS(task, status),
-
-	TP_FIELDS(
-		ctf_integer_hex(const struct rpc_task *, task, task)
-		ctf_integer_hex(const struct rpc_clnt *, clnt, task->tk_client)
-		ctf_integer(int, status, status)
-	)
-)
-
 LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_running,
 
 	TP_PROTO(const struct rpc_clnt *clnt, const struct rpc_task *task, const void *action),
