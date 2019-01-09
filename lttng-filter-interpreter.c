@@ -20,7 +20,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <linux/uaccess.h>
+#include <wrapper/uaccess.h>
 #include <wrapper/frame.h>
 
 #include <lttng-filter.h>
@@ -40,7 +40,7 @@ char get_char(struct estack_entry *reg, size_t offset)
 		char c;
 
 		/* Handle invalid access as end of string. */
-		if (unlikely(!access_ok(VERIFY_READ,
+		if (unlikely(!lttng_access_ok(VERIFY_READ,
 				reg->u.s.user_str + offset,
 				sizeof(c))))
 			return '\0';
