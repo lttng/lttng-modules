@@ -21,7 +21,7 @@
 #include <linux/list.h>
 #include <linux/fs.h>
 #include <linux/mm.h>
-#include <linux/uaccess.h>
+#include <wrapper/uaccess.h>
 
 /* Internal helpers */
 #include <wrapper/ringbuffer/backend_internal.h>
@@ -289,7 +289,7 @@ void lib_ring_buffer_copy_from_user_inatomic(const struct lib_ring_buffer_config
 
 	set_fs(KERNEL_DS);
 	pagefault_disable();
-	if (unlikely(!access_ok(VERIFY_READ, src, len)))
+	if (unlikely(!lttng_access_ok(VERIFY_READ, src, len)))
 		goto fill_buffer;
 
 	if (likely(pagecpy == len)) {
@@ -359,7 +359,7 @@ void lib_ring_buffer_strcpy_from_user_inatomic(const struct lib_ring_buffer_conf
 
 	set_fs(KERNEL_DS);
 	pagefault_disable();
-	if (unlikely(!access_ok(VERIFY_READ, src, len)))
+	if (unlikely(!lttng_access_ok(VERIFY_READ, src, len)))
 		goto fill_buffer;
 
 	if (likely(pagecpy == len)) {
@@ -449,7 +449,7 @@ unsigned long lib_ring_buffer_copy_from_user_check_nofault(void *dest,
 	unsigned long ret;
 	mm_segment_t old_fs;
 
-	if (!access_ok(VERIFY_READ, src, len))
+	if (!lttng_access_ok(VERIFY_READ, src, len))
 		return 1;
 	old_fs = get_fs();
 	set_fs(KERNEL_DS);
