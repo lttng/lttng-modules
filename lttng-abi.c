@@ -236,6 +236,20 @@ long lttng_abi_add_context(struct file *file,
 	case LTTNG_KERNEL_CONTEXT_CALLSTACK_KERNEL:
 	case LTTNG_KERNEL_CONTEXT_CALLSTACK_USER:
 		return lttng_add_callstack_to_ctx(ctx, context_param->ctx);
+	case LTTNG_KERNEL_CONTEXT_CGROUP_NS:
+		return lttng_add_cgroup_ns_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_IPC_NS:
+		return lttng_add_ipc_ns_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_MNT_NS:
+		return lttng_add_mnt_ns_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_NET_NS:
+		return lttng_add_net_ns_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_PID_NS:
+		return lttng_add_pid_ns_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_USER_NS:
+		return lttng_add_user_ns_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_UTS_NS:
+		return lttng_add_uts_ns_to_ctx(ctx);
 	default:
 		return -EINVAL;
 	}

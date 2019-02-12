@@ -303,6 +303,34 @@ int lttng_context_init(void)
 	if (ret && ret != -ENOSYS) {
 		printk(KERN_WARNING "Cannot add context lttng_add_migratable_to_ctx");
 	}
+	ret = lttng_add_cgroup_ns_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "Cannot add context lttng_add_cgroup_ns_to_ctx");
+	}
+	ret = lttng_add_ipc_ns_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "Cannot add context lttng_add_ipc_ns_to_ctx");
+	}
+	ret = lttng_add_mnt_ns_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "Cannot add context lttng_add_mnt_ns_to_ctx");
+	}
+	ret = lttng_add_net_ns_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "Cannot add context lttng_add_net_ns_to_ctx");
+	}
+	ret = lttng_add_pid_ns_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "Cannot add context lttng_add_pid_ns_to_ctx");
+	}
+	ret = lttng_add_user_ns_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "Cannot add context lttng_add_user_ns_to_ctx");
+	}
+	ret = lttng_add_uts_ns_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "Cannot add context lttng_add_uts_ns_to_ctx");
+	}
 	/* TODO: perf counters for filtering */
 	return 0;
 }
