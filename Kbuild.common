@@ -71,4 +71,9 @@ ifneq ($(CONFIG_DYNAMIC_FTRACE),)
   endif
 endif
 
+mnt_ns_dep = $(srctree)/fs/mount.h
+ifeq ($(wildcard $(mnt_ns_dep)),)
+    ccflags-y += -DLTTNG_MNT_NS_MISSING_HEADER
+endif
+
 # vim:syntax=make

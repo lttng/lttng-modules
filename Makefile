@@ -83,6 +83,32 @@ ifneq ($(KERNELRELEASE),)
       -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 15 \) ] ; then \
       echo "lttng-tracepoint.o" ; fi;)
 
+  lttng-tracer-objs += lttng-context-cgroup-ns.o
+
+  ifneq ($(CONFIG_IPC_NS),)
+    lttng-tracer-objs += lttng-context-ipc-ns.o
+  endif
+
+  ifneq ($(wildcard $(mnt_ns_dep)),)
+     lttng-tracer-objs += lttng-context-mnt-ns.o
+  endif
+
+  ifneq ($(CONFIG_NET_NS),)
+    lttng-tracer-objs += lttng-context-net-ns.o
+  endif
+
+  ifneq ($(CONFIG_PID_NS),)
+    lttng-tracer-objs += lttng-context-pid-ns.o
+  endif
+
+  ifneq ($(CONFIG_USER_NS),)
+    lttng-tracer-objs += lttng-context-user-ns.o
+  endif
+
+  ifneq ($(CONFIG_UTS_NS),)
+    lttng-tracer-objs += lttng-context-uts-ns.o
+  endif
+
   obj-$(CONFIG_LTTNG) += lttng-statedump.o
   lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o \
                           wrapper/fdtable.o
