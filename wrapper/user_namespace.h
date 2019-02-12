@@ -27,6 +27,30 @@
 #define lttng_current_vxxgid(xxx)				\
 	(from_kgid_munged(current_user_ns(), current_##xxx()))
 
+static inline
+uid_t lttng_task_vuid(struct task_struct *p, struct user_namespace *ns)
+{
+	uid_t uid;
+	kuid_t kuid;
+
+	kuid = task_cred_xxx(p, uid);
+	uid = from_kuid_munged(ns, kuid);
+
+	return uid;
+}
+
+static inline
+gid_t lttng_task_vgid(struct task_struct *p, struct user_namespace *ns)
+{
+	gid_t gid;
+	kgid_t kgid;
+
+	kgid = task_cred_xxx(p, gid);
+	gid = from_kgid_munged(ns, kgid);
+
+	return gid;
+}
+
 #else
 
 #define lttng_current_xxuid(xxx)	(current_##xxx())
@@ -38,6 +62,37 @@
 
 #define lttng_current_vxxgid(xxx)					\
 	(user_ns_map_gid(current_user_ns(), current_cred(), current_##xxx()))
+
+static inline
+uid_t lttng_task_vuid(struct task_struct *p, struct user_namespace *ns)
+{
+	uid_t uid;
+
+	/*
+	 * __task_cred requires the RCU readlock be held
+	 */
+	rcu_read_lock();
+	uid = user_ns_map_uid(ns, __task_cred(p), __task_cred(p)->uid);
+	rcu_read_unlock();
+
+	return uid;
+}
+
+static inline
+gid_t lttng_task_vgid(struct task_struct *p, struct user_namespace *ns)
+{
+	gid_t gid;
+
+	/*
+	 * __task_cred requires the RCU readlock be held
+	 */
+	rcu_read_lock();
+	gid = user_ns_map_gid(ns, __task_cred(p), __task_cred(p)->gid);
+	rcu_read_unlock();
+
+	return gid;
+}
+
 #endif
 
 #define lttng_current_uid()	(lttng_current_xxuid(uid))

@@ -18,4 +18,10 @@
 #define lttng_ns_inum proc_inum
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+#define lttng_user_ns_parent parent
+#else
+#define lttng_user_ns_parent creator->user_ns
+#endif
+
 #endif /* _LTTNG_WRAPPER_NAMESPACE_H */
