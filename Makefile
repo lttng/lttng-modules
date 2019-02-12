@@ -48,6 +48,18 @@ ifneq ($(KERNELRELEASE),)
                        lttng-context-vpid.o lttng-context-tid.o \
                        lttng-context-vtid.o lttng-context-ppid.o \
                        lttng-context-vppid.o lttng-context-cpu-id.o \
+                       lttng-context-uid.o \
+                       lttng-context-euid.o \
+                       lttng-context-suid.o \
+                       lttng-context-gid.o \
+                       lttng-context-egid.o \
+                       lttng-context-sgid.o \
+                       lttng-context-vuid.o \
+                       lttng-context-veuid.o \
+                       lttng-context-vsuid.o \
+                       lttng-context-vgid.o \
+                       lttng-context-vegid.o \
+                       lttng-context-vsgid.o \
                        lttng-context-interruptible.o \
                        lttng-context-need-reschedule.o \
                        lttng-context-callstack.o lttng-calibrate.o \

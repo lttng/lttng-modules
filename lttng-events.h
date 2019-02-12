@@ -796,6 +796,19 @@ int lttng_add_uts_ns_to_ctx(struct lttng_ctx **ctx)
 }
 #endif
 
+int lttng_add_uid_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_euid_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_suid_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_gid_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_egid_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_sgid_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_vuid_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_veuid_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_vsuid_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_vgid_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_vegid_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_vsgid_to_ctx(struct lttng_ctx **ctx);
+
 #if defined(CONFIG_PERF_EVENTS)
 int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  uint64_t config,
