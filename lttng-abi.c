@@ -250,6 +250,30 @@ long lttng_abi_add_context(struct file *file,
 		return lttng_add_user_ns_to_ctx(ctx);
 	case LTTNG_KERNEL_CONTEXT_UTS_NS:
 		return lttng_add_uts_ns_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_UID:
+		return lttng_add_uid_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_EUID:
+		return lttng_add_euid_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_SUID:
+		return lttng_add_suid_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_GID:
+		return lttng_add_gid_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_EGID:
+		return lttng_add_egid_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_SGID:
+		return lttng_add_sgid_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_VUID:
+		return lttng_add_vuid_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_VEUID:
+		return lttng_add_veuid_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_VSUID:
+		return lttng_add_vsuid_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_VGID:
+		return lttng_add_vgid_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_VEGID:
+		return lttng_add_vegid_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_VSGID:
+		return lttng_add_vsgid_to_ctx(ctx);
 	default:
 		return -EINVAL;
 	}
