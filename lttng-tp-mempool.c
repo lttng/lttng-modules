@@ -151,19 +151,12 @@ void lttng_tp_mempool_free(void *ptr)
 	struct lttng_tp_buf_entry *entry;
 	struct per_cpu_buf *cpu_buf;
 
-	if (!ptr) {
+	if (!ptr)
 		goto end;
-	}
-
 	entry = container_of(ptr, struct lttng_tp_buf_entry, buf);
-	if (!entry) {
-		goto end;
-	}
-
 	cpu_buf = per_cpu_ptr(pool, entry->cpu);
-	if (!cpu_buf) {
+	if (!cpu_buf)
 		goto end;
-	}
 	/* Add it to the free list. */
 	list_add_tail(&entry->list, &cpu_buf->free_list);
 
