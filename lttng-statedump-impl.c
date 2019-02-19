@@ -425,8 +425,6 @@ void lttng_statedump_process_ns(struct lttng_session *session,
 	 */
 	pid_ns = task_active_pid_ns(p);
 	do {
-		trace_lttng_statedump_process_state(session,
-			p, type, mode, submode, status, pid_ns);
 		trace_lttng_statedump_process_pid_ns(session, p, pid_ns);
 		pid_ns = pid_ns->parent;
 	} while (pid_ns);
@@ -523,6 +521,9 @@ int lttng_enumerate_process_states(struct lttng_session *session)
 				type = LTTNG_USER_THREAD;
 			else
 				type = LTTNG_KERNEL_THREAD;
+
+			trace_lttng_statedump_process_state(session,
+				p, type, mode, submode, status);
 			lttng_statedump_process_ns(session,
 				p, type, mode, submode, status);
 			task_unlock(p);

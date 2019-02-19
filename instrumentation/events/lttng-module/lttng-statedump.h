@@ -40,14 +40,11 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_end,
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_state,
 	TP_PROTO(struct lttng_session *session,
 		struct task_struct *p,
-		int type, int mode, int submode, int status,
-		struct pid_namespace *pid_ns),
-	TP_ARGS(session, p, type, mode, submode, status, pid_ns),
+		int type, int mode, int submode, int status),
+	TP_ARGS(session, p, type, mode, submode, status),
 	TP_FIELDS(
 		ctf_integer(pid_t, tid, p->pid)
-		ctf_integer(pid_t, vtid, pid_ns ? task_pid_nr_ns(p, pid_ns) : 0)
 		ctf_integer(pid_t, pid, p->tgid)
-		ctf_integer(pid_t, vpid, pid_ns ? task_tgid_nr_ns(p, pid_ns) : 0)
 		ctf_integer(pid_t, ppid,
 			({
 				pid_t ret;
@@ -57,28 +54,11 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_state,
 				rcu_read_unlock();
 				ret;
 			}))
-		ctf_integer(pid_t, vppid,
-			({
-				struct task_struct *parent;
-				pid_t ret = 0;
-
-				if (pid_ns) {
-					rcu_read_lock();
-					parent = rcu_dereference(p->real_parent);
-					ret = task_tgid_nr_ns(parent, pid_ns);
-					rcu_read_unlock();
-				}
-				ret;
-			}))
 		ctf_array_text(char, name, p->comm, TASK_COMM_LEN)
 		ctf_integer(int, type, type)
 		ctf_integer(int, mode, mode)
 		ctf_integer(int, submode, submode)
 		ctf_integer(int, status, status)
-		ctf_integer(int, ns_level, pid_ns ? pid_ns->level : 0)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
-		ctf_integer(unsigned int, ns_inum, pid_ns ? pid_ns->lttng_proc_inum : 0)
-#endif
 		ctf_integer(unsigned int, cpu, task_cpu(p))
 	)
 )
