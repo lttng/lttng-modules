@@ -29,6 +29,7 @@
 #include <wrapper/vmalloc.h>
 #include <wrapper/irqflags.h>
 #include <lttng-tracer.h>
+#include <blacklist/kprobes.h>
 
 enum lttng_kretprobe_type {
 	EVENT_ENTRY = 0,
