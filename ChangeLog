@@ -1,3 +1,6 @@
+2019-03-12 (Homer Simpson Birthday) LTTng modules 2.11.0-rc4
+	* Fix: timer instrumentation for RHEL 7.6
+
 2019-03-12 (Homer Simpson Birthday) LTTng modules 2.11.0-rc3
 	* Move timekeeping blacklisting to a header file
 	* Blacklist: kprobe for arm
