@@ -1,3 +1,15 @@
+2019-03-12 (Homer Simpson Birthday) LTTng modules 2.10.9
+	* Blacklist: kprobe for arm
+	* Cleanup: tp mempool: Remove logically dead code
+	* Fix: btrfs: Remove fsid/metadata_fsid fields from btrfs_info
+	* Fix: SUNRPC: Simplify defining common RPC trace events (v5.0)
+	* Fix: Replace pointer values with task->tk_pid and rpc_clnt->cl_clid
+	* Fix: Remove 'type' argument from access_ok() function (v5.0)
+	* Fix: timer instrumentation for RHEL 7.6
+	* Fix: ext4: adjust reserved cluster count when removing extents (v4.20)
+	* Fix: signal: Remove SEND_SIG_FORCED (v4.20)
+	* Fix: signal: Distinguish between kernel_siginfo and siginfo (v4.20)
+
 2018-11-01 (National Men Make Dinner Day) LTTng modules 2.10.8
 	* Fix: update kvm instrumentation for SLES12 SP2 LTSS >= 4.4.121-92.92
 	* Fix: Add missing const to lttng_tracepoint_ptr_deref prototype
