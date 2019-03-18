@@ -56,7 +56,9 @@ static void lib_ring_buffer_pipe_buf_release(struct pipe_inode_info *pipe,
 }
 
 static const struct pipe_buf_operations ring_buffer_pipe_buf_ops = {
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,1,0))
 	.can_merge = 0,
+#endif
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
 	.map = generic_pipe_buf_map,
 	.unmap = generic_pipe_buf_unmap,
