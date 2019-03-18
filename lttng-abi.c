@@ -429,8 +429,8 @@ int lttng_abi_create_channel(struct file *session_file,
 		transport_name = "<unknown>";
 		break;
 	}
-	if (atomic_long_add_unless(&session_file->f_count,
-		1, INT_MAX) == INT_MAX) {
+	if (!atomic_long_add_unless(&session_file->f_count, 1, LONG_MAX)) {
+		ret = -EOVERFLOW;
 		goto refcount_error;
 	}
 	/*
@@ -1038,8 +1038,7 @@ int lttng_abi_create_event(struct file *channel_file,
 		goto file_error;
 	}
 	/* The event holds a reference on the channel */
-	if (atomic_long_add_unless(&channel_file->f_count,
-		1, INT_MAX) == INT_MAX) {
+	if (!atomic_long_add_unless(&channel_file->f_count, 1, LONG_MAX)) {
 		ret = -EOVERFLOW;
 		goto refcount_error;
 	}
