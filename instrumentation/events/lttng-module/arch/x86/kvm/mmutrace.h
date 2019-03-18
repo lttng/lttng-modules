@@ -14,7 +14,15 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM kvm_mmu
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,1,0))
+
+#define LTTNG_KVM_MMU_PAGE_FIELDS \
+	ctf_integer(__u64, gfn, (sp)->gfn) \
+	ctf_integer(__u32, role, (sp)->role.word) \
+	ctf_integer(__u32, root_count, (sp)->root_count) \
+	ctf_integer(bool, unsync, (sp)->unsync)
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
 
 #define LTTNG_KVM_MMU_PAGE_FIELDS \
 	ctf_integer(unsigned long, mmu_valid_gen, (sp)->mmu_valid_gen) \
