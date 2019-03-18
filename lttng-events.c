@@ -76,7 +76,12 @@ int _lttng_field_statedump(struct lttng_session *session,
 
 void synchronize_trace(void)
 {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,1,0))
+	synchronize_rcu();
+#else
 	synchronize_sched();
+#endif
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 #ifdef CONFIG_PREEMPT_RT_FULL
 	synchronize_rcu();
