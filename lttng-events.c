@@ -1122,8 +1122,8 @@ int lttng_session_list_tracker_pids(struct lttng_session *session)
 		ret = PTR_ERR(tracker_pids_list_file);
 		goto file_error;
 	}
-	if (atomic_long_add_unless(&session->file->f_count,
-		1, INT_MAX) == INT_MAX) {
+	if (!atomic_long_add_unless(&session->file->f_count, 1, LONG_MAX)) {
+		ret = -EOVERFLOW;
 		goto refcount_error;
 	}
 	ret = lttng_tracker_pids_list_fops.open(NULL, tracker_pids_list_file);
