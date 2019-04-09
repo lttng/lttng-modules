@@ -38,6 +38,7 @@
 #include <wrapper/tracepoint.h>
 #include <wrapper/file.h>
 #include <wrapper/rcu.h>
+#include <wrapper/syscall.h>
 #include <lttng-events.h>
 
 #ifndef CONFIG_COMPAT
@@ -370,9 +371,9 @@ struct lttng_syscall_filter {
 static void syscall_entry_unknown(struct lttng_event *event,
 	struct pt_regs *regs, unsigned int id)
 {
-	unsigned long args[UNKNOWN_SYSCALL_NRARGS];
+	unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
-	syscall_get_arguments(current, regs, 0, UNKNOWN_SYSCALL_NRARGS, args);
+	lttng_syscall_get_arguments(current, regs, args);
 	if (unlikely(in_compat_syscall()))
 		__event_probe__compat_syscall_entry_unknown(event, id, args);
 	else
@@ -441,9 +442,9 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 	case 1:
 	{
 		void (*fptr)(void *__data, unsigned long arg0) = entry->func;
-		unsigned long args[1];
+		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
-		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		lttng_syscall_get_arguments(current, regs, args);
 		fptr(event, args[0]);
 		break;
 	}
@@ -452,9 +453,9 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 		void (*fptr)(void *__data,
 			unsigned long arg0,
 			unsigned long arg1) = entry->func;
-		unsigned long args[2];
+		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
-		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		lttng_syscall_get_arguments(current, regs, args);
 		fptr(event, args[0], args[1]);
 		break;
 	}
@@ -464,9 +465,9 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 			unsigned long arg0,
 			unsigned long arg1,
 			unsigned long arg2) = entry->func;
-		unsigned long args[3];
+		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
-		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		lttng_syscall_get_arguments(current, regs, args);
 		fptr(event, args[0], args[1], args[2]);
 		break;
 	}
@@ -477,9 +478,9 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 			unsigned long arg1,
 			unsigned long arg2,
 			unsigned long arg3) = entry->func;
-		unsigned long args[4];
+		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
-		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		lttng_syscall_get_arguments(current, regs, args);
 		fptr(event, args[0], args[1], args[2], args[3]);
 		break;
 	}
@@ -491,9 +492,9 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 			unsigned long arg2,
 			unsigned long arg3,
 			unsigned long arg4) = entry->func;
-		unsigned long args[5];
+		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
-		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		lttng_syscall_get_arguments(current, regs, args);
 		fptr(event, args[0], args[1], args[2], args[3], args[4]);
 		break;
 	}
@@ -506,9 +507,9 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 			unsigned long arg3,
 			unsigned long arg4,
 			unsigned long arg5) = entry->func;
-		unsigned long args[6];
+		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
-		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		lttng_syscall_get_arguments(current, regs, args);
 		fptr(event, args[0], args[1], args[2],
 			args[3], args[4], args[5]);
 		break;
@@ -521,9 +522,9 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 static void syscall_exit_unknown(struct lttng_event *event,
 	struct pt_regs *regs, int id, long ret)
 {
-	unsigned long args[UNKNOWN_SYSCALL_NRARGS];
+	unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
-	syscall_get_arguments(current, regs, 0, UNKNOWN_SYSCALL_NRARGS, args);
+	lttng_syscall_get_arguments(current, regs, args);
 	if (unlikely(in_compat_syscall()))
 		__event_probe__compat_syscall_exit_unknown(event, id, ret,
 			args);
@@ -597,9 +598,9 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 		void (*fptr)(void *__data,
 			long ret,
 			unsigned long arg0) = entry->func;
-		unsigned long args[1];
+		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
-		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		lttng_syscall_get_arguments(current, regs, args);
 		fptr(event, ret, args[0]);
 		break;
 	}
@@ -609,9 +610,9 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 			long ret,
 			unsigned long arg0,
 			unsigned long arg1) = entry->func;
-		unsigned long args[2];
+		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
-		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		lttng_syscall_get_arguments(current, regs, args);
 		fptr(event, ret, args[0], args[1]);
 		break;
 	}
@@ -622,9 +623,9 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 			unsigned long arg0,
 			unsigned long arg1,
 			unsigned long arg2) = entry->func;
-		unsigned long args[3];
+		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
-		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		lttng_syscall_get_arguments(current, regs, args);
 		fptr(event, ret, args[0], args[1], args[2]);
 		break;
 	}
@@ -636,9 +637,9 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 			unsigned long arg1,
 			unsigned long arg2,
 			unsigned long arg3) = entry->func;
-		unsigned long args[4];
+		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
-		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		lttng_syscall_get_arguments(current, regs, args);
 		fptr(event, ret, args[0], args[1], args[2], args[3]);
 		break;
 	}
@@ -651,9 +652,9 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 			unsigned long arg2,
 			unsigned long arg3,
 			unsigned long arg4) = entry->func;
-		unsigned long args[5];
+		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
-		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		lttng_syscall_get_arguments(current, regs, args);
 		fptr(event, ret, args[0], args[1], args[2], args[3], args[4]);
 		break;
 	}
@@ -667,9 +668,9 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 			unsigned long arg3,
 			unsigned long arg4,
 			unsigned long arg5) = entry->func;
-		unsigned long args[6];
+		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
-		syscall_get_arguments(current, regs, 0, entry->nrargs, args);
+		lttng_syscall_get_arguments(current, regs, args);
 		fptr(event, ret, args[0], args[1], args[2],
 			args[3], args[4], args[5]);
 		break;
