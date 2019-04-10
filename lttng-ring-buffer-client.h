@@ -464,9 +464,10 @@ static int client_stream_id(const struct lib_ring_buffer_config *config,
 			struct lib_ring_buffer *buf,
 			uint64_t *stream_id)
 {
-	struct packet_header *header = client_packet_header(config, buf);
-	*stream_id = header->stream_id;
+	struct channel *chan = buf->backend.chan;
+	struct lttng_channel *lttng_chan = channel_get_private(chan);
 
+	*stream_id = lttng_chan->id;
 	return 0;
 }
 
@@ -495,8 +496,7 @@ int client_instance_id(const struct lib_ring_buffer_config *config,
 		struct lib_ring_buffer *buf,
 		uint64_t *id)
 {
-	struct packet_header *header = client_packet_header(config, buf);
-	*id = header->stream_instance_id;
+	*id = buf->backend.cpu;
 
 	return 0;
 }
