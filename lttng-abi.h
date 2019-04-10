@@ -231,24 +231,30 @@ struct lttng_kernel_filter_bytecode {
 #define LTTNG_KERNEL_FILTER			_IO(0xF6, 0x90)
 #define LTTNG_KERNEL_ADD_CALLSITE		_IO(0xF6, 0x91)
 
-/* LTTng-specific ioctls for the lib ringbuffer */
+/*
+ * LTTng-specific ioctls for the lib ringbuffer.
+ *
+ * Operations applying to the current sub-buffer need to occur between
+ * a get/put or get_next/put_next ioctl pair.
+ */
+
 /* returns the timestamp begin of the current sub-buffer */
 #define LTTNG_RING_BUFFER_GET_TIMESTAMP_BEGIN	_IOR(0xF6, 0x20, uint64_t)
 /* returns the timestamp end of the current sub-buffer */
 #define LTTNG_RING_BUFFER_GET_TIMESTAMP_END	_IOR(0xF6, 0x21, uint64_t)
-/* returns the number of events discarded */
+/* returns the number of events discarded of the current sub-buffer */
 #define LTTNG_RING_BUFFER_GET_EVENTS_DISCARDED	_IOR(0xF6, 0x22, uint64_t)
-/* returns the packet payload size */
+/* returns the packet payload size of the current sub-buffer */
 #define LTTNG_RING_BUFFER_GET_CONTENT_SIZE	_IOR(0xF6, 0x23, uint64_t)
-/* returns the actual packet size */
+/* returns the packet size of the current sub-buffer*/
 #define LTTNG_RING_BUFFER_GET_PACKET_SIZE	_IOR(0xF6, 0x24, uint64_t)
-/* returns the stream id */
+/* returns the stream id (invariant for the stream) */
 #define LTTNG_RING_BUFFER_GET_STREAM_ID		_IOR(0xF6, 0x25, uint64_t)
-/* returns the current timestamp */
+/* returns the current timestamp as perceived from the tracer */
 #define LTTNG_RING_BUFFER_GET_CURRENT_TIMESTAMP	_IOR(0xF6, 0x26, uint64_t)
-/* returns the packet sequence number */
+/* returns the packet sequence number of the current sub-buffer */
 #define LTTNG_RING_BUFFER_GET_SEQ_NUM		_IOR(0xF6, 0x27, uint64_t)
-/* returns the stream instance id */
+/* returns the stream instance id (invariant for the stream) */
 #define LTTNG_RING_BUFFER_INSTANCE_ID		_IOR(0xF6, 0x28, uint64_t)
 
 #ifdef CONFIG_COMPAT
@@ -258,25 +264,25 @@ struct lttng_kernel_filter_bytecode {
 /* returns the timestamp end of the current sub-buffer */
 #define LTTNG_RING_BUFFER_COMPAT_GET_TIMESTAMP_END \
 	LTTNG_RING_BUFFER_GET_TIMESTAMP_END
-/* returns the number of events discarded */
+/* returns the number of events discarded of the current sub-buffer */
 #define LTTNG_RING_BUFFER_COMPAT_GET_EVENTS_DISCARDED \
 	LTTNG_RING_BUFFER_GET_EVENTS_DISCARDED
-/* returns the packet payload size */
+/* returns the packet payload size of the current sub-buffer */
 #define LTTNG_RING_BUFFER_COMPAT_GET_CONTENT_SIZE \
 	LTTNG_RING_BUFFER_GET_CONTENT_SIZE
-/* returns the actual packet size */
+/* returns the packet size of the current sub-buffer */
 #define LTTNG_RING_BUFFER_COMPAT_GET_PACKET_SIZE \
 	LTTNG_RING_BUFFER_GET_PACKET_SIZE
-/* returns the stream id */
+/* returns the stream id (invariant for the stream) */
 #define LTTNG_RING_BUFFER_COMPAT_GET_STREAM_ID \
 	LTTNG_RING_BUFFER_GET_STREAM_ID
-/* returns the current timestamp */
+/* returns the current timestamp as perceived from the tracer */
 #define LTTNG_RING_BUFFER_COMPAT_GET_CURRENT_TIMESTAMP \
 	LTTNG_RING_BUFFER_GET_CURRENT_TIMESTAMP
-/* returns the packet sequence number */
+/* returns the packet sequence number of the current sub-buffer */
 #define LTTNG_RING_BUFFER_COMPAT_GET_SEQ_NUM	\
 	LTTNG_RING_BUFFER_GET_SEQ_NUM
-/* returns the stream instance id */
+/* returns the stream instance id (invariant for the stream) */
 #define LTTNG_RING_BUFFER_COMPAT_INSTANCE_ID	\
 	LTTNG_RING_BUFFER_INSTANCE_ID
 #endif /* CONFIG_COMPAT */
