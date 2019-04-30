@@ -120,6 +120,20 @@ struct lib_ring_buffer {
 
 	struct commit_counters_cold *commit_cold;
 					/* Commit count per sub-buffer */
+	u64 *ts_end;			/*
+					 * timestamp_end per sub-buffer.
+					 * Time is sampled by the
+					 * switch_*_end() callbacks which
+					 * are the last space reservation
+					 * performed in the sub-buffer
+					 * before it can be fully
+					 * committed and delivered. This
+					 * time value is then read by
+					 * the deliver callback,
+					 * performed by the last commit
+					 * before the buffer becomes
+					 * readable.
+					 */
 	atomic_long_t active_readers;	/*
 					 * Active readers count
 					 * standard atomic access (shared)
