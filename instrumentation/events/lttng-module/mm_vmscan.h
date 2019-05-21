@@ -114,7 +114,42 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_wakeup_kswapd,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,2,0))
+
+LTTNG_TRACEPOINT_EVENT_CLASS(mm_vmscan_direct_reclaim_begin_template,
+
+	TP_PROTO(int order, gfp_t gfp_flags),
+
+	TP_ARGS(order, gfp_flags),
+
+	TP_FIELDS(
+		ctf_integer(int, order, order)
+		ctf_integer(gfp_t, gfp_flags, gfp_flags)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_direct_reclaim_begin_template, mm_vmscan_direct_reclaim_begin,
+
+	TP_PROTO(int order, gfp_t gfp_flags),
+
+	TP_ARGS(order, gfp_flags)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_direct_reclaim_begin_template, mm_vmscan_memcg_reclaim_begin,
+
+	TP_PROTO(int order, gfp_t gfp_flags),
+
+	TP_ARGS(order, gfp_flags)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_direct_reclaim_begin_template, mm_vmscan_memcg_softlimit_reclaim_begin,
+
+	TP_PROTO(int order, gfp_t gfp_flags),
+
+	TP_ARGS(order, gfp_flags)
+)
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
 
 LTTNG_TRACEPOINT_EVENT_CLASS(mm_vmscan_direct_reclaim_begin_template,
 
