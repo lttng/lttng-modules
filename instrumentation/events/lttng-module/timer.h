@@ -89,6 +89,27 @@ LTTNG_TRACEPOINT_EVENT(timer_start,
 )
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,2,0))
+/**
+ * timer_expire_entry - called immediately before the timer callback
+ * @timer:	pointer to struct timer_list
+ *
+ * Allows to determine the timer latency.
+ */
+LTTNG_TRACEPOINT_EVENT(timer_expire_entry,
+
+	TP_PROTO(struct timer_list *timer, unsigned long baseclk),
+
+	TP_ARGS(timer, baseclk),
+
+	TP_FIELDS(
+		ctf_integer_hex(void *, timer, timer)
+		ctf_integer(unsigned long, now, jiffies)
+		ctf_integer_hex(void *, function, timer->function)
+		ctf_integer(unsigned long, baseclk, baseclk)
+	)
+)
+#else
 /**
  * timer_expire_entry - called immediately before the timer callback
  * @timer:	pointer to struct timer_list
@@ -107,6 +128,7 @@ LTTNG_TRACEPOINT_EVENT(timer_expire_entry,
 		ctf_integer_hex(void *, function, timer->function)
 	)
 )
+#endif
 
 /**
  * timer_expire_exit - called immediately after the timer callback returns
