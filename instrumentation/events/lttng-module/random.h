@@ -38,6 +38,24 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(random__mix_pool_bytes, mix_pool_bytes_noloc
 	TP_ARGS(pool_name, bytes, IP)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,2,0))
+LTTNG_TRACEPOINT_EVENT_MAP(credit_entropy_bits,
+
+	random_credit_entropy_bits,
+
+	TP_PROTO(const char *pool_name, int bits, int entropy_count,
+		 unsigned long IP),
+
+	TP_ARGS(pool_name, bits, entropy_count, IP),
+
+	TP_FIELDS(
+		ctf_string(pool_name, pool_name)
+		ctf_integer(int, bits, bits)
+		ctf_integer(int, entropy_count, entropy_count)
+		ctf_integer(unsigned long, IP, IP)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT_MAP(credit_entropy_bits,
 
 	random_credit_entropy_bits,
@@ -55,6 +73,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(credit_entropy_bits,
 		ctf_integer(unsigned long, IP, IP)
 	)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT_MAP(get_random_bytes,
 
