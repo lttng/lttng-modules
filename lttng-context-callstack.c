@@ -49,7 +49,11 @@
 #include "wrapper/vmalloc.h"
 #include "lttng-tracer.h"
 
+#ifdef CONFIG_ARCH_STACKWALK
+#include "lttng-context-callstack-stackwalk-impl.h"
+#else
 #include "lttng-context-callstack-legacy-impl.h"
+#endif
 
 static
 void field_data_free(struct field_data *fdata)
