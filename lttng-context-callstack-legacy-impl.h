@@ -54,6 +54,12 @@ static struct lttng_cs_type cs_types[] = {
 };
 
 static
+const char *lttng_cs_ctx_mode_name(enum lttng_cs_ctx_modes mode)
+{
+	return cs_types[mode].name;
+}
+
+static
 int init_type(enum lttng_cs_ctx_modes mode)
 {
 	unsigned long func;
@@ -68,6 +74,25 @@ int init_type(enum lttng_cs_ctx_modes mode)
 	}
 	cs_types[mode].save_func = (void *) func;
 	return 0;
+}
+
+static
+void lttng_cs_set_init(struct lttng_cs __percpu *cs_set)
+{
+	int cpu, i;
+
+	for_each_possible_cpu(cpu) {
+		struct lttng_cs *cs;
+
+		cs = per_cpu_ptr(cs_set, cpu);
+		for (i = 0; i < RING_BUFFER_MAX_NESTING; i++) {
+			struct lttng_cs_dispatch *dispatch;
+
+			dispatch = &cs->dispatch[i];
+			dispatch->stack_trace.entries = dispatch->entries;
+			dispatch->stack_trace.max_entries = MAX_ENTRIES;
+		}
+	}
 }
 
 /* Keep track of nesting inside userspace callstack context code */

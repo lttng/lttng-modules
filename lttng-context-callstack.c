@@ -63,7 +63,6 @@ void field_data_free(struct field_data *fdata)
 static
 struct field_data __percpu *field_data_create(enum lttng_cs_ctx_modes mode)
 {
-	int cpu, i;
 	struct lttng_cs __percpu *cs_set;
 	struct field_data *fdata;
 
@@ -73,20 +72,8 @@ struct field_data __percpu *field_data_create(enum lttng_cs_ctx_modes mode)
 	cs_set = alloc_percpu(struct lttng_cs);
 	if (!cs_set)
 		goto error_alloc;
-
+	lttng_cs_set_init(cs_set);
 	fdata->cs_percpu = cs_set;
-	for_each_possible_cpu(cpu) {
-		struct lttng_cs *cs;
-
-		cs = per_cpu_ptr(cs_set, cpu);
-		for (i = 0; i < RING_BUFFER_MAX_NESTING; i++) {
-			struct lttng_cs_dispatch *dispatch;
-
-			dispatch = &cs->dispatch[i];
-			dispatch->stack_trace.entries = dispatch->entries;
-			dispatch->stack_trace.max_entries = MAX_ENTRIES;
-		}
-	}
 	fdata->mode = mode;
 	return fdata;
 
@@ -107,7 +94,7 @@ static
 int __lttng_add_callstack_generic(struct lttng_ctx **ctx,
 		enum lttng_cs_ctx_modes mode)
 {
-	const char *ctx_name = cs_types[mode].name;
+	const char *ctx_name = lttng_cs_ctx_mode_name(mode);
 	struct lttng_ctx_field *field;
 	struct field_data *fdata;
 	int ret;
