@@ -407,7 +407,7 @@ static void lib_ring_buffer_start_read_timer(struct lib_ring_buffer *buf)
 {
 	struct channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
-	unsigned int flags;
+	unsigned int flags = 0;
 
 	if (config->wakeup != RING_BUFFER_WAKEUP_BY_TIMER
 	    || !chan->read_timer_interval
