@@ -1512,12 +1512,13 @@ void lib_ring_buffer_print_buffer_errors(struct lib_ring_buffer *buf,
 						       cpu);
 }
 
+#ifdef LTTNG_RING_BUFFER_COUNT_EVENTS
 static
-void lib_ring_buffer_print_errors(struct channel *chan,
-				  struct lib_ring_buffer *buf, int cpu)
+void lib_ring_buffer_print_records_count(struct channel *chan,
+					 struct lib_ring_buffer *buf,
+					 int cpu)
 {
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
-	void *priv = chan->backend.priv;
 
 	if (!strcmp(chan->backend.name, "relay-metadata")) {
 		printk(KERN_DEBUG "ring buffer %s: %lu records written, "
@@ -1531,7 +1532,26 @@ void lib_ring_buffer_print_errors(struct channel *chan,
 			chan->backend.name, cpu,
 			v_read(config, &buf->records_count),
 			v_read(config, &buf->records_overrun));
+	}
+}
+#else
+static
+void lib_ring_buffer_print_records_count(struct channel *chan,
+					 struct lib_ring_buffer *buf,
+					 int cpu)
+{
+}
+#endif
 
+static
+void lib_ring_buffer_print_errors(struct channel *chan,
+				  struct lib_ring_buffer *buf, int cpu)
+{
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
+	void *priv = chan->backend.priv;
+
+	lib_ring_buffer_print_records_count(chan, buf, cpu);
+	if (strcmp(chan->backend.name, "relay-metadata")) {
 		if (v_read(config, &buf->records_lost_full)
 		    || v_read(config, &buf->records_lost_wrap)
 		    || v_read(config, &buf->records_lost_big))
