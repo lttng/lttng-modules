@@ -978,8 +978,6 @@ void *channel_destroy(struct channel *chan)
 				config->cb.buffer_finalize(buf,
 							   chan->backend.priv,
 							   cpu);
-			if (buf->backend.allocated)
-				lib_ring_buffer_set_quiescent(buf);
 			/*
 			 * Perform flush before writing to finalized.
 			 */
@@ -992,8 +990,6 @@ void *channel_destroy(struct channel *chan)
 
 		if (config->cb.buffer_finalize)
 			config->cb.buffer_finalize(buf, chan->backend.priv, -1);
-		if (buf->backend.allocated)
-			lib_ring_buffer_set_quiescent(buf);
 		/*
 		 * Perform flush before writing to finalized.
 		 */
