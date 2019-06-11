@@ -1,3 +1,27 @@
+2019-06-12 (National Peanut Butter Cookie Day) LTTng modules 2.10.10
+	* Fix: Don't print ring-buffer's records count when it is not used
+	* Fix: do not set quiescent state on channel destroy
+	* Fix: ring_buffer_frontend.c: init read timer with uninitialized flags
+	* fix: random: only read from /dev/random after its pool has received 128 bits (v5.2)
+	* fix: mm: move recent_rotated pages calculation to shrink_inactive_list() (v5.2)
+	* fix: mm/vmscan: simplify trace_reclaim_flags and trace_shrink_flags (v5.2)
+	* fix: mm/vmscan: drop may_writepage and classzone_idx from direct reclaim begin template (v5.2)
+	* fix: timer/trace: Improve timer tracing (v5.2)
+	* Cleanup: bitfields: streamline use of underscores
+	* Silence compiler "always false comparison" warning
+	* Fix: bitfield: shift undefined/implementation defined behaviors
+	* Cleanup: bitfield.h: move to kernel style SPDX license identifiers
+	* Fix: timestamp_end field should include all events within sub-buffer
+	* Fix: Remove start and number from syscall_get_arguments() args (v5.1)
+	* lttng abi documentation: clarify getter usage requirements
+	* Fix: don't access packet header for stream_id and stream_instance_id getters
+	* Fix: atomic_long_add_unless() returns a boolean
+	* Fix: Revert "KVM: MMU: show mmu_valid_gen..." (v5.1)
+	* Fix: pipe: stop using ->can_merge (v5.1)
+	* Fix: rcu: Remove wrapper definitions for obsolete RCU... (v5.1)
+	* Fix: mm: create the new vm_fault_t type (v5.1)
+	* Fix: extra-version-git.sh redirect stderr to /dev/null
+
 2019-03-12 (Homer Simpson Birthday) LTTng modules 2.10.9
 	* Blacklist: kprobe for arm
 	* Cleanup: tp mempool: Remove logically dead code
