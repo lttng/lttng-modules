@@ -553,6 +553,175 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_template,
 
 	TP_ARGS(skb)
 )
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+
+/* Trace events for the receive entry points */
+LTTNG_TRACEPOINT_EVENT_CLASS(net_dev_receive_entry_template,
+
+	TP_PROTO(const struct sk_buff *skb),
+
+	TP_ARGS(skb),
+
+	TP_FIELDS(
+		ctf_integer_hex(const void *, skbaddr, skb)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_receive_entry_template,
+
+	napi_gro_frags_entry,
+
+	net_napi_gro_frags_entry,
+
+	TP_PROTO(const struct sk_buff *skb),
+
+	TP_ARGS(skb)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_receive_entry_template,
+
+	napi_gro_receive_entry,
+
+	net_napi_gro_receive_entry,
+
+	TP_PROTO(const struct sk_buff *skb),
+
+	TP_ARGS(skb)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_receive_entry_template,
+
+	netif_receive_skb_entry,
+
+	net_if_receive_skb_entry,
+
+	TP_PROTO(const struct sk_buff *skb),
+
+	TP_ARGS(skb)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_receive_entry_template,
+
+	netif_rx_entry,
+
+	net_if_rx_entry,
+
+	TP_PROTO(const struct sk_buff *skb),
+
+	TP_ARGS(skb)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_receive_entry_template,
+
+	netif_rx_ni_entry,
+
+	net_if_rx_ni_entry,
+
+	TP_PROTO(const struct sk_buff *skb),
+
+	TP_ARGS(skb)
+)
+
+#endif /* kernel > 3.14 */
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_receive_entry_template,
+
+	netif_receive_skb_list_entry,
+
+	net_if_receive_skb_list_entry,
+
+	TP_PROTO(const struct sk_buff *skb),
+
+	TP_ARGS(skb)
+)
+
+#endif /* kernel > 4.19 */
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0))
+
+/* Trace events for the receive exit points */
+LTTNG_TRACEPOINT_EVENT_CLASS(net_dev_receive_exit_template,
+
+	TP_PROTO(int ret),
+
+	TP_ARGS(ret),
+
+	TP_FIELDS(
+		ctf_integer(int, ret, ret)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_receive_exit_template,
+
+	napi_gro_frags_exit,
+
+	net_napi_gro_frags_exit,
+
+	TP_PROTO(int ret),
+
+	TP_ARGS(ret)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_receive_exit_template,
+
+	napi_gro_receive_exit,
+
+	net_napi_gro_receive_exit,
+
+	TP_PROTO(int ret),
+
+	TP_ARGS(ret)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_receive_exit_template,
+
+	netif_receive_skb_exit,
+
+	net_if_receive_skb_exit,
+
+	TP_PROTO(int ret),
+
+	TP_ARGS(ret)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_receive_exit_template,
+
+	netif_rx_exit,
+
+	net_if_rx_exit,
+
+	TP_PROTO(int ret),
+
+	TP_ARGS(ret)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_receive_exit_template,
+
+	netif_rx_ni_exit,
+
+	net_if_rx_ni_exit,
+
+	TP_PROTO(int ret),
+
+	TP_ARGS(ret)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_receive_exit_template,
+
+	netif_receive_skb_list_exit,
+
+	net_if_receive_skb_list_exit,
+
+	TP_PROTO(int ret),
+
+	TP_ARGS(ret)
+)
+
+#endif /* kernel > 5.0.0 */
+
 #endif /* LTTNG_TRACE_NET_H */
 
 /* This part must be outside protection */
