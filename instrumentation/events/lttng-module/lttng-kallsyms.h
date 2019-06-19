@@ -34,6 +34,30 @@ LTTNG_TRACEPOINT_EVENT(lttng_kallsyms_symbol_core,
 	)
 )
 
+LTTNG_TRACEPOINT_EVENT(lttng_kallsyms_new_module_symbol,
+
+	TP_PROTO(unsigned long addr, const char *symbol, const char *module),
+
+	TP_ARGS(addr, symbol, module),
+
+	TP_FIELDS(
+		ctf_integer_hex(unsigned long, addr, addr)
+		ctf_string(symbol, symbol)
+		ctf_string(module, module)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT(lttng_kallsyms_module_unloaded,
+
+	TP_PROTO(const char *module),
+
+	TP_ARGS(module),
+
+	TP_FIELDS(
+		ctf_string(module, module)
+	)
+)
+
 #endif /*  LTTNG_TRACE_LTTNG_KALLSYMS_H */
 
 /* This part must be outside protection */
