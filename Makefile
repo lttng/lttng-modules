@@ -83,6 +83,10 @@ ifneq ($(KERNELRELEASE),)
       -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 15 \) ] ; then \
       echo "lttng-tracepoint.o" ; fi;)
 
+  ifneq ($(CONFIG_KALLSYMS),)
+    obj-$(CONFIG_LTTNG) += lttng-kallsyms.o
+  endif
+
   obj-$(CONFIG_LTTNG) += lttng-statedump.o
   lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o \
                           wrapper/fdtable.o

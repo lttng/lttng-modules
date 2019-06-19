@@ -54,6 +54,7 @@
 #define TRACE_INCLUDE_FILE lttng-statedump
 #define LTTNG_INSTRUMENTATION
 #include <instrumentation/events/lttng-module/lttng-statedump.h>
+#include <lttng-kallsyms.h>
 
 DEFINE_TRACE(lttng_statedump_block_device);
 DEFINE_TRACE(lttng_statedump_end);
@@ -510,6 +511,9 @@ int do_lttng_statedump(struct lttng_session *session)
 		return ret;
 	}
 	ret = lttng_enumerate_cpu_topology(session);
+	if (ret)
+		return ret;
+	ret = lttng_enumerate_kernel_symbols(session);
 	if (ret)
 		return ret;
 
