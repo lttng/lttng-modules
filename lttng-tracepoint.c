@@ -269,7 +269,7 @@ int lttng_tracepoint_coming(struct tp_module *tp_mod)
 		}
 	}
 	mutex_unlock(&lttng_tracepoint_mutex);
-	return 0;
+	return NOTIFY_OK;
 }
 
 static
