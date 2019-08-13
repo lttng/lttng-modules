@@ -470,6 +470,23 @@ int lttng_abi_session_set_name(struct lttng_session *session,
 	return 0;
 }
 
+static
+int lttng_abi_session_set_creation_time(struct lttng_session *session,
+		struct lttng_kernel_session_creation_time *time)
+{
+	size_t len;
+
+	len = strnlen(time->iso8601, LTTNG_KERNEL_SESSION_CREATION_TIME_ISO8601_LEN);
+
+	if (len == LTTNG_KERNEL_SESSION_CREATION_TIME_ISO8601_LEN) {
+		/* Time is too long/malformed */
+		return -EINVAL;
+	}
+
+	strcpy(session->creation_time, time->iso8601);
+	return 0;
+}
+
 /**
  *	lttng_session_ioctl - lttng session fd ioctl
  *
@@ -588,6 +605,16 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 				sizeof(struct lttng_kernel_session_name)))
 			return -EFAULT;
 		return lttng_abi_session_set_name(session, &name);
+	}
+	case LTTNG_KERNEL_SESSION_SET_CREATION_TIME:
+	{
+		struct lttng_kernel_session_creation_time time;
+
+		if (copy_from_user(&time,
+				(struct lttng_kernel_session_creation_time __user *) arg,
+				sizeof(struct lttng_kernel_session_creation_time)))
+			return -EFAULT;
+		return lttng_abi_session_set_creation_time(session, &time);
 	}
 	default:
 		return -ENOIOCTLCMD;

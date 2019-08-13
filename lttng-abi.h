@@ -21,6 +21,7 @@
 
 #define LTTNG_KERNEL_SYM_NAME_LEN	256
 #define LTTNG_KERNEL_SESSION_NAME_LEN	256
+#define LTTNG_KERNEL_SESSION_CREATION_TIME_ISO8601_LEN	26
 
 enum lttng_kernel_instrumentation {
 	LTTNG_KERNEL_TRACEPOINT	= 0,
@@ -124,6 +125,10 @@ struct lttng_kernel_session_name {
 	char name[LTTNG_KERNEL_SESSION_NAME_LEN];
 } __attribute__((packed));
 
+struct lttng_kernel_session_creation_time {
+	char iso8601[LTTNG_KERNEL_SESSION_CREATION_TIME_ISO8601_LEN];
+} __attribute__((packed));
+
 enum lttng_kernel_calibrate_type {
 	LTTNG_KERNEL_CALIBRATE_KRETPROBE,
 };
@@ -219,6 +224,8 @@ struct lttng_kernel_filter_bytecode {
 #define LTTNG_KERNEL_SESSION_STATEDUMP		_IO(0xF6, 0x5C)
 #define LTTNG_KERNEL_SESSION_SET_NAME		\
 	_IOR(0xF6, 0x5D, struct lttng_kernel_session_name)
+#define LTTNG_KERNEL_SESSION_SET_CREATION_TIME		\
+	_IOR(0xF6, 0x5E, struct lttng_kernel_session_creation_time)
 
 /* Channel FD ioctl */
 #define LTTNG_KERNEL_STREAM			_IO(0xF6, 0x62)

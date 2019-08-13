@@ -522,6 +522,7 @@ struct lttng_session {
 	/* Hash table of events */
 	struct lttng_event_ht events_ht;
 	char name[LTTNG_KERNEL_SESSION_NAME_LEN];
+	char creation_time[LTTNG_KERNEL_SESSION_CREATION_TIME_ISO8601_LEN];
 };
 
 struct lttng_metadata_cache {
