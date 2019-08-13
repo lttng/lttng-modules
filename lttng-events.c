@@ -2478,6 +2478,60 @@ int64_t measure_clock_offset(void)
 	return offset;
 }
 
+static
+int print_escaped_ctf_string(struct lttng_session *session, const char *string)
+{
+	int ret;
+	size_t i;
+	char cur;
+
+	i = 0;
+	cur = string[i];
+	while (cur != '\0') {
+		switch (cur) {
+		case '\n':
+			ret = lttng_metadata_printf(session, "%s", "\\n");
+			break;
+		case '\\':
+		case '"':
+			ret = lttng_metadata_printf(session, "%c", '\\');
+			if (ret)
+				goto error;
+			/* We still print the current char */
+			/* Fallthrough */
+		default:
+			ret = lttng_metadata_printf(session, "%c", cur);
+			break;
+		}
+
+		if (ret)
+			goto error;
+
+		cur = string[++i];
+	}
+error:
+	return ret;
+}
+
+static
+int print_metadata_session_name(struct lttng_session *session)
+{
+	int ret;
+
+	ret = lttng_metadata_printf(session, "	trace_name = \"");
+	if (ret)
+		goto error;
+
+	ret = print_escaped_ctf_string(session, session->name);
+	if (ret)
+		goto error;
+
+	ret = lttng_metadata_printf(session, "\";\n");
+
+error:
+	return ret;
+}
+
 /*
  * Output metadata into this session's metadata buffers.
  * Must be called with sessions_mutex held.
@@ -2553,7 +2607,7 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 		"	tracer_major = %d;\n"
 		"	tracer_minor = %d;\n"
 		"	tracer_patchlevel = %d;\n"
-		"};\n\n",
+		"	trace_buffering_scheme = \"global\";\n",
 		current->nsproxy->uts_ns->name.nodename,
 		utsname()->sysname,
 		utsname()->release,
@@ -2562,6 +2616,15 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 		LTTNG_MODULES_MINOR_VERSION,
 		LTTNG_MODULES_PATCHLEVEL_VERSION
 		);
+	if (ret)
+		goto end;
+
+	ret = print_metadata_session_name(session);
+	if (ret)
+		goto end;
+
+	/* Close env */
+	ret = lttng_metadata_printf(session, "};\n\n");
 	if (ret)
 		goto end;
 
