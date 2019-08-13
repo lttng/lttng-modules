@@ -453,6 +453,23 @@ fd_error:
 	return ret;
 }
 
+static
+int lttng_abi_session_set_name(struct lttng_session *session,
+		struct lttng_kernel_session_name *name)
+{
+	size_t len;
+
+	len = strnlen(name->name, LTTNG_KERNEL_SESSION_NAME_LEN);
+
+	if (len == LTTNG_KERNEL_SESSION_NAME_LEN) {
+		/* Name is too long/malformed */
+		return -EINVAL;
+	}
+
+	strcpy(session->name, name->name);
+	return 0;
+}
+
 /**
  *	lttng_session_ioctl - lttng session fd ioctl
  *
@@ -562,6 +579,16 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return lttng_session_metadata_regenerate(session);
 	case LTTNG_KERNEL_SESSION_STATEDUMP:
 		return lttng_session_statedump(session);
+	case LTTNG_KERNEL_SESSION_SET_NAME:
+	{
+		struct lttng_kernel_session_name name;
+
+		if (copy_from_user(&name,
+				(struct lttng_kernel_session_name __user *) arg,
+				sizeof(struct lttng_kernel_session_name)))
+			return -EFAULT;
+		return lttng_abi_session_set_name(session, &name);
+	}
 	default:
 		return -ENOIOCTLCMD;
 	}
