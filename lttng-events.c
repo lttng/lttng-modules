@@ -2514,15 +2514,16 @@ error:
 }
 
 static
-int print_metadata_session_name(struct lttng_session *session)
+int print_metadata_escaped_field(struct lttng_session *session, const char *field,
+		const char *field_value)
 {
 	int ret;
 
-	ret = lttng_metadata_printf(session, "	trace_name = \"");
+	ret = lttng_metadata_printf(session, "	%s = \"", field);
 	if (ret)
 		goto error;
 
-	ret = print_escaped_ctf_string(session, session->name);
+	ret = print_escaped_ctf_string(session, field_value);
 	if (ret)
 		goto error;
 
@@ -2619,7 +2620,11 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 	if (ret)
 		goto end;
 
-	ret = print_metadata_session_name(session);
+	ret = print_metadata_escaped_field(session, "trace_name", session->name);
+	if (ret)
+		goto end;
+	ret = print_metadata_escaped_field(session, "trace_creation_datetime",
+			session->creation_time);
 	if (ret)
 		goto end;
 
