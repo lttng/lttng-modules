@@ -521,6 +521,7 @@ struct lttng_session {
 	struct list_head enablers_head;
 	/* Hash table of events */
 	struct lttng_event_ht events_ht;
+	char name[LTTNG_KERNEL_SESSION_NAME_LEN];
 };
 
 struct lttng_metadata_cache {
