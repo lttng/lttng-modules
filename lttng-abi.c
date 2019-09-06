@@ -490,13 +490,12 @@ static
 long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	struct lttng_session *session = file->private_data;
+	struct lttng_kernel_channel chan_param;
+	struct lttng_kernel_old_channel old_chan_param;
 
 	switch (cmd) {
 	case LTTNG_KERNEL_OLD_CHANNEL:
 	{
-		struct lttng_kernel_channel chan_param;
-		struct lttng_kernel_old_channel old_chan_param;
-
 		if (copy_from_user(&old_chan_param,
 				(struct lttng_kernel_old_channel __user *) arg,
 				sizeof(struct lttng_kernel_old_channel)))
@@ -513,8 +512,6 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	}
 	case LTTNG_KERNEL_CHANNEL:
 	{
-		struct lttng_kernel_channel chan_param;
-
 		if (copy_from_user(&chan_param,
 				(struct lttng_kernel_channel __user *) arg,
 				sizeof(struct lttng_kernel_channel)))
@@ -534,9 +531,6 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return lttng_session_disable(session);
 	case LTTNG_KERNEL_OLD_METADATA:
 	{
-		struct lttng_kernel_channel chan_param;
-		struct lttng_kernel_old_channel old_chan_param;
-
 		if (copy_from_user(&old_chan_param,
 				(struct lttng_kernel_old_channel __user *) arg,
 				sizeof(struct lttng_kernel_old_channel)))
@@ -553,8 +547,6 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	}
 	case LTTNG_KERNEL_METADATA:
 	{
-		struct lttng_kernel_channel chan_param;
-
 		if (copy_from_user(&chan_param,
 					(struct lttng_kernel_channel __user *) arg,
 					sizeof(struct lttng_kernel_channel)))
