@@ -1,3 +1,12 @@
+2019-09-07 (Walter White's Anniversary) LTTng modules 2.11.0-rc6
+	* Fix: gcc-9.1 stack frame size warning
+	* Introduce LTTNG_KERNEL_SESSION_SET_CREATION_TIME
+	* Add metadata env fields
+	* Introduce LTTNG_KERNEL_SESSION_SET_NAME
+	* Fix: do not use diagnostic pragma when GCC version is lower than 4.6.0
+	* Fix: missing define when not building with gcc
+	* Fix: lttng-tracepoint module notifier should return NOTIFY_OK
+
 2019-06-12 (National Peanut Butter Cookie Day) LTTng modules 2.11.0-rc5
 	* Fix: Don't print ring-buffer's records count when it is not used
 	* Fix: do not set quiescent state on channel destroy
