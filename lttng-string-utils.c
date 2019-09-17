@@ -302,11 +302,12 @@ retry:
 			p = pattern_get_char_at_cb(p_at,
 				pattern_get_char_at_cb_data);
 
-			/*
-			 * Fall through the default case which will
-			 * compare the escaped character now.
-			 */
+			/* Fall-through. */
 		default:
+			/*
+			 * Default case which will compare the escaped
+			 * character now.
+			 */
 			if (p == '\0' || c != p) {
 end_of_pattern:
 				/* Character mismatch OR end of pattern. */
