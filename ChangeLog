@@ -1,3 +1,8 @@
+2019-10-11 (National Sausage Pizza Day) LTTng modules 2.11.0-rc7
+	* Fix: btrfs: move basic block_group definitions to their own header (v5.4)
+	* Cleanup: Silence gcc fall-through warning
+	* Fix: update sched prev_state instrumentation for upstream kernel
+
 2019-09-07 (Walter White's Anniversary) LTTng modules 2.11.0-rc6
 	* Fix: gcc-9.1 stack frame size warning
 	* Introduce LTTNG_KERNEL_SESSION_SET_CREATION_TIME
