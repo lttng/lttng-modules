@@ -94,6 +94,19 @@ available from LTTng:
   - `CONFIG_KALLSYMS_ALL`: state dump of mapping between block device
     number and name
 
+Customization/Extension
+-----------------------
+
+The lttng-modules source includes definitions for the actual callback
+functions that will be attached to the kernel tracepoints by lttng.
+The lttng-modules project implements its own macros generating these
+callbacks: the LTTNG_TRACEPOINT_EVENT macro family found in
+instrumentation/events/lttng-module/. In order to show up in a
+lttng-modules trace, a kernel tracepoint must be defined within the
+kernel tree, and also defined within lttng-modules with the
+LTTNG_TRACEPOINT_EVENT macro family. Customizations or extensions must
+be done by modifying instances of these macros within the lttng-modules
+source.
 
 Usage
 -----
