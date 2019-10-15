@@ -13,9 +13,9 @@ distribution kernel, with no need for additional patches.
 Other notable features:
 
   - Produces [CTF](http://www.efficios.com/ctf)
-    (Common Trace Format) natively.
+    (Common Trace Format) natively,
   - Tracepoints, function tracer, CPU Performance Monitoring Unit (PMU)
-    counters, kprobes, and kretprobes support.
+    counters, kprobes, and kretprobes support,
   - Have the ability to attach _context_ information to events in the
     trace (e.g., any PMU counter, PID, PPID, TID, command name, etc).
     All the extra information fields to be collected with events are
@@ -58,14 +58,14 @@ Then configure your kernel as usual and enable the `CONFIG_LTTNG` option.
 Make sure your target kernel has the following config options enabled:
 
   - `CONFIG_MODULES`: loadable module support (not strictly required
-     when built into the kernel)
+     when built into the kernel),
   - `CONFIG_KALLSYMS`: see files in [`wrapper`](wrapper); this is
      necessary until the few required missing symbols are exported to GPL
-     modules from mainline
-  - `CONFIG_HIGH_RES_TIMERS`: needed for LTTng 2.x clock source
+     modules from mainline,
+  - `CONFIG_HIGH_RES_TIMERS`: needed for LTTng 2.x clock source,
   - `CONFIG_TRACEPOINTS`: kernel tracepoint instrumentation
      (enabled as a side-effect of any of the perf/ftrace/blktrace
-     instrumentation features)
+     instrumentation features).
 
 
 ### Supported (optional) kernel config options
