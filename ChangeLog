@@ -1,3 +1,7 @@
+2019-10-17 (Wear Something Gaudy Day) LTTng modules 2.9.15
+	* Fix: btrfs: move basic block_group definitions to their own header (v5.4)
+	* Fix: update sched prev_state instrumentation for upstream kernel
+
 2019-09-07 (Walter White's Anniversary) LTTng modules 2.9.14
 	* Fix: gcc-9.1 stack frame size warning
 	* Fix: do not use diagnostic pragma when GCC version is lower than 4.6.0
