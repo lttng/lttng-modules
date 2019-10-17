@@ -1,3 +1,6 @@
+2019-10-17 (Wear Something Gaudy Day) LTTng modules 2.11.0
+	* (no change)
+
 2019-10-11 (National Sausage Pizza Day) LTTng modules 2.11.0-rc7
 	* Fix: btrfs: move basic block_group definitions to their own header (v5.4)
 	* Cleanup: Silence gcc fall-through warning
