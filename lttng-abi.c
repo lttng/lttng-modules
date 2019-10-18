@@ -1529,6 +1529,9 @@ long lttng_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 				(struct lttng_kernel_event_callsite __user *) arg);
 		case LTTNG_TYPE_ENABLER:
 			return -EINVAL;
+		default:
+			WARN_ON_ONCE(1);
+			return -ENOSYS;
 		}
 	default:
 		return -ENOIOCTLCMD;
