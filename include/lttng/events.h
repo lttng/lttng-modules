@@ -341,19 +341,31 @@ struct lttng_enabler {
 
 	enum lttng_enabler_format_type format_type;
 
-	struct list_head node;	/* per-session list of enablers */
 	/* head list of struct lttng_ust_filter_bytecode_node */
 	struct list_head filter_bytecode_head;
 
 	struct lttng_kernel_event event_param;
+	unsigned int enabled:1;
+};
+
+struct lttng_event_enabler {
+	struct lttng_enabler base;
+	struct list_head node;	/* per-session list of enablers */
 	struct lttng_channel *chan;
 	/*
 	 * Unused, but kept around to make it explicit that the tracer can do
 	 * it.
 	 */
 	struct lttng_ctx *ctx;
-	unsigned int enabled:1;
 };
+
+static inline
+struct lttng_enabler *lttng_event_enabler_as_enabler(
+		struct lttng_event_enabler *event_enabler)
+{
+	return &event_enabler->base;
+}
+
 
 struct lttng_channel_ops {
 	struct channel *(*channel_create)(const char *name,
@@ -537,7 +549,7 @@ struct lttng_session {
 	struct lttng_id_tracker vgid_tracker;
 	unsigned int metadata_dumped:1,
 		tstate:1;		/* Transient enable state */
-	/* List of enablers */
+	/* List of event enablers */
 	struct list_head enablers_head;
 	/* Hash table of events */
 	struct lttng_event_ht events_ht;
@@ -562,12 +574,13 @@ void lttng_unlock_sessions(void);
 
 struct list_head *lttng_get_probe_list_head(void);
 
-struct lttng_enabler *lttng_enabler_create(enum lttng_enabler_format_type format_type,
+struct lttng_event_enabler *lttng_event_enabler_create(
+		enum lttng_enabler_format_type format_type,
 		struct lttng_kernel_event *event_param,
 		struct lttng_channel *chan);
 
-int lttng_enabler_enable(struct lttng_enabler *enabler);
-int lttng_enabler_disable(struct lttng_enabler *enabler);
+int lttng_event_enabler_enable(struct lttng_event_enabler *event_enabler);
+int lttng_event_enabler_disable(struct lttng_event_enabler *event_enabler);
 int lttng_fix_pending_events(void);
 int lttng_session_active(void);
 
@@ -696,10 +709,10 @@ static inline long lttng_channel_syscall_mask(struct lttng_channel *channel,
 #endif
 
 void lttng_filter_sync_state(struct lttng_bytecode_runtime *runtime);
-int lttng_enabler_attach_bytecode(struct lttng_enabler *enabler,
+int lttng_event_enabler_attach_bytecode(struct lttng_event_enabler *event_enabler,
 		struct lttng_kernel_filter_bytecode __user *bytecode);
-void lttng_enabler_event_link_bytecode(struct lttng_event *event,
-		struct lttng_enabler *enabler);
+void lttng_event_enabler_link_bytecode(struct lttng_event *event,
+		struct lttng_event_enabler *event_enabler);
 
 int lttng_probes_init(void);
 

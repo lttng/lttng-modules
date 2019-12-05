@@ -483,17 +483,18 @@ void lttng_filter_sync_state(struct lttng_bytecode_runtime *runtime)
 /*
  * Link bytecode for all enablers referenced by an event.
  */
-void lttng_enabler_event_link_bytecode(struct lttng_event *event,
-		struct lttng_enabler *enabler)
+void lttng_event_enabler_link_bytecode(struct lttng_event *event,
+		struct lttng_event_enabler *event_enabler)
 {
 	struct lttng_filter_bytecode_node *bc;
 	struct lttng_bytecode_runtime *runtime;
+	struct lttng_enabler *base_enabler = lttng_event_enabler_as_enabler(event_enabler);
 
 	/* Can only be called for events with desc attached */
 	WARN_ON_ONCE(!event->desc);
 
 	/* Link each bytecode. */
-	list_for_each_entry(bc, &enabler->filter_bytecode_head, node) {
+	list_for_each_entry(bc, &base_enabler->filter_bytecode_head, node) {
 		int found = 0, ret;
 		struct list_head *insert_loc;
 

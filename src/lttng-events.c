@@ -55,9 +55,9 @@ static LIST_HEAD(lttng_transport_list);
 static DEFINE_MUTEX(sessions_mutex);
 static struct kmem_cache *event_cache;
 
-static void lttng_session_lazy_sync_enablers(struct lttng_session *session);
-static void lttng_session_sync_enablers(struct lttng_session *session);
-static void lttng_enabler_destroy(struct lttng_enabler *enabler);
+static void lttng_session_lazy_sync_event_enablers(struct lttng_session *session);
+static void lttng_session_sync_event_enablers(struct lttng_session *session);
+static void lttng_event_enabler_destroy(struct lttng_event_enabler *event_enabler);
 
 static void _lttng_event_destroy(struct lttng_event *event);
 static void _lttng_channel_destroy(struct lttng_channel *chan);
@@ -191,7 +191,7 @@ void lttng_session_destroy(struct lttng_session *session)
 	struct lttng_channel *chan, *tmpchan;
 	struct lttng_event *event, *tmpevent;
 	struct lttng_metadata_stream *metadata_stream;
-	struct lttng_enabler *enabler, *tmpenabler;
+	struct lttng_event_enabler *event_enabler, *tmp_event_enabler;
 	int ret;
 
 	mutex_lock(&sessions_mutex);
@@ -209,9 +209,9 @@ void lttng_session_destroy(struct lttng_session *session)
 		ret = lttng_syscalls_destroy(chan);
 		WARN_ON(ret);
 	}
-	list_for_each_entry_safe(enabler, tmpenabler,
+	list_for_each_entry_safe(event_enabler, tmp_event_enabler,
 			&session->enablers_head, node)
-		lttng_enabler_destroy(enabler);
+		lttng_event_enabler_destroy(event_enabler);
 	list_for_each_entry_safe(event, tmpevent, &session->events, list)
 		_lttng_event_destroy(event);
 	list_for_each_entry_safe(chan, tmpchan, &session->chan, list) {
@@ -259,7 +259,7 @@ int lttng_session_enable(struct lttng_session *session)
 	session->tstate = 1;
 
 	/* We need to sync enablers with session before activation. */
-	lttng_session_sync_enablers(session);
+	lttng_session_sync_event_enablers(session);
 
 	/*
 	 * Snapshot the number of events per channel to know the type of header
@@ -309,7 +309,7 @@ int lttng_session_disable(struct lttng_session *session)
 
 	/* Set transient enabler state to "disabled" */
 	session->tstate = 0;
-	lttng_session_sync_enablers(session);
+	lttng_session_sync_event_enablers(session);
 
 	/* Set each stream's quiescent state. */
 	list_for_each_entry(chan, &session->chan, list) {
@@ -376,7 +376,7 @@ int lttng_channel_enable(struct lttng_channel *channel)
 	}
 	/* Set transient enabler state to "enabled" */
 	channel->tstate = 1;
-	lttng_session_sync_enablers(channel->session);
+	lttng_session_sync_event_enablers(channel->session);
 	/* Set atomically the state to "enabled" */
 	WRITE_ONCE(channel->enabled, 1);
 end:
@@ -401,7 +401,7 @@ int lttng_channel_disable(struct lttng_channel *channel)
 	WRITE_ONCE(channel->enabled, 0);
 	/* Set transient enabler state to "enabled" */
 	channel->tstate = 0;
-	lttng_session_sync_enablers(channel->session);
+	lttng_session_sync_event_enablers(channel->session);
 end:
 	mutex_unlock(&sessions_mutex);
 	return ret;
@@ -1315,26 +1315,29 @@ int lttng_desc_match_enabler(const struct lttng_event_desc *desc,
 }
 
 static
-int lttng_event_match_enabler(struct lttng_event *event,
-		struct lttng_enabler *enabler)
+int lttng_event_enabler_match_event(struct lttng_event_enabler *event_enabler,
+		struct lttng_event *event)
 {
-	if (enabler->event_param.instrumentation != event->instrumentation)
+	struct lttng_enabler *base_enabler = lttng_event_enabler_as_enabler(
+		event_enabler);
+
+	if (base_enabler->event_param.instrumentation != event->instrumentation)
 		return 0;
-	if (lttng_desc_match_enabler(event->desc, enabler)
-			&& event->chan == enabler->chan)
+	if (lttng_desc_match_enabler(event->desc, base_enabler)
+			&& event->chan == event_enabler->chan)
 		return 1;
 	else
 		return 0;
 }
 
 static
-struct lttng_enabler_ref *lttng_event_enabler_ref(struct lttng_event *event,
+struct lttng_enabler_ref *lttng_enabler_ref(
+		struct list_head *enablers_ref_list,
 		struct lttng_enabler *enabler)
 {
 	struct lttng_enabler_ref *enabler_ref;
 
-	list_for_each_entry(enabler_ref,
-			&event->enablers_ref_head, node) {
+	list_for_each_entry(enabler_ref, enablers_ref_list, node) {
 		if (enabler_ref->ref == enabler)
 			return enabler_ref;
 	}
@@ -1342,9 +1345,9 @@ struct lttng_enabler_ref *lttng_event_enabler_ref(struct lttng_event *event,
 }
 
 static
-void lttng_create_tracepoint_if_missing(struct lttng_enabler *enabler)
+void lttng_create_tracepoint_if_missing(struct lttng_event_enabler *event_enabler)
 {
-	struct lttng_session *session = enabler->chan->session;
+	struct lttng_session *session = event_enabler->chan->session;
 	struct lttng_probe_desc *probe_desc;
 	const struct lttng_event_desc *desc;
 	int i;
@@ -1366,7 +1369,8 @@ void lttng_create_tracepoint_if_missing(struct lttng_enabler *enabler)
 			struct lttng_event *event;
 
 			desc = probe_desc->event_desc[i];
-			if (!lttng_desc_match_enabler(desc, enabler))
+			if (!lttng_desc_match_enabler(desc,
+					lttng_event_enabler_as_enabler(event_enabler)))
 				continue;
 			event_name = desc->name;
 			name_len = strlen(event_name);
@@ -1378,7 +1382,7 @@ void lttng_create_tracepoint_if_missing(struct lttng_enabler *enabler)
 			head = &session->events_ht.table[hash & (LTTNG_EVENT_HT_SIZE - 1)];
 			lttng_hlist_for_each_entry(event, head, hlist) {
 				if (event->desc == desc
-						&& event->chan == enabler->chan)
+						&& event->chan == event_enabler->chan)
 					found = 1;
 			}
 			if (found)
@@ -1388,7 +1392,7 @@ void lttng_create_tracepoint_if_missing(struct lttng_enabler *enabler)
 			 * We need to create an event for this
 			 * event probe.
 			 */
-			event = _lttng_event_create(enabler->chan,
+			event = _lttng_event_create(event_enabler->chan,
 					NULL, NULL, desc,
 					LTTNG_KERNEL_TRACEPOINT);
 			if (!event) {
@@ -1400,11 +1404,11 @@ void lttng_create_tracepoint_if_missing(struct lttng_enabler *enabler)
 }
 
 static
-void lttng_create_syscall_if_missing(struct lttng_enabler *enabler)
+void lttng_create_syscall_if_missing(struct lttng_event_enabler *event_enabler)
 {
 	int ret;
 
-	ret = lttng_syscalls_register(enabler->chan, NULL);
+	ret = lttng_syscalls_register(event_enabler->chan, NULL);
 	WARN_ON_ONCE(ret);
 }
 
@@ -1414,14 +1418,14 @@ void lttng_create_syscall_if_missing(struct lttng_enabler *enabler)
  * Should be called with sessions mutex held.
  */
 static
-void lttng_create_event_if_missing(struct lttng_enabler *enabler)
+void lttng_create_event_if_missing(struct lttng_event_enabler *event_enabler)
 {
-	switch (enabler->event_param.instrumentation) {
+	switch (event_enabler->base.event_param.instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
-		lttng_create_tracepoint_if_missing(enabler);
+		lttng_create_tracepoint_if_missing(event_enabler);
 		break;
 	case LTTNG_KERNEL_SYSCALL:
-		lttng_create_syscall_if_missing(enabler);
+		lttng_create_syscall_if_missing(event_enabler);
 		break;
 	default:
 		WARN_ON_ONCE(1);
@@ -1430,47 +1434,49 @@ void lttng_create_event_if_missing(struct lttng_enabler *enabler)
 }
 
 /*
- * Create events associated with an enabler (if not already present),
+ * Create events associated with an event_enabler (if not already present),
  * and add backward reference from the event to the enabler.
  * Should be called with sessions mutex held.
  */
 static
-int lttng_enabler_ref_events(struct lttng_enabler *enabler)
+int lttng_event_enabler_ref_events(struct lttng_event_enabler *event_enabler)
 {
-	struct lttng_channel *chan = enabler->chan;
-	struct lttng_session *session = chan->session;
+	struct lttng_channel *chan = event_enabler->chan;
+	struct lttng_session *session = event_enabler->chan->session;
+	struct lttng_enabler *base_enabler = lttng_event_enabler_as_enabler(event_enabler);
 	struct lttng_event *event;
 
-	if (enabler->event_param.instrumentation == LTTNG_KERNEL_SYSCALL &&
-			enabler->event_param.u.syscall.entryexit == LTTNG_KERNEL_SYSCALL_ENTRYEXIT &&
-			enabler->event_param.u.syscall.abi == LTTNG_KERNEL_SYSCALL_ABI_ALL &&
-			enabler->event_param.u.syscall.match == LTTNG_SYSCALL_MATCH_NAME &&
-			!strcmp(enabler->event_param.name, "*")) {
-		if (enabler->enabled)
+	if (base_enabler->event_param.instrumentation == LTTNG_KERNEL_SYSCALL &&
+			base_enabler->event_param.u.syscall.entryexit == LTTNG_KERNEL_SYSCALL_ENTRYEXIT &&
+			base_enabler->event_param.u.syscall.abi == LTTNG_KERNEL_SYSCALL_ABI_ALL &&
+			base_enabler->event_param.u.syscall.match == LTTNG_SYSCALL_MATCH_NAME &&
+			!strcmp(base_enabler->event_param.name, "*")) {
+		if (base_enabler->enabled)
 			WRITE_ONCE(chan->syscall_all, 1);
 		else
 			WRITE_ONCE(chan->syscall_all, 0);
 	}
 
 	/* First ensure that probe events are created for this enabler. */
-	lttng_create_event_if_missing(enabler);
+	lttng_create_event_if_missing(event_enabler);
 
-	/* For each event matching enabler in session event list. */
+	/* For each event matching event_enabler in session event list. */
 	list_for_each_entry(event, &session->events, list) {
 		struct lttng_enabler_ref *enabler_ref;
 
-		if (!lttng_event_match_enabler(event, enabler))
+		if (!lttng_event_enabler_match_event(event_enabler, event))
 			continue;
-		enabler_ref = lttng_event_enabler_ref(event, enabler);
+		enabler_ref = lttng_enabler_ref(&event->enablers_ref_head,
+			lttng_event_enabler_as_enabler(event_enabler));
 		if (!enabler_ref) {
 			/*
 			 * If no backward ref, create it.
-			 * Add backward ref from event to enabler.
+			 * Add backward ref from event to event_enabler.
 			 */
 			enabler_ref = kzalloc(sizeof(*enabler_ref), GFP_KERNEL);
 			if (!enabler_ref)
 				return -ENOMEM;
-			enabler_ref->ref = enabler;
+			enabler_ref->ref = lttng_event_enabler_as_enabler(event_enabler);
 			list_add(&enabler_ref->node,
 				&event->enablers_ref_head);
 		}
@@ -1478,7 +1484,7 @@ int lttng_enabler_ref_events(struct lttng_enabler *enabler)
 		/*
 		 * Link filter bytecodes if not linked yet.
 		 */
-		lttng_enabler_event_link_bytecode(event, enabler);
+		lttng_event_enabler_link_bytecode(event, event_enabler);
 
 		/* TODO: merge event context. */
 	}
@@ -1495,52 +1501,54 @@ int lttng_fix_pending_events(void)
 	struct lttng_session *session;
 
 	list_for_each_entry(session, &sessions, list)
-		lttng_session_lazy_sync_enablers(session);
+		lttng_session_lazy_sync_event_enablers(session);
 	return 0;
 }
 
-struct lttng_enabler *lttng_enabler_create(enum lttng_enabler_format_type format_type,
+struct lttng_event_enabler *lttng_event_enabler_create(
+		enum lttng_enabler_format_type format_type,
 		struct lttng_kernel_event *event_param,
 		struct lttng_channel *chan)
 {
-	struct lttng_enabler *enabler;
+	struct lttng_event_enabler *event_enabler;
 
-	enabler = kzalloc(sizeof(*enabler), GFP_KERNEL);
-	if (!enabler)
+	event_enabler = kzalloc(sizeof(*event_enabler), GFP_KERNEL);
+	if (!event_enabler)
 		return NULL;
-	enabler->format_type = format_type;
-	INIT_LIST_HEAD(&enabler->filter_bytecode_head);
-	memcpy(&enabler->event_param, event_param,
-		sizeof(enabler->event_param));
-	enabler->chan = chan;
+	event_enabler->base.format_type = format_type;
+	INIT_LIST_HEAD(&event_enabler->base.filter_bytecode_head);
+	memcpy(&event_enabler->base.event_param, event_param,
+		sizeof(event_enabler->base.event_param));
+	event_enabler->chan = chan;
 	/* ctx left NULL */
-	enabler->enabled = 0;
-	enabler->evtype = LTTNG_TYPE_ENABLER;
+	event_enabler->base.enabled = 0;
+	event_enabler->base.evtype = LTTNG_TYPE_ENABLER;
 	mutex_lock(&sessions_mutex);
-	list_add(&enabler->node, &enabler->chan->session->enablers_head);
-	lttng_session_lazy_sync_enablers(enabler->chan->session);
+	list_add(&event_enabler->node, &event_enabler->chan->session->enablers_head);
+	lttng_session_lazy_sync_event_enablers(event_enabler->chan->session);
 	mutex_unlock(&sessions_mutex);
-	return enabler;
+	return event_enabler;
 }
 
-int lttng_enabler_enable(struct lttng_enabler *enabler)
+int lttng_event_enabler_enable(struct lttng_event_enabler *event_enabler)
 {
 	mutex_lock(&sessions_mutex);
-	enabler->enabled = 1;
-	lttng_session_lazy_sync_enablers(enabler->chan->session);
+	lttng_event_enabler_as_enabler(event_enabler)->enabled = 1;
+	lttng_session_lazy_sync_event_enablers(event_enabler->chan->session);
 	mutex_unlock(&sessions_mutex);
 	return 0;
 }
 
-int lttng_enabler_disable(struct lttng_enabler *enabler)
+int lttng_event_enabler_disable(struct lttng_event_enabler *event_enabler)
 {
 	mutex_lock(&sessions_mutex);
-	enabler->enabled = 0;
-	lttng_session_lazy_sync_enablers(enabler->chan->session);
+	lttng_event_enabler_as_enabler(event_enabler)->enabled = 0;
+	lttng_session_lazy_sync_event_enablers(event_enabler->chan->session);
 	mutex_unlock(&sessions_mutex);
 	return 0;
 }
 
+static
 int lttng_enabler_attach_bytecode(struct lttng_enabler *enabler,
 		struct lttng_kernel_filter_bytecode __user *bytecode)
 {
@@ -1559,15 +1567,32 @@ int lttng_enabler_attach_bytecode(struct lttng_enabler *enabler,
 		sizeof(*bytecode) + bytecode_len);
 	if (ret)
 		goto error_free;
+
 	bytecode_node->enabler = enabler;
 	/* Enforce length based on allocated size */
 	bytecode_node->bc.len = bytecode_len;
 	list_add_tail(&bytecode_node->node, &enabler->filter_bytecode_head);
-	lttng_session_lazy_sync_enablers(enabler->chan->session);
+
 	return 0;
 
 error_free:
 	kfree(bytecode_node);
+	return ret;
+}
+
+int lttng_event_enabler_attach_bytecode(struct lttng_event_enabler *event_enabler,
+		struct lttng_kernel_filter_bytecode __user *bytecode)
+{
+	int ret;
+	ret = lttng_enabler_attach_bytecode(
+		lttng_event_enabler_as_enabler(event_enabler), bytecode);
+	if (ret)
+		goto error;
+
+	lttng_session_lazy_sync_event_enablers(event_enabler->chan->session);
+	return 0;
+
+error:
 	return ret;
 }
 
@@ -1583,7 +1608,7 @@ int lttng_event_add_callsite(struct lttng_event *event,
 	}
 }
 
-int lttng_enabler_attach_context(struct lttng_enabler *enabler,
+int lttng_event_enabler_attach_context(struct lttng_event_enabler *event_enabler,
 		struct lttng_kernel_context *context_param)
 {
 	return -ENOSYS;
@@ -1599,27 +1624,33 @@ void lttng_enabler_destroy(struct lttng_enabler *enabler)
 			&enabler->filter_bytecode_head, node) {
 		kfree(filter_node);
 	}
+}
+
+static
+void lttng_event_enabler_destroy(struct lttng_event_enabler *event_enabler)
+{
+	lttng_enabler_destroy(lttng_event_enabler_as_enabler(event_enabler));
 
 	/* Destroy contexts */
-	lttng_destroy_context(enabler->ctx);
+	lttng_destroy_context(event_enabler->ctx);
 
-	list_del(&enabler->node);
-	kfree(enabler);
+	list_del(&event_enabler->node);
+	kfree(event_enabler);
 }
 
 /*
- * lttng_session_sync_enablers should be called just before starting a
+ * lttng_session_sync_event_enablers should be called just before starting a
  * session.
  * Should be called with sessions mutex held.
  */
 static
-void lttng_session_sync_enablers(struct lttng_session *session)
+void lttng_session_sync_event_enablers(struct lttng_session *session)
 {
-	struct lttng_enabler *enabler;
+	struct lttng_event_enabler *event_enabler;
 	struct lttng_event *event;
 
-	list_for_each_entry(enabler, &session->enablers_head, node)
-		lttng_enabler_ref_events(enabler);
+	list_for_each_entry(event_enabler, &session->enablers_head, node)
+		lttng_event_enabler_ref_events(event_enabler);
 	/*
 	 * For each event, if at least one of its enablers is enabled,
 	 * and its channel and session transient states are enabled, we
@@ -1691,12 +1722,12 @@ void lttng_session_sync_enablers(struct lttng_session *session)
  * Should be called with sessions mutex held.
  */
 static
-void lttng_session_lazy_sync_enablers(struct lttng_session *session)
+void lttng_session_lazy_sync_event_enablers(struct lttng_session *session)
 {
 	/* We can skip if session is not active */
 	if (!session->active)
 		return;
-	lttng_session_sync_enablers(session);
+	lttng_session_sync_event_enablers(session);
 }
 
 /*
