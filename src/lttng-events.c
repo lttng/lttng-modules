@@ -1237,10 +1237,10 @@ int lttng_desc_match_enabler(const struct lttng_event_desc *desc,
 	switch (enabler->event_param.instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
 		desc_name = desc->name;
-		switch (enabler->type) {
-		case LTTNG_ENABLER_STAR_GLOB:
+		switch (enabler->format_type) {
+		case LTTNG_ENABLER_FORMAT_STAR_GLOB:
 			return lttng_match_enabler_star_glob(desc_name, enabler_name);
-		case LTTNG_ENABLER_NAME:
+		case LTTNG_ENABLER_FORMAT_NAME:
 			return lttng_match_enabler_name(desc_name, enabler_name);
 		default:
 			return -EINVAL;
@@ -1293,10 +1293,10 @@ int lttng_desc_match_enabler(const struct lttng_event_desc *desc,
 		}
 		switch (enabler->event_param.u.syscall.match) {
 		case LTTNG_SYSCALL_MATCH_NAME:
-			switch (enabler->type) {
-			case LTTNG_ENABLER_STAR_GLOB:
+			switch (enabler->format_type) {
+			case LTTNG_ENABLER_FORMAT_STAR_GLOB:
 				return lttng_match_enabler_star_glob(desc_name, enabler_name);
-			case LTTNG_ENABLER_NAME:
+			case LTTNG_ENABLER_FORMAT_NAME:
 				return lttng_match_enabler_name(desc_name, enabler_name);
 			default:
 				return -EINVAL;
@@ -1499,7 +1499,7 @@ int lttng_fix_pending_events(void)
 	return 0;
 }
 
-struct lttng_enabler *lttng_enabler_create(enum lttng_enabler_type type,
+struct lttng_enabler *lttng_enabler_create(enum lttng_enabler_format_type format_type,
 		struct lttng_kernel_event *event_param,
 		struct lttng_channel *chan)
 {
@@ -1508,7 +1508,7 @@ struct lttng_enabler *lttng_enabler_create(enum lttng_enabler_type type,
 	enabler = kzalloc(sizeof(*enabler), GFP_KERNEL);
 	if (!enabler)
 		return NULL;
-	enabler->type = type;
+	enabler->format_type = format_type;
 	INIT_LIST_HEAD(&enabler->filter_bytecode_head);
 	memcpy(&enabler->event_param, event_param,
 		sizeof(enabler->event_param));

@@ -327,9 +327,9 @@ struct lttng_event {
 	int has_enablers_without_bytecode;
 };
 
-enum lttng_enabler_type {
-	LTTNG_ENABLER_STAR_GLOB,
-	LTTNG_ENABLER_NAME,
+enum lttng_enabler_format_type {
+	LTTNG_ENABLER_FORMAT_STAR_GLOB,
+	LTTNG_ENABLER_FORMAT_NAME,
 };
 
 /*
@@ -339,7 +339,7 @@ enum lttng_enabler_type {
 struct lttng_enabler {
 	enum lttng_event_type evtype;	/* First field. */
 
-	enum lttng_enabler_type type;
+	enum lttng_enabler_format_type format_type;
 
 	struct list_head node;	/* per-session list of enablers */
 	/* head list of struct lttng_ust_filter_bytecode_node */
@@ -558,7 +558,7 @@ void lttng_unlock_sessions(void);
 
 struct list_head *lttng_get_probe_list_head(void);
 
-struct lttng_enabler *lttng_enabler_create(enum lttng_enabler_type type,
+struct lttng_enabler *lttng_enabler_create(enum lttng_enabler_format_type format_type,
 		struct lttng_kernel_event *event_param,
 		struct lttng_channel *chan);
 

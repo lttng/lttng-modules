@@ -1359,10 +1359,10 @@ int lttng_abi_create_event(struct file *channel_file,
 			 * If the event name is a star globbing pattern,
 			 * we create the special star globbing enabler.
 			 */
-			enabler = lttng_enabler_create(LTTNG_ENABLER_STAR_GLOB,
+			enabler = lttng_enabler_create(LTTNG_ENABLER_FORMAT_STAR_GLOB,
 				event_param, channel);
 		} else {
-			enabler = lttng_enabler_create(LTTNG_ENABLER_NAME,
+			enabler = lttng_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
 				event_param, channel);
 		}
 		priv = enabler;
