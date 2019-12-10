@@ -1404,7 +1404,36 @@ LTTNG_TRACEPOINT_EVENT(ext4_load_inode,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,5,0))
+
+LTTNG_TRACEPOINT_EVENT(ext4_journal_start,
+	TP_PROTO(struct super_block *sb, int blocks, int rsv_blocks,
+		 int revoke_creds, unsigned long IP),
+
+	TP_ARGS(sb, blocks, rsv_blocks, revoke_creds, IP),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, sb->s_dev)
+		ctf_integer(unsigned long, ip, IP)
+		ctf_integer(int, blocks, blocks)
+		ctf_integer(int, rsv_blocks, rsv_blocks)
+		ctf_integer(int, revoke_creds, revoke_creds)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT(ext4_journal_start_reserved,
+	TP_PROTO(struct super_block *sb, int blocks, unsigned long IP),
+
+	TP_ARGS(sb, blocks, IP),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, sb->s_dev)
+		ctf_integer(unsigned long, ip, IP)
+		ctf_integer(int, blocks, blocks)
+	)
+)
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
 
 LTTNG_TRACEPOINT_EVENT(ext4_journal_start,
 	TP_PROTO(struct super_block *sb, int blocks, int rsv_blocks,
