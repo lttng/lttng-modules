@@ -294,7 +294,26 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(timer_hrtimer_class, hrtimer_cancel,
  *		zero, otherwise it is started
  * @expires:	the itimers expiry time
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,5,0))
+LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
+
+	timer_itimer_state,
+
+	TP_PROTO(int which, const struct itimerspec64 *const value,
+		 unsigned long long expires),
+
+	TP_ARGS(which, value, expires),
+
+	TP_FIELDS(
+		ctf_integer(int, which, which)
+		ctf_integer(unsigned long long, expires, expires)
+		ctf_integer(long, value_sec, value->it_value.tv_sec)
+		ctf_integer(long, value_nsec, value->it_value.tv_nsec)
+		ctf_integer(long, interval_sec, value->it_interval.tv_sec)
+		ctf_integer(long, interval_nsec, value->it_interval.tv_nsec)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
 LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
 
 	timer_itimer_state,
