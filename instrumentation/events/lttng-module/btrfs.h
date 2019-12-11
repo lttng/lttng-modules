@@ -318,7 +318,7 @@ LTTNG_TRACEPOINT_EVENT(btrfs_handle_em_exist,
 	TP_ARGS(fs_info, existing, map, start, len),
 
 	TP_FIELDS(
-		ctf_array(u8, fsid, fs_info->fsid, BTRFS_UUID_SIZE)
+		ctf_array(u8, fsid, lttng_fs_info_fsid, BTRFS_UUID_SIZE)
 		ctf_integer(u64, e_start, existing->start)
 		ctf_integer(u64, e_len, existing->len)
 		ctf_integer(u64, map_start, map->start)
