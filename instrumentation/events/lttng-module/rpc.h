@@ -18,7 +18,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_status,
 
 	TP_FIELDS(
 		ctf_integer(unsigned int, task_id, task->tk_pid)
-		ctf_integer(unsigned int, client_id, task->tk_client->cl_clid)
+		ctf_integer(int, client_id, task->tk_client->cl_clid)
 		ctf_integer(int, status, task->tk_status)
 	)
 )
@@ -43,7 +43,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_status,
 
 	TP_FIELDS(
 		ctf_integer(unsigned int, task_id, task->tk_pid)
-		ctf_integer(unsigned int, client_id, task->tk_client->cl_clid)
+		ctf_integer(int, client_id, task->tk_client->cl_clid)
 		ctf_integer(int, status, task->tk_status)
 	)
 )
@@ -100,7 +100,7 @@ LTTNG_TRACEPOINT_EVENT(rpc_connect_status,
 
 	TP_FIELDS(
 		ctf_integer(unsigned int, task_id, task->tk_pid)
-		ctf_integer(unsigned int, client_id, task->tk_client->cl_clid)
+		ctf_integer(int, client_id, task->tk_client->cl_clid)
 		ctf_integer(int, status, task->tk_status)
 	)
 )
@@ -112,7 +112,7 @@ LTTNG_TRACEPOINT_EVENT(rpc_connect_status,
 
 	TP_FIELDS(
 		ctf_integer(unsigned int, task_id, task->tk_pid)
-		ctf_integer(unsigned int, client_id, task->tk_client->cl_clid)
+		ctf_integer(int, client_id, task->tk_client->cl_clid)
 		ctf_integer(int, status, status)
 	)
 )
@@ -139,7 +139,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_running,
 
 	TP_FIELDS(
 		ctf_integer(unsigned int, task_id, task->tk_pid)
-		ctf_integer(unsigned int, client_id, task->tk_client ? task->tk_client->cl_clid : -1)
+		ctf_integer(int, client_id, task->tk_client ?
+			task->tk_client->cl_clid : -1)
 		ctf_integer_hex(const void *, action, action)
 		ctf_integer(unsigned long, runstate, task->tk_runstate)
 		ctf_integer(int, status, task->tk_status)
@@ -176,7 +177,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_queued,
 
 	TP_FIELDS(
 		ctf_integer(unsigned int, task_id, task->tk_pid)
-		ctf_integer(unsigned int, client_id, task->tk_client ?
+		ctf_integer(int, client_id, task->tk_client ?
 				task->tk_client->cl_clid : -1)
 		ctf_integer(unsigned long, timeout, task->tk_timeout)
 		ctf_integer(unsigned long, runstate, task->tk_runstate)
@@ -209,7 +210,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_running,
 
 	TP_FIELDS(
 		ctf_integer(unsigned int, task_id, task->tk_pid)
-		ctf_integer(unsigned int, client_id, task->tk_client ? task->tk_client->cl_clid : -1)
+		ctf_integer(int, client_id, task->tk_client ?
+			task->tk_client->cl_clid : -1)
 		ctf_integer_hex(const void *, action, action)
 		ctf_integer(unsigned long, runstate, task->tk_runstate)
 		ctf_integer(int, status, task->tk_status)
@@ -246,7 +248,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_queued,
 
 	TP_FIELDS(
 		ctf_integer(unsigned int, task_id, task->tk_pid)
-		ctf_integer(unsigned int, client_id, task->tk_client->cl_clid)
+		ctf_integer(int, client_id, task->tk_client ?
+			task->tk_client->cl_clid : -1)
 		ctf_integer(unsigned long, timeout, task->tk_timeout)
 		ctf_integer(unsigned long, runstate, task->tk_runstate)
 		ctf_integer(int, status, task->tk_status)
