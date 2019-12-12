@@ -8,6 +8,29 @@
 #include <linux/sunrpc/sched.h>
 #include <linux/sunrpc/clnt.h>
 
+#ifndef ONCE_LTTNG_RPC_H
+#define ONCE_LTTNG_RPC_H
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+static inline
+int lttng_get_clid(const struct rpc_task *task)
+{
+	struct rpc_clnt *tk_client;
+
+	tk_client = task->tk_client;
+	if (!tk_client)
+		return -1;
+	/*
+	 * The cl_clid field is always initialized to positive signed
+	 * integers. Negative signed integer values are treated as
+	 * errors.
+	 */
+	return (int) tk_client->cl_clid;
+}
+#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
+
+#endif /* ONCE_LTTNG_RPC_H */
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_status,
 
@@ -17,7 +40,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_status,
 
 	TP_FIELDS(
 		ctf_integer(unsigned int, task_id, task->tk_pid)
-		ctf_integer(int, client_id, task->tk_client->cl_clid)
+		ctf_integer(int, client_id, lttng_get_clid(task))
 		ctf_integer(int, status, task->tk_status)
 	)
 )
@@ -42,7 +65,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_status,
 
 	TP_FIELDS(
 		ctf_integer(unsigned int, task_id, task->tk_pid)
-		ctf_integer(int, client_id, task->tk_client->cl_clid)
+		ctf_integer(int, client_id, lttng_get_clid(task))
 		ctf_integer(int, status, task->tk_status)
 	)
 )
@@ -99,7 +122,7 @@ LTTNG_TRACEPOINT_EVENT(rpc_connect_status,
 
 	TP_FIELDS(
 		ctf_integer(unsigned int, task_id, task->tk_pid)
-		ctf_integer(int, client_id, task->tk_client->cl_clid)
+		ctf_integer(int, client_id, lttng_get_clid(task))
 		ctf_integer(int, status, task->tk_status)
 	)
 )
@@ -111,7 +134,7 @@ LTTNG_TRACEPOINT_EVENT(rpc_connect_status,
 
 	TP_FIELDS(
 		ctf_integer(unsigned int, task_id, task->tk_pid)
-		ctf_integer(int, client_id, task->tk_client->cl_clid)
+		ctf_integer(int, client_id, lttng_get_clid(task))
 		ctf_integer(int, status, status)
 	)
 )
@@ -138,8 +161,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_running,
 
 	TP_FIELDS(
 		ctf_integer(unsigned int, task_id, task->tk_pid)
-		ctf_integer(int, client_id, task->tk_client ?
-			task->tk_client->cl_clid : -1)
+		ctf_integer(int, client_id, lttng_get_clid(task))
 		ctf_integer_hex(const void *, action, action)
 		ctf_integer(unsigned long, runstate, task->tk_runstate)
 		ctf_integer(int, status, task->tk_status)
@@ -176,8 +198,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_queued,
 
 	TP_FIELDS(
 		ctf_integer(unsigned int, task_id, task->tk_pid)
-		ctf_integer(int, client_id, task->tk_client ?
-				task->tk_client->cl_clid : -1)
+		ctf_integer(int, client_id, lttng_get_clid(task))
 		ctf_integer(unsigned long, timeout, task->tk_timeout)
 		ctf_integer(unsigned long, runstate, task->tk_runstate)
 		ctf_integer(int, status, task->tk_status)
@@ -209,8 +230,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_running,
 
 	TP_FIELDS(
 		ctf_integer(unsigned int, task_id, task->tk_pid)
-		ctf_integer(int, client_id, task->tk_client ?
-			task->tk_client->cl_clid : -1)
+		ctf_integer(int, client_id, lttng_get_clid(task))
 		ctf_integer_hex(const void *, action, action)
 		ctf_integer(unsigned long, runstate, task->tk_runstate)
 		ctf_integer(int, status, task->tk_status)
@@ -247,8 +267,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_queued,
 
 	TP_FIELDS(
 		ctf_integer(unsigned int, task_id, task->tk_pid)
-		ctf_integer(int, client_id, task->tk_client ?
-			task->tk_client->cl_clid : -1)
+		ctf_integer(int, client_id, lttng_get_clid(task))
 		ctf_integer(unsigned long, timeout, task->tk_timeout)
 		ctf_integer(unsigned long, runstate, task->tk_runstate)
 		ctf_integer(int, status, task->tk_status)
