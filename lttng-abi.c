@@ -525,6 +525,27 @@ int lttng_abi_session_set_creation_time(struct lttng_session *session,
 	return 0;
 }
 
+static
+enum tracker_type get_tracker_type(struct lttng_kernel_tracker_args *tracker)
+{
+	switch (tracker->type) {
+	case LTTNG_KERNEL_TRACKER_PID:
+		return TRACKER_PID;
+	case LTTNG_KERNEL_TRACKER_VPID:
+		return TRACKER_VPID;
+	case LTTNG_KERNEL_TRACKER_UID:
+		return TRACKER_UID;
+	case LTTNG_KERNEL_TRACKER_VUID:
+		return TRACKER_VUID;
+	case LTTNG_KERNEL_TRACKER_GID:
+		return TRACKER_GID;
+	case LTTNG_KERNEL_TRACKER_VGID:
+		return TRACKER_VGID;
+	default:
+		return TRACKER_UNKNOWN;
+	}
+}
+
 /**
  *	lttng_session_ioctl - lttng session fd ioctl
  *
@@ -542,9 +563,13 @@ int lttng_abi_session_set_creation_time(struct lttng_session *session,
  *	LTTNG_KERNEL_METADATA
  *		Returns a LTTng metadata file descriptor
  *	LTTNG_KERNEL_SESSION_TRACK_PID
- *		Add PID to session tracker
+ *		Add PID to session PID tracker
  *	LTTNG_KERNEL_SESSION_UNTRACK_PID
- *		Remove PID from session tracker
+ *		Remove PID from session PID tracker
+ *	LTTNG_KERNEL_SESSION_TRACK_ID
+ *		Add ID to tracker
+ *	LTTNG_KERNEL_SESSION_UNTRACK_ID
+ *		Remove ID from tracker
  *
  * The returned channel will be deleted when its file descriptor is closed.
  */
@@ -617,11 +642,54 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 				METADATA_CHANNEL);
 	}
 	case LTTNG_KERNEL_SESSION_TRACK_PID:
-		return lttng_session_track_pid(session, (int) arg);
+		return lttng_session_track_id(session, TRACKER_PID, (int) arg);
 	case LTTNG_KERNEL_SESSION_UNTRACK_PID:
-		return lttng_session_untrack_pid(session, (int) arg);
+		return lttng_session_untrack_id(session, TRACKER_PID, (int) arg);
+	case LTTNG_KERNEL_SESSION_TRACK_ID:
+	{
+		struct lttng_kernel_tracker_args tracker;
+		enum tracker_type tracker_type;
+
+		if (copy_from_user(&tracker,
+				(struct lttng_kernel_tracker_args __user *) arg,
+				sizeof(struct lttng_kernel_tracker_args)))
+			return -EFAULT;
+		tracker_type = get_tracker_type(&tracker);
+		if (tracker_type == TRACKER_UNKNOWN)
+			return -EINVAL;
+		return lttng_session_track_id(session, tracker_type, tracker.id);
+	}
+	case LTTNG_KERNEL_SESSION_UNTRACK_ID:
+	{
+		struct lttng_kernel_tracker_args tracker;
+		enum tracker_type tracker_type;
+
+		if (copy_from_user(&tracker,
+				(struct lttng_kernel_tracker_args __user *) arg,
+				sizeof(struct lttng_kernel_tracker_args)))
+			return -EFAULT;
+		tracker_type = get_tracker_type(&tracker);
+		if (tracker_type == TRACKER_UNKNOWN)
+			return -EINVAL;
+		return lttng_session_untrack_id(session, tracker_type,
+				tracker.id);
+	}
 	case LTTNG_KERNEL_SESSION_LIST_TRACKER_PIDS:
-		return lttng_session_list_tracker_pids(session);
+		return lttng_session_list_tracker_ids(session, TRACKER_PID);
+	case LTTNG_KERNEL_SESSION_LIST_TRACKER_IDS:
+	{
+		struct lttng_kernel_tracker_args tracker;
+		enum tracker_type tracker_type;
+
+		if (copy_from_user(&tracker,
+				(struct lttng_kernel_tracker_args __user *) arg,
+				sizeof(struct lttng_kernel_tracker_args)))
+			return -EFAULT;
+		tracker_type = get_tracker_type(&tracker);
+		if (tracker_type == TRACKER_UNKNOWN)
+			return -EINVAL;
+		return lttng_session_list_tracker_ids(session, tracker_type);
+	}
 	case LTTNG_KERNEL_SESSION_METADATA_REGEN:
 		return lttng_session_metadata_regenerate(session);
 	case LTTNG_KERNEL_SESSION_STATEDUMP:

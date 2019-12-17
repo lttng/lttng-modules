@@ -149,6 +149,18 @@ struct lttng_session *lttng_session_create(void)
 	for (i = 0; i < LTTNG_EVENT_HT_SIZE; i++)
 		INIT_HLIST_HEAD(&session->events_ht.table[i]);
 	list_add(&session->list, &sessions);
+	session->pid_tracker.session = session;
+	session->pid_tracker.tracker_type = TRACKER_PID;
+	session->vpid_tracker.session = session;
+	session->vpid_tracker.tracker_type = TRACKER_VPID;
+	session->uid_tracker.session = session;
+	session->uid_tracker.tracker_type = TRACKER_UID;
+	session->vuid_tracker.session = session;
+	session->vuid_tracker.tracker_type = TRACKER_VUID;
+	session->gid_tracker.session = session;
+	session->gid_tracker.tracker_type = TRACKER_GID;
+	session->vgid_tracker.session = session;
+	session->vgid_tracker.tracker_type = TRACKER_VGID;
 	mutex_unlock(&sessions_mutex);
 	return session;
 
@@ -199,8 +211,12 @@ void lttng_session_destroy(struct lttng_session *session)
 	}
 	list_for_each_entry(metadata_stream, &session->metadata_cache->metadata_stream, list)
 		_lttng_metadata_channel_hangup(metadata_stream);
-	if (session->pid_tracker)
-		lttng_pid_tracker_destroy(session->pid_tracker);
+	lttng_id_tracker_destroy(&session->pid_tracker, false);
+	lttng_id_tracker_destroy(&session->vpid_tracker, false);
+	lttng_id_tracker_destroy(&session->uid_tracker, false);
+	lttng_id_tracker_destroy(&session->vuid_tracker, false);
+	lttng_id_tracker_destroy(&session->gid_tracker, false);
+	lttng_id_tracker_destroy(&session->vgid_tracker, false);
 	kref_put(&session->metadata_cache->refcount, metadata_cache_destroy);
 	list_del(&session->list);
 	mutex_unlock(&sessions_mutex);
@@ -930,91 +946,85 @@ void _lttng_event_destroy(struct lttng_event *event)
 	kmem_cache_free(event_cache, event);
 }
 
-int lttng_session_track_pid(struct lttng_session *session, int pid)
+struct lttng_id_tracker *get_tracker(struct lttng_session *session,
+		enum tracker_type tracker_type)
 {
+	switch (tracker_type) {
+	case TRACKER_PID:
+		return &session->pid_tracker;
+	case TRACKER_VPID:
+		return &session->vpid_tracker;
+	case TRACKER_UID:
+		return &session->uid_tracker;
+	case TRACKER_VUID:
+		return &session->vuid_tracker;
+	case TRACKER_GID:
+		return &session->gid_tracker;
+	case TRACKER_VGID:
+		return &session->vgid_tracker;
+	default:
+		WARN_ON_ONCE(1);
+		return NULL;
+	}
+}
+
+int lttng_session_track_id(struct lttng_session *session,
+		enum tracker_type tracker_type, int id)
+{
+	struct lttng_id_tracker *tracker;
 	int ret;
 
-	if (pid < -1)
+	tracker = get_tracker(session, tracker_type);
+	if (!tracker)
+		return -EINVAL;
+	if (id < -1)
 		return -EINVAL;
 	mutex_lock(&sessions_mutex);
-	if (pid == -1) {
-		/* track all pids: destroy tracker. */
-		if (session->pid_tracker) {
-			struct lttng_pid_tracker *lpf;
-
-			lpf = session->pid_tracker;
-			rcu_assign_pointer(session->pid_tracker, NULL);
-			synchronize_trace();
-			lttng_pid_tracker_destroy(lpf);
-		}
+	if (id == -1) {
+		/* track all ids: destroy tracker. */
+		lttng_id_tracker_destroy(tracker, true);
 		ret = 0;
 	} else {
-		if (!session->pid_tracker) {
-			struct lttng_pid_tracker *lpf;
-
-			lpf = lttng_pid_tracker_create();
-			if (!lpf) {
-				ret = -ENOMEM;
-				goto unlock;
-			}
-			ret = lttng_pid_tracker_add(lpf, pid);
-			rcu_assign_pointer(session->pid_tracker, lpf);
-		} else {
-			ret = lttng_pid_tracker_add(session->pid_tracker, pid);
-		}
+		ret = lttng_id_tracker_add(tracker, id);
 	}
-unlock:
 	mutex_unlock(&sessions_mutex);
 	return ret;
 }
 
-int lttng_session_untrack_pid(struct lttng_session *session, int pid)
+int lttng_session_untrack_id(struct lttng_session *session,
+		enum tracker_type tracker_type, int id)
 {
+	struct lttng_id_tracker *tracker;
 	int ret;
 
-	if (pid < -1)
+	tracker = get_tracker(session, tracker_type);
+	if (!tracker)
+		return -EINVAL;
+	if (id < -1)
 		return -EINVAL;
 	mutex_lock(&sessions_mutex);
-	if (pid == -1) {
-		/* untrack all pids: replace by empty tracker. */
-		struct lttng_pid_tracker *old_lpf = session->pid_tracker;
-		struct lttng_pid_tracker *lpf;
-
-		lpf = lttng_pid_tracker_create();
-		if (!lpf) {
-			ret = -ENOMEM;
-			goto unlock;
-		}
-		rcu_assign_pointer(session->pid_tracker, lpf);
-		synchronize_trace();
-		if (old_lpf)
-			lttng_pid_tracker_destroy(old_lpf);
-		ret = 0;
+	if (id == -1) {
+		/* untrack all ids: replace by empty tracker. */
+		ret = lttng_id_tracker_empty_set(tracker);
 	} else {
-		if (!session->pid_tracker) {
-			ret = -ENOENT;
-			goto unlock;
-		}
-		ret = lttng_pid_tracker_del(session->pid_tracker, pid);
+		ret = lttng_id_tracker_del(tracker, id);
 	}
-unlock:
 	mutex_unlock(&sessions_mutex);
 	return ret;
 }
 
 static
-void *pid_list_start(struct seq_file *m, loff_t *pos)
+void *id_list_start(struct seq_file *m, loff_t *pos)
 {
-	struct lttng_session *session = m->private;
-	struct lttng_pid_tracker *lpf;
-	struct lttng_pid_hash_node *e;
+	struct lttng_id_tracker *id_tracker = m->private;
+	struct lttng_id_tracker_rcu *id_tracker_p = id_tracker->p;
+	struct lttng_id_hash_node *e;
 	int iter = 0, i;
 
 	mutex_lock(&sessions_mutex);
-	lpf = session->pid_tracker;
-	if (lpf) {
-		for (i = 0; i < LTTNG_PID_TABLE_SIZE; i++) {
-			struct hlist_head *head = &lpf->pid_hash[i];
+	if (id_tracker_p) {
+		for (i = 0; i < LTTNG_ID_TABLE_SIZE; i++) {
+			struct hlist_head *head = &id_tracker_p->id_hash[i];
 
 			lttng_hlist_for_each_entry(e, head, hlist) {
 				if (iter++ >= *pos)
@@ -1022,9 +1032,9 @@ void *pid_list_start(struct seq_file *m, loff_t *pos)
 			}
 		}
 	} else {
-		/* PID tracker disabled. */
+		/* ID tracker disabled. */
 		if (iter >= *pos && iter == 0) {
-			return session;	/* empty tracker */
+			return id_tracker_p;	/* empty tracker */
 		}
 		iter++;
 	}
@@ -1034,18 +1044,17 @@ void *pid_list_start(struct seq_file *m, loff_t *pos)
 
 /* Called with sessions_mutex held. */
 static
-void *pid_list_next(struct seq_file *m, void *p, loff_t *ppos)
+void *id_list_next(struct seq_file *m, void *p, loff_t *ppos)
 {
-	struct lttng_session *session = m->private;
-	struct lttng_pid_tracker *lpf;
-	struct lttng_pid_hash_node *e;
+	struct lttng_id_tracker *id_tracker = m->private;
+	struct lttng_id_tracker_rcu *id_tracker_p = id_tracker->p;
+	struct lttng_id_hash_node *e;
 	int iter = 0, i;
 
 	(*ppos)++;
-	lpf = session->pid_tracker;
-	if (lpf) {
-		for (i = 0; i < LTTNG_PID_TABLE_SIZE; i++) {
-			struct hlist_head *head = &lpf->pid_hash[i];
+	if (id_tracker_p) {
+		for (i = 0; i < LTTNG_ID_TABLE_SIZE; i++) {
+			struct hlist_head *head = &id_tracker_p->id_hash[i];
 
 			lttng_hlist_for_each_entry(e, head, hlist) {
 				if (iter++ >= *ppos)
@@ -1053,9 +1062,9 @@ void *pid_list_next(struct seq_file *m, void *p, loff_t *ppos)
 			}
 		}
 	} else {
-		/* PID tracker disabled. */
+		/* ID tracker disabled. */
 		if (iter >= *ppos && iter == 0)
-			return session;	/* empty tracker */
+			return p;	/* empty tracker */
 		iter++;
 	}
 
@@ -1064,67 +1073,91 @@ void *pid_list_next(struct seq_file *m, void *p, loff_t *ppos)
 }
 
 static
-void pid_list_stop(struct seq_file *m, void *p)
+void id_list_stop(struct seq_file *m, void *p)
 {
 	mutex_unlock(&sessions_mutex);
 }
 
 static
-int pid_list_show(struct seq_file *m, void *p)
+int id_list_show(struct seq_file *m, void *p)
 {
-	int pid;
+	struct lttng_id_tracker *id_tracker = m->private;
+	struct lttng_id_tracker_rcu *id_tracker_p = id_tracker->p;
+	int id;
 
-	if (p == m->private) {
+	if (p == id_tracker_p) {
 		/* Tracker disabled. */
-		pid = -1;
+		id = -1;
 	} else {
-		const struct lttng_pid_hash_node *e = p;
+		const struct lttng_id_hash_node *e = p;
 
-		pid = lttng_pid_tracker_get_node_pid(e);
+		id = lttng_id_tracker_get_node_id(e);
 	}
-	seq_printf(m,	"process { pid = %d; };\n", pid);
+	switch (id_tracker->tracker_type) {
+	case TRACKER_PID:
+		seq_printf(m,	"process { pid = %d; };\n", id);
+		break;
+	case TRACKER_VPID:
+		seq_printf(m,	"process { vpid = %d; };\n", id);
+		break;
+	case TRACKER_UID:
+		seq_printf(m,	"user { uid = %d; };\n", id);
+		break;
+	case TRACKER_VUID:
+		seq_printf(m,	"user { vuid = %d; };\n", id);
+		break;
+	case TRACKER_GID:
+		seq_printf(m,	"group { gid = %d; };\n", id);
+		break;
+	case TRACKER_VGID:
+		seq_printf(m,	"group { vgid = %d; };\n", id);
+		break;
+	default:
+		seq_printf(m,	"UNKNOWN { field = %d };\n", id);
+	}
 	return 0;
 }
 
 static
-const struct seq_operations lttng_tracker_pids_list_seq_ops = {
-	.start = pid_list_start,
-	.next = pid_list_next,
-	.stop = pid_list_stop,
-	.show = pid_list_show,
+const struct seq_operations lttng_tracker_ids_list_seq_ops = {
+	.start = id_list_start,
+	.next = id_list_next,
+	.stop = id_list_stop,
+	.show = id_list_show,
 };
 
 static
-int lttng_tracker_pids_list_open(struct inode *inode, struct file *file)
+int lttng_tracker_ids_list_open(struct inode *inode, struct file *file)
 {
-	return seq_open(file, &lttng_tracker_pids_list_seq_ops);
+	return seq_open(file, &lttng_tracker_ids_list_seq_ops);
 }
 
 static
-int lttng_tracker_pids_list_release(struct inode *inode, struct file *file)
+int lttng_tracker_ids_list_release(struct inode *inode, struct file *file)
 {
 	struct seq_file *m = file->private_data;
-	struct lttng_session *session = m->private;
+	struct lttng_id_tracker *id_tracker = m->private;
 	int ret;
 
-	WARN_ON_ONCE(!session);
+	WARN_ON_ONCE(!id_tracker);
 	ret = seq_release(inode, file);
-	if (!ret && session)
-		fput(session->file);
+	if (!ret)
+		fput(id_tracker->session->file);
 	return ret;
 }
 
-const struct file_operations lttng_tracker_pids_list_fops = {
+const struct file_operations lttng_tracker_ids_list_fops = {
 	.owner = THIS_MODULE,
-	.open = lttng_tracker_pids_list_open,
+	.open = lttng_tracker_ids_list_open,
 	.read = seq_read,
 	.llseek = seq_lseek,
-	.release = lttng_tracker_pids_list_release,
+	.release = lttng_tracker_ids_list_release,
 };
 
-int lttng_session_list_tracker_pids(struct lttng_session *session)
+int lttng_session_list_tracker_ids(struct lttng_session *session,
+		enum tracker_type tracker_type)
 {
-	struct file *tracker_pids_list_file;
+	struct file *tracker_ids_list_file;
 	struct seq_file *m;
 	int file_fd, ret;
 
@@ -1134,30 +1167,32 @@ int lttng_session_list_tracker_pids(struct lttng_session *session)
 		goto fd_error;
 	}
 
-	tracker_pids_list_file = anon_inode_getfile("[lttng_tracker_pids_list]",
-					  &lttng_tracker_pids_list_fops,
+	tracker_ids_list_file = anon_inode_getfile("[lttng_tracker_ids_list]",
+					  &lttng_tracker_ids_list_fops,
 					  NULL, O_RDWR);
-	if (IS_ERR(tracker_pids_list_file)) {
-		ret = PTR_ERR(tracker_pids_list_file);
+	if (IS_ERR(tracker_ids_list_file)) {
+		ret = PTR_ERR(tracker_ids_list_file);
 		goto file_error;
 	}
 	if (!atomic_long_add_unless(&session->file->f_count, 1, LONG_MAX)) {
 		ret = -EOVERFLOW;
 		goto refcount_error;
 	}
-	ret = lttng_tracker_pids_list_fops.open(NULL, tracker_pids_list_file);
+	ret = lttng_tracker_ids_list_fops.open(NULL, tracker_ids_list_file);
 	if (ret < 0)
 		goto open_error;
-	m = tracker_pids_list_file->private_data;
-	m->private = session;
-	fd_install(file_fd, tracker_pids_list_file);
+	m = tracker_ids_list_file->private_data;
+
+	m->private = get_tracker(session, tracker_type);
+	BUG_ON(!m->private);
+	fd_install(file_fd, tracker_ids_list_file);
 
 	return file_fd;
 
 open_error:
 	atomic_long_dec(&session->file->f_count);
 refcount_error:
-	fput(tracker_pids_list_file);
+	fput(tracker_ids_list_file);
 file_error:
 	put_unused_fd(file_fd);
 fd_error:
