@@ -11,7 +11,6 @@
 #include <linux/rculist.h>
 #include <asm/byteorder.h>
 #include <linux/swab.h>
-#include <linux/uidgid.h>
 
 #include <probes/lttng.h>
 #include <probes/lttng-types.h>
@@ -20,6 +19,7 @@
 #include <wrapper/ringbuffer/frontend_types.h>
 #include <wrapper/ringbuffer/backend.h>
 #include <wrapper/rcu.h>
+#include <wrapper/user_namespace.h>
 #include <lttng-events.h>
 #include <lttng-tracer-core.h>
 #include <lttng-tp-mempool.h>
@@ -1146,19 +1146,19 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 		return;							      \
 	__lf = lttng_rcu_dereference(__session->uid_tracker.p);		      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
-			from_kuid(&init_user_ns, current_uid()))))	      \
+			lttng_current_uid())))				      \
 		return;							      \
 	__lf = lttng_rcu_dereference(__session->vuid_tracker.p);	      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
-			from_kuid(current_user_ns(), current_uid()))))	      \
+			lttng_current_vuid())))				      \
 		return;							      \
 	__lf = lttng_rcu_dereference(__session->gid_tracker.p);		      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
-			from_kgid(&init_user_ns, current_gid()))))	      \
+			lttng_current_gid())))				      \
 		return;							      \
 	__lf = lttng_rcu_dereference(__session->vgid_tracker.p);	      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
-			from_kgid(current_user_ns(), current_gid()))))	      \
+			lttng_current_vgid())))				      \
 		return;							      \
 	__orig_dynamic_len_offset = this_cpu_ptr(&lttng_dynamic_len_stack)->offset; \
 	__dynamic_len_idx = __orig_dynamic_len_offset;			      \
@@ -1239,19 +1239,19 @@ static void __event_probe__##_name(void *__data)			      \
 		return;							      \
 	__lf = lttng_rcu_dereference(__session->uid_tracker.p);		      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
-			from_kuid(&init_user_ns, current_uid()))))	      \
+			lttng_current_uid())))				      \
 		return;							      \
 	__lf = lttng_rcu_dereference(__session->vuid_tracker.p);	      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
-			from_kuid(current_user_ns(), current_uid()))))	      \
+			lttng_current_vuid())))				      \
 		return;							      \
 	__lf = lttng_rcu_dereference(__session->gid_tracker.p);		      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
-			from_kgid(&init_user_ns, current_gid()))))	      \
+			lttng_current_gid())))				      \
 		return;							      \
 	__lf = lttng_rcu_dereference(__session->vgid_tracker.p);	      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
-			from_kgid(current_user_ns(), current_gid()))))	      \
+			lttng_current_vgid())))				      \
 		return;							      \
 	__orig_dynamic_len_offset = this_cpu_ptr(&lttng_dynamic_len_stack)->offset; \
 	__dynamic_len_idx = __orig_dynamic_len_offset;			      \
