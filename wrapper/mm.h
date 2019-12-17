@@ -62,7 +62,7 @@ void wrapper_set_current_oom_origin(void)
 }
 
 static inline
-void wrapper_clear_current_oom_origin()
+void wrapper_clear_current_oom_origin(void)
 {
 	return;
 }
