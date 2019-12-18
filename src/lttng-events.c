@@ -1345,7 +1345,7 @@ struct lttng_enabler_ref *lttng_enabler_ref(
 }
 
 static
-void lttng_create_tracepoint_if_missing(struct lttng_event_enabler *event_enabler)
+void lttng_create_tracepoint_event_if_missing(struct lttng_event_enabler *event_enabler)
 {
 	struct lttng_session *session = event_enabler->chan->session;
 	struct lttng_probe_desc *probe_desc;
@@ -1404,7 +1404,7 @@ void lttng_create_tracepoint_if_missing(struct lttng_event_enabler *event_enable
 }
 
 static
-void lttng_create_syscall_if_missing(struct lttng_event_enabler *event_enabler)
+void lttng_create_syscall_event_if_missing(struct lttng_event_enabler *event_enabler)
 {
 	int ret;
 
@@ -1422,10 +1422,10 @@ void lttng_create_event_if_missing(struct lttng_event_enabler *event_enabler)
 {
 	switch (event_enabler->base.event_param.instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
-		lttng_create_tracepoint_if_missing(event_enabler);
+		lttng_create_tracepoint_event_if_missing(event_enabler);
 		break;
 	case LTTNG_KERNEL_SYSCALL:
-		lttng_create_syscall_if_missing(event_enabler);
+		lttng_create_syscall_event_if_missing(event_enabler);
 		break;
 	default:
 		WARN_ON_ONCE(1);
