@@ -24,7 +24,6 @@
 #include <linux/file.h>
 #include <linux/anon_inodes.h>
 #include <wrapper/file.h>
-#include <linux/jhash.h>
 #include <linux/uaccess.h>
 #include <linux/vmalloc.h>
 #include <linux/dmi.h>
@@ -41,6 +40,7 @@
 #include <lttng/abi-old.h>
 #include <lttng/endian.h>
 #include <lttng/string-utils.h>
+#include <lttng/utils.h>
 #include <ringbuffer/backend.h>
 #include <ringbuffer/frontend.h>
 #include <wrapper/time.h>
@@ -596,8 +596,6 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 	struct lttng_event *event;
 	const char *event_name;
 	struct hlist_head *head;
-	size_t name_len;
-	uint32_t hash;
 	int ret;
 
 	if (chan->free_event_id == -1U) {
@@ -622,9 +620,9 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		ret = -EINVAL;
 		goto type_error;
 	}
-	name_len = strlen(event_name);
-	hash = jhash(event_name, name_len, 0);
-	head = &session->events_ht.table[hash & (LTTNG_EVENT_HT_SIZE - 1)];
+
+	head = utils_borrow_hash_table_bucket(session->events_ht.table,
+		LTTNG_EVENT_HT_SIZE, event_name);
 	lttng_hlist_for_each_entry(event, head, hlist) {
 		WARN_ON_ONCE(!event->desc);
 		if (!strncmp(event->desc->name, event_name,
@@ -1363,23 +1361,19 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_enabler *event_
 		for (i = 0; i < probe_desc->nr_events; i++) {
 			int found = 0;
 			struct hlist_head *head;
-			const char *event_name;
-			size_t name_len;
-			uint32_t hash;
 			struct lttng_event *event;
 
 			desc = probe_desc->event_desc[i];
 			if (!lttng_desc_match_enabler(desc,
 					lttng_event_enabler_as_enabler(event_enabler)))
 				continue;
-			event_name = desc->name;
-			name_len = strlen(event_name);
 
 			/*
 			 * Check if already created.
 			 */
-			hash = jhash(event_name, name_len, 0);
-			head = &session->events_ht.table[hash & (LTTNG_EVENT_HT_SIZE - 1)];
+			head = utils_borrow_hash_table_bucket(
+				session->events_ht.table, LTTNG_EVENT_HT_SIZE,
+				desc->name);
 			lttng_hlist_for_each_entry(event, head, hlist) {
 				if (event->desc == desc
 						&& event->chan == event_enabler->chan)
