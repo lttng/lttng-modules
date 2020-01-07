@@ -297,7 +297,8 @@ end:
 	return ret;
 }
 
-static int specialize_context_lookup_name(struct bytecode_runtime *bytecode,
+static int specialize_context_lookup_name(struct lttng_ctx *ctx,
+		struct bytecode_runtime *bytecode,
 		struct load_op *insn)
 {
 	uint16_t offset;
@@ -305,7 +306,7 @@ static int specialize_context_lookup_name(struct bytecode_runtime *bytecode,
 
 	offset = ((struct get_symbol *) insn->data)->offset;
 	name = bytecode->p.bc->bc.data + bytecode->p.bc->bc.reloc_offset + offset;
-	return lttng_get_context_index(lttng_static_ctx, name);
+	return lttng_get_context_index(ctx, name);
 }
 
 static int specialize_load_object(const struct lttng_event_field *field,
@@ -383,7 +384,8 @@ static int specialize_load_object(const struct lttng_event_field *field,
 	return 0;
 }
 
-static int specialize_context_lookup(struct bytecode_runtime *runtime,
+static int specialize_context_lookup(struct lttng_ctx *ctx,
+		struct bytecode_runtime *runtime,
 		struct load_op *insn,
 		struct vstack_load *load)
 {
@@ -393,7 +395,7 @@ static int specialize_context_lookup(struct bytecode_runtime *runtime,
 	struct filter_get_index_data gid;
 	ssize_t data_offset;
 
-	idx = specialize_context_lookup_name(runtime, insn);
+	idx = specialize_context_lookup_name(ctx, runtime, insn);
 	if (idx < 0) {
 		return -ENOENT;
 	}
@@ -416,14 +418,13 @@ static int specialize_context_lookup(struct bytecode_runtime *runtime,
 	return 0;
 }
 
-static int specialize_event_payload_lookup(struct lttng_event *event,
+static int specialize_payload_lookup(const struct lttng_event_desc *event_desc,
 		struct bytecode_runtime *runtime,
 		struct load_op *insn,
 		struct vstack_load *load)
 {
 	const char *name;
 	uint16_t offset;
-	const struct lttng_event_desc *desc = event->desc;
 	unsigned int i, nr_fields;
 	bool found = false;
 	uint32_t field_offset = 0;
@@ -432,11 +433,11 @@ static int specialize_event_payload_lookup(struct lttng_event *event,
 	struct filter_get_index_data gid;
 	ssize_t data_offset;
 
-	nr_fields = desc->nr_fields;
+	nr_fields = event_desc->nr_fields;
 	offset = ((struct get_symbol *) insn->data)->offset;
 	name = runtime->p.bc->bc.data + runtime->p.bc->bc.reloc_offset + offset;
 	for (i = 0; i < nr_fields; i++) {
-		field = &desc->fields[i];
+		field = &event_desc->fields[i];
 		if (field->nofilter) {
 			continue;
 		}
@@ -489,13 +490,14 @@ end:
 	return ret;
 }
 
-int lttng_filter_specialize_bytecode(struct lttng_event *event,
+int lttng_filter_specialize_bytecode(const struct lttng_event_desc *event_desc,
 		struct bytecode_runtime *bytecode)
 {
 	void *pc, *next_pc, *start_pc;
 	int ret = -EINVAL;
 	struct vstack _stack;
 	struct vstack *stack = &_stack;
+	struct lttng_ctx *ctx = bytecode->p.ctx;
 
 	vstack_init(stack);
 
@@ -1150,7 +1152,7 @@ int lttng_filter_specialize_bytecode(struct lttng_event *event,
 				goto end;
 			case LOAD_ROOT_CONTEXT:
 				/* Lookup context field. */
-				ret = specialize_context_lookup(bytecode, insn,
+				ret = specialize_context_lookup(ctx, bytecode, insn,
 					&vstack_ax(stack)->load);
 				if (ret)
 					goto end;
@@ -1160,7 +1162,7 @@ int lttng_filter_specialize_bytecode(struct lttng_event *event,
 				goto end;
 			case LOAD_ROOT_PAYLOAD:
 				/* Lookup event payload field. */
-				ret = specialize_event_payload_lookup(event,
+				ret = specialize_payload_lookup(event_desc,
 					bytecode, insn,
 					&vstack_ax(stack)->load);
 				if (ret)

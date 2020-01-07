@@ -255,7 +255,7 @@ struct lttng_bytecode_runtime {
 			const char *filter_stack_data);
 	int link_failed;
 	struct list_head node;	/* list of bytecode runtime in event */
-	struct lttng_event *event;
+	struct lttng_ctx *ctx;
 };
 
 /*
@@ -711,8 +711,11 @@ static inline long lttng_channel_syscall_mask(struct lttng_channel *channel,
 void lttng_filter_sync_state(struct lttng_bytecode_runtime *runtime);
 int lttng_event_enabler_attach_bytecode(struct lttng_event_enabler *event_enabler,
 		struct lttng_kernel_filter_bytecode __user *bytecode);
-void lttng_event_enabler_link_bytecode(struct lttng_event *event,
-		struct lttng_event_enabler *event_enabler);
+
+void lttng_enabler_link_bytecode(const struct lttng_event_desc *event_desc,
+		struct lttng_ctx *ctx,
+		struct list_head *bytecode_runtime_head,
+		struct lttng_enabler *enabler);
 
 int lttng_probes_init(void);
 

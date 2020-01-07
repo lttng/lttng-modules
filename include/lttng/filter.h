@@ -235,7 +235,7 @@ struct estack {
 const char *lttng_filter_print_op(enum filter_op op);
 
 int lttng_filter_validate_bytecode(struct bytecode_runtime *bytecode);
-int lttng_filter_specialize_bytecode(struct lttng_event *event,
+int lttng_filter_specialize_bytecode(const struct lttng_event_desc *event_desc,
 		struct bytecode_runtime *bytecode);
 
 uint64_t lttng_filter_false(void *filter_data,
