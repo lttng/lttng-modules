@@ -344,6 +344,7 @@ struct lttng_event_notifier {
 
 	enum lttng_kernel_instrumentation instrumentation;
 	union {
+		struct lttng_kprobe kprobe;
 	} u;
 
 	/* Backward references: list of lttng_enabler_ref (ref to enablers) */
@@ -723,6 +724,9 @@ int lttng_channel_disable(struct lttng_channel *channel);
 int lttng_event_enable(struct lttng_event *event);
 int lttng_event_disable(struct lttng_event *event);
 
+int lttng_event_notifier_enable(struct lttng_event_notifier *event_notifier);
+int lttng_event_notifier_disable(struct lttng_event_notifier *event_notifier);
+
 void lttng_transport_register(struct lttng_transport *transport);
 void lttng_transport_unregister(struct lttng_transport *transport);
 
@@ -1016,6 +1020,12 @@ int lttng_kprobes_register_event(const char *name,
 		struct lttng_event *event);
 void lttng_kprobes_unregister_event(struct lttng_event *event);
 void lttng_kprobes_destroy_event_private(struct lttng_event *event);
+int lttng_kprobes_register_event_notifier(const char *symbol_name,
+		uint64_t offset,
+		uint64_t addr,
+		struct lttng_event_notifier *event_notifier);
+void lttng_kprobes_unregister_event_notifier(struct lttng_event_notifier *event_notifier);
+void lttng_kprobes_destroy_event_notifier_private(struct lttng_event_notifier *event_notifier);
 #else
 static inline
 int lttng_kprobes_register_event(const char *name,
@@ -1038,7 +1048,21 @@ void lttng_kprobes_destroy_event_private(struct lttng_event *event)
 }
 
 static inline
-void lttng_kprobes_destroy_private(struct lttng_event *event)
+int lttng_kprobes_register_event_notifier(const char *symbol_name,
+		uint64_t offset,
+		uint64_t addr,
+		struct lttng_event_notifier *event_notifier)
+{
+	return -ENOSYS;
+}
+
+static inline
+void lttng_kprobes_unregister_event_notifier(struct lttng_event_notifier *event_notifier)
+{
+}
+
+static inline
+void lttng_kprobes_destroy_event_notifier_private(struct lttng_event_notifier *event_notifier)
 {
 }
 #endif

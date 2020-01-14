@@ -1711,6 +1711,7 @@ fd_error:
 static
 long lttng_event_notifier_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
+	struct lttng_event_notifier *event_notifier;
 	struct lttng_event_notifier_enabler *event_notifier_enabler;
 	enum lttng_event_type *evtype = file->private_data;
 
@@ -1718,7 +1719,8 @@ long lttng_event_notifier_ioctl(struct file *file, unsigned int cmd, unsigned lo
 	case LTTNG_KERNEL_ENABLE:
 		switch (*evtype) {
 		case LTTNG_TYPE_EVENT:
-			return -EINVAL;
+			event_notifier = file->private_data;
+			return lttng_event_notifier_enable(event_notifier);
 		case LTTNG_TYPE_ENABLER:
 			event_notifier_enabler = file->private_data;
 			return lttng_event_notifier_enabler_enable(event_notifier_enabler);
@@ -1729,7 +1731,8 @@ long lttng_event_notifier_ioctl(struct file *file, unsigned int cmd, unsigned lo
 	case LTTNG_KERNEL_DISABLE:
 		switch (*evtype) {
 		case LTTNG_TYPE_EVENT:
-			return -EINVAL;
+			event_notifier = file->private_data;
+			return lttng_event_notifier_disable(event_notifier);
 		case LTTNG_TYPE_ENABLER:
 			event_notifier_enabler = file->private_data;
 			return lttng_event_notifier_enabler_disable(event_notifier_enabler);
@@ -1806,6 +1809,8 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 	case LTTNG_KERNEL_TRACEPOINT:
 		break;
 	case LTTNG_KERNEL_KPROBE:
+		event_notifier_param->event.u.kprobe.symbol_name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
+		break;
 	case LTTNG_KERNEL_UPROBE:
 	case LTTNG_KERNEL_KRETPROBE:
 	case LTTNG_KERNEL_FUNCTION:

@@ -49,6 +49,20 @@ int lttng_kprobes_event_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	return 0;
 }
 
+static
+int lttng_kprobes_event_notifier_handler_pre(struct kprobe *p, struct pt_regs *regs)
+{
+	struct lttng_event_notifier *event_notifier =
+		container_of(p, struct lttng_event_notifier, u.kprobe.kp);
+
+	if (unlikely(!READ_ONCE(event_notifier->enabled)))
+		return 0;
+
+	event_notifier->send_notification(event_notifier);
+
+	return 0;
+}
+
 /*
  * Create event description
  */
@@ -94,6 +108,35 @@ error_str:
 	return ret;
 }
 
+/*
+ * Create event_notifier description
+ */
+static
+int lttng_create_kprobe_event_notifier(const char *name, struct lttng_event_notifier *event_notifier)
+{
+	struct lttng_event_desc *desc;
+	int ret;
+
+	desc = kzalloc(sizeof(*event_notifier->desc), GFP_KERNEL);
+	if (!desc)
+		return -ENOMEM;
+	desc->name = kstrdup(name, GFP_KERNEL);
+	if (!desc->name) {
+		ret = -ENOMEM;
+		goto error_str;
+	}
+	desc->nr_fields = 0;
+
+	desc->owner = THIS_MODULE;
+	event_notifier->desc = desc;
+
+	return 0;
+
+error_str:
+	kfree(desc);
+	return ret;
+}
+
 static
 int _lttng_kprobes_register(const char *symbol_name,
 			   uint64_t offset,
@@ -127,7 +170,7 @@ int _lttng_kprobes_register(const char *symbol_name,
 	lttng_kp->kp.addr = (void *) (unsigned long) addr;
 
 	/*
-	 * Ensure the memory we just allocated don't trigger page faults.
+	 * Ensure the memory we just allocated don't event_notifier page faults.
 	 * Well.. kprobes itself puts the page fault handler on the blacklist,
 	 * but we can never be too careful.
 	 */
@@ -173,11 +216,42 @@ error:
 }
 EXPORT_SYMBOL_GPL(lttng_kprobes_register_event);
 
+int lttng_kprobes_register_event_notifier(const char *symbol_name,
+			   uint64_t offset,
+			   uint64_t addr,
+			   struct lttng_event_notifier *event_notifier)
+{
+	int ret;
+	ret = lttng_create_kprobe_event_notifier(symbol_name, event_notifier);
+	if (ret)
+		goto error;
+
+	ret = _lttng_kprobes_register(symbol_name, offset, addr,
+		&event_notifier->u.kprobe, lttng_kprobes_event_notifier_handler_pre);
+	if (ret)
+		goto register_error;
+
+	return 0;
+
+register_error:
+	kfree(event_notifier->desc->name);
+	kfree(event_notifier->desc);
+error:
+	return ret;
+}
+EXPORT_SYMBOL_GPL(lttng_kprobes_register_event_notifier);
+
 void lttng_kprobes_unregister_event(struct lttng_event *event)
 {
 	unregister_kprobe(&event->u.kprobe.kp);
 }
 EXPORT_SYMBOL_GPL(lttng_kprobes_unregister_event);
+
+void lttng_kprobes_unregister_event_notifier(struct lttng_event_notifier *event_notifier)
+{
+	unregister_kprobe(&event_notifier->u.kprobe.kp);
+}
+EXPORT_SYMBOL_GPL(lttng_kprobes_unregister_event_notifier);
 
 void lttng_kprobes_destroy_event_private(struct lttng_event *event)
 {
@@ -187,6 +261,14 @@ void lttng_kprobes_destroy_event_private(struct lttng_event *event)
 	kfree(event->desc);
 }
 EXPORT_SYMBOL_GPL(lttng_kprobes_destroy_event_private);
+
+void lttng_kprobes_destroy_event_notifier_private(struct lttng_event_notifier *event_notifier)
+{
+	kfree(event_notifier->u.kprobe.symbol_name);
+	kfree(event_notifier->desc->name);
+	kfree(event_notifier->desc);
+}
+EXPORT_SYMBOL_GPL(lttng_kprobes_destroy_event_notifier_private);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");
