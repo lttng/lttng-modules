@@ -18,7 +18,7 @@
 #include <blacklist/kprobes.h>
 
 static
-int lttng_kprobes_handler_pre(struct kprobe *p, struct pt_regs *regs)
+int lttng_kprobes_event_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
 	struct lttng_event *event =
 		container_of(p, struct lttng_event, u.kprobe.kp);
@@ -94,11 +94,12 @@ error_str:
 	return ret;
 }
 
-int lttng_kprobes_register(const char *name,
-			   const char *symbol_name,
+static
+int _lttng_kprobes_register(const char *symbol_name,
 			   uint64_t offset,
 			   uint64_t addr,
-			   struct lttng_event *event)
+			   struct lttng_kprobe *lttng_kp,
+			   kprobe_pre_handler_t pre_handler)
 {
 	int ret;
 
@@ -106,26 +107,24 @@ int lttng_kprobes_register(const char *name,
 	if (symbol_name[0] == '\0')
 		symbol_name = NULL;
 
-	ret = lttng_create_kprobe_event(name, event);
-	if (ret)
-		goto error;
-	memset(&event->u.kprobe.kp, 0, sizeof(event->u.kprobe.kp));
-	event->u.kprobe.kp.pre_handler = lttng_kprobes_handler_pre;
+	memset(&lttng_kp->kp, 0, sizeof(lttng_kp->kp));
+	lttng_kp->kp.pre_handler = pre_handler;
+
 	if (symbol_name) {
-		event->u.kprobe.symbol_name =
+		lttng_kp->symbol_name =
 			kzalloc(LTTNG_KERNEL_SYM_NAME_LEN * sizeof(char),
 				GFP_KERNEL);
-		if (!event->u.kprobe.symbol_name) {
+		if (!lttng_kp->symbol_name) {
 			ret = -ENOMEM;
 			goto name_error;
 		}
-		memcpy(event->u.kprobe.symbol_name, symbol_name,
+		memcpy(lttng_kp->symbol_name, symbol_name,
 		       LTTNG_KERNEL_SYM_NAME_LEN * sizeof(char));
-		event->u.kprobe.kp.symbol_name =
-			event->u.kprobe.symbol_name;
+		lttng_kp->kp.symbol_name = lttng_kp->symbol_name;
 	}
-	event->u.kprobe.kp.offset = offset;
-	event->u.kprobe.kp.addr = (void *) (unsigned long) addr;
+
+	lttng_kp->kp.offset = offset;
+	lttng_kp->kp.addr = (void *) (unsigned long) addr;
 
 	/*
 	 * Ensure the memory we just allocated don't trigger page faults.
@@ -134,36 +133,60 @@ int lttng_kprobes_register(const char *name,
 	 */
 	wrapper_vmalloc_sync_mappings();
 
-	ret = register_kprobe(&event->u.kprobe.kp);
+	ret = register_kprobe(&lttng_kp->kp);
 	if (ret)
 		goto register_error;
+
 	return 0;
 
 register_error:
-	kfree(event->u.kprobe.symbol_name);
+	kfree(lttng_kp->symbol_name);
 name_error:
+	return ret;
+}
+
+int lttng_kprobes_register_event(const char *name,
+			   const char *symbol_name,
+			   uint64_t offset,
+			   uint64_t addr,
+			   struct lttng_event *event)
+{
+	int ret;
+
+	ret = lttng_create_kprobe_event(name, event);
+	if (ret)
+		goto error;
+
+	ret = _lttng_kprobes_register(symbol_name, offset, addr,
+		&event->u.kprobe, lttng_kprobes_event_handler_pre);
+	if (ret)
+		goto register_error;
+
+	return 0;
+
+register_error:
 	kfree(event->desc->fields);
 	kfree(event->desc->name);
 	kfree(event->desc);
 error:
 	return ret;
 }
-EXPORT_SYMBOL_GPL(lttng_kprobes_register);
+EXPORT_SYMBOL_GPL(lttng_kprobes_register_event);
 
-void lttng_kprobes_unregister(struct lttng_event *event)
+void lttng_kprobes_unregister_event(struct lttng_event *event)
 {
 	unregister_kprobe(&event->u.kprobe.kp);
 }
-EXPORT_SYMBOL_GPL(lttng_kprobes_unregister);
+EXPORT_SYMBOL_GPL(lttng_kprobes_unregister_event);
 
-void lttng_kprobes_destroy_private(struct lttng_event *event)
+void lttng_kprobes_destroy_event_private(struct lttng_event *event)
 {
 	kfree(event->u.kprobe.symbol_name);
 	kfree(event->desc->fields);
 	kfree(event->desc->name);
 	kfree(event->desc);
 }
-EXPORT_SYMBOL_GPL(lttng_kprobes_destroy_private);
+EXPORT_SYMBOL_GPL(lttng_kprobes_destroy_event_private);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");

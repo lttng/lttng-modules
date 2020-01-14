@@ -838,7 +838,7 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		 * registration.
 		 */
 		smp_wmb();
-		ret = lttng_kprobes_register(event_name,
+		ret = lttng_kprobes_register_event(event_name,
 				event_param->u.kprobe.symbol_name,
 				event_param->u.kprobe.offset,
 				event_param->u.kprobe.addr,
@@ -1163,7 +1163,7 @@ int _lttng_event_unregister(struct lttng_event *event)
 						  event);
 		break;
 	case LTTNG_KERNEL_KPROBE:
-		lttng_kprobes_unregister(event);
+		lttng_kprobes_unregister_event(event);
 		ret = 0;
 		break;
 	case LTTNG_KERNEL_KRETPROBE:
@@ -1262,7 +1262,7 @@ void _lttng_event_destroy(struct lttng_event *event)
 		break;
 	case LTTNG_KERNEL_KPROBE:
 		module_put(event->desc->owner);
-		lttng_kprobes_destroy_private(event);
+		lttng_kprobes_destroy_event_private(event);
 		break;
 	case LTTNG_KERNEL_KRETPROBE:
 		module_put(event->desc->owner);
