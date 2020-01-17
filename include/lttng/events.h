@@ -637,8 +637,8 @@ void lttng_abi_compat_old_exit(void);
 
 int lttng_probe_register(struct lttng_probe_desc *desc);
 void lttng_probe_unregister(struct lttng_probe_desc *desc);
-const struct lttng_event_desc *lttng_event_get(const char *name);
-void lttng_event_put(const struct lttng_event_desc *desc);
+const struct lttng_event_desc *lttng_event_desc_get(const char *name);
+void lttng_event_desc_put(const struct lttng_event_desc *desc);
 int lttng_probes_init(void);
 void lttng_probes_exit(void);
 

@@ -651,7 +651,7 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		/* Event will be enabled by enabler sync. */
 		event->enabled = 0;
 		event->registered = 0;
-		event->desc = lttng_event_get(event_name);
+		event->desc = lttng_event_desc_get(event_name);
 		if (!event->desc) {
 			ret = -ENOENT;
 			goto register_error;
@@ -923,7 +923,7 @@ void _lttng_event_destroy(struct lttng_event *event)
 {
 	switch (event->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
-		lttng_event_put(event->desc);
+		lttng_event_desc_put(event->desc);
 		break;
 	case LTTNG_KERNEL_KPROBE:
 		module_put(event->desc->owner);

@@ -198,7 +198,7 @@ EXPORT_SYMBOL_GPL(lttng_probe_unregister);
  * Called with sessions lock held.
  */
 static
-const struct lttng_event_desc *find_event(const char *name)
+const struct lttng_event_desc *find_event_desc(const char *name)
 {
 	struct lttng_probe_desc *probe_desc;
 	int i;
@@ -215,28 +215,28 @@ const struct lttng_event_desc *find_event(const char *name)
 /*
  * Called with sessions lock held.
  */
-const struct lttng_event_desc *lttng_event_get(const char *name)
+const struct lttng_event_desc *lttng_event_desc_get(const char *name)
 {
-	const struct lttng_event_desc *event;
+	const struct lttng_event_desc *event_desc;
 	int ret;
 
-	event = find_event(name);
-	if (!event)
+	event_desc = find_event_desc(name);
+	if (!event_desc)
 		return NULL;
-	ret = try_module_get(event->owner);
+	ret = try_module_get(event_desc->owner);
 	WARN_ON_ONCE(!ret);
-	return event;
+	return event_desc;
 }
-EXPORT_SYMBOL_GPL(lttng_event_get);
+EXPORT_SYMBOL_GPL(lttng_event_desc_get);
 
 /*
  * Called with sessions lock held.
  */
-void lttng_event_put(const struct lttng_event_desc *event)
+void lttng_event_desc_put(const struct lttng_event_desc *event_desc)
 {
-	module_put(event->owner);
+	module_put(event_desc->owner);
 }
-EXPORT_SYMBOL_GPL(lttng_event_put);
+EXPORT_SYMBOL_GPL(lttng_event_desc_put);
 
 static
 void *tp_list_start(struct seq_file *m, loff_t *pos)
