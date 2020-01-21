@@ -1752,6 +1752,18 @@ long lttng_event_notifier_ioctl(struct file *file, unsigned int cmd, unsigned lo
 			WARN_ON_ONCE(1);
 			return -ENOSYS;
 		}
+	case LTTNG_KERNEL_ADD_CALLSITE:
+		switch (*evtype) {
+		case LTTNG_TYPE_EVENT:
+			event_notifier = file->private_data;
+			return lttng_event_notifier_add_callsite(event_notifier,
+				(struct lttng_kernel_event_callsite __user *) arg);
+		case LTTNG_TYPE_ENABLER:
+			return -EINVAL;
+		default:
+			WARN_ON_ONCE(1);
+			return -ENOSYS;
+		}
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -1807,13 +1819,13 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 
 	switch (event_notifier_param->event.instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
+	case LTTNG_KERNEL_UPROBE:
 		break;
 	case LTTNG_KERNEL_KPROBE:
 		event_notifier_param->event.u.kprobe.symbol_name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		break;
 	case LTTNG_KERNEL_KRETPROBE:
-		/* Placing a trigger on kretprobe is not supported. */
-	case LTTNG_KERNEL_UPROBE:
+		/* Placing an event notifier on kretprobe is not supported. */
 	case LTTNG_KERNEL_FUNCTION:
 	case LTTNG_KERNEL_NOOP:
 	case LTTNG_KERNEL_SYSCALL:

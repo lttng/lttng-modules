@@ -63,6 +63,20 @@ int lttng_uprobes_event_handler_pre(struct uprobe_consumer *uc, struct pt_regs *
 	return 0;
 }
 
+static
+int lttng_uprobes_event_notifier_handler_pre(struct uprobe_consumer *uc, struct pt_regs *regs)
+{
+	struct lttng_uprobe_handler *uprobe_handler =
+		container_of(uc, struct lttng_uprobe_handler, up_consumer);
+	struct lttng_event_notifier *event_notifier = uprobe_handler->u.event_notifier;
+
+	if (unlikely(!READ_ONCE(event_notifier->enabled)))
+		return 0;
+
+	event_notifier->send_notification(event_notifier);
+	return 0;
+}
+
 /*
  * Create event description.
  */
@@ -106,6 +120,36 @@ int lttng_create_uprobe_event(const char *name, struct lttng_event *event)
 
 error_fields:
 	kfree(desc->name);
+error_str:
+	kfree(desc);
+	return ret;
+}
+
+/*
+ * Create event_notifier description.
+ */
+static
+int lttng_create_uprobe_event_notifier(const char *name, struct lttng_event_notifier *event_notifier)
+{
+	struct lttng_event_desc *desc;
+	int ret;
+
+	desc = kzalloc(sizeof(*event_notifier->desc), GFP_KERNEL);
+	if (!desc)
+		return -ENOMEM;
+	desc->name = kstrdup(name, GFP_KERNEL);
+	if (!desc->name) {
+		ret = -ENOMEM;
+		goto error_str;
+	}
+
+	desc->nr_fields = 0;
+
+	desc->owner = THIS_MODULE;
+	event_notifier->desc = desc;
+
+	return 0;
+
 error_str:
 	kfree(desc);
 	return ret;
@@ -164,7 +208,7 @@ int lttng_uprobes_add_callsite(struct lttng_uprobe *uprobe,
 		goto end;
 	}
 
-	/* Ensure the memory we just allocated don't trigger page faults. */
+	/* Ensure the memory we just allocated don't event_notifier page faults. */
 	wrapper_vmalloc_sync_mappings();
 
 	uprobe_handler->u.event = priv_data;
@@ -202,6 +246,14 @@ int lttng_uprobes_event_add_callsite(struct lttng_event *event,
 		lttng_uprobes_event_handler_pre, event);
 }
 EXPORT_SYMBOL_GPL(lttng_uprobes_event_add_callsite);
+
+int lttng_uprobes_event_notifier_add_callsite(struct lttng_event_notifier *event_notifier,
+	struct lttng_kernel_event_callsite __user *callsite)
+{
+	return lttng_uprobes_add_callsite(&event_notifier->u.uprobe, callsite,
+		lttng_uprobes_event_notifier_handler_pre, event_notifier);
+}
+EXPORT_SYMBOL_GPL(lttng_uprobes_event_notifier_add_callsite);
 
 static
 int lttng_uprobes_register(struct lttng_uprobe *uprobe, int fd)
@@ -244,7 +296,31 @@ error:
 }
 EXPORT_SYMBOL_GPL(lttng_uprobes_register_event);
 
-void lttng_uprobes_unregister_event(struct lttng_event *event)
+int lttng_uprobes_register_event_notifier(const char *name, int fd,
+		struct lttng_event_notifier *event_notifier)
+{
+	int ret = 0;
+
+	ret = lttng_create_uprobe_event_notifier(name, event_notifier);
+	if (ret)
+		goto error;
+
+	ret = lttng_uprobes_register(&event_notifier->u.uprobe, fd);
+	if (ret)
+		goto register_error;
+
+	return 0;
+
+register_error:
+	kfree(event_notifier->desc->name);
+	kfree(event_notifier->desc);
+error:
+	return ret;
+}
+EXPORT_SYMBOL_GPL(lttng_uprobes_register_event_notifier);
+
+static
+void lttng_uprobes_unregister(struct inode *inode, struct list_head *head)
 {
 	struct lttng_uprobe_handler *iter, *tmp;
 
@@ -252,14 +328,25 @@ void lttng_uprobes_unregister_event(struct lttng_event *event)
 	 * Iterate over the list of handler, remove each handler from the list
 	 * and free the struct.
 	 */
-	list_for_each_entry_safe(iter, tmp, &event->u.uprobe.head, node) {
-		wrapper_uprobe_unregister(event->u.uprobe.inode, iter->offset,
-			&iter->up_consumer);
+	list_for_each_entry_safe(iter, tmp, head, node) {
+		wrapper_uprobe_unregister(inode, iter->offset, &iter->up_consumer);
 		list_del(&iter->node);
 		kfree(iter);
 	}
+
+}
+
+void lttng_uprobes_unregister_event(struct lttng_event *event)
+{
+	lttng_uprobes_unregister(event->u.uprobe.inode, &event->u.uprobe.head);
 }
 EXPORT_SYMBOL_GPL(lttng_uprobes_unregister_event);
+
+void lttng_uprobes_unregister_event_notifier(struct lttng_event_notifier *event_notifier)
+{
+	lttng_uprobes_unregister(event_notifier->u.uprobe.inode, &event_notifier->u.uprobe.head);
+}
+EXPORT_SYMBOL_GPL(lttng_uprobes_unregister_event_notifier);
 
 void lttng_uprobes_destroy_event_private(struct lttng_event *event)
 {
@@ -268,6 +355,14 @@ void lttng_uprobes_destroy_event_private(struct lttng_event *event)
 	kfree(event->desc);
 }
 EXPORT_SYMBOL_GPL(lttng_uprobes_destroy_event_private);
+
+void lttng_uprobes_destroy_event_notifier_private(struct lttng_event_notifier *event_notifier)
+{
+	iput(event_notifier->u.uprobe.inode);
+	kfree(event_notifier->desc->name);
+	kfree(event_notifier->desc);
+}
+EXPORT_SYMBOL_GPL(lttng_uprobes_destroy_event_notifier_private);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Yannick Brosseau");
