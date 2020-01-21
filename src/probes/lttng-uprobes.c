@@ -23,11 +23,11 @@
 #include <wrapper/vmalloc.h>
 
 static
-int lttng_uprobes_handler_pre(struct uprobe_consumer *uc, struct pt_regs *regs)
+int lttng_uprobes_event_handler_pre(struct uprobe_consumer *uc, struct pt_regs *regs)
 {
 	struct lttng_uprobe_handler *uprobe_handler =
 		container_of(uc, struct lttng_uprobe_handler, up_consumer);
-	struct lttng_event *event = uprobe_handler->event;
+	struct lttng_event *event = uprobe_handler->u.event;
 	struct lttng_probe_ctx lttng_probe_ctx = {
 		.event = event,
 		.interruptible = !lttng_regs_irqs_disabled(regs),
@@ -142,13 +142,17 @@ error:
 	return inode;
 }
 
-int lttng_uprobes_add_callsite(struct lttng_event *event,
-	struct lttng_kernel_event_callsite __user *callsite)
+
+static
+int lttng_uprobes_add_callsite(struct lttng_uprobe *uprobe,
+	struct lttng_kernel_event_callsite __user *callsite,
+	int (*handler)(struct uprobe_consumer *self, struct pt_regs *regs),
+	void *priv_data)
 {
 	int ret = 0;
 	struct lttng_uprobe_handler *uprobe_handler;
 
-	if (!event) {
+	if (!priv_data) {
 		ret = -EINVAL;
 		goto end;
 	}
@@ -163,25 +167,25 @@ int lttng_uprobes_add_callsite(struct lttng_event *event,
 	/* Ensure the memory we just allocated don't trigger page faults. */
 	wrapper_vmalloc_sync_mappings();
 
-	uprobe_handler->event = event;
-	uprobe_handler->up_consumer.handler = lttng_uprobes_handler_pre;
+	uprobe_handler->u.event = priv_data;
+	uprobe_handler->up_consumer.handler = handler;
 
 	ret = copy_from_user(&uprobe_handler->offset, &callsite->u.uprobe.offset, sizeof(uint64_t));
 	if (ret) {
 		goto register_error;
 	}
 
-	ret = wrapper_uprobe_register(event->u.uprobe.inode,
+	ret = wrapper_uprobe_register(uprobe->inode,
 		      uprobe_handler->offset, &uprobe_handler->up_consumer);
 	if (ret) {
 		printk(KERN_WARNING "LTTng: Error registering probe on inode %lu "
-		       "and offset 0x%llx\n", event->u.uprobe.inode->i_ino,
+		       "and offset 0x%llx\n", uprobe->inode->i_ino,
 		       uprobe_handler->offset);
 		ret = -1;
 		goto register_error;
 	}
 
-	list_add(&uprobe_handler->node, &event->u.uprobe.head);
+	list_add(&uprobe_handler->node, &uprobe->head);
 
 	return ret;
 
@@ -190,16 +194,20 @@ register_error:
 end:
 	return ret;
 }
-EXPORT_SYMBOL_GPL(lttng_uprobes_add_callsite);
 
-int lttng_uprobes_register(const char *name, int fd, struct lttng_event *event)
+int lttng_uprobes_event_add_callsite(struct lttng_event *event,
+	struct lttng_kernel_event_callsite __user *callsite)
+{
+	return lttng_uprobes_add_callsite(&event->u.uprobe, callsite,
+		lttng_uprobes_event_handler_pre, event);
+}
+EXPORT_SYMBOL_GPL(lttng_uprobes_event_add_callsite);
+
+static
+int lttng_uprobes_register(struct lttng_uprobe *uprobe, int fd)
 {
 	int ret = 0;
 	struct inode *inode;
-
-	ret = lttng_create_uprobe_event(name, event);
-	if (ret)
-		goto error;
 
 	inode = get_inode_from_fd(fd);
 	if (!inode) {
@@ -207,20 +215,36 @@ int lttng_uprobes_register(const char *name, int fd, struct lttng_event *event)
 		ret = -EBADF;
 		goto inode_error;
 	}
-	event->u.uprobe.inode = inode;
-	INIT_LIST_HEAD(&event->u.uprobe.head);
+	uprobe->inode = inode;
+	INIT_LIST_HEAD(&uprobe->head);
+
+inode_error:
+	return ret;
+}
+
+int lttng_uprobes_register_event(const char *name, int fd, struct lttng_event *event)
+{
+	int ret = 0;
+
+	ret = lttng_create_uprobe_event(name, event);
+	if (ret)
+		goto error;
+
+	ret = lttng_uprobes_register(&event->u.uprobe, fd);
+	if (ret)
+		goto register_error;
 
 	return 0;
 
-inode_error:
+register_error:
 	kfree(event->desc->name);
 	kfree(event->desc);
 error:
 	return ret;
 }
-EXPORT_SYMBOL_GPL(lttng_uprobes_register);
+EXPORT_SYMBOL_GPL(lttng_uprobes_register_event);
 
-void lttng_uprobes_unregister(struct lttng_event *event)
+void lttng_uprobes_unregister_event(struct lttng_event *event)
 {
 	struct lttng_uprobe_handler *iter, *tmp;
 
@@ -235,15 +259,15 @@ void lttng_uprobes_unregister(struct lttng_event *event)
 		kfree(iter);
 	}
 }
-EXPORT_SYMBOL_GPL(lttng_uprobes_unregister);
+EXPORT_SYMBOL_GPL(lttng_uprobes_unregister_event);
 
-void lttng_uprobes_destroy_private(struct lttng_event *event)
+void lttng_uprobes_destroy_event_private(struct lttng_event *event)
 {
 	iput(event->u.uprobe.inode);
 	kfree(event->desc->name);
 	kfree(event->desc);
 }
-EXPORT_SYMBOL_GPL(lttng_uprobes_destroy_private);
+EXPORT_SYMBOL_GPL(lttng_uprobes_destroy_event_private);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Yannick Brosseau");

@@ -958,7 +958,7 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		 */
 		smp_wmb();
 
-		ret = lttng_uprobes_register(event_param->name,
+		ret = lttng_uprobes_register_event(event_param->name,
 				event_param->u.uprobe.fd,
 				event);
 		if (ret)
@@ -1206,7 +1206,7 @@ int _lttng_event_unregister(struct lttng_event *event)
 		ret = 0;
 		break;
 	case LTTNG_KERNEL_UPROBE:
-		lttng_uprobes_unregister(event);
+		lttng_uprobes_unregister_event(event);
 		ret = 0;
 		break;
 	case LTTNG_KERNEL_FUNCTION:	/* Fall-through */
@@ -1307,7 +1307,7 @@ void _lttng_event_destroy(struct lttng_event *event)
 		break;
 	case LTTNG_KERNEL_UPROBE:
 		module_put(event->desc->owner);
-		lttng_uprobes_destroy_private(event);
+		lttng_uprobes_destroy_event_private(event);
 		break;
 	case LTTNG_KERNEL_FUNCTION:	/* Fall-through */
 	default:
@@ -2163,7 +2163,7 @@ int lttng_event_add_callsite(struct lttng_event *event,
 
 	switch (event->instrumentation) {
 	case LTTNG_KERNEL_UPROBE:
-		return lttng_uprobes_add_callsite(event, callsite);
+		return lttng_uprobes_event_add_callsite(event, callsite);
 	default:
 		return -EINVAL;
 	}

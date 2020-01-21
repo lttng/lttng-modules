@@ -270,7 +270,9 @@ struct lttng_enabler_ref {
 };
 
 struct lttng_uprobe_handler {
-	struct lttng_event *event;
+	union {
+		struct lttng_event *event;
+	} u;
 	loff_t offset;
 	struct uprobe_consumer up_consumer;
 	struct list_head node;
@@ -279,6 +281,11 @@ struct lttng_uprobe_handler {
 struct lttng_kprobe {
 	struct kprobe kp;
 	char *symbol_name;
+};
+
+struct lttng_uprobe {
+	struct inode *inode;
+	struct list_head head;
 };
 
 enum lttng_syscall_entryexit {
@@ -310,10 +317,7 @@ struct lttng_event {
 			struct lttng_krp *lttng_krp;
 			char *symbol_name;
 		} kretprobe;
-		struct {
-			struct inode *inode;
-			struct list_head head;
-		} uprobe;
+		struct lttng_uprobe uprobe;
 		struct {
 			char *syscall_name;
 			enum lttng_syscall_entryexit entryexit;
@@ -1071,34 +1075,34 @@ int lttng_event_add_callsite(struct lttng_event *event,
 	struct lttng_kernel_event_callsite *callsite);
 
 #ifdef CONFIG_UPROBES
-int lttng_uprobes_register(const char *name,
+int lttng_uprobes_register_event(const char *name,
 	int fd, struct lttng_event *event);
-int lttng_uprobes_add_callsite(struct lttng_event *event,
+int lttng_uprobes_event_add_callsite(struct lttng_event *event,
 	struct lttng_kernel_event_callsite *callsite);
-void lttng_uprobes_unregister(struct lttng_event *event);
-void lttng_uprobes_destroy_private(struct lttng_event *event);
+void lttng_uprobes_unregister_event(struct lttng_event *event);
+void lttng_uprobes_destroy_event_private(struct lttng_event *event);
 #else
 static inline
-int lttng_uprobes_register(const char *name,
+int lttng_uprobes_register_event(const char *name,
 	int fd, struct lttng_event *event)
 {
 	return -ENOSYS;
 }
 
 static inline
-int lttng_uprobes_add_callsite(struct lttng_event *event,
+int lttng_uprobes_event_add_callsite(struct lttng_event *event,
 	struct lttng_kernel_event_callsite *callsite)
 {
 	return -ENOSYS;
 }
 
 static inline
-void lttng_uprobes_unregister(struct lttng_event *event)
+void lttng_uprobes_unregister_event(struct lttng_event *event)
 {
 }
 
 static inline
-void lttng_uprobes_destroy_private(struct lttng_event *event)
+void lttng_uprobes_destroy_event_private(struct lttng_event *event)
 {
 }
 #endif
