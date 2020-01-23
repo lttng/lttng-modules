@@ -1824,11 +1824,12 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 	case LTTNG_KERNEL_KPROBE:
 		event_notifier_param->event.u.kprobe.symbol_name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		break;
+	case LTTNG_KERNEL_SYSCALL:
+		break;
 	case LTTNG_KERNEL_KRETPROBE:
 		/* Placing an event notifier on kretprobe is not supported. */
 	case LTTNG_KERNEL_FUNCTION:
 	case LTTNG_KERNEL_NOOP:
-	case LTTNG_KERNEL_SYSCALL:
 	default:
 		ret = -EINVAL;
 		goto inval_instr;

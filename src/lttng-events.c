@@ -329,6 +329,9 @@ void lttng_event_notifier_group_destroy(
 
 	mutex_lock(&sessions_mutex);
 
+	ret = lttng_syscalls_unregister_event_notifier(event_notifier_group);
+	WARN_ON(ret);
+
 	list_for_each_entry_safe(event_notifier, tmpevent_notifier,
 			&event_notifier_group->event_notifiers_head, list) {
 		ret = _lttng_event_notifier_unregister(event_notifier);
@@ -612,13 +615,13 @@ int lttng_event_notifier_enable(struct lttng_event_notifier *event_notifier)
 	}
 	switch (event_notifier->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
+	case LTTNG_KERNEL_SYSCALL:
 		ret = -EINVAL;
 		break;
 	case LTTNG_KERNEL_KPROBE:
 	case LTTNG_KERNEL_UPROBE:
 		WRITE_ONCE(event_notifier->enabled, 1);
 		break;
-	case LTTNG_KERNEL_SYSCALL:
 	case LTTNG_KERNEL_FUNCTION:
 	case LTTNG_KERNEL_NOOP:
 	case LTTNG_KERNEL_KRETPROBE:
@@ -642,13 +645,13 @@ int lttng_event_notifier_disable(struct lttng_event_notifier *event_notifier)
 	}
 	switch (event_notifier->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
+	case LTTNG_KERNEL_SYSCALL:
 		ret = -EINVAL;
 		break;
 	case LTTNG_KERNEL_KPROBE:
 	case LTTNG_KERNEL_UPROBE:
 		WRITE_ONCE(event_notifier->enabled, 0);
 		break;
-	case LTTNG_KERNEL_SYSCALL:
 	case LTTNG_KERNEL_FUNCTION:
 	case LTTNG_KERNEL_NOOP:
 	case LTTNG_KERNEL_KRETPROBE:
@@ -1009,12 +1012,12 @@ struct lttng_event_notifier *_lttng_event_notifier_create(
 		break;
 	case LTTNG_KERNEL_KPROBE:
 	case LTTNG_KERNEL_UPROBE:
+	case LTTNG_KERNEL_SYSCALL:
 		event_name = event_notifier_param->event.name;
 		break;
 	case LTTNG_KERNEL_KRETPROBE:
 	case LTTNG_KERNEL_FUNCTION:
 	case LTTNG_KERNEL_NOOP:
-	case LTTNG_KERNEL_SYSCALL:
 	default:
 		WARN_ON_ONCE(1);
 		ret = -EINVAL;
@@ -1086,6 +1089,20 @@ struct lttng_event_notifier *_lttng_event_notifier_create(
 		ret = try_module_get(event_notifier->desc->owner);
 		WARN_ON_ONCE(!ret);
 		break;
+	case LTTNG_KERNEL_NOOP:
+	case LTTNG_KERNEL_SYSCALL:
+		/*
+		 * Needs to be explicitly enabled after creation, since
+		 * we may want to apply filters.
+		 */
+		event_notifier->enabled = 0;
+		event_notifier->registered = 0;
+		event_notifier->desc = event_desc;
+		if (!event_notifier->desc) {
+			ret = -EINVAL;
+			goto register_error;
+		}
+		break;
 	case LTTNG_KERNEL_UPROBE:
 		/*
 		 * Needs to be explicitly enabled after creation, since
@@ -1111,8 +1128,6 @@ struct lttng_event_notifier *_lttng_event_notifier_create(
 		break;
 	case LTTNG_KERNEL_KRETPROBE:
 	case LTTNG_KERNEL_FUNCTION:
-	case LTTNG_KERNEL_NOOP:
-	case LTTNG_KERNEL_SYSCALL:
 	default:
 		WARN_ON_ONCE(1);
 		ret = -EINVAL;
@@ -1257,11 +1272,13 @@ void register_event_notifier(struct lttng_event_notifier *event_notifier)
 						  desc->event_notifier_callback,
 						  event_notifier);
 		break;
+	case LTTNG_KERNEL_SYSCALL:
+		ret = lttng_syscall_filter_enable_event_notifier(event_notifier);
+		break;
 	case LTTNG_KERNEL_KPROBE:
 	case LTTNG_KERNEL_UPROBE:
 		ret = 0;
 		break;
-	case LTTNG_KERNEL_SYSCALL:
 	case LTTNG_KERNEL_KRETPROBE:
 	case LTTNG_KERNEL_FUNCTION:
 	case LTTNG_KERNEL_NOOP:
@@ -1297,9 +1314,11 @@ int _lttng_event_notifier_unregister(
 		lttng_uprobes_unregister_event_notifier(event_notifier);
 		ret = 0;
 		break;
+	case LTTNG_KERNEL_SYSCALL:
+		ret = lttng_syscall_filter_disable_event_notifier(event_notifier);
+		break;
 	case LTTNG_KERNEL_KRETPROBE:
 	case LTTNG_KERNEL_FUNCTION:
-	case LTTNG_KERNEL_SYSCALL:
 	case LTTNG_KERNEL_NOOP:
 	default:
 		WARN_ON_ONCE(1);
@@ -1357,14 +1376,15 @@ void _lttng_event_notifier_destroy(struct lttng_event_notifier *event_notifier)
 		module_put(event_notifier->desc->owner);
 		lttng_kprobes_destroy_event_notifier_private(event_notifier);
 		break;
+	case LTTNG_KERNEL_NOOP:
+	case LTTNG_KERNEL_SYSCALL:
+		break;
 	case LTTNG_KERNEL_UPROBE:
 		module_put(event_notifier->desc->owner);
 		lttng_uprobes_destroy_event_notifier_private(event_notifier);
 		break;
 	case LTTNG_KERNEL_KRETPROBE:
 	case LTTNG_KERNEL_FUNCTION:
-	case LTTNG_KERNEL_NOOP:
-	case LTTNG_KERNEL_SYSCALL:
 	default:
 		WARN_ON_ONCE(1);
 	}
@@ -1647,7 +1667,6 @@ int lttng_match_enabler_name(const char *desc_name,
 	return 1;
 }
 
-static
 int lttng_desc_match_enabler(const struct lttng_event_desc *desc,
 		struct lttng_enabler *enabler)
 {
@@ -1901,6 +1920,17 @@ void lttng_create_syscall_event_if_missing(struct lttng_event_enabler *event_ena
 	WARN_ON_ONCE(ret);
 }
 
+static
+void lttng_create_syscall_event_notifier_if_missing(struct lttng_event_notifier_enabler *event_notifier_enabler)
+{
+	int ret;
+
+	ret = lttng_syscalls_register_event_notifier(event_notifier_enabler, NULL);
+	WARN_ON_ONCE(ret);
+	ret = lttng_syscals_create_matching_event_notifiers(event_notifier_enabler, NULL);
+	WARN_ON_ONCE(ret);
+}
+
 /*
  * Create struct lttng_event if it is missing and present in the list of
  * tracepoint probes.
@@ -1994,6 +2024,9 @@ void lttng_create_event_notifier_if_missing(struct lttng_event_notifier_enabler 
 	switch (event_notifier_enabler->base.event_param.instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
 		lttng_create_tracepoint_event_notifier_if_missing(event_notifier_enabler);
+		break;
+	case LTTNG_KERNEL_SYSCALL:
+		lttng_create_syscall_event_notifier_if_missing(event_notifier_enabler);
 		break;
 	default:
 		WARN_ON_ONCE(1);

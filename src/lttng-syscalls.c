@@ -29,6 +29,7 @@
 #include <wrapper/rcu.h>
 #include <wrapper/syscall.h>
 #include <lttng/events.h>
+#include <lttng/utils.h>
 
 #ifndef CONFIG_COMPAT
 # ifndef is_compat_task
@@ -62,6 +63,10 @@ static
 void syscall_entry_event_probe(void *__data, struct pt_regs *regs, long id);
 static
 void syscall_exit_event_probe(void *__data, struct pt_regs *regs, long ret);
+
+static
+void syscall_entry_event_notifier_probe(void *__data, struct pt_regs *regs,
+		long id);
 
 /*
  * Forward declarations for old kernels.
@@ -285,6 +290,7 @@ typedef __kernel_old_time_t time_t;
 
 struct trace_syscall_entry {
 	void *event_func;
+	void *event_notifier_func;
 	const struct lttng_event_desc *desc;
 	const struct lttng_event_field *fields;
 	unsigned int nrargs;
@@ -301,6 +307,7 @@ struct trace_syscall_entry {
 #define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
 	[ _nr ] = {						\
 		.event_func = __event_probe__syscall_entry_##_template, \
+		.event_notifier_func = __event_notifier_probe__syscall_entry_##_template, \
 		.nrargs = (_nrargs),				\
 		.fields = __event_fields___syscall_entry_##_template, \
 		.desc = &__event_desc___syscall_entry_##_name,	\
@@ -316,6 +323,7 @@ static const struct trace_syscall_entry sc_table[] = {
 #define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
 	[ _nr ] = {						\
 		.event_func = __event_probe__compat_syscall_entry_##_template, \
+		.event_notifier_func = __event_notifier_probe__compat_syscall_entry_##_template, \
 		.nrargs = (_nrargs),				\
 		.fields = __event_fields___compat_syscall_entry_##_template, \
 		.desc = &__event_desc___compat_syscall_entry_##_name, \
@@ -338,6 +346,7 @@ const struct trace_syscall_entry compat_sc_table[] = {
 #define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
 	[ _nr ] = {						\
 		.event_func = __event_probe__syscall_exit_##_template, \
+		.event_notifier_func = __event_notifier_probe__syscall_exit_##_template, \
 		.nrargs = (_nrargs),				\
 		.fields = __event_fields___syscall_exit_##_template, \
 		.desc = &__event_desc___syscall_exit_##_name, \
@@ -353,6 +362,7 @@ static const struct trace_syscall_entry sc_exit_table[] = {
 #define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
 	[ _nr ] = {						\
 		.event_func = __event_probe__compat_syscall_exit_##_template, \
+		.event_notifier_func = __event_notifier_probe__compat_syscall_exit_##_template, \
 		.nrargs = (_nrargs),				\
 		.fields = __event_fields___compat_syscall_exit_##_template, \
 		.desc = &__event_desc___compat_syscall_exit_##_name, \
@@ -385,6 +395,20 @@ static void syscall_entry_event_unknown(struct lttng_event *event,
 		__event_probe__compat_syscall_entry_unknown(event, id, args);
 	else
 		__event_probe__syscall_entry_unknown(event, id, args);
+}
+
+static void syscall_entry_event_notifier_unknown(
+		struct lttng_event_notifier_group *notifier_group,
+		struct pt_regs *regs, unsigned int id)
+{
+	unsigned long args[LTTNG_SYSCALL_NR_ARGS];
+	struct lttng_event *event;
+
+	lttng_syscall_get_arguments(current, regs, args);
+	if (unlikely(in_compat_syscall()))
+		__event_probe__compat_syscall_notifier_entry_unknown(event, id, args);
+	else
+		__event_probe__syscall_notifier_entry_unknown(event, id, args);
 }
 
 static __always_inline
@@ -524,6 +548,44 @@ void syscall_entry_event_probe(void *__data, struct pt_regs *regs, long id)
 	entry = &table[id];
 	WARN_ON_ONCE(!entry);
 	syscall_entry_call_func(entry->event_func, entry->nrargs, event, regs);
+}
+
+void syscall_entry_event_notifier_probe(void *__data, struct pt_regs *regs, long id)
+{
+	struct lttng_event_notifier_group *event_notifier_group = __data;
+	const struct trace_syscall_entry *entry;
+	struct list_head *dispatch_list;
+	struct lttng_event_notifier *iter;
+	size_t table_len;
+
+	if (unlikely(in_compat_syscall())) {
+		table_len = ARRAY_SIZE(compat_sc_table);
+		if (unlikely(id < 0 || id >= table_len)) {
+			return;
+		}
+		entry = &compat_sc_table[id];
+		dispatch_list = &event_notifier_group->event_notifier_compat_syscall_dispatch[id];
+	} else {
+		table_len = ARRAY_SIZE(sc_table);
+		if (unlikely(id < 0 || id >= table_len)) {
+			return;
+		}
+		entry = &sc_table[id];
+		dispatch_list = &event_notifier_group->event_notifier_syscall_dispatch[id];
+	}
+
+	if (unlikely(id < 0 || id >= table_len)) {
+		syscall_entry_event_notifier_unknown(event_notifier_group, regs, id);
+		return;
+	}
+
+	/* TODO handle unknown syscall */
+
+	list_for_each_entry_rcu(iter, dispatch_list, u.syscall.node) {
+		BUG_ON(iter->u.syscall.syscall_id != id);
+		syscall_entry_call_func(entry->event_notifier_func,
+				entry->nrargs, iter, regs);
+	}
 }
 
 static void syscall_exit_event_unknown(struct lttng_event *event,
@@ -918,8 +980,157 @@ int lttng_syscalls_register_event(struct lttng_channel *chan, void *filter)
 }
 
 /*
- * Only called at session destruction.
+ * Should be called with sessions lock held.
  */
+int lttng_syscalls_register_event_notifier(struct lttng_event_notifier_enabler *event_notifier_enabler, void *filter)
+{
+	struct lttng_event_notifier_group *group = event_notifier_enabler->group;
+	unsigned int i;
+	int ret = 0;
+
+	wrapper_vmalloc_sync_mappings();
+
+	if (!group->event_notifier_syscall_dispatch) {
+		group->event_notifier_syscall_dispatch = kzalloc(sizeof(struct list_head)
+					* ARRAY_SIZE(sc_table), GFP_KERNEL);
+		if (!group->event_notifier_syscall_dispatch)
+			return -ENOMEM;
+
+		/* Initialize all list_head */
+		for (i = 0; i < ARRAY_SIZE(sc_table); i++)
+			INIT_LIST_HEAD(&group->event_notifier_syscall_dispatch[i]);
+	}
+
+#ifdef CONFIG_COMPAT
+	if (!group->event_notifier_compat_syscall_dispatch) {
+		group->event_notifier_compat_syscall_dispatch = kzalloc(sizeof(struct list_head)
+					* ARRAY_SIZE(compat_sc_table), GFP_KERNEL);
+		if (!group->event_notifier_syscall_dispatch)
+			return -ENOMEM;
+
+		/* Initialize all list_head */
+		for (i = 0; i < ARRAY_SIZE(compat_sc_table); i++)
+			INIT_LIST_HEAD(&group->event_notifier_compat_syscall_dispatch[i]);
+	}
+#endif
+
+	if (!group->sys_enter_registered) {
+		ret = lttng_wrapper_tracepoint_probe_register("sys_enter",
+				(void *) syscall_entry_event_notifier_probe, group);
+		if (ret)
+			return ret;
+		group->sys_enter_registered = 1;
+	}
+
+	return ret;
+}
+
+static int create_matching_event_notifiers(struct lttng_event_notifier_enabler *event_notifier_enabler,
+		void *filter, const struct trace_syscall_entry *table,
+		size_t table_len, bool is_compat)
+{
+	struct lttng_event_notifier_group *group = event_notifier_enabler->group;
+	const struct lttng_event_desc *desc;
+	uint64_t user_token = event_notifier_enabler->base.user_token;
+	unsigned int i;
+	int ret = 0;
+
+	/* iterate over all syscall and create event_notifier that match */
+	for (i = 0; i < table_len; i++) {
+		struct lttng_event_notifier *event_notifier;
+		struct lttng_kernel_event_notifier event_notifier_param;
+		struct hlist_head *head;
+		int found = 0;
+
+		desc = table[i].desc;
+		if (!desc) {
+			/* Unknown syscall */
+			continue;
+		}
+
+		if (!lttng_desc_match_enabler(desc,
+				lttng_event_notifier_enabler_as_enabler(event_notifier_enabler)))
+			continue;
+
+		/*
+		 * Check if already created.
+		 */
+		head = utils_borrow_hash_table_bucket(group->event_notifiers_ht.table,
+			LTTNG_EVENT_NOTIFIER_HT_SIZE, desc->name);
+		lttng_hlist_for_each_entry(event_notifier, head, hlist) {
+			if (event_notifier->desc == desc
+				&& event_notifier->user_token == event_notifier_enabler->base.user_token)
+				found = 1;
+		}
+		if (found)
+			continue;
+
+		memset(&event_notifier_param, 0, sizeof(event_notifier_param));
+		strncat(event_notifier_param.event.name, desc->name,
+			LTTNG_KERNEL_SYM_NAME_LEN - strlen(event_notifier_param.event.name) - 1);
+		event_notifier_param.event.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
+		event_notifier_param.event.instrumentation = LTTNG_KERNEL_SYSCALL;
+
+		event_notifier = _lttng_event_notifier_create(desc, user_token, group,
+			&event_notifier_param, filter,
+			event_notifier_param.event.instrumentation);
+		if (IS_ERR(event_notifier)) {
+			printk(KERN_INFO "Unable to create event_notifier %s\n",
+				desc->name);
+			ret = -ENOMEM;
+			goto end;
+		}
+
+		event_notifier->u.syscall.syscall_id = i;
+		event_notifier->u.syscall.is_compat = is_compat;
+	}
+end:
+	return ret;
+
+}
+
+int lttng_syscals_create_matching_event_notifiers(struct lttng_event_notifier_enabler *event_notifier_enabler, void *filter)
+{
+	int ret;
+
+	ret = create_matching_event_notifiers(event_notifier_enabler, filter, sc_table,
+		ARRAY_SIZE(sc_table), false);
+	if (ret)
+		goto end;
+
+	ret = create_matching_event_notifiers(event_notifier_enabler, filter, compat_sc_table,
+		ARRAY_SIZE(compat_sc_table), true);
+end:
+	return ret;
+}
+
+/*
+ * Unregister the syscall event_notifier probes from the callsites.
+ */
+int lttng_syscalls_unregister_event_notifier(struct lttng_event_notifier_group *event_notifier_group)
+{
+	int ret;
+
+	/*
+	 * Only register the event_notifier probe on the `sys_enter` callsite for now.
+	 * At the moment, we don't think it's desirable to have one fired
+	 * event_notifier for the entry and one for the exit of a syscall.
+	 */
+	if (event_notifier_group->sys_enter_registered) {
+		ret = lttng_wrapper_tracepoint_probe_unregister("sys_enter",
+				(void *) syscall_entry_event_notifier_probe, event_notifier_group);
+		if (ret)
+			return ret;
+		event_notifier_group->sys_enter_registered = 0;
+	}
+
+	kfree(event_notifier_group->event_notifier_syscall_dispatch);
+#ifdef CONFIG_COMPAT
+	kfree(event_notifier_group->event_notifier_compat_syscall_dispatch);
+#endif
+	return 0;
+}
+
 int lttng_syscalls_unregister_event(struct lttng_channel *chan)
 {
 	int ret;
@@ -1099,6 +1310,23 @@ int lttng_syscall_filter_enable_event(struct lttng_channel *chan,
 	return 0;
 }
 
+int lttng_syscall_filter_enable_event_notifier(
+		struct lttng_event_notifier *event_notifier)
+{
+	struct lttng_event_notifier_group *group = event_notifier->group;
+	unsigned int syscall_id = event_notifier->u.syscall.syscall_id;
+	struct list_head *dispatch_list;
+
+	if (event_notifier->u.syscall.is_compat)
+		dispatch_list = &group->event_notifier_compat_syscall_dispatch[syscall_id];
+	else
+		dispatch_list = &group->event_notifier_syscall_dispatch[syscall_id];
+
+	list_add_rcu(&event_notifier->u.syscall.node, dispatch_list);
+
+	return 0;
+}
+
 int lttng_syscall_filter_disable_event(struct lttng_channel *chan,
 		struct lttng_event *event)
 {
@@ -1156,6 +1384,13 @@ int lttng_syscall_filter_disable_event(struct lttng_channel *chan,
 		return -EEXIST;
 	bitmap_clear(bitmap, syscall_nr, 1);
 
+	return 0;
+}
+
+int lttng_syscall_filter_disable_event_notifier(
+		struct lttng_event_notifier *event_notifier)
+{
+	list_del_rcu(&event_notifier->u.syscall.node);
 	return 0;
 }
 
