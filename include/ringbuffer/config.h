@@ -101,7 +101,9 @@ struct lib_ring_buffer_client_cb {
  *
  * RING_BUFFER_WAKEUP_BY_WRITER directly wakes up readers when a subbuffer is
  * ready to read. Lower latencies before the reader is woken up. Mainly suitable
- * for drivers.
+ * for drivers. Going through an "irq_work" allows triggering this type of wakeup
+ * even from NMI context: the wakeup will be slightly delayed until the next
+ * interrupts are handled.
  *
  * RING_BUFFER_WAKEUP_NONE does not perform any wakeup whatsoever. The client
  * has the responsibility to perform wakeups.
@@ -142,9 +144,8 @@ struct lib_ring_buffer_config {
 	enum {
 		RING_BUFFER_WAKEUP_BY_TIMER,	/* wake up performed by timer */
 		RING_BUFFER_WAKEUP_BY_WRITER,	/*
-						 * writer wakes up reader,
-						 * not lock-free
-						 * (takes spinlock).
+						 * writer wakes up reader through
+						 * irq_work.
 						 */
 	} wakeup;
 	/*

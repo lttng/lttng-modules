@@ -13,6 +13,7 @@
 #define _LIB_RING_BUFFER_FRONTEND_TYPES_H
 
 #include <linux/kref.h>
+#include <linux/irq_work.h>
 #include <ringbuffer/config.h>
 #include <ringbuffer/backend_types.h>
 #include <lttng/prio_heap.h>	/* For per-CPU read-side iterator */
@@ -66,6 +67,7 @@ struct channel {
 	struct notifier_block tick_nohz_notifier; /* CPU nohz notifier */
 	wait_queue_head_t read_wait;		/* reader wait queue */
 	wait_queue_head_t hp_wait;		/* CPU hotplug wait queue */
+	struct irq_work wakeup_pending;		/* Pending wakeup irq work */
 	int finalized;				/* Has channel been finalized */
 	struct channel_iter iter;		/* Channel read-side iterator */
 	struct kref ref;			/* Reference count */
@@ -146,6 +148,7 @@ struct lib_ring_buffer {
 	union v_atomic records_overrun;	/* Number of overwritten records */
 	wait_queue_head_t read_wait;	/* reader buffer-level wait queue */
 	wait_queue_head_t write_wait;	/* writer buffer-level wait queue (for metadata only) */
+	struct irq_work wakeup_pending;		/* Pending wakeup irq work */
 	int finalized;			/* buffer has been finalized */
 	struct timer_list switch_timer;	/* timer for periodical switch */
 	struct timer_list read_timer;	/* timer for read poll */

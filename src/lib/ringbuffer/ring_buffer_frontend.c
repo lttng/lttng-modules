@@ -133,6 +133,8 @@ void lib_ring_buffer_free(struct lib_ring_buffer *buf)
 {
 	struct channel *chan = buf->backend.chan;
 
+	irq_work_sync(&buf->wakeup_pending);
+
 	lib_ring_buffer_print_errors(chan, buf, buf->backend.cpu);
 	lttng_kvfree(buf->commit_hot);
 	lttng_kvfree(buf->commit_cold);
@@ -206,6 +208,19 @@ void channel_reset(struct channel *chan)
 }
 EXPORT_SYMBOL_GPL(channel_reset);
 
+static void lib_ring_buffer_pending_wakeup_buf(struct irq_work *entry)
+{
+	struct lib_ring_buffer *buf = container_of(entry, struct lib_ring_buffer,
+						   wakeup_pending);
+	wake_up_interruptible(&buf->read_wait);
+}
+
+static void lib_ring_buffer_pending_wakeup_chan(struct irq_work *entry)
+{
+	struct channel *chan = container_of(entry, struct channel, wakeup_pending);
+	wake_up_interruptible(&chan->read_wait);
+}
+
 /*
  * Must be called under cpu hotplug protection.
  */
@@ -268,6 +283,7 @@ int lib_ring_buffer_create(struct lib_ring_buffer *buf,
 
 	init_waitqueue_head(&buf->read_wait);
 	init_waitqueue_head(&buf->write_wait);
+	init_irq_work(&buf->wakeup_pending, lib_ring_buffer_pending_wakeup_buf);
 	raw_spin_lock_init(&buf->raw_tick_nohz_spinlock);
 
 	/*
@@ -854,6 +870,7 @@ struct channel *channel_create(const struct lib_ring_buffer_config *config,
 	kref_init(&chan->ref);
 	init_waitqueue_head(&chan->read_wait);
 	init_waitqueue_head(&chan->hp_wait);
+	init_irq_work(&chan->wakeup_pending, lib_ring_buffer_pending_wakeup_chan);
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
@@ -962,6 +979,8 @@ void *channel_destroy(struct channel *chan)
 	int cpu;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	void *priv;
+
+	irq_work_sync(&chan->wakeup_pending);
 
 	channel_unregister_notifiers(chan);
 
@@ -2356,13 +2375,14 @@ void lib_ring_buffer_check_deliver_slow(const struct lib_ring_buffer_config *con
 						 commit_count, idx);
 
 		/*
-		 * RING_BUFFER_WAKEUP_BY_WRITER wakeup is not lock-free.
+		 * RING_BUFFER_WAKEUP_BY_WRITER uses an irq_work to issue
+		 * the wakeups.
 		 */
 		if (config->wakeup == RING_BUFFER_WAKEUP_BY_WRITER
 		    && atomic_long_read(&buf->active_readers)
 		    && lib_ring_buffer_poll_deliver(config, buf, chan)) {
-			wake_up_interruptible(&buf->read_wait);
-			wake_up_interruptible(&chan->read_wait);
+			irq_work_queue(&buf->wakeup_pending);
+			irq_work_queue(&chan->wakeup_pending);
 		}
 
 	}
