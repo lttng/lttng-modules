@@ -350,6 +350,13 @@ struct lttng_event_notifier {
 	union {
 		struct lttng_kprobe kprobe;
 		struct lttng_uprobe uprobe;
+		struct {
+			enum lttng_syscall_entryexit entryexit;
+			enum lttng_syscall_abi abi;
+			struct hlist_node node;			/* chain registered syscall event_notifier */
+			unsigned int syscall_id;
+		} syscall;
+
 	} u;
 
 	/* Backward references: list of lttng_enabler_ref (ref to enablers) */
@@ -628,6 +635,28 @@ struct lttng_event_notifier_group {
 	struct lib_ring_buffer *buf;	/* Ring buffer for event notifier group. */
 	wait_queue_head_t read_wait;
 	struct irq_work wakeup_pending;	/* Pending wakeup irq work. */
+	struct lttng_event_notifier *sc_unknown;	/* for unknown syscalls */
+	struct lttng_event_notifier *sc_compat_unknown;
+
+	struct lttng_syscall_filter *sc_filter;
+
+	struct hlist_head *event_notifier_syscall_dispatch;
+	struct hlist_head *event_notifier_compat_syscall_dispatch;
+	struct hlist_head *event_notifier_exit_syscall_dispatch;
+	struct hlist_head *event_notifier_exit_compat_syscall_dispatch;
+
+	struct hlist_head event_notifier_unknown_syscall_dispatch;
+	struct hlist_head event_notifier_compat_unknown_syscall_dispatch;
+	struct hlist_head event_notifier_exit_unknown_syscall_dispatch;
+	struct hlist_head event_notifier_exit_compat_unknown_syscall_dispatch;
+
+	int syscall_all_entry;
+	int syscall_all_exit;
+
+	unsigned int sys_enter_registered:1, sys_exit_registered:1;
+
+	struct lttng_counter *error_counter;
+	size_t error_counter_len;
 };
 
 struct lttng_metadata_cache {
@@ -769,6 +798,9 @@ int lttng_session_list_tracker_ids(struct lttng_session *session,
 void lttng_clock_ref(void);
 void lttng_clock_unref(void);
 
+int lttng_desc_match_enabler(const struct lttng_event_desc *desc,
+		struct lttng_enabler *enabler);
+
 #if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
 int lttng_syscalls_register_event(struct lttng_channel *chan, void *filter);
 int lttng_syscalls_unregister_event(struct lttng_channel *chan);
@@ -783,6 +815,14 @@ int lttng_syscall_filter_disable_event(
 long lttng_channel_syscall_mask(struct lttng_channel *channel,
 		struct lttng_kernel_syscall_mask __user *usyscall_mask);
 
+int lttng_syscalls_register_event_notifier(
+		struct lttng_event_notifier_enabler *event_notifier_enabler,
+		void *filter);
+int lttng_syscals_create_matching_event_notifiers(
+		struct lttng_event_notifier_enabler *event_notifier_enabler, void *filter);
+int lttng_syscalls_unregister_event_notifier(struct lttng_event_notifier_group *group);
+int lttng_syscall_filter_enable_event_notifier(struct lttng_event_notifier *event_notifier);
+int lttng_syscall_filter_disable_event_notifier(struct lttng_event_notifier *event_notifier);
 #else
 static inline int lttng_syscalls_register_event(
 		struct lttng_channel *chan, void *filter)
@@ -814,6 +854,32 @@ static inline int lttng_syscall_filter_disable_event(struct lttng_channel *chan,
 
 static inline long lttng_channel_syscall_mask(struct lttng_channel *channel,
 		struct lttng_kernel_syscall_mask __user *usyscall_mask)
+{
+	return -ENOSYS;
+}
+
+static inline int lttng_syscalls_register_event_notifier(
+		struct lttng_event_notifier_group *group, void *filter)
+{
+	return -ENOSYS;
+}
+
+static inline int lttng_syscalls_unregister_event_notifier(
+		struct lttng_event_notifier_group *group)
+{
+	return 0;
+}
+
+static inline int lttng_syscall_filter_enable_event_notifier(
+		struct lttng_event_notifier_group *group,
+		const char *name)
+{
+	return -ENOSYS;
+}
+
+static inline int lttng_syscall_filter_disable_event_notifier(
+		struct lttng_event_notifier_group *group,
+		const char *name)
 {
 	return -ENOSYS;
 }

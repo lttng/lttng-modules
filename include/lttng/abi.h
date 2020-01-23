@@ -98,8 +98,8 @@ enum lttng_kernel_syscall_entryexit {
 
 enum lttng_kernel_syscall_abi {
 	LTTNG_KERNEL_SYSCALL_ABI_ALL = 0,
-	LTTNG_KERNEL_SYSCALL_ABI_NATIVE = 1,	/* Not implemented. */
-	LTTNG_KERNEL_SYSCALL_ABI_COMPAT = 2,	/* Not implemented. */
+	LTTNG_KERNEL_SYSCALL_ABI_NATIVE = 1,
+	LTTNG_KERNEL_SYSCALL_ABI_COMPAT = 2,
 };
 
 enum lttng_kernel_syscall_match {
