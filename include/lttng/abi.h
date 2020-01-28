@@ -90,6 +90,31 @@ struct lttng_kernel_event_callsite {
 	} u;
 } __attribute__((packed));
 
+enum lttng_kernel_syscall_entryexit {
+	LTTNG_KERNEL_SYSCALL_ENTRYEXIT = 0,
+	LTTNG_KERNEL_SYSCALL_ENTRY = 1,		/* Not implemented. */
+	LTTNG_KERNEL_SYSCALL_EXIT = 2,		/* Not implemented. */
+};
+
+enum lttng_kernel_syscall_abi {
+	LTTNG_KERNEL_SYSCALL_ABI_ALL = 0,
+	LTTNG_KERNEL_SYSCALL_ABI_NATIVE = 1,	/* Not implemented. */
+	LTTNG_KERNEL_SYSCALL_ABI_COMPAT = 2,	/* Not implemented. */
+};
+
+enum lttng_kernel_syscall_match {
+	LTTNG_SYSCALL_MATCH_NAME = 0,
+	LTTNG_SYSCALL_MATCH_NR = 1,		/* Not implemented. */
+};
+
+struct lttng_kernel_syscall {
+	uint8_t entryexit;	/* enum lttng_kernel_syscall_entryexit */
+	uint8_t abi;		/* enum lttng_kernel_syscall_abi */
+	uint8_t match;		/* enum lttng_kernel_syscall_match */
+	uint8_t padding;
+	uint32_t nr;		/* For LTTNG_SYSCALL_MATCH_NR */
+} __attribute__((packed));
+
 /*
  * For syscall tracing, name = "*" means "enable all".
  */
@@ -106,6 +131,7 @@ struct lttng_kernel_event {
 		struct lttng_kernel_kprobe kprobe;
 		struct lttng_kernel_function_tracer ftrace;
 		struct lttng_kernel_uprobe uprobe;
+		struct lttng_kernel_syscall syscall;
 		char padding[LTTNG_KERNEL_EVENT_PADDING2];
 	} u;
 } __attribute__((packed));

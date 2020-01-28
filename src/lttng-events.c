@@ -205,6 +205,10 @@ void lttng_session_destroy(struct lttng_session *session)
 		WARN_ON(ret);
 	}
 	synchronize_trace();	/* Wait for in-flight events to complete */
+	list_for_each_entry(chan, &session->chan, list) {
+		ret = lttng_syscalls_destroy(chan);
+		WARN_ON(ret);
+	}
 	list_for_each_entry_safe(enabler, tmpenabler,
 			&session->enablers_head, node)
 		lttng_enabler_destroy(enabler);
@@ -744,6 +748,28 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		event->enabled = 0;
 		event->registered = 0;
 		event->desc = event_desc;
+		switch (event_param->u.syscall.entryexit) {
+		case LTTNG_KERNEL_SYSCALL_ENTRYEXIT:
+			ret = -EINVAL;
+			goto register_error;
+		case LTTNG_KERNEL_SYSCALL_ENTRY:
+			event->u.syscall.entryexit = LTTNG_SYSCALL_ENTRY;
+			break;
+		case LTTNG_KERNEL_SYSCALL_EXIT:
+			event->u.syscall.entryexit = LTTNG_SYSCALL_EXIT;
+			break;
+		}
+		switch (event_param->u.syscall.abi) {
+		case LTTNG_KERNEL_SYSCALL_ABI_ALL:
+			ret = -EINVAL;
+			goto register_error;
+		case LTTNG_KERNEL_SYSCALL_ABI_NATIVE:
+			event->u.syscall.abi = LTTNG_SYSCALL_ABI_NATIVE;
+			break;
+		case LTTNG_KERNEL_SYSCALL_ABI_COMPAT:
+			event->u.syscall.abi = LTTNG_SYSCALL_ABI_COMPAT;
+			break;
+		}
 		if (!event->desc) {
 			ret = -EINVAL;
 			goto register_error;
@@ -830,8 +856,7 @@ void register_event(struct lttng_event *event)
 						  event);
 		break;
 	case LTTNG_KERNEL_SYSCALL:
-		ret = lttng_syscall_filter_enable(event->chan,
-			desc->name);
+		ret = lttng_syscall_filter_enable(event->chan, event);
 		break;
 	case LTTNG_KERNEL_KPROBE:
 	case LTTNG_KERNEL_UPROBE:
@@ -874,8 +899,7 @@ int _lttng_event_unregister(struct lttng_event *event)
 		ret = 0;
 		break;
 	case LTTNG_KERNEL_SYSCALL:
-		ret = lttng_syscall_filter_disable(event->chan,
-			desc->name);
+		ret = lttng_syscall_filter_disable(event->chan, event);
 		break;
 	case LTTNG_KERNEL_NOOP:
 		ret = 0;
@@ -1207,37 +1231,85 @@ int lttng_desc_match_enabler(const struct lttng_event_desc *desc,
 		struct lttng_enabler *enabler)
 {
 	const char *desc_name, *enabler_name;
+	bool compat = false, entry = false;
 
 	enabler_name = enabler->event_param.name;
 	switch (enabler->event_param.instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
 		desc_name = desc->name;
+		switch (enabler->type) {
+		case LTTNG_ENABLER_STAR_GLOB:
+			return lttng_match_enabler_star_glob(desc_name, enabler_name);
+		case LTTNG_ENABLER_NAME:
+			return lttng_match_enabler_name(desc_name, enabler_name);
+		default:
+			return -EINVAL;
+		}
 		break;
 	case LTTNG_KERNEL_SYSCALL:
 		desc_name = desc->name;
-		if (!strncmp(desc_name, "compat_", strlen("compat_")))
+		if (!strncmp(desc_name, "compat_", strlen("compat_"))) {
 			desc_name += strlen("compat_");
+			compat = true;
+		}
 		if (!strncmp(desc_name, "syscall_exit_",
 				strlen("syscall_exit_"))) {
 			desc_name += strlen("syscall_exit_");
 		} else if (!strncmp(desc_name, "syscall_entry_",
 				strlen("syscall_entry_"))) {
 			desc_name += strlen("syscall_entry_");
+			entry = true;
 		} else {
 			WARN_ON_ONCE(1);
+			return -EINVAL;
+		}
+		switch (enabler->event_param.u.syscall.entryexit) {
+		case LTTNG_KERNEL_SYSCALL_ENTRYEXIT:
+			break;
+		case LTTNG_KERNEL_SYSCALL_ENTRY:
+			if (!entry)
+				return 0;
+			break;
+		case LTTNG_KERNEL_SYSCALL_EXIT:
+			if (entry)
+				return 0;
+			break;
+		default:
+			return -EINVAL;
+		}
+		switch (enabler->event_param.u.syscall.abi) {
+		case LTTNG_KERNEL_SYSCALL_ABI_ALL:
+			break;
+		case LTTNG_KERNEL_SYSCALL_ABI_NATIVE:
+			if (compat)
+				return 0;
+			break;
+		case LTTNG_KERNEL_SYSCALL_ABI_COMPAT:
+			if (!compat)
+				return 0;
+			break;
+		default:
+			return -EINVAL;
+		}
+		switch (enabler->event_param.u.syscall.match) {
+		case LTTNG_SYSCALL_MATCH_NAME:
+			switch (enabler->type) {
+			case LTTNG_ENABLER_STAR_GLOB:
+				return lttng_match_enabler_star_glob(desc_name, enabler_name);
+			case LTTNG_ENABLER_NAME:
+				return lttng_match_enabler_name(desc_name, enabler_name);
+			default:
+				return -EINVAL;
+			}
+			break;
+		case LTTNG_SYSCALL_MATCH_NR:
+			return -EINVAL;	/* Not implemented. */
+		default:
 			return -EINVAL;
 		}
 		break;
 	default:
 		WARN_ON_ONCE(1);
-		return -EINVAL;
-	}
-	switch (enabler->type) {
-	case LTTNG_ENABLER_STAR_GLOB:
-		return lttng_match_enabler_star_glob(desc_name, enabler_name);
-	case LTTNG_ENABLER_NAME:
-		return lttng_match_enabler_name(desc_name, enabler_name);
-	default:
 		return -EINVAL;
 	}
 }
@@ -1365,8 +1437,20 @@ void lttng_create_event_if_missing(struct lttng_enabler *enabler)
 static
 int lttng_enabler_ref_events(struct lttng_enabler *enabler)
 {
-	struct lttng_session *session = enabler->chan->session;
+	struct lttng_channel *chan = enabler->chan;
+	struct lttng_session *session = chan->session;
 	struct lttng_event *event;
+
+	if (enabler->event_param.instrumentation == LTTNG_KERNEL_SYSCALL &&
+			enabler->event_param.u.syscall.entryexit == LTTNG_KERNEL_SYSCALL_ENTRYEXIT &&
+			enabler->event_param.u.syscall.abi == LTTNG_KERNEL_SYSCALL_ABI_ALL &&
+			enabler->event_param.u.syscall.match == LTTNG_SYSCALL_MATCH_NAME &&
+			!strcmp(enabler->event_param.name, "*")) {
+		if (enabler->enabled)
+			WRITE_ONCE(chan->syscall_all, 1);
+		else
+			WRITE_ONCE(chan->syscall_all, 0);
+	}
 
 	/* First ensure that probe events are created for this enabler. */
 	lttng_create_event_if_missing(enabler);
