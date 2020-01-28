@@ -1265,6 +1265,46 @@ nomem:
 }
 
 static
+int lttng_abi_validate_event_param(struct lttng_kernel_event *event_param)
+{
+	/* Limit ABI to implemented features. */
+	switch (event_param->instrumentation) {
+	case LTTNG_KERNEL_SYSCALL:
+		switch (event_param->u.syscall.entryexit) {
+		case LTTNG_KERNEL_SYSCALL_ENTRYEXIT:
+			break;
+		default:
+			return -EINVAL;
+		}
+		switch (event_param->u.syscall.abi) {
+		case LTTNG_KERNEL_SYSCALL_ABI_ALL:
+			break;
+		default:
+			return -EINVAL;
+		}
+		switch (event_param->u.syscall.match) {
+		case LTTNG_SYSCALL_MATCH_NAME:
+			break;
+		default:
+			return -EINVAL;
+		}
+		break;
+
+	case LTTNG_KERNEL_TRACEPOINT:	/* Fallthrough */
+	case LTTNG_KERNEL_KPROBE:	/* Fallthrough */
+	case LTTNG_KERNEL_KRETPROBE:	/* Fallthrough */
+	case LTTNG_KERNEL_NOOP:		/* Fallthrough */
+	case LTTNG_KERNEL_UPROBE:
+		break;
+
+	case LTTNG_KERNEL_FUNCTION:	/* Fallthrough */
+	default:
+		return -EINVAL;
+	}
+	return 0;
+}
+
+static
 int lttng_abi_create_event(struct file *channel_file,
 			   struct lttng_kernel_event *event_param)
 {
@@ -1305,6 +1345,9 @@ int lttng_abi_create_event(struct file *channel_file,
 		ret = -EOVERFLOW;
 		goto refcount_error;
 	}
+	ret = lttng_abi_validate_event_param(event_param);
+	if (ret)
+		goto event_error;
 	if (event_param->instrumentation == LTTNG_KERNEL_TRACEPOINT
 			|| event_param->instrumentation == LTTNG_KERNEL_SYSCALL) {
 		struct lttng_enabler *enabler;

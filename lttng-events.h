@@ -292,6 +292,16 @@ struct lttng_uprobe_handler {
 	struct list_head node;
 };
 
+enum lttng_syscall_entryexit {
+	LTTNG_SYSCALL_ENTRY,
+	LTTNG_SYSCALL_EXIT,
+};
+
+enum lttng_syscall_abi {
+	LTTNG_SYSCALL_ABI_NATIVE,
+	LTTNG_SYSCALL_ABI_COMPAT,
+};
+
 /*
  * lttng_event structure is referred to by the tracing fast path. It must be
  * kept small.
@@ -318,6 +328,11 @@ struct lttng_event {
 			struct inode *inode;
 			struct list_head head;
 		} uprobe;
+		struct {
+			char *syscall_name;
+			enum lttng_syscall_entryexit entryexit;
+			enum lttng_syscall_abi abi;
+		} syscall;
 	} u;
 	struct list_head list;		/* Event list in session */
 	unsigned int metadata_dumped:1;
@@ -457,10 +472,10 @@ struct lttng_channel {
 	struct lttng_syscall_filter *sc_filter;
 	int header_type;		/* 0: unset, 1: compact, 2: large */
 	enum channel_type channel_type;
+	int syscall_all;
 	unsigned int metadata_dumped:1,
 		sys_enter_registered:1,
 		sys_exit_registered:1,
-		syscall_all:1,
 		tstate:1;		/* Transient enable state */
 };
 
@@ -653,10 +668,11 @@ void lttng_clock_unref(void);
 #if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
 int lttng_syscalls_register(struct lttng_channel *chan, void *filter);
 int lttng_syscalls_unregister(struct lttng_channel *chan);
+int lttng_syscalls_destroy(struct lttng_channel *chan);
 int lttng_syscall_filter_enable(struct lttng_channel *chan,
-		const char *name);
+		struct lttng_event *event);
 int lttng_syscall_filter_disable(struct lttng_channel *chan,
-		const char *name);
+		struct lttng_event *event);
 long lttng_channel_syscall_mask(struct lttng_channel *channel,
 		struct lttng_kernel_syscall_mask __user *usyscall_mask);
 #else
@@ -670,14 +686,19 @@ static inline int lttng_syscalls_unregister(struct lttng_channel *chan)
 	return 0;
 }
 
+static inline int lttng_syscalls_destroy(struct lttng_channel *chan)
+{
+	return 0;
+}
+
 static inline int lttng_syscall_filter_enable(struct lttng_channel *chan,
-		const char *name)
+		struct lttng_event *event);
 {
 	return -ENOSYS;
 }
 
 static inline int lttng_syscall_filter_disable(struct lttng_channel *chan,
-		const char *name)
+		struct lttng_event *event);
 {
 	return -ENOSYS;
 }
