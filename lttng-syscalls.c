@@ -905,15 +905,15 @@ int lttng_syscalls_unregister(struct lttng_channel *chan)
 	if (!chan->sc_table)
 		return 0;
 	if (chan->sys_enter_registered) {
-		ret = lttng_wrapper_tracepoint_probe_unregister("sys_exit",
-				(void *) syscall_exit_probe, chan);
+		ret = lttng_wrapper_tracepoint_probe_unregister("sys_enter",
+				(void *) syscall_entry_probe, chan);
 		if (ret)
 			return ret;
 		chan->sys_enter_registered = 0;
 	}
 	if (chan->sys_exit_registered) {
-		ret = lttng_wrapper_tracepoint_probe_unregister("sys_enter",
-				(void *) syscall_entry_probe, chan);
+		ret = lttng_wrapper_tracepoint_probe_unregister("sys_exit",
+				(void *) syscall_exit_probe, chan);
 		if (ret)
 			return ret;
 		chan->sys_exit_registered = 0;
