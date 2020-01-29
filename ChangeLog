@@ -1,3 +1,18 @@
+2020-01-29 (National Puzzle Day) LTTng modules 2.10.13
+	* fix: function prototype in wrapper/mm.h
+	* sunrpc: introduce lttng_get_clid helper
+	* Fix: sunrpc: use signed integer for client id
+	* Fix: sunrpc: null rpc_clnt dereference in rpc_task_queued tracepoint
+	* Fix: SUNRPC: Fix oops when trace sunrpc_task events in nfs client
+	* fix: missing 'lttng_fs_info_fsid' wrapper in btrfs backport
+	* fix: ext4: Reserve revoke credits for freed blocks (v5.5)
+	* fix: btrfs: tracepoints: constify all pointers (v5.5)
+	* Fix: btrfs: use fs_info for btrfs_handle_em_exist tracepoint
+	* Add btrfs tracepoint for em's EEXIST case
+	* fix: btrfs block group struct refactor (v5.5)
+	* fix: y2038: itimer: change implementation to timespec64 (v5.5)
+	* Update .gitignore from upstream
+
 2019-10-17 (Wear Something Gaudy Day) LTTng modules 2.10.12
 	* Fix: btrfs: move basic block_group definitions to their own header (v5.4)
 	* Cleanup: Silence gcc fall-through warning
