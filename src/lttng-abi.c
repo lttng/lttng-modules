@@ -44,6 +44,7 @@
 #include <lttng/tracer.h>
 #include <lttng/tp-mempool.h>
 #include <ringbuffer/frontend_types.h>
+#include <ringbuffer/iterator.h>
 
 /*
  * This is LTTng's own personal way to create a system call as an external
@@ -815,8 +816,223 @@ static const struct file_operations lttng_session_fops = {
 #endif
 };
 
+/*
+ * When encountering empty buffer, flush current sub-buffer if non-empty
+ * and retry (if new data available to read after flush).
+ */
+static
+ssize_t lttng_event_notifier_group_notif_read(struct file *filp, char __user *user_buf,
+		size_t count, loff_t *ppos)
+{
+	struct lttng_event_notifier_group *event_notifier_group = filp->private_data;
+	struct channel *chan = event_notifier_group->chan;
+	struct lib_ring_buffer *buf = event_notifier_group->buf;
+	ssize_t read_count = 0, len;
+	size_t read_offset;
+
+	might_sleep();
+	if (!lttng_access_ok(VERIFY_WRITE, user_buf, count))
+		return -EFAULT;
+
+	/* Finish copy of previous record */
+	if (*ppos != 0) {
+		if (read_count < count) {
+			len = chan->iter.len_left;
+			read_offset = *ppos;
+			goto skip_get_next;
+		}
+	}
+
+	while (read_count < count) {
+		size_t copy_len, space_left;
+
+		len = lib_ring_buffer_get_next_record(chan, buf);
+len_test:
+		if (len < 0) {
+			/*
+			 * Check if buffer is finalized (end of file).
+			 */
+			if (len == -ENODATA) {
+				/* A 0 read_count will tell about end of file */
+				goto nodata;
+			}
+			if (filp->f_flags & O_NONBLOCK) {
+				if (!read_count)
+					read_count = -EAGAIN;
+				goto nodata;
+			} else {
+				int error;
+
+				/*
+				 * No data available at the moment, return what
+				 * we got.
+				 */
+				if (read_count)
+					goto nodata;
+
+				/*
+				 * Wait for returned len to be >= 0 or -ENODATA.
+				 */
+				error = wait_event_interruptible(
+					  event_notifier_group->read_wait,
+					  ((len = lib_ring_buffer_get_next_record(
+						  chan, buf)), len != -EAGAIN));
+				CHAN_WARN_ON(chan, len == -EBUSY);
+				if (error) {
+					read_count = error;
+					goto nodata;
+				}
+				CHAN_WARN_ON(chan, len < 0 && len != -ENODATA);
+				goto len_test;
+			}
+		}
+		read_offset = buf->iter.read_offset;
+skip_get_next:
+		space_left = count - read_count;
+		if (len <= space_left) {
+			copy_len = len;
+			chan->iter.len_left = 0;
+			*ppos = 0;
+		} else {
+			copy_len = space_left;
+			chan->iter.len_left = len - copy_len;
+			*ppos = read_offset + copy_len;
+		}
+		if (__lib_ring_buffer_copy_to_user(&buf->backend, read_offset,
+					       &user_buf[read_count],
+					       copy_len)) {
+			/*
+			 * Leave the len_left and ppos values at their current
+			 * state, as we currently have a valid event to read.
+			 */
+			return -EFAULT;
+		}
+		read_count += copy_len;
+	}
+	return read_count;
+
+nodata:
+	*ppos = 0;
+	chan->iter.len_left = 0;
+	return read_count;
+}
+
+/*
+ * If the ring buffer is non empty (even just a partial subbuffer), return that
+ * there is data available. Perform a ring buffer flush if we encounter a
+ * non-empty ring buffer which does not have any consumeable subbuffer available.
+ */
+static
+unsigned int lttng_event_notifier_group_notif_poll(struct file *filp,
+		poll_table *wait)
+{
+	unsigned int mask = 0;
+	struct lttng_event_notifier_group *event_notifier_group = filp->private_data;
+	struct channel *chan = event_notifier_group->chan;
+	struct lib_ring_buffer *buf = event_notifier_group->buf;
+	const struct lib_ring_buffer_config *config = &chan->backend.config;
+	int finalized, disabled;
+	unsigned long consumed, offset;
+
+	if (filp->f_mode & FMODE_READ) {
+		poll_wait_set_exclusive(wait);
+		poll_wait(filp, &event_notifier_group->read_wait, wait);
+
+		finalized = lib_ring_buffer_is_finalized(config, buf);
+		disabled = lib_ring_buffer_channel_is_disabled(chan);
+
+		/*
+		 * lib_ring_buffer_is_finalized() contains a smp_rmb() ordering
+		 * finalized load before offsets loads.
+		 */
+		WARN_ON(atomic_long_read(&buf->active_readers) != 1);
+retry:
+		if (disabled)
+			return POLLERR;
+
+		offset = lib_ring_buffer_get_offset(config, buf);
+		consumed = lib_ring_buffer_get_consumed(config, buf);
+
+		/*
+		 * If there is no buffer available to consume.
+		 */
+		if (subbuf_trunc(offset, chan) - subbuf_trunc(consumed, chan) == 0) {
+			/*
+			 * If there is a non-empty subbuffer, flush and try again.
+			 */
+			if (subbuf_offset(offset, chan) != 0) {
+				lib_ring_buffer_switch_remote(buf);
+				goto retry;
+			}
+
+			if (finalized)
+				return POLLHUP;
+			else {
+				/*
+				 * The memory barriers
+				 * __wait_event()/wake_up_interruptible() take
+				 * care of "raw_spin_is_locked" memory ordering.
+				 */
+				if (raw_spin_is_locked(&buf->raw_tick_nohz_spinlock))
+					goto retry;
+				else
+					return 0;
+			}
+		} else {
+			if (subbuf_trunc(offset, chan) - subbuf_trunc(consumed, chan)
+					>= chan->backend.buf_size)
+				return POLLPRI | POLLRDBAND;
+			else
+				return POLLIN | POLLRDNORM;
+		}
+	}
+
+	return mask;
+}
+
+/**
+ *	lttng_event_notifier_group_notif_open - event_notifier ring buffer open file operation
+ *	@inode: opened inode
+ *	@file: opened file
+ *
+ *	Open implementation. Makes sure only one open instance of a buffer is
+ *	done at a given moment.
+ */
+static int lttng_event_notifier_group_notif_open(struct inode *inode, struct file *file)
+{
+	struct lttng_event_notifier_group *event_notifier_group = inode->i_private;
+	struct lib_ring_buffer *buf = event_notifier_group->buf;
+
+	file->private_data = event_notifier_group;
+	return lib_ring_buffer_open(inode, file, buf);
+}
+
+/**
+ *	lttng_event_notifier_group_notif_release - event_notifier ring buffer release file operation
+ *	@inode: opened inode
+ *	@file: opened file
+ *
+ *	Release implementation.
+ */
+static int lttng_event_notifier_group_notif_release(struct inode *inode, struct file *file)
+{
+	struct lttng_event_notifier_group *event_notifier_group = file->private_data;
+	struct lib_ring_buffer *buf = event_notifier_group->buf;
+	int ret;
+
+	ret = lib_ring_buffer_release(inode, file, buf);
+	if (ret)
+		return ret;
+	fput(event_notifier_group->file);
+	return 0;
+}
+
 static const struct file_operations lttng_event_notifier_group_notif_fops = {
 	.owner = THIS_MODULE,
+	.open = lttng_event_notifier_group_notif_open,
+	.release = lttng_event_notifier_group_notif_release,
+	.read = lttng_event_notifier_group_notif_read,
+	.poll = lttng_event_notifier_group_notif_poll,
 };
 
 /**
