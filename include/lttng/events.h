@@ -369,7 +369,7 @@ struct lttng_enabler *lttng_event_enabler_as_enabler(
 
 struct lttng_channel_ops {
 	struct channel *(*channel_create)(const char *name,
-				struct lttng_channel *lttng_chan,
+				void *priv,
 				void *buf_addr,
 				size_t subbuf_size, size_t num_subbuf,
 				unsigned int switch_timer_interval,

@@ -237,11 +237,12 @@ void lttng_channel_destroy(struct channel *chan)
 
 static
 struct channel *_channel_create(const char *name,
-				struct lttng_channel *lttng_chan, void *buf_addr,
+				void *priv, void *buf_addr,
 				size_t subbuf_size, size_t num_subbuf,
 				unsigned int switch_timer_interval,
 				unsigned int read_timer_interval)
 {
+	struct lttng_channel *lttng_chan = priv;
 	struct channel *chan;
 
 	chan = channel_create(&client_config, name,
