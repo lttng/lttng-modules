@@ -1140,7 +1140,7 @@ const struct file_operations lttng_metadata_ring_buffer_file_operations = {
 
 static
 int lttng_abi_create_stream_fd(struct file *channel_file, void *stream_priv,
-		const struct file_operations *fops)
+		const struct file_operations *fops, const char *name)
 {
 	int stream_fd, ret;
 	struct file *stream_file;
@@ -1150,8 +1150,7 @@ int lttng_abi_create_stream_fd(struct file *channel_file, void *stream_priv,
 		ret = stream_fd;
 		goto fd_error;
 	}
-	stream_file = anon_inode_getfile("[lttng_stream]", fops,
-			stream_priv, O_RDWR);
+	stream_file = anon_inode_getfile(name, fops, stream_priv, O_RDWR);
 	if (IS_ERR(stream_file)) {
 		ret = PTR_ERR(stream_file);
 		goto file_error;
@@ -1190,7 +1189,8 @@ int lttng_abi_open_stream(struct file *channel_file)
 
 	stream_priv = buf;
 	ret = lttng_abi_create_stream_fd(channel_file, stream_priv,
-			&lttng_stream_ring_buffer_file_operations);
+			&lttng_stream_ring_buffer_file_operations,
+			"[lttng_stream]");
 	if (ret < 0)
 		goto fd_error;
 
@@ -1245,7 +1245,8 @@ int lttng_abi_open_metadata_stream(struct file *channel_file)
 	}
 
 	ret = lttng_abi_create_stream_fd(channel_file, stream_priv,
-			&lttng_metadata_ring_buffer_file_operations);
+			&lttng_metadata_ring_buffer_file_operations,
+			"[lttng_metadata_stream]");
 	if (ret < 0)
 		goto fd_error;
 
