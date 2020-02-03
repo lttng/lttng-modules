@@ -933,6 +933,7 @@ unsigned int lttng_event_notifier_group_notif_poll(struct file *filp,
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	int finalized, disabled;
 	unsigned long consumed, offset;
+	size_t subbuffer_header_size = config->cb.subbuffer_header_size();
 
 	if (filp->f_mode & FMODE_READ) {
 		poll_wait_set_exclusive(wait);
@@ -960,7 +961,7 @@ retry:
 			/*
 			 * If there is a non-empty subbuffer, flush and try again.
 			 */
-			if (subbuf_offset(offset, chan) != 0) {
+			if (subbuf_offset(offset, chan) > subbuffer_header_size) {
 				lib_ring_buffer_switch_remote(buf);
 				goto retry;
 			}
