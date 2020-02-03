@@ -236,14 +236,6 @@ void subbuffer_count_record(const struct lib_ring_buffer_config *config,
 	sb_bindex = subbuffer_id_get_index(config, bufb->buf_wsb[idx].id);
 	v_inc(config, &bufb->array[sb_bindex]->records_commit);
 }
-#else /* LTTNG_RING_BUFFER_COUNT_EVENTS */
-static inline
-void subbuffer_count_record(const struct lib_ring_buffer_config *config,
-			    struct lib_ring_buffer_backend *bufb,
-			    unsigned long idx)
-{
-}
-#endif /* #else LTTNG_RING_BUFFER_COUNT_EVENTS */
 
 /*
  * Reader has exclusive subbuffer access for record consumption. No need to
@@ -262,6 +254,19 @@ void subbuffer_consume_record(const struct lib_ring_buffer_config *config,
 	_v_dec(config, &bufb->array[sb_bindex]->records_unread);
 	v_inc(config, &bufb->records_read);
 }
+#else /* LTTNG_RING_BUFFER_COUNT_EVENTS */
+static inline
+void subbuffer_count_record(const struct lib_ring_buffer_config *config,
+			    struct lib_ring_buffer_backend *bufb,
+			    unsigned long idx)
+{
+}
+static inline
+void subbuffer_consume_record(const struct lib_ring_buffer_config *config,
+			      struct lib_ring_buffer_backend *bufb)
+{
+}
+#endif /* #else LTTNG_RING_BUFFER_COUNT_EVENTS */
 
 static inline
 unsigned long subbuffer_get_records_count(
