@@ -12,6 +12,7 @@ obj-$(CONFIG_LTTNG) += lttng-ring-buffer-metadata-client.o
 obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-mmap-discard.o
 obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-mmap-overwrite.o
 obj-$(CONFIG_LTTNG) += lttng-ring-buffer-metadata-mmap-client.o
+obj-$(CONFIG_LTTNG) += lttng-ring-buffer-event-notifier-client.o
 obj-$(CONFIG_LTTNG) += lttng-clock.o
 
 obj-$(CONFIG_LTTNG) += lttng-tracer.o
