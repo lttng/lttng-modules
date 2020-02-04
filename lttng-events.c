@@ -2529,7 +2529,7 @@ int64_t measure_clock_offset(void)
 static
 int print_escaped_ctf_string(struct lttng_session *session, const char *string)
 {
-	int ret;
+	int ret = 0;
 	size_t i;
 	char cur;
 
