@@ -909,11 +909,14 @@ skip_get_next:
 		}
 		read_count += copy_len;
 	}
-	return read_count;
+	goto put_record;
 
 nodata:
 	*ppos = 0;
 	chan->iter.len_left = 0;
+
+put_record:
+	lib_ring_buffer_put_current_record(buf);
 	return read_count;
 }
 
