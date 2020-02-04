@@ -24,6 +24,15 @@ extern ssize_t lib_ring_buffer_get_next_record(struct channel *chan,
 					       struct lib_ring_buffer *buf);
 
 /*
+ * Ensure that the current subbuffer is put after client code has read the
+ * payload of the current record. Has an effect when the end of subbuffer is
+ * reached. It is not required if get_next_record is called successively.
+ * However, it should be invoked before returning data to user-space to ensure
+ * that the get/put subbuffer state is quiescent.
+ */
+extern void lib_ring_buffer_put_current_record(struct lib_ring_buffer *buf);
+
+/*
  * channel_get_next_record advances the buffer read position to the next record.
  * It returns either the size of the next record, -EAGAIN if there is currently
  * no data available, or -ENODATA if no data is available and buffer is

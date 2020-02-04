@@ -105,6 +105,24 @@ restart:
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_get_next_record);
 
+void lib_ring_buffer_put_current_record(struct lib_ring_buffer *buf)
+{
+	struct lib_ring_buffer_iter *iter;
+
+	if (!buf)
+		return;
+	iter = &buf->iter;
+	if (iter->state != ITER_NEXT_RECORD)
+		return;
+	iter->read_offset += iter->payload_len;
+	iter->state = ITER_TEST_RECORD;
+	if (iter->read_offset - iter->consumed >= iter->data_size) {
+		lib_ring_buffer_put_next_subbuf(buf);
+		iter->state = ITER_GET_SUBBUF;
+	}
+}
+EXPORT_SYMBOL_GPL(lib_ring_buffer_put_current_record);
+
 static int buf_is_higher(void *a, void *b)
 {
 	struct lib_ring_buffer *bufa = a;
@@ -696,12 +714,14 @@ skip_get_next:
 			return -EFAULT;
 		}
 		read_count += copy_len;
-	};
-	return read_count;
+	}
+	goto put_record;
 
 nodata:
 	*ppos = 0;
 	chan->iter.len_left = 0;
+put_record:
+	lib_ring_buffer_put_current_record(buf);
 	return read_count;
 }
 
