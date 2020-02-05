@@ -1804,6 +1804,7 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 
 	switch (event_notifier_param->event.instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
+		break;
 	case LTTNG_KERNEL_KPROBE:
 	case LTTNG_KERNEL_UPROBE:
 	case LTTNG_KERNEL_KRETPROBE:

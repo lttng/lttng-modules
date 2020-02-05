@@ -25,7 +25,7 @@ static LIST_HEAD(_probe_list);
 static LIST_HEAD(lazy_probe_init);
 
 /*
- * lazy_nesting counter ensures we don't trigger lazy probe registration
+ * lazy_nesting counter ensures we don't event_notifier lazy probe registration
  * fixup while we are performing the fixup. It is protected by the
  * sessions lock.
  */
@@ -124,6 +124,8 @@ void fixup_lazy_probes(void)
 	}
 	ret = lttng_fix_pending_events();
 	WARN_ON_ONCE(ret);
+	ret = lttng_fix_pending_event_notifiers();
+	WARN_ON_ONCE(ret);
 	lazy_nesting--;
 }
 
@@ -173,7 +175,7 @@ int lttng_probe_register(struct lttng_probe_desc *desc)
 	 * the probe immediately, since we cannot delay event
 	 * registration because they are needed ASAP.
 	 */
-	if (lttng_session_active())
+	if (lttng_session_active() || lttng_event_notifier_active())
 		fixup_lazy_probes();
 end:
 	lttng_unlock_sessions();

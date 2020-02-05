@@ -656,7 +656,9 @@ int lttng_event_notifier_enabler_enable(
 int lttng_event_notifier_enabler_disable(
 		struct lttng_event_notifier_enabler *event_notifier_enabler);
 int lttng_fix_pending_events(void);
+int lttng_fix_pending_event_notifiers(void);
 int lttng_session_active(void);
+bool lttng_event_notifier_active(void);
 
 struct lttng_session *lttng_session_create(void);
 int lttng_session_enable(struct lttng_session *session);

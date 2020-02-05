@@ -62,6 +62,7 @@ static void lttng_session_lazy_sync_event_enablers(struct lttng_session *session
 static void lttng_session_sync_event_enablers(struct lttng_session *session);
 static void lttng_event_enabler_destroy(struct lttng_event_enabler *event_enabler);
 static void lttng_event_notifier_enabler_destroy(struct lttng_event_notifier_enabler *event_notifier_enabler);
+static void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group *event_notifier_group);
 
 static void _lttng_event_destroy(struct lttng_event *event);
 static void _lttng_event_notifier_destroy(struct lttng_event_notifier *event_notifier);
@@ -333,6 +334,9 @@ void lttng_event_notifier_group_destroy(
 		ret = _lttng_event_notifier_unregister(event_notifier);
 		WARN_ON(ret);
 	}
+
+	/* Wait for in-flight event notifier to complete */
+	synchronize_trace();
 
 	irq_work_sync(&event_notifier_group->wakeup_pending);
 
@@ -608,6 +612,8 @@ int lttng_event_notifier_enable(struct lttng_event_notifier *event_notifier)
 	}
 	switch (event_notifier->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
+		ret = -EINVAL;
+		break;
 	case LTTNG_KERNEL_SYSCALL:
 	case LTTNG_KERNEL_KPROBE:
 	case LTTNG_KERNEL_FUNCTION:
@@ -634,6 +640,8 @@ int lttng_event_notifier_disable(struct lttng_event_notifier *event_notifier)
 	}
 	switch (event_notifier->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
+		ret = -EINVAL;
+		break;
 	case LTTNG_KERNEL_SYSCALL:
 	case LTTNG_KERNEL_KPROBE:
 	case LTTNG_KERNEL_FUNCTION:
@@ -993,6 +1001,8 @@ struct lttng_event_notifier *_lttng_event_notifier_create(
 
 	switch (itype) {
 	case LTTNG_KERNEL_TRACEPOINT:
+		event_name = event_desc->name;
+		break;
 	case LTTNG_KERNEL_KPROBE:
 	case LTTNG_KERNEL_UPROBE:
 	case LTTNG_KERNEL_KRETPROBE:
@@ -1181,8 +1191,7 @@ int _lttng_event_unregister(struct lttng_event *event)
 
 /* Only used for tracepoints for now. */
 static
-void __always_unused register_event_notifier(
-		struct lttng_event_notifier *event_notifier)
+void register_event_notifier(struct lttng_event_notifier *event_notifier)
 {
 	const struct lttng_event_desc *desc;
 	int ret = -EINVAL;
@@ -1193,6 +1202,10 @@ void __always_unused register_event_notifier(
 	desc = event_notifier->desc;
 	switch (event_notifier->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
+		ret = lttng_wrapper_tracepoint_probe_register(desc->kname,
+						  desc->event_notifier_callback,
+						  event_notifier);
+		break;
 	case LTTNG_KERNEL_SYSCALL:
 	case LTTNG_KERNEL_KPROBE:
 	case LTTNG_KERNEL_UPROBE:
@@ -1219,6 +1232,10 @@ int _lttng_event_notifier_unregister(
 	desc = event_notifier->desc;
 	switch (event_notifier->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
+		ret = lttng_wrapper_tracepoint_probe_unregister(event_notifier->desc->kname,
+						  event_notifier->desc->event_notifier_callback,
+						  event_notifier);
+		break;
 	case LTTNG_KERNEL_KPROBE:
 	case LTTNG_KERNEL_KRETPROBE:
 	case LTTNG_KERNEL_FUNCTION:
@@ -1275,6 +1292,8 @@ void _lttng_event_notifier_destroy(struct lttng_event_notifier *event_notifier)
 {
 	switch (event_notifier->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
+		lttng_event_desc_put(event_notifier->desc);
+		break;
 	case LTTNG_KERNEL_KPROBE:
 	case LTTNG_KERNEL_KRETPROBE:
 	case LTTNG_KERNEL_FUNCTION:
@@ -1668,6 +1687,23 @@ int lttng_event_enabler_match_event(struct lttng_event_enabler *event_enabler,
 }
 
 static
+int lttng_event_notifier_enabler_match_event_notifier(struct lttng_event_notifier_enabler *event_notifier_enabler,
+		struct lttng_event_notifier *event_notifier)
+{
+	struct lttng_enabler *base_enabler = lttng_event_notifier_enabler_as_enabler(
+		event_notifier_enabler);
+
+	if (base_enabler->event_param.instrumentation != event_notifier->instrumentation)
+		return 0;
+	if (lttng_desc_match_enabler(event_notifier->desc, base_enabler)
+			&& event_notifier->group == event_notifier_enabler->group
+			&& event_notifier->user_token == event_notifier_enabler->base.user_token)
+		return 1;
+	else
+		return 0;
+}
+
+static
 struct lttng_enabler_ref *lttng_enabler_ref(
 		struct list_head *enablers_ref_list,
 		struct lttng_enabler *enabler)
@@ -1730,6 +1766,61 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_enabler *event_
 					LTTNG_KERNEL_TRACEPOINT);
 			if (!event) {
 				printk(KERN_INFO "LTTng: Unable to create event %s\n",
+					probe_desc->event_desc[i]->name);
+			}
+		}
+	}
+}
+
+static
+void lttng_create_tracepoint_event_notifier_if_missing(struct lttng_event_notifier_enabler *event_notifier_enabler)
+{
+	struct lttng_event_notifier_group *event_notifier_group = event_notifier_enabler->group;
+	struct lttng_probe_desc *probe_desc;
+	const struct lttng_event_desc *desc;
+	int i;
+	struct list_head *probe_list;
+
+	probe_list = lttng_get_probe_list_head();
+	/*
+	 * For each probe event, if we find that a probe event matches
+	 * our enabler, create an associated lttng_event_notifier if not
+	 * already present.
+	 */
+	list_for_each_entry(probe_desc, probe_list, head) {
+		for (i = 0; i < probe_desc->nr_events; i++) {
+			int found = 0;
+			struct hlist_head *head;
+			struct lttng_event_notifier *event_notifier;
+
+			desc = probe_desc->event_desc[i];
+			if (!lttng_desc_match_enabler(desc,
+					lttng_event_notifier_enabler_as_enabler(event_notifier_enabler)))
+				continue;
+
+			/*
+			 * Check if already created.
+			 */
+			head = utils_borrow_hash_table_bucket(
+				event_notifier_group->event_notifiers_ht.table,
+				LTTNG_EVENT_NOTIFIER_HT_SIZE, desc->name);
+			lttng_hlist_for_each_entry(event_notifier, head, hlist) {
+				if (event_notifier->desc == desc
+						&& event_notifier->user_token == event_notifier_enabler->base.user_token)
+					found = 1;
+			}
+			if (found)
+				continue;
+
+			/*
+			 * We need to create a event_notifier for this event probe.
+			 */
+			event_notifier = _lttng_event_notifier_create(desc,
+				event_notifier_enabler->base.user_token,
+				event_notifier_group, NULL, NULL,
+				LTTNG_KERNEL_TRACEPOINT);
+			if (IS_ERR(event_notifier)) {
+				printk(KERN_INFO "Unable to create event_notifier %s\n",
 					probe_desc->event_desc[i]->name);
 			}
 		}
@@ -1828,6 +1919,70 @@ int lttng_event_enabler_ref_events(struct lttng_event_enabler *event_enabler)
 }
 
 /*
+ * Create struct lttng_event_notifier if it is missing and present in the list of
+ * tracepoint probes.
+ * Should be called with sessions mutex held.
+ */
+static
+void lttng_create_event_notifier_if_missing(struct lttng_event_notifier_enabler *event_notifier_enabler)
+{
+	switch (event_notifier_enabler->base.event_param.instrumentation) {
+	case LTTNG_KERNEL_TRACEPOINT:
+		lttng_create_tracepoint_event_notifier_if_missing(event_notifier_enabler);
+		break;
+	default:
+		WARN_ON_ONCE(1);
+		break;
+	}
+}
+
+/*
+ * Create event_notifiers associated with a event_notifier enabler (if not already present).
+ */
+static
+int lttng_event_notifier_enabler_ref_event_notifiers(struct lttng_event_notifier_enabler *event_notifier_enabler)
+{
+	struct lttng_event_notifier_group *event_notifier_group = event_notifier_enabler->group;
+	struct lttng_event_notifier *event_notifier;
+
+	/* First ensure that probe event_notifiers are created for this enabler. */
+	lttng_create_event_notifier_if_missing(event_notifier_enabler);
+
+	/* Link the created event_notifier with its associated enabler. */
+	list_for_each_entry(event_notifier, &event_notifier_group->event_notifiers_head, list) {
+		struct lttng_enabler_ref *enabler_ref;
+
+		if (!lttng_event_notifier_enabler_match_event_notifier(event_notifier_enabler, event_notifier))
+			continue;
+
+		enabler_ref = lttng_enabler_ref(&event_notifier->enablers_ref_head,
+			lttng_event_notifier_enabler_as_enabler(event_notifier_enabler));
+		if (!enabler_ref) {
+			/*
+			 * If no backward ref, create it.
+			 * Add backward ref from event_notifier to enabler.
+			 */
+			enabler_ref = kzalloc(sizeof(*enabler_ref), GFP_KERNEL);
+			if (!enabler_ref)
+				return -ENOMEM;
+
+			enabler_ref->ref = lttng_event_notifier_enabler_as_enabler(
+				event_notifier_enabler);
+			list_add(&enabler_ref->node,
+				&event_notifier->enablers_ref_head);
+		}
+
+		/*
+		 * Link filter bytecodes if not linked yet.
+		 */
+		lttng_enabler_link_bytecode(event_notifier->desc,
+			lttng_static_ctx, &event_notifier->bytecode_runtime_head,
+			lttng_event_notifier_enabler_as_enabler(event_notifier_enabler));
+	}
+	return 0;
+}
+
+/*
  * Called at module load: connect the probe on all enablers matching
  * this event.
  * Called with sessions lock held.
@@ -1838,6 +1993,39 @@ int lttng_fix_pending_events(void)
 
 	list_for_each_entry(session, &sessions, list)
 		lttng_session_lazy_sync_event_enablers(session);
+	return 0;
+}
+
+static bool lttng_event_notifier_group_has_active_event_notifiers(
+		struct lttng_event_notifier_group *event_notifier_group)
+{
+	struct lttng_event_notifier_enabler *event_notifier_enabler;
+
+	list_for_each_entry(event_notifier_enabler, &event_notifier_group->enablers_head,
+			node) {
+		if (event_notifier_enabler->base.enabled)
+			return true;
+	}
+	return false;
+}
+
+bool lttng_event_notifier_active(void)
+{
+	struct lttng_event_notifier_group *event_notifier_group;
+
+	list_for_each_entry(event_notifier_group, &event_notifier_groups, node) {
+		if (lttng_event_notifier_group_has_active_event_notifiers(event_notifier_group))
+			return true;
+	}
+	return false;
+}
+
+int lttng_fix_pending_event_notifiers(void)
+{
+	struct lttng_event_notifier_group *event_notifier_group;
+
+	list_for_each_entry(event_notifier_group, &event_notifier_groups, node)
+		lttng_event_notifier_group_sync_enablers(event_notifier_group);
 	return 0;
 }
 
@@ -1999,6 +2187,7 @@ struct lttng_event_notifier_enabler *lttng_event_notifier_enabler_create(
 
 	mutex_lock(&sessions_mutex);
 	list_add(&event_notifier_enabler->node, &event_notifier_enabler->group->enablers_head);
+	lttng_event_notifier_group_sync_enablers(event_notifier_enabler->group);
 
 	mutex_unlock(&sessions_mutex);
 
@@ -2010,6 +2199,7 @@ int lttng_event_notifier_enabler_enable(
 {
 	mutex_lock(&sessions_mutex);
 	lttng_event_notifier_enabler_as_enabler(event_notifier_enabler)->enabled = 1;
+	lttng_event_notifier_group_sync_enablers(event_notifier_enabler->group);
 	mutex_unlock(&sessions_mutex);
 	return 0;
 }
@@ -2019,6 +2209,7 @@ int lttng_event_notifier_enabler_disable(
 {
 	mutex_lock(&sessions_mutex);
 	lttng_event_notifier_enabler_as_enabler(event_notifier_enabler)->enabled = 0;
+	lttng_event_notifier_group_sync_enablers(event_notifier_enabler->group);
 	mutex_unlock(&sessions_mutex);
 	return 0;
 }
@@ -2035,6 +2226,7 @@ int lttng_event_notifier_enabler_attach_bytecode(
 	if (ret)
 		goto error;
 
+	lttng_event_notifier_group_sync_enablers(event_notifier_enabler->group);
 	return 0;
 
 error:
@@ -2152,6 +2344,73 @@ void lttng_session_lazy_sync_event_enablers(struct lttng_session *session)
 	if (!session->active)
 		return;
 	lttng_session_sync_event_enablers(session);
+}
+
+static
+void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group *event_notifier_group)
+{
+	struct lttng_event_notifier_enabler *event_notifier_enabler;
+	struct lttng_event_notifier *event_notifier;
+
+	list_for_each_entry(event_notifier_enabler, &event_notifier_group->enablers_head, node)
+		lttng_event_notifier_enabler_ref_event_notifiers(event_notifier_enabler);
+
+	/*
+	 * For each event_notifier, if at least one of its enablers is enabled,
+	 * we enable the event_notifier, else we disable it.
+	 */
+	list_for_each_entry(event_notifier, &event_notifier_group->event_notifiers_head, list) {
+		struct lttng_enabler_ref *enabler_ref;
+		struct lttng_bytecode_runtime *runtime;
+		int enabled = 0, has_enablers_without_bytecode = 0;
+
+		switch (event_notifier->instrumentation) {
+		case LTTNG_KERNEL_TRACEPOINT:
+		case LTTNG_KERNEL_SYSCALL:
+			/* Enable event_notifiers */
+			list_for_each_entry(enabler_ref,
+					&event_notifier->enablers_ref_head, node) {
+				if (enabler_ref->ref->enabled) {
+					enabled = 1;
+					break;
+				}
+			}
+			break;
+		default:
+			/* Not handled with sync. */
+			continue;
+		}
+
+		WRITE_ONCE(event_notifier->enabled, enabled);
+		/*
+		 * Sync tracepoint registration with event_notifier enabled
+		 * state.
+		 */
+		if (enabled) {
+			if (!event_notifier->registered)
+				register_event_notifier(event_notifier);
+		} else {
+			if (event_notifier->registered)
+				_lttng_event_notifier_unregister(event_notifier);
+		}
+
+		/* Check if has enablers without bytecode enabled */
+		list_for_each_entry(enabler_ref,
+				&event_notifier->enablers_ref_head, node) {
+			if (enabler_ref->ref->enabled
+					&& list_empty(&enabler_ref->ref->filter_bytecode_head)) {
+				has_enablers_without_bytecode = 1;
+				break;
+			}
+		}
+		event_notifier->has_enablers_without_bytecode =
+			has_enablers_without_bytecode;
+
+		/* Enable filters */
+		list_for_each_entry(runtime,
+				&event_notifier->bytecode_runtime_head, node)
+			lttng_filter_sync_state(runtime);
+	}
 }
 
 /*
