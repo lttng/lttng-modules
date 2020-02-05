@@ -30,10 +30,10 @@
 #define LTTNG_MODULES_MAJOR_VERSION 2
 #define LTTNG_MODULES_MINOR_VERSION 12
 #define LTTNG_MODULES_PATCHLEVEL_VERSION 0
-#define LTTNG_MODULES_EXTRAVERSION "-pre"
+#define LTTNG_MODULES_EXTRAVERSION "-rc1"
 
-#define LTTNG_VERSION_NAME		"M-Beer"
-#define LTTNG_VERSION_DESCRIPTION	"An alcoholic drink made from yeast-fermented malt flavored with hops."
+#define LTTNG_VERSION_NAME		"(Ta) Meilleure"
+#define LTTNG_VERSION_DESCRIPTION	"Ta Meilleure is a Northeast IPA beer brewed by Lagabière. Translating to \"Your best one\", this beer gives out strong aromas of passion fruit, lemon, and peaches. Tastewise, expect a lot of fruit, a creamy texture, and a smooth lingering hop bitterness."
 
 #ifndef CHAR_BIT
 #define CHAR_BIT 8
