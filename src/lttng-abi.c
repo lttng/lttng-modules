@@ -1439,10 +1439,202 @@ fd_error:
 }
 
 static
+long lttng_event_notifier_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+{
+	struct lttng_event_notifier_enabler *event_notifier_enabler;
+	enum lttng_event_type *evtype = file->private_data;
+
+	switch (cmd) {
+	case LTTNG_KERNEL_ENABLE:
+		switch (*evtype) {
+		case LTTNG_TYPE_EVENT:
+			return -EINVAL;
+		case LTTNG_TYPE_ENABLER:
+			event_notifier_enabler = file->private_data;
+			return lttng_event_notifier_enabler_enable(event_notifier_enabler);
+		default:
+			WARN_ON_ONCE(1);
+			return -ENOSYS;
+		}
+	case LTTNG_KERNEL_DISABLE:
+		switch (*evtype) {
+		case LTTNG_TYPE_EVENT:
+			return -EINVAL;
+		case LTTNG_TYPE_ENABLER:
+			event_notifier_enabler = file->private_data;
+			return lttng_event_notifier_enabler_disable(event_notifier_enabler);
+		default:
+			WARN_ON_ONCE(1);
+			return -ENOSYS;
+		}
+	case LTTNG_KERNEL_FILTER:
+		switch (*evtype) {
+		case LTTNG_TYPE_EVENT:
+			return -EINVAL;
+		case LTTNG_TYPE_ENABLER:
+			event_notifier_enabler = file->private_data;
+			return lttng_event_notifier_enabler_attach_bytecode(event_notifier_enabler,
+				(struct lttng_kernel_filter_bytecode __user *) arg);
+		default:
+			WARN_ON_ONCE(1);
+			return -ENOSYS;
+		}
+	default:
+		return -ENOIOCTLCMD;
+	}
+}
+
+static
+int lttng_event_notifier_release(struct inode *inode, struct file *file)
+{
+	struct lttng_event_notifier *event_notifier;
+	struct lttng_event_notifier_enabler *event_notifier_enabler;
+	enum lttng_event_type *evtype = file->private_data;
+
+	if (!evtype)
+		return 0;
+
+	switch (*evtype) {
+	case LTTNG_TYPE_EVENT:
+		event_notifier = file->private_data;
+		if (event_notifier)
+			fput(event_notifier->group->file);
+		break;
+	case LTTNG_TYPE_ENABLER:
+		event_notifier_enabler = file->private_data;
+		if (event_notifier_enabler)
+			fput(event_notifier_enabler->group->file);
+		break;
+	default:
+		WARN_ON_ONCE(1);
+		break;
+	}
+
+	return 0;
+}
+
+static const struct file_operations lttng_event_notifier_fops = {
+	.owner = THIS_MODULE,
+	.release = lttng_event_notifier_release,
+	.unlocked_ioctl = lttng_event_notifier_ioctl,
+#ifdef CONFIG_COMPAT
+	.compat_ioctl = lttng_event_notifier_ioctl,
+#endif
+};
+
+static
+int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
+		struct lttng_kernel_event_notifier *event_notifier_param)
+{
+	struct lttng_event_notifier_group *event_notifier_group =
+			event_notifier_group_file->private_data;
+	int event_notifier_fd, ret;
+	struct file *event_notifier_file;
+	void *priv;
+
+	switch (event_notifier_param->event.instrumentation) {
+	case LTTNG_KERNEL_TRACEPOINT:
+	case LTTNG_KERNEL_KPROBE:
+	case LTTNG_KERNEL_UPROBE:
+	case LTTNG_KERNEL_KRETPROBE:
+	case LTTNG_KERNEL_FUNCTION:
+	case LTTNG_KERNEL_NOOP:
+	case LTTNG_KERNEL_SYSCALL:
+	default:
+		ret = -EINVAL;
+		goto inval_instr;
+	}
+
+	event_notifier_param->event.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
+
+	event_notifier_fd = lttng_get_unused_fd();
+	if (event_notifier_fd < 0) {
+		ret = event_notifier_fd;
+		goto fd_error;
+	}
+
+	event_notifier_file = anon_inode_getfile("[lttng_event_notifier]",
+					&lttng_event_notifier_fops,
+					NULL, O_RDWR);
+	if (IS_ERR(event_notifier_file)) {
+		ret = PTR_ERR(event_notifier_file);
+		goto file_error;
+	}
+
+	/* The event notifier holds a reference on the event notifier group. */
+	if (!atomic_long_add_unless(&event_notifier_group_file->f_count, 1, LONG_MAX)) {
+		ret = -EOVERFLOW;
+		goto refcount_error;
+	}
+
+	if (event_notifier_param->event.instrumentation == LTTNG_KERNEL_TRACEPOINT
+			|| event_notifier_param->event.instrumentation == LTTNG_KERNEL_SYSCALL) {
+		struct lttng_event_notifier_enabler *enabler;
+
+		if (strutils_is_star_glob_pattern(event_notifier_param->event.name)) {
+			/*
+			 * If the event name is a star globbing pattern,
+			 * we create the special star globbing enabler.
+			 */
+			enabler = lttng_event_notifier_enabler_create(
+					event_notifier_group,
+					LTTNG_ENABLER_FORMAT_STAR_GLOB,
+					event_notifier_param);
+		} else {
+			enabler = lttng_event_notifier_enabler_create(
+					event_notifier_group,
+					LTTNG_ENABLER_FORMAT_NAME,
+					event_notifier_param);
+		}
+		priv = enabler;
+	} else {
+		struct lttng_event_notifier *event_notifier;
+
+		/*
+		 * We tolerate no failure path after event notifier creation.
+		 * It will stay invariant for the rest of the session.
+		 */
+		event_notifier = lttng_event_notifier_create(NULL,
+				event_notifier_param->event.token, event_notifier_group,
+				event_notifier_param, NULL,
+				event_notifier_param->event.instrumentation);
+		WARN_ON_ONCE(!event_notifier);
+		if (IS_ERR(event_notifier)) {
+			ret = PTR_ERR(event_notifier);
+			goto event_notifier_error;
+		}
+		priv = event_notifier;
+	}
+	event_notifier_file->private_data = priv;
+	fd_install(event_notifier_fd, event_notifier_file);
+	return event_notifier_fd;
+
+event_notifier_error:
+	atomic_long_dec(&event_notifier_group_file->f_count);
+refcount_error:
+	fput(event_notifier_file);
+file_error:
+	put_unused_fd(event_notifier_fd);
+fd_error:
+inval_instr:
+	return ret;
+}
+
+static
 long lttng_event_notifier_group_ioctl(struct file *file, unsigned int cmd,
 		unsigned long arg)
 {
 	switch (cmd) {
+	case LTTNG_KERNEL_EVENT_NOTIFIER_CREATE:
+	{
+		struct lttng_kernel_event_notifier uevent_notifier_param;
+
+		if (copy_from_user(&uevent_notifier_param,
+				(struct lttng_kernel_event_notifier __user *) arg,
+				sizeof(uevent_notifier_param)))
+			return -EFAULT;
+		return lttng_abi_create_event_notifier(file, &uevent_notifier_param);
+	}
 	default:
 		return -ENOIOCTLCMD;
 	}

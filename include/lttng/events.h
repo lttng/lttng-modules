@@ -327,6 +327,30 @@ struct lttng_event {
 	int has_enablers_without_bytecode;
 };
 
+// FIXME: Really similar to lttng_event above. Could those be merged ?
+struct lttng_event_notifier {
+	enum lttng_event_type evtype;	/* First field. */
+	uint64_t user_token;
+	int enabled;
+	int registered;			/* has reg'd tracepoint probe */
+	const struct lttng_event_desc *desc;
+	void *filter;
+	struct list_head list;		/* event_notifier list in event_notifier group */
+
+	enum lttng_kernel_instrumentation instrumentation;
+	union {
+	} u;
+
+	/* Backward references: list of lttng_enabler_ref (ref to enablers) */
+	struct list_head enablers_ref_head;
+	struct hlist_node hlist;	/* session ht of event_notifiers */
+	/* list of struct lttng_bytecode_runtime, sorted by seqnum */
+	struct list_head bytecode_runtime_head;
+	int has_enablers_without_bytecode;
+
+	struct lttng_event_notifier_group *group; /* Weak ref */
+};
+
 enum lttng_enabler_format_type {
 	LTTNG_ENABLER_FORMAT_STAR_GLOB,
 	LTTNG_ENABLER_FORMAT_NAME,
@@ -346,6 +370,8 @@ struct lttng_enabler {
 
 	struct lttng_kernel_event event_param;
 	unsigned int enabled:1;
+
+	uint64_t user_token;		/* User-provided token. */
 };
 
 struct lttng_event_enabler {
@@ -359,6 +385,12 @@ struct lttng_event_enabler {
 	struct lttng_ctx *ctx;
 };
 
+struct lttng_event_notifier_enabler {
+	struct lttng_enabler base;
+	struct list_head node;	/* List of event_notifier enablers */
+	struct lttng_event_notifier_group *group;
+};
+
 static inline
 struct lttng_enabler *lttng_event_enabler_as_enabler(
 		struct lttng_event_enabler *event_enabler)
@@ -366,6 +398,12 @@ struct lttng_enabler *lttng_event_enabler_as_enabler(
 	return &event_enabler->base;
 }
 
+static inline
+struct lttng_enabler *lttng_event_notifier_enabler_as_enabler(
+		struct lttng_event_notifier_enabler *event_notifier_enabler)
+{
+	return &event_notifier_enabler->base;
+}
 
 struct lttng_channel_ops {
 	struct channel *(*channel_create)(const char *name,
@@ -444,6 +482,13 @@ struct lttng_syscall_filter;
 
 struct lttng_event_ht {
 	struct hlist_head table[LTTNG_EVENT_HT_SIZE];
+};
+
+#define LTTNG_EVENT_NOTIFIER_HT_BITS		12
+#define LTTNG_EVENT_NOTIFIER_HT_SIZE		(1U << LTTNG_EVENT_NOTIFIER_HT_BITS)
+
+struct lttng_event_notifier_ht {
+	struct hlist_head table[LTTNG_EVENT_NOTIFIER_HT_SIZE];
 };
 
 struct lttng_channel {
@@ -560,6 +605,9 @@ struct lttng_session {
 struct lttng_event_notifier_group {
 	struct file *file;		/* File associated to event notifier group */
 	struct list_head node;		/* event notifier group list */
+	struct list_head enablers_head; /* List of enablers */
+	struct list_head event_notifiers_head; /* List of event notifier */
+	struct lttng_event_notifier_ht event_notifiers_ht; /* Hash table of event notifiers */
 	struct lttng_ctx *ctx;		/* Contexts for filters. */
 	struct lttng_channel_ops *ops;
 	struct lttng_transport *transport;
@@ -591,6 +639,15 @@ struct lttng_event_enabler *lttng_event_enabler_create(
 
 int lttng_event_enabler_enable(struct lttng_event_enabler *event_enabler);
 int lttng_event_enabler_disable(struct lttng_event_enabler *event_enabler);
+struct lttng_event_notifier_enabler *lttng_event_notifier_enabler_create(
+		struct lttng_event_notifier_group *event_notifier_group,
+		enum lttng_enabler_format_type format_type,
+		struct lttng_kernel_event_notifier *event_notifier_param);
+
+int lttng_event_notifier_enabler_enable(
+		struct lttng_event_notifier_enabler *event_notifier_enabler);
+int lttng_event_notifier_enabler_disable(
+		struct lttng_event_notifier_enabler *event_notifier_enabler);
 int lttng_fix_pending_events(void);
 int lttng_session_active(void);
 
@@ -634,6 +691,21 @@ struct lttng_event *lttng_event_compat_old_create(struct lttng_channel *chan,
 		struct lttng_kernel_old_event *old_event_param,
 		void *filter,
 		const struct lttng_event_desc *internal_desc);
+
+struct lttng_event_notifier *lttng_event_notifier_create(
+				const struct lttng_event_desc *event_notifier_desc,
+				uint64_t id,
+				struct lttng_event_notifier_group *event_notifier_group,
+				struct lttng_kernel_event_notifier *event_notifier_param,
+				void *filter,
+				enum lttng_kernel_instrumentation itype);
+struct lttng_event_notifier *_lttng_event_notifier_create(
+				const struct lttng_event_desc *event_notifier_desc,
+				uint64_t id,
+				struct lttng_event_notifier_group *event_notifier_group,
+				struct lttng_kernel_event_notifier *event_notifier_param,
+				void *filter,
+				enum lttng_kernel_instrumentation itype);
 
 int lttng_channel_enable(struct lttng_channel *channel);
 int lttng_channel_disable(struct lttng_channel *channel);
@@ -720,10 +792,14 @@ static inline long lttng_channel_syscall_mask(struct lttng_channel *channel,
 {
 	return -ENOSYS;
 }
+
 #endif
 
 void lttng_filter_sync_state(struct lttng_bytecode_runtime *runtime);
 int lttng_event_enabler_attach_bytecode(struct lttng_event_enabler *event_enabler,
+		struct lttng_kernel_filter_bytecode __user *bytecode);
+int lttng_event_notifier_enabler_attach_bytecode(
+		struct lttng_event_notifier_enabler *event_notifier_enabler,
 		struct lttng_kernel_filter_bytecode __user *bytecode);
 
 void lttng_enabler_link_bytecode(const struct lttng_event_desc *event_desc,

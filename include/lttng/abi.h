@@ -137,6 +137,13 @@ struct lttng_kernel_event {
 	} u;
 } __attribute__((packed));
 
+#define LTTNG_KERNEL_EVENT_NOTIFIER_PADDING1	16
+struct lttng_kernel_event_notifier {
+	struct lttng_kernel_event event;
+
+	char padding[LTTNG_KERNEL_EVENT_NOTIFIER_PADDING1];
+} __attribute__((packed));
+
 struct lttng_kernel_tracer_version {
 	uint32_t major;
 	uint32_t minor;
@@ -307,12 +314,12 @@ struct lttng_kernel_tracker_args {
 #define LTTNG_KERNEL_CONTEXT			\
 	_IOW(0xF6, 0x71, struct lttng_kernel_context)
 
-/* Event, Channel and Session ioctl */
+/* Event, Event notifier, Channel and Session ioctl */
 /* lttng/abi-old.h reserve 0x80 and 0x81. */
 #define LTTNG_KERNEL_ENABLE			_IO(0xF6, 0x82)
 #define LTTNG_KERNEL_DISABLE			_IO(0xF6, 0x83)
 
-/* Event FD ioctl */
+/* Event and Event notifier FD ioctl */
 #define LTTNG_KERNEL_FILTER			_IO(0xF6, 0x90)
 #define LTTNG_KERNEL_ADD_CALLSITE		_IO(0xF6, 0x91)
 
@@ -323,6 +330,10 @@ struct lttng_kernel_tracker_args {
 	_IOR(0xF6, 0xA1, struct lttng_kernel_tracker_args)
 #define LTTNG_KERNEL_SESSION_UNTRACK_ID		\
 	_IOR(0xF6, 0xA2, struct lttng_kernel_tracker_args)
+
+/* Event notifier group file descriptor ioctl */
+#define LTTNG_KERNEL_EVENT_NOTIFIER_CREATE \
+	_IOW(0xF6, 0xB0, struct lttng_kernel_event_notifier)
 
 /*
  * LTTng-specific ioctls for the lib ringbuffer.
