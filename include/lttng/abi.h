@@ -334,6 +334,8 @@ struct lttng_kernel_tracker_args {
 /* Event notifier group file descriptor ioctl */
 #define LTTNG_KERNEL_EVENT_NOTIFIER_CREATE \
 	_IOW(0xF6, 0xB0, struct lttng_kernel_event_notifier)
+#define LTTNG_KERNEL_EVENT_NOTIFIER_GROUP_NOTIFICATION_FD \
+	_IO(0xF6, 0xB1)
 
 /*
  * LTTng-specific ioctls for the lib ringbuffer.

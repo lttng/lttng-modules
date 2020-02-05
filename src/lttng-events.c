@@ -37,6 +37,7 @@
 #include <lttng/kernel-version.h>
 #include <lttng/events.h>
 #include <lttng/tracer.h>
+#include <lttng/event-notifier-notification.h>
 #include <lttng/abi-old.h>
 #include <lttng/endian.h>
 #include <lttng/string-utils.h>
@@ -332,6 +333,8 @@ void lttng_event_notifier_group_destroy(
 		ret = _lttng_event_notifier_unregister(event_notifier);
 		WARN_ON(ret);
 	}
+
+	irq_work_sync(&event_notifier_group->wakeup_pending);
 
 	list_for_each_entry_safe(event_notifier_enabler, tmp_event_notifier_enabler,
 			&event_notifier_group->enablers_head, node)
@@ -1020,11 +1023,13 @@ struct lttng_event_notifier *_lttng_event_notifier_create(
 		ret = -ENOMEM;
 		goto cache_error;
 	}
+
 	event_notifier->group = event_notifier_group;
 	event_notifier->user_token = token;
 	event_notifier->filter = filter;
 	event_notifier->instrumentation = itype;
 	event_notifier->evtype = LTTNG_TYPE_EVENT;
+	event_notifier->send_notification = lttng_event_notifier_notification_send;
 	INIT_LIST_HEAD(&event_notifier->bytecode_runtime_head);
 	INIT_LIST_HEAD(&event_notifier->enablers_ref_head);
 

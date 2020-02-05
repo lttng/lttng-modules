@@ -10,6 +10,7 @@
 #ifndef _LTTNG_EVENTS_H
 #define _LTTNG_EVENTS_H
 
+#include <linux/irq_work.h>
 #include <linux/version.h>
 #include <linux/list.h>
 #include <linux/kprobes.h>
@@ -348,6 +349,7 @@ struct lttng_event_notifier {
 	struct list_head bytecode_runtime_head;
 	int has_enablers_without_bytecode;
 
+	void (*send_notification)(struct lttng_event_notifier *event_notifier);
 	struct lttng_event_notifier_group *group; /* Weak ref */
 };
 
@@ -604,6 +606,7 @@ struct lttng_session {
 
 struct lttng_event_notifier_group {
 	struct file *file;		/* File associated to event notifier group */
+	struct file *notif_file;	/* File used to expose notifications to userspace. */
 	struct list_head node;		/* event notifier group list */
 	struct list_head enablers_head; /* List of enablers */
 	struct list_head event_notifiers_head; /* List of event notifier */
@@ -613,6 +616,8 @@ struct lttng_event_notifier_group {
 	struct lttng_transport *transport;
 	struct channel *chan;		/* Ring buffer channel for event notifier group. */
 	struct lib_ring_buffer *buf;	/* Ring buffer for event notifier group. */
+	wait_queue_head_t read_wait;
+	struct irq_work wakeup_pending;	/* Pending wakeup irq work. */
 };
 
 struct lttng_metadata_cache {

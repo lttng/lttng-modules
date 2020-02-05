@@ -106,6 +106,14 @@ fd_error:
 	return ret;
 }
 
+void event_notifier_send_notification_work_wakeup(struct irq_work *entry)
+{
+	struct lttng_event_notifier_group *event_notifier_group =
+			container_of(entry, struct lttng_event_notifier_group,
+					wakeup_pending);
+	wake_up_interruptible(&event_notifier_group->read_wait);
+}
+
 static
 int lttng_abi_create_event_notifier_group(void)
 {
@@ -131,6 +139,9 @@ int lttng_abi_create_event_notifier_group(void)
 	}
 
 	event_notifier_group->file = event_notifier_group_file;
+	init_waitqueue_head(&event_notifier_group->read_wait);
+	init_irq_work(&event_notifier_group->wakeup_pending,
+		      event_notifier_send_notification_work_wakeup);
 	fd_install(event_notifier_group_fd, event_notifier_group_file);
 	return event_notifier_group_fd;
 
@@ -804,6 +815,10 @@ static const struct file_operations lttng_session_fops = {
 #endif
 };
 
+static const struct file_operations lttng_event_notifier_group_notif_fops = {
+	.owner = THIS_MODULE,
+};
+
 /**
  *	lttng_metadata_ring_buffer_poll - LTTng ring buffer poll file operation
  *	@filp: the file
@@ -1308,6 +1323,41 @@ nomem:
 }
 
 static
+int lttng_abi_open_event_notifier_group_stream(struct file *notif_file)
+{
+	struct lttng_event_notifier_group *event_notifier_group = notif_file->private_data;
+	struct channel *chan = event_notifier_group->chan;
+	struct lib_ring_buffer *buf;
+	int ret;
+	void *stream_priv;
+
+	buf = event_notifier_group->ops->buffer_read_open(chan);
+	if (!buf)
+		return -ENOENT;
+
+	/* The event_notifier notification fd holds a reference on the event_notifier group */
+	if (!atomic_long_add_unless(&notif_file->f_count, 1, LONG_MAX)) {
+		ret = -EOVERFLOW;
+		goto refcount_error;
+	}
+	event_notifier_group->buf = buf;
+	stream_priv = event_notifier_group;
+	ret = lttng_abi_create_stream_fd(notif_file, stream_priv,
+			&lttng_event_notifier_group_notif_fops,
+			"[lttng_event_notifier_stream]");
+	if (ret < 0)
+		goto fd_error;
+
+	return ret;
+
+fd_error:
+	atomic_long_dec(&notif_file->f_count);
+refcount_error:
+	event_notifier_group->ops->buffer_read_close(buf);
+	return ret;
+}
+
+static
 int lttng_abi_validate_event_param(struct lttng_kernel_event *event_param)
 {
 	/* Limit ABI to implemented features. */
@@ -1625,6 +1675,10 @@ long lttng_event_notifier_group_ioctl(struct file *file, unsigned int cmd,
 		unsigned long arg)
 {
 	switch (cmd) {
+	case LTTNG_KERNEL_EVENT_NOTIFIER_GROUP_NOTIFICATION_FD:
+	{
+		return lttng_abi_open_event_notifier_group_stream(file);
+	}
 	case LTTNG_KERNEL_EVENT_NOTIFIER_CREATE:
 	{
 		struct lttng_kernel_event_notifier uevent_notifier_param;

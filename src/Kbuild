@@ -49,6 +49,7 @@ lttng-tracer-objs := lttng-events.o lttng-abi.o lttng-string-utils.o \
                      lttng-filter-validator.o \
                      probes/lttng-probe-user.o \
                      lttng-tp-mempool.o \
+                     lttng-event-notifier-notification.o
 
 lttng-wrapper-objs := wrapper/page_alloc.o \
                       wrapper/random.o \
