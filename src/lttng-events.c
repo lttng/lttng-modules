@@ -280,7 +280,7 @@ void lttng_session_destroy(struct lttng_session *session)
 	mutex_lock(&sessions_mutex);
 	WRITE_ONCE(session->active, 0);
 	list_for_each_entry(chan, &session->chan, list) {
-		ret = lttng_syscalls_unregister(chan);
+		ret = lttng_syscalls_unregister_event(chan);
 		WARN_ON(ret);
 	}
 	list_for_each_entry(event, &session->events, list) {
@@ -289,7 +289,7 @@ void lttng_session_destroy(struct lttng_session *session)
 	}
 	synchronize_trace();	/* Wait for in-flight events to complete */
 	list_for_each_entry(chan, &session->chan, list) {
-		ret = lttng_syscalls_destroy(chan);
+		ret = lttng_syscalls_destroy_event(chan);
 		WARN_ON(ret);
 	}
 	list_for_each_entry_safe(event_enabler, tmp_event_enabler,
@@ -1179,7 +1179,7 @@ void register_event(struct lttng_event *event)
 						  event);
 		break;
 	case LTTNG_KERNEL_SYSCALL:
-		ret = lttng_syscall_filter_enable(event->chan, event);
+		ret = lttng_syscall_filter_enable_event(event->chan, event);
 		break;
 	case LTTNG_KERNEL_KPROBE:
 	case LTTNG_KERNEL_UPROBE:
@@ -1222,7 +1222,7 @@ int _lttng_event_unregister(struct lttng_event *event)
 		ret = 0;
 		break;
 	case LTTNG_KERNEL_SYSCALL:
-		ret = lttng_syscall_filter_disable(event->chan, event);
+		ret = lttng_syscall_filter_disable_event(event->chan, event);
 		break;
 	case LTTNG_KERNEL_NOOP:
 		ret = 0;
@@ -1897,7 +1897,7 @@ void lttng_create_syscall_event_if_missing(struct lttng_event_enabler *event_ena
 {
 	int ret;
 
-	ret = lttng_syscalls_register(event_enabler->chan, NULL);
+	ret = lttng_syscalls_register_event(event_enabler->chan, NULL);
 	WARN_ON_ONCE(ret);
 }
 

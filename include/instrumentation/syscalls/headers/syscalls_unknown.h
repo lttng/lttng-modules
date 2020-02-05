@@ -9,7 +9,7 @@
 #define UNKNOWN_SYSCALL_NRARGS	6
 
 #undef TP_PROBE_CB
-#define TP_PROBE_CB(_template)          &syscall_entry_probe
+#define TP_PROBE_CB(_template)          &syscall_entry_event_probe
 
 LTTNG_TRACEPOINT_EVENT(syscall_entry_unknown,
 	TP_PROTO(int id, unsigned long *args),
@@ -29,7 +29,7 @@ LTTNG_TRACEPOINT_EVENT(compat_syscall_entry_unknown,
 )
 
 #undef TP_PROBE_CB
-#define TP_PROBE_CB(_template)          &syscall_exit_probe
+#define TP_PROBE_CB(_template)          &syscall_exit_event_probe
 
 LTTNG_TRACEPOINT_EVENT(syscall_exit_unknown,
 	TP_PROTO(int id, long ret, unsigned long *args),
