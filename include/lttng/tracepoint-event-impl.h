@@ -173,6 +173,41 @@ void __event_template_proto___##_name(void);
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
 /*
+ * Stage 1.2 of the trace event_notifier.
+ *
+ * Create dummy trace prototypes for each event class, and for each used
+ * template. This will allow checking whether the prototypes from the
+ * class and the instance using the class actually match.
+ */
+
+#include <lttng/events-reset.h>	/* Reset all macros within TRACE_EVENT */
+
+#undef TP_PROTO
+#define TP_PROTO(...)	__VA_ARGS__
+
+#undef TP_ARGS
+#define TP_ARGS(...)	__VA_ARGS__
+
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(_template, _name, _map, _proto, _args) \
+void __event_notifier_template_proto___##_template(_proto);
+
+#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map) \
+void __event_notifier_template_proto___##_template(void);
+
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
+void __event_notifier_template_proto___##_name(_proto);
+
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
+void __event_notifier_template_proto___##_name(void);
+
+#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+
+
+/*
  * Stage 1.2 of tracepoint event generation
  *
  * Unfolding the enums
@@ -466,6 +501,28 @@ static void __event_probe__##_name(void *__data, _proto);
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
 #define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
 static void __event_probe__##_name(void *__data);
+
+#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+
+/*
+ * Stage 3.1 of the trace event_notifiers.
+ *
+ * Create event_notifier probe callback prototypes.
+ */
+
+/* Reset all macros within TRACEPOINT_EVENT */
+#include <lttng/events-reset.h>
+
+#undef TP_PROTO
+#define TP_PROTO(...)	__VA_ARGS__
+
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
+static void __event_notifier_probe__##_name(void *__data, _proto);
+
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
+static void __event_notifier_probe__##_name(void *__data);
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
@@ -1131,8 +1188,9 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 {									      \
 	struct probe_local_vars { _locvar };				      \
 	struct lttng_event *__event = __data;				      \
-	struct lttng_probe_ctx __lttng_probe_ctx = {				      \
+	struct lttng_probe_ctx __lttng_probe_ctx = {			      \
 		.event = __event,				              \
+		.event_notifier = NULL,					      \
 		.interruptible = !irqs_disabled(),			      \
 	};								      \
 	struct lttng_channel *__chan = __event->chan;			      \
@@ -1226,8 +1284,9 @@ static void __event_probe__##_name(void *__data)			      \
 {									      \
 	struct probe_local_vars { _locvar };				      \
 	struct lttng_event *__event = __data;				      \
-	struct lttng_probe_ctx __lttng_probe_ctx = {				      \
+	struct lttng_probe_ctx __lttng_probe_ctx = {			      \
 		.event = __event,				              \
+		.event_notifier = NULL,					      \
 		.interruptible = !irqs_disabled(),			      \
 	};								      \
 	struct lttng_channel *__chan = __event->chan;			      \
@@ -1320,6 +1379,127 @@ __post:									      \
 #undef __get_dynamic_len
 
 /*
+ * Stage 6.1 of tracepoint generation: generate event notifier probes
+ *
+ * Create the probe function. This function evaluates the filter bytecode and
+ * queue a notification to be sent to userspace.
+ */
+
+#include <lttng/events-reset.h>	/* Reset all macros within LTTNG_TRACEPOINT_EVENT */
+
+#undef TP_PROTO
+#define TP_PROTO(...)	__VA_ARGS__
+
+#undef TP_ARGS
+#define TP_ARGS(...)	__VA_ARGS__
+
+#undef TP_FIELDS
+#define TP_FIELDS(...)	__VA_ARGS__
+
+#undef TP_locvar
+#define TP_locvar(...)	__VA_ARGS__
+
+#undef TP_code_pre
+#define TP_code_pre(...)	__VA_ARGS__
+
+#undef TP_code_post
+#define TP_code_post(...)	__VA_ARGS__
+
+/*
+ * Using twice size for filter stack data to hold size and pointer for
+ * each field (worse case). For integers, max size required is 64-bit.
+ * Same for double-precision floats. Those fit within
+ * 2*sizeof(unsigned long) for all supported architectures.
+ * Perform UNION (||) of filter runtime list.
+ */
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
+static void __event_notifier_probe__##_name(void *__data, _proto)	      \
+{									      \
+	struct probe_local_vars { _locvar };				      \
+	struct lttng_event_notifier *__event_notifier = __data;		      \
+	struct lttng_probe_ctx __lttng_probe_ctx = {			      \
+		.event = NULL,						      \
+		.event_notifier = __event_notifier,			      \
+		.interruptible = !irqs_disabled(),			      \
+	};								      \
+	union {								      \
+		size_t __dynamic_len_removed[ARRAY_SIZE(__event_fields___##_name)];   \
+		char __filter_stack_data[2 * sizeof(unsigned long) * ARRAY_SIZE(__event_fields___##_name)]; \
+	} __stackvar;							      \
+	struct probe_local_vars __tp_locvar;				      \
+	struct probe_local_vars *tp_locvar __attribute__((unused)) =	      \
+			&__tp_locvar;					      \
+									      \
+	if (unlikely(!READ_ONCE(__event_notifier->enabled)))		      \
+		return;							      \
+	_code_pre							      \
+	if (unlikely(!list_empty(&__event_notifier->bytecode_runtime_head))) {		\
+		struct lttng_bytecode_runtime *bc_runtime;				\
+		int __filter_record = __event_notifier->has_enablers_without_bytecode;	\
+											\
+		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data,	\
+				tp_locvar, _args);				        \
+		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->bytecode_runtime_head, node) { \
+			if (unlikely(bc_runtime->filter(bc_runtime, &__lttng_probe_ctx,	\
+					__stackvar.__filter_stack_data) & LTTNG_FILTER_RECORD_FLAG)) \
+				__filter_record = 1;			      \
+		}							      \
+		if (likely(!__filter_record))				      \
+			goto __post;					      \
+	}								      \
+									      \
+	__event_notifier->send_notification(__event_notifier);		      \
+__post:									      \
+	_code_post							      \
+	return;								      \
+}
+
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
+static void __event_notifier_probe__##_name(void *__data)		      \
+{									      \
+	struct probe_local_vars { _locvar };				      \
+	struct lttng_event_notifier *__event_notifier = __data;		      \
+	struct lttng_probe_ctx __lttng_probe_ctx = {			      \
+		.event = NULL,						      \
+		.event_notifier = __event_notifier,			      \
+		.interruptible = !irqs_disabled(),			      \
+	};								      \
+	union {								      \
+		size_t __dynamic_len_removed[ARRAY_SIZE(__event_fields___##_name)];   \
+		char __filter_stack_data[2 * sizeof(unsigned long) * ARRAY_SIZE(__event_fields___##_name)]; \
+	} __stackvar;							      \
+	struct probe_local_vars __tp_locvar;				      \
+	struct probe_local_vars *tp_locvar __attribute__((unused)) =	      \
+			&__tp_locvar;					      \
+									      \
+	if (unlikely(!READ_ONCE(__event_notifier->enabled)))		      \
+		return;							      \
+	_code_pre							      \
+	if (unlikely(!list_empty(&__event_notifier->bytecode_runtime_head))) {		      \
+		struct lttng_bytecode_runtime *bc_runtime;				      \
+		int __filter_record = __event_notifier->has_enablers_without_bytecode;	      \
+											      \
+		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data,	      \
+				tp_locvar);						      \
+		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->bytecode_runtime_head, node) { \
+			if (unlikely(bc_runtime->filter(bc_runtime, &__lttng_probe_ctx,	      \
+					__stackvar.__filter_stack_data) & LTTNG_FILTER_RECORD_FLAG)) \
+				__filter_record = 1;			      \
+		}							      \
+		if (likely(!__filter_record))				      \
+			goto __post;					      \
+	}								      \
+									      \
+	__event_notifier->send_notification(__event_notifier);		      \
+__post:									      \
+	_code_post							      \
+	return;								      \
+}
+
+#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+/*
  * Stage 7 of the trace events.
  *
  * Create event descriptions.
@@ -1333,6 +1513,10 @@ __post:									      \
 #define TP_PROBE_CB(_template)	&__event_probe__##_template
 #endif
 
+#ifndef TP_EVENT_NOTIFIER_PROBE_CB
+#define TP_EVENT_NOTIFIER_PROBE_CB(_template)	&__event_notifier_probe__##_template
+#endif
+
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map)	\
 static const struct lttng_event_desc __event_desc___##_map = {		\
@@ -1342,6 +1526,7 @@ static const struct lttng_event_desc __event_desc___##_map = {		\
 	.probe_callback = (void *) TP_PROBE_CB(_template),   		\
 	.nr_fields = ARRAY_SIZE(__event_fields___##_template),		\
 	.owner = THIS_MODULE,				     		\
+	.event_notifier_callback = (void *) TP_EVENT_NOTIFIER_PROBE_CB(_template),   		\
 };
 
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP

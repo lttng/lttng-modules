@@ -170,6 +170,7 @@ struct lttng_perf_counter_field {
 
 struct lttng_probe_ctx {
 	struct lttng_event *event;
+	struct lttng_event_notifier *event_notifier; // Not sure if we will ever need it.
 	uint8_t interruptible;
 };
 
@@ -212,6 +213,7 @@ struct lttng_event_desc {
 	const struct lttng_event_field *fields;	/* event payload */
 	unsigned int nr_fields;
 	struct module *owner;
+	void *event_notifier_callback;
 };
 
 struct lttng_probe_desc {
