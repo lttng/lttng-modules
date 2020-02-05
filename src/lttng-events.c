@@ -108,6 +108,17 @@ void lttng_unlock_sessions(void)
 	mutex_unlock(&sessions_mutex);
 }
 
+static struct lttng_transport *lttng_transport_find(const char *name)
+{
+	struct lttng_transport *transport;
+
+	list_for_each_entry(transport, &lttng_transport_list, node) {
+		if (!strcmp(transport->name, name))
+			return transport;
+	}
+	return NULL;
+}
+
 /*
  * Called with sessions lock held.
  */
@@ -477,17 +488,6 @@ int lttng_event_disable(struct lttng_event *event)
 end:
 	mutex_unlock(&sessions_mutex);
 	return ret;
-}
-
-static struct lttng_transport *lttng_transport_find(const char *name)
-{
-	struct lttng_transport *transport;
-
-	list_for_each_entry(transport, &lttng_transport_list, node) {
-		if (!strcmp(transport->name, name))
-			return transport;
-	}
-	return NULL;
 }
 
 struct lttng_channel *lttng_channel_create(struct lttng_session *session,
