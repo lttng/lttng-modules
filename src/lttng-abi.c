@@ -59,6 +59,7 @@ static const struct file_operations lttng_proc_ops;
 #endif
 
 static const struct file_operations lttng_session_fops;
+static const struct file_operations lttng_event_notifier_group_fops;
 static const struct file_operations lttng_channel_fops;
 static const struct file_operations lttng_metadata_fops;
 static const struct file_operations lttng_event_fops;
@@ -102,6 +103,41 @@ file_error:
 	put_unused_fd(session_fd);
 fd_error:
 	lttng_session_destroy(session);
+	return ret;
+}
+
+static
+int lttng_abi_create_event_notifier_group(void)
+{
+	struct lttng_event_notifier_group *event_notifier_group;
+	struct file *event_notifier_group_file;
+	int event_notifier_group_fd, ret;
+
+	event_notifier_group = lttng_event_notifier_group_create();
+	if (!event_notifier_group)
+		return -ENOMEM;
+
+	event_notifier_group_fd = lttng_get_unused_fd();
+	if (event_notifier_group_fd < 0) {
+		ret = event_notifier_group_fd;
+		goto fd_error;
+	}
+	event_notifier_group_file = anon_inode_getfile("[lttng_event_notifier_group]",
+					  &lttng_event_notifier_group_fops,
+					  event_notifier_group, O_RDWR);
+	if (IS_ERR(event_notifier_group_file)) {
+		ret = PTR_ERR(event_notifier_group_file);
+		goto file_error;
+	}
+
+	event_notifier_group->file = event_notifier_group_file;
+	fd_install(event_notifier_group_fd, event_notifier_group_file);
+	return event_notifier_group_fd;
+
+file_error:
+	put_unused_fd(event_notifier_group_fd);
+fd_error:
+	lttng_event_notifier_group_destroy(event_notifier_group);
 	return ret;
 }
 
@@ -306,6 +342,8 @@ long lttng_abi_add_context(struct file *file,
  *		Returns after all previously running probes have completed
  *	LTTNG_KERNEL_TRACER_ABI_VERSION
  *		Returns the LTTng kernel tracer ABI version
+ *	LTTNG_KERNEL_EVENT_NOTIFIER_GROUP_CREATE
+ *		Returns a LTTng event notifier group file descriptor
  *
  * The returned session will be deleted when its file descriptor is closed.
  */
@@ -316,6 +354,8 @@ long lttng_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	case LTTNG_KERNEL_OLD_SESSION:
 	case LTTNG_KERNEL_SESSION:
 		return lttng_abi_create_session();
+	case LTTNG_KERNEL_EVENT_NOTIFIER_GROUP_CREATE:
+		return lttng_abi_create_event_notifier_group();
 	case LTTNG_KERNEL_OLD_TRACER_VERSION:
 	{
 		struct lttng_kernel_tracer_version v;
@@ -1397,6 +1437,37 @@ file_error:
 fd_error:
 	return ret;
 }
+
+static
+long lttng_event_notifier_group_ioctl(struct file *file, unsigned int cmd,
+		unsigned long arg)
+{
+	switch (cmd) {
+	default:
+		return -ENOIOCTLCMD;
+	}
+	return 0;
+}
+
+static
+int lttng_event_notifier_group_release(struct inode *inode, struct file *file)
+{
+	struct lttng_event_notifier_group *event_notifier_group =
+			file->private_data;
+
+	if (event_notifier_group)
+		lttng_event_notifier_group_destroy(event_notifier_group);
+	return 0;
+}
+
+static const struct file_operations lttng_event_notifier_group_fops = {
+	.owner = THIS_MODULE,
+	.release = lttng_event_notifier_group_release,
+	.unlocked_ioctl = lttng_event_notifier_group_ioctl,
+#ifdef CONFIG_COMPAT
+	.compat_ioctl = lttng_event_notifier_group_ioctl,
+#endif
+};
 
 /**
  *	lttng_channel_ioctl - lttng syscall through ioctl

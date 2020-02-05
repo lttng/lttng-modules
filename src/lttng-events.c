@@ -48,6 +48,7 @@
 #define METADATA_CACHE_DEFAULT_SIZE 4096
 
 static LIST_HEAD(sessions);
+static LIST_HEAD(event_notifier_groups);
 static LIST_HEAD(lttng_transport_list);
 /*
  * Protect the sessions and metadata caches.
@@ -189,6 +190,64 @@ err:
 	return NULL;
 }
 
+struct lttng_event_notifier_group *lttng_event_notifier_group_create(void)
+{
+	struct lttng_transport *transport = NULL;
+	struct lttng_event_notifier_group *event_notifier_group;
+	const char *transport_name = "relay-event-notifier";
+	size_t subbuf_size = 4096;	//TODO
+	size_t num_subbuf = 16;		//TODO
+	unsigned int switch_timer_interval = 0;
+	unsigned int read_timer_interval = 0;
+
+	mutex_lock(&sessions_mutex);
+
+	transport = lttng_transport_find(transport_name);
+	if (!transport) {
+		printk(KERN_WARNING "LTTng: transport %s not found\n",
+		       transport_name);
+		goto notransport;
+	}
+	if (!try_module_get(transport->owner)) {
+		printk(KERN_WARNING "LTTng: Can't lock transport %s module.\n",
+		       transport_name);
+		goto notransport;
+	}
+
+	event_notifier_group = lttng_kvzalloc(sizeof(struct lttng_event_notifier_group),
+				       GFP_KERNEL);
+	if (!event_notifier_group)
+		goto nomem;
+
+	/*
+	 * Initialize the ring buffer used to store event notifier
+	 * notifications.
+	 */
+	event_notifier_group->ops = &transport->ops;
+	event_notifier_group->chan = transport->ops.channel_create(
+			transport_name, event_notifier_group, NULL,
+			subbuf_size, num_subbuf, switch_timer_interval,
+			read_timer_interval);
+	if (!event_notifier_group->chan)
+		goto create_error;
+
+	event_notifier_group->transport = transport;
+	list_add(&event_notifier_group->node, &event_notifier_groups);
+
+	mutex_unlock(&sessions_mutex);
+
+	return event_notifier_group;
+
+create_error:
+	lttng_kvfree(event_notifier_group);
+nomem:
+	if (transport)
+		module_put(transport->owner);
+notransport:
+	mutex_unlock(&sessions_mutex);
+	return NULL;
+}
+
 void metadata_cache_destroy(struct kref *kref)
 {
 	struct lttng_metadata_cache *cache =
@@ -243,6 +302,19 @@ void lttng_session_destroy(struct lttng_session *session)
 	list_del(&session->list);
 	mutex_unlock(&sessions_mutex);
 	lttng_kvfree(session);
+}
+
+void lttng_event_notifier_group_destroy(struct lttng_event_notifier_group *event_notifier_group)
+{
+	if (!event_notifier_group)
+		return;
+
+	mutex_lock(&sessions_mutex);
+	event_notifier_group->ops->channel_destroy(event_notifier_group->chan);
+	module_put(event_notifier_group->transport->owner);
+	list_del(&event_notifier_group->node);
+	mutex_unlock(&sessions_mutex);
+	lttng_kvfree(event_notifier_group);
 }
 
 int lttng_session_statedump(struct lttng_session *session)

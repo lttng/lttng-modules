@@ -264,6 +264,7 @@ struct lttng_kernel_tracker_args {
 #define LTTNG_KERNEL_SYSCALL_LIST		_IO(0xF6, 0x4A)
 #define LTTNG_KERNEL_TRACER_ABI_VERSION		\
 	_IOR(0xF6, 0x4B, struct lttng_kernel_tracer_abi_version)
+#define LTTNG_KERNEL_EVENT_NOTIFIER_GROUP_CREATE    _IO(0xF6, 0x4C)
 
 /* Session FD ioctl */
 /* lttng/abi-old.h reserve 0x50, 0x51, 0x52, and 0x53. */
