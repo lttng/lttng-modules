@@ -90,9 +90,15 @@ end:
 	return written;
 }
 
-static const struct file_operations lttng_test_filter_event_operations = {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+static const struct proc_ops lttng_test_filter_event_proc_ops = {
+	.proc_write = lttng_test_filter_event_write,
+};
+#else
+static const struct file_operations lttng_test_filter_event_proc_ops = {
 	.write = lttng_test_filter_event_write,
 };
+#endif
 
 static
 int __init lttng_test_init(void)
@@ -104,7 +110,7 @@ int __init lttng_test_init(void)
 	lttng_test_filter_event_dentry =
 			proc_create_data(LTTNG_TEST_FILTER_EVENT_FILE,
 				S_IRUGO | S_IWUGO, NULL,
-				&lttng_test_filter_event_operations, NULL);
+				&lttng_test_filter_event_proc_ops, NULL);
 	if (!lttng_test_filter_event_dentry) {
 		printk(KERN_ERR "Error creating LTTng test filter file\n");
 		ret = -ENOMEM;

@@ -105,6 +105,18 @@ static const struct file_operations lttng_logger_operations = {
 	.write = lttng_logger_write,
 };
 
+/*
+ * Linux 5.6 introduced a separate proc_ops struct for /proc operations
+ * to decouple it from the vfs.
+ */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+static const struct proc_ops lttng_logger_proc_ops = {
+	.proc_write = lttng_logger_write,
+};
+#else
+#define lttng_logger_proc_ops lttng_logger_operations
+#endif
+
 int __init lttng_logger_init(void)
 {
 	int ret = 0;
@@ -112,7 +124,7 @@ int __init lttng_logger_init(void)
 	wrapper_vmalloc_sync_all();
 	lttng_logger_dentry = proc_create_data(LTTNG_LOGGER_FILE,
 				S_IRUGO | S_IWUGO, NULL,
-				&lttng_logger_operations, NULL);
+				&lttng_logger_proc_ops, NULL);
 	if (!lttng_logger_dentry) {
 		printk(KERN_ERR "Error creating LTTng logger file\n");
 		ret = -ENOMEM;
