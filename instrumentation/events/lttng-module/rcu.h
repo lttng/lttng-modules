@@ -386,7 +386,22 @@ LTTNG_TRACEPOINT_EVENT(rcu_fqs,
  * events use the upper bits of each number, while interrupt-related
  * events use the lower bits.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,16,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+LTTNG_TRACEPOINT_EVENT(rcu_dyntick,
+
+	TP_PROTO(const char *polarity, long oldnesting, long newnesting, int dynticks),
+
+	TP_ARGS(polarity, oldnesting, newnesting, dynticks),
+
+	TP_FIELDS(
+		ctf_string(polarity, polarity)
+		ctf_integer(long, oldnesting, oldnesting)
+		ctf_integer(long, newnesting, newnesting)
+		ctf_integer(int, dynticks, dynticks)
+	)
+)
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,16,0))
 LTTNG_TRACEPOINT_EVENT(rcu_dyntick,
 
 	TP_PROTO(const char *polarity, long oldnesting, long newnesting, atomic_t dynticks),
