@@ -51,7 +51,13 @@
  */
 
 static struct proc_dir_entry *lttng_proc_dentry;
-static const struct file_operations lttng_fops;
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+static const struct proc_ops lttng_proc_ops;
+#else
+static const struct file_operations lttng_proc_ops;
+#endif
+
 static const struct file_operations lttng_session_fops;
 static const struct file_operations lttng_channel_fops;
 static const struct file_operations lttng_metadata_fops;
@@ -391,13 +397,22 @@ long lttng_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	}
 }
 
-static const struct file_operations lttng_fops = {
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+static const struct proc_ops lttng_proc_ops = {
+	.proc_ioctl = lttng_ioctl,
+#ifdef CONFIG_COMPAT
+	.proc_compat_ioctl = lttng_ioctl,
+#endif /* CONFIG_COMPAT */
+};
+#else
+static const struct file_operations lttng_proc_ops = {
 	.owner = THIS_MODULE,
 	.unlocked_ioctl = lttng_ioctl,
 #ifdef CONFIG_COMPAT
 	.compat_ioctl = lttng_ioctl,
-#endif
+#endif /* CONFIG_COMPAT */
 };
+#endif
 
 static
 int lttng_abi_create_channel(struct file *session_file,
@@ -1932,7 +1947,7 @@ int __init lttng_abi_init(void)
 	}
 
 	lttng_proc_dentry = proc_create_data("lttng", S_IRUSR | S_IWUSR, NULL,
-					&lttng_fops, NULL);
+					&lttng_proc_ops, NULL);
 
 	if (!lttng_proc_dentry) {
 		printk(KERN_ERR "Error creating LTTng control file\n");
