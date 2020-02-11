@@ -34,6 +34,22 @@ enum {
 
 #endif /* _TRACE_BLOCK_DEF_ */
 
+LTTNG_TRACEPOINT_ENUM(block_rq_type,
+	TP_ENUM_VALUES(
+		ctf_enum_value("RWBS_FLAG_WRITE", RWBS_FLAG_WRITE)
+		ctf_enum_value("RWBS_FLAG_DISCARD", RWBS_FLAG_DISCARD)
+		ctf_enum_value("RWBS_FLAG_READ", RWBS_FLAG_READ)
+		ctf_enum_value("RWBS_FLAG_RAHEAD", RWBS_FLAG_RAHEAD)
+		ctf_enum_value("RWBS_FLAG_BARRIER", RWBS_FLAG_BARRIER)
+		ctf_enum_value("RWBS_FLAG_SYNC", RWBS_FLAG_SYNC)
+		ctf_enum_value("RWBS_FLAG_META", RWBS_FLAG_META)
+		ctf_enum_value("RWBS_FLAG_SECURE", RWBS_FLAG_SECURE)
+		ctf_enum_value("RWBS_FLAG_FLUSH", RWBS_FLAG_FLUSH)
+		ctf_enum_value("RWBS_FLAG_FUA", RWBS_FLAG_FUA)
+		ctf_enum_value("RWBS_FLAG_PREFLUSH", RWBS_FLAG_PREFLUSH)
+	)
+)
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,73,5,0,0, 4,4,73,6,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,82,6,0,0, 4,4,82,7,0,0) || \
@@ -49,7 +65,7 @@ enum {
 #define lttng_bio_rw(bio)	((bio)->bi_opf)
 
 #define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
-		ctf_integer(type, rwbs,					      \
+		ctf_enum(block_rq_type, type, rwbs,					      \
 			(((op) == REQ_OP_WRITE || (op) == REQ_OP_WRITE_SAME) ? RWBS_FLAG_WRITE : \
 			( (op) == REQ_OP_DISCARD ? RWBS_FLAG_DISCARD :	      \
 			( (op) == REQ_OP_SECURE_ERASE ? (RWBS_FLAG_DISCARD | RWBS_FLAG_SECURE) : \
@@ -70,7 +86,7 @@ enum {
 #define lttng_bio_rw(bio)	((bio)->bi_rw)
 
 #define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
-		ctf_integer(type, rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :     \
+		ctf_enum(block_rq_type, type, rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE : \
 			( (rw) & REQ_DISCARD ? RWBS_FLAG_DISCARD :	      \
 			( (bytes) ? RWBS_FLAG_READ :			      \
 			( 0 ))))					      \
@@ -89,7 +105,7 @@ enum {
 #define lttng_bio_rw(bio)	((bio)->bi_rw)
 
 #define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
-		ctf_integer(type, rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :     \
+		ctf_enum(block_rq_type, type, rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :     \
 			( (rw) & REQ_DISCARD ? RWBS_FLAG_DISCARD :	      \
 			( (bytes) ? RWBS_FLAG_READ :			      \
 			( 0 ))))					      \
