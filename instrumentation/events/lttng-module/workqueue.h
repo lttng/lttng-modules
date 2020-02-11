@@ -92,6 +92,26 @@ LTTNG_TRACEPOINT_EVENT(workqueue_execute_start,
 	)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+/**
+ * workqueue_execute_end - called immediately after the workqueue callback
+ * @work:	pointer to struct work_struct
+ * @function:	pointer to worker function
+ *
+ * Allows to track workqueue execution.
+ */
+LTTNG_TRACEPOINT_EVENT(workqueue_execute_end,
+
+	TP_PROTO(struct work_struct *work, work_func_t function),
+
+	TP_ARGS(work, function),
+
+	TP_FIELDS(
+		ctf_integer_hex(void *, work, work)
+		ctf_integer_hex(void *, function, function)
+	)
+)
+#else
 /**
  * workqueue_execute_end - called immediately after the workqueue callback
  * @work:	pointer to struct work_struct
@@ -104,6 +124,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(workqueue_work, workqueue_execute_end,
 
 	TP_ARGS(work)
 )
+#endif
 
 #endif /*  LTTNG_TRACE_WORKQUEUE_H */
 
