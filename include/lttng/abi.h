@@ -180,6 +180,7 @@ enum lttng_kernel_context_type {
 	LTTNG_KERNEL_CONTEXT_VGID		= 34,
 	LTTNG_KERNEL_CONTEXT_VEGID		= 35,
 	LTTNG_KERNEL_CONTEXT_VSGID		= 36,
+	LTTNG_KERNEL_CONTEXT_TIME_NS		= 37,
 };
 
 struct lttng_kernel_perf_counter_ctx {

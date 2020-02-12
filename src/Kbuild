@@ -105,6 +105,10 @@ ifneq ($(CONFIG_UTS_NS),)
   lttng-tracer-objs += lttng-context-uts-ns.o
 endif
 
+ifneq ($(CONFIG_TIME_NS),)
+  lttng-tracer-objs += lttng-context-time-ns.o
+endif
+
 obj-$(CONFIG_LTTNG) += lttng-statedump.o
 lttng-statedump-objs := lttng-statedump-impl.o
 

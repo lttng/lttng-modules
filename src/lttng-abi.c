@@ -281,6 +281,8 @@ long lttng_abi_add_context(struct file *file,
 		return lttng_add_vegid_to_ctx(ctx);
 	case LTTNG_KERNEL_CONTEXT_VSGID:
 		return lttng_add_vsgid_to_ctx(ctx);
+	case LTTNG_KERNEL_CONTEXT_TIME_NS:
+		return lttng_add_time_ns_to_ctx(ctx);
 	default:
 		return -EINVAL;
 	}

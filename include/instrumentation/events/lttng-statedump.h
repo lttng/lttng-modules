@@ -17,6 +17,9 @@
 #include <linux/version.h>
 #include <wrapper/namespace.h>
 #include <wrapper/user_namespace.h>
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+#include <linux/time_namespace.h>
+#endif
 
 #ifndef LTTNG_MNT_NS_MISSING_HEADER
 # ifndef ONCE_LTTNG_FS_MOUNT_H
@@ -178,6 +181,19 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_uts_ns,
 #endif
 	)
 )
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_time_ns,
+	TP_PROTO(struct lttng_session *session,
+		struct task_struct *p,
+		struct time_namespace *time_ns),
+	TP_ARGS(session, p, time_ns),
+	TP_FIELDS(
+		ctf_integer(pid_t, tid, p->pid)
+		ctf_integer(unsigned int, ns_inum, time_ns ? time_ns->lttng_ns_inum : 0)
+	)
+)
+#endif
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_file_descriptor,
 	TP_PROTO(struct lttng_session *session,

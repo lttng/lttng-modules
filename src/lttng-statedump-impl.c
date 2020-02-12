@@ -72,6 +72,7 @@ DEFINE_TRACE(lttng_statedump_process_mnt_ns);
 DEFINE_TRACE(lttng_statedump_process_net_ns);
 DEFINE_TRACE(lttng_statedump_process_user_ns);
 DEFINE_TRACE(lttng_statedump_process_uts_ns);
+DEFINE_TRACE(lttng_statedump_process_time_ns);
 DEFINE_TRACE(lttng_statedump_network_interface);
 #ifdef LTTNG_HAVE_STATEDUMP_CPU_TOPOLOGY
 DEFINE_TRACE(lttng_statedump_cpu_topology);
@@ -453,6 +454,9 @@ void lttng_statedump_process_ns(struct lttng_session *session,
 #endif
 		trace_lttng_statedump_process_net_ns(session, p, proxy->net_ns);
 		trace_lttng_statedump_process_uts_ns(session, p, proxy->uts_ns);
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+		trace_lttng_statedump_process_time_ns(session, p, proxy->time_ns);
+#endif
 	}
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0) || \
 		LTTNG_UBUNTU_KERNEL_RANGE(3,13,11,36, 3,14,0,0) || \

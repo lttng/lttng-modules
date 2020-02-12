@@ -805,6 +805,17 @@ int lttng_add_uts_ns_to_ctx(struct lttng_ctx **ctx)
 }
 #endif
 
+#if defined(CONFIG_TIME_NS) && \
+	(LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+int lttng_add_time_ns_to_ctx(struct lttng_ctx **ctx);
+#else
+static inline
+int lttng_add_time_ns_to_ctx(struct lttng_ctx **ctx)
+{
+	return -ENOSYS;
+}
+#endif
+
 int lttng_add_uid_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_euid_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_suid_to_ctx(struct lttng_ctx **ctx);
