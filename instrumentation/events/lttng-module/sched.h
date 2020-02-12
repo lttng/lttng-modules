@@ -166,6 +166,40 @@ static inline long __trace_sched_switch_state(struct task_struct *p)
 #endif /* _TRACE_SCHED_DEF_ */
 
 /*
+ * Enumeration of the task state bitmask.
+ * Only bit flags are enumerated here, not composition of states.
+ */
+LTTNG_TRACEPOINT_ENUM(task_state,
+	TP_ENUM_VALUES(
+		ctf_enum_value("TASK_RUNNING", TASK_RUNNING)
+		ctf_enum_value("TASK_INTERRUPTIBLE", TASK_INTERRUPTIBLE)
+		ctf_enum_value("TASK_UNINTERRUPTIBLE", TASK_UNINTERRUPTIBLE)
+		ctf_enum_value("TASK_STOPPED", __TASK_STOPPED)
+		ctf_enum_value("TASK_TRACED", __TASK_TRACED)
+		ctf_enum_value("EXIT_DEAD", EXIT_DEAD)
+		ctf_enum_value("EXIT_ZOMBIE", EXIT_ZOMBIE)
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+		ctf_enum_value("TASK_PARKED", TASK_PARKED)
+#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0)) */
+
+		ctf_enum_value("TASK_DEAD", TASK_DEAD)
+		ctf_enum_value("TASK_WAKEKILL", TASK_WAKEKILL)
+		ctf_enum_value("TASK_WAKING", TASK_WAKING)
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+		ctf_enum_value("TASK_NOLOAD", TASK_NOLOAD)
+#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
+		ctf_enum_value("TASK_NEW", TASK_NEW)
+#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0)) */
+
+		ctf_enum_value("TASK_STATE_MAX", TASK_STATE_MAX)
+	)
+)
+
+/*
  * Tracepoint for calling kthread_stop, performed to end a kthread:
  */
 LTTNG_TRACEPOINT_EVENT(sched_kthread_stop,
@@ -305,9 +339,9 @@ LTTNG_TRACEPOINT_EVENT(sched_switch,
 		ctf_integer(pid_t, prev_tid, prev->pid)
 		ctf_integer(int, prev_prio, prev->prio - MAX_RT_PRIO)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0))
-		ctf_integer(long, prev_state, __trace_sched_switch_state(preempt, prev))
+		ctf_enum(task_state, long, prev_state, __trace_sched_switch_state(preempt, prev))
 #else
-		ctf_integer(long, prev_state, __trace_sched_switch_state(prev))
+		ctf_enum(task_state, long, prev_state, __trace_sched_switch_state(prev))
 #endif
 		ctf_array_text(char, next_comm, next->comm, TASK_COMM_LEN)
 		ctf_integer(pid_t, next_tid, next->pid)
