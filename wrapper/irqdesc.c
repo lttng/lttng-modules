@@ -23,7 +23,7 @@ struct irq_desc *(*irq_to_desc_sym)(unsigned int irq);
 struct irq_desc *wrapper_irq_to_desc(unsigned int irq)
 {
 	if (!irq_to_desc_sym)
-		irq_to_desc_sym = (void *) kallsyms_lookup_funcptr("irq_to_desc"); 
+		irq_to_desc_sym = (void *) kallsyms_lookup_funcptr("irq_to_desc");
 	if (irq_to_desc_sym) {
 		return irq_to_desc_sym(irq);
 	} else {

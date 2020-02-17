@@ -348,7 +348,6 @@ void lttng_event_strcpy(struct lib_ring_buffer_ctx *ctx, const char *src,
 
 static
 size_t lttng_packet_avail_size(struct channel *chan)
-			     
 {
 	unsigned long o_begin;
 	struct lib_ring_buffer *buf;

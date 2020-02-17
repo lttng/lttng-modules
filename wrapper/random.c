@@ -47,7 +47,7 @@ int wrapper_get_bootid(char *bootid)
 		ret = -EINVAL;
 		goto end;
 	}
-	
+
 	bootid[BOOT_ID_LEN - 1] = '\0';
 	ret = 0;
 end:
