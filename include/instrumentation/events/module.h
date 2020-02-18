@@ -17,6 +17,7 @@
 
 #include <lttng/tracepoint-event.h>
 #include <linux/version.h>
+#include <linux/kernel.h>
 
 #ifdef CONFIG_MODULES
 
@@ -26,6 +27,41 @@ struct module;
 
 #endif
 
+LTTNG_TRACEPOINT_ENUM(taint,
+	TP_ENUM_VALUES(
+		ctf_enum_value("PROPRIETARY_MODULE", 1UL << TAINT_PROPRIETARY_MODULE)
+		ctf_enum_value("FORCED_MODULE", 1UL << TAINT_FORCED_MODULE)
+		ctf_enum_value("CPU_OUT_OF_SPEC", 1UL << TAINT_CPU_OUT_OF_SPEC)
+		ctf_enum_value("FORCED_RMMOD", 1UL << TAINT_FORCED_RMMOD)
+		ctf_enum_value("MACHINE_CHECK", 1UL << TAINT_MACHINE_CHECK)
+		ctf_enum_value("BAD_PAGE", 1UL << TAINT_BAD_PAGE)
+		ctf_enum_value("USER", 1UL << TAINT_USER)
+		ctf_enum_value("DIE", 1UL << TAINT_DIE)
+		ctf_enum_value("OVERRIDDEN_ACPI_TABLE", 1UL << TAINT_OVERRIDDEN_ACPI_TABLE)
+		ctf_enum_value("WARN", 1UL << TAINT_WARN)
+		ctf_enum_value("CRAP", 1UL << TAINT_CRAP)
+		ctf_enum_value("FIRMWARE_WORKAROUND", 1UL << TAINT_FIRMWARE_WORKAROUND)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+		ctf_enum_value("OOT_MODULE", 1UL << TAINT_OOT_MODULE)
+#endif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
+		ctf_enum_value("UNSIGNED_MODULE", 1UL << TAINT_UNSIGNED_MODULE)
+#endif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0))
+		ctf_enum_value("SOFTLOCKUP", 1UL << TAINT_SOFTLOCKUP)
+#endif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0))
+		ctf_enum_value("LIVEPATCH", 1UL << TAINT_LIVEPATCH)
+#endif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+		ctf_enum_value("AUX", 1UL << TAINT_AUX)
+#endif
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,17,0))
+		ctf_enum_value("RANDSTRUCT", 1UL << TAINT_RANDSTRUCT)
+#endif
+	)
+)
+
 LTTNG_TRACEPOINT_EVENT(module_load,
 
 	TP_PROTO(struct module *mod),
@@ -33,7 +69,7 @@ LTTNG_TRACEPOINT_EVENT(module_load,
 	TP_ARGS(mod),
 
 	TP_FIELDS(
-		ctf_integer(unsigned int, taints, mod->taints)
+		ctf_enum(taint, unsigned int, taints, mod->taints)
 		ctf_string(name, mod->name)
 	)
 )
