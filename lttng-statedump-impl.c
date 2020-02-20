@@ -426,7 +426,7 @@ void lttng_statedump_process_ns(struct lttng_session *session,
 	pid_ns = task_active_pid_ns(p);
 	do {
 		trace_lttng_statedump_process_pid_ns(session, p, pid_ns);
-		pid_ns = pid_ns->parent;
+		pid_ns = pid_ns ? pid_ns->parent : NULL;
 	} while (pid_ns);
 
 
