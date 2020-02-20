@@ -433,7 +433,16 @@ void lttng_statedump_process_ns(struct lttng_session *session,
 	user_ns = task_cred_xxx(p, user_ns);
 	do {
 		trace_lttng_statedump_process_user_ns(session, p, user_ns);
-		user_ns = user_ns->lttng_user_ns_parent;
+		/*
+		 * trace_lttng_statedump_process_user_ns() internally
+		 * checks whether user_ns is NULL. While this does not
+		 * appear to be a possible return value for
+		 * task_cred_xxx(), err on the safe side and check
+		 * for NULL here as well to be consistent with the
+		 * paranoid behavior of
+		 * trace_lttng_statedump_process_user_ns().
+		 */
+		user_ns = user_ns ? user_ns->lttng_user_ns_parent : NULL;
 	} while (user_ns);
 
 	/*
