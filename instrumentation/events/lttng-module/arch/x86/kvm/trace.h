@@ -173,7 +173,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(kvm_page_fault, kvm_x86_page_fault,
 	TP_ARGS(fault_address, error_code),
 
 	TP_FIELDS(
-		ctf_integer(unsigned long, fault_address, fault_address)
+		ctf_integer_hex(unsigned long, fault_address, fault_address)
 		ctf_integer(unsigned int, error_code, error_code)
 	)
 )
@@ -363,7 +363,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(kvm_invlpga, kvm_x86_invlpga,
 	TP_FIELDS(
 		ctf_integer(__u64, rip, rip)
 		ctf_integer(int, asid, asid)
-		ctf_integer(__u64, address, address)
+		ctf_integer_hex(__u64, address, address)
 	)
 )
 

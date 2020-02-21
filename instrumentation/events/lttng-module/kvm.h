@@ -56,7 +56,7 @@ LTTNG_TRACEPOINT_EVENT(kvm_msi_set_irq,
 	    TP_ARGS(address, data),
 
 	TP_FIELDS(
-		ctf_integer(__u64, address, address)
+		ctf_integer_hex(__u64, address, address)
 		ctf_integer(__u64, data, data)
 	)
 )
@@ -245,7 +245,7 @@ LTTNG_TRACEPOINT_EVENT(
 	TP_ARGS(address, gva),
 
 	TP_FIELDS(
-		ctf_integer(unsigned long, address, address)
+		ctf_integer_hex(unsigned long, address, address)
 		ctf_integer(u64, gva, gva)
 	)
 )
@@ -258,7 +258,7 @@ LTTNG_TRACEPOINT_EVENT(
 	TP_ARGS(address, page, gva),
 
 	TP_FIELDS(
-		ctf_integer(unsigned long, address, address)
+		ctf_integer_hex(unsigned long, address, address)
 		ctf_integer(pfn_t, pfn, page ? page_to_pfn(page) : 0)
 		ctf_integer(u64, gva, gva)
 	)

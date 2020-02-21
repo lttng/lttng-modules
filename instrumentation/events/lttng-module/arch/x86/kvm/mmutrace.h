@@ -51,7 +51,7 @@ LTTNG_TRACEPOINT_EVENT(
 	TP_ARGS(addr, pferr),
 
 	TP_FIELDS(
-		ctf_integer(__u64, addr, addr)
+		ctf_integer_hex(__u64, addr, addr)
 		ctf_integer(__u32, pferr, pferr)
 	)
 )
@@ -65,7 +65,7 @@ LTTNG_TRACEPOINT_EVENT(
 	TP_ARGS(addr, write_fault, user_fault, fetch_fault),
 
 	TP_FIELDS(
-		ctf_integer(__u64, addr, addr)
+		ctf_integer_hex(__u64, addr, addr)
 		ctf_integer(__u32, pferr,
 			(!!write_fault << 1) | (!!user_fault << 2)
 			| (!!fetch_fault << 4))
@@ -208,7 +208,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(
 	TP_ARGS(addr, gfn, access),
 
 	TP_FIELDS(
-		ctf_integer(u64, addr, addr)
+		ctf_integer_hex(u64, addr, addr)
 		ctf_integer(gfn_t, gfn, gfn)
 		ctf_integer(unsigned, access, access)
 	)

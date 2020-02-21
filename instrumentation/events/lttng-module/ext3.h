@@ -85,7 +85,7 @@ LTTNG_TRACEPOINT_EVENT(ext3_mark_inode_dirty,
 	TP_FIELDS(
 		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
 		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(unsigned long, ip, IP)
+		ctf_integer_hex(unsigned long, ip, IP)
 	)
 )
 

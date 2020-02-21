@@ -62,7 +62,7 @@ LTTNG_TRACEPOINT_EVENT(rpm_return_int,
 
 	TP_FIELDS(
 		ctf_string(name, dev_name(dev))
-		ctf_integer(unsigned long, ip, ip)
+		ctf_integer_hex(unsigned long, ip, ip)
 		ctf_integer(int, ret, ret)
 	)
 )

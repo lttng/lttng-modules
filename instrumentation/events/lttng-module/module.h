@@ -59,7 +59,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(module_refcnt,
 	TP_ARGS(mod, ip),
 
 	TP_FIELDS(
-		ctf_integer(unsigned long, ip, ip)
+		ctf_integer_hex(unsigned long, ip, ip)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
 		ctf_integer(int, refcnt, atomic_read(&mod->refcnt))
 #else
@@ -91,7 +91,7 @@ LTTNG_TRACEPOINT_EVENT(module_request,
 	TP_ARGS(name, wait, ip),
 
 	TP_FIELDS(
-		ctf_integer(unsigned long, ip, ip)
+		ctf_integer_hex(unsigned long, ip, ip)
 		ctf_integer(bool, wait, wait)
 		ctf_string(name, name)
 	)

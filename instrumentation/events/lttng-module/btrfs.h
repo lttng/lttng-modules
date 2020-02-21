@@ -2331,7 +2331,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(alloc_extent_state,
 	TP_FIELDS(
 		ctf_integer_hex(const struct extent_state *, state, state)
 		ctf_integer(gfp_t, mask, mask)
-		ctf_integer(unsigned long, ip, IP)
+		ctf_integer_hex(unsigned long, ip, IP)
 	)
 )
 
@@ -2345,7 +2345,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(free_extent_state,
 
 	TP_FIELDS(
 		ctf_integer_hex(const struct extent_state *, state, state)
-		ctf_integer(unsigned long, ip, IP)
+		ctf_integer_hex(unsigned long, ip, IP)
 	)
 )
 #elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
@@ -2360,7 +2360,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(alloc_extent_state,
 	TP_FIELDS(
 		ctf_integer_hex(struct extent_state *, state, state)
 		ctf_integer(gfp_t, mask, mask)
-		ctf_integer(unsigned long, ip, IP)
+		ctf_integer_hex(unsigned long, ip, IP)
 	)
 )
 
@@ -2374,7 +2374,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(free_extent_state,
 
 	TP_FIELDS(
 		ctf_integer_hex(struct extent_state *, state, state)
-		ctf_integer(unsigned long, ip, IP)
+		ctf_integer_hex(unsigned long, ip, IP)
 	)
 )
 #endif

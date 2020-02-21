@@ -16,7 +16,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(random__mix_pool_bytes,
 	TP_FIELDS(
 		ctf_string(pool_name, pool_name)
 		ctf_integer(int, bytes, bytes)
-		ctf_integer(unsigned long, IP, IP)
+		ctf_integer_hex(unsigned long, IP, IP)
 	)
 )
 
@@ -52,7 +52,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(credit_entropy_bits,
 		ctf_string(pool_name, pool_name)
 		ctf_integer(int, bits, bits)
 		ctf_integer(int, entropy_count, entropy_count)
-		ctf_integer(unsigned long, IP, IP)
+		ctf_integer_hex(unsigned long, IP, IP)
 	)
 )
 #else
@@ -70,7 +70,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(credit_entropy_bits,
 		ctf_integer(int, bits, bits)
 		ctf_integer(int, entropy_count, entropy_count)
 		ctf_integer(int, entropy_total, entropy_total)
-		ctf_integer(unsigned long, IP, IP)
+		ctf_integer_hex(unsigned long, IP, IP)
 	)
 )
 #endif
@@ -85,7 +85,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(get_random_bytes,
 
 	TP_FIELDS(
 		ctf_integer(int, nbytes, nbytes)
-		ctf_integer(unsigned long, IP, IP)
+		ctf_integer_hex(unsigned long, IP, IP)
 	)
 )
 
@@ -99,7 +99,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(random__extract_entropy,
 		ctf_string(pool_name, pool_name)
 		ctf_integer(int, nbytes, nbytes)
 		ctf_integer(int, entropy_count, entropy_count)
-		ctf_integer(unsigned long, IP, IP)
+		ctf_integer_hex(unsigned long, IP, IP)
 	)
 )
 
