@@ -90,6 +90,13 @@ struct user_msghdr;
  * Forward declaration for kernels >= 5.6
  */
 struct timex;
+struct timeval;
+struct itimerval;
+struct itimerspec;
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+typedef __kernel_old_time_t time_t;
+#endif
 
 #ifdef IA32_NR_syscalls
 #define NR_compat_syscalls IA32_NR_syscalls
