@@ -28,7 +28,6 @@
 #include <linux/inetdevice.h>
 #include <linux/sched.h>
 #include <linux/mm.h>
-#include <linux/fdtable.h>
 #include <linux/swap.h>
 #include <linux/wait.h>
 #include <linux/mutex.h>
@@ -43,7 +42,7 @@
 #include <wrapper/tracepoint.h>
 #include <wrapper/genhd.h>
 #include <wrapper/file.h>
-#include <wrapper/time.h>
+#include <wrapper/fdtable.h>
 
 #ifdef CONFIG_LTTNG_HAS_LIST_IRQ
 #include <linux/irq.h>
