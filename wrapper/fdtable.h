@@ -28,4 +28,21 @@ int lttng_iterate_fd(struct files_struct *files,
 #define lttng_iterate_fd	iterate_fd
 
 #endif
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
+
+static inline bool lttng_close_on_exec(int fd, const struct fdtable *fdt)
+{
+	return close_on_exec(fd, fdt);
+}
+
+#else
+
+static inline bool lttng_close_on_exec(int fd, const struct fdtable *fdt)
+{
+	return FD_ISSET(fd, fdt->close_on_exec);
+}
+
+#endif
+
 #endif /* _LTTNG_WRAPPER_FDTABLE_H */
