@@ -86,6 +86,11 @@ struct mmap_arg_struct;
 struct file_handle;
 struct user_msghdr;
 
+/*
+ * Forward declaration for kernels >= 5.6
+ */
+struct timex;
+
 #ifdef IA32_NR_syscalls
 #define NR_compat_syscalls IA32_NR_syscalls
 #else
