@@ -43,6 +43,7 @@
 #include <wrapper/vzalloc.h>
 #include <wrapper/ringbuffer/backend.h>
 #include <wrapper/ringbuffer/frontend.h>
+#include <wrapper/time.h>
 
 #define METADATA_CACHE_DEFAULT_SIZE 4096
 
@@ -2448,6 +2449,9 @@ int _lttng_event_header_declare(struct lttng_session *session)
  * in future versions.
  * This function may return a negative offset. It may happen if the
  * system sets the REALTIME clock to 0 after boot.
+ *
+ * Use 64bit timespec on kernels that have it, this makes 32bit arch
+ * y2038 compliant.
  */
 static
 int64_t measure_clock_offset(void)
@@ -2455,13 +2459,21 @@ int64_t measure_clock_offset(void)
 	uint64_t monotonic_avg, monotonic[2], realtime;
 	uint64_t tcf = trace_clock_freq();
 	int64_t offset;
-	struct timespec rts = { 0, 0 };
 	unsigned long flags;
+#ifdef LTTNG_KERNEL_HAS_TIMESPEC64
+	struct timespec64 rts = { 0, 0 };
+#else
+	struct timespec rts = { 0, 0 };
+#endif
 
 	/* Disable interrupts to increase correlation precision. */
 	local_irq_save(flags);
 	monotonic[0] = trace_clock_read64();
+#ifdef LTTNG_KERNEL_HAS_TIMESPEC64
+	ktime_get_real_ts64(&rts);
+#else
 	getnstimeofday(&rts);
+#endif
 	monotonic[1] = trace_clock_read64();
 	local_irq_restore(flags);
 
