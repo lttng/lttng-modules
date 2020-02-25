@@ -1,3 +1,22 @@
+2020-02-25 (National Chocolate Covered Nut Day) LTTng modules 2.12.0-rc2
+	* Fix: lttng-events.c: variable may be used uninitialized
+	* Fix: rcu: Fix data-race due to atomic_t copy-by-value (5.5.6, 5.4.22)
+	* fix: workqueue: add worker function to workqueue_execute_end tracepoint (v5.6)
+	* fix: media: v4l2: abstract timeval handling in v4l2_buffer (v5.6)
+	* fix: rcu: Remove kfree_rcu() special casing and lazy-callback (v5.6)
+	* fix: rcu: Fix data-race due to atomic_t copy-by-value (v5.6)
+	* fix: btrfs: make btrfs_ordered_extent naming consistent (v5.6)
+	* fix: KVM: x86: Use gpa_t for cr2/gpa to fix TDP support on 32-bit (v5.6)
+	* fix: proc: decouple proc from VFS with "struct proc_ops" (v5.6)
+	* fix: y2038: hide timeval/timespec/itimerval/itimerspec types (v5.6)
+	* fix: use timespec64 on kernels that have it
+	* fix: move lttng_close_on_exec to proper wrapper
+	* fix: 'struct timex' removed upstream (v5.6)
+	* Fix: statedump: consistently check task_cred_xxx() return value for NULL
+	* Fix: statedump: check task_active_pid_ns return value for NULL
+	* sched: Make the sched_switch task state an enum
+	* block: Make the rwbs field as a bit field enum
+
 2020-02-05 (National Weatherperson's Day) LTTng modules 2.12.0-rc1
 	* Fix: lttng-syscalls.c: marking wrong syscall probe as unregistered
 	* Version 2.12.0-pre
