@@ -1221,7 +1221,8 @@ int lttng_abi_create_event(struct file *channel_file,
 		event_param->u.kprobe.symbol_name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		break;
 	case LTTNG_KERNEL_FUNCTION:
-		event_param->u.ftrace.symbol_name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
+		WARN_ON_ONCE(1);
+		/* Not implemented. */
 		break;
 	default:
 		break;
@@ -1372,9 +1373,8 @@ long lttng_channel_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 				sizeof(uevent_param->u.kretprobe.symbol_name));
 			break;
 		case LTTNG_KERNEL_FUNCTION:
-			memcpy(uevent_param->u.ftrace.symbol_name,
-					old_uevent_param->u.ftrace.symbol_name,
-					sizeof(uevent_param->u.ftrace.symbol_name));
+			WARN_ON_ONCE(1);
+			/* Not implemented. */
 			break;
 		default:
 			break;
