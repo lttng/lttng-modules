@@ -4,12 +4,15 @@
  *
  * wrapper around splice_to_pipe. Using KALLSYMS to get its address when
  * available, else we need to have a kernel that exports this function to GPL
- * modules.
+ * modules. The export was introduced in kernel 4.2.
  *
  * Copyright (C) 2011-2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */
 
-#ifdef CONFIG_KALLSYMS
+#include <lttng-kernel-version.h>
+
+#if (defined(CONFIG_KALLSYMS) \
+	&& (LINUX_VERSION_CODE < KERNEL_VERSION(4,2,0)))
 
 #include <linux/kallsyms.h>
 #include <linux/fs.h>
