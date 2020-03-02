@@ -307,9 +307,6 @@ struct lttng_event {
 			struct lttng_krp *lttng_krp;
 			char *symbol_name;
 		} kretprobe;
-		struct {
-			char *symbol_name;
-		} ftrace;
 	} u;
 	struct list_head list;		/* Event list in session */
 	unsigned int metadata_dumped:1;
@@ -807,32 +804,6 @@ int lttng_kretprobes_event_enable_state(struct lttng_event *event,
 	int enable)
 {
 	return -ENOSYS;
-}
-#endif
-
-#if defined(CONFIG_DYNAMIC_FTRACE) && !defined(LTTNG_FTRACE_MISSING_HEADER)
-int lttng_ftrace_register(const char *name,
-			  const char *symbol_name,
-			  struct lttng_event *event);
-void lttng_ftrace_unregister(struct lttng_event *event);
-void lttng_ftrace_destroy_private(struct lttng_event *event);
-#else
-static inline
-int lttng_ftrace_register(const char *name,
-			  const char *symbol_name,
-			  struct lttng_event *event)
-{
-	return -ENOSYS;
-}
-
-static inline
-void lttng_ftrace_unregister(struct lttng_event *event)
-{
-}
-
-static inline
-void lttng_ftrace_destroy_private(struct lttng_event *event)
-{
 }
 #endif
 

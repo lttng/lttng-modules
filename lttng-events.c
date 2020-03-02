@@ -415,13 +415,13 @@ int lttng_event_enable(struct lttng_event *event)
 		ret = -EINVAL;
 		break;
 	case LTTNG_KERNEL_KPROBE:
-	case LTTNG_KERNEL_FUNCTION:
 	case LTTNG_KERNEL_NOOP:
 		WRITE_ONCE(event->enabled, 1);
 		break;
 	case LTTNG_KERNEL_KRETPROBE:
 		ret = lttng_kretprobes_event_enable_state(event, 1);
 		break;
+	case LTTNG_KERNEL_FUNCTION:	/* Fall-through. */
 	default:
 		WARN_ON_ONCE(1);
 		ret = -EINVAL;
@@ -450,13 +450,13 @@ int lttng_event_disable(struct lttng_event *event)
 		ret = -EINVAL;
 		break;
 	case LTTNG_KERNEL_KPROBE:
-	case LTTNG_KERNEL_FUNCTION:
 	case LTTNG_KERNEL_NOOP:
 		WRITE_ONCE(event->enabled, 0);
 		break;
 	case LTTNG_KERNEL_KRETPROBE:
 		ret = lttng_kretprobes_event_enable_state(event, 0);
 		break;
+	case LTTNG_KERNEL_FUNCTION:	/* Fall-through. */
 	default:
 		WARN_ON_ONCE(1);
 		ret = -EINVAL;
@@ -598,11 +598,11 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		break;
 	case LTTNG_KERNEL_KPROBE:
 	case LTTNG_KERNEL_KRETPROBE:
-	case LTTNG_KERNEL_FUNCTION:
 	case LTTNG_KERNEL_NOOP:
 	case LTTNG_KERNEL_SYSCALL:
 		event_name = event_param->name;
 		break;
+	case LTTNG_KERNEL_FUNCTION:	/* Fall-through. */
 	default:
 		WARN_ON_ONCE(1);
 		ret = -EINVAL;
@@ -725,27 +725,6 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		list_add(&event_return->list, &chan->session->events);
 		break;
 	}
-	case LTTNG_KERNEL_FUNCTION:
-		/*
-		 * Needs to be explicitly enabled after creation, since
-		 * we may want to apply filters.
-		 */
-		event->enabled = 0;
-		event->registered = 1;
-		/*
-		 * Populate lttng_event structure before event
-		 * registration.
-		 */
-		smp_wmb();
-		ret = lttng_ftrace_register(event_name,
-				event_param->u.ftrace.symbol_name,
-				event);
-		if (ret) {
-			goto register_error;
-		}
-		ret = try_module_get(event->desc->owner);
-		WARN_ON_ONCE(!ret);
-		break;
 	case LTTNG_KERNEL_NOOP:
 	case LTTNG_KERNEL_SYSCALL:
 		/*
@@ -760,6 +739,7 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 			goto register_error;
 		}
 		break;
+	case LTTNG_KERNEL_FUNCTION:	/* Fall-through */
 	default:
 		WARN_ON_ONCE(1);
 		ret = -EINVAL;
@@ -823,10 +803,10 @@ void register_event(struct lttng_event *event)
 		break;
 	case LTTNG_KERNEL_KPROBE:
 	case LTTNG_KERNEL_KRETPROBE:
-	case LTTNG_KERNEL_FUNCTION:
 	case LTTNG_KERNEL_NOOP:
 		ret = 0;
 		break;
+	case LTTNG_KERNEL_FUNCTION:	/* Fall-through */
 	default:
 		WARN_ON_ONCE(1);
 	}
@@ -860,10 +840,6 @@ int _lttng_event_unregister(struct lttng_event *event)
 		lttng_kretprobes_unregister(event);
 		ret = 0;
 		break;
-	case LTTNG_KERNEL_FUNCTION:
-		lttng_ftrace_unregister(event);
-		ret = 0;
-		break;
 	case LTTNG_KERNEL_SYSCALL:
 		ret = lttng_syscall_filter_disable(event->chan,
 			desc->name);
@@ -871,6 +847,7 @@ int _lttng_event_unregister(struct lttng_event *event)
 	case LTTNG_KERNEL_NOOP:
 		ret = 0;
 		break;
+	case LTTNG_KERNEL_FUNCTION:	/* Fall-through */
 	default:
 		WARN_ON_ONCE(1);
 	}
@@ -897,13 +874,10 @@ void _lttng_event_destroy(struct lttng_event *event)
 		module_put(event->desc->owner);
 		lttng_kretprobes_destroy_private(event);
 		break;
-	case LTTNG_KERNEL_FUNCTION:
-		module_put(event->desc->owner);
-		lttng_ftrace_destroy_private(event);
-		break;
 	case LTTNG_KERNEL_NOOP:
 	case LTTNG_KERNEL_SYSCALL:
 		break;
+	case LTTNG_KERNEL_FUNCTION:	/* Fall-through */
 	default:
 		WARN_ON_ONCE(1);
 	}
