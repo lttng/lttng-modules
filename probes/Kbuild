@@ -234,14 +234,6 @@ ifneq ($(CONFIG_KRETPROBES),)
   obj-$(CONFIG_LTTNG) += lttng-kretprobes.o
 endif # CONFIG_KRETPROBES
 
-ifneq ($(CONFIG_DYNAMIC_FTRACE),)
-  ifeq ($(have_ftrace_header),yes)
-    obj-$(CONFIG_LTTNG) += lttng-ftrace.o
-  else
-    $(warning Files $(ftrace_dep) not found. Probe "ftrace" is disabled. Use full kernel source tree to enable it.)
-  endif
-endif # CONFIG_DYNAMIC_FTRACE
-
 ifneq ($(CONFIG_PREEMPTIRQ_EVENTS),)
   obj-$(CONFIG_LTTNG) += lttng-probe-preemptirq.o
 endif # CONFIG_PREEMPTIRQ_EVENTS

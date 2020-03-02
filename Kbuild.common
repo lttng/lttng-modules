@@ -50,27 +50,6 @@ endif
 
 EXTRA_VERSION_PATCHES:=$(shell $(TOP_LTTNG_MODULES_DIR)/scripts/extra-version-patches.sh $(TOP_LTTNG_MODULES_DIR))
 
-# Starting with kernel 4.12, the ftrace header was moved to private headers
-# and as such is not available when building against distro headers instead
-# of the full kernel sources. In the situation, define LTTNG_FTRACE_MISSING_HEADER
-# so we can enable the compat code even if CONFIG_DYNAMIC_FTRACE is enabled.
-ifneq ($(CONFIG_DYNAMIC_FTRACE),)
-  ftrace_dep = $(srctree)/kernel/trace/trace.h
-  ftrace_dep_check = $(wildcard $(ftrace_dep))
-  have_ftrace_header = $(shell \
-    if [ $(VERSION) -ge 5 -o \( $(VERSION) -eq 4 -a $(PATCHLEVEL) -ge 12 \) ] ; then \
-      if [ -z "$(ftrace_dep_check)" ] ; then \
-        echo "no" ; \
-        exit ; \
-      fi; \
-    fi; \
-    echo "yes" ; \
-    )
-  ifeq ($(have_ftrace_header), no)
-    ccflags-y += -DLTTNG_FTRACE_MISSING_HEADER
-  endif
-endif
-
 mnt_ns_dep = $(srctree)/fs/mount.h
 ifeq ($(wildcard $(mnt_ns_dep)),)
     ccflags-y += -DLTTNG_MNT_NS_MISSING_HEADER
