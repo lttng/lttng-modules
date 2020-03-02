@@ -65,7 +65,7 @@ void lttng_tracepoint_exit(void)
 
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
 
-#ifdef CONFIG_MODULE_SIG
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0) && defined(CONFIG_MODULE_SIG))
 
 #include <linux/kallsyms.h>
 #include <wrapper/kallsyms.h>
@@ -87,9 +87,9 @@ int wrapper_tracepoint_module_notify(struct notifier_block *nb,
 	}
 }
 
-#endif /* CONFIG_MODULE_SIG */
+#endif /* #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0) && defined(CONFIG_MODULE_SIG)) */
 
-#if defined(CONFIG_MODULE_SIG) && defined(MODULE)
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0) && defined(CONFIG_MODULE_SIG) && defined(MODULE))
 
 static inline
 int wrapper_lttng_fixup_sig(struct module *mod)
@@ -110,7 +110,7 @@ int wrapper_lttng_fixup_sig(struct module *mod)
 	return ret;
 }
 
-#else /* #if defined(CONFIG_MODULE_SIG) && defined(MODULE) */
+#else /* #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0) && defined(CONFIG_MODULE_SIG) && defined(MODULE)) */
 
 static inline
 int wrapper_lttng_fixup_sig(struct module *mod)
@@ -118,7 +118,7 @@ int wrapper_lttng_fixup_sig(struct module *mod)
 	return 0;
 }
 
-#endif /*#else #if defined(CONFIG_MODULE_SIG) && defined(MODULE) */
+#endif /* #else #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0) && defined(CONFIG_MODULE_SIG) && defined(MODULE)) */
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
 static inline struct tracepoint *lttng_tracepoint_ptr_deref(tracepoint_ptr_t *p)
