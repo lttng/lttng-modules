@@ -1,5 +1,0 @@
-# SPDX-License-Identifier: (GPL-2.0 or LGPL-2.1)
-
-obj-m += lttng-syscalls-extractor.o
-
-# vim:syntax=make
