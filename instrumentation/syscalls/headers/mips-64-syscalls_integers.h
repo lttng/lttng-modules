@@ -1,4 +1,9 @@
+/* SPDX-License-Identifier: (GPL-2.0 or LGPL-2.1) */
+
 /* THIS FILE IS AUTO-GENERATED. DO NOT EDIT */
+
+/* Generated from mips-64-syscalls 3.5.0 */
+
 #ifndef CREATE_SYSCALL_TABLE
 
 #if !defined(_TRACE_SYSCALLS_INTEGERS_H) || defined(TRACE_HEADER_MULTI_READ)
@@ -6,7 +11,7 @@
 
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/syscalls.h>
-#include "mips-64-syscalls-3.5.0_integers_override.h"
+#include "mips-64-syscalls_integers_override.h"
 #include "syscalls_integers_override.h"
 
 #ifdef SC_ENTER
@@ -795,7 +800,7 @@ SC_LTTNG_TRACEPOINT_EVENT(mips_mmap,
 
 #else /* CREATE_SYSCALL_TABLE */
 
-#include "mips-64-syscalls-3.5.0_integers_override.h"
+#include "mips-64-syscalls_integers_override.h"
 #include "syscalls_integers_override.h"
 
 #ifdef SC_ENTER

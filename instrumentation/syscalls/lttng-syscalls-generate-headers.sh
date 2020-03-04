@@ -7,17 +7,17 @@
 # example usage:
 #
 # lttng-syscalls-generate-headers.sh <type> <input_dir> <input_filename_in_dir> <bitness>
-# lttng-syscalls-generate-headers.sh integers 3.0.4 x86-64-syscalls-3.0.4 64
-# lttng-syscalls-generate-headers.sh pointers 3.0.4 x86-64-syscalls-3.0.4 64
+# lttng-syscalls-generate-headers.sh integers 3.0.4 x86-64-syscalls 64
+# lttng-syscalls-generate-headers.sh pointers 3.0.4 x86-64-syscalls 64
 
 CLASS=$1
-INPUTDIR=$2
+VERSIONDIR=$2
 INPUTFILE=$3
 BITNESS=$4
-INPUT=${INPUTDIR}/${INPUTFILE}
+INPUT=${VERSIONDIR}/${INPUTFILE}
 HEADER=headers/${INPUTFILE}_${CLASS}.h
 
-if [ x"$INPUTDIR" = x"" ]; then
+if [ x"$VERSIONDIR" = x"" ]; then
 	echo "Error: Please specify input directory as second argument" >&2
 	exit 1
 fi
@@ -73,6 +73,8 @@ fi
 echo "/* SPDX-License-Identifier: (GPL-2.0 or LGPL-2.1) */
 
 /* THIS FILE IS AUTO-GENERATED. DO NOT EDIT */
+
+/* Generated from ${INPUTFILE} ${VERSIONDIR} */
 
 #ifndef CREATE_SYSCALL_TABLE
 

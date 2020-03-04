@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: (GPL-2.0 or LGPL-2.1) */
+
 #ifndef CONFIG_UID16
 
 #define OVERRIDE_32_getuid16

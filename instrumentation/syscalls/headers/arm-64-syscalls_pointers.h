@@ -1,4 +1,9 @@
+/* SPDX-License-Identifier: (GPL-2.0 or LGPL-2.1) */
+
 /* THIS FILE IS AUTO-GENERATED. DO NOT EDIT */
+
+/* Generated from arm-64-syscalls 4.4.0 */
+
 #ifndef CREATE_SYSCALL_TABLE
 
 #if !defined(_TRACE_SYSCALLS_POINTERS_H) || defined(TRACE_HEADER_MULTI_READ)
@@ -6,7 +11,7 @@
 
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/syscalls.h>
-#include "arm-64-syscalls-4.4.0_pointers_override.h"
+#include "arm-64-syscalls_pointers_override.h"
 #include "syscalls_pointers_override.h"
 
 #ifndef OVERRIDE_64_chdir
@@ -1165,7 +1170,7 @@ SC_LTTNG_TRACEPOINT_EVENT(process_vm_writev,
 
 #else /* CREATE_SYSCALL_TABLE */
 
-#include "arm-64-syscalls-4.4.0_pointers_override.h"
+#include "arm-64-syscalls_pointers_override.h"
 #include "syscalls_pointers_override.h"
 
 #ifndef OVERRIDE_TABLE_64_io_setup

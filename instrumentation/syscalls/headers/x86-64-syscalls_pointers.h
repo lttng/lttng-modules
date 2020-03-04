@@ -1,4 +1,9 @@
+/* SPDX-License-Identifier: (GPL-2.0 or LGPL-2.1) */
+
 /* THIS FILE IS AUTO-GENERATED. DO NOT EDIT */
+
+/* Generated from x86-64-syscalls 3.10.0-rc7 */
+
 #ifndef CREATE_SYSCALL_TABLE
 
 #if !defined(_TRACE_SYSCALLS_POINTERS_H) || defined(TRACE_HEADER_MULTI_READ)
@@ -6,7 +11,7 @@
 
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/syscalls.h>
-#include "x86-64-syscalls-3.10.0-rc7_pointers_override.h"
+#include "x86-64-syscalls_pointers_override.h"
 #include "syscalls_pointers_override.h"
 
 #ifndef OVERRIDE_64_pipe
@@ -1347,7 +1352,7 @@ SC_LTTNG_TRACEPOINT_EVENT(process_vm_writev,
 
 #else /* CREATE_SYSCALL_TABLE */
 
-#include "x86-64-syscalls-3.10.0-rc7_pointers_override.h"
+#include "x86-64-syscalls_pointers_override.h"
 #include "syscalls_pointers_override.h"
 
 #ifndef OVERRIDE_TABLE_64_read

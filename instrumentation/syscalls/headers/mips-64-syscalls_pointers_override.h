@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: (GPL-2.0 or LGPL-2.1) */
+
 #ifndef CREATE_SYSCALL_TABLE
 
 #else	/* CREATE_SYSCALL_TABLE */
