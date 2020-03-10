@@ -40,8 +40,9 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_end,
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_state,
 	TP_PROTO(struct lttng_session *session,
 		struct task_struct *p,
-		int type, int mode, int submode, int status),
-	TP_ARGS(session, p, type, mode, submode, status),
+		int type, int mode, int submode, int status,
+		struct files_struct *files),
+	TP_ARGS(session, p, type, mode, submode, status, files),
 	TP_FIELDS(
 		ctf_integer(pid_t, tid, p->pid)
 		ctf_integer(pid_t, pid, p->tgid)
@@ -60,6 +61,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_state,
 		ctf_integer(int, submode, submode)
 		ctf_integer(int, status, status)
 		ctf_integer(unsigned int, cpu, task_cpu(p))
+		ctf_integer_hex(struct files_struct *, file_table_address, files)
 	)
 )
 
@@ -179,11 +181,12 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_uts_ns,
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_file_descriptor,
 	TP_PROTO(struct lttng_session *session,
-		struct task_struct *p, int fd, const char *filename,
+		struct files_struct *files,
+		int fd, const char *filename,
 		unsigned int flags, fmode_t fmode),
-	TP_ARGS(session, p, fd, filename, flags, fmode),
+	TP_ARGS(session, files, fd, filename, flags, fmode),
 	TP_FIELDS(
-		ctf_integer(pid_t, pid, p->tgid)
+		ctf_integer_hex(struct files_struct *, file_table_address, files)
 		ctf_integer(int, fd, fd)
 		ctf_integer_oct(unsigned int, flags, flags)
 		ctf_integer_hex(fmode_t, fmode, fmode)

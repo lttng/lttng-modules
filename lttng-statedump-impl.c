@@ -80,7 +80,6 @@ DEFINE_TRACE(lttng_statedump_cpu_topology);
 struct lttng_fd_ctx {
 	char *page;
 	struct lttng_session *session;
-	struct task_struct *p;
 	struct files_struct *files;
 };
 
@@ -245,51 +244,27 @@ int lttng_dump_one_fd(const void *p, struct file *file, unsigned int fd)
 
 		/* Make sure we give at least some info */
 		spin_lock(&dentry->d_lock);
-		trace_lttng_statedump_file_descriptor(ctx->session, ctx->p, fd,
-			dentry->d_name.name, flags, file->f_mode);
+		trace_lttng_statedump_file_descriptor(ctx->session,
+			ctx->files, fd, dentry->d_name.name, flags,
+			file->f_mode);
 		spin_unlock(&dentry->d_lock);
 		goto end;
 	}
-	trace_lttng_statedump_file_descriptor(ctx->session, ctx->p, fd, s,
-		flags, file->f_mode);
+	trace_lttng_statedump_file_descriptor(ctx->session,
+		ctx->files, fd, s, flags, file->f_mode);
 end:
 	return 0;
 }
 
+/* Called with task lock held. */
 static
-void lttng_enumerate_task_fd(struct lttng_session *session,
-		struct task_struct *p, char *tmp)
+void lttng_enumerate_files(struct lttng_session *session,
+		struct files_struct *files,
+		char *tmp)
 {
-	struct lttng_fd_ctx ctx = { .page = tmp, .session = session, .p = p };
-	struct files_struct *files;
+	struct lttng_fd_ctx ctx = { .page = tmp, .session = session, .files = files, };
 
-	task_lock(p);
-	files = p->files;
-	if (!files)
-		goto end;
-	ctx.files = files;
 	lttng_iterate_fd(files, 0, lttng_dump_one_fd, &ctx);
-end:
-	task_unlock(p);
-}
-
-static
-int lttng_enumerate_file_descriptors(struct lttng_session *session)
-{
-	struct task_struct *p;
-	char *tmp;
-
-	tmp = (char *) __get_free_page(GFP_KERNEL);
-	if (!tmp)
-		return -ENOMEM;
-
-	/* Enumerate active file descriptors */
-	rcu_read_lock();
-	for_each_process(p)
-		lttng_enumerate_task_fd(session, p, tmp);
-	rcu_read_unlock();
-	free_page((unsigned long) tmp);
-	return 0;
 }
 
 #ifdef LTTNG_HAVE_STATEDUMP_CPU_TOPOLOGY
@@ -484,9 +459,16 @@ static
 int lttng_enumerate_process_states(struct lttng_session *session)
 {
 	struct task_struct *g, *p;
+	char *tmp;
+
+	tmp = (char *) __get_free_page(GFP_KERNEL);
+	if (!tmp)
+		return -ENOMEM;
 
 	rcu_read_lock();
 	for_each_process(g) {
+		struct files_struct *prev_files = NULL;
+
 		p = g;
 		do {
 			enum lttng_execution_mode mode =
@@ -495,6 +477,7 @@ int lttng_enumerate_process_states(struct lttng_session *session)
 				LTTNG_UNKNOWN;
 			enum lttng_process_status status;
 			enum lttng_thread_type type;
+			struct files_struct *files;
 
 			task_lock(p);
 			if (p->exit_state == EXIT_ZOMBIE)
@@ -529,15 +512,30 @@ int lttng_enumerate_process_states(struct lttng_session *session)
 				type = LTTNG_USER_THREAD;
 			else
 				type = LTTNG_KERNEL_THREAD;
+			files = p->files;
 
 			trace_lttng_statedump_process_state(session,
-				p, type, mode, submode, status);
+				p, type, mode, submode, status, files);
 			lttng_statedump_process_ns(session,
 				p, type, mode, submode, status);
+			/*
+			 * As an optimisation for the common case, do not
+			 * repeat information for the same files_struct in
+			 * two consecutive threads. This is the common case
+			 * for threads sharing the same fd table. RCU guarantees
+			 * that the same files_struct pointer is not re-used
+			 * throughout processes/threads iteration.
+			 */
+			if (files && files != prev_files) {
+				lttng_enumerate_files(session, files, tmp);
+				prev_files = files;
+			}
 			task_unlock(p);
 		} while_each_thread(g, p);
 	}
 	rcu_read_unlock();
+
+	free_page((unsigned long) tmp);
 
 	return 0;
 }
@@ -557,9 +555,6 @@ int do_lttng_statedump(struct lttng_session *session)
 
 	trace_lttng_statedump_start(session);
 	ret = lttng_enumerate_process_states(session);
-	if (ret)
-		return ret;
-	ret = lttng_enumerate_file_descriptors(session);
 	if (ret)
 		return ret;
 	/*
