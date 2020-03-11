@@ -884,4 +884,86 @@ SC_LTTNG_TRACEPOINT_EVENT(socketpair,
 )
 #endif /* (defined(CONFIG_X86_64) && !defined(LTTNG_SC_COMPAT)) || defined(CONFIG_ARM64) || defined(CONFIG_ARM) */
 
+/*
+ * Enumeration of the open flags, as described in the 'open'
+ * system call man page.
+ */
+SC_LTTNG_TRACEPOINT_ENUM(lttng_file_status_flags,
+	TP_ENUM_VALUES(
+		ctf_enum_value("O_RDONLY", O_RDONLY)
+		ctf_enum_value("O_WRONLY", O_WRONLY)
+		ctf_enum_value("O_RDWR", O_RDWR)
+		ctf_enum_value("O_CREAT", O_CREAT)
+		ctf_enum_value("O_EXCL", O_EXCL)
+		ctf_enum_value("O_NOCTTY", O_NOCTTY)
+		ctf_enum_value("O_TRUNC", O_TRUNC)
+		ctf_enum_value("O_APPEND", O_APPEND)
+		ctf_enum_value("O_NONBLOCK", O_NONBLOCK)
+		ctf_enum_value("O_DSYNC", O_DSYNC)
+		ctf_enum_value("FASYNC", FASYNC)
+		ctf_enum_value("O_DIRECT", O_DIRECT)
+		ctf_enum_value("O_LARGEFILE", O_LARGEFILE)
+		ctf_enum_value("O_DIRECTORY", O_DIRECTORY)
+		ctf_enum_value("O_NOFOLLOW", O_NOFOLLOW)
+		ctf_enum_value("O_NOATIME", O_NOATIME)
+		ctf_enum_value("O_CLOEXEC", O_CLOEXEC)
+		ctf_enum_value("O_SYNC", __O_SYNC)
+		ctf_enum_value("O_PATH", O_PATH)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+		ctf_enum_value("O_TMPFILE", __O_TMPFILE)
+#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
+	)
+)
+
+/*
+ * Enumeration of the open flags, as described in the 'open'
+ * system call man page.
+ */
+SC_LTTNG_TRACEPOINT_ENUM(lttng_file_mode,
+	TP_ENUM_VALUES(
+		ctf_enum_value("S_IRWXU", S_IRWXU)
+		ctf_enum_value("S_IRUSR", S_IRUSR)
+		ctf_enum_value("S_IWUSR", S_IWUSR)
+		ctf_enum_value("S_IXUSR", S_IXUSR)
+		ctf_enum_value("S_IRWXG", S_IRWXG)
+		ctf_enum_value("S_IRGRP", S_IRGRP)
+		ctf_enum_value("S_IWGRP", S_IWGRP)
+		ctf_enum_value("S_IXGRP", S_IXGRP)
+		ctf_enum_value("S_IRWXO", S_IRWXO)
+		ctf_enum_value("S_IROTH", S_IROTH)
+		ctf_enum_value("S_IWOTH", S_IWOTH)
+		ctf_enum_value("S_IXOTH", S_IXOTH)
+		ctf_enum_value("S_ISUID", S_ISUID)
+		ctf_enum_value("S_ISGID", S_ISGID)
+		ctf_enum_value("S_ISVTX", S_ISVTX)
+	)
+)
+
+#define OVERRIDE_32_openat
+#define OVERRIDE_64_openat
+SC_LTTNG_TRACEPOINT_EVENT(openat,
+	TP_PROTO(sc_exit(long ret,) int dfd, const char * filename, int flags, umode_t mode),
+	TP_ARGS(sc_exit(ret,) dfd, filename, flags, mode),
+	TP_FIELDS(
+		sc_exit(ctf_integer(long, ret, ret))
+		sc_in(ctf_integer(int, dfd, dfd))
+		sc_in(ctf_user_string(filename, filename))
+		sc_in(ctf_enum(lttng_file_status_flags, int, flags, flags))
+		sc_in(ctf_enum(lttng_file_mode, umode_t, mode, mode))
+	)
+)
+
+#define OVERRIDE_32_open
+#define OVERRIDE_64_open
+SC_LTTNG_TRACEPOINT_EVENT(open,
+	TP_PROTO(sc_exit(long ret,) const char * filename, int flags, umode_t mode),
+	TP_ARGS(sc_exit(ret,) filename, flags, mode),
+	TP_FIELDS(
+		sc_exit(ctf_integer(long, ret, ret))
+		sc_in(ctf_user_string(filename, filename))
+		sc_in(ctf_enum(lttng_file_status_flags, int, flags, flags))
+		sc_in(ctf_enum(lttng_file_mode, umode_t, mode, mode))
+	)
+)
+
 #endif /* CREATE_SYSCALL_TABLE */
