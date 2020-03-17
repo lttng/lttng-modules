@@ -11,6 +11,8 @@
 #include <linux/ip.h>
 #include <linux/ipv6.h>
 #include <linux/tcp.h>
+#include <linux/udp.h>
+#include <linux/icmp.h>
 #include <linux/version.h>
 #include <lttng-endian.h>
 #include <net/sock.h>
@@ -85,6 +87,53 @@ static struct lttng_event_field tcpfields[] = {
 	},
 };
 
+static struct lttng_event_field udpfields[] = {
+	[0] = {
+		.name = "source_port",
+		.type = __type_integer(uint16_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
+	},
+	[1] = {
+		.name = "dest_port",
+		.type = __type_integer(uint16_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
+	},
+	[2] = {
+		.name = "len",
+		.type = __type_integer(uint16_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
+	},
+	[3] = {
+		.name = "check",
+		.type = __type_integer(uint16_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
+	},
+};
+
+static struct lttng_event_field icmpfields[] = {
+	[0] = {
+		.name = "type",
+		.type = __type_integer(uint8_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
+	},
+	[1] = {
+		.name = "code",
+		.type = __type_integer(uint8_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
+	},
+	[2] = {
+		.name = "checksum",
+		.type = __type_integer(uint16_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
+	},
+	[3] = {
+		.name = "gateway",
+		.type = __type_integer(uint32_t, 0, 0, 0,
+				__BIG_ENDIAN, 10, none),
+	},
+};
+
+
 static struct lttng_event_field transport_fields[] = {
 	[0] = {
 		.name = "unknown",
@@ -102,12 +151,56 @@ static struct lttng_event_field transport_fields[] = {
 			.u._struct.fields = tcpfields,
 		},
 	},
+	[2] = {
+		.name = "udp",
+		.type = {
+			.atype = atype_struct,
+			.u._struct.nr_fields = ARRAY_SIZE(udpfields),
+			.u._struct.fields = udpfields,
+		},
+	},
+	[3] = {
+		.name = "icmp",
+		.type = {
+			.atype = atype_struct,
+			.u._struct.nr_fields = ARRAY_SIZE(icmpfields),
+			.u._struct.fields = icmpfields,
+		},
+	},
 };
 
 enum transport_header_types {
 	TH_NONE = 0,
 	TH_TCP = 1,
+	TH_UDP = 2,
+	TH_ICMP = 3,
 };
+
+static inline enum transport_header_types __get_transport_header_type_ip(struct sk_buff *skb)
+{
+	switch (ip_hdr(skb)->protocol) {
+	case IPPROTO_TCP:
+		return TH_TCP;
+	case IPPROTO_UDP:
+		return TH_UDP;
+	case IPPROTO_ICMP:
+		return TH_ICMP;
+	}
+	return TH_NONE;
+}
+
+static inline enum transport_header_types __get_transport_header_type_ipv6(struct sk_buff *skb)
+{
+	switch (ipv6_hdr(skb)->nexthdr) {
+	case IPPROTO_TCP:
+		return TH_TCP;
+	case IPPROTO_UDP:
+		return TH_UDP;
+	case IPPROTO_ICMP:
+		return TH_ICMP;
+	}
+	return TH_NONE;
+}
 
 static inline enum transport_header_types __get_transport_header_type(struct sk_buff *skb)
 {
@@ -123,13 +216,13 @@ static inline enum transport_header_types __get_transport_header_type(struct sk_
 			 * header's data. This method works both for
 			 * sent and received packets.
 			 */
-			if ((skb->protocol == htons(ETH_P_IP) &&
-					ip_hdr(skb)->protocol == IPPROTO_TCP) ||
-				(skb->protocol == htons(ETH_P_IPV6) &&
-					ipv6_hdr(skb)->nexthdr == IPPROTO_TCP))
-				return TH_TCP;
+			if (skb->protocol == htons(ETH_P_IP)) {
+				return __get_transport_header_type_ip(skb);
+			} else if(skb->protocol == htons(ETH_P_IPV6)) {
+				return __get_transport_header_type_ipv6(skb);
+			}
 		}
-		/* Fallthrough for other cases where header is not TCP. */
+		/* Fallthrough for other cases where header is not recognized. */
 	}
 	return TH_NONE;
 }
@@ -137,16 +230,36 @@ static inline enum transport_header_types __get_transport_header_type(struct sk_
 static struct lttng_enum_entry proto_transport_enum_entries[] = {
 	[0] = {
 		.start = { .value = 0, .signedness = 0, },
-		.end = { .value = IPPROTO_TCP - 1, .signedness = 0, },
+		.end = { .value = IPPROTO_ICMP - 1, .signedness = 0, },
 		.string = "_unknown",
 	},
 	[1] = {
+		.start = { .value = IPPROTO_ICMP, .signedness = 0, },
+		.end = { .value = IPPROTO_ICMP, .signedness = 0, },
+		.string = "_icmp",
+	},
+	[2] = {
+		.start = { .value = IPPROTO_ICMP + 1, .signedness = 0, },
+		.end = { .value = IPPROTO_TCP - 1, .signedness = 0, },
+		.string = "_unknown",
+	},
+	[3] = {
 		.start = { .value = IPPROTO_TCP, .signedness = 0, },
 		.end = { .value = IPPROTO_TCP, .signedness = 0, },
 		.string = "_tcp",
 	},
-	[2] = {
+	[4] = {
 		.start = { .value = IPPROTO_TCP + 1, .signedness = 0, },
+		.end = { .value = IPPROTO_UDP - 1, .signedness = 0, },
+		.string = "_unknown",
+	},
+	[5] = {
+		.start = { .value = IPPROTO_UDP, .signedness = 0, },
+		.end = { .value = IPPROTO_UDP, .signedness = 0, },
+		.string = "_udp",
+	},
+	[6] = {
+		.start = { .value = IPPROTO_UDP + 1, .signedness = 0, },
 		.end = { .value = 255, .signedness = 0, },
 		.string = "_unknown",
 	},
@@ -168,6 +281,16 @@ static struct lttng_enum_entry transport_enum_entries[] = {
 		.start = { .value = TH_TCP, .signedness = 0, },
 		.end = { .value = TH_TCP, .signedness = 0, },
 		.string = "_tcp",
+	},
+	[2] = {
+		.start = { .value = TH_UDP, .signedness = 0, },
+		.end = { .value = TH_UDP, .signedness = 0, },
+		.string = "_udp",
+	},
+	[3] = {
+		.start = { .value = TH_ICMP, .signedness = 0, },
+		.end = { .value = TH_ICMP, .signedness = 0, },
+		.string = "_icmp",
 	},
 };
 
@@ -510,15 +633,32 @@ LTTNG_TRACEPOINT_EVENT_CLASS(net_dev_template,
 					ctf_integer_type(unsigned char, th_type)
 
 					/* Copy the transport header. */
-					if (th_type == TH_TCP) {
+					switch (th_type) {
+					case TH_TCP: {
 						ctf_align(uint32_t)
 						ctf_array_type(uint8_t, tcp_hdr(skb),
 								sizeof(struct tcphdr))
+						break;
 					}
-					/*
-					 * For any other transport header type,
-					 * there is nothing to do.
-					 */
+					case TH_UDP: {
+						ctf_align(uint32_t)
+						ctf_array_type(uint8_t, udp_hdr(skb),
+								sizeof(struct udphdr))
+						break;
+					}
+					case TH_ICMP: {
+						ctf_align(uint32_t)
+						ctf_array_type(uint8_t, icmp_hdr(skb),
+								sizeof(struct icmphdr))
+						break;
+					}
+					default:
+						/*
+						* For any other transport header type,
+						* there is nothing to do.
+						*/
+						break;
+					}
 				}
 			)
 		)
