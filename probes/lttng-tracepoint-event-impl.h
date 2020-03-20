@@ -1171,8 +1171,10 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 				tp_locvar, _args);				      \
 		lttng_list_for_each_entry_rcu(bc_runtime, &__event->bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->filter(bc_runtime, &__lttng_probe_ctx,	      \
-					__stackvar.__filter_stack_data) & LTTNG_FILTER_RECORD_FLAG)) \
+					__stackvar.__filter_stack_data) & LTTNG_FILTER_RECORD_FLAG)) { \
 				__filter_record = 1;			      \
+				break;					      \
+			}						      \
 		}							      \
 		if (likely(!__filter_record))				      \
 			goto __post;					      \
@@ -1264,8 +1266,10 @@ static void __event_probe__##_name(void *__data)			      \
 				tp_locvar);				      \
 		lttng_list_for_each_entry_rcu(bc_runtime, &__event->bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->filter(bc_runtime, &__lttng_probe_ctx,	\
-					__stackvar.__filter_stack_data) & LTTNG_FILTER_RECORD_FLAG)) \
+					__stackvar.__filter_stack_data) & LTTNG_FILTER_RECORD_FLAG)) { \
 				__filter_record = 1;			      \
+				break;					      \
+			}						      \
 		}							      \
 		if (likely(!__filter_record))				      \
 			goto __post;					      \
