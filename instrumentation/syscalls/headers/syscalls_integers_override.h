@@ -43,7 +43,9 @@ SC_LTTNG_TRACEPOINT_ENUM(lttng_fcntl_cmd_flags,
 		ctf_enum_value("F_SETLKW64", F_SETLKW64)
 		ctf_enum_value("F_SETOWN_EX", F_SETOWN_EX)
 		ctf_enum_value("F_GETOWN_EX", F_GETOWN_EX)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
 		ctf_enum_value("F_GETOWNER_UIDS", F_GETOWNER_UIDS)
+#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)) */
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
 		ctf_enum_value("F_OFD_GETLK", F_OFD_GETLK)
 		ctf_enum_value("F_OFD_SETLK", F_OFD_SETLK)
