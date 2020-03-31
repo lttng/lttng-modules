@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: GPL-2.0
+/* SPDX-License-Identifier: GPL-2.0-only
  *
  * ring_buffer_mmap.c
  *
@@ -6,7 +6,7 @@
  * Copyright (C) 1999-2005 - Karim Yaghmour <karim@opersys.com>
  * Copyright (C) 2008-2012 - Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  *
- * Re-using code from kernel/relay.c, hence the GPL-2.0 license for this
+ * Re-using code from kernel/relay.c, hence the GPL-2.0-only license for this
  * file.
  */
 

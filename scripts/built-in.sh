@@ -1,5 +1,5 @@
 #!/bin/bash
-# SPDX-License-Identifier: (GPL-2.0 OR LGPL-2.1)
+# SPDX-License-Identifier: (GPL-2.0-only OR LGPL-2.1-only)
 
 set -e
 

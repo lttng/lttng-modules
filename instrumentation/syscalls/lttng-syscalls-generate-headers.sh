@@ -70,7 +70,7 @@ else
 fi
 
 
-echo "/* SPDX-License-Identifier: (GPL-2.0 or LGPL-2.1) */
+echo "/* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only) */
 
 /* THIS FILE IS AUTO-GENERATED. DO NOT EDIT */
 

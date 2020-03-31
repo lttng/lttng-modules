@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: (GPL-2.0 OR LGPL-2.1)
+/* SPDX-License-Identifier: (GPL-2.0-only OR LGPL-2.1-only)
  *
  * ring_buffer_frontend.c
  *

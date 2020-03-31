@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: (GPL-2.0 or LGPL-2.1)
+/* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
  * wrapper/fdtable.c
  *
  * Copyright (C) 2013 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
