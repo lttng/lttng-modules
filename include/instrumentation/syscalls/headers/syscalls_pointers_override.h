@@ -14,6 +14,154 @@ SC_LTTNG_TRACEPOINT_EVENT(execve,
 	)
 )
 
+/*
+ * Clone()'s `flags` field has two parts:
+ *     1. exit signal: the least significant byte of the `unsigned long` is
+ *         the signal the kernel must send to the parent process on child
+ *         exit,
+ *     2. clone options: the remaining bytes of the `unsigned long` is used a
+ *         bitwise flag for the clone options.
+ */
+#define CLONE_EXIT_SIGNAL_FLAG_RESERVED_BITS 8
+#define LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(x) ((x) >> CLONE_EXIT_SIGNAL_FLAG_RESERVED_BITS)
+
+SC_LTTNG_TRACEPOINT_ENUM(lttng_clone_exit_signal_flags,
+	TP_ENUM_VALUES(
+		ctf_enum_value("SIGHUP", SIGHUP)
+		ctf_enum_value("SIGINT", SIGINT)
+		ctf_enum_value("SIGQUIT", SIGQUIT)
+		ctf_enum_value("SIGILL", SIGILL)
+		ctf_enum_value("SIGTRAP", SIGTRAP)
+		ctf_enum_value("SIGABRT", SIGABRT)
+		ctf_enum_value("SIGIOT", SIGIOT)
+		ctf_enum_value("SIGBUS", SIGBUS)
+#ifdef SIGEMT
+		ctf_enum_value("SIGEMT", SIGEMT)
+#endif /* #ifdef SIGEMT */
+		ctf_enum_value("SIGFPE", SIGFPE)
+		ctf_enum_value("SIGKILL", SIGKILL)
+		ctf_enum_value("SIGUSR1", SIGUSR1)
+		ctf_enum_value("SIGSEGV", SIGSEGV)
+		ctf_enum_value("SIGUSR2", SIGUSR2)
+		ctf_enum_value("SIGPIPE", SIGPIPE)
+		ctf_enum_value("SIGALRM", SIGALRM)
+		ctf_enum_value("SIGTERM", SIGTERM)
+#ifdef SIGSTKFLT
+		ctf_enum_value("SIGSTKFLT", SIGSTKFLT)
+#endif /* #ifdef SIGSTKFLT */
+		ctf_enum_value("SIGCHLD", SIGCHLD)
+#ifdef SIGCLD
+		ctf_enum_value("SIGCLD", SIGCLD)
+#endif /* #ifdef SIGCLD */
+		ctf_enum_value("SIGCONT", SIGCONT)
+		ctf_enum_value("SIGSTOP", SIGSTOP)
+		ctf_enum_value("SIGTSTP", SIGTSTP)
+		ctf_enum_value("SIGTTIN", SIGTTIN)
+		ctf_enum_value("SIGTTOU", SIGTTOU)
+		ctf_enum_value("SIGURG", SIGURG)
+		ctf_enum_value("SIGXCPU", SIGXCPU)
+		ctf_enum_value("SIGXFSZ", SIGXFSZ)
+		ctf_enum_value("SIGVTALR", SIGVTALRM)
+		ctf_enum_value("SIGPROF", SIGPROF)
+		ctf_enum_value("SIGWINCH", SIGWINCH)
+		ctf_enum_value("SIGIO", SIGIO)
+		ctf_enum_value("SIGPOLL", SIGPOLL)
+		ctf_enum_value("SIGPWR", SIGPWR)
+#ifdef SIGINFO
+		ctf_enum_value("SIGINFO", SIGINFO)
+#endif /* #ifdef SIGINFO */
+#ifdef SIGLOST
+		ctf_enum_value("SIGLOST", SIGLOST)
+#endif /* #ifdef SIGLOST */
+		ctf_enum_value("SIGSYS", SIGSYS)
+#ifdef SIGUNUSED
+		ctf_enum_value("SIGUNUSED", SIGUNUSED)
+#endif /* #ifdef SIGUNUSED */
+	)
+)
+
+SC_LTTNG_TRACEPOINT_ENUM(lttng_clone_option_flags,
+	TP_ENUM_VALUES(
+		ctf_enum_value("CLONE_CHILD_CLEARTID",	LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_CHILD_CLEARTID))
+		ctf_enum_value("CLONE_CHILD_SETTID",	LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_CHILD_SETTID))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,5,0))
+		ctf_enum_value("CLONE_CLEAR_SIGHAND",	LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_CLEAR_SIGHAND))
+#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,5,0)) */
+		ctf_enum_value("CLONE_DETACHED",	LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_DETACHED))
+		ctf_enum_value("CLONE_FILES",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_FILES))
+		ctf_enum_value("CLONE_FS",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_FS))
+		ctf_enum_value("CLONE_IO",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_IO))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0))
+		ctf_enum_value("CLONE_NEWCGROUP",	LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_NEWCGROUP))
+#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0)) */
+		ctf_enum_value("CLONE_NEWIPC",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_NEWIPC))
+		ctf_enum_value("CLONE_NEWNET",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_NEWNET))
+		ctf_enum_value("CLONE_NEWNS",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_NEWNS))
+		ctf_enum_value("CLONE_NEWPID",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_NEWPID))
+		ctf_enum_value("CLONE_NEWUSER",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_NEWUSER))
+		ctf_enum_value("CLONE_NEWUTS",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_NEWUTS))
+		ctf_enum_value("CLONE_PARENT",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_PARENT))
+		ctf_enum_value("CLONE_PARENT_SETTID",	LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_PARENT_SETTID))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,2,0))
+		ctf_enum_value("CLONE_PIDFD",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_PIDFD))
+#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,2,0)) */
+		ctf_enum_value("CLONE_PTRACE",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_PTRACE))
+		ctf_enum_value("CLONE_SETTLS",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_SETTLS))
+		ctf_enum_value("CLONE_SIGHAND",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_SIGHAND))
+		ctf_enum_value("CLONE_SYSVSEM",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_SYSVSEM))
+		ctf_enum_value("CLONE_THREAD",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_THREAD))
+		ctf_enum_value("CLONE_UNTRACED",	LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_UNTRACED))
+		ctf_enum_value("CLONE_VFORK",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_VFORK))
+		ctf_enum_value("CLONE_VM",		LTTNG_CLONE_OPTIONS_FLAGS_TO_CTF(CLONE_VM))
+	)
+)
+
+#define LTTNG_CLONE_FLAGS_EXIT_SIGNAL					\
+{									\
+	.name = "exit_signal",						\
+	.type = {							\
+		.atype = atype_enum_nestable,				\
+		.u = {							\
+			.enum_nestable = {				\
+				.desc = &__enum_lttng_clone_exit_signal_flags,		\
+				.container_type =  __LTTNG_COMPOUND_LITERAL(		\
+					struct lttng_type, __type_integer(unsigned long,	\
+						CLONE_EXIT_SIGNAL_FLAG_RESERVED_BITS,	\
+						1, -1, __BYTE_ORDER, 16, none)),	\
+			},						\
+		},							\
+	},								\
+}
+
+#define LTTNG_CLONE_FLAGS_OPTIONS					\
+{									\
+	.name = "options",						\
+	.type = {							\
+		.atype = atype_enum_nestable,				\
+		.u = {							\
+			.enum_nestable = {				\
+				.desc = &__enum_lttng_clone_option_flags,		\
+				.container_type =  __LTTNG_COMPOUND_LITERAL(		\
+					struct lttng_type, __type_integer(unsigned long,\
+						sizeof(unsigned long) * CHAR_BIT - CLONE_EXIT_SIGNAL_FLAG_RESERVED_BITS, \
+						1, -1, __BYTE_ORDER, 16, none)),	\
+			},						\
+		},							\
+	},								\
+}
+
+#if (__BYTE_ORDER == __LITTLE_ENDIAN)
+#define LTTNG_CLONE_FLAGS			\
+	[0] = LTTNG_CLONE_FLAGS_EXIT_SIGNAL,	\
+	[1] = LTTNG_CLONE_FLAGS_OPTIONS,
+
+#else
+#define LTTNG_CLONE_FLAGS			\
+	[0] = LTTNG_CLONE_FLAGS_OPTIONS,	\
+	[1] = LTTNG_CLONE_FLAGS_EXIT_SIGNAL,
+#endif
+
+
 #define OVERRIDE_32_clone
 #define OVERRIDE_64_clone
 SC_LTTNG_TRACEPOINT_EVENT(clone,
@@ -23,7 +171,25 @@ SC_LTTNG_TRACEPOINT_EVENT(clone,
 	TP_ARGS(sc_exit(ret,) clone_flags, newsp, parent_tid, child_tid),
 	TP_FIELDS(
 		sc_exit(ctf_integer(long, ret, ret))
-		sc_in(ctf_integer_hex(unsigned long, clone_flags, clone_flags))
+		sc_in(
+			ctf_custom_field(
+				ctf_custom_type(
+					{
+						.atype = atype_struct_nestable,
+						.u.struct_nestable.nr_fields = 2,
+						.u.struct_nestable.fields =
+							__LTTNG_COMPOUND_LITERAL(struct lttng_event_field,
+								LTTNG_CLONE_FLAGS
+							),
+						.u.struct_nestable.alignment = lttng_alignof(uint32_t) * CHAR_BIT,
+					}
+				),
+				flags,
+				ctf_custom_code(
+					ctf_integer_type(uint32_t, clone_flags)
+				)
+			)
+		)
 		sc_in(ctf_integer_hex(unsigned long, newsp, newsp))
 		sc_in(ctf_integer_hex(void *, parent_tid, parent_tid))
 		sc_in(ctf_integer_hex(void *, child_tid, child_tid))
