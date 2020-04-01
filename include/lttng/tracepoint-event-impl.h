@@ -1242,13 +1242,13 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	__orig_dynamic_len_offset = this_cpu_ptr(&lttng_dynamic_len_stack)->offset; \
 	__dynamic_len_idx = __orig_dynamic_len_offset;			      \
 	_code_pre							      \
-	if (unlikely(!list_empty(&__event->bytecode_runtime_head))) {	      \
+	if (unlikely(!list_empty(&__event->filter_bytecode_runtime_head))) {	      \
 		struct lttng_bytecode_runtime *bc_runtime;		      \
 		int __filter_record = __event->has_enablers_without_bytecode; \
 									      \
 		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data, \
 				tp_locvar, _args);				      \
-		lttng_list_for_each_entry_rcu(bc_runtime, &__event->bytecode_runtime_head, node) { \
+		lttng_list_for_each_entry_rcu(bc_runtime, &__event->filter_bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->filter(bc_runtime, &__lttng_probe_ctx,	      \
 					__stackvar.__filter_stack_data) & LTTNG_FILTER_RECORD_FLAG)) { \
 				__filter_record = 1;			      \
@@ -1338,13 +1338,13 @@ static void __event_probe__##_name(void *__data)			      \
 	__orig_dynamic_len_offset = this_cpu_ptr(&lttng_dynamic_len_stack)->offset; \
 	__dynamic_len_idx = __orig_dynamic_len_offset;			      \
 	_code_pre							      \
-	if (unlikely(!list_empty(&__event->bytecode_runtime_head))) {	      \
+	if (unlikely(!list_empty(&__event->filter_bytecode_runtime_head))) {	      \
 		struct lttng_bytecode_runtime *bc_runtime;		      \
 		int __filter_record = __event->has_enablers_without_bytecode; \
 									      \
 		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data, \
 				tp_locvar);				      \
-		lttng_list_for_each_entry_rcu(bc_runtime, &__event->bytecode_runtime_head, node) { \
+		lttng_list_for_each_entry_rcu(bc_runtime, &__event->filter_bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->filter(bc_runtime, &__lttng_probe_ctx,	\
 					__stackvar.__filter_stack_data) & LTTNG_FILTER_RECORD_FLAG)) { \
 				__filter_record = 1;			      \
@@ -1434,13 +1434,13 @@ static void __event_notifier_probe__##_name(void *__data, _proto)	      \
 	if (unlikely(!READ_ONCE(__event_notifier->enabled)))		      \
 		return;							      \
 	_code_pre							      \
-	if (unlikely(!list_empty(&__event_notifier->bytecode_runtime_head))) {		\
+	if (unlikely(!list_empty(&__event_notifier->filter_bytecode_runtime_head))) {	\
 		struct lttng_bytecode_runtime *bc_runtime;				\
 		int __filter_record = __event_notifier->has_enablers_without_bytecode;	\
 											\
 		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data,	\
 				tp_locvar, _args);				        \
-		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->bytecode_runtime_head, node) { \
+		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->filter_bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->filter(bc_runtime, &__lttng_probe_ctx,	\
 					__stackvar.__filter_stack_data) & LTTNG_FILTER_RECORD_FLAG)) \
 				__filter_record = 1;			      \
@@ -1477,13 +1477,13 @@ static void __event_notifier_probe__##_name(void *__data)		      \
 	if (unlikely(!READ_ONCE(__event_notifier->enabled)))		      \
 		return;							      \
 	_code_pre							      \
-	if (unlikely(!list_empty(&__event_notifier->bytecode_runtime_head))) {		      \
+	if (unlikely(!list_empty(&__event_notifier->filter_bytecode_runtime_head))) {	      \
 		struct lttng_bytecode_runtime *bc_runtime;				      \
 		int __filter_record = __event_notifier->has_enablers_without_bytecode;	      \
 											      \
 		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data,	      \
 				tp_locvar);						      \
-		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->bytecode_runtime_head, node) { \
+		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->filter_bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->filter(bc_runtime, &__lttng_probe_ctx,	      \
 					__stackvar.__filter_stack_data) & LTTNG_FILTER_RECORD_FLAG)) \
 				__filter_record = 1;			      \

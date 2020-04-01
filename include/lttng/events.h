@@ -332,7 +332,7 @@ struct lttng_event {
 	struct hlist_node hlist;	/* session ht of events */
 	int registered;			/* has reg'd tracepoint probe */
 	/* list of struct lttng_bytecode_runtime, sorted by seqnum */
-	struct list_head bytecode_runtime_head;
+	struct list_head filter_bytecode_runtime_head;
 	int has_enablers_without_bytecode;
 };
 
@@ -363,7 +363,7 @@ struct lttng_event_notifier {
 	struct list_head enablers_ref_head;
 	struct hlist_node hlist;	/* session ht of event_notifiers */
 	/* list of struct lttng_bytecode_runtime, sorted by seqnum */
-	struct list_head bytecode_runtime_head;
+	struct list_head filter_bytecode_runtime_head;
 	int has_enablers_without_bytecode;
 
 	void (*send_notification)(struct lttng_event_notifier *event_notifier);
@@ -887,9 +887,9 @@ static inline int lttng_syscall_filter_disable_event_notifier(
 #endif
 
 void lttng_filter_sync_state(struct lttng_bytecode_runtime *runtime);
-int lttng_event_enabler_attach_bytecode(struct lttng_event_enabler *event_enabler,
+int lttng_event_enabler_attach_filter_bytecode(struct lttng_event_enabler *event_enabler,
 		struct lttng_kernel_filter_bytecode __user *bytecode);
-int lttng_event_notifier_enabler_attach_bytecode(
+int lttng_event_notifier_enabler_attach_filter_bytecode(
 		struct lttng_event_notifier_enabler *event_notifier_enabler,
 		struct lttng_kernel_filter_bytecode __user *bytecode);
 

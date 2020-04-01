@@ -557,7 +557,7 @@ void lttng_free_event_filter_runtime(struct lttng_event *event)
 	struct bytecode_runtime *runtime, *tmp;
 
 	list_for_each_entry_safe(runtime, tmp,
-			&event->bytecode_runtime_head, p.node) {
+			&event->filter_bytecode_runtime_head, p.node) {
 		kfree(runtime->data);
 		kfree(runtime);
 	}

@@ -1748,7 +1748,8 @@ long lttng_event_notifier_ioctl(struct file *file, unsigned int cmd, unsigned lo
 			return -EINVAL;
 		case LTTNG_TYPE_ENABLER:
 			event_notifier_enabler = file->private_data;
-			return lttng_event_notifier_enabler_attach_bytecode(event_notifier_enabler,
+			return lttng_event_notifier_enabler_attach_filter_bytecode(
+					event_notifier_enabler,
 				(struct lttng_kernel_filter_bytecode __user *) arg);
 		default:
 			WARN_ON_ONCE(1);
@@ -2301,7 +2302,8 @@ long lttng_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		case LTTNG_TYPE_ENABLER:
 		{
 			event_enabler = file->private_data;
-			return lttng_event_enabler_attach_bytecode(event_enabler,
+			return lttng_event_enabler_attach_filter_bytecode(
+				event_enabler,
 				(struct lttng_kernel_filter_bytecode __user *) arg);
 		}
 		default:
