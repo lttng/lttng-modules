@@ -12,7 +12,8 @@
 #include <linux/signal.h>
 #include <linux/sched.h>
 #undef LTTNG_FIELDS_SIGINFO
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,147,0,0, 4,19,0,0,0,0))
 #define LTTNG_FIELDS_SIGINFO(info)				\
 		ctf_integer(int, errno,				\
 			(info == SEND_SIG_NOINFO || info == SEND_SIG_PRIV) ? \
@@ -47,7 +48,8 @@
  * SEND_SIG_NOINFO means that si_code is SI_USER, and SEND_SIG_PRIV
  * means that si_code is SI_KERNEL.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,147,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT(signal_generate,
 
 	TP_PROTO(int sig, struct kernel_siginfo *info, struct task_struct *task,
@@ -111,7 +113,8 @@ LTTNG_TRACEPOINT_EVENT(signal_generate,
  * This means, this can show which signals are actually delivered, but
  * matching generated signals and delivered signals may not be correct.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,147,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT(signal_deliver,
 
 	TP_PROTO(int sig, struct kernel_siginfo *info, struct k_sigaction *ka),
