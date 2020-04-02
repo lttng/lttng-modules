@@ -1483,7 +1483,8 @@ LTTNG_TRACEPOINT_EVENT(ext4_ext_show_extent,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,147,0,0, 4,19,0,0,0,0))
 
 LTTNG_TRACEPOINT_EVENT(ext4_remove_blocks,
 	TP_PROTO(struct inode *inode, struct ext4_extent *ex,
@@ -1550,7 +1551,8 @@ LTTNG_TRACEPOINT_EVENT(ext4_remove_blocks,
 
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,147,0,0, 4,19,0,0,0,0))
 
 LTTNG_TRACEPOINT_EVENT(ext4_ext_rm_leaf,
 	TP_PROTO(struct inode *inode, ext4_lblk_t start,
@@ -1659,7 +1661,8 @@ LTTNG_TRACEPOINT_EVENT(ext4_ext_remove_space,
 
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,147,0,0, 4,19,0,0,0,0))
 
 LTTNG_TRACEPOINT_EVENT(ext4_ext_remove_space_done,
 	TP_PROTO(struct inode *inode, ext4_lblk_t start, ext4_lblk_t end,
