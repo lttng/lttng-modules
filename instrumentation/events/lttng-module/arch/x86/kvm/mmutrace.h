@@ -14,7 +14,8 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM kvm_mmu
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,1,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,1,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,147,0,0, 4,19,0,0,0,0))
 
 #define LTTNG_KVM_MMU_PAGE_FIELDS \
 	ctf_integer(__u64, gfn, (sp)->gfn) \
