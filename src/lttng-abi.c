@@ -1755,6 +1755,20 @@ long lttng_event_notifier_ioctl(struct file *file, unsigned int cmd, unsigned lo
 			WARN_ON_ONCE(1);
 			return -ENOSYS;
 		}
+
+	case LTTNG_KERNEL_CAPTURE:
+		switch (*evtype) {
+		case LTTNG_TYPE_EVENT:
+			return -EINVAL;
+		case LTTNG_TYPE_ENABLER:
+			event_notifier_enabler = file->private_data;
+			return lttng_event_notifier_enabler_attach_capture_bytecode(
+				event_notifier_enabler,
+				(struct lttng_kernel_capture_bytecode __user *) arg);
+		default:
+			WARN_ON_ONCE(1);
+			return -ENOSYS;
+		}
 	case LTTNG_KERNEL_ADD_CALLSITE:
 		switch (*evtype) {
 		case LTTNG_TYPE_EVENT:

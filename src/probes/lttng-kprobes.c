@@ -58,7 +58,7 @@ int lttng_kprobes_event_notifier_handler_pre(struct kprobe *p, struct pt_regs *r
 	if (unlikely(!READ_ONCE(event_notifier->enabled)))
 		return 0;
 
-	event_notifier->send_notification(event_notifier);
+	event_notifier->send_notification(event_notifier, NULL, NULL);
 
 	return 0;
 }

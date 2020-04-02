@@ -214,6 +214,14 @@ uint64_t lttng_bytecode_filter_interpret_false(void *filter_data,
 	return LTTNG_INTERPRETER_DISCARD;
 }
 
+uint64_t lttng_bytecode_capture_interpret_false(void *filter_data,
+		struct lttng_probe_ctx *lttng_probe_ctx,
+		const char *capture_stack_data,
+		struct lttng_interpreter_output *output)
+{
+	return LTTNG_INTERPRETER_DISCARD;
+}
+
 #ifdef INTERPRETER_USE_SWITCH
 
 /*
@@ -1780,6 +1788,15 @@ uint64_t lttng_bytecode_filter_interpret(void *filter_data,
 {
 	return bytecode_interpret(filter_data, lttng_probe_ctx,
 			filter_stack_data, NULL);
+}
+
+uint64_t lttng_bytecode_capture_interpret(void *capture_data,
+		struct lttng_probe_ctx *lttng_probe_ctx,
+		const char *capture_stack_data,
+		struct lttng_interpreter_output *output)
+{
+	return bytecode_interpret(capture_data, lttng_probe_ctx,
+			capture_stack_data, output);
 }
 
 #undef START_OP

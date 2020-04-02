@@ -822,7 +822,7 @@ error:									      \
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
 #define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
 static inline								      \
-void __event_prepare_filter_stack__##_name(char *__stack_data,		      \
+void __event_prepare_interpreter_stack__##_name(char *__stack_data,		      \
 		void *__tp_locvar)					      \
 {									      \
 	struct { _locvar } *tp_locvar __attribute__((unused)) = __tp_locvar;  \
@@ -833,7 +833,7 @@ void __event_prepare_filter_stack__##_name(char *__stack_data,		      \
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
 #define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
 static inline								      \
-void __event_prepare_filter_stack__##_name(char *__stack_data,		      \
+void __event_prepare_interpreter_stack__##_name(char *__stack_data,		      \
 		void *__tp_locvar, _proto)				      \
 {									      \
 	struct { _locvar } *tp_locvar __attribute__((unused)) = __tp_locvar;  \
@@ -1246,7 +1246,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 		struct lttng_bytecode_runtime *bc_runtime;		      \
 		int __filter_record = __event->has_enablers_without_bytecode; \
 									      \
-		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data, \
+		__event_prepare_interpreter_stack__##_name(__stackvar.__filter_stack_data, \
 				tp_locvar, _args);				      \
 		lttng_list_for_each_entry_rcu(bc_runtime, &__event->filter_bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx,	      \
@@ -1342,7 +1342,7 @@ static void __event_probe__##_name(void *__data)			      \
 		struct lttng_bytecode_runtime *bc_runtime;		      \
 		int __filter_record = __event->has_enablers_without_bytecode; \
 									      \
-		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data, \
+		__event_prepare_interpreter_stack__##_name(__stackvar.__filter_stack_data, \
 				tp_locvar);				      \
 		lttng_list_for_each_entry_rcu(bc_runtime, &__event->filter_bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx,	\
@@ -1425,7 +1425,7 @@ static void __event_notifier_probe__##_name(void *__data, _proto)	      \
 	};								      \
 	union {								      \
 		size_t __dynamic_len_removed[ARRAY_SIZE(__event_fields___##_name)];   \
-		char __filter_stack_data[2 * sizeof(unsigned long) * ARRAY_SIZE(__event_fields___##_name)]; \
+		char __interpreter_stack_data[2 * sizeof(unsigned long) * ARRAY_SIZE(__event_fields___##_name)]; \
 	} __stackvar;							      \
 	struct probe_local_vars __tp_locvar;				      \
 	struct probe_local_vars *tp_locvar __attribute__((unused)) =	      \
@@ -1435,21 +1435,29 @@ static void __event_notifier_probe__##_name(void *__data, _proto)	      \
 		return;							      \
 	_code_pre							      \
 	if (unlikely(!list_empty(&__event_notifier->filter_bytecode_runtime_head))) {	\
-		struct lttng_bytecode_runtime *bc_runtime;				\
+		struct lttng_bytecode_runtime *bc_runtime;		      \
 		int __filter_record = __event_notifier->has_enablers_without_bytecode;	\
-											\
-		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data,	\
-				tp_locvar, _args);				        \
+									      \
+		__event_prepare_interpreter_stack__##_name(__stackvar.__interpreter_stack_data, \
+				tp_locvar, _args);			      \
 		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->filter_bytecode_runtime_head, node) { \
-			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx, \
-					__stackvar.__filter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG)) \
+			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx,   	\
+					__stackvar.__interpreter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG))	\
 				__filter_record = 1;			      \
 		}							      \
 		if (likely(!__filter_record))				      \
 			goto __post;					      \
 	}								      \
 									      \
-	__event_notifier->send_notification(__event_notifier);		      \
+	if (unlikely(!list_empty(&__event_notifier->capture_bytecode_runtime_head)))	\
+		__event_prepare_interpreter_stack__##_name(		      \
+				__stackvar.__interpreter_stack_data,	      \
+				tp_locvar, _args);			      \
+									      \
+	__event_notifier->send_notification(__event_notifier,		      \
+			&__lttng_probe_ctx,				      \
+			__stackvar.__interpreter_stack_data);		      \
+									      \
 __post:									      \
 	_code_post							      \
 	return;								      \
@@ -1468,7 +1476,7 @@ static void __event_notifier_probe__##_name(void *__data)		      \
 	};								      \
 	union {								      \
 		size_t __dynamic_len_removed[ARRAY_SIZE(__event_fields___##_name)];   \
-		char __filter_stack_data[2 * sizeof(unsigned long) * ARRAY_SIZE(__event_fields___##_name)]; \
+		char __interpreter_stack_data[2 * sizeof(unsigned long) * ARRAY_SIZE(__event_fields___##_name)]; \
 	} __stackvar;							      \
 	struct probe_local_vars __tp_locvar;				      \
 	struct probe_local_vars *tp_locvar __attribute__((unused)) =	      \
@@ -1477,22 +1485,29 @@ static void __event_notifier_probe__##_name(void *__data)		      \
 	if (unlikely(!READ_ONCE(__event_notifier->enabled)))		      \
 		return;							      \
 	_code_pre							      \
-	if (unlikely(!list_empty(&__event_notifier->filter_bytecode_runtime_head))) {	      \
-		struct lttng_bytecode_runtime *bc_runtime;				      \
-		int __filter_record = __event_notifier->has_enablers_without_bytecode;	      \
-											      \
-		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data,	      \
-				tp_locvar);						      \
+	if (unlikely(!list_empty(&__event_notifier->filter_bytecode_runtime_head))) {	\
+		struct lttng_bytecode_runtime *bc_runtime;		      \
+		int __filter_record = __event_notifier->has_enablers_without_bytecode;	\
+									      \
+		__event_prepare_interpreter_stack__##_name(__stackvar.__interpreter_stack_data, \
+				tp_locvar);				      \
 		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->filter_bytecode_runtime_head, node) { \
-			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx, \
-					__stackvar.__filter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG)) \
+			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx,	\
+					__stackvar.__interpreter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG))	\
 				__filter_record = 1;			      \
 		}							      \
 		if (likely(!__filter_record))				      \
 			goto __post;					      \
 	}								      \
 									      \
-	__event_notifier->send_notification(__event_notifier);		      \
+	if (unlikely(!list_empty(&__event_notifier->capture_bytecode_runtime_head)))  \
+		__event_prepare_interpreter_stack__##_name(		      \
+				__stackvar.__interpreter_stack_data,	      \
+				tp_locvar);				      \
+									      \
+	__event_notifier->send_notification(__event_notifier,		      \
+			&__lttng_probe_ctx,				      \
+			__stackvar.__interpreter_stack_data);		      \
 __post:									      \
 	_code_post							      \
 	return;								      \

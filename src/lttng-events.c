@@ -1048,11 +1048,13 @@ struct lttng_event_notifier *_lttng_event_notifier_create(
 
 	event_notifier->group = event_notifier_group;
 	event_notifier->user_token = token;
+	event_notifier->num_captures = 0;
 	event_notifier->filter = filter;
 	event_notifier->instrumentation = itype;
 	event_notifier->evtype = LTTNG_TYPE_EVENT;
 	event_notifier->send_notification = lttng_event_notifier_notification_send;
 	INIT_LIST_HEAD(&event_notifier->filter_bytecode_runtime_head);
+	INIT_LIST_HEAD(&event_notifier->capture_bytecode_runtime_head);
 	INIT_LIST_HEAD(&event_notifier->enablers_ref_head);
 
 	switch (itype) {
@@ -2120,6 +2122,13 @@ int lttng_event_notifier_enabler_ref_event_notifiers(
 		lttng_enabler_link_bytecode(event_notifier->desc,
 			lttng_static_ctx, &event_notifier->filter_bytecode_runtime_head,
 			&lttng_event_notifier_enabler_as_enabler(event_notifier_enabler)->filter_bytecode_head);
+
+		/* Link capture bytecodes if not linked yet. */
+		lttng_enabler_link_bytecode(event_notifier->desc,
+			lttng_static_ctx, &event_notifier->capture_bytecode_runtime_head,
+			&event_notifier_enabler->capture_bytecode_head);
+
+		event_notifier->num_captures = event_notifier_enabler->num_captures;
 	}
 	return 0;
 }
@@ -2318,6 +2327,9 @@ struct lttng_event_notifier_enabler *lttng_event_notifier_enabler_create(
 
 	event_notifier_enabler->base.format_type = format_type;
 	INIT_LIST_HEAD(&event_notifier_enabler->base.filter_bytecode_head);
+	INIT_LIST_HEAD(&event_notifier_enabler->capture_bytecode_head);
+
+	event_notifier_enabler->num_captures = 0;
 
 	memcpy(&event_notifier_enabler->base.event_param, &event_notifier_param->event,
 		sizeof(event_notifier_enabler->base.event_param));
@@ -2372,6 +2384,48 @@ int lttng_event_notifier_enabler_attach_filter_bytecode(
 	return 0;
 
 error:
+	return ret;
+}
+
+int lttng_event_notifier_enabler_attach_capture_bytecode(
+		struct lttng_event_notifier_enabler *event_notifier_enabler,
+		struct lttng_kernel_capture_bytecode __user *bytecode)
+{
+	struct lttng_bytecode_node *bytecode_node;
+	struct lttng_enabler *enabler =
+			lttng_event_notifier_enabler_as_enabler(event_notifier_enabler);
+	uint32_t bytecode_len;
+	int ret;
+
+	ret = get_user(bytecode_len, &bytecode->len);
+	if (ret)
+		return ret;
+
+	bytecode_node = lttng_kvzalloc(sizeof(*bytecode_node) + bytecode_len,
+			GFP_KERNEL);
+	if (!bytecode_node)
+		return -ENOMEM;
+
+	ret = copy_from_user(&bytecode_node->bc, bytecode,
+		sizeof(*bytecode) + bytecode_len);
+	if (ret)
+		goto error_free;
+
+	bytecode_node->type = LTTNG_BYTECODE_NODE_TYPE_CAPTURE;
+	bytecode_node->enabler = enabler;
+
+	/* Enforce length based on allocated size */
+	bytecode_node->bc.len = bytecode_len;
+	list_add_tail(&bytecode_node->node, &event_notifier_enabler->capture_bytecode_head);
+
+	event_notifier_enabler->num_captures++;
+
+	lttng_event_notifier_group_sync_enablers(event_notifier_enabler->group);
+	goto end;
+
+error_free:
+	lttng_kvfree(bytecode_node);
+end:
 	return ret;
 }
 
@@ -2565,6 +2619,11 @@ void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group 
 		list_for_each_entry(runtime,
 				&event_notifier->filter_bytecode_runtime_head, node)
 			lttng_bytecode_filter_sync_state(runtime);
+
+		/* Enable captures */
+		list_for_each_entry(runtime,
+				&event_notifier->capture_bytecode_runtime_head, node)
+			lttng_bytecode_capture_sync_state(runtime);
 	}
 }
 

@@ -234,6 +234,7 @@ enum lttng_event_type {
 
 enum lttng_bytecode_node_type {
 	LTTNG_BYTECODE_NODE_TYPE_FILTER,
+	LTTNG_BYTECODE_NODE_TYPE_CAPTURE,
 };
 
 struct lttng_bytecode_node {
@@ -257,6 +258,8 @@ enum lttng_bytecode_interpreter_ret {
 	/* Other bits are kept for future use. */
 };
 
+struct lttng_interpreter_output;
+
 struct lttng_bytecode_runtime {
 	/* Associated bytecode */
 	struct lttng_bytecode_node *bc;
@@ -264,6 +267,10 @@ struct lttng_bytecode_runtime {
 		uint64_t (*filter)(void *filter_data,
 				struct lttng_probe_ctx *lttng_probe_ctx,
 				const char *filter_stack_data);
+		uint64_t (*capture)(void *filter_data,
+				struct lttng_probe_ctx *lttng_probe_ctx,
+				const char *capture_stack_data,
+				struct lttng_interpreter_output *output);
 	} interpreter_funcs;
 	int link_failed;
 	struct list_head node;	/* list of bytecode runtime in event */
@@ -373,9 +380,13 @@ struct lttng_event_notifier {
 	struct hlist_node hlist;	/* session ht of event_notifiers */
 	/* list of struct lttng_bytecode_runtime, sorted by seqnum */
 	struct list_head filter_bytecode_runtime_head;
+	size_t num_captures;
+	struct list_head capture_bytecode_runtime_head;
 	int has_enablers_without_bytecode;
 
-	void (*send_notification)(struct lttng_event_notifier *event_notifier);
+	void (*send_notification)(struct lttng_event_notifier *event_notifier,
+			struct lttng_probe_ctx *lttng_probe_ctx,
+			const char *interpreter_stack_data);
 	struct lttng_event_notifier_group *group; /* Weak ref */
 };
 
@@ -417,7 +428,12 @@ struct lttng_event_notifier_enabler {
 	struct lttng_enabler base;
 	struct list_head node;	/* List of event_notifier enablers */
 	struct lttng_event_notifier_group *group;
+
+	/* head list of struct lttng_bytecode_node */
+	struct list_head capture_bytecode_head;
+	uint64_t num_captures;
 };
+
 
 static inline
 struct lttng_enabler *lttng_event_enabler_as_enabler(
@@ -900,6 +916,9 @@ int lttng_event_enabler_attach_filter_bytecode(struct lttng_event_enabler *event
 int lttng_event_notifier_enabler_attach_filter_bytecode(
 		struct lttng_event_notifier_enabler *event_notifier_enabler,
 		struct lttng_kernel_filter_bytecode __user *bytecode);
+int lttng_event_notifier_enabler_attach_capture_bytecode(
+		struct lttng_event_notifier_enabler *event_notifier_enabler,
+		struct lttng_kernel_capture_bytecode __user *bytecode);
 
 void lttng_enabler_link_bytecode(const struct lttng_event_desc *event_desc,
 		struct lttng_ctx *ctx,

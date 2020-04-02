@@ -10,6 +10,8 @@
 
 #include <lttng/events.h>
 
-void lttng_event_notifier_notification_send(struct lttng_event_notifier *event_notifier);
+void lttng_event_notifier_notification_send(struct lttng_event_notifier *event_notifier,
+		struct lttng_probe_ctx *lttng_probe_ctx,
+		const char *stack_data);
 
 #endif /* _LTTNG_EVENT_NOTIFIER_NOTIFICATION_H */

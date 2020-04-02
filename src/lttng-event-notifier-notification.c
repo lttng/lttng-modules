@@ -12,9 +12,20 @@
 #include <lttng/msgpack.h>
 #include <lttng/event-notifier-notification.h>
 
-static
-int capture_enum(struct lttng_msgpack_writer *writer,
-		struct lttng_interpreter_output *output) __attribute__ ((unused));
+/*
+ * FIXME: this probably too low but it needs to be below 1024 bytes to avoid
+ * the frame to be larger than the 1024 limit enforced by the kernel.
+ */
+#define CAPTURE_BUFFER_SIZE 512
+
+struct lttng_event_notifier_notification {
+	int notification_fd;
+	uint64_t event_notifier_token;
+	uint8_t capture_buf[CAPTURE_BUFFER_SIZE];
+	struct lttng_msgpack_writer writer;
+	bool has_captures;
+};
+
 static
 int capture_enum(struct lttng_msgpack_writer *writer,
 		struct lttng_interpreter_output *output)
@@ -175,9 +186,6 @@ uint64_t capture_sequence_element_unsigned(uint8_t *ptr,
 	return value;
 }
 
-static
-int capture_sequence(struct lttng_msgpack_writer *writer,
-		struct lttng_interpreter_output *output) __attribute__ ((unused));
 int capture_sequence(struct lttng_msgpack_writer *writer,
 		struct lttng_interpreter_output *output)
 {
@@ -245,18 +253,122 @@ end:
 	return ret;
 }
 
-void lttng_event_notifier_notification_send(struct lttng_event_notifier *event_notifier)
+static
+int notification_append_capture(
+		struct lttng_event_notifier_notification *notif,
+		struct lttng_interpreter_output *output)
+{
+	struct lttng_msgpack_writer *writer = &notif->writer;
+	int ret = 0;
+
+	switch (output->type) {
+	case LTTNG_INTERPRETER_TYPE_S64:
+		ret = lttng_msgpack_write_signed_integer(writer, output->u.s);
+		if (ret) {
+			WARN_ON_ONCE(1);
+			goto end;
+		}
+		break;
+	case LTTNG_INTERPRETER_TYPE_U64:
+		ret = lttng_msgpack_write_unsigned_integer(writer, output->u.u);
+		if (ret) {
+			WARN_ON_ONCE(1);
+			goto end;
+		}
+		break;
+	case LTTNG_INTERPRETER_TYPE_STRING:
+		ret = lttng_msgpack_write_str(writer, output->u.str.str);
+		if (ret) {
+			WARN_ON_ONCE(1);
+			goto end;
+		}
+		break;
+	case LTTNG_INTERPRETER_TYPE_SEQUENCE:
+		ret = capture_sequence(writer, output);
+		if (ret) {
+			WARN_ON_ONCE(1);
+			goto end;
+		}
+		break;
+	case LTTNG_INTERPRETER_TYPE_SIGNED_ENUM:
+	case LTTNG_INTERPRETER_TYPE_UNSIGNED_ENUM:
+		ret = capture_enum(writer, output);
+		if (ret) {
+			WARN_ON_ONCE(1);
+			goto end;
+		}
+		break;
+	default:
+		ret = -1;
+		WARN_ON(1);
+	}
+end:
+	return ret;
+}
+
+static
+int notification_append_empty_capture(
+		struct lttng_event_notifier_notification *notif)
+{
+	int ret = lttng_msgpack_write_nil(&notif->writer);
+	if (ret)
+		WARN_ON_ONCE(1);
+
+	return ret;
+}
+
+static
+int notification_init(struct lttng_event_notifier_notification *notif,
+		struct lttng_event_notifier *event_notifier)
+{
+	struct lttng_msgpack_writer *writer = &notif->writer;
+	int ret = 0;
+
+	notif->has_captures = false;
+
+	if (event_notifier->num_captures > 0) {
+		lttng_msgpack_writer_init(writer, notif->capture_buf,
+				CAPTURE_BUFFER_SIZE);
+
+		ret = lttng_msgpack_begin_array(writer, event_notifier->num_captures);
+		if (ret) {
+			WARN_ON_ONCE(1);
+			goto end;
+		}
+
+		notif->has_captures = true;
+	}
+
+end:
+	return ret;
+}
+
+static
+void notification_send(struct lttng_event_notifier_notification *notif,
+		struct lttng_event_notifier *event_notifier)
 {
 	struct lttng_event_notifier_group *event_notifier_group = event_notifier->group;
 	struct lib_ring_buffer_ctx ctx;
+	struct lttng_kernel_event_notifier_notification kernel_notif;
+	size_t capture_buffer_content_len, reserve_size;
 	int ret;
 
-	if (unlikely(!READ_ONCE(event_notifier->enabled)))
-		return;
+	reserve_size = sizeof(kernel_notif);
+	kernel_notif.token = event_notifier->user_token;
 
-	lib_ring_buffer_ctx_init(&ctx, event_notifier_group->chan, NULL,
-			sizeof(event_notifier->user_token),
-			lttng_alignof(event_notifier->user_token), -1);
+	if (notif->has_captures) {
+		capture_buffer_content_len = notif->writer.write_pos - notif->writer.buffer;
+	} else {
+		capture_buffer_content_len = 0;
+	}
+
+	WARN_ON_ONCE(capture_buffer_content_len > CAPTURE_BUFFER_SIZE);
+
+	reserve_size += capture_buffer_content_len;
+	kernel_notif.capture_buf_size = capture_buffer_content_len;
+
+	lib_ring_buffer_ctx_init(&ctx, event_notifier_group->chan, NULL, reserve_size,
+			lttng_alignof(kernel_notif), -1);
 	ret = event_notifier_group->ops->event_reserve(&ctx, 0);
 	if (ret < 0) {
 		//TODO: error handling with counter maps
@@ -264,9 +376,69 @@ void lttng_event_notifier_notification_send(struct lttng_event_notifier *event_n
 		WARN_ON_ONCE(1);
 		return;
 	}
-	lib_ring_buffer_align_ctx(&ctx, lttng_alignof(event_notifier->user_token));
-	event_notifier_group->ops->event_write(&ctx, &event_notifier->user_token,
-			sizeof(event_notifier->user_token));
+
+	lib_ring_buffer_align_ctx(&ctx, lttng_alignof(kernel_notif));
+
+	/* Write the notif structure. */
+	event_notifier_group->ops->event_write(&ctx, &kernel_notif,
+			sizeof(kernel_notif));
+
+	/*
+	 * Write the capture buffer. No need to realigned as the below is a raw
+	 * char* buffer.
+	 */
+	event_notifier_group->ops->event_write(&ctx, &notif->capture_buf,
+			capture_buffer_content_len);
+
 	event_notifier_group->ops->event_commit(&ctx);
 	irq_work_queue(&event_notifier_group->wakeup_pending);
+}
+
+void lttng_event_notifier_notification_send(struct lttng_event_notifier *event_notifier,
+		struct lttng_probe_ctx *lttng_probe_ctx,
+		const char *stack_data)
+{
+	struct lttng_event_notifier_notification notif = { 0 };
+	int ret;
+
+	if (unlikely(!READ_ONCE(event_notifier->enabled)))
+		return;
+
+	ret = notification_init(&notif, event_notifier);
+	if (ret) {
+		WARN_ON_ONCE(1);
+		goto end;
+	}
+
+	if (unlikely(!list_empty(&event_notifier->capture_bytecode_runtime_head))) {
+		struct lttng_bytecode_runtime *capture_bc_runtime;
+
+		/*
+		 * Iterate over all the capture bytecodes. If the interpreter
+		 * functions returns successfully, append the value of the
+		 * `output` parameter to the capture buffer. If the interpreter
+		 * fails, append an empty capture to the buffer.
+		 */
+		list_for_each_entry(capture_bc_runtime,
+				&event_notifier->capture_bytecode_runtime_head, node) {
+			struct lttng_interpreter_output output;
+
+			if (capture_bc_runtime->interpreter_funcs.capture(capture_bc_runtime,
+					lttng_probe_ctx, stack_data, &output) & LTTNG_INTERPRETER_RECORD_FLAG)
+				ret = notification_append_capture(&notif, &output);
+			else
+				ret = notification_append_empty_capture(&notif);
+
+			if (ret)
+				printk(KERN_WARNING "Error appending capture to notification");
+		}
+	}
+
+	/*
+	 * Send the notification (including the capture buffer) to the
+	 * sessiond.
+	 */
+	notification_send(&notif, event_notifier);
+end:
+	return;
 }

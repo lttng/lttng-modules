@@ -144,6 +144,13 @@ struct lttng_kernel_event_notifier {
 	char padding[LTTNG_KERNEL_EVENT_NOTIFIER_PADDING1];
 } __attribute__((packed));
 
+#define LTTNG_KERNEL_EVENT_NOTIFIER_NOTIFICATION_PADDING 32
+struct lttng_kernel_event_notifier_notification {
+	uint64_t token;
+	uint16_t capture_buf_size;
+	char padding[LTTNG_KERNEL_EVENT_NOTIFIER_NOTIFICATION_PADDING];
+} __attribute__((packed));
+
 struct lttng_kernel_tracer_version {
 	uint32_t major;
 	uint32_t minor;
@@ -243,6 +250,14 @@ struct lttng_kernel_filter_bytecode {
 	char data[0];
 } __attribute__((packed));
 
+#define LTTNG_KERNEL_CAPTURE_BYTECODE_MAX_LEN		65536
+struct lttng_kernel_capture_bytecode {
+	uint32_t len;
+	uint32_t reloc_offset;
+	uint64_t seqnum;
+	char data[0];
+} __attribute__((packed));
+
 enum lttng_kernel_tracker_type {
 	LTTNG_KERNEL_TRACKER_UNKNOWN		= -1,
 
@@ -336,6 +351,9 @@ struct lttng_kernel_tracker_args {
 	_IOW(0xF6, 0xB0, struct lttng_kernel_event_notifier)
 #define LTTNG_KERNEL_EVENT_NOTIFIER_GROUP_NOTIFICATION_FD \
 	_IO(0xF6, 0xB1)
+
+/* Event notifier file descriptor ioctl */
+#define LTTNG_KERNEL_CAPTURE			_IO(0xF6, 0xB8)
 
 /*
  * LTTng-specific ioctls for the lib ringbuffer.

@@ -7,9 +7,11 @@
  * Copyright (C) 2010-2020 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */
 
+#include <linux/limits.h>
 #include <linux/module.h>
 #include <linux/types.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
+#include <lttng/abi.h>
 #include <lttng/events.h>
 #include <lttng/tracer.h>
 
@@ -20,6 +22,7 @@ struct event_notifier_packet_header {
 };
 
 struct event_notifier_record_header {
+	uint32_t payload_len;		/* in bytes */
 	uint8_t header_end[0];		/* End of header */
 };
 
@@ -38,7 +41,17 @@ size_t record_header_size(const struct lib_ring_buffer_config *config,
 				 struct lib_ring_buffer_ctx *ctx,
 				 void *client_ctx)
 {
-	return 0;
+	size_t orig_offset = offset;
+	size_t padding;
+
+	padding = lib_ring_buffer_align(offset, lttng_alignof(uint32_t));
+	offset += padding;
+
+	offset += sizeof(uint32_t);
+
+	*pre_header_padding = padding;
+
+	return offset - orig_offset;
 }
 
 #include <ringbuffer/api.h>
@@ -55,7 +68,8 @@ size_t client_record_header_size(const struct lib_ring_buffer_config *config,
 				 struct lib_ring_buffer_ctx *ctx,
 				 void *client_ctx)
 {
-	return 0;
+	return record_header_size(config, chan, offset,
+				  pre_header_padding, ctx, client_ctx);
 }
 
 /**
@@ -169,10 +183,7 @@ static void client_record_get(const struct lib_ring_buffer_config *config,
 			offsetof(struct event_notifier_record_header, header_end));
 	CHAN_WARN_ON(chan, ret != offsetof(struct event_notifier_record_header, header_end));
 	*header_len = offsetof(struct event_notifier_record_header, header_end);
-	/*
-	 * Currently, only 64-bit event notifier ID.
-	 */
-	*payload_len = sizeof(uint64_t);
+	*payload_len = header.payload_len;
 	*timestamp = 0;
 }
 
@@ -274,6 +285,21 @@ void lttng_buffer_read_close(struct lib_ring_buffer *buf)
 }
 
 static
+void lttng_write_event_notifier_header(const struct lib_ring_buffer_config *config,
+			    struct lib_ring_buffer_ctx *ctx)
+{
+	uint32_t data_size;
+
+	WARN_ON_ONCE(ctx->data_size > U32_MAX);
+
+	data_size = (uint32_t) ctx->data_size;
+
+	lib_ring_buffer_write(config, ctx, &data_size, sizeof(data_size));
+
+	lib_ring_buffer_align_ctx(ctx, ctx->largest_align);
+}
+
+static
 int lttng_event_reserve(struct lib_ring_buffer_ctx *ctx, uint32_t event_id)
 {
 	int ret;
@@ -283,6 +309,8 @@ int lttng_event_reserve(struct lib_ring_buffer_ctx *ctx, uint32_t event_id)
 		return ret;
 	lib_ring_buffer_backend_get_pages(&client_config, ctx,
 			&ctx->backend_pages);
+
+	lttng_write_event_notifier_header(&client_config, ctx);
 	return 0;
 }
 
