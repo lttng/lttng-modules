@@ -49,7 +49,8 @@ LTTNG_TRACEPOINT_EVENT(rcu_utilization,
  * and "cpuofl", respectively), and a CPU being kicked for being too
  * long in dyntick-idle mode ("kick").
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,80,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT(rcu_grace_period,
 
 	TP_PROTO(const char *rcuname, unsigned long gp_seq, const char *gpevent),
@@ -97,7 +98,8 @@ LTTNG_TRACEPOINT_EVENT(rcu_grace_period,
  * rcu_node structure, and the mask of CPUs that will be waited for.
  * All but the type of RCU are extracted from the rcu_node structure.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,80,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT(rcu_grace_period_init,
 
 	TP_PROTO(const char *rcuname, unsigned long gp_seq, u8 level,
@@ -156,7 +158,8 @@ LTTNG_TRACEPOINT_EVENT(rcu_grace_period_init,
  * include SRCU), the grace-period number that the task is blocking
  * (the current or the next), and the task's PID.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,80,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT(rcu_preempt_task,
 
 	TP_PROTO(const char *rcuname, int pid, unsigned long gp_seq),
@@ -202,7 +205,8 @@ LTTNG_TRACEPOINT_EVENT(rcu_preempt_task,
  * read-side critical section exiting that critical section.  Track the
  * type of RCU (which one day might include SRCU) and the task's PID.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,80,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT(rcu_unlock_preempted_task,
 
 	TP_PROTO(const char *rcuname, unsigned long gp_seq, int pid),
@@ -251,7 +255,8 @@ LTTNG_TRACEPOINT_EVENT(rcu_unlock_preempted_task,
  * whether there are any blocked tasks blocking the current grace period.
  * All but the type of RCU are extracted from the rcu_node structure.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,80,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT(rcu_quiescent_state_report,
 
 	TP_PROTO(const char *rcuname, unsigned long gp_seq,
@@ -321,7 +326,8 @@ LTTNG_TRACEPOINT_EVENT(rcu_quiescent_state_report,
  * or "kick" when kicking a CPU that has been in dyntick-idle mode for
  * too long.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,80,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT(rcu_fqs,
 
 	TP_PROTO(const char *rcuname, unsigned long gp_seq, int cpu, const char *qsevent),
@@ -888,7 +894,8 @@ LTTNG_TRACEPOINT_EVENT(rcu_barrier,
 
 #else /* #ifdef CONFIG_RCU_TRACE */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,80,0,0, 4,19,0,0,0,0))
 #define trace_rcu_grace_period(rcuname, gp_seq, gpevent) do { } while (0)
 #define trace_rcu_grace_period_init(rcuname, gp_seq, level, grplo, grphi, \
 				    qsmask) do { } while (0)
