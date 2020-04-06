@@ -39,4 +39,6 @@
 # define WRITE_ONCE(x, val)	({ ACCESS_ONCE(x) = val; })
 #endif
 
+#define __LTTNG_COMPOUND_LITERAL(type, ...)	(type[]) { __VA_ARGS__ }
+
 #endif /* _LTTNG_WRAPPER_COMPILER_H */
