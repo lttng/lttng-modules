@@ -48,6 +48,7 @@
 #include "wrapper/ringbuffer/frontend.h"
 #include "wrapper/vmalloc.h"
 #include "lttng-tracer.h"
+#include "lttng-endian.h"
 
 #ifdef CONFIG_ARCH_STACKWALK
 #include "lttng-context-callstack-stackwalk-impl.h"
@@ -87,28 +88,38 @@ error_alloc:
 }
 
 static
-void lttng_callstack_destroy(struct lttng_ctx_field *field)
+void lttng_callstack_sequence_destroy(struct lttng_ctx_field *field)
 {
 	struct field_data *fdata = field->priv;
 
 	field_data_free(fdata);
 }
 
+static const struct lttng_type sequence_elem_type =
+	__type_integer(unsigned long, 0, 0, -1, __BYTE_ORDER, 16, none);
+
 static
 int __lttng_add_callstack_generic(struct lttng_ctx **ctx,
 		enum lttng_cs_ctx_modes mode)
 {
 	const char *ctx_name = lttng_cs_ctx_mode_name(mode);
-	struct lttng_ctx_field *field;
+	const char *ctx_length_name = lttng_cs_ctx_mode_length_name(mode);
+	struct lttng_ctx_field *length_field, *sequence_field;
+	struct lttng_event_field *field;
 	struct field_data *fdata;
 	int ret;
 
 	ret = init_type(mode);
 	if (ret)
 		return ret;
-	field = lttng_append_context(ctx);
-	if (!field)
+	length_field = lttng_append_context(ctx);
+	if (!length_field)
 		return -ENOMEM;
+	sequence_field = lttng_append_context(ctx);
+	if (!sequence_field) {
+		lttng_remove_context_field(ctx, length_field);
+		return -ENOMEM;
+	}
 	if (lttng_find_context(*ctx, ctx_name)) {
 		ret = -EEXIST;
 		goto error_find;
@@ -119,35 +130,36 @@ int __lttng_add_callstack_generic(struct lttng_ctx **ctx,
 		goto error_create;
 	}
 
-	field->event_field.name = ctx_name;
-	field->event_field.type.atype = atype_sequence;
-	field->event_field.type.u.sequence.elem_type.atype = atype_integer;
-	field->event_field.type.u.sequence.elem_type.u.basic.integer.size = sizeof(unsigned long) * CHAR_BIT;
-	field->event_field.type.u.sequence.elem_type.u.basic.integer.alignment = lttng_alignof(long) * CHAR_BIT;
-	field->event_field.type.u.sequence.elem_type.u.basic.integer.signedness = lttng_is_signed_type(unsigned long);
-	field->event_field.type.u.sequence.elem_type.u.basic.integer.reverse_byte_order = 0;
-	field->event_field.type.u.sequence.elem_type.u.basic.integer.base = 16;
-	field->event_field.type.u.sequence.elem_type.u.basic.integer.encoding = lttng_encode_none;
+	field = &length_field->event_field;
+	field->name = ctx_length_name;
+	field->type.atype = atype_integer;
+	field->type.u.integer.size = sizeof(unsigned int) * CHAR_BIT;
+	field->type.u.integer.alignment = lttng_alignof(unsigned int) * CHAR_BIT;
+	field->type.u.integer.signedness = lttng_is_signed_type(unsigned int);
+	field->type.u.integer.reverse_byte_order = 0;
+	field->type.u.integer.base = 10;
+	field->type.u.integer.encoding = lttng_encode_none;
+	length_field->get_size_arg = lttng_callstack_length_get_size;
+	length_field->record = lttng_callstack_length_record;
 
-	field->event_field.type.u.sequence.length_type.atype = atype_integer;
-	field->event_field.type.u.sequence.length_type.u.basic.integer.size = sizeof(unsigned int) * CHAR_BIT;
-	field->event_field.type.u.sequence.length_type.u.basic.integer.alignment = lttng_alignof(unsigned int) * CHAR_BIT;
-	field->event_field.type.u.sequence.length_type.u.basic.integer.signedness = lttng_is_signed_type(unsigned int);
-	field->event_field.type.u.sequence.length_type.u.basic.integer.reverse_byte_order = 0;
-	field->event_field.type.u.sequence.length_type.u.basic.integer.base = 10;
-	field->event_field.type.u.sequence.length_type.u.basic.integer.encoding = lttng_encode_none;
+	field = &sequence_field->event_field;
+	field->name = ctx_name;
+	field->type.atype = atype_sequence_nestable;
+	field->type.u.sequence_nestable.elem_type = &sequence_elem_type;
+	field->type.u.sequence_nestable.alignment = 0;
+	sequence_field->get_size_arg = lttng_callstack_sequence_get_size;
+	sequence_field->record = lttng_callstack_sequence_record;
+	sequence_field->priv = fdata;
+	sequence_field->destroy = lttng_callstack_sequence_destroy;
 
-	field->get_size_arg = lttng_callstack_get_size;
-	field->record = lttng_callstack_record;
-	field->priv = fdata;
-	field->destroy = lttng_callstack_destroy;
 	wrapper_vmalloc_sync_all();
 	return 0;
 
 error_create:
 	field_data_free(fdata);
 error_find:
-	lttng_remove_context_field(ctx, field);
+	lttng_remove_context_field(ctx, sequence_field);
+	lttng_remove_context_field(ctx, length_field);
 	return ret;
 }
 

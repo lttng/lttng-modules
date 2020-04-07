@@ -288,7 +288,7 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 	switch (field->type.atype) {
 	case atype_integer:
 		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
-		if (field->type.u.basic.integer.signedness) {
+		if (field->type.u.integer.signedness) {
 			ptr->object_type = OBJECT_TYPE_S64;
 			ptr->u.s64 = v.s64;
 			ptr->ptr = &ptr->u.s64;
@@ -298,10 +298,10 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			ptr->ptr = &ptr->u.u64;
 		}
 		break;
-	case atype_enum:
+	case atype_enum_nestable:
 	{
 		const struct lttng_integer_type *itype =
-			&field->type.u.basic.enumeration.container_type;
+			&field->type.u.enum_nestable.container_type->u.integer;
 
 		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
 		if (itype->signedness) {
@@ -315,12 +315,12 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		}
 		break;
 	}
-	case atype_array:
-		if (field->type.u.array.elem_type.atype != atype_integer) {
+	case atype_array_nestable:
+		if (!lttng_is_bytewise_integer(field->type.u.array_nestable.elem_type)) {
 			printk(KERN_WARNING "Array nesting only supports integer types.\n");
 			return -EINVAL;
 		}
-		if (field->type.u.array.elem_type.u.basic.integer.encoding == lttng_encode_none) {
+		if (field->type.u.array_nestable.elem_type->u.integer.encoding == lttng_encode_none) {
 			printk(KERN_WARNING "Only string arrays are supported for contexts.\n");
 			return -EINVAL;
 		}
@@ -328,12 +328,12 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
 		ptr->ptr = v.str;
 		break;
-	case atype_sequence:
-		if (field->type.u.sequence.elem_type.atype != atype_integer) {
+	case atype_sequence_nestable:
+		if (!lttng_is_bytewise_integer(field->type.u.sequence_nestable.elem_type)) {
 			printk(KERN_WARNING "Sequence nesting only supports integer types.\n");
 			return -EINVAL;
 		}
-		if (field->type.u.sequence.elem_type.u.basic.integer.encoding == lttng_encode_none) {
+		if (field->type.u.sequence_nestable.elem_type->u.integer.encoding == lttng_encode_none) {
 			printk(KERN_WARNING "Only string sequences are supported for contexts.\n");
 			return -EINVAL;
 		}
@@ -341,19 +341,16 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
 		ptr->ptr = v.str;
 		break;
-	case atype_array_bitfield:
-		printk(KERN_WARNING "Bitfield array type is not supported.\n");
-		return -EINVAL;
-	case atype_sequence_bitfield:
-		printk(KERN_WARNING "Bitfield sequence type is not supported.\n");
-		return -EINVAL;
 	case atype_string:
 		ptr->object_type = OBJECT_TYPE_STRING;
 		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
 		ptr->ptr = v.str;
 		break;
-	case atype_struct:
+	case atype_struct_nestable:
 		printk(KERN_WARNING "Structure type cannot be loaded.\n");
+		return -EINVAL;
+	case atype_variant_nestable:
+		printk(KERN_WARNING "Variant type cannot be loaded.\n");
 		return -EINVAL;
 	default:
 		printk(KERN_WARNING "Unknown type: %d", (int) field->type.atype);

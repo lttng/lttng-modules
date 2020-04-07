@@ -198,14 +198,20 @@ static int specialize_get_index(struct bytecode_runtime *runtime,
 		switch (stack_top->load.object_type) {
 		case OBJECT_TYPE_ARRAY:
 		{
+			const struct lttng_integer_type *integer_type;
 			const struct lttng_event_field *field;
 			uint32_t elem_len, num_elems;
 			int signedness;
 
 			field = stack_top->load.field;
-			elem_len = field->type.u.array.elem_type.u.basic.integer.size;
-			signedness = field->type.u.array.elem_type.u.basic.integer.signedness;
-			num_elems = field->type.u.array.length;
+			if (!lttng_is_bytewise_integer(field->type.u.array_nestable.elem_type)) {
+				ret = -EINVAL;
+				goto end;
+			}
+			integer_type = &field->type.u.array_nestable.elem_type->u.integer;
+			num_elems = field->type.u.array_nestable.length;
+			elem_len = integer_type->size;
+			signedness = integer_type->signedness;
 			if (index >= num_elems) {
 				ret = -EINVAL;
 				goto end;
@@ -218,20 +224,26 @@ static int specialize_get_index(struct bytecode_runtime *runtime,
 			gid.array_len = num_elems * (elem_len / CHAR_BIT);
 			gid.elem.type = stack_top->load.object_type;
 			gid.elem.len = elem_len;
-			if (field->type.u.array.elem_type.u.basic.integer.reverse_byte_order)
+			if (integer_type->reverse_byte_order)
 				gid.elem.rev_bo = true;
 			stack_top->load.rev_bo = gid.elem.rev_bo;
 			break;
 		}
 		case OBJECT_TYPE_SEQUENCE:
 		{
+			const struct lttng_integer_type *integer_type;
 			const struct lttng_event_field *field;
 			uint32_t elem_len;
 			int signedness;
 
 			field = stack_top->load.field;
-			elem_len = field->type.u.sequence.elem_type.u.basic.integer.size;
-			signedness = field->type.u.sequence.elem_type.u.basic.integer.signedness;
+			if (!lttng_is_bytewise_integer(field->type.u.sequence_nestable.elem_type)) {
+				ret = -EINVAL;
+				goto end;
+			}
+			integer_type = &field->type.u.sequence_nestable.elem_type->u.integer;
+			elem_len = integer_type->size;
+			signedness = integer_type->signedness;
 			ret = specialize_get_index_object_type(&stack_top->load.object_type,
 					signedness, elem_len);
 			if (ret)
@@ -239,7 +251,7 @@ static int specialize_get_index(struct bytecode_runtime *runtime,
 			gid.offset = index * (elem_len / CHAR_BIT);
 			gid.elem.type = stack_top->load.object_type;
 			gid.elem.len = elem_len;
-			if (field->type.u.sequence.elem_type.u.basic.integer.reverse_byte_order)
+			if (integer_type->reverse_byte_order)
 				gid.elem.rev_bo = true;
 			stack_top->load.rev_bo = gid.elem.rev_bo;
 			break;
@@ -305,16 +317,16 @@ static int specialize_load_object(const struct lttng_event_field *field,
 	 */
 	switch (field->type.atype) {
 	case atype_integer:
-		if (field->type.u.basic.integer.signedness)
+		if (field->type.u.integer.signedness)
 			load->object_type = OBJECT_TYPE_S64;
 		else
 			load->object_type = OBJECT_TYPE_U64;
 		load->rev_bo = false;
 		break;
-	case atype_enum:
+	case atype_enum_nestable:
 	{
 		const struct lttng_integer_type *itype =
-			&field->type.u.basic.enumeration.container_type;
+			&field->type.u.enum_nestable.container_type->u.integer;
 
 		if (itype->signedness)
 			load->object_type = OBJECT_TYPE_S64;
@@ -323,15 +335,15 @@ static int specialize_load_object(const struct lttng_event_field *field,
 		load->rev_bo = false;
 		break;
 	}
-	case atype_array:
-		if (field->type.u.array.elem_type.atype != atype_integer) {
+	case atype_array_nestable:
+		if (!lttng_is_bytewise_integer(field->type.u.array_nestable.elem_type)) {
 			printk(KERN_WARNING "Array nesting only supports integer types.\n");
 			return -EINVAL;
 		}
 		if (is_context) {
 			load->object_type = OBJECT_TYPE_STRING;
 		} else {
-			if (field->type.u.array.elem_type.u.basic.integer.encoding == lttng_encode_none) {
+			if (field->type.u.array_nestable.elem_type->u.integer.encoding == lttng_encode_none) {
 				load->object_type = OBJECT_TYPE_ARRAY;
 				load->field = field;
 			} else {
@@ -339,15 +351,15 @@ static int specialize_load_object(const struct lttng_event_field *field,
 			}
 		}
 		break;
-	case atype_sequence:
-		if (field->type.u.sequence.elem_type.atype != atype_integer) {
+	case atype_sequence_nestable:
+		if (!lttng_is_bytewise_integer(field->type.u.sequence_nestable.elem_type)) {
 			printk(KERN_WARNING "Sequence nesting only supports integer types.\n");
 			return -EINVAL;
 		}
 		if (is_context) {
 			load->object_type = OBJECT_TYPE_STRING;
 		} else {
-			if (field->type.u.sequence.elem_type.u.basic.integer.encoding == lttng_encode_none) {
+			if (field->type.u.sequence_nestable.elem_type->u.integer.encoding == lttng_encode_none) {
 				load->object_type = OBJECT_TYPE_SEQUENCE;
 				load->field = field;
 			} else {
@@ -355,17 +367,14 @@ static int specialize_load_object(const struct lttng_event_field *field,
 			}
 		}
 		break;
-	case atype_array_bitfield:
-		printk(KERN_WARNING "Bitfield array type is not supported.\n");
-		return -EINVAL;
-	case atype_sequence_bitfield:
-		printk(KERN_WARNING "Bitfield sequence type is not supported.\n");
-		return -EINVAL;
 	case atype_string:
 		load->object_type = OBJECT_TYPE_STRING;
 		break;
-	case atype_struct:
+	case atype_struct_nestable:
 		printk(KERN_WARNING "Structure type cannot be loaded.\n");
+		return -EINVAL;
+	case atype_variant_nestable:
+		printk(KERN_WARNING "Variant type cannot be loaded.\n");
 		return -EINVAL;
 	default:
 		printk(KERN_WARNING "Unknown type: %d", (int) field->type.atype);
@@ -428,6 +437,9 @@ static int specialize_event_payload_lookup(struct lttng_event *event,
 	name = runtime->p.bc->bc.data + runtime->p.bc->bc.reloc_offset + offset;
 	for (i = 0; i < nr_fields; i++) {
 		field = &desc->fields[i];
+		if (field->nofilter) {
+			continue;
+		}
 		if (!strcmp(field->name, name)) {
 			found = true;
 			break;
@@ -435,13 +447,11 @@ static int specialize_event_payload_lookup(struct lttng_event *event,
 		/* compute field offset on stack */
 		switch (field->type.atype) {
 		case atype_integer:
-		case atype_enum:
+		case atype_enum_nestable:
 			field_offset += sizeof(int64_t);
 			break;
-		case atype_array:
-		case atype_sequence:
-		case atype_array_bitfield:
-		case atype_sequence_bitfield:
+		case atype_array_nestable:
+		case atype_sequence_nestable:
 			field_offset += sizeof(unsigned long);
 			field_offset += sizeof(void *);
 			break;

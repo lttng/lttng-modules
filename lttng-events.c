@@ -71,6 +71,10 @@ int _lttng_session_metadata_statedump(struct lttng_session *session);
 static
 void _lttng_metadata_channel_hangup(struct lttng_metadata_stream *stream);
 static
+int _lttng_type_statedump(struct lttng_session *session,
+		const struct lttng_type *type,
+		size_t nesting);
+static
 int _lttng_field_statedump(struct lttng_session *session,
 		const struct lttng_event_field *field,
 		size_t nesting);
@@ -1754,6 +1758,45 @@ int print_tabs(struct lttng_session *session, size_t nesting)
 	return 0;
 }
 
+static
+int lttng_field_name_statedump(struct lttng_session *session,
+		const struct lttng_event_field *field,
+		size_t nesting)
+{
+	return lttng_metadata_printf(session, " _%s;\n", field->name);
+}
+
+static
+int _lttng_integer_type_statedump(struct lttng_session *session,
+		const struct lttng_type *type,
+		size_t nesting)
+{
+	int ret;
+
+	WARN_ON_ONCE(type->atype != atype_integer);
+	ret = print_tabs(session, nesting);
+	if (ret)
+		return ret;
+	ret = lttng_metadata_printf(session,
+		"integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s }",
+		type->u.integer.size,
+		type->u.integer.alignment,
+		type->u.integer.signedness,
+		(type->u.integer.encoding == lttng_encode_none)
+			? "none"
+			: (type->u.integer.encoding == lttng_encode_UTF8)
+				? "UTF8"
+				: "ASCII",
+		type->u.integer.base,
+#if __BYTE_ORDER == __BIG_ENDIAN
+		type->u.integer.reverse_byte_order ? " byte_order = le;" : ""
+#else
+		type->u.integer.reverse_byte_order ? " byte_order = be;" : ""
+#endif
+	);
+	return ret;
+}
+
 /*
  * Must be called with sessions_mutex held.
  */
@@ -1764,6 +1807,9 @@ int _lttng_struct_type_statedump(struct lttng_session *session,
 {
 	int ret;
 	uint32_t i, nr_fields;
+	unsigned int alignment;
+
+	WARN_ON_ONCE(type->atype != atype_struct_nestable);
 
 	ret = print_tabs(session, nesting);
 	if (ret)
@@ -1772,11 +1818,11 @@ int _lttng_struct_type_statedump(struct lttng_session *session,
 		"struct {\n");
 	if (ret)
 		return ret;
-	nr_fields = type->u._struct.nr_fields;
+	nr_fields = type->u.struct_nestable.nr_fields;
 	for (i = 0; i < nr_fields; i++) {
 		const struct lttng_event_field *iter_field;
 
-		iter_field = &type->u._struct.fields[i];
+		iter_field = &type->u.struct_nestable.fields[i];
 		ret = _lttng_field_statedump(session, iter_field, nesting + 1);
 		if (ret)
 			return ret;
@@ -1784,8 +1830,15 @@ int _lttng_struct_type_statedump(struct lttng_session *session,
 	ret = print_tabs(session, nesting);
 	if (ret)
 		return ret;
-	ret = lttng_metadata_printf(session,
-		"}");
+	alignment = type->u.struct_nestable.alignment;
+	if (alignment) {
+		ret = lttng_metadata_printf(session,
+			"} align(%u)",
+			alignment);
+	} else {
+		ret = lttng_metadata_printf(session,
+			"}");
+	}
 	return ret;
 }
 
@@ -1793,7 +1846,7 @@ int _lttng_struct_type_statedump(struct lttng_session *session,
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_struct_statedump(struct lttng_session *session,
+int _lttng_struct_field_statedump(struct lttng_session *session,
 		const struct lttng_event_field *field,
 		size_t nesting)
 {
@@ -1803,10 +1856,7 @@ int _lttng_struct_statedump(struct lttng_session *session,
 			&field->type, nesting);
 	if (ret)
 		return ret;
-	ret = lttng_metadata_printf(session,
-		"_%s;\n",
-		field->name);
-	return ret;
+	return lttng_field_name_statedump(session, field, nesting);
 }
 
 /*
@@ -1820,19 +1870,25 @@ int _lttng_variant_type_statedump(struct lttng_session *session,
 	int ret;
 	uint32_t i, nr_choices;
 
+	WARN_ON_ONCE(type->atype != atype_variant_nestable);
+	/*
+	 * CTF 1.8 does not allow expressing nonzero variant alignment in a nestable way.
+	 */
+	if (type->u.variant_nestable.alignment != 0)
+		return -EINVAL;
 	ret = print_tabs(session, nesting);
 	if (ret)
 		return ret;
 	ret = lttng_metadata_printf(session,
 		"variant <_%s> {\n",
-		type->u.variant.tag_name);
+		type->u.variant_nestable.tag_name);
 	if (ret)
 		return ret;
-	nr_choices = type->u.variant.nr_choices;
+	nr_choices = type->u.variant_nestable.nr_choices;
 	for (i = 0; i < nr_choices; i++) {
 		const struct lttng_event_field *iter_field;
 
-		iter_field = &type->u.variant.choices[i];
+		iter_field = &type->u.variant_nestable.choices[i];
 		ret = _lttng_field_statedump(session, iter_field, nesting + 1);
 		if (ret)
 			return ret;
@@ -1849,7 +1905,7 @@ int _lttng_variant_type_statedump(struct lttng_session *session,
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_variant_statedump(struct lttng_session *session,
+int _lttng_variant_field_statedump(struct lttng_session *session,
 		const struct lttng_event_field *field,
 		size_t nesting)
 {
@@ -1859,43 +1915,54 @@ int _lttng_variant_statedump(struct lttng_session *session,
 			&field->type, nesting);
 	if (ret)
 		return ret;
-	ret = lttng_metadata_printf(session,
-		"_%s;\n",
-		field->name);
-	return ret;
+	return lttng_field_name_statedump(session, field, nesting);
 }
 
 /*
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_array_compound_statedump(struct lttng_session *session,
+int _lttng_array_field_statedump(struct lttng_session *session,
 		const struct lttng_event_field *field,
 		size_t nesting)
 {
 	int ret;
 	const struct lttng_type *elem_type;
 
-	/* Only array of structures and variants are currently supported. */
-	elem_type = field->type.u.array_compound.elem_type;
+	WARN_ON_ONCE(field->type.atype != atype_array_nestable);
+
+	if (field->type.u.array_nestable.alignment) {
+		ret = print_tabs(session, nesting);
+		if (ret)
+			return ret;
+		ret = lttng_metadata_printf(session,
+		"struct { } align(%u) _%s_padding;\n",
+				field->type.u.array_nestable.alignment * CHAR_BIT,
+				field->name);
+		if (ret)
+			return ret;
+	}
+	/*
+	 * Nested compound types: Only array of structures and variants are
+	 * currently supported.
+	 */
+	elem_type = field->type.u.array_nestable.elem_type;
 	switch (elem_type->atype) {
-	case atype_struct:
-		ret = _lttng_struct_type_statedump(session, elem_type, nesting);
+	case atype_integer:
+	case atype_struct_nestable:
+	case atype_variant_nestable:
+		ret = _lttng_type_statedump(session, elem_type, nesting);
 		if (ret)
 			return ret;
 		break;
-	case atype_variant:
-		ret = _lttng_variant_type_statedump(session, elem_type, nesting);
-		if (ret)
-			return ret;
-		break;
+
 	default:
 		return -EINVAL;
 	}
 	ret = lttng_metadata_printf(session,
 		" _%s[%u];\n",
 		field->name,
-		field->type.u.array_compound.length);
+		field->type.u.array_nestable.length);
 	return ret;
 }
 
@@ -1903,7 +1970,7 @@ int _lttng_array_compound_statedump(struct lttng_session *session,
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_sequence_compound_statedump(struct lttng_session *session,
+int _lttng_sequence_field_statedump(struct lttng_session *session,
 		const struct lttng_event_field *field,
 		size_t nesting)
 {
@@ -1911,28 +1978,43 @@ int _lttng_sequence_compound_statedump(struct lttng_session *session,
 	const char *length_name;
 	const struct lttng_type *elem_type;
 
-	length_name = field->type.u.sequence_compound.length_name;
+	WARN_ON_ONCE(field->type.atype != atype_sequence_nestable);
 
-	/* Only array of structures and variants are currently supported. */
-	elem_type = field->type.u.sequence_compound.elem_type;
+	length_name = field->type.u.sequence_nestable.length_name;
+
+	if (field->type.u.sequence_nestable.alignment) {
+		ret = print_tabs(session, nesting);
+		if (ret)
+			return ret;
+		ret = lttng_metadata_printf(session,
+		"struct { } align(%u) _%s_padding;\n",
+				field->type.u.sequence_nestable.alignment * CHAR_BIT,
+				field->name);
+		if (ret)
+			return ret;
+	}
+
+	/*
+	 * Nested compound types: Only array of structures and variants are
+	 * currently supported.
+	 */
+	elem_type = field->type.u.sequence_nestable.elem_type;
 	switch (elem_type->atype) {
-	case atype_struct:
-		ret = _lttng_struct_type_statedump(session, elem_type, nesting);
+	case atype_integer:
+	case atype_struct_nestable:
+	case atype_variant_nestable:
+		ret = _lttng_type_statedump(session, elem_type, nesting);
 		if (ret)
 			return ret;
 		break;
-	case atype_variant:
-		ret = _lttng_variant_type_statedump(session, elem_type, nesting);
-		if (ret)
-			return ret;
-		break;
+
 	default:
 		return -EINVAL;
 	}
 	ret = lttng_metadata_printf(session,
 		" _%s[ _%s ];\n",
 		field->name,
-		length_name);
+		field->type.u.sequence_nestable.length_name);
 	return ret;
 }
 
@@ -1940,41 +2022,35 @@ int _lttng_sequence_compound_statedump(struct lttng_session *session,
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_enum_statedump(struct lttng_session *session,
-		const struct lttng_event_field *field,
+int _lttng_enum_type_statedump(struct lttng_session *session,
+		const struct lttng_type *type,
 		size_t nesting)
 {
 	const struct lttng_enum_desc *enum_desc;
-	const struct lttng_integer_type *container_type;
+	const struct lttng_type *container_type;
 	int ret;
 	unsigned int i, nr_entries;
 
-	enum_desc = field->type.u.basic.enumeration.desc;
-	container_type = &field->type.u.basic.enumeration.container_type;
+	container_type = type->u.enum_nestable.container_type;
+	if (container_type->atype != atype_integer) {
+		ret = -EINVAL;
+		goto end;
+	}
+	enum_desc = type->u.enum_nestable.desc;
 	nr_entries = enum_desc->nr_entries;
 
 	ret = print_tabs(session, nesting);
 	if (ret)
 		goto end;
-	ret = lttng_metadata_printf(session,
-		"enum : integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } {\n",
-		container_type->size,
-		container_type->alignment,
-		container_type->signedness,
-		(container_type->encoding == lttng_encode_none)
-			? "none"
-			: (container_type->encoding == lttng_encode_UTF8)
-				? "UTF8"
-				: "ASCII",
-		container_type->base,
-#if __BYTE_ORDER == __BIG_ENDIAN
-		container_type->reverse_byte_order ? " byte_order = le;" : ""
-#else
-		container_type->reverse_byte_order ? " byte_order = be;" : ""
-#endif
-		);
+	ret = lttng_metadata_printf(session, "enum : ");
 	if (ret)
-	        goto end;
+		goto end;
+	ret = _lttng_integer_type_statedump(session, container_type, 0);
+	if (ret)
+		goto end;
+	ret = lttng_metadata_printf(session, " {\n");
+	if (ret)
+		goto end;
 	/* Dump all entries */
 	for (i = 0; i < nr_entries; i++) {
 		const struct lttng_enum_entry *entry = &enum_desc->entries[i];
@@ -2053,9 +2129,107 @@ int _lttng_enum_statedump(struct lttng_session *session,
 	ret = print_tabs(session, nesting);
 	if (ret)
 		goto end;
-	ret = lttng_metadata_printf(session, "} _%s;\n",
-			field->name);
+	ret = lttng_metadata_printf(session, "}");
 end:
+	return ret;
+}
+
+/*
+ * Must be called with sessions_mutex held.
+ */
+static
+int _lttng_enum_field_statedump(struct lttng_session *session,
+		const struct lttng_event_field *field,
+		size_t nesting)
+{
+	int ret;
+
+	ret = _lttng_enum_type_statedump(session, &field->type, nesting);
+	if (ret)
+		return ret;
+	return lttng_field_name_statedump(session, field, nesting);
+}
+
+static
+int _lttng_integer_field_statedump(struct lttng_session *session,
+		const struct lttng_event_field *field,
+		size_t nesting)
+{
+	int ret;
+
+	ret = _lttng_integer_type_statedump(session, &field->type, nesting);
+	if (ret)
+		return ret;
+	return lttng_field_name_statedump(session, field, nesting);
+}
+
+static
+int _lttng_string_type_statedump(struct lttng_session *session,
+		const struct lttng_type *type,
+		size_t nesting)
+{
+	int ret;
+
+	WARN_ON_ONCE(type->atype != atype_string);
+	/* Default encoding is UTF8 */
+	ret = print_tabs(session, nesting);
+	if (ret)
+		return ret;
+	ret = lttng_metadata_printf(session,
+		"string%s",
+		type->u.string.encoding == lttng_encode_ASCII ?
+			" { encoding = ASCII; }" : "");
+	return ret;
+}
+
+static
+int _lttng_string_field_statedump(struct lttng_session *session,
+		const struct lttng_event_field *field,
+		size_t nesting)
+{
+	int ret;
+
+	WARN_ON_ONCE(field->type.atype != atype_string);
+	ret = _lttng_string_type_statedump(session, &field->type, nesting);
+	if (ret)
+		return ret;
+	return lttng_field_name_statedump(session, field, nesting);
+}
+
+/*
+ * Must be called with sessions_mutex held.
+ */
+static
+int _lttng_type_statedump(struct lttng_session *session,
+		const struct lttng_type *type,
+		size_t nesting)
+{
+	int ret = 0;
+
+	switch (type->atype) {
+	case atype_integer:
+		ret = _lttng_integer_type_statedump(session, type, nesting);
+		break;
+	case atype_enum_nestable:
+		ret = _lttng_enum_type_statedump(session, type, nesting);
+		break;
+	case atype_string:
+		ret = _lttng_string_type_statedump(session, type, nesting);
+		break;
+	case atype_struct_nestable:
+		ret = _lttng_struct_type_statedump(session, type, nesting);
+		break;
+	case atype_variant_nestable:
+		ret = _lttng_variant_type_statedump(session, type, nesting);
+		break;
+
+	/* Nested arrays and sequences are not supported yet. */
+	case atype_array_nestable:
+	case atype_sequence_nestable:
+	default:
+		WARN_ON_ONCE(1);
+		return -EINVAL;
+	}
 	return ret;
 }
 
@@ -2071,157 +2245,25 @@ int _lttng_field_statedump(struct lttng_session *session,
 
 	switch (field->type.atype) {
 	case atype_integer:
-		ret = print_tabs(session, nesting);
-		if (ret)
-			return ret;
-		ret = lttng_metadata_printf(session,
-			"integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } _%s;\n",
-			field->type.u.basic.integer.size,
-			field->type.u.basic.integer.alignment,
-			field->type.u.basic.integer.signedness,
-			(field->type.u.basic.integer.encoding == lttng_encode_none)
-				? "none"
-				: (field->type.u.basic.integer.encoding == lttng_encode_UTF8)
-					? "UTF8"
-					: "ASCII",
-			field->type.u.basic.integer.base,
-#if __BYTE_ORDER == __BIG_ENDIAN
-			field->type.u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
-#else
-			field->type.u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
-#endif
-			field->name);
+		ret = _lttng_integer_field_statedump(session, field, nesting);
 		break;
-	case atype_enum:
-		ret = _lttng_enum_statedump(session, field, nesting);
+	case atype_enum_nestable:
+		ret = _lttng_enum_field_statedump(session, field, nesting);
 		break;
-	case atype_array:
-	case atype_array_bitfield:
-	{
-		const struct lttng_basic_type *elem_type;
-
-		elem_type = &field->type.u.array.elem_type;
-		if (field->type.u.array.elem_alignment) {
-			ret = print_tabs(session, nesting);
-			if (ret)
-				return ret;
-			ret = lttng_metadata_printf(session,
-			"struct { } align(%u) _%s_padding;\n",
-					field->type.u.array.elem_alignment * CHAR_BIT,
-					field->name);
-			if (ret)
-				return ret;
-		}
-		ret = print_tabs(session, nesting);
-		if (ret)
-			return ret;
-		ret = lttng_metadata_printf(session,
-			"integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } _%s[%u];\n",
-			elem_type->u.basic.integer.size,
-			elem_type->u.basic.integer.alignment,
-			elem_type->u.basic.integer.signedness,
-			(elem_type->u.basic.integer.encoding == lttng_encode_none)
-				? "none"
-				: (elem_type->u.basic.integer.encoding == lttng_encode_UTF8)
-					? "UTF8"
-					: "ASCII",
-			elem_type->u.basic.integer.base,
-#if __BYTE_ORDER == __BIG_ENDIAN
-			elem_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
-#else
-			elem_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
-#endif
-			field->name, field->type.u.array.length);
-		break;
-	}
-	case atype_sequence:
-	case atype_sequence_bitfield:
-	{
-		const struct lttng_basic_type *elem_type;
-		const struct lttng_basic_type *length_type;
-
-		elem_type = &field->type.u.sequence.elem_type;
-		length_type = &field->type.u.sequence.length_type;
-		ret = print_tabs(session, nesting);
-		if (ret)
-			return ret;
-		ret = lttng_metadata_printf(session,
-			"integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } __%s_length;\n",
-			length_type->u.basic.integer.size,
-			(unsigned int) length_type->u.basic.integer.alignment,
-			length_type->u.basic.integer.signedness,
-			(length_type->u.basic.integer.encoding == lttng_encode_none)
-				? "none"
-				: ((length_type->u.basic.integer.encoding == lttng_encode_UTF8)
-					? "UTF8"
-					: "ASCII"),
-			length_type->u.basic.integer.base,
-#if __BYTE_ORDER == __BIG_ENDIAN
-			length_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
-#else
-			length_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
-#endif
-			field->name);
-		if (ret)
-			return ret;
-
-		if (field->type.u.sequence.elem_alignment) {
-			ret = print_tabs(session, nesting);
-			if (ret)
-				return ret;
-			ret = lttng_metadata_printf(session,
-			"struct { } align(%u) _%s_padding;\n",
-					field->type.u.sequence.elem_alignment * CHAR_BIT,
-					field->name);
-			if (ret)
-				return ret;
-		}
-		ret = print_tabs(session, nesting);
-		if (ret)
-			return ret;
-		ret = lttng_metadata_printf(session,
-			"integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s } _%s[ __%s_length ];\n",
-			elem_type->u.basic.integer.size,
-			(unsigned int) elem_type->u.basic.integer.alignment,
-			elem_type->u.basic.integer.signedness,
-			(elem_type->u.basic.integer.encoding == lttng_encode_none)
-				? "none"
-				: ((elem_type->u.basic.integer.encoding == lttng_encode_UTF8)
-					? "UTF8"
-					: "ASCII"),
-			elem_type->u.basic.integer.base,
-#if __BYTE_ORDER == __BIG_ENDIAN
-			elem_type->u.basic.integer.reverse_byte_order ? " byte_order = le;" : "",
-#else
-			elem_type->u.basic.integer.reverse_byte_order ? " byte_order = be;" : "",
-#endif
-			field->name,
-			field->name);
-		break;
-	}
-
 	case atype_string:
-		/* Default encoding is UTF8 */
-		ret = print_tabs(session, nesting);
-		if (ret)
-			return ret;
-		ret = lttng_metadata_printf(session,
-			"string%s _%s;\n",
-			field->type.u.basic.string.encoding == lttng_encode_ASCII ?
-				" { encoding = ASCII; }" : "",
-			field->name);
+		ret = _lttng_string_field_statedump(session, field, nesting);
 		break;
-	case atype_struct:
-		ret = _lttng_struct_statedump(session, field, nesting);
+	case atype_struct_nestable:
+		ret = _lttng_struct_field_statedump(session, field, nesting);
 		break;
-	case atype_array_compound:
-		ret = _lttng_array_compound_statedump(session, field, nesting);
+	case atype_array_nestable:
+		ret = _lttng_array_field_statedump(session, field, nesting);
 		break;
-	case atype_sequence_compound:
-		ret = _lttng_sequence_compound_statedump(session, field, nesting);
+	case atype_sequence_nestable:
+		ret = _lttng_sequence_field_statedump(session, field, nesting);
 		break;
-	case atype_variant:
-		ret = _lttng_variant_statedump(session, field, nesting);
+	case atype_variant_nestable:
+		ret = _lttng_variant_field_statedump(session, field, nesting);
 		break;
 
 	default:

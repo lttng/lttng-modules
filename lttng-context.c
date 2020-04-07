@@ -112,95 +112,65 @@ void lttng_context_update(struct lttng_ctx *ctx)
 		type = &ctx->fields[i].event_field.type;
 		switch (type->atype) {
 		case atype_integer:
-			field_align = type->u.basic.integer.alignment;
+			field_align = type->u.integer.alignment;
 			break;
-		case atype_array:
-		case atype_array_bitfield:
+		case atype_array_nestable:
 		{
-			struct lttng_basic_type *btype;
+			const struct lttng_type *nested_type;
 
-			btype = &type->u.array.elem_type;
-			switch (btype->atype) {
+			nested_type = type->u.array_nestable.elem_type;
+			switch (nested_type->atype) {
 			case atype_integer:
-				field_align = btype->u.basic.integer.alignment;
+				field_align = nested_type->u.integer.alignment;
 				break;
 			case atype_string:
 				break;
 
-			case atype_array:
-			case atype_sequence:
-			case atype_array_bitfield:
-			case atype_sequence_bitfield:
-			case atype_struct:
-			case atype_array_compound:
-			case atype_sequence_compound:
-			case atype_variant:
+			case atype_array_nestable:
+			case atype_sequence_nestable:
+			case atype_struct_nestable:
+			case atype_variant_nestable:
 			default:
 				WARN_ON_ONCE(1);
 				break;
 			}
+			field_align = max_t(size_t, field_align,
+					type->u.array_nestable.alignment);
 			break;
 		}
-		case atype_sequence:
-		case atype_sequence_bitfield:
+		case atype_sequence_nestable:
 		{
-			struct lttng_basic_type *btype;
+			const struct lttng_type *nested_type;
 
-			btype = &type->u.sequence.length_type;
-			switch (btype->atype) {
+			nested_type = type->u.sequence_nestable.elem_type;
+			switch (nested_type->atype) {
 			case atype_integer:
-				field_align = btype->u.basic.integer.alignment;
-				break;
-
-			case atype_string:
-			case atype_array:
-			case atype_sequence:
-			case atype_array_bitfield:
-			case atype_sequence_bitfield:
-			case atype_struct:
-			case atype_array_compound:
-			case atype_sequence_compound:
-			case atype_variant:
-			default:
-				WARN_ON_ONCE(1);
-				break;
-			}
-
-			btype = &type->u.sequence.elem_type;
-			switch (btype->atype) {
-			case atype_integer:
-				field_align = max_t(size_t,
-					field_align,
-					btype->u.basic.integer.alignment);
+				field_align = nested_type->u.integer.alignment;
 				break;
 
 			case atype_string:
 				break;
 
-			case atype_array:
-			case atype_sequence:
-			case atype_array_bitfield:
-			case atype_sequence_bitfield:
-			case atype_struct:
-			case atype_array_compound:
-			case atype_sequence_compound:
-			case atype_variant:
+			case atype_array_nestable:
+			case atype_sequence_nestable:
+			case atype_struct_nestable:
+			case atype_variant_nestable:
 			default:
 				WARN_ON_ONCE(1);
 				break;
 			}
+			field_align = max_t(size_t, field_align,
+					type->u.sequence_nestable.alignment);
 			break;
 		}
 		case atype_string:
 			break;
 
-		case atype_struct:
-		case atype_array_compound:
-		case atype_sequence_compound:
-		case atype_variant:
+		case atype_struct_nestable:
+		case atype_variant_nestable:
 			break;
 
-		case atype_enum:
+		case atype_enum_nestable:
 		default:
 			WARN_ON_ONCE(1);
 			break;

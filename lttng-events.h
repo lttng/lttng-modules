@@ -20,6 +20,7 @@
 #include <lttng-tracer.h>
 #include <lttng-abi.h>
 #include <lttng-abi-old.h>
+#include <lttng-endian.h>
 
 #define lttng_is_signed_type(type)	(((type)(-1)) < 0)
 
@@ -35,16 +36,12 @@ struct lib_ring_buffer_config;
 
 enum abstract_types {
 	atype_integer,
-	atype_enum,
-	atype_array,
-	atype_sequence,
 	atype_string,
-	atype_struct,
-	atype_array_compound,		/* Array of compound types. */
-	atype_sequence_compound,	/* Sequence of compound types. */
-	atype_variant,
-	atype_array_bitfield,
-	atype_sequence_bitfield,
+	atype_enum_nestable,
+	atype_array_nestable,
+	atype_sequence_nestable,
+	atype_struct_nestable,
+	atype_variant_nestable,
 	NR_ABSTRACT_TYPES,
 };
 
@@ -77,7 +74,7 @@ struct lttng_enum_entry {
 		_byte_order, _base, _encoding)	\
 	{							\
 	    .atype = atype_integer,				\
-	    .u.basic.integer =					\
+	    .u.integer =					\
 		{						\
 		  .size = (_size) ? : sizeof(_type) * CHAR_BIT,	\
 		  .alignment = (_alignment) ? : lttng_alignof(_type) * CHAR_BIT, \
@@ -97,55 +94,38 @@ struct lttng_integer_type {
 	enum lttng_string_encodings encoding;
 };
 
-union _lttng_basic_type {
-	struct lttng_integer_type integer;
-	struct {
-		const struct lttng_enum_desc *desc;	/* Enumeration mapping */
-		struct lttng_integer_type container_type;
-	} enumeration;
-	struct {
-		enum lttng_string_encodings encoding;
-	} string;
-};
-
-struct lttng_basic_type {
-	enum abstract_types atype;
-	union {
-		union _lttng_basic_type basic;
-	} u;
-};
-
 struct lttng_type {
 	enum abstract_types atype;
 	union {
-		union _lttng_basic_type basic;
+		struct lttng_integer_type integer;
 		struct {
-			struct lttng_basic_type elem_type;
-			unsigned int length;		/* num. elems. */
-			unsigned int elem_alignment;	/* alignment override */
-		} array;
+			enum lttng_string_encodings encoding;
+		} string;
 		struct {
-			struct lttng_basic_type length_type;
-			struct lttng_basic_type elem_type;
-			unsigned int elem_alignment;	/* alignment override */
-		} sequence;
+			const struct lttng_enum_desc *desc;	/* Enumeration mapping */
+			const struct lttng_type *container_type;
+		} enum_nestable;
 		struct {
-			uint32_t nr_fields;
-			struct lttng_event_field *fields; /* Array of fields. */
-		} _struct;
+			const struct lttng_type *elem_type;
+			unsigned int length;			/* Num. elems. */
+			unsigned int alignment;
+		} array_nestable;
 		struct {
-			struct lttng_type *elem_type;
-			unsigned int length;		/* num. elems. */
-		} array_compound;
+			const char *length_name;		/* Length field name. */
+			const struct lttng_type *elem_type;
+			unsigned int alignment;			/* Alignment before elements. */
+		} sequence_nestable;
 		struct {
-			struct lttng_type *elem_type;
-			const char *length_name;
-		} sequence_compound;
+			unsigned int nr_fields;
+			const struct lttng_event_field *fields;	/* Array of fields. */
+			unsigned int alignment;
+		} struct_nestable;
 		struct {
 			const char *tag_name;
-			struct lttng_event_field *choices; /* Array of fields. */
-			uint32_t nr_choices;
-		} variant;
+			const struct lttng_event_field *choices; /* Array of fields. */
+			unsigned int nr_choices;
+			unsigned int alignment;
+		} variant_nestable;
 	} u;
 };
 
@@ -161,7 +141,8 @@ struct lttng_event_field {
 	const char *name;
 	struct lttng_type type;
 	unsigned int nowrite:1,		/* do not write into trace */
-			user:1;		/* fetch from user-space */
+			user:1,		/* fetch from user-space */
+			nofilter:1;	/* do not consider for filter */
 };
 
 union lttng_ctx_value {
@@ -981,5 +962,21 @@ extern const struct file_operations lttng_tracepoint_list_fops;
 extern const struct file_operations lttng_syscall_list_fops;
 
 #define TRACEPOINT_HAS_DATA_ARG
+
+static inline bool lttng_is_bytewise_integer(const struct lttng_type *type)
+{
+	if (type->atype != atype_integer)
+		return false;
+	switch (type->u.integer.size) {
+	case 8:		/* Fall-through. */
+	case 16:	/* Fall-through. */
+	case 32:	/* Fall-through. */
+	case 64:
+		break;
+	default:
+		return false;
+	}
+	return true;
+}
 
 #endif /* _LTTNG_EVENTS_H */

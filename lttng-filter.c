@@ -191,6 +191,8 @@ int apply_field_reloc(struct lttng_event *event,
 		return -EINVAL;
 	nr_fields = desc->nr_fields;
 	for (i = 0; i < nr_fields; i++) {
+		if (fields[i].nofilter)
+			continue;
 		if (!strcmp(fields[i].name, field_name)) {
 			field = &fields[i];
 			break;
@@ -198,23 +200,26 @@ int apply_field_reloc(struct lttng_event *event,
 		/* compute field offset */
 		switch (fields[i].type.atype) {
 		case atype_integer:
-		case atype_enum:
+		case atype_enum_nestable:
 			field_offset += sizeof(int64_t);
 			break;
-		case atype_array:
-		case atype_sequence:
-		case atype_array_bitfield:
-		case atype_sequence_bitfield:
+		case atype_array_nestable:
+			if (!lttng_is_bytewise_integer(fields[i].type.u.array_nestable.elem_type))
+				return -EINVAL;
+			field_offset += sizeof(unsigned long);
+			field_offset += sizeof(void *);
+			break;
+		case atype_sequence_nestable:
+			if (!lttng_is_bytewise_integer(fields[i].type.u.sequence_nestable.elem_type))
+				return -EINVAL;
 			field_offset += sizeof(unsigned long);
 			field_offset += sizeof(void *);
 			break;
 		case atype_string:
 			field_offset += sizeof(void *);
 			break;
-		case atype_struct:		/* Unsupported. */
-		case atype_array_compound:	/* Unsupported. */
-		case atype_sequence_compound:	/* Unsupported. */
-		case atype_variant:		/* Unsupported. */
+		case atype_struct_nestable:	/* Unsupported. */
+		case atype_variant_nestable:	/* Unsupported. */
 		default:
 			return -EINVAL;
 		}
@@ -237,11 +242,11 @@ int apply_field_reloc(struct lttng_event *event,
 		field_ref = (struct field_ref *) op->data;
 		switch (field->type.atype) {
 		case atype_integer:
-		case atype_enum:
+		case atype_enum_nestable:
 			op->op = FILTER_OP_LOAD_FIELD_REF_S64;
 			break;
-		case atype_array:
-		case atype_sequence:
+		case atype_array_nestable:
+		case atype_sequence_nestable:
 			if (field->user)
 				op->op = FILTER_OP_LOAD_FIELD_REF_USER_SEQUENCE;
 			else
@@ -253,12 +258,8 @@ int apply_field_reloc(struct lttng_event *event,
 			else
 				op->op = FILTER_OP_LOAD_FIELD_REF_STRING;
 			break;
-		case atype_struct:		/* Unsupported. */
-		case atype_array_compound:	/* Unsupported. */
-		case atype_sequence_compound:	/* Unsupported. */
-		case atype_variant:		/* Unsupported. */
-		case atype_array_bitfield:	/* Unsupported. */
-		case atype_sequence_bitfield:	/* Unsupported. */
+		case atype_struct_nestable:	/* Unsupported. */
+		case atype_variant_nestable:	/* Unsupported. */
 		default:
 			return -EINVAL;
 		}
@@ -307,22 +308,28 @@ int apply_context_reloc(struct lttng_event *event,
 		field_ref = (struct field_ref *) op->data;
 		switch (ctx_field->event_field.type.atype) {
 		case atype_integer:
-		case atype_enum:
+		case atype_enum_nestable:
 			op->op = FILTER_OP_GET_CONTEXT_REF_S64;
 			break;
 			/* Sequence and array supported as string */
 		case atype_string:
-		case atype_array:
-		case atype_sequence:
 			BUG_ON(ctx_field->event_field.user);
 			op->op = FILTER_OP_GET_CONTEXT_REF_STRING;
 			break;
-		case atype_struct:	/* Unsupported. */
-		case atype_array_compound:	/* Unsupported. */
-		case atype_sequence_compound:	/* Unsupported. */
-		case atype_variant:		/* Unsupported. */
-		case atype_array_bitfield:	/* Unsupported. */
-		case atype_sequence_bitfield:	/* Unsupported. */
+		case atype_array_nestable:
+			if (!lttng_is_bytewise_integer(ctx_field->event_field.type.u.array_nestable.elem_type))
+				return -EINVAL;
+			BUG_ON(ctx_field->event_field.user);
+			op->op = FILTER_OP_GET_CONTEXT_REF_STRING;
+			break;
+		case atype_sequence_nestable:
+			if (!lttng_is_bytewise_integer(ctx_field->event_field.type.u.sequence_nestable.elem_type))
+				return -EINVAL;
+			BUG_ON(ctx_field->event_field.user);
+			op->op = FILTER_OP_GET_CONTEXT_REF_STRING;
+			break;
+		case atype_struct_nestable:	/* Unsupported. */
+		case atype_variant_nestable:	/* Unsupported. */
 		default:
 			return -EINVAL;
 		}

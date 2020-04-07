@@ -54,6 +54,19 @@ const char *lttng_cs_ctx_mode_name(enum lttng_cs_ctx_modes mode)
 }
 
 static
+const char *lttng_cs_ctx_mode_length_name(enum lttng_cs_ctx_modes mode)
+{
+	switch (mode) {
+	case CALLSTACK_KERNEL:
+		return "_callstack_kernel_length";
+	case CALLSTACK_USER:
+		return "_callstack_user_length";
+	default:
+		return NULL;
+	}
+}
+
+static
 int init_type_callstack_kernel(void)
 {
 	unsigned long func;
@@ -142,14 +155,26 @@ struct lttng_stack_trace *stack_trace_context(struct lttng_ctx_field *field,
 	return &cs->stack_trace[buffer_nesting];
 }
 
+static
+size_t lttng_callstack_length_get_size(size_t offset, struct lttng_ctx_field *field,
+				struct lib_ring_buffer_ctx *ctx,
+				struct lttng_channel *chan)
+{
+	size_t orig_offset = offset;
+
+	offset += lib_ring_buffer_align(offset, lttng_alignof(unsigned int));
+	offset += sizeof(unsigned int);
+	return offset - orig_offset;
+}
+
 /*
  * In order to reserve the correct size, the callstack is computed. The
  * resulting callstack is saved to be accessed in the record step.
  */
 static
-size_t lttng_callstack_get_size(size_t offset, struct lttng_ctx_field *field,
-				struct lib_ring_buffer_ctx *ctx,
-				struct lttng_channel *chan)
+size_t lttng_callstack_sequence_get_size(size_t offset, struct lttng_ctx_field *field,
+					struct lib_ring_buffer_ctx *ctx,
+					struct lttng_channel *chan)
 {
 	struct lttng_stack_trace *trace;
 	struct field_data *fdata = field->priv;
@@ -158,8 +183,6 @@ size_t lttng_callstack_get_size(size_t offset, struct lttng_ctx_field *field,
 	/* do not write data if no space is available */
 	trace = stack_trace_context(field, ctx);
 	if (unlikely(!trace)) {
-		offset += lib_ring_buffer_align(offset, lttng_alignof(unsigned int));
-		offset += sizeof(unsigned int);
 		offset += lib_ring_buffer_align(offset, lttng_alignof(unsigned long));
 		return offset - orig_offset;
 	}
@@ -188,8 +211,6 @@ size_t lttng_callstack_get_size(size_t offset, struct lttng_ctx_field *field,
 	 * If the array is filled, add our own marker to show that the
 	 * stack is incomplete.
 	 */
-	offset += lib_ring_buffer_align(offset, lttng_alignof(unsigned int));
-	offset += sizeof(unsigned int);
 	offset += lib_ring_buffer_align(offset, lttng_alignof(unsigned long));
 	offset += sizeof(unsigned long) * trace->nr_entries;
 	/* Add our own ULONG_MAX delimiter to show incomplete stack. */
@@ -199,26 +220,39 @@ size_t lttng_callstack_get_size(size_t offset, struct lttng_ctx_field *field,
 }
 
 static
-void lttng_callstack_record(struct lttng_ctx_field *field,
+void lttng_callstack_length_record(struct lttng_ctx_field *field,
 			struct lib_ring_buffer_ctx *ctx,
 			struct lttng_channel *chan)
 {
 	struct lttng_stack_trace *trace = stack_trace_context(field, ctx);
 	unsigned int nr_seq_entries;
 
+	lib_ring_buffer_align_ctx(ctx, lttng_alignof(unsigned int));
 	if (unlikely(!trace)) {
 		nr_seq_entries = 0;
-		lib_ring_buffer_align_ctx(ctx, lttng_alignof(unsigned int));
-		chan->ops->event_write(ctx, &nr_seq_entries, sizeof(unsigned int));
-		lib_ring_buffer_align_ctx(ctx, lttng_alignof(unsigned long));
+	} else {
+		nr_seq_entries = trace->nr_entries;
+		if (trace->nr_entries == MAX_ENTRIES)
+			nr_seq_entries++;
+	}
+	chan->ops->event_write(ctx, &nr_seq_entries, sizeof(unsigned int));
+}
+
+static
+void lttng_callstack_sequence_record(struct lttng_ctx_field *field,
+			struct lib_ring_buffer_ctx *ctx,
+			struct lttng_channel *chan)
+{
+	struct lttng_stack_trace *trace = stack_trace_context(field, ctx);
+	unsigned int nr_seq_entries;
+
+	lib_ring_buffer_align_ctx(ctx, lttng_alignof(unsigned long));
+	if (unlikely(!trace)) {
 		return;
 	}
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(unsigned int));
 	nr_seq_entries = trace->nr_entries;
 	if (trace->nr_entries == MAX_ENTRIES)
 		nr_seq_entries++;
-	chan->ops->event_write(ctx, &nr_seq_entries, sizeof(unsigned int));
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(unsigned long));
 	chan->ops->event_write(ctx, trace->entries,
 			sizeof(unsigned long) * trace->nr_entries);
 	/* Add our own ULONG_MAX delimiter to show incomplete stack. */
