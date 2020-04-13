@@ -12,6 +12,10 @@
 #include <lttng-tracer.h>
 #include <lttng-kernel-version.h>
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0))
+#include <kvm_emulate.h>
+#endif
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
 #include <kvm/iodev.h>
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0)) */
