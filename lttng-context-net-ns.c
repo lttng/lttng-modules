@@ -16,7 +16,6 @@
 #include <net/net_namespace.h>
 #include <lttng-events.h>
 #include <wrapper/ringbuffer/frontend_types.h>
-#include <wrapper/namespace.h>
 #include <lttng-tracer.h>
 
 #if defined(CONFIG_NET_NS) && \
@@ -47,7 +46,7 @@ void net_ns_record(struct lttng_ctx_field *field,
 	 * namespaces, just dereference the pointers.
 	 */
 	if (current->nsproxy)
-		net_ns_inum = current->nsproxy->net_ns->lttng_ns_inum;
+		net_ns_inum = current->nsproxy->net_ns->ns.inum;
 
 	lib_ring_buffer_align_ctx(ctx, lttng_alignof(net_ns_inum));
 	chan->ops->event_write(ctx, &net_ns_inum, sizeof(net_ns_inum));
@@ -68,7 +67,7 @@ void net_ns_get_value(struct lttng_ctx_field *field,
 	 * namespaces, just dereference the pointers.
 	 */
 	if (current->nsproxy)
-		net_ns_inum = current->nsproxy->net_ns->lttng_ns_inum;
+		net_ns_inum = current->nsproxy->net_ns->ns.inum;
 
 	value->s64 = net_ns_inum;
 }

@@ -15,7 +15,6 @@
 #include <linux/cgroup.h>
 #include <lttng-events.h>
 #include <wrapper/ringbuffer/frontend_types.h>
-#include <wrapper/namespace.h>
 #include <lttng-tracer.h>
 
 #if defined(CONFIG_CGROUPS) && \
@@ -47,7 +46,7 @@ void cgroup_ns_record(struct lttng_ctx_field *field,
 	 * namespaces, just dereference the pointers.
 	 */
 	if (current->nsproxy)
-		cgroup_ns_inum = current->nsproxy->cgroup_ns->lttng_ns_inum;
+		cgroup_ns_inum = current->nsproxy->cgroup_ns->ns.inum;
 
 	lib_ring_buffer_align_ctx(ctx, lttng_alignof(cgroup_ns_inum));
 	chan->ops->event_write(ctx, &cgroup_ns_inum, sizeof(cgroup_ns_inum));
@@ -68,7 +67,7 @@ void cgroup_ns_get_value(struct lttng_ctx_field *field,
 	 * namespaces, just dereference the pointers.
 	 */
 	if (current->nsproxy)
-		cgroup_ns_inum = current->nsproxy->cgroup_ns->lttng_ns_inum;
+		cgroup_ns_inum = current->nsproxy->cgroup_ns->ns.inum;
 
 	value->s64 = cgroup_ns_inum;
 }

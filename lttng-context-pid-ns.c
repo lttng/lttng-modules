@@ -15,7 +15,6 @@
 #include <linux/pid_namespace.h>
 #include <lttng-events.h>
 #include <wrapper/ringbuffer/frontend_types.h>
-#include <wrapper/namespace.h>
 #include <lttng-tracer.h>
 
 #if defined(CONFIG_PID_NS) && \
@@ -47,7 +46,7 @@ void pid_ns_record(struct lttng_ctx_field *field,
 	ns = task_active_pid_ns(current);
 
 	if (ns)
-		pid_ns_inum = ns->lttng_ns_inum;
+		pid_ns_inum = ns->ns.inum;
 
 	lib_ring_buffer_align_ctx(ctx, lttng_alignof(pid_ns_inum));
 	chan->ops->event_write(ctx, &pid_ns_inum, sizeof(pid_ns_inum));
@@ -69,7 +68,7 @@ void pid_ns_get_value(struct lttng_ctx_field *field,
 	ns = task_active_pid_ns(current);
 
 	if (ns)
-		pid_ns_inum = ns->lttng_ns_inum;
+		pid_ns_inum = ns->ns.inum;
 
 	value->s64 = pid_ns_inum;
 }

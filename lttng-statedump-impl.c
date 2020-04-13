@@ -37,7 +37,6 @@
 
 #include <lttng-events.h>
 #include <lttng-tracer.h>
-#include <wrapper/namespace.h>
 #include <wrapper/genhd.h>
 
 /* Define the tracepoints, but do not build the probes */
@@ -397,7 +396,7 @@ void lttng_statedump_process_ns(struct lttng_session *session,
 		 * paranoid behavior of
 		 * trace_lttng_statedump_process_user_ns().
 		 */
-		user_ns = user_ns ? user_ns->lttng_user_ns_parent : NULL;
+		user_ns = user_ns ? user_ns->parent : NULL;
 	} while (user_ns);
 
 	/*

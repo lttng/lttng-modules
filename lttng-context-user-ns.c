@@ -15,7 +15,6 @@
 #include <linux/user_namespace.h>
 #include <lttng-events.h>
 #include <wrapper/ringbuffer/frontend_types.h>
-#include <wrapper/namespace.h>
 #include <lttng-tracer.h>
 
 #if defined(CONFIG_USER_NS) && \
@@ -39,7 +38,7 @@ void user_ns_record(struct lttng_ctx_field *field,
 	unsigned int user_ns_inum = 0;
 
 	if (current_user_ns())
-		user_ns_inum = current_user_ns()->lttng_ns_inum;
+		user_ns_inum = current_user_ns()->ns.inum;
 
 	lib_ring_buffer_align_ctx(ctx, lttng_alignof(user_ns_inum));
 	chan->ops->event_write(ctx, &user_ns_inum, sizeof(user_ns_inum));
@@ -53,7 +52,7 @@ void user_ns_get_value(struct lttng_ctx_field *field,
 	unsigned int user_ns_inum = 0;
 
 	if (current_user_ns())
-		user_ns_inum = current_user_ns()->lttng_ns_inum;
+		user_ns_inum = current_user_ns()->ns.inum;
 
 	value->s64 = user_ns_inum;
 }

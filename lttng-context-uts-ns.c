@@ -15,7 +15,6 @@
 #include <linux/utsname.h>
 #include <lttng-events.h>
 #include <wrapper/ringbuffer/frontend_types.h>
-#include <wrapper/namespace.h>
 #include <lttng-tracer.h>
 
 #if defined(CONFIG_UTS_NS) && \
@@ -46,7 +45,7 @@ void uts_ns_record(struct lttng_ctx_field *field,
 	 * namespaces, just dereference the pointers.
 	 */
 	if (current->nsproxy)
-		uts_ns_inum = current->nsproxy->uts_ns->lttng_ns_inum;
+		uts_ns_inum = current->nsproxy->uts_ns->ns.inum;
 
 	lib_ring_buffer_align_ctx(ctx, lttng_alignof(uts_ns_inum));
 	chan->ops->event_write(ctx, &uts_ns_inum, sizeof(uts_ns_inum));
@@ -67,7 +66,7 @@ void uts_ns_get_value(struct lttng_ctx_field *field,
 	 * namespaces, just dereference the pointers.
 	 */
 	if (current->nsproxy)
-		uts_ns_inum = current->nsproxy->uts_ns->lttng_ns_inum;
+		uts_ns_inum = current->nsproxy->uts_ns->ns.inum;
 
 	value->s64 = uts_ns_inum;
 }

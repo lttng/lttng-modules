@@ -15,7 +15,6 @@
 #include <lttng-events.h>
 #include <linux/nsproxy.h>
 #include <wrapper/ringbuffer/frontend_types.h>
-#include <wrapper/namespace.h>
 #include <lttng-tracer.h>
 
 #if !defined(LTTNG_MNT_NS_MISSING_HEADER) && \
@@ -48,7 +47,7 @@ void mnt_ns_record(struct lttng_ctx_field *field,
 	 * namespaces, just dereference the pointers.
 	 */
 	if (current->nsproxy)
-		mnt_ns_inum = current->nsproxy->mnt_ns->lttng_ns_inum;
+		mnt_ns_inum = current->nsproxy->mnt_ns->ns.inum;
 
 	lib_ring_buffer_align_ctx(ctx, lttng_alignof(mnt_ns_inum));
 	chan->ops->event_write(ctx, &mnt_ns_inum, sizeof(mnt_ns_inum));
@@ -69,7 +68,7 @@ void mnt_ns_get_value(struct lttng_ctx_field *field,
 	 * namespaces, just dereference the pointers.
 	 */
 	if (current->nsproxy)
-		mnt_ns_inum = current->nsproxy->mnt_ns->lttng_ns_inum;
+		mnt_ns_inum = current->nsproxy->mnt_ns->ns.inum;
 
 	value->s64 = mnt_ns_inum;
 }

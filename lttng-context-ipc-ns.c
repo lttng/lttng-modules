@@ -15,7 +15,6 @@
 #include <linux/ipc_namespace.h>
 #include <lttng-events.h>
 #include <wrapper/ringbuffer/frontend_types.h>
-#include <wrapper/namespace.h>
 #include <lttng-tracer.h>
 
 #if defined(CONFIG_IPC_NS) && \
@@ -46,7 +45,7 @@ void ipc_ns_record(struct lttng_ctx_field *field,
 	 * namespaces, just dereference the pointers.
 	 */
 	if (current->nsproxy)
-		ipc_ns_inum = current->nsproxy->ipc_ns->lttng_ns_inum;
+		ipc_ns_inum = current->nsproxy->ipc_ns->ns.inum;
 
 	lib_ring_buffer_align_ctx(ctx, lttng_alignof(ipc_ns_inum));
 	chan->ops->event_write(ctx, &ipc_ns_inum, sizeof(ipc_ns_inum));
@@ -67,7 +66,7 @@ void ipc_ns_get_value(struct lttng_ctx_field *field,
 	 * namespaces, just dereference the pointers.
 	 */
 	if (current->nsproxy)
-		ipc_ns_inum = current->nsproxy->ipc_ns->lttng_ns_inum;
+		ipc_ns_inum = current->nsproxy->ipc_ns->ns.inum;
 
 	value->s64 = ipc_ns_inum;
 }
