@@ -53,9 +53,7 @@ DEFINE_TRACE(lttng_statedump_file_descriptor);
 DEFINE_TRACE(lttng_statedump_start);
 DEFINE_TRACE(lttng_statedump_process_state);
 DEFINE_TRACE(lttng_statedump_process_pid_ns);
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0))
 DEFINE_TRACE(lttng_statedump_process_cgroup_ns);
-#endif
 DEFINE_TRACE(lttng_statedump_process_ipc_ns);
 #ifndef LTTNG_MNT_NS_MISSING_HEADER
 DEFINE_TRACE(lttng_statedump_process_mnt_ns);
@@ -397,19 +395,9 @@ void lttng_statedump_process_ns(struct lttng_session *session,
 	 * "namespaces: Use task_lock and not rcu to protect nsproxy"
 	 * for details.
 	 */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0) || \
-		LTTNG_UBUNTU_KERNEL_RANGE(3,13,11,36, 3,14,0,0) || \
-		LTTNG_UBUNTU_KERNEL_RANGE(3,16,1,11, 3,17,0,0) || \
-		LTTNG_RHEL_KERNEL_RANGE(3,10,0,229,13,0, 3,11,0,0,0,0))
 	proxy = p->nsproxy;
-#else
-	rcu_read_lock();
-	proxy = task_nsproxy(p);
-#endif
 	if (proxy) {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0))
 		trace_lttng_statedump_process_cgroup_ns(session, p, proxy->cgroup_ns);
-#endif
 		trace_lttng_statedump_process_ipc_ns(session, p, proxy->ipc_ns);
 #ifndef LTTNG_MNT_NS_MISSING_HEADER
 		trace_lttng_statedump_process_mnt_ns(session, p, proxy->mnt_ns);
@@ -417,14 +405,6 @@ void lttng_statedump_process_ns(struct lttng_session *session,
 		trace_lttng_statedump_process_net_ns(session, p, proxy->net_ns);
 		trace_lttng_statedump_process_uts_ns(session, p, proxy->uts_ns);
 	}
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0) || \
-		LTTNG_UBUNTU_KERNEL_RANGE(3,13,11,36, 3,14,0,0) || \
-		LTTNG_UBUNTU_KERNEL_RANGE(3,16,1,11, 3,17,0,0) || \
-		LTTNG_RHEL_KERNEL_RANGE(3,10,0,229,13,0, 3,11,0,0,0,0))
-	/* (nothing) */
-#else
-	rcu_read_unlock();
-#endif
 }
 
 static
