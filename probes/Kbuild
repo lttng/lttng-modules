@@ -83,10 +83,6 @@ ifneq ($(CONFIG_NET),)
       echo "lttng-probe-udp.o" ; fi;)
 endif # CONFIG_NET
 
-ifneq ($(CONFIG_SND_SOC),)
-  obj-$(CONFIG_LTTNG) += lttng-probe-asoc.o
-endif # CONFIG_SND_SOC
-
 ifneq ($(CONFIG_EXT3_FS),)
   ext3_dep = $(srctree)/fs/ext3/*.h
   ext3_dep_check = $(wildcard $(ext3_dep))
