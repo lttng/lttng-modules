@@ -16,7 +16,6 @@
 #define LTTNG_TRACE_MODULE_H
 
 #include <probes/lttng-tracepoint-event.h>
-#include <linux/version.h>
 
 #ifdef CONFIG_MODULES
 
@@ -60,11 +59,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(module_refcnt,
 
 	TP_FIELDS(
 		ctf_integer_hex(unsigned long, ip, ip)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
 		ctf_integer(int, refcnt, atomic_read(&mod->refcnt))
-#else
-		ctf_integer(int, refcnt, __this_cpu_read(mod->refptr->incs) + __this_cpu_read(mod->refptr->decs))
-#endif
 		ctf_string(name, mod->name)
 	)
 )
