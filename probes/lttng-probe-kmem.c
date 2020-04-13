@@ -8,11 +8,6 @@
  * Copyright (C) 2012 Mentor Graphics Corp.
  */
 
-/*
- * This page_alloc.h wrapper needs to be included before gfpflags.h because it
- * overrides a function with a define.
- */
-#include <wrapper/page_alloc.h>
 #include <linux/module.h>
 #include <linux/mm.h>
 #include <lttng-tracer.h>

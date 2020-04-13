@@ -65,7 +65,6 @@ ifneq ($(KERNELRELEASE),)
                        lttng-context-callstack.o lttng-calibrate.o \
                        lttng-context-hostname.o wrapper/random.o \
                        probes/lttng.o wrapper/trace-clock.o \
-                       wrapper/page_alloc.o \
                        lttng-tracker-id.o \
                        lttng-filter.o lttng-filter-interpreter.o \
                        lttng-filter-specialize.o \

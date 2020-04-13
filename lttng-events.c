@@ -7,12 +7,6 @@
  * Copyright (C) 2010-2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */
 
-/*
- * This page_alloc.h wrapper needs to be included before gfpflags.h because it
- * overrides a function with a define.
- */
-#include "wrapper/page_alloc.h"
-
 #include <linux/module.h>
 #include <linux/mutex.h>
 #include <linux/sched.h>
@@ -2936,12 +2930,6 @@ static int __init lttng_events_init(void)
 {
 	int ret;
 
-	ret = wrapper_get_pfnblock_flags_mask_init();
-	if (ret)
-		return ret;
-	ret = wrapper_get_pageblock_flags_mask_init();
-	if (ret)
-		return ret;
 	ret = lttng_probes_init();
 	if (ret)
 		return ret;
