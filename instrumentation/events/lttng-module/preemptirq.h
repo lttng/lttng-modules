@@ -28,15 +28,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(preemptirq_template,
 	)
 )
 
-/*
- * Tracing of irq enable / disable events is enabled
- *   on >= 4.19 when CONFIG_TRACE_IRQFLAGS is defined.
- *   on previous kernels when CONFIG_PROVE_LOCKING is NOT defined.
- */
 #if defined(CONFIG_TRACE_IRQFLAGS)
-#define LTTNG_TRACE_IRQ
-#elif (LINUX_VERSION_CODE < KERNEL_VERSION(4,19,0) && \
-	!defined(CONFIG_PROVE_LOCKING))
 #define LTTNG_TRACE_IRQ
 #endif
 
@@ -60,15 +52,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(preemptirq_template, irq_enable,
 )
 #endif /* LTTNG_TRACE_IRQ */
 
-/*
- * Tracing of preempt enable / disable events is enabled
- *   on >= 4.19 when CONFIG_TRACE_PREEMPT_TOGGLE is defined.
- *   on previous kernels when CONFIG_DEBUG_PREEMPT is defined.
- */
 #if defined(CONFIG_TRACE_PREEMPT_TOGGLE)
-#define LTTNG_TRACE_PREEMPT
-#elif (LINUX_VERSION_CODE < KERNEL_VERSION(4,19,0) && \
-	defined(CONFIG_DEBUG_PREEMPT))
 #define LTTNG_TRACE_PREEMPT
 #endif
 
