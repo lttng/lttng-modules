@@ -7,7 +7,7 @@
  * Copyright (C) 2010-2016 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */
 
-#include <wrapper/uaccess.h>
+#include <linux/uaccess.h>
 #include <wrapper/frame.h>
 #include <wrapper/types.h>
 #include <linux/swab.h>
@@ -30,8 +30,7 @@ char get_char(struct estack_entry *reg, size_t offset)
 		char c;
 
 		/* Handle invalid access as end of string. */
-		if (unlikely(!lttng_access_ok(VERIFY_READ,
-				reg->u.s.user_str + offset,
+		if (unlikely(!access_ok(reg->u.s.user_str + offset,
 				sizeof(c))))
 			return '\0';
 		/* Handle fault (nonzero return value) as end of string. */
