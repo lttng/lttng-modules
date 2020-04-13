@@ -568,7 +568,20 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_lru_isolate_template, mm_vmscan_memcg_
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,2,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0))
+LTTNG_TRACEPOINT_EVENT(mm_vmscan_writepage,
+
+	TP_PROTO(struct page *page),
+
+	TP_ARGS(page),
+
+	TP_FIELDS(
+		ctf_integer_hex(struct page *, page, page)
+		ctf_integer(int, reclaim_flags, trace_reclaim_flags(
+				page_is_file_lru(page)))
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(5,2,0))
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_writepage,
 
 	TP_PROTO(struct page *page),
