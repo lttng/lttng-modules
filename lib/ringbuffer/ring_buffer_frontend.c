@@ -50,7 +50,6 @@
 #include <wrapper/ringbuffer/frontend.h>
 #include <wrapper/ringbuffer/iterator.h>
 #include <wrapper/ringbuffer/nohz.h>
-#include <wrapper/atomic.h>
 
 /*
  * Internal structure representing offsets to use at a sub-buffer switch.
@@ -1013,7 +1012,7 @@ int lib_ring_buffer_open_read(struct lib_ring_buffer *buf)
 	if (!atomic_long_add_unless(&buf->active_readers, 1, 1))
 		return -EBUSY;
 	kref_get(&chan->ref);
-	lttng_smp_mb__after_atomic();
+	smp_mb__after_atomic();
 	return 0;
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_open_read);
@@ -1023,7 +1022,7 @@ void lib_ring_buffer_release_read(struct lib_ring_buffer *buf)
 	struct channel *chan = buf->backend.chan;
 
 	CHAN_WARN_ON(chan, atomic_long_read(&buf->active_readers) != 1);
-	lttng_smp_mb__before_atomic();
+	smp_mb__before_atomic();
 	atomic_long_dec(&buf->active_readers);
 	kref_put(&chan->ref, channel_release);
 }
