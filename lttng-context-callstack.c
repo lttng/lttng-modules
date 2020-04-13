@@ -46,7 +46,6 @@
 #include "lttng-events.h"
 #include "wrapper/ringbuffer/backend.h"
 #include "wrapper/ringbuffer/frontend.h"
-#include "wrapper/kallsyms.h"
 #include "lttng-tracer.h"
 #include "lttng-endian.h"
 
@@ -109,9 +108,6 @@ int __lttng_add_callstack_generic(struct lttng_ctx **ctx,
 	struct field_data *fdata;
 	int ret;
 
-	ret = init_type(mode);
-	if (ret)
-		return ret;
 	length_field = lttng_append_context(ctx);
 	if (!length_field)
 		return -ENOMEM;

@@ -37,22 +37,16 @@ struct field_data {
 struct lttng_cs_type {
 	const char *name;
 	const char *length_name;
-	const char *save_func_name;
-	void (*save_func)(struct stack_trace *trace);
 };
 
 static struct lttng_cs_type cs_types[] = {
 	{
 		.name		= "callstack_kernel",
 		.length_name	= "_callstack_kernel_length",
-		.save_func_name	= "save_stack_trace",
-		.save_func	= NULL,
 	},
 	{
 		.name		= "callstack_user",
 		.length_name	= "_callstack_user_length",
-		.save_func_name	= "save_stack_trace_user",
-		.save_func	= NULL,
 	},
 };
 
@@ -66,23 +60,6 @@ static
 const char *lttng_cs_ctx_mode_length_name(enum lttng_cs_ctx_modes mode)
 {
 	return cs_types[mode].length_name;
-}
-
-static
-int init_type(enum lttng_cs_ctx_modes mode)
-{
-	unsigned long func;
-
-	if (cs_types[mode].save_func)
-		return 0;
-	func = kallsyms_lookup_funcptr(cs_types[mode].save_func_name);
-	if (!func) {
-		printk(KERN_WARNING "LTTng: symbol lookup failed: %s\n",
-				cs_types[mode].save_func_name);
-		return -EINVAL;
-	}
-	cs_types[mode].save_func = (void *) func;
-	return 0;
 }
 
 static
@@ -174,14 +151,14 @@ size_t lttng_callstack_sequence_get_size(size_t offset, struct lttng_ctx_field *
 	/* reset stack trace, no need to clear memory */
 	trace->nr_entries = 0;
 
-	if (fdata->mode == CALLSTACK_USER)
+	if (fdata->mode == CALLSTACK_USER) {
 		++per_cpu(callstack_user_nesting, ctx->cpu);
-
-	/* do the real work and reserve space */
-	cs_types[fdata->mode].save_func(trace);
-
-	if (fdata->mode == CALLSTACK_USER)
+		/* do the real work and reserve space */
+		save_stack_trace_user(trace);
 		per_cpu(callstack_user_nesting, ctx->cpu)--;
+	} else {
+		save_stack_trace(trace);
+	}
 
 	/*
 	 * Remove final ULONG_MAX delimiter. If we cannot find it, add

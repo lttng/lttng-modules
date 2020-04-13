@@ -35,12 +35,6 @@ struct field_data {
 };
 
 static
-unsigned int (*save_func_kernel)(unsigned long *store, unsigned int size,
-				unsigned int skipnr);
-static
-unsigned int (*save_func_user)(unsigned long *store, unsigned int size);
-
-static
 const char *lttng_cs_ctx_mode_name(enum lttng_cs_ctx_modes mode)
 {
 	switch (mode) {
@@ -63,55 +57,6 @@ const char *lttng_cs_ctx_mode_length_name(enum lttng_cs_ctx_modes mode)
 		return "_callstack_user_length";
 	default:
 		return NULL;
-	}
-}
-
-static
-int init_type_callstack_kernel(void)
-{
-	unsigned long func;
-	const char *func_name = "stack_trace_save";
-
-	if (save_func_kernel)
-		return 0;
-	func = kallsyms_lookup_funcptr(func_name);
-	if (!func) {
-		printk(KERN_WARNING "LTTng: symbol lookup failed: %s\n",
-				func_name);
-		return -EINVAL;
-	}
-	save_func_kernel = (void *) func;
-	return 0;
-}
-
-static
-int init_type_callstack_user(void)
-{
-	unsigned long func;
-	const char *func_name = "stack_trace_save_user";
-
-	if (save_func_user)
-		return 0;
-	func = kallsyms_lookup_funcptr(func_name);
-	if (!func) {
-		printk(KERN_WARNING "LTTng: symbol lookup failed: %s\n",
-				func_name);
-		return -EINVAL;
-	}
-	save_func_user = (void *) func;
-	return 0;
-}
-
-static
-int init_type(enum lttng_cs_ctx_modes mode)
-{
-	switch (mode) {
-	case CALLSTACK_KERNEL:
-		return init_type_callstack_kernel();
-	case CALLSTACK_USER:
-		return init_type_callstack_user();
-	default:
-		return -EINVAL;
 	}
 }
 
@@ -193,13 +138,13 @@ size_t lttng_callstack_sequence_get_size(size_t offset, struct lttng_ctx_field *
 	switch (fdata->mode) {
 	case CALLSTACK_KERNEL:
 		/* do the real work and reserve space */
-		trace->nr_entries = save_func_kernel(trace->entries,
+		trace->nr_entries = stack_trace_save(trace->entries,
 						MAX_ENTRIES, 0);
 		break;
 	case CALLSTACK_USER:
 		++per_cpu(callstack_user_nesting, ctx->cpu);
 		/* do the real work and reserve space */
-		trace->nr_entries = save_func_user(trace->entries,
+		trace->nr_entries = stack_trace_save_user(trace->entries,
 						MAX_ENTRIES);
 		per_cpu(callstack_user_nesting, ctx->cpu)--;
 		break;
