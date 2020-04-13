@@ -30,12 +30,12 @@
 #include <linux/uaccess.h>
 #include <linux/slab.h>
 #include <linux/err.h>
+#include <linux/kref.h>
 #include <wrapper/ringbuffer/vfs.h>
 #include <wrapper/ringbuffer/backend.h>
 #include <wrapper/ringbuffer/frontend.h>
 #include <wrapper/poll.h>
 #include <wrapper/file.h>
-#include <wrapper/kref.h>
 #include <lttng-string-utils.h>
 #include <lttng-abi.h>
 #include <lttng-abi-old.h>
@@ -1177,11 +1177,7 @@ int lttng_abi_open_metadata_stream(struct file *channel_file)
 		goto notransport;
 	}
 
-	if (!lttng_kref_get(&session->metadata_cache->refcount)) {
-		ret = -EOVERFLOW;
-		goto kref_error;
-	}
-
+	kref_get(&session->metadata_cache->refcount);
 	ret = lttng_abi_create_stream_fd(channel_file, stream_priv,
 			&lttng_metadata_ring_buffer_file_operations);
 	if (ret < 0)
@@ -1193,7 +1189,6 @@ int lttng_abi_open_metadata_stream(struct file *channel_file)
 
 fd_error:
 	kref_put(&session->metadata_cache->refcount, metadata_cache_destroy);
-kref_error:
 	module_put(metadata_stream->transport->owner);
 notransport:
 	kfree(metadata_stream);

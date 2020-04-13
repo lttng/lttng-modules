@@ -40,6 +40,7 @@
 #include <linux/delay.h>
 #include <linux/module.h>
 #include <linux/percpu.h>
+#include <linux/kref.h>
 #include <asm/cacheflush.h>
 
 #include <wrapper/ringbuffer/config.h>
@@ -48,7 +49,6 @@
 #include <wrapper/ringbuffer/iterator.h>
 #include <wrapper/ringbuffer/nohz.h>
 #include <wrapper/atomic.h>
-#include <wrapper/kref.h>
 #include <wrapper/percpu-defs.h>
 #include <wrapper/timer.h>
 
@@ -1021,10 +1021,7 @@ int lib_ring_buffer_open_read(struct lib_ring_buffer *buf)
 
 	if (!atomic_long_add_unless(&buf->active_readers, 1, 1))
 		return -EBUSY;
-	if (!lttng_kref_get(&chan->ref)) {
-		atomic_long_dec(&buf->active_readers);
-		return -EOVERFLOW;
-	}
+	kref_get(&chan->ref);
 	lttng_smp_mb__after_atomic();
 	return 0;
 }
