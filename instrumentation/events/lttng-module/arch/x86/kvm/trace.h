@@ -436,7 +436,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(kvm_emulate_insn, kvm_x86_emulate_insn,
 		ctf_integer(__u8, len, vcpu->arch.emulate_ctxt._eip
 				- vcpu->arch.emulate_ctxt.fetch.start)
 		ctf_array(__u8, insn, vcpu->arch.emulate_ctxt.fetch.data, 15)
-#else
+#elif (LINUX_VERSION_CODE < KERNEL_VERSION(5,7,0))
 		ctf_integer(__u64, rip, vcpu->arch.emulate_ctxt._eip -
 				(vcpu->arch.emulate_ctxt.fetch.ptr -
 					vcpu->arch.emulate_ctxt.fetch.data))
@@ -444,6 +444,14 @@ LTTNG_TRACEPOINT_EVENT_MAP(kvm_emulate_insn, kvm_x86_emulate_insn,
 		ctf_integer(__u8, len, vcpu->arch.emulate_ctxt.fetch.ptr -
 				vcpu->arch.emulate_ctxt.fetch.data)
 		ctf_array(__u8, insn, vcpu->arch.emulate_ctxt.fetch.data, 15)
+#else
+		ctf_integer(__u64, rip, vcpu->arch.emulate_ctxt->_eip -
+				(vcpu->arch.emulate_ctxt->fetch.ptr -
+					vcpu->arch.emulate_ctxt->fetch.data))
+		ctf_integer(__u32, csbase, kvm_x86_ops->get_segment_base(vcpu, VCPU_SREG_CS))
+		ctf_integer(__u8, len, vcpu->arch.emulate_ctxt->fetch.ptr -
+				vcpu->arch.emulate_ctxt->fetch.data)
+		ctf_array(__u8, insn, vcpu->arch.emulate_ctxt->fetch.data, 15)
 #endif
 		ctf_integer(__u8, flags, kei_decode_mode(vcpu->arch.emulate_ctxt.mode))
 		ctf_integer(__u8, failed, failed)
