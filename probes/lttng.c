@@ -92,17 +92,9 @@ static const struct file_operations lttng_logger_operations = {
 	.write = lttng_logger_write,
 };
 
-/*
- * Linux 5.6 introduced a separate proc_ops struct for /proc operations
- * to decouple it from the vfs.
- */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
 static const struct proc_ops lttng_logger_proc_ops = {
 	.proc_write = lttng_logger_write,
 };
-#else
-#define lttng_logger_proc_ops lttng_logger_operations
-#endif
 
 static struct miscdevice logger_dev = {
 	.minor = MISC_DYNAMIC_MINOR,
