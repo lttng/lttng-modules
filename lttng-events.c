@@ -2784,8 +2784,6 @@ void lttng_transport_unregister(struct lttng_transport *transport)
 }
 EXPORT_SYMBOL_GPL(lttng_transport_unregister);
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
-
 enum cpuhp_state lttng_hp_prepare;
 enum cpuhp_state lttng_hp_online;
 
@@ -2899,17 +2897,6 @@ static void __exit lttng_exit_cpu_hotplug(void)
 	lttng_rb_set_hp_prepare(0);
 	cpuhp_remove_multi_state(lttng_hp_prepare);
 }
-
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
-static int lttng_init_cpu_hotplug(void)
-{
-	return 0;
-}
-static void lttng_exit_cpu_hotplug(void)
-{
-}
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
-
 
 static int __init lttng_events_init(void)
 {
