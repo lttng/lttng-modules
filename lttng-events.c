@@ -27,9 +27,9 @@
 #include <linux/jhash.h>
 #include <linux/uaccess.h>
 #include <linux/vmalloc.h>
-#include <linux/uuid.h>
 #include <linux/dmi.h>
 
+#include <wrapper/uuid.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
 #include <wrapper/random.h>
 #include <wrapper/tracepoint.h>
@@ -134,7 +134,7 @@ struct lttng_session *lttng_session_create(void)
 		goto err;
 	INIT_LIST_HEAD(&session->chan);
 	INIT_LIST_HEAD(&session->events);
-	uuid_le_gen(&session->uuid);
+	lttng_guid_gen(&session->uuid);
 
 	metadata_cache = kzalloc(sizeof(struct lttng_metadata_cache),
 			GFP_KERNEL);
