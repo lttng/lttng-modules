@@ -122,7 +122,7 @@ ifneq ($(KERNELRELEASE),)
   endif
 
   obj-$(CONFIG_LTTNG) += lttng-statedump.o
-  lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o \
+  lttng-statedump-objs := lttng-statedump-impl.o \
                           wrapper/fdtable.o
 
   obj-$(CONFIG_LTTNG) += probes/

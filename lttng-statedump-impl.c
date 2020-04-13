@@ -35,7 +35,6 @@
 
 #include <lttng-events.h>
 #include <lttng-tracer.h>
-#include <wrapper/irqdesc.h>
 #include <wrapper/fdtable.h>
 #include <wrapper/namespace.h>
 #include <wrapper/irq.h>
@@ -346,7 +345,6 @@ int lttng_list_interrupts(struct lttng_session *session)
 	unsigned long flags = 0;
 	struct irq_desc *desc;
 
-#define irq_to_desc	wrapper_irq_to_desc
 	/* needs irq_desc */
 	for_each_irq_desc(irq, desc) {
 		struct irqaction *action;
@@ -363,7 +361,6 @@ int lttng_list_interrupts(struct lttng_session *session)
 		local_irq_restore(flags);
 	}
 	return 0;
-#undef irq_to_desc
 }
 #else
 static inline
