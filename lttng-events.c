@@ -25,7 +25,6 @@
 #include <linux/limits.h>
 
 #include <wrapper/random.h>
-#include <wrapper/list.h>
 #include <lttng-kernel-version.h>
 #include <lttng-events.h>
 #include <lttng-tracer.h>
@@ -611,7 +610,7 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 	name_len = strlen(event_name);
 	hash = jhash(event_name, name_len, 0);
 	head = &session->events_ht.table[hash & (LTTNG_EVENT_HT_SIZE - 1)];
-	lttng_hlist_for_each_entry(event, head, hlist) {
+	hlist_for_each_entry(event, head, hlist) {
 		WARN_ON_ONCE(!event->desc);
 		if (!strncmp(event->desc->name, event_name,
 					LTTNG_KERNEL_SYM_NAME_LEN - 1)
@@ -997,7 +996,7 @@ void *id_list_start(struct seq_file *m, loff_t *pos)
 		for (i = 0; i < LTTNG_ID_TABLE_SIZE; i++) {
 			struct hlist_head *head = &id_tracker_p->id_hash[i];
 
-			lttng_hlist_for_each_entry(e, head, hlist) {
+			hlist_for_each_entry(e, head, hlist) {
 				if (iter++ >= *pos)
 					return e;
 			}
@@ -1027,7 +1026,7 @@ void *id_list_next(struct seq_file *m, void *p, loff_t *ppos)
 		for (i = 0; i < LTTNG_ID_TABLE_SIZE; i++) {
 			struct hlist_head *head = &id_tracker_p->id_hash[i];
 
-			lttng_hlist_for_each_entry(e, head, hlist) {
+			hlist_for_each_entry(e, head, hlist) {
 				if (iter++ >= *ppos)
 					return e;
 			}
@@ -1294,7 +1293,7 @@ void lttng_create_tracepoint_if_missing(struct lttng_enabler *enabler)
 			 */
 			hash = jhash(event_name, name_len, 0);
 			head = &session->events_ht.table[hash & (LTTNG_EVENT_HT_SIZE - 1)];
-			lttng_hlist_for_each_entry(event, head, hlist) {
+			hlist_for_each_entry(event, head, hlist) {
 				if (event->desc == desc
 						&& event->chan == enabler->chan)
 					found = 1;

@@ -23,7 +23,6 @@
 #include <asm/syscall.h>
 
 #include <lib/bitfield.h>
-#include <wrapper/rcu.h>
 #include <lttng-events.h>
 #include "lttng-tracepoint.h"
 

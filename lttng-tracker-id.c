@@ -15,8 +15,6 @@
 #include <linux/hash.h>
 #include <linux/rcupdate.h>
 
-#include <wrapper/rcu.h>
-#include <wrapper/list.h>
 #include <lttng-events.h>
 
 /*
@@ -46,7 +44,7 @@ bool lttng_id_tracker_lookup(struct lttng_id_tracker_rcu *p, int id)
 	uint32_t hash = hash_32(id, 32);
 
 	head = &p->id_hash[hash & (LTTNG_ID_TABLE_SIZE - 1)];
-	lttng_hlist_for_each_entry_rcu(e, head, hlist) {
+	hlist_for_each_entry_rcu_notrace(e, head, hlist) {
 		if (id == e->id)
 			return true;	/* Found */
 	}
@@ -82,7 +80,7 @@ int lttng_id_tracker_add(struct lttng_id_tracker *lf, int id)
 		allocated = true;
 	}
 	head = &p->id_hash[hash & (LTTNG_ID_TABLE_SIZE - 1)];
-	lttng_hlist_for_each_entry(e, head, hlist) {
+	hlist_for_each_entry(e, head, hlist) {
 		if (id == e->id)
 			return -EEXIST;
 	}
@@ -138,7 +136,7 @@ int lttng_id_tracker_del(struct lttng_id_tracker *lf, int id)
 	 * No need of _safe iteration, because we stop traversal as soon
 	 * as we remove the entry.
 	 */
-	lttng_hlist_for_each_entry(e, head, hlist) {
+	hlist_for_each_entry(e, head, hlist) {
 		if (id == e->id) {
 			id_tracker_del_node_rcu(e);
 			return 0;
@@ -158,7 +156,7 @@ static void lttng_id_tracker_rcu_destroy(struct lttng_id_tracker_rcu *p)
 		struct lttng_id_hash_node *e;
 		struct hlist_node *tmp;
 
-		lttng_hlist_for_each_entry_safe(e, tmp, head, hlist)
+		hlist_for_each_entry_safe(e, tmp, head, hlist)
 			id_tracker_del_node(e);
 	}
 	kfree(p);

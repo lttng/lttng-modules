@@ -16,7 +16,6 @@
 #include <linux/module.h>
 
 #include <lttng-tracepoint.h>
-#include <wrapper/list.h>
 
 /*
  * Protect the tracepoint table. lttng_tracepoint_mutex nests within
@@ -106,7 +105,7 @@ struct tracepoint_entry *get_tracepoint(const char *name)
 	u32 hash = jhash(name, strlen(name), 0);
 
 	head = &tracepoint_table[hash & (TRACEPOINT_TABLE_SIZE - 1)];
-	lttng_hlist_for_each_entry(e, head, hlist) {
+	hlist_for_each_entry(e, head, hlist) {
 		if (!strcmp(name, e->name))
 			return e;
 	}
@@ -126,7 +125,7 @@ struct tracepoint_entry *add_tracepoint(const char *name)
 	u32 hash = jhash(name, name_len - 1, 0);
 
 	head = &tracepoint_table[hash & (TRACEPOINT_TABLE_SIZE - 1)];
-	lttng_hlist_for_each_entry(e, head, hlist) {
+	hlist_for_each_entry(e, head, hlist) {
 		if (!strcmp(name, e->name)) {
 			printk(KERN_NOTICE
 				"tracepoint %s busy\n", name);
