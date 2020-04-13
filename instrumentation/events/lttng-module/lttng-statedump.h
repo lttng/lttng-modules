@@ -14,7 +14,6 @@
 #include <linux/user_namespace.h>
 #include <linux/utsname.h>
 #include <linux/types.h>
-#include <linux/version.h>
 #include <wrapper/user_namespace.h>
 
 #ifndef LTTNG_MNT_NS_MISSING_HEADER
@@ -64,7 +63,6 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_state,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0))
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_cgroup_ns,
 	TP_PROTO(struct lttng_session *session,
 		struct task_struct *p,
@@ -75,7 +73,6 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_cgroup_ns,
 		ctf_integer(unsigned int, ns_inum, cgroup_ns ? cgroup_ns->ns.inum : 0)
 	)
 )
-#endif
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_ipc_ns,
 	TP_PROTO(struct lttng_session *session,
@@ -84,9 +81,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_ipc_ns,
 	TP_ARGS(session, p, ipc_ns),
 	TP_FIELDS(
 		ctf_integer(pid_t, tid, p->pid)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
 		ctf_integer(unsigned int, ns_inum, ipc_ns ? ipc_ns->ns.inum : 0)
-#endif
 	)
 )
 
@@ -98,9 +93,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_mnt_ns,
 	TP_ARGS(session, p, mnt_ns),
 	TP_FIELDS(
 		ctf_integer(pid_t, tid, p->pid)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
 		ctf_integer(unsigned int, ns_inum, mnt_ns ? mnt_ns->ns.inum : 0)
-#endif
 	)
 )
 #endif
@@ -112,9 +105,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_net_ns,
 	TP_ARGS(session, p, net_ns),
 	TP_FIELDS(
 		ctf_integer(pid_t, tid, p->pid)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
 		ctf_integer(unsigned int, ns_inum, net_ns ? net_ns->ns.inum : 0)
-#endif
 	)
 )
 
@@ -141,9 +132,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_pid_ns,
 				ret;
 			}))
 		ctf_integer(int, ns_level, pid_ns ? pid_ns->level : 0)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
 		ctf_integer(unsigned int, ns_inum, pid_ns ? pid_ns->ns.inum : 0)
-#endif
 	)
 )
 
@@ -156,12 +145,8 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_user_ns,
 		ctf_integer(pid_t, tid, p->pid)
 		ctf_integer(uid_t, vuid, user_ns ? lttng_task_vuid(p, user_ns) : 0)
 		ctf_integer(gid_t, vgid, user_ns ? lttng_task_vgid(p, user_ns) : 0)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
 		ctf_integer(int, ns_level, user_ns ? user_ns->level : 0)
-#endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
 		ctf_integer(unsigned int, ns_inum, user_ns ? user_ns->ns.inum : 0)
-#endif
 	)
 )
 
@@ -172,9 +157,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_uts_ns,
 	TP_ARGS(session, p, uts_ns),
 	TP_FIELDS(
 		ctf_integer(pid_t, tid, p->pid)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
 		ctf_integer(unsigned int, ns_inum, uts_ns ? uts_ns->ns.inum : 0)
-#endif
 	)
 )
 
