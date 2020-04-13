@@ -34,7 +34,6 @@
 #include <wrapper/ringbuffer/vfs.h>
 #include <wrapper/ringbuffer/backend.h>
 #include <wrapper/ringbuffer/frontend.h>
-#include <wrapper/file.h>
 #include <lttng-string-utils.h>
 #include <lttng-abi.h>
 #include <lttng-abi-old.h>
@@ -79,7 +78,7 @@ int lttng_abi_create_session(void)
 	session = lttng_session_create();
 	if (!session)
 		return -ENOMEM;
-	session_fd = lttng_get_unused_fd();
+	session_fd = get_unused_fd_flags(0);
 	if (session_fd < 0) {
 		ret = session_fd;
 		goto fd_error;
@@ -108,7 +107,7 @@ int lttng_abi_tracepoint_list(void)
 	struct file *tracepoint_list_file;
 	int file_fd, ret;
 
-	file_fd = lttng_get_unused_fd();
+	file_fd = get_unused_fd_flags(0);
 	if (file_fd < 0) {
 		ret = file_fd;
 		goto fd_error;
@@ -148,7 +147,7 @@ int lttng_abi_syscall_list(void)
 	struct file *syscall_list_file;
 	int file_fd, ret;
 
-	file_fd = lttng_get_unused_fd();
+	file_fd = get_unused_fd_flags(0);
 	if (file_fd < 0) {
 		ret = file_fd;
 		goto fd_error;
@@ -425,7 +424,7 @@ int lttng_abi_create_channel(struct file *session_file,
 	int chan_fd;
 	int ret = 0;
 
-	chan_fd = lttng_get_unused_fd();
+	chan_fd = get_unused_fd_flags(0);
 	if (chan_fd < 0) {
 		ret = chan_fd;
 		goto fd_error;
@@ -1083,7 +1082,7 @@ int lttng_abi_create_stream_fd(struct file *channel_file, void *stream_priv,
 	int stream_fd, ret;
 	struct file *stream_file;
 
-	stream_fd = lttng_get_unused_fd();
+	stream_fd = get_unused_fd_flags(0);
 	if (stream_fd < 0) {
 		ret = stream_fd;
 		goto fd_error;
@@ -1219,7 +1218,7 @@ int lttng_abi_create_event(struct file *channel_file,
 	default:
 		break;
 	}
-	event_fd = lttng_get_unused_fd();
+	event_fd = get_unused_fd_flags(0);
 	if (event_fd < 0) {
 		ret = event_fd;
 		goto fd_error;

@@ -23,7 +23,6 @@
 #include <linux/seq_file.h>
 #include <linux/file.h>
 #include <linux/anon_inodes.h>
-#include <wrapper/file.h>
 #include <linux/jhash.h>
 #include <linux/uaccess.h>
 #include <linux/uuid.h>
@@ -1139,7 +1138,7 @@ int lttng_session_list_tracker_ids(struct lttng_session *session,
 	struct seq_file *m;
 	int file_fd, ret;
 
-	file_fd = lttng_get_unused_fd();
+	file_fd = get_unused_fd_flags(0);
 	if (file_fd < 0) {
 		ret = file_fd;
 		goto fd_error;
