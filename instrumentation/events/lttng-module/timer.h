@@ -11,17 +11,12 @@
 #define _TRACE_TIMER_DEF_
 #include <linux/hrtimer.h>
 #include <linux/timer.h>
-#include <linux/version.h>
 
 struct timer_list;
 
 #endif /* _TRACE_TIMER_DEF_ */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
 #define lttng_ktime_get_tv64(kt)	(kt)
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
-#define lttng_ktime_get_tv64(kt)	((kt).tv64)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 
 LTTNG_TRACEPOINT_EVENT_CLASS(timer_class,
 
@@ -45,8 +40,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(timer_class, timer_init,
 	TP_ARGS(timer)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0) || \
-	LTTNG_RHEL_KERNEL_RANGE(3,10,0,957,0,0, 3,11,0,0,0,0))
 /**
  * timer_start - called when the timer is started
  * @timer:	pointer to struct timer_list
@@ -68,28 +61,7 @@ LTTNG_TRACEPOINT_EVENT(timer_start,
 		ctf_integer(unsigned int, flags, flags)
 	)
 )
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
-/**
- * timer_start - called when the timer is started
- * @timer:	pointer to struct timer_list
- * @expires:	the timers expiry time
- */
-LTTNG_TRACEPOINT_EVENT(timer_start,
 
-	TP_PROTO(struct timer_list *timer, unsigned long expires),
-
-	TP_ARGS(timer, expires),
-
-	TP_FIELDS(
-		ctf_integer_hex(void *, timer, timer)
-		ctf_integer_hex(void *, function, timer->function)
-		ctf_integer(unsigned long, expires, expires)
-		ctf_integer(unsigned long, now, jiffies)
-	)
-)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,2,0))
 /**
  * timer_expire_entry - called immediately before the timer callback
  * @timer:	pointer to struct timer_list
@@ -109,26 +81,6 @@ LTTNG_TRACEPOINT_EVENT(timer_expire_entry,
 		ctf_integer(unsigned long, baseclk, baseclk)
 	)
 )
-#else
-/**
- * timer_expire_entry - called immediately before the timer callback
- * @timer:	pointer to struct timer_list
- *
- * Allows to determine the timer latency.
- */
-LTTNG_TRACEPOINT_EVENT(timer_expire_entry,
-
-	TP_PROTO(struct timer_list *timer),
-
-	TP_ARGS(timer),
-
-	TP_FIELDS(
-		ctf_integer_hex(void *, timer, timer)
-		ctf_integer(unsigned long, now, jiffies)
-		ctf_integer_hex(void *, function, timer->function)
-	)
-)
-#endif
 
 /**
  * timer_expire_exit - called immediately after the timer callback returns
@@ -184,8 +136,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_init,
  * hrtimer_start - called when the hrtimer is started
  * @timer: pointer to struct hrtimer
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,16,0) || \
-	LTTNG_RT_KERNEL_RANGE(4,14,0,0, 4,15,0,0))
 LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_start,
 
 	timer_hrtimer_start,
@@ -204,25 +154,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_start,
 		ctf_integer(enum hrtimer_mode, mode, mode)
 	)
 )
-#else
-LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_start,
-
-	timer_hrtimer_start,
-
-	TP_PROTO(struct hrtimer *hrtimer),
-
-	TP_ARGS(hrtimer),
-
-	TP_FIELDS(
-		ctf_integer_hex(void *, hrtimer, hrtimer)
-		ctf_integer_hex(void *, function, hrtimer->function)
-		ctf_integer(s64, expires,
-			lttng_ktime_get_tv64(hrtimer_get_expires(hrtimer)))
-		ctf_integer(s64, softexpires,
-			lttng_ktime_get_tv64(hrtimer_get_softexpires(hrtimer)))
-	)
-)
-#endif
 
 /**
  * htimmer_expire_entry - called immediately before the hrtimer callback
@@ -294,7 +225,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(timer_hrtimer_class, hrtimer_cancel,
  *		zero, otherwise it is started
  * @expires:	the itimers expiry time
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,5,0))
 LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
 
 	timer_itimer_state,
@@ -313,45 +243,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
 		ctf_integer(long, interval_nsec, value->it_interval.tv_nsec)
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
-LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
-
-	timer_itimer_state,
-
-	TP_PROTO(int which, const struct itimerval *const value,
-		 unsigned long long expires),
-
-	TP_ARGS(which, value, expires),
-
-	TP_FIELDS(
-		ctf_integer(int, which, which)
-		ctf_integer(unsigned long long, expires, expires)
-		ctf_integer(long, value_sec, value->it_value.tv_sec)
-		ctf_integer(long, value_usec, value->it_value.tv_usec)
-		ctf_integer(long, interval_sec, value->it_interval.tv_sec)
-		ctf_integer(long, interval_usec, value->it_interval.tv_usec)
-	)
-)
-#else /* if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
-LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
-
-	timer_itimer_state,
-
-	TP_PROTO(int which, const struct itimerval *const value,
-		 cputime_t expires),
-
-	TP_ARGS(which, value, expires),
-
-	TP_FIELDS(
-		ctf_integer(int, which, which)
-		ctf_integer(cputime_t, expires, expires)
-		ctf_integer(long, value_sec, value->it_value.tv_sec)
-		ctf_integer(long, value_usec, value->it_value.tv_usec)
-		ctf_integer(long, interval_sec, value->it_interval.tv_sec)
-		ctf_integer(long, interval_usec, value->it_interval.tv_usec)
-	)
-)
-#endif /* #else (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
 
 /**
  * itimer_expire - called when itimer expires
@@ -359,7 +250,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
  * @pid:	pid of the process which owns the timer
  * @now:	current time, used to calculate the latency of itimer
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
 LTTNG_TRACEPOINT_EVENT_MAP(itimer_expire,
 
 	timer_itimer_expire,
@@ -374,22 +264,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(itimer_expire,
 		ctf_integer(unsigned long long, now, now)
 	)
 )
-#else /* if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
-LTTNG_TRACEPOINT_EVENT_MAP(itimer_expire,
-
-	timer_itimer_expire,
-
-	TP_PROTO(int which, struct pid *pid, cputime_t now),
-
-	TP_ARGS(which, pid, now),
-
-	TP_FIELDS(
-		ctf_integer(int , which, which)
-		ctf_integer(pid_t, pid, pid_nr(pid))
-		ctf_integer(cputime_t, now, now)
-	)
-)
-#endif /* #else (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
 
 #endif /*  LTTNG_TRACE_TIMER_H */
 
