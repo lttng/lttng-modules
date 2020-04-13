@@ -134,7 +134,7 @@ struct lttng_session *lttng_session_create(void)
 		goto err;
 	INIT_LIST_HEAD(&session->chan);
 	INIT_LIST_HEAD(&session->events);
-	uuid_le_gen(&session->uuid);
+	guid_gen(&session->uuid);
 
 	metadata_cache = kzalloc(sizeof(struct lttng_metadata_cache),
 			GFP_KERNEL);
