@@ -59,9 +59,6 @@ Make sure your target kernel has the following config options enabled:
 
   - `CONFIG_MODULES`: loadable module support (not strictly required
      when built into the kernel),
-  - `CONFIG_KALLSYMS`: see files in [`wrapper`](wrapper); this is
-     necessary until the few required missing symbols are exported to GPL
-     modules from mainline,
   - `CONFIG_HIGH_RES_TIMERS`: needed for LTTng 2.x clock source,
   - `CONFIG_TRACEPOINTS`: kernel tracepoint instrumentation
      (enabled as a side-effect of any of the perf/ftrace/blktrace
@@ -90,9 +87,6 @@ available from LTTng:
   - `CONFIG_KRETPROBES`: dynamic function entry/return probes:
 
         lttng enable-event -k --function ...
-
-  - `CONFIG_KALLSYMS_ALL`: state dump of mapping between block device
-    number and name
 
 Customization/Extension
 -----------------------
