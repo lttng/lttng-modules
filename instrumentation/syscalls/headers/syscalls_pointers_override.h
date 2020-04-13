@@ -946,9 +946,7 @@ SC_LTTNG_TRACEPOINT_ENUM(lttng_file_status_flags,
 		ctf_enum_value("O_CLOEXEC", O_CLOEXEC)
 		ctf_enum_value("O_SYNC", __O_SYNC)
 		ctf_enum_value("O_PATH", O_PATH)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
 		ctf_enum_value("O_TMPFILE", __O_TMPFILE)
-#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
 	)
 )
 

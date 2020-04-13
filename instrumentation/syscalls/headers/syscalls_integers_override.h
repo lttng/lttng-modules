@@ -43,14 +43,10 @@ SC_LTTNG_TRACEPOINT_ENUM(lttng_fcntl_cmd_flags,
 		ctf_enum_value("F_SETLKW64", F_SETLKW64)
 		ctf_enum_value("F_SETOWN_EX", F_SETOWN_EX)
 		ctf_enum_value("F_GETOWN_EX", F_GETOWN_EX)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
 		ctf_enum_value("F_GETOWNER_UIDS", F_GETOWNER_UIDS)
-#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)) */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
 		ctf_enum_value("F_OFD_GETLK", F_OFD_GETLK)
 		ctf_enum_value("F_OFD_SETLK", F_OFD_SETLK)
 		ctf_enum_value("F_OFD_SETLKW", F_OFD_SETLKW)
-#endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
 		ctf_enum_value("F_SETLEASE", F_SETLEASE)
 		ctf_enum_value("F_GETLEASE", F_GETLEASE)
 		ctf_enum_value("F_NOTIFY", F_NOTIFY)
@@ -58,16 +54,12 @@ SC_LTTNG_TRACEPOINT_ENUM(lttng_fcntl_cmd_flags,
 		ctf_enum_value("F_DUPFD_CLOEXEC", F_DUPFD_CLOEXEC)
 		ctf_enum_value("F_SETPIPE_SZ", F_SETPIPE_SZ)
 		ctf_enum_value("F_GETPIPE_SZ", F_GETPIPE_SZ)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0))
 		ctf_enum_value("F_ADD_SEALS", F_ADD_SEALS)
 		ctf_enum_value("F_GET_SEALS", F_GET_SEALS)
-#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0)) */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
 		ctf_enum_value("F_GET_RW_HINT", F_GET_RW_HINT)
 		ctf_enum_value("F_SET_RW_HINT", F_SET_RW_HINT)
 		ctf_enum_value("F_GET_FILE_RW_HINT", F_GET_FILE_RW_HINT)
 		ctf_enum_value("F_SET_FILE_RW_HINT", F_SET_FILE_RW_HINT)
-#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0)) */
 	)
 )
 
