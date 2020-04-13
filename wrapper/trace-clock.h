@@ -27,7 +27,6 @@
 #include <lttng-clock.h>
 #include <wrapper/compiler.h>
 #include <wrapper/random.h>
-#include <blacklist/timekeeping.h>
 
 extern struct lttng_trace_clock *lttng_trace_clock;
 
