@@ -32,16 +32,15 @@
 #include <linux/wait.h>
 #include <linux/mutex.h>
 #include <linux/device.h>
+#include <linux/fdtable.h>
 
 #include <lttng-events.h>
 #include <lttng-tracer.h>
-#include <wrapper/fdtable.h>
 #include <wrapper/namespace.h>
 #include <wrapper/irq.h>
 #include <wrapper/tracepoint.h>
 #include <wrapper/genhd.h>
 #include <wrapper/file.h>
-#include <wrapper/fdtable.h>
 
 #ifdef CONFIG_LTTNG_HAS_LIST_IRQ
 #include <linux/irq.h>
@@ -236,7 +235,7 @@ int lttng_dump_one_fd(const void *p, struct file *file, unsigned int fd)
 	 * the lock is taken, but we are not aware whether this is
 	 * guaranteed or not, so play safe.
 	 */
-	if (fd < fdt->max_fds && lttng_close_on_exec(fd, fdt))
+	if (fd < fdt->max_fds && close_on_exec(fd, fdt))
 		flags |= O_CLOEXEC;
 	if (IS_ERR(s)) {
 		struct dentry *dentry = file->f_path.dentry;
@@ -263,7 +262,7 @@ void lttng_enumerate_files(struct lttng_session *session,
 {
 	struct lttng_fd_ctx ctx = { .page = tmp, .session = session, .files = files, };
 
-	lttng_iterate_fd(files, 0, lttng_dump_one_fd, &ctx);
+	iterate_fd(files, 0, lttng_dump_one_fd, &ctx);
 }
 
 #ifdef LTTNG_HAVE_STATEDUMP_CPU_TOPOLOGY
