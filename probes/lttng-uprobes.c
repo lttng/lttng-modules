@@ -15,11 +15,11 @@
 #include <linux/namei.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
+#include <linux/uprobes.h>
 #include <lttng-events.h>
 #include <lttng-tracer.h>
 #include <wrapper/irqflags.h>
 #include <wrapper/ringbuffer/frontend_types.h>
-#include <wrapper/uprobes.h>
 
 static
 int lttng_uprobes_handler_pre(struct uprobe_consumer *uc, struct pt_regs *regs)
@@ -167,8 +167,8 @@ int lttng_uprobes_add_callsite(struct lttng_event *event,
 		goto register_error;
 	}
 
-	ret = wrapper_uprobe_register(event->u.uprobe.inode,
-		      uprobe_handler->offset, &uprobe_handler->up_consumer);
+	ret = uprobe_register(event->u.uprobe.inode,
+			      uprobe_handler->offset, &uprobe_handler->up_consumer);
 	if (ret) {
 		printk(KERN_WARNING "Error registering probe on inode %lu "
 		       "and offset 0x%llx\n", event->u.uprobe.inode->i_ino,
@@ -225,8 +225,8 @@ void lttng_uprobes_unregister(struct lttng_event *event)
 	 * and free the struct.
 	 */
 	list_for_each_entry_safe(iter, tmp, &event->u.uprobe.head, node) {
-		wrapper_uprobe_unregister(event->u.uprobe.inode, iter->offset,
-			&iter->up_consumer);
+		uprobe_unregister(event->u.uprobe.inode, iter->offset,
+				  &iter->up_consumer);
 		list_del(&iter->node);
 		kfree(iter);
 	}
