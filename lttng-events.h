@@ -721,9 +721,7 @@ int lttng_add_migratable_to_ctx(struct lttng_ctx **ctx)
 
 int lttng_add_callstack_to_ctx(struct lttng_ctx **ctx, int type);
 
-#if defined(CONFIG_CGROUPS) && \
-	((LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0)) || \
-	 LTTNG_UBUNTU_KERNEL_RANGE(4,4,0,0, 4,5,0,0))
+#if defined(CONFIG_CGROUPS)
 int lttng_add_cgroup_ns_to_ctx(struct lttng_ctx **ctx);
 #else
 static inline

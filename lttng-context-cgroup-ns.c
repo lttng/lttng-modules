@@ -17,9 +17,7 @@
 #include <wrapper/ringbuffer/frontend_types.h>
 #include <lttng-tracer.h>
 
-#if defined(CONFIG_CGROUPS) && \
-	((LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0)) || \
-	 LTTNG_UBUNTU_KERNEL_RANGE(4,4,0,0, 4,5,0,0))
+#if defined(CONFIG_CGROUPS)
 
 static
 size_t cgroup_ns_get_size(size_t offset)
