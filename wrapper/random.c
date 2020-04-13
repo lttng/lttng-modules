@@ -2,9 +2,7 @@
  *
  * wrapper/random.c
  *
- * wrapper around bootid read. Using KALLSYMS to get its address when
- * available, else we need to have a kernel that exports this function to GPL
- * modules.
+ * wrapper around bootid read. Read the boot id through the /proc filesystem.
  *
  * Copyright (C) 2011-2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */
