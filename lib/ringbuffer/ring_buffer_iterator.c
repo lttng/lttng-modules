@@ -335,8 +335,6 @@ void lib_ring_buffer_iterator_init(struct channel *chan, struct lib_ring_buffer 
 		list_add(&buf->iter.empty_node, &chan->iter.empty_head);
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
-
 int lttng_cpuhp_rb_iter_online(unsigned int cpu,
 		struct lttng_cpuhp_node *node)
 {
@@ -351,40 +349,6 @@ int lttng_cpuhp_rb_iter_online(unsigned int cpu,
 	return 0;
 }
 EXPORT_SYMBOL_GPL(lttng_cpuhp_rb_iter_online);
-
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
-
-#ifdef CONFIG_HOTPLUG_CPU
-static
-int channel_iterator_cpu_hotplug(struct notifier_block *nb,
-					   unsigned long action,
-					   void *hcpu)
-{
-	unsigned int cpu = (unsigned long)hcpu;
-	struct channel *chan = container_of(nb, struct channel,
-					    hp_iter_notifier);
-	struct lib_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
-	const struct lib_ring_buffer_config *config = &chan->backend.config;
-
-	if (!chan->hp_iter_enable)
-		return NOTIFY_DONE;
-
-	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_GLOBAL);
-
-	switch (action) {
-	case CPU_DOWN_FAILED:
-	case CPU_DOWN_FAILED_FROZEN:
-	case CPU_ONLINE:
-	case CPU_ONLINE_FROZEN:
-		lib_ring_buffer_iterator_init(chan, buf);
-		return NOTIFY_OK;
-	default:
-		return NOTIFY_DONE;
-	}
-}
-#endif
-
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 
 int channel_iterator_init(struct channel *chan)
 {
@@ -401,42 +365,11 @@ int channel_iterator_init(struct channel *chan)
 		if (ret)
 			return ret;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
 		chan->cpuhp_iter_online.component = LTTNG_RING_BUFFER_ITER;
 		ret = cpuhp_state_add_instance(lttng_rb_hp_online,
 			&chan->cpuhp_iter_online.node);
 		if (ret)
 			return ret;
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
-		{
-			int cpu;
-
-			/*
-			 * In case of non-hotplug cpu, if the ring-buffer is allocated
-			 * in early initcall, it will not be notified of secondary cpus.
-			 * In that off case, we need to allocate for all possible cpus.
-			 */
-#ifdef CONFIG_HOTPLUG_CPU
-			chan->hp_iter_notifier.notifier_call =
-				channel_iterator_cpu_hotplug;
-			chan->hp_iter_notifier.priority = 10;
-			register_cpu_notifier(&chan->hp_iter_notifier);
-
-			get_online_cpus();
-			for_each_online_cpu(cpu) {
-				buf = per_cpu_ptr(chan->backend.buf, cpu);
-				lib_ring_buffer_iterator_init(chan, buf);
-			}
-			chan->hp_iter_enable = 1;
-			put_online_cpus();
-#else
-			for_each_possible_cpu(cpu) {
-				buf = per_cpu_ptr(chan->backend.buf, cpu);
-				lib_ring_buffer_iterator_init(chan, buf);
-			}
-#endif
-		}
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 	} else {
 		buf = channel_get_ring_buffer(config, chan, 0);
 		lib_ring_buffer_iterator_init(chan, buf);
@@ -449,7 +382,6 @@ void channel_iterator_unregister_notifiers(struct channel *chan)
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
 		{
 			int ret;
 
@@ -457,10 +389,6 @@ void channel_iterator_unregister_notifiers(struct channel *chan)
 				&chan->cpuhp_iter_online.node);
 			WARN_ON(ret);
 		}
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
-		chan->hp_iter_enable = 0;
-		unregister_cpu_notifier(&chan->hp_iter_notifier);
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 	}
 }
 
