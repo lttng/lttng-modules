@@ -89,10 +89,7 @@ ifneq ($(KERNELRELEASE),)
     lttng-tracer-objs += lttng-context-preemptible.o
   endif
 
-  lttng-tracer-objs += $(shell \
-    if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 15 \) ] ; then \
-      echo "lttng-tracepoint.o" ; fi;)
+  lttng-tracer-objs += lttng-tracepoint.o
 
   lttng-tracer-objs += lttng-context-cgroup-ns.o
 
