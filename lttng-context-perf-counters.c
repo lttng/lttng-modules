@@ -70,7 +70,6 @@ void lttng_destroy_perf_counter_field(struct lttng_ctx_field *field)
 {
 	struct perf_event **events = field->u.perf_counter->e;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
 	{
 		int ret;
 
@@ -81,26 +80,11 @@ void lttng_destroy_perf_counter_field(struct lttng_ctx_field *field)
 			&field->u.perf_counter->cpuhp_prepare.node);
 		WARN_ON(ret);
 	}
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
-	{
-		int cpu;
-
-		get_online_cpus();
-		for_each_online_cpu(cpu)
-			perf_event_release_kernel(events[cpu]);
-		put_online_cpus();
-#ifdef CONFIG_HOTPLUG_CPU
-		unregister_cpu_notifier(&field->u.perf_counter->nb);
-#endif
-	}
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 	kfree(field->event_field.name);
 	kfree(field->u.perf_counter->attr);
 	kvfree(events);
 	kfree(field->u.perf_counter);
 }
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
 
 int lttng_cpuhp_perf_counter_online(unsigned int cpu,
 		struct lttng_cpuhp_node *node)
@@ -140,67 +124,6 @@ int lttng_cpuhp_perf_counter_dead(unsigned int cpu,
 	perf_event_release_kernel(pevent);
 	return 0;
 }
-
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
-
-#ifdef CONFIG_HOTPLUG_CPU
-
-/**
- *	lttng_perf_counter_hp_callback - CPU hotplug callback
- *	@nb: notifier block
- *	@action: hotplug action to take
- *	@hcpu: CPU number
- *
- *	Returns the success/failure of the operation. (%NOTIFY_OK, %NOTIFY_BAD)
- *
- * We can setup perf counters when the cpu is online (up prepare seems to be too
- * soon).
- */
-static
-int lttng_perf_counter_cpu_hp_callback(struct notifier_block *nb,
-						 unsigned long action,
-						 void *hcpu)
-{
-	unsigned int cpu = (unsigned long) hcpu;
-	struct lttng_perf_counter_field *perf_field =
-		container_of(nb, struct lttng_perf_counter_field, nb);
-	struct perf_event **events = perf_field->e;
-	struct perf_event_attr *attr = perf_field->attr;
-	struct perf_event *pevent;
-
-	if (!perf_field->hp_enable)
-		return NOTIFY_OK;
-
-	switch (action) {
-	case CPU_ONLINE:
-	case CPU_ONLINE_FROZEN:
-		pevent = perf_event_create_kernel_counter(attr,
-				cpu, NULL, overflow_callback, NULL);
-		if (!pevent || IS_ERR(pevent))
-			return NOTIFY_BAD;
-		if (pevent->state == PERF_EVENT_STATE_ERROR) {
-			perf_event_release_kernel(pevent);
-			return NOTIFY_BAD;
-		}
-		barrier();	/* Create perf counter before setting event */
-		events[cpu] = pevent;
-		break;
-	case CPU_UP_CANCELED:
-	case CPU_UP_CANCELED_FROZEN:
-	case CPU_DEAD:
-	case CPU_DEAD_FROZEN:
-		pevent = events[cpu];
-		events[cpu] = NULL;
-		barrier();	/* NULLify event before perf counter teardown */
-		perf_event_release_kernel(pevent);
-		break;
-	}
-	return NOTIFY_OK;
-}
-
-#endif
-
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 
 int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  uint64_t config,
@@ -254,8 +177,6 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 		goto find_error;
 	}
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
-
 	perf_field->cpuhp_prepare.component = LTTNG_CONTEXT_PERF_COUNTERS;
 	ret = cpuhp_state_add_instance(lttng_hp_prepare,
 		&perf_field->cpuhp_prepare.node);
@@ -267,34 +188,6 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 		&perf_field->cpuhp_online.node);
 	if (ret)
 		goto cpuhp_online_error;
-
-#else	/* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
-	{
-		int cpu;
-
-#ifdef CONFIG_HOTPLUG_CPU
-		perf_field->nb.notifier_call =
-			lttng_perf_counter_cpu_hp_callback;
-		perf_field->nb.priority = 0;
-		register_cpu_notifier(&perf_field->nb);
-#endif
-		get_online_cpus();
-		for_each_online_cpu(cpu) {
-			events[cpu] = perf_event_create_kernel_counter(attr,
-						cpu, NULL, overflow_callback, NULL);
-			if (!events[cpu] || IS_ERR(events[cpu])) {
-				ret = -EINVAL;
-				goto counter_error;
-			}
-			if (events[cpu]->state == PERF_EVENT_STATE_ERROR) {
-				ret = -EBUSY;
-				goto counter_busy;
-			}
-		}
-		put_online_cpus();
-		perf_field->hp_enable = 1;
-	}
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 
 	field->destroy = lttng_destroy_perf_counter_field;
 
@@ -313,7 +206,6 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 
 	return 0;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
 cpuhp_online_error:
 	{
 		int remove_ret;
@@ -323,22 +215,6 @@ cpuhp_online_error:
 		WARN_ON(remove_ret);
 	}
 cpuhp_prepare_error:
-#else	/* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
-counter_busy:
-counter_error:
-	{
-		int cpu;
-
-		for_each_online_cpu(cpu) {
-			if (events[cpu] && !IS_ERR(events[cpu]))
-				perf_event_release_kernel(events[cpu]);
-		}
-		put_online_cpus();
-#ifdef CONFIG_HOTPLUG_CPU
-		unregister_cpu_notifier(&perf_field->nb);
-#endif
-	}
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
 find_error:
 	lttng_remove_context_field(ctx, field);
 append_context_error:
