@@ -16,7 +16,6 @@
 #include <linux/mm.h>
 #include <lttng-events.h>
 #include <wrapper/ringbuffer/frontend_types.h>
-#include <wrapper/perf.h>
 #include <lttng-tracer.h>
 
 static
@@ -122,8 +121,8 @@ int lttng_cpuhp_perf_counter_online(unsigned int cpu,
 	struct perf_event_attr *attr = perf_field->attr;
 	struct perf_event *pevent;
 
-	pevent = wrapper_perf_event_create_kernel_counter(attr,
-			cpu, NULL, overflow_callback);
+	pevent = perf_event_create_kernel_counter(attr,
+			cpu, NULL, overflow_callback, NULL);
 	if (!pevent || IS_ERR(pevent))
 		return -EINVAL;
 	if (pevent->state == PERF_EVENT_STATE_ERROR) {
@@ -184,8 +183,8 @@ int lttng_perf_counter_cpu_hp_callback(struct notifier_block *nb,
 	switch (action) {
 	case CPU_ONLINE:
 	case CPU_ONLINE_FROZEN:
-		pevent = wrapper_perf_event_create_kernel_counter(attr,
-				cpu, NULL, overflow_callback);
+		pevent = perf_event_create_kernel_counter(attr,
+				cpu, NULL, overflow_callback, NULL);
 		if (!pevent || IS_ERR(pevent))
 			return NOTIFY_BAD;
 		if (pevent->state == PERF_EVENT_STATE_ERROR) {
@@ -290,8 +289,8 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 #endif
 		get_online_cpus();
 		for_each_online_cpu(cpu) {
-			events[cpu] = wrapper_perf_event_create_kernel_counter(attr,
-						cpu, NULL, overflow_callback);
+			events[cpu] = perf_event_create_kernel_counter(attr,
+						cpu, NULL, overflow_callback, NULL);
 			if (!events[cpu] || IS_ERR(events[cpu])) {
 				ret = -EINVAL;
 				goto counter_error;
