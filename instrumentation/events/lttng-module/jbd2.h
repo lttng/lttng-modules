@@ -7,7 +7,6 @@
 
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/jbd2.h>
-#include <linux/version.h>
 
 #ifndef _TRACE_JBD2_DEF
 #define _TRACE_JBD2_DEF
@@ -68,14 +67,12 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(jbd2_commit, jbd2_commit_logging,
 	TP_ARGS(journal, commit_transaction)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 LTTNG_TRACEPOINT_EVENT_INSTANCE(jbd2_commit, jbd2_drop_transaction,
 
 	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
 
 	TP_ARGS(journal, commit_transaction)
 )
-#endif
 
 LTTNG_TRACEPOINT_EVENT(jbd2_end_commit,
 	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
@@ -137,11 +134,7 @@ LTTNG_TRACEPOINT_EVENT(jbd2_checkpoint_stats,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 LTTNG_TRACEPOINT_EVENT(jbd2_update_log_tail,
-#else
-LTTNG_TRACEPOINT_EVENT(jbd2_cleanup_journal_tail,
-#endif
 
 	TP_PROTO(journal_t *journal, tid_t first_tid,
 		 unsigned long block_nr, unsigned long freed),
@@ -157,7 +150,6 @@ LTTNG_TRACEPOINT_EVENT(jbd2_cleanup_journal_tail,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 LTTNG_TRACEPOINT_EVENT(jbd2_write_superblock,
 
 	TP_PROTO(journal_t *journal, int write_op),
@@ -169,7 +161,6 @@ LTTNG_TRACEPOINT_EVENT(jbd2_write_superblock,
 		ctf_integer(int, write_op, write_op)
 	)
 )
-#endif
 
 #endif /* LTTNG_TRACE_JBD2_H */
 
