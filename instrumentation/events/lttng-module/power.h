@@ -7,7 +7,6 @@
 
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/ktime.h>
-#include <linux/version.h>
 
 LTTNG_TRACEPOINT_EVENT_CLASS(power_cpu,
 
@@ -59,7 +58,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(machine_suspend,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(power_wakeup_source,
 
 	TP_PROTO(const char *name, unsigned int state),
@@ -89,85 +87,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(power_wakeup_source, wakeup_source_deactivat
 
 	TP_ARGS(name, state)
 )
-#endif
-
-#ifdef CONFIG_EVENT_POWER_TRACING_DEPRECATED
-
-/*
- * The power events are used for cpuidle & suspend (power_start, power_end)
- *  and for cpufreq (power_frequency)
- */
-LTTNG_TRACEPOINT_EVENT_CLASS(power,
-
-	TP_PROTO(unsigned int type, unsigned int state, unsigned int cpu_id),
-
-	TP_ARGS(type, state, cpu_id),
-
-	TP_FIELDS(
-		ctf_integer(u64, type, type)
-		ctf_integer(u64, state, state)
-		ctf_integer(u64, cpu_id, cpu_id)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(power, power_start,
-
-	TP_PROTO(unsigned int type, unsigned int state, unsigned int cpu_id),
-
-	TP_ARGS(type, state, cpu_id)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(power, power_frequency,
-
-	TP_PROTO(unsigned int type, unsigned int state, unsigned int cpu_id),
-
-	TP_ARGS(type, state, cpu_id)
-)
-
-LTTNG_TRACEPOINT_EVENT(power_end,
-
-	TP_PROTO(unsigned int cpu_id),
-
-	TP_ARGS(cpu_id),
-
-	TP_FIELDS(
-		ctf_integer(u64, cpu_id, cpu_id)
-	)
-)
-
-/* Deprecated dummy functions must be protected against multi-declartion */
-#ifndef _PWR_EVENT_AVOID_DOUBLE_DEFINING_DEPRECATED
-#define _PWR_EVENT_AVOID_DOUBLE_DEFINING_DEPRECATED
-
-enum {
-	POWER_NONE = 0,
-	POWER_CSTATE = 1,
-	POWER_PSTATE = 2,
-};
-#endif /* _PWR_EVENT_AVOID_DOUBLE_DEFINING_DEPRECATED */
-
-#else /* CONFIG_EVENT_POWER_TRACING_DEPRECATED */
-
-#ifndef _PWR_EVENT_AVOID_DOUBLE_DEFINING_DEPRECATED
-#define _PWR_EVENT_AVOID_DOUBLE_DEFINING_DEPRECATED
-enum {
-       POWER_NONE = 0,
-       POWER_CSTATE = 1,
-       POWER_PSTATE = 2,
-};
-
-/* These dummy declaration have to be ripped out when the deprecated
-   events get removed */
-static inline void trace_power_start(u64 type, u64 state, u64 cpuid) {};
-static inline void trace_power_end(u64 cpuid) {};
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
-static inline void trace_power_start_rcuidle(u64 type, u64 state, u64 cpuid) {};
-static inline void trace_power_end_rcuidle(u64 cpuid) {};
-#endif
-static inline void trace_power_frequency(u64 type, u64 state, u64 cpuid) {};
-#endif /* _PWR_EVENT_AVOID_DOUBLE_DEFINING_DEPRECATED */
-
-#endif /* CONFIG_EVENT_POWER_TRACING_DEPRECATED */
 
 /*
  * The clock events are used for clock enable/disable and for
