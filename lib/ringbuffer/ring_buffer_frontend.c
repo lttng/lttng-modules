@@ -42,6 +42,7 @@
 #include <linux/percpu.h>
 #include <linux/kref.h>
 #include <linux/percpu-defs.h>
+#include <linux/timer.h>
 #include <asm/cacheflush.h>
 
 #include <wrapper/ringbuffer/config.h>
@@ -50,7 +51,6 @@
 #include <wrapper/ringbuffer/iterator.h>
 #include <wrapper/ringbuffer/nohz.h>
 #include <wrapper/atomic.h>
-#include <wrapper/timer.h>
 
 /*
  * Internal structure representing offsets to use at a sub-buffer switch.
@@ -313,11 +313,10 @@ free_chanbuf:
 	return ret;
 }
 
-static void switch_buffer_timer(LTTNG_TIMER_FUNC_ARG_TYPE t)
+static void switch_buffer_timer(struct timer_list *t)
 {
-	struct lib_ring_buffer *buf = lttng_from_timer(buf, t, switch_timer);
+	struct lib_ring_buffer *buf = from_timer(buf, t, switch_timer);
 	struct channel *chan = buf->backend.chan;
-	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	/*
 	 * Only flush buffers periodically if readers are active.
@@ -325,12 +324,8 @@ static void switch_buffer_timer(LTTNG_TIMER_FUNC_ARG_TYPE t)
 	if (atomic_long_read(&buf->active_readers))
 		lib_ring_buffer_switch_slow(buf, SWITCH_ACTIVE);
 
-	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
-		lttng_mod_timer_pinned(&buf->switch_timer,
-				 jiffies + chan->switch_timer_interval);
-	else
-		mod_timer(&buf->switch_timer,
-			  jiffies + chan->switch_timer_interval);
+	mod_timer(&buf->switch_timer,
+		  jiffies + chan->switch_timer_interval);
 }
 
 /*
@@ -346,9 +341,9 @@ static void lib_ring_buffer_start_switch_timer(struct lib_ring_buffer *buf)
 		return;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
-		flags = LTTNG_TIMER_PINNED;
+		flags = TIMER_PINNED;
 
-	lttng_timer_setup(&buf->switch_timer, switch_buffer_timer, flags, buf);
+	timer_setup(&buf->switch_timer, switch_buffer_timer, flags);
 	buf->switch_timer.expires = jiffies + chan->switch_timer_interval;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
@@ -376,9 +371,9 @@ static void lib_ring_buffer_stop_switch_timer(struct lib_ring_buffer *buf)
 /*
  * Polling timer to check the channels for data.
  */
-static void read_buffer_timer(LTTNG_TIMER_FUNC_ARG_TYPE t)
+static void read_buffer_timer(struct timer_list *t)
 {
-	struct lib_ring_buffer *buf = lttng_from_timer(buf, t, read_timer);
+	struct lib_ring_buffer *buf = from_timer(buf, t, read_timer);
 	struct channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
@@ -390,12 +385,8 @@ static void read_buffer_timer(LTTNG_TIMER_FUNC_ARG_TYPE t)
 		wake_up_interruptible(&chan->read_wait);
 	}
 
-	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
-		lttng_mod_timer_pinned(&buf->read_timer,
-				 jiffies + chan->read_timer_interval);
-	else
-		mod_timer(&buf->read_timer,
-			  jiffies + chan->read_timer_interval);
+	mod_timer(&buf->read_timer,
+		  jiffies + chan->read_timer_interval);
 }
 
 /*
@@ -413,9 +404,9 @@ static void lib_ring_buffer_start_read_timer(struct lib_ring_buffer *buf)
 		return;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
-		flags = LTTNG_TIMER_PINNED;
+		flags = TIMER_PINNED;
 
-	lttng_timer_setup(&buf->read_timer, read_buffer_timer, flags, buf);
+	timer_setup(&buf->read_timer, read_buffer_timer, flags);
 	buf->read_timer.expires = jiffies + chan->read_timer_interval;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
