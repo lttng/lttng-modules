@@ -761,8 +761,6 @@ int lttng_syscalls_register(struct lttng_channel *chan, void *filter)
 	struct lttng_kernel_event ev;
 	int ret;
 
-	wrapper_vmalloc_sync_all();
-
 	if (!chan->sc_table) {
 		/* create syscall table mapping syscall to events */
 		chan->sc_table = kzalloc(sizeof(struct lttng_event *)

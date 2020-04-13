@@ -13,7 +13,6 @@
 #include <linux/utsname.h>
 #include <lttng-events.h>
 #include <wrapper/ringbuffer/frontend_types.h>
-#include <wrapper/vmalloc.h>
 #include <lttng-tracer.h>
 
 #define LTTNG_HOSTNAME_CTX_LEN	(__NEW_UTS_LEN + 1)
@@ -100,7 +99,6 @@ int lttng_add_hostname_to_ctx(struct lttng_ctx **ctx)
 	field->record = hostname_record;
 	field->get_value = hostname_get_value;
 	lttng_context_update(*ctx);
-	wrapper_vmalloc_sync_all();
 	return 0;
 }
 EXPORT_SYMBOL_GPL(lttng_add_hostname_to_ctx);

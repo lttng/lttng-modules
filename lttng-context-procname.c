@@ -12,7 +12,6 @@
 #include <linux/sched.h>
 #include <lttng-events.h>
 #include <wrapper/ringbuffer/frontend_types.h>
-#include <wrapper/vmalloc.h>
 #include <lttng-tracer.h>
 #include <lttng-endian.h>
 
@@ -71,7 +70,6 @@ int lttng_add_procname_to_ctx(struct lttng_ctx **ctx)
 	field->record = procname_record;
 	field->get_value = procname_get_value;
 	lttng_context_update(*ctx);
-	wrapper_vmalloc_sync_all();
 	return 0;
 }
 EXPORT_SYMBOL_GPL(lttng_add_procname_to_ctx);

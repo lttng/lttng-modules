@@ -12,7 +12,6 @@
 #include <linux/sched.h>
 #include <lttng-events.h>
 #include <wrapper/ringbuffer/frontend_types.h>
-#include <wrapper/vmalloc.h>
 #include <lttng-tracer.h>
 
 static
@@ -68,7 +67,6 @@ int lttng_add_pid_to_ctx(struct lttng_ctx **ctx)
 	field->record = pid_record;
 	field->get_value = pid_get_value;
 	lttng_context_update(*ctx);
-	wrapper_vmalloc_sync_all();
 	return 0;
 }
 EXPORT_SYMBOL_GPL(lttng_add_pid_to_ctx);

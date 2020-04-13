@@ -9,7 +9,7 @@
 
 #include <linux/slab.h>
 #include <lib/prio_heap/lttng_prio_heap.h>
-#include <wrapper/vmalloc.h>
+#include <linux/mm.h>
 
 #ifdef DEBUG_HEAP
 void lttng_check_heap(const struct lttng_ptr_heap *heap)
@@ -54,12 +54,13 @@ int heap_grow(struct lttng_ptr_heap *heap, size_t new_len)
 		return 0;
 
 	heap->alloc_len = max_t(size_t, new_len, heap->alloc_len << 1);
-	new_ptrs = lttng_kvmalloc(heap->alloc_len * sizeof(void *), heap->gfpmask);
+	new_ptrs = kvmalloc_node(heap->alloc_len * sizeof(void *), heap->gfpmask,
+				 NUMA_NO_NODE);
 	if (!new_ptrs)
 		return -ENOMEM;
 	if (heap->ptrs)
 		memcpy(new_ptrs, heap->ptrs, heap->len * sizeof(void *));
-	lttng_kvfree(heap->ptrs);
+	kvfree(heap->ptrs);
 	heap->ptrs = new_ptrs;
 	return 0;
 }
@@ -93,7 +94,7 @@ int lttng_heap_init(struct lttng_ptr_heap *heap, size_t alloc_len,
 
 void lttng_heap_free(struct lttng_ptr_heap *heap)
 {
-	lttng_kvfree(heap->ptrs);
+	kvfree(heap->ptrs);
 }
 
 static void heapify(struct lttng_ptr_heap *heap, size_t i)

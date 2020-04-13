@@ -13,7 +13,6 @@
 #include <linux/kref.h>
 #include <lttng-events.h>
 #include <wrapper/ringbuffer/frontend_types.h>
-#include <wrapper/vmalloc.h>
 #include <wrapper/irqflags.h>
 #include <lttng-tracer.h>
 #include <blacklist/kprobes.h>
@@ -215,13 +214,6 @@ int lttng_kretprobes_register(const char *name,
 	kref_get(&lttng_krp->kref_alloc);	/* inc refcount to 2, no overflow. */
 	kref_init(&lttng_krp->kref_register);
 	kref_get(&lttng_krp->kref_register);	/* inc refcount to 2, no overflow. */
-
-	/*
-	 * Ensure the memory we just allocated don't trigger page faults.
-	 * Well.. kprobes itself puts the page fault handler on the blacklist,
-	 * but we can never be too careful.
-	 */
-	wrapper_vmalloc_sync_all();
 
 	ret = register_kretprobe(&lttng_krp->krp);
 	if (ret)

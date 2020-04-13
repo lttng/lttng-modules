@@ -23,7 +23,6 @@
 
 #include <wrapper/trace-clock.h>
 #include <wrapper/compiler.h>
-#include <wrapper/vmalloc.h>
 #include <lttng-tracer-core.h>
 #include <lttng-events.h>
 

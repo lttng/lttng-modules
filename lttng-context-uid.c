@@ -14,7 +14,6 @@
 #include <lttng-events.h>
 #include <lttng-tracer.h>
 #include <wrapper/ringbuffer/frontend_types.h>
-#include <wrapper/vmalloc.h>
 #include <wrapper/user_namespace.h>
 
 static
@@ -70,7 +69,6 @@ int lttng_add_uid_to_ctx(struct lttng_ctx **ctx)
 	field->record = uid_record;
 	field->get_value = uid_get_value;
 	lttng_context_update(*ctx);
-	wrapper_vmalloc_sync_all();
 	return 0;
 }
 EXPORT_SYMBOL_GPL(lttng_add_uid_to_ctx);

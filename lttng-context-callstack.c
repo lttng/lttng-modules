@@ -46,7 +46,6 @@
 #include "lttng-events.h"
 #include "wrapper/ringbuffer/backend.h"
 #include "wrapper/ringbuffer/frontend.h"
-#include "wrapper/vmalloc.h"
 #include "lttng-tracer.h"
 #include "lttng-endian.h"
 
@@ -152,7 +151,6 @@ int __lttng_add_callstack_generic(struct lttng_ctx **ctx,
 	sequence_field->priv = fdata;
 	sequence_field->destroy = lttng_callstack_sequence_destroy;
 
-	wrapper_vmalloc_sync_all();
 	return 0;
 
 error_create:

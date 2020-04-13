@@ -11,7 +11,6 @@
 #include <linux/list.h>
 #include <linux/mutex.h>
 #include <linux/slab.h>
-#include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
 #include <lttng-events.h>
 #include <lttng-tracer.h>
 
@@ -82,12 +81,13 @@ struct lttng_ctx_field *lttng_append_context(struct lttng_ctx **ctx_p)
 		struct lttng_ctx_field *new_fields;
 
 		ctx->allocated_fields = max_t(size_t, 1, 2 * ctx->allocated_fields);
-		new_fields = lttng_kvzalloc(ctx->allocated_fields * sizeof(struct lttng_ctx_field), GFP_KERNEL);
+		new_fields = kvzalloc_node(ctx->allocated_fields * sizeof(struct lttng_ctx_field),
+					   GFP_KERNEL, NUMA_NO_NODE);
 		if (!new_fields)
 			return NULL;
 		if (ctx->fields)
 			memcpy(new_fields, ctx->fields, sizeof(*ctx->fields) * ctx->nr_fields);
-		lttng_kvfree(ctx->fields);
+		kvfree(ctx->fields);
 		ctx->fields = new_fields;
 	}
 	field = &ctx->fields[ctx->nr_fields];
@@ -205,7 +205,7 @@ void lttng_destroy_context(struct lttng_ctx *ctx)
 		if (ctx->fields[i].destroy)
 			ctx->fields[i].destroy(&ctx->fields[i]);
 	}
-	lttng_kvfree(ctx->fields);
+	kvfree(ctx->fields);
 	kfree(ctx);
 }
 

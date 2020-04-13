@@ -17,7 +17,6 @@
 #include <linux/vmalloc.h>
 
 #include <wrapper/mm.h>
-#include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
 #include <wrapper/ringbuffer/config.h>
 #include <wrapper/ringbuffer/backend.h>
 #include <wrapper/ringbuffer/frontend.h>
@@ -78,14 +77,13 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 	if (unlikely(!pages))
 		goto pages_error;
 
-	bufb->array = lttng_kvmalloc_node(ALIGN(sizeof(*bufb->array)
-					 * num_subbuf_alloc,
-				  1 << INTERNODE_CACHE_SHIFT),
+	bufb->array = kvmalloc_node(ALIGN(sizeof(*bufb->array)
+				    * num_subbuf_alloc,
+				    1 << INTERNODE_CACHE_SHIFT),
 			GFP_KERNEL | __GFP_NOWARN,
 			cpu_to_node(max(bufb->cpu, 0)));
 	if (unlikely(!bufb->array))
 		goto array_error;
-
 	for (i = 0; i < num_pages; i++) {
 		pages[i] = alloc_pages_node(cpu_to_node(max(bufb->cpu, 0)),
 				GFP_KERNEL | __GFP_NOWARN | __GFP_ZERO, 0);
@@ -97,7 +95,7 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 	/* Allocate backend pages array elements */
 	for (i = 0; i < num_subbuf_alloc; i++) {
 		bufb->array[i] =
-			lttng_kvzalloc_node(ALIGN(
+			kvzalloc_node(ALIGN(
 				sizeof(struct lib_ring_buffer_backend_pages) +
 				sizeof(struct lib_ring_buffer_backend_page)
 				* num_pages_per_subbuf,
@@ -109,7 +107,7 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 	}
 
 	/* Allocate write-side subbuffer table */
-	bufb->buf_wsb = lttng_kvzalloc_node(ALIGN(
+	bufb->buf_wsb = kvzalloc_node(ALIGN(
 				sizeof(struct lib_ring_buffer_backend_subbuffer)
 				* num_subbuf,
 				1 << INTERNODE_CACHE_SHIFT),
@@ -129,7 +127,7 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 		bufb->buf_rsb.id = subbuffer_id(config, 0, 1, 0);
 
 	/* Allocate subbuffer packet counter table */
-	bufb->buf_cnt = lttng_kvzalloc_node(ALIGN(
+	bufb->buf_cnt = kvzalloc_node(ALIGN(
 				sizeof(struct lib_ring_buffer_backend_counts)
 				* num_subbuf,
 				1 << INTERNODE_CACHE_SHIFT),
@@ -152,25 +150,20 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 		}
 	}
 
-	/*
-	 * If kmalloc ever uses vmalloc underneath, make sure the buffer pages
-	 * will not fault.
-	 */
-	wrapper_vmalloc_sync_all();
 	wrapper_clear_current_oom_origin();
 	vfree(pages);
 	return 0;
 
 free_wsb:
-	lttng_kvfree(bufb->buf_wsb);
+	kvfree(bufb->buf_wsb);
 free_array:
 	for (i = 0; (i < num_subbuf_alloc && bufb->array[i]); i++)
-		lttng_kvfree(bufb->array[i]);
+		kvfree(bufb->array[i]);
 depopulate:
 	/* Free all allocated pages */
 	for (i = 0; (i < num_pages && pages[i]); i++)
 		__free_page(pages[i]);
-	lttng_kvfree(bufb->array);
+	kvfree(bufb->array);
 array_error:
 	vfree(pages);
 pages_error:
@@ -201,14 +194,14 @@ void lib_ring_buffer_backend_free(struct lib_ring_buffer_backend *bufb)
 	if (chanb->extra_reader_sb)
 		num_subbuf_alloc++;
 
-	lttng_kvfree(bufb->buf_wsb);
-	lttng_kvfree(bufb->buf_cnt);
+	kvfree(bufb->buf_wsb);
+	kvfree(bufb->buf_cnt);
 	for (i = 0; i < num_subbuf_alloc; i++) {
 		for (j = 0; j < bufb->num_pages_per_subbuf; j++)
 			__free_page(pfn_to_page(bufb->array[i]->p[j].pfn));
-		lttng_kvfree(bufb->array[i]);
+		kvfree(bufb->array[i]);
 	}
-	lttng_kvfree(bufb->array);
+	kvfree(bufb->array);
 	bufb->allocated = 0;
 }
 

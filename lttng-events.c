@@ -26,11 +26,10 @@
 #include <wrapper/file.h>
 #include <linux/jhash.h>
 #include <linux/uaccess.h>
-#include <linux/vmalloc.h>
 #include <linux/uuid.h>
 #include <linux/dmi.h>
+#include <linux/vmalloc.h>
 
-#include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
 #include <wrapper/random.h>
 #include <wrapper/tracepoint.h>
 #include <wrapper/list.h>
@@ -129,7 +128,8 @@ struct lttng_session *lttng_session_create(void)
 	int i;
 
 	mutex_lock(&sessions_mutex);
-	session = lttng_kvzalloc(sizeof(struct lttng_session), GFP_KERNEL);
+	session = kvzalloc_node(sizeof(struct lttng_session), GFP_KERNEL,
+				NUMA_NO_NODE);
 	if (!session)
 		goto err;
 	INIT_LIST_HEAD(&session->chan);
@@ -172,7 +172,7 @@ struct lttng_session *lttng_session_create(void)
 err_free_cache:
 	kfree(metadata_cache);
 err_free_session:
-	lttng_kvfree(session);
+	kvfree(session);
 err:
 	mutex_unlock(&sessions_mutex);
 	return NULL;
@@ -225,7 +225,7 @@ void lttng_session_destroy(struct lttng_session *session)
 	kref_put(&session->metadata_cache->refcount, metadata_cache_destroy);
 	list_del(&session->list);
 	mutex_unlock(&sessions_mutex);
-	lttng_kvfree(session);
+	kvfree(session);
 }
 
 int lttng_session_statedump(struct lttng_session *session)
@@ -2793,22 +2793,10 @@ end:
  * @transport: transport structure
  *
  * Registers a transport which can be used as output to extract the data out of
- * LTTng. The module calling this registration function must ensure that no
- * trap-inducing code will be executed by the transport functions. E.g.
- * vmalloc_sync_all() must be called between a vmalloc and the moment the memory
- * is made visible to the transport function. This registration acts as a
- * vmalloc_sync_all. Therefore, only if the module allocates virtual memory
- * after its registration must it synchronize the TLBs.
+ * LTTng.
  */
 void lttng_transport_register(struct lttng_transport *transport)
 {
-	/*
-	 * Make sure no page fault can be triggered by the module about to be
-	 * registered. We deal with this here so we don't have to call
-	 * vmalloc_sync_all() in each module's init.
-	 */
-	wrapper_vmalloc_sync_all();
-
 	mutex_lock(&sessions_mutex);
 	list_add_tail(&transport->node, &lttng_transport_list);
 	mutex_unlock(&sessions_mutex);

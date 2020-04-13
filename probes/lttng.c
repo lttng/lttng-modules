@@ -16,7 +16,6 @@
 #include <linux/slab.h>
 #include <linux/mm.h>
 #include <linux/miscdevice.h>
-#include <wrapper/vmalloc.h>
 #include <lttng-events.h>
 
 #define TP_MODULE_NOAUTOLOAD
@@ -115,8 +114,6 @@ static struct miscdevice logger_dev = {
 int __init lttng_logger_init(void)
 {
 	int ret = 0;
-
-	wrapper_vmalloc_sync_all();
 
 	/* /dev/lttng-logger */
 	ret = misc_register(&logger_dev);

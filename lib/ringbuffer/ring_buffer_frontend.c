@@ -51,7 +51,6 @@
 #include <wrapper/kref.h>
 #include <wrapper/percpu-defs.h>
 #include <wrapper/timer.h>
-#include <wrapper/vmalloc.h>
 
 /*
  * Internal structure representing offsets to use at a sub-buffer switch.
@@ -134,9 +133,9 @@ void lib_ring_buffer_free(struct lib_ring_buffer *buf)
 	struct channel *chan = buf->backend.chan;
 
 	lib_ring_buffer_print_errors(chan, buf, buf->backend.cpu);
-	lttng_kvfree(buf->commit_hot);
-	lttng_kvfree(buf->commit_cold);
-	lttng_kvfree(buf->ts_end);
+	kvfree(buf->commit_hot);
+	kvfree(buf->commit_cold);
+	kvfree(buf->ts_end);
 
 	lib_ring_buffer_backend_free(&buf->backend);
 }
@@ -234,7 +233,7 @@ int lib_ring_buffer_create(struct lib_ring_buffer *buf,
 		return ret;
 
 	buf->commit_hot =
-		lttng_kvzalloc_node(ALIGN(sizeof(*buf->commit_hot)
+		kvzalloc_node(ALIGN(sizeof(*buf->commit_hot)
 				   * chan->backend.num_subbuf,
 				   1 << INTERNODE_CACHE_SHIFT),
 			GFP_KERNEL | __GFP_NOWARN,
@@ -245,7 +244,7 @@ int lib_ring_buffer_create(struct lib_ring_buffer *buf,
 	}
 
 	buf->commit_cold =
-		lttng_kvzalloc_node(ALIGN(sizeof(*buf->commit_cold)
+		kvzalloc_node(ALIGN(sizeof(*buf->commit_cold)
 				   * chan->backend.num_subbuf,
 				   1 << INTERNODE_CACHE_SHIFT),
 			GFP_KERNEL | __GFP_NOWARN,
@@ -256,7 +255,7 @@ int lib_ring_buffer_create(struct lib_ring_buffer *buf,
 	}
 
 	buf->ts_end =
-		lttng_kvzalloc_node(ALIGN(sizeof(*buf->ts_end)
+		kvzalloc_node(ALIGN(sizeof(*buf->ts_end)
 				   * chan->backend.num_subbuf,
 				   1 << INTERNODE_CACHE_SHIFT),
 			GFP_KERNEL | __GFP_NOWARN,
@@ -300,16 +299,15 @@ int lib_ring_buffer_create(struct lib_ring_buffer *buf,
 			     chan->backend.cpumask));
 		cpumask_set_cpu(cpu, chan->backend.cpumask);
 	}
-
 	return 0;
 
 	/* Error handling */
 free_init:
-	lttng_kvfree(buf->ts_end);
+	kvfree(buf->ts_end);
 free_commit_cold:
-	lttng_kvfree(buf->commit_cold);
+	kvfree(buf->commit_cold);
 free_commit:
-	lttng_kvfree(buf->commit_hot);
+	kvfree(buf->commit_hot);
 free_chanbuf:
 	lib_ring_buffer_backend_free(&buf->backend);
 	return ret;
