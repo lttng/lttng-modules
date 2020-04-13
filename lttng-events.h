@@ -156,13 +156,8 @@ union lttng_ctx_value {
  * lttng_ctx_field because cpu hotplug needs fixed-location addresses.
  */
 struct lttng_perf_counter_field {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
 	struct lttng_cpuhp_node cpuhp_prepare;
 	struct lttng_cpuhp_node cpuhp_online;
-#else
-	struct notifier_block nb;
-	int hp_enable;
-#endif
 	struct perf_event_attr *attr;
 	struct perf_event **e;	/* per-cpu array */
 };
