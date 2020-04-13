@@ -10,18 +10,11 @@
 #include <linux/module.h>
 #include <linux/kvm_host.h>
 #include <lttng-tracer.h>
-#include <lttng-kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0))
 /* TODO: check for header availability in Makefile */
 #include <../../arch/x86/kvm/kvm_emulate.h>
-#endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
 #include <kvm/iodev.h>
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0)) */
-#include <../../virt/kvm/iodev.h>
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0)) */
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
