@@ -13,8 +13,8 @@
 #include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/version.h>
+#include <linux/splice.h>
 
-#include <wrapper/splice.h>
 #include <wrapper/ringbuffer/backend.h>
 #include <wrapper/ringbuffer/frontend.h>
 #include <wrapper/ringbuffer/vfs.h>
@@ -152,7 +152,7 @@ static int subbuf_splice_actor(struct file *in,
 	if (!spd.nr_pages)
 		return 0;
 
-	return wrapper_splice_to_pipe(pipe, &spd);
+	return splice_to_pipe(pipe, &spd);
 }
 
 ssize_t lib_ring_buffer_splice_read(struct file *in, loff_t *ppos,
