@@ -10,8 +10,6 @@
 
 struct lttng_cpuhp_node;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
-
 #include <linux/cpuhotplug.h>
 
 enum lttng_cpuhp_component {
@@ -46,7 +44,5 @@ void lttng_rb_set_hp_online(enum cpuhp_state val);
 
 extern enum cpuhp_state lttng_rb_hp_prepare;
 extern enum cpuhp_state lttng_rb_hp_online;
-
-#endif
 
 #endif /* LTTNG_CPUHOTPLUG_H */
