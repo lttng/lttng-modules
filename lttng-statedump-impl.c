@@ -34,10 +34,10 @@
 #include <linux/device.h>
 #include <linux/fdtable.h>
 #include <linux/irq.h>
+#include <linux/genhd.h>
 
 #include <lttng-events.h>
 #include <lttng-tracer.h>
-#include <wrapper/genhd.h>
 
 /* Define the tracepoints, but do not build the probes */
 #define CREATE_TRACE_POINTS
@@ -114,19 +114,11 @@ enum lttng_process_status {
 static
 int lttng_enumerate_block_devices(struct lttng_session *session)
 {
-	struct class *ptr_block_class;
-	struct device_type *ptr_disk_type;
 	struct class_dev_iter iter;
 	struct device *dev;
 
-	ptr_block_class = wrapper_get_block_class();
-	if (!ptr_block_class)
-		return -ENOSYS;
-	ptr_disk_type = wrapper_get_disk_type();
-	if (!ptr_disk_type) {
-		return -ENOSYS;
-	}
-	class_dev_iter_init(&iter, ptr_block_class, NULL, ptr_disk_type);
+	class_dev_iter_init(&iter, gendisk_block_class(), NULL,
+			    gendisk_device_type());
 	while ((dev = class_dev_iter_next(&iter))) {
 		struct disk_part_iter piter;
 		struct gendisk *disk = dev_to_disk(dev);
@@ -145,7 +137,7 @@ int lttng_enumerate_block_devices(struct lttng_session *session)
 			char name_buf[BDEVNAME_SIZE];
 			char *p;
 
-			p = wrapper_disk_name(disk, part->partno, name_buf);
+			p = gendisk_name(disk, part->partno, name_buf);
 			if (!p) {
 				disk_part_iter_exit(&piter);
 				class_dev_iter_exit(&iter);
