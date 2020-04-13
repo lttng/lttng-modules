@@ -20,7 +20,6 @@
 #include <trace/events/writeback.h>
 
 #include <lttng-kernel-version.h>
-#include <wrapper/writeback.h>
 
 /* #if <check version number if global_dirty_limit will be exported> */
 
