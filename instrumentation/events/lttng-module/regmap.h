@@ -7,7 +7,6 @@
 
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/ktime.h>
-#include <linux/version.h>
 
 #ifndef _TRACE_REGMAP_DEF_
 #define _TRACE_REGMAP_DEF_
