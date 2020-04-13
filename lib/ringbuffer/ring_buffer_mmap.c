@@ -20,11 +20,7 @@
 /*
  * fault() vm_op implementation for ring buffer file mapping.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,1,0))
 static vm_fault_t lib_ring_buffer_fault_compat(struct vm_area_struct *vma, struct vm_fault *vmf)
-#else
-static int lib_ring_buffer_fault_compat(struct vm_area_struct *vma, struct vm_fault *vmf)
-#endif
 {
 	struct lib_ring_buffer *buf = vma->vm_private_data;
 	struct channel *chan = buf->backend.chan;
@@ -57,24 +53,11 @@ static int lib_ring_buffer_fault_compat(struct vm_area_struct *vma, struct vm_fa
 	return 0;
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,1,0))
 static vm_fault_t lib_ring_buffer_fault(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
 	return lib_ring_buffer_fault_compat(vma, vmf);
 }
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
-static int lib_ring_buffer_fault(struct vm_fault *vmf)
-{
-	struct vm_area_struct *vma = vmf->vma;
-	return lib_ring_buffer_fault_compat(vma, vmf);
-}
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
-static int lib_ring_buffer_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
-{
-	return lib_ring_buffer_fault_compat(vma, vmf);
-}
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
 
 /*
  * vm_ops for ring buffer file mappings.
