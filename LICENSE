@@ -16,7 +16,6 @@ LICENSES/GPL-2.0 for details.
 lib/ringbuffer/ring_buffer_splice.c
 lib/ringbuffer/ring_buffer_mmap.c
 instrumentation/events/lttng-module/*.h
-wrapper/list.h
 
 * MIT-style license
 
