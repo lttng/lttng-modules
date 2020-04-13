@@ -8,14 +8,14 @@
  */
 
 #include <linux/uaccess.h>
-#include <wrapper/frame.h>
+#include <linux/frame.h>
 #include <wrapper/types.h>
 #include <linux/swab.h>
 
 #include <lttng-filter.h>
 #include <lttng-string-utils.h>
 
-LTTNG_STACK_FRAME_NON_STANDARD(lttng_filter_interpret_bytecode);
+STACK_FRAME_NON_STANDARD(lttng_filter_interpret_bytecode);
 
 /*
  * get_char should be called with page fault handler disabled if it is expected
