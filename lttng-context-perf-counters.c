@@ -58,21 +58,12 @@ void perf_counter_record(struct lttng_ctx_field *field,
 	chan->ops->event_write(ctx, &value, sizeof(value));
 }
 
-#if defined(CONFIG_PERF_EVENTS) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,99))
 static
 void overflow_callback(struct perf_event *event,
 		       struct perf_sample_data *data,
 		       struct pt_regs *regs)
 {
 }
-#else
-static
-void overflow_callback(struct perf_event *event, int nmi,
-		       struct perf_sample_data *data,
-		       struct pt_regs *regs)
-{
-}
-#endif
 
 static
 void lttng_destroy_perf_counter_field(struct lttng_ctx_field *field)
