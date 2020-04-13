@@ -15,8 +15,8 @@
 #include <linux/cpu.h>
 #include <linux/mm.h>
 #include <linux/vmalloc.h>
+#include <linux/oom.h>
 
-#include <wrapper/mm.h>
 #include <wrapper/ringbuffer/config.h>
 #include <wrapper/ringbuffer/backend.h>
 #include <wrapper/ringbuffer/frontend.h>
@@ -51,7 +51,7 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 	 * and returns if there should be enough free pages based on the
 	 * current estimate.
 	 */
-	if (!wrapper_check_enough_free_pages(num_pages))
+	if (num_pages >= si_mem_available())
 		goto not_enough_pages;
 
 	/*
@@ -60,7 +60,7 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 	 * end up running out of memory because of this buffer allocation, we
 	 * want to kill the offending app first.
 	 */
-	wrapper_set_current_oom_origin();
+	set_current_oom_origin();
 
 	num_pages_per_subbuf = num_pages >> get_count_order(num_subbuf);
 	subbuf_size = chanb->subbuf_size;
@@ -150,7 +150,7 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 		}
 	}
 
-	wrapper_clear_current_oom_origin();
+	clear_current_oom_origin();
 	vfree(pages);
 	return 0;
 
@@ -167,7 +167,7 @@ depopulate:
 array_error:
 	vfree(pages);
 pages_error:
-	wrapper_clear_current_oom_origin();
+	clear_current_oom_origin();
 not_enough_pages:
 	return -ENOMEM;
 }
