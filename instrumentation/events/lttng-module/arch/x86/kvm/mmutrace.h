@@ -3,46 +3,18 @@
 #define LTTNG_TRACE_KVM_MMU_H
 
 #include <probes/lttng-tracepoint-event.h>
-#include <linux/version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
 #include <linux/trace_events.h>
-#else /* if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
-#include <linux/ftrace_event.h>
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
 
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM kvm_mmu
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,1,0) || \
-	LTTNG_RHEL_KERNEL_RANGE(4,18,0,147,0,0, 4,19,0,0,0,0))
-
 #define LTTNG_KVM_MMU_PAGE_FIELDS \
 	ctf_integer(__u64, gfn, (sp)->gfn) \
 	ctf_integer(__u32, role, (sp)->role.word) \
 	ctf_integer(__u32, root_count, (sp)->root_count) \
 	ctf_integer(bool, unsync, (sp)->unsync)
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
-
-#define LTTNG_KVM_MMU_PAGE_FIELDS \
-	ctf_integer(unsigned long, mmu_valid_gen, (sp)->mmu_valid_gen) \
-	ctf_integer(__u64, gfn, (sp)->gfn) \
-	ctf_integer(__u32, role, (sp)->role.word) \
-	ctf_integer(__u32, root_count, (sp)->root_count) \
-	ctf_integer(bool, unsync, (sp)->unsync)
-
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
-
-#define LTTNG_KVM_MMU_PAGE_FIELDS \
-	ctf_integer(__u64, gfn, (sp)->gfn) \
-	ctf_integer(__u32, role, (sp)->role.word) \
-	ctf_integer(__u32, root_count, (sp)->root_count) \
-	ctf_integer(bool, unsync, (sp)->unsync)
-
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
 /*
  * A pagetable walk has started
  */
@@ -56,23 +28,6 @@ LTTNG_TRACEPOINT_EVENT(
 		ctf_integer(__u32, pferr, pferr)
 	)
 )
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)) */
-/*
- * A pagetable walk has started
- */
-LTTNG_TRACEPOINT_EVENT(
-	kvm_mmu_pagetable_walk,
-	TP_PROTO(u64 addr, int write_fault, int user_fault, int fetch_fault),
-	TP_ARGS(addr, write_fault, user_fault, fetch_fault),
-
-	TP_FIELDS(
-		ctf_integer_hex(__u64, addr, addr)
-		ctf_integer(__u32, pferr,
-			(!!write_fault << 1) | (!!user_fault << 2)
-			| (!!fetch_fault << 4))
-	)
-)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)) */
 
 /* We just walked a paging element */
 LTTNG_TRACEPOINT_EVENT(
@@ -163,8 +118,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_mmu_page_class, kvm_mmu_prepare_zap_page,
 	TP_ARGS(sp)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
-
 LTTNG_TRACEPOINT_EVENT_MAP(
 	mark_mmio_spte,
 
@@ -181,25 +134,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(
 	)
 )
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
-
-LTTNG_TRACEPOINT_EVENT_MAP(
-	mark_mmio_spte,
-
-	kvm_mmu_mark_mmio_spte,
-
-	TP_PROTO(u64 *sptep, gfn_t gfn, unsigned access),
-	TP_ARGS(sptep, gfn, access),
-
-	TP_FIELDS(
-		ctf_integer_hex(void *, sptep, sptep)
-		ctf_integer(gfn_t, gfn, gfn)
-		ctf_integer(unsigned, access, access)
-	)
-)
-
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
-
 LTTNG_TRACEPOINT_EVENT_MAP(
 	handle_mmio_page_fault,
 
@@ -215,13 +149,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0) || \
-	LTTNG_KERNEL_RANGE(4,19,103, 4,20,0) || \
-	LTTNG_KERNEL_RANGE(5,4,19, 5,5,0) || \
-	LTTNG_KERNEL_RANGE(5,5,3, 5,6,0) || \
-	LTTNG_UBUNTU_KERNEL_RANGE(4,15,18,92, 4,16,0,0) || \
-	LTTNG_UBUNTU_KERNEL_RANGE(5,3,18,43, 5,3,18,45) || \
-	LTTNG_UBUNTU_KERNEL_RANGE(5,3,18,46, 5,4,0,0))
 LTTNG_TRACEPOINT_EVENT_MAP(
 	fast_page_fault,
 
@@ -241,27 +168,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(
 		ctf_integer(bool, retry, retry)
 	)
 )
-#else
-LTTNG_TRACEPOINT_EVENT_MAP(
-	fast_page_fault,
-
-	kvm_mmu_fast_page_fault,
-
-	TP_PROTO(struct kvm_vcpu *vcpu, gva_t gva, u32 error_code,
-		 u64 *sptep, u64 old_spte, bool retry),
-	TP_ARGS(vcpu, gva, error_code, sptep, old_spte, retry),
-
-	TP_FIELDS(
-		ctf_integer(int, vcpu_id, vcpu->vcpu_id)
-		ctf_integer(gva_t, gva, gva)
-		ctf_integer(u32, error_code, error_code)
-		ctf_integer_hex(u64 *, sptep, sptep)
-		ctf_integer(u64, old_spte, old_spte)
-		ctf_integer(u64, new_spte, *sptep)
-		ctf_integer(bool, retry, retry)
-	)
-)
-#endif
 
 #endif /* LTTNG_TRACE_KVM_MMU_H */
 
