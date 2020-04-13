@@ -38,7 +38,6 @@
 #include <lttng-tracer.h>
 #include <wrapper/namespace.h>
 #include <wrapper/irq.h>
-#include <wrapper/tracepoint.h>
 #include <wrapper/genhd.h>
 #include <wrapper/file.h>
 
@@ -615,13 +614,6 @@ EXPORT_SYMBOL_GPL(lttng_statedump_start);
 static
 int __init lttng_statedump_init(void)
 {
-	/*
-	 * Allow module to load even if the fixup cannot be done. This
-	 * will allow seemless transition when the underlying issue fix
-	 * is merged into the Linux kernel, and when tracepoint.c
-	 * "tracepoint_module_notify" is turned into a static function.
-	 */
-	(void) wrapper_lttng_fixup_sig(THIS_MODULE);
 	return 0;
 }
 

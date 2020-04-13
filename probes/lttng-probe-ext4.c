@@ -23,7 +23,7 @@
 #include <trace/events/ext4.h>
 
 #include <lttng-kernel-version.h>
-#include <wrapper/tracepoint.h>
+#include "lttng-tracepoint.h"
 
 /*
  * Create LTTng tracepoint probes.

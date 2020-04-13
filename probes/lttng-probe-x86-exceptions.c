@@ -16,7 +16,7 @@
  */
 #include <asm/trace/exceptions.h>
 
-#include <wrapper/tracepoint.h>
+#include "lttng-tracepoint.h"
 
 #undef TRACE_INCLUDE_PATH
 #undef TRACE_INCLUDE_FILE

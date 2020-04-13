@@ -21,7 +21,7 @@ struct pool_workqueue;
  */
 #include <trace/events/workqueue.h>
 
-#include <wrapper/tracepoint.h>
+#include "lttng-tracepoint.h"
 
 /*
  * Create LTTng tracepoint probes.

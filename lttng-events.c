@@ -31,7 +31,6 @@
 #include <linux/vmalloc.h>
 
 #include <wrapper/random.h>
-#include <wrapper/tracepoint.h>
 #include <wrapper/list.h>
 #include <wrapper/types.h>
 #include <lttng-kernel-version.h>
@@ -40,6 +39,7 @@
 #include <lttng-abi-old.h>
 #include <lttng-endian.h>
 #include <lttng-string-utils.h>
+#include <lttng-tracepoint.h>
 #include <wrapper/ringbuffer/backend.h>
 #include <wrapper/ringbuffer/frontend.h>
 
@@ -822,9 +822,9 @@ void register_event(struct lttng_event *event)
 	desc = event->desc;
 	switch (event->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
-		ret = lttng_wrapper_tracepoint_probe_register(desc->kname,
-						  desc->probe_callback,
-						  event);
+		ret = lttng_tracepoint_probe_register(desc->kname,
+						desc->probe_callback,
+						event);
 		break;
 	case LTTNG_KERNEL_SYSCALL:
 		ret = lttng_syscall_filter_enable(event->chan,
@@ -858,7 +858,7 @@ int _lttng_event_unregister(struct lttng_event *event)
 	desc = event->desc;
 	switch (event->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
-		ret = lttng_wrapper_tracepoint_probe_unregister(event->desc->kname,
+		ret = lttng_tracepoint_probe_unregister(event->desc->kname,
 						  event->desc->probe_callback,
 						  event);
 		break;
@@ -2937,9 +2937,6 @@ static int __init lttng_events_init(void)
 {
 	int ret;
 
-	ret = wrapper_lttng_fixup_sig(THIS_MODULE);
-	if (ret)
-		return ret;
 	ret = wrapper_get_pfnblock_flags_mask_init();
 	if (ret)
 		return ret;

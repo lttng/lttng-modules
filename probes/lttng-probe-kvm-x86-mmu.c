@@ -22,7 +22,7 @@
  * Create the tracepoint static inlines from the kernel to validate that our
  * trace event macros match the kernel we run on.
  */
-#include <wrapper/tracepoint.h>
+#include "lttng-tracepoint.h"
 
 #include <../../arch/x86/kvm/mmutrace.h>
 

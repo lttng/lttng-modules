@@ -17,7 +17,6 @@
 
 #include <lttng-tracepoint.h>
 #include <wrapper/list.h>
-#include <wrapper/tracepoint.h>
 
 /*
  * Protect the tracepoint table. lttng_tracepoint_mutex nests within
@@ -229,7 +228,7 @@ int lttng_tracepoint_coming(struct tp_module *tp_mod)
 		struct tracepoint_entry *e;
 		struct lttng_tp_probe *p;
 
-		tp = lttng_tracepoint_ptr_deref(&tp_mod->mod->tracepoints_ptrs[i]);
+		tp = tracepoint_ptr_deref(&tp_mod->mod->tracepoints_ptrs[i]);
 		e = get_tracepoint(tp->name);
 		if (!e) {
 			e = add_tracepoint(tp->name);
@@ -270,7 +269,7 @@ int lttng_tracepoint_going(struct tp_module *tp_mod)
 		struct tracepoint_entry *e;
 		struct lttng_tp_probe *p;
 
-		tp = lttng_tracepoint_ptr_deref(&tp_mod->mod->tracepoints_ptrs[i]);
+		tp = tracepoint_ptr_deref(&tp_mod->mod->tracepoints_ptrs[i]);
 		e = get_tracepoint(tp->name);
 		if (!e || !e->tp)
 			continue;

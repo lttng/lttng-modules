@@ -18,7 +18,7 @@
 #include <linux/sched.h>
 #include <trace/events/timer.h>
 
-#include <wrapper/tracepoint.h>
+#include "lttng-tracepoint.h"
 
 /*
  * Create LTTng tracepoint probes.

@@ -15,7 +15,6 @@
 
 #include <lttng-events.h>
 #include <lttng-tracer.h>
-#include <wrapper/tracepoint.h>
 
 #define TP_MODULE_NOAUTOLOAD
 #define LTTNG_PACKAGE_BUILD
@@ -96,7 +95,6 @@ int __init lttng_test_init(void)
 {
 	int ret = 0;
 
-	(void) wrapper_lttng_fixup_sig(THIS_MODULE);
 	lttng_test_filter_event_dentry =
 			proc_create_data(LTTNG_TEST_FILTER_EVENT_FILE,
 				S_IRUGO | S_IWUGO, NULL,

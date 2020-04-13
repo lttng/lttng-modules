@@ -17,7 +17,7 @@
  * trace event macros match the kernel we run on.
  */
 #include <trace/events/lock.h>
-#include <wrapper/tracepoint.h>
+#include "lttng-tracepoint.h"
 
 /*
  * Create LTTng tracepoint probes.
