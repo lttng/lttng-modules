@@ -93,13 +93,6 @@ ifneq ($(CONFIG_JBD2),)
   obj-$(CONFIG_LTTNG) += lttng-probe-jbd2.o
 endif # CONFIG_JBD2
 
-ifneq ($(CONFIG_JBD),)
-  obj-$(CONFIG_LTTNG) +=  $(shell \
-    if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 1 \) ] ; then \
-      echo "lttng-probe-jbd.o" ; fi;)
-endif # CONFIG_JBD
-
 ifneq ($(CONFIG_REGULATOR),)
   obj-$(CONFIG_LTTNG) += lttng-probe-regulator.o
 endif # CONFIG_REGULATOR
