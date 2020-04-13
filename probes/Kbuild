@@ -15,10 +15,7 @@ obj-$(CONFIG_LTTNG) += lttng-probe-power.o
 obj-$(CONFIG_LTTNG) += lttng-probe-statedump.o
 
 ifneq ($(CONFIG_NET_9P),)
-  obj-$(CONFIG_LTTNG) +=  $(shell \
-    if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 10 \) ] ; then \
-      echo "lttng-probe-9p.o" ; fi;)
+  obj-$(CONFIG_LTTNG) += lttng-probe-9p.o
 endif # CONFIG_NET_9P
 
 i2c_dep = $(srctree)/include/trace/events/i2c.h
@@ -73,20 +70,12 @@ ifneq ($(CONFIG_NET),)
   obj-$(CONFIG_LTTNG) += lttng-probe-napi.o
   obj-$(CONFIG_LTTNG) += lttng-probe-skb.o
   obj-$(CONFIG_LTTNG) += lttng-probe-net.o
-  obj-$(CONFIG_LTTNG) +=  $(shell \
-    if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 1 \) ] ; then \
-      echo "lttng-probe-sock.o" ; fi;)
-  obj-$(CONFIG_LTTNG) +=  $(shell \
-    if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 1 \) ] ; then \
-      echo "lttng-probe-udp.o" ; fi;)
+  obj-$(CONFIG_LTTNG) += lttng-probe-sock.o
+  obj-$(CONFIG_LTTNG) += lttng-probe-udp.o
 endif # CONFIG_NET
 
 ifneq ($(CONFIG_GPIOLIB),)
-  obj-$(CONFIG_LTTNG) +=  $(shell \
-    if [ $(VERSION) -ge 3 ] ; then \
-      echo "lttng-probe-gpio.o" ; fi;)
+  obj-$(CONFIG_LTTNG) += lttng-probe-gpio.o
 endif # CONFIG_GPIOLIB
 
 ifneq ($(CONFIG_JBD2),)
@@ -128,27 +117,15 @@ ifneq ($(CONFIG_EXT4_FS),)
   endif # $(wildcard $(ext4_dep))
 endif # CONFIG_EXT4_FS
 
-obj-$(CONFIG_LTTNG) +=  $(shell \
-  if [ $(VERSION) -ge 4 \
-    -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 4 \) ] ; then \
-    echo "lttng-probe-printk.o" ; fi;)
+obj-$(CONFIG_LTTNG) +=  lttng-probe-printk.o
 
 ifneq ($(CONFIG_FRAME_WARN),0)
   CFLAGS_lttng-probe-printk.o += -Wframe-larger-than=2200
 endif
 
-obj-$(CONFIG_LTTNG) +=  $(shell \
-    if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 6 \) \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 5 -a $(SUBLEVEL) -ge 2 \) \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 4 -a $(SUBLEVEL) -ge 9 \) \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 0 -a $(SUBLEVEL) -ge 41 \) ] ; then \
-      echo "lttng-probe-random.o" ; fi;)
+obj-$(CONFIG_LTTNG) += lttng-probe-random.o
 
-obj-$(CONFIG_LTTNG) +=  $(shell \
-  if [ $(VERSION) -ge 4 \
-    -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 2 \) ] ; then \
-    echo "lttng-probe-rcu.o" ; fi;)
+obj-$(CONFIG_LTTNG) += lttng-probe-rcu.o
 
 ifneq ($(CONFIG_REGMAP),)
   regmap_dep_4_1 = $(srctree)/drivers/base/regmap/trace.h
@@ -160,35 +137,20 @@ ifneq ($(CONFIG_REGMAP),)
 endif # CONFIG_REGMAP
 
 ifneq ($(CONFIG_PM_RUNTIME),)
-  obj-$(CONFIG_LTTNG) +=  $(shell \
-    if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 2 \) ] ; then \
-      echo "lttng-probe-rpm.o" ; fi;)
+  obj-$(CONFIG_LTTNG) += lttng-probe-rpm.o
 endif # CONFIG_PM_RUNTIME
 
 ifneq ($(CONFIG_SUNRPC),)
-  obj-$(CONFIG_LTTNG) +=  $(shell \
-    if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 4 \) ] ; then \
-      echo "lttng-probe-sunrpc.o" ; fi;)
+  obj-$(CONFIG_LTTNG) += lttng-probe-sunrpc.o
 endif # CONFIG_SUNRPC
 
 ifneq ($(CONFIG_VIDEO_V4L2),)
-  obj-$(CONFIG_LTTNG) += $(shell \
-    if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 14 \) ] ; then \
-      echo "lttng-probe-v4l2.o" ; fi;)
+  obj-$(CONFIG_LTTNG) += lttng-probe-v4l2.o
 endif # CONFIG_VIDEO_V4L2
 
 obj-$(CONFIG_LTTNG) += lttng-probe-workqueue.o
 
-ifneq ($(CONFIG_KALLSYMS_ALL),)
-  obj-$(CONFIG_LTTNG) += lttng-probe-writeback.o
-else
-  ifdef CONFIG_LOCALVERSION # Check if dot-config is included.
-    $(warning CONFIG_KALLSYMS_ALL is disabled, therefore probe "writeback" is disabled. Rebuild your kernel with this configuration option enabled in order to trace this subsystem.)
-  endif
-endif # CONFIG_KALLSYMS_ALL
+obj-$(CONFIG_LTTNG) += lttng-probe-writeback.o
 
 ifneq ($(CONFIG_KPROBES),)
   obj-$(CONFIG_LTTNG) += lttng-kprobes.o
