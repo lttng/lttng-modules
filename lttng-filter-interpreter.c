@@ -9,7 +9,7 @@
 
 #include <linux/uaccess.h>
 #include <linux/frame.h>
-#include <wrapper/types.h>
+#include <linux/limits.h>
 #include <linux/swab.h>
 
 #include <lttng-filter.h>
@@ -551,7 +551,7 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 			ret = -EINVAL;
 			goto end;
 		}
-		stack_top->u.s.seq_len = LTTNG_SIZE_MAX;
+		stack_top->u.s.seq_len = SIZE_MAX;
 		stack_top->u.s.literal_type =
 			ESTACK_STRING_LITERAL_TYPE_NONE;
 		break;
@@ -1128,7 +1128,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 				ret = -EINVAL;
 				goto end;
 			}
-			estack_ax(stack, top)->u.s.seq_len = LTTNG_SIZE_MAX;
+			estack_ax(stack, top)->u.s.seq_len = SIZE_MAX;
 			estack_ax(stack, top)->u.s.literal_type =
 				ESTACK_STRING_LITERAL_TYPE_NONE;
 			estack_ax(stack, top)->u.s.user = 0;
@@ -1192,7 +1192,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 			dbg_printk("load string %s\n", insn->data);
 			estack_push(stack, top, ax, bx);
 			estack_ax(stack, top)->u.s.str = insn->data;
-			estack_ax(stack, top)->u.s.seq_len = LTTNG_SIZE_MAX;
+			estack_ax(stack, top)->u.s.seq_len = SIZE_MAX;
 			estack_ax(stack, top)->u.s.literal_type =
 				ESTACK_STRING_LITERAL_TYPE_PLAIN;
 			estack_ax(stack, top)->u.s.user = 0;
@@ -1207,7 +1207,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 			dbg_printk("load globbing pattern %s\n", insn->data);
 			estack_push(stack, top, ax, bx);
 			estack_ax(stack, top)->u.s.str = insn->data;
-			estack_ax(stack, top)->u.s.seq_len = LTTNG_SIZE_MAX;
+			estack_ax(stack, top)->u.s.seq_len = SIZE_MAX;
 			estack_ax(stack, top)->u.s.literal_type =
 				ESTACK_STRING_LITERAL_TYPE_STAR_GLOB;
 			estack_ax(stack, top)->u.s.user = 0;
@@ -1272,7 +1272,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 				ret = -EINVAL;
 				goto end;
 			}
-			estack_ax(stack, top)->u.s.seq_len = LTTNG_SIZE_MAX;
+			estack_ax(stack, top)->u.s.seq_len = SIZE_MAX;
 			estack_ax(stack, top)->u.s.literal_type =
 				ESTACK_STRING_LITERAL_TYPE_NONE;
 			estack_ax(stack, top)->u.s.user = 0;
@@ -1322,7 +1322,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 				ret = -EINVAL;
 				goto end;
 			}
-			estack_ax(stack, top)->u.s.seq_len = LTTNG_SIZE_MAX;
+			estack_ax(stack, top)->u.s.seq_len = SIZE_MAX;
 			estack_ax(stack, top)->u.s.literal_type =
 				ESTACK_STRING_LITERAL_TYPE_NONE;
 			estack_ax(stack, top)->u.s.user = 1;
@@ -1538,7 +1538,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 				ret = -EINVAL;
 				goto end;
 			}
-			estack_ax(stack, top)->u.s.seq_len = LTTNG_SIZE_MAX;
+			estack_ax(stack, top)->u.s.seq_len = SIZE_MAX;
 			estack_ax(stack, top)->u.s.literal_type =
 				ESTACK_STRING_LITERAL_TYPE_NONE;
 			next_pc += sizeof(struct load_op);
