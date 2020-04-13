@@ -7,7 +7,6 @@
 
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/writeback.h>
-#include <linux/version.h>
 
 #ifndef _TRACE_EXT4_DEF_
 #define _TRACE_EXT4_DEF_
@@ -17,17 +16,11 @@ struct ext4_prealloc_space;
 struct ext4_inode_info;
 struct mpage_da_data;
 struct ext4_map_blocks;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
 struct ext4_extent;
-#endif
 #endif
 
 #define EXT4_I(inode) (container_of(inode, struct ext4_inode_info, vfs_inode))
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
 #define TP_MODE_T	__u16
-#else
-#define TP_MODE_T	umode_t
-#endif
 
 LTTNG_TRACEPOINT_EVENT(ext4_free_inode,
 	TP_PROTO(struct inode *inode),
@@ -37,13 +30,8 @@ LTTNG_TRACEPOINT_EVENT(ext4_free_inode,
 	TP_FIELDS(
 		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
 		ctf_integer(ino_t, ino, inode->i_ino)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
 		ctf_integer(uid_t, uid, i_uid_read(inode))
 		ctf_integer(gid_t, gid, i_gid_read(inode))
-#else
-		ctf_integer(uid_t, uid, inode->i_uid)
-		ctf_integer(gid_t, gid, inode->i_gid)
-#endif
 		ctf_integer(__u64, blocks, inode->i_blocks)
 		ctf_integer(TP_MODE_T, mode, inode->i_mode)
 	)
@@ -220,8 +208,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_da_writepages,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
-
 LTTNG_TRACEPOINT_EVENT(ext4_da_write_pages,
 	TP_PROTO(struct inode *inode, pgoff_t first_page,
 		 struct writeback_control *wbc),
@@ -237,30 +223,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_da_write_pages,
 	)
 )
 
-#else
-
-LTTNG_TRACEPOINT_EVENT(ext4_da_write_pages,
-	TP_PROTO(struct inode *inode, struct mpage_da_data *mpd),
-
-	TP_ARGS(inode, mpd),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(__u64, b_blocknr, mpd->b_blocknr)
-		ctf_integer(__u32, b_size, mpd->b_size)
-		ctf_integer(__u32, b_state, mpd->b_state)
-		ctf_integer(unsigned long, first_page, mpd->first_page)
-		ctf_integer(int, io_done, mpd->io_done)
-		ctf_integer(int, pages_written, mpd->pages_written)
-		ctf_integer(int, sync_mode, mpd->wbc->sync_mode)
-	)
-)
-
-#endif
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
-
 LTTNG_TRACEPOINT_EVENT(ext4_da_write_pages_extent,
 	TP_PROTO(struct inode *inode, struct ext4_map_blocks *map),
 
@@ -274,8 +236,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_da_write_pages_extent,
 		ctf_integer(__u32, flags, map->m_flags)
 	)
 )
-
-#endif
 
 LTTNG_TRACEPOINT_EVENT(ext4_da_writepages_result,
 	TP_PROTO(struct inode *inode, struct writeback_control *wbc,
@@ -327,8 +287,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__page_op, ext4_releasepage,
 	TP_ARGS(page)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
-
 LTTNG_TRACEPOINT_EVENT_CLASS(ext4_invalidatepage_op,
 	TP_PROTO(struct page *page, unsigned int offset, unsigned int length),
 
@@ -354,24 +312,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4_invalidatepage_op, ext4_journalled_invalida
 
 	TP_ARGS(page, offset, length)
 )
-
-#else
-
-LTTNG_TRACEPOINT_EVENT(ext4_invalidatepage,
-	TP_PROTO(struct page *page, unsigned long offset),
-
-	TP_ARGS(page, offset),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, page->mapping->host->i_sb->s_dev)
-		ctf_integer(ino_t, ino, page->mapping->host->i_ino)
-		ctf_integer(pgoff_t, index, page->index)
-		ctf_integer(unsigned long, offset, offset)
-
-	)
-)
-
-#endif
 
 LTTNG_TRACEPOINT_EVENT(ext4_discard_blocks,
 	TP_PROTO(struct super_block *sb, unsigned long long blk,
@@ -432,7 +372,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_mb_release_inode_pa,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
 LTTNG_TRACEPOINT_EVENT(ext4_mb_release_group_pa,
 
 	TP_PROTO(struct super_block *sb, struct ext4_prealloc_space *pa),
@@ -445,20 +384,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_mb_release_group_pa,
 		ctf_integer(__u32, pa_len, pa->pa_len)
 	)
 )
-#else
-LTTNG_TRACEPOINT_EVENT(ext4_mb_release_group_pa,
-
-	TP_PROTO(struct ext4_prealloc_space *pa),
-
-	TP_ARGS(pa),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, pa->pa_inode->i_sb->s_dev)
-		ctf_integer(__u64, pa_pstart, pa->pa_pstart)
-		ctf_integer(__u32, pa_len, pa->pa_len)
-	)
-)
-#endif
 
 LTTNG_TRACEPOINT_EVENT(ext4_discard_preallocations,
 	TP_PROTO(struct inode *inode),
@@ -574,7 +499,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_sync_fs,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,13,0))
 LTTNG_TRACEPOINT_EVENT(ext4_alloc_da_blocks,
 	TP_PROTO(struct inode *inode),
 
@@ -586,20 +510,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_alloc_da_blocks,
 		ctf_integer(unsigned int, data_blocks, EXT4_I(inode)->i_reserved_data_blocks)
 	)
 )
-#else
-LTTNG_TRACEPOINT_EVENT(ext4_alloc_da_blocks,
-	TP_PROTO(struct inode *inode),
-
-	TP_ARGS(inode),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(unsigned int, data_blocks, EXT4_I(inode)->i_reserved_data_blocks)
-		ctf_integer(unsigned int, meta_blocks, EXT4_I(inode)->i_reserved_meta_blocks)
-	)
-)
-#endif
 
 LTTNG_TRACEPOINT_EVENT(ext4_mballoc_alloc,
 	TP_PROTO(struct ext4_allocation_context *ac),
@@ -703,7 +613,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_forget,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,13,0))
 LTTNG_TRACEPOINT_EVENT(ext4_da_update_reserve_space,
 	TP_PROTO(struct inode *inode, int used_blocks, int quota_claim),
 
@@ -720,50 +629,7 @@ LTTNG_TRACEPOINT_EVENT(ext4_da_update_reserve_space,
 		ctf_integer(TP_MODE_T, mode, inode->i_mode)
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
-LTTNG_TRACEPOINT_EVENT(ext4_da_update_reserve_space,
-	TP_PROTO(struct inode *inode, int used_blocks, int quota_claim),
 
-	TP_ARGS(inode, used_blocks, quota_claim),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(__u64, i_blocks, inode->i_blocks)
-		ctf_integer(int, used_blocks, used_blocks)
-		ctf_integer(int, reserved_data_blocks,
-				EXT4_I(inode)->i_reserved_data_blocks)
-		ctf_integer(int, reserved_meta_blocks,
-				EXT4_I(inode)->i_reserved_meta_blocks)
-		ctf_integer(int, allocated_meta_blocks,
-				EXT4_I(inode)->i_allocated_meta_blocks)
-		ctf_integer(int, quota_claim, quota_claim)
-		ctf_integer(TP_MODE_T, mode, inode->i_mode)
-	)
-)
-#else
-LTTNG_TRACEPOINT_EVENT(ext4_da_update_reserve_space,
-	TP_PROTO(struct inode *inode, int used_blocks),
-
-	TP_ARGS(inode, used_blocks),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(__u64, i_blocks, inode->i_blocks)
-		ctf_integer(int, used_blocks, used_blocks)
-		ctf_integer(int, reserved_data_blocks,
-				EXT4_I(inode)->i_reserved_data_blocks)
-		ctf_integer(int, reserved_meta_blocks,
-				EXT4_I(inode)->i_reserved_meta_blocks)
-		ctf_integer(int, allocated_meta_blocks,
-				EXT4_I(inode)->i_allocated_meta_blocks)
-		ctf_integer(TP_MODE_T, mode, inode->i_mode)
-	)
-)
-#endif
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,13,0))
 LTTNG_TRACEPOINT_EVENT(ext4_da_reserve_space,
 	TP_PROTO(struct inode *inode),
 
@@ -778,44 +644,7 @@ LTTNG_TRACEPOINT_EVENT(ext4_da_reserve_space,
 		ctf_integer(TP_MODE_T, mode, inode->i_mode)
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
-LTTNG_TRACEPOINT_EVENT(ext4_da_reserve_space,
-	TP_PROTO(struct inode *inode),
 
-	TP_ARGS(inode),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(__u64, i_blocks, inode->i_blocks)
-		ctf_integer(int, reserved_data_blocks,
-				EXT4_I(inode)->i_reserved_data_blocks)
-		ctf_integer(int, reserved_meta_blocks,
-				EXT4_I(inode)->i_reserved_meta_blocks)
-		ctf_integer(TP_MODE_T, mode, inode->i_mode)
-	)
-)
-#else
-LTTNG_TRACEPOINT_EVENT(ext4_da_reserve_space,
-	TP_PROTO(struct inode *inode, int md_needed),
-
-	TP_ARGS(inode, md_needed),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(__u64, i_blocks, inode->i_blocks)
-		ctf_integer(int, md_needed, md_needed)
-		ctf_integer(int, reserved_data_blocks,
-				EXT4_I(inode)->i_reserved_data_blocks)
-		ctf_integer(int, reserved_meta_blocks,
-				EXT4_I(inode)->i_reserved_meta_blocks)
-		ctf_integer(TP_MODE_T, mode, inode->i_mode)
-	)
-)
-#endif
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,13,0))
 LTTNG_TRACEPOINT_EVENT(ext4_da_release_space,
 	TP_PROTO(struct inode *inode, int freed_blocks),
 
@@ -831,27 +660,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_da_release_space,
 		ctf_integer(TP_MODE_T, mode, inode->i_mode)
 	)
 )
-#else
-LTTNG_TRACEPOINT_EVENT(ext4_da_release_space,
-	TP_PROTO(struct inode *inode, int freed_blocks),
-
-	TP_ARGS(inode, freed_blocks),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(__u64, i_blocks, inode->i_blocks)
-		ctf_integer(int, freed_blocks, freed_blocks)
-		ctf_integer(int, reserved_data_blocks,
-				EXT4_I(inode)->i_reserved_data_blocks)
-		ctf_integer(int, reserved_meta_blocks,
-				EXT4_I(inode)->i_reserved_meta_blocks)
-		ctf_integer(int, allocated_meta_blocks,
-				EXT4_I(inode)->i_allocated_meta_blocks)
-		ctf_integer(TP_MODE_T, mode, inode->i_mode)
-	)
-)
-#endif
 
 LTTNG_TRACEPOINT_EVENT_CLASS(ext4__bitmap_load,
 	TP_PROTO(struct super_block *sb, unsigned long group),
@@ -937,8 +745,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_fallocate_exit,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
-
 LTTNG_TRACEPOINT_EVENT_CLASS(ext4__fallocate_mode,
 	TP_PROTO(struct inode *inode, loff_t offset, loff_t len, int mode),
 
@@ -973,41 +779,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__fallocate_mode, ext4_zero_range,
 
 	TP_ARGS(inode, offset, len, mode)
 )
-
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
-
-LTTNG_TRACEPOINT_EVENT(ext4_fallocate_enter,
-	TP_PROTO(struct inode *inode, loff_t offset, loff_t len, int mode),
-
-	TP_ARGS(inode, offset, len, mode),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(loff_t, pos, offset)
-		ctf_integer(loff_t, len, len)
-		ctf_integer(int, mode, mode)
-	)
-)
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
-
-LTTNG_TRACEPOINT_EVENT(ext4_punch_hole,
-	TP_PROTO(struct inode *inode, loff_t offset, loff_t len),
-
-	TP_ARGS(inode, offset, len),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(loff_t, pos, offset)
-		ctf_integer(loff_t, len, len)
-	)
-)
-
-#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
-
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
 
 LTTNG_TRACEPOINT_EVENT(ext4_unlink_enter,
 	TP_PROTO(struct inode *parent, struct dentry *dentry),
@@ -1060,7 +831,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__truncate, ext4_truncate_exit,
 	TP_ARGS(inode)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
 /* 'ux' is the uninitialized extent. */
 LTTNG_TRACEPOINT_EVENT(ext4_ext_convert_to_initialized_enter,
 	TP_PROTO(struct inode *inode, struct ext4_map_blocks *map,
@@ -1102,7 +872,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_ext_convert_to_initialized_fastpath,
 		ctf_integer(ext4_fsblk_t, i_pblk, ext4_ext_pblock(ix))
 	)
 )
-#endif
 
 LTTNG_TRACEPOINT_EVENT_CLASS(ext4__map_blocks_enter,
 	TP_PROTO(struct inode *inode, ext4_lblk_t lblk,
@@ -1132,8 +901,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__map_blocks_enter, ext4_ind_map_blocks_ente
 
 	TP_ARGS(inode, lblk, len, flags)
 )
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
 
 LTTNG_TRACEPOINT_EVENT_CLASS(ext4__map_blocks_exit,
 	TP_PROTO(struct inode *inode, unsigned flags, struct ext4_map_blocks *map,
@@ -1167,70 +934,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__map_blocks_exit, ext4_ind_map_blocks_exit,
 	TP_ARGS(inode, flags, map, ret)
 )
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
-
-LTTNG_TRACEPOINT_EVENT_CLASS(ext4__map_blocks_exit,
-	TP_PROTO(struct inode *inode, struct ext4_map_blocks *map, int ret),
-
-	TP_ARGS(inode, map, ret),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(ext4_fsblk_t, pblk, map->m_pblk)
-		ctf_integer(ext4_lblk_t, lblk, map->m_lblk)
-		ctf_integer(unsigned int, len, map->m_len)
-		ctf_integer(unsigned int, mflags, map->m_flags)
-		ctf_integer(int, ret, ret)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__map_blocks_exit, ext4_ext_map_blocks_exit,
-	TP_PROTO(struct inode *inode, struct ext4_map_blocks *map, int ret),
-
-	TP_ARGS(inode, map, ret)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__map_blocks_exit, ext4_ind_map_blocks_exit,
-	TP_PROTO(struct inode *inode, struct ext4_map_blocks *map, int ret),
-
-	TP_ARGS(inode, map, ret)
-)
-
-#else	/* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)) */
-
-LTTNG_TRACEPOINT_EVENT_CLASS(ext4__map_blocks_exit,
-	TP_PROTO(struct inode *inode, ext4_lblk_t lblk,
-		 ext4_fsblk_t pblk, unsigned int len, int ret),
-
-	TP_ARGS(inode, lblk, pblk, len, ret),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(ext4_fsblk_t, pblk, pblk)
-		ctf_integer(ext4_lblk_t, lblk, lblk)
-		ctf_integer(unsigned int, len, len)
-		ctf_integer(int, ret, ret)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__map_blocks_exit, ext4_ext_map_blocks_exit,
-	TP_PROTO(struct inode *inode, ext4_lblk_t lblk,
-		 ext4_fsblk_t pblk, unsigned len, int ret),
-
-	TP_ARGS(inode, lblk, pblk, len, ret)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__map_blocks_exit, ext4_ind_map_blocks_exit,
-	TP_PROTO(struct inode *inode, ext4_lblk_t lblk,
-		 ext4_fsblk_t pblk, unsigned len, int ret),
-
-	TP_ARGS(inode, lblk, pblk, len, ret)
-)
-
-#endif	/* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)) */
-
 LTTNG_TRACEPOINT_EVENT(ext4_ext_load_extent,
 	TP_PROTO(struct inode *inode, ext4_lblk_t lblk, ext4_fsblk_t pblk),
 
@@ -1254,8 +957,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_load_inode,
 		ctf_integer(ino_t, ino, inode->i_ino)
 	)
 )
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,5,0))
 
 LTTNG_TRACEPOINT_EVENT(ext4_journal_start,
 	TP_PROTO(struct super_block *sb, int blocks, int rsv_blocks,
@@ -1284,109 +985,16 @@ LTTNG_TRACEPOINT_EVENT(ext4_journal_start_reserved,
 	)
 )
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
-
-LTTNG_TRACEPOINT_EVENT(ext4_journal_start,
-	TP_PROTO(struct super_block *sb, int blocks, int rsv_blocks,
-		 unsigned long IP),
-
-	TP_ARGS(sb, blocks, rsv_blocks, IP),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, sb->s_dev)
-		ctf_integer_hex(unsigned long, ip, IP)
-		ctf_integer(int, blocks, blocks)
-		ctf_integer(int, rsv_blocks, rsv_blocks)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT(ext4_journal_start_reserved,
-	TP_PROTO(struct super_block *sb, int blocks, unsigned long IP),
-
-	TP_ARGS(sb, blocks, IP),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, sb->s_dev)
-		ctf_integer_hex(unsigned long, ip, IP)
-		ctf_integer(int, blocks, blocks)
-	)
-)
-
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
-
-LTTNG_TRACEPOINT_EVENT(ext4_journal_start,
-	TP_PROTO(struct super_block *sb, int nblocks, unsigned long IP),
-
-	TP_ARGS(sb, nblocks, IP),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, sb->s_dev)
-		ctf_integer_hex(unsigned long, ip, IP)
-		ctf_integer(int, nblocks, nblocks)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT_CLASS(ext4__trim,
-	TP_PROTO(struct super_block *sb,
-		 ext4_group_t group,
-		 ext4_grpblk_t start,
-		 ext4_grpblk_t len),
-
-	TP_ARGS(sb, group, start, len),
-
-	TP_FIELDS(
-		ctf_integer(int, dev_major, MAJOR(sb->s_dev))
-		ctf_integer(int, dev_minor, MINOR(sb->s_dev))
-		ctf_integer(__u32, group, group)
-		ctf_integer(int, start, start)
-		ctf_integer(int, len, len)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__trim, ext4_trim_extent,
-
-	TP_PROTO(struct super_block *sb,
-		 ext4_group_t group,
-		 ext4_grpblk_t start,
-		 ext4_grpblk_t len),
-
-	TP_ARGS(sb, group, start, len)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__trim, ext4_trim_all_free,
-
-	TP_PROTO(struct super_block *sb,
-		 ext4_group_t group,
-		 ext4_grpblk_t start,
-		 ext4_grpblk_t len),
-
-	TP_ARGS(sb, group, start, len)
-)
-#endif
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
-
 LTTNG_TRACEPOINT_EVENT(ext4_ext_handle_uninitialized_extents,
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
 	TP_PROTO(struct inode *inode, struct ext4_map_blocks *map, int flags,
 		 unsigned int allocated, ext4_fsblk_t newblock),
 
 	TP_ARGS(inode, map, flags, allocated, newblock),
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)) */
-	TP_PROTO(struct inode *inode, struct ext4_map_blocks *map,
-		 unsigned int allocated, ext4_fsblk_t newblock),
-
-	TP_ARGS(inode, map, allocated, newblock),
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)) */
 
 	TP_FIELDS(
 		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
 		ctf_integer(ino_t, ino, inode->i_ino)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
 		ctf_integer(int, flags, flags)
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)) */
-		ctf_integer(int, flags, map->m_flags)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)) */
 		ctf_integer(ext4_lblk_t, lblk, map->m_lblk)
 		ctf_integer(ext4_fsblk_t, pblk, map->m_pblk)
 		ctf_integer(unsigned int, len, map->m_len)
@@ -1483,9 +1091,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_ext_show_extent,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0) || \
-	LTTNG_RHEL_KERNEL_RANGE(4,18,0,147,0,0, 4,19,0,0,0,0))
-
 LTTNG_TRACEPOINT_EVENT(ext4_remove_blocks,
 	TP_PROTO(struct inode *inode, struct ext4_extent *ex,
 		 ext4_lblk_t from, ext4_fsblk_t to,
@@ -1507,53 +1112,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_remove_blocks,
 	)
 )
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
-
-LTTNG_TRACEPOINT_EVENT(ext4_remove_blocks,
-	    TP_PROTO(struct inode *inode, struct ext4_extent *ex,
-		ext4_lblk_t from, ext4_fsblk_t to,
-		long long partial_cluster),
-
-	TP_ARGS(inode, ex, from, to, partial_cluster),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(ext4_lblk_t, from, from)
-		ctf_integer(ext4_lblk_t, to, to)
-		ctf_integer(long long, partial, partial_cluster)
-		ctf_integer(ext4_fsblk_t, ee_pblk, ext4_ext_pblock(ex))
-		ctf_integer(ext4_lblk_t, ee_lblk, le32_to_cpu(ex->ee_block))
-		ctf_integer(unsigned short, ee_len, ext4_ext_get_actual_len(ex))
-	)
-)
-
-#else
-
-LTTNG_TRACEPOINT_EVENT(ext4_remove_blocks,
-	    TP_PROTO(struct inode *inode, struct ext4_extent *ex,
-		ext4_lblk_t from, ext4_fsblk_t to,
-		ext4_fsblk_t partial_cluster),
-
-	TP_ARGS(inode, ex, from, to, partial_cluster),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(ext4_lblk_t, from, from)
-		ctf_integer(ext4_lblk_t, to, to)
-		ctf_integer(ext4_fsblk_t, partial, partial_cluster)
-		ctf_integer(ext4_fsblk_t, ee_pblk, ext4_ext_pblock(ex))
-		ctf_integer(ext4_lblk_t, ee_lblk, le32_to_cpu(ex->ee_block))
-		ctf_integer(unsigned short, ee_len, ext4_ext_get_actual_len(ex))
-	)
-)
-
-#endif
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0) || \
-	LTTNG_RHEL_KERNEL_RANGE(4,18,0,147,0,0, 4,19,0,0,0,0))
-
 LTTNG_TRACEPOINT_EVENT(ext4_ext_rm_leaf,
 	TP_PROTO(struct inode *inode, ext4_lblk_t start,
 		 struct ext4_extent *ex,
@@ -1574,47 +1132,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_ext_rm_leaf,
 	)
 )
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
-
-LTTNG_TRACEPOINT_EVENT(ext4_ext_rm_leaf,
-	TP_PROTO(struct inode *inode, ext4_lblk_t start,
-		 struct ext4_extent *ex,
-		 long long partial_cluster),
-
-	TP_ARGS(inode, start, ex, partial_cluster),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(long long, partial, partial_cluster)
-		ctf_integer(ext4_lblk_t, start, start)
-		ctf_integer(ext4_lblk_t, ee_lblk, le32_to_cpu(ex->ee_block))
-		ctf_integer(ext4_fsblk_t, ee_pblk, ext4_ext_pblock(ex))
-		ctf_integer(short, ee_len, ext4_ext_get_actual_len(ex))
-	)
-)
-
-#else
-
-LTTNG_TRACEPOINT_EVENT(ext4_ext_rm_leaf,
-	TP_PROTO(struct inode *inode, ext4_lblk_t start,
-		 struct ext4_extent *ex, ext4_fsblk_t partial_cluster),
-
-	TP_ARGS(inode, start, ex, partial_cluster),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(long long, partial, partial_cluster)
-		ctf_integer(ext4_lblk_t, start, start)
-		ctf_integer(ext4_lblk_t, ee_lblk, le32_to_cpu(ex->ee_block))
-		ctf_integer(ext4_fsblk_t, ee_pblk, ext4_ext_pblock(ex))
-		ctf_integer(short, ee_len, ext4_ext_get_actual_len(ex))
-	)
-)
-
-#endif
-
 LTTNG_TRACEPOINT_EVENT(ext4_ext_rm_idx,
 	TP_PROTO(struct inode *inode, ext4_fsblk_t pblk),
 
@@ -1626,8 +1143,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_ext_rm_idx,
 		ctf_integer(ext4_fsblk_t, pblk, pblk)
 	)
 )
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
 
 LTTNG_TRACEPOINT_EVENT(ext4_ext_remove_space,
 	TP_PROTO(struct inode *inode, ext4_lblk_t start,
@@ -1643,26 +1158,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_ext_remove_space,
 		ctf_integer(int, depth, depth)
 	)
 )
-
-#else
-
-LTTNG_TRACEPOINT_EVENT(ext4_ext_remove_space,
-	TP_PROTO(struct inode *inode, ext4_lblk_t start, int depth),
-
-	TP_ARGS(inode, start, depth),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(ext4_lblk_t, start, start)
-		ctf_integer(int, depth, depth)
-	)
-)
-
-#endif
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0) || \
-	LTTNG_RHEL_KERNEL_RANGE(4,18,0,147,0,0, 4,19,0,0,0,0))
 
 LTTNG_TRACEPOINT_EVENT(ext4_ext_remove_space_done,
 	TP_PROTO(struct inode *inode, ext4_lblk_t start, ext4_lblk_t end,
@@ -1682,49 +1177,6 @@ LTTNG_TRACEPOINT_EVENT(ext4_ext_remove_space_done,
 		ctf_integer(int, pc_state, pc->state)
 	)
 )
-
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
-
-LTTNG_TRACEPOINT_EVENT(ext4_ext_remove_space_done,
-	TP_PROTO(struct inode *inode, ext4_lblk_t start, ext4_lblk_t end,
-		 int depth, long long partial, __le16 eh_entries),
-
-	TP_ARGS(inode, start, end, depth, partial, eh_entries),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(ext4_lblk_t, start, start)
-		ctf_integer(ext4_lblk_t, end, end)
-		ctf_integer(int, depth, depth)
-		ctf_integer(long long, partial, partial)
-		ctf_integer(unsigned short, eh_entries, le16_to_cpu(eh_entries))
-	)
-)
-
-#else
-
-LTTNG_TRACEPOINT_EVENT(ext4_ext_remove_space_done,
-	TP_PROTO(struct inode *inode, ext4_lblk_t start, int depth,
-		ext4_lblk_t partial, unsigned short eh_entries),
-
-	TP_ARGS(inode, start, depth, partial, eh_entries),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(ext4_lblk_t, start, start)
-		ctf_integer(int, depth, depth)
-		ctf_integer(ext4_lblk_t, partial, partial)
-		ctf_integer(unsigned short, eh_entries, eh_entries)
-	)
-)
-
-#endif
-
-#endif
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
 
 LTTNG_TRACEPOINT_EVENT_CLASS(ext4__es_extent,
 	TP_PROTO(struct inode *inode, struct extent_status *es),
@@ -1752,118 +1204,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__es_extent, ext4_es_cache_extent,
 
 	TP_ARGS(inode, es)
 )
-
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
-
-LTTNG_TRACEPOINT_EVENT(ext4_es_insert_extent,
-	TP_PROTO(struct inode *inode, struct extent_status *es),
-
-	TP_ARGS(inode, es),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(ext4_lblk_t, lblk, es->es_lblk)
-		ctf_integer(ext4_lblk_t, len, es->es_len)
-		ctf_integer(ext4_fsblk_t, pblk, ext4_es_pblock(es))
-		ctf_integer(char, status, ext4_es_status(es) >> 60)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT(ext4_es_remove_extent,
-	TP_PROTO(struct inode *inode, ext4_lblk_t lblk, ext4_lblk_t len),
-
-	TP_ARGS(inode, lblk, len),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(loff_t, lblk, lblk)
-		ctf_integer(loff_t, len, len)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT(ext4_es_find_delayed_extent_range_enter,
-	TP_PROTO(struct inode *inode, ext4_lblk_t lblk),
-
-	TP_ARGS(inode, lblk),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(ext4_lblk_t, lblk, lblk)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT(ext4_es_find_delayed_extent_range_exit,
-	TP_PROTO(struct inode *inode, struct extent_status *es),
-
-	TP_ARGS(inode, es),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(ext4_lblk_t, lblk, es->es_lblk)
-		ctf_integer(ext4_lblk_t, len, es->es_len)
-		ctf_integer(ext4_fsblk_t, pblk, ext4_es_pblock(es))
-		ctf_integer(char, status, ext4_es_status(es) >> 60)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT(ext4_es_lookup_extent_enter,
-	TP_PROTO(struct inode *inode, ext4_lblk_t lblk),
-
-	TP_ARGS(inode, lblk),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(ext4_lblk_t, lblk, lblk)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT(ext4_es_lookup_extent_exit,
-	TP_PROTO(struct inode *inode, struct extent_status *es,
-		 int found),
-
-	TP_ARGS(inode, es, found),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
-		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(ext4_lblk_t, lblk, es->es_lblk)
-		ctf_integer(ext4_lblk_t, len, es->es_len)
-		ctf_integer(ext4_fsblk_t, pblk, ext4_es_pblock(es))
-		ctf_integer(char, status, ext4_es_status(es) >> 60)
-		ctf_integer(int, found, found)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT(ext4_es_shrink_enter,
-	TP_PROTO(struct super_block *sb, int nr_to_scan, int cache_cnt),
-
-	TP_ARGS(sb, nr_to_scan, cache_cnt),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, sb->s_dev)
-		ctf_integer(int, nr_to_scan, nr_to_scan)
-		ctf_integer(int, cache_cnt, cache_cnt)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT(ext4_es_shrink_exit,
-	TP_PROTO(struct super_block *sb, int shrunk_nr, int cache_cnt),
-
-	TP_ARGS(sb, shrunk_nr, cache_cnt),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, sb->s_dev)
-		ctf_integer(int, shrunk_nr, shrunk_nr)
-		ctf_integer(int, cache_cnt, cache_cnt)
-	)
-)
-
-#endif
 
 #endif /* LTTNG_TRACE_EXT4_H */
 
