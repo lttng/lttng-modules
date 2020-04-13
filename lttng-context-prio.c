@@ -12,21 +12,7 @@
 #include <linux/sched.h>
 #include <lttng-events.h>
 #include <wrapper/ringbuffer/frontend_types.h>
-#include <wrapper/kallsyms.h>
 #include <lttng-tracer.h>
-
-static
-int (*wrapper_task_prio_sym)(struct task_struct *t);
-
-int wrapper_task_prio_init(void)
-{
-	wrapper_task_prio_sym = (void *) kallsyms_lookup_funcptr("task_prio");
-	if (!wrapper_task_prio_sym) {
-		printk(KERN_WARNING "LTTng: task_prio symbol lookup failed.\n");
-		return -EINVAL;
-	}
-	return 0;
-}
 
 static
 size_t prio_get_size(size_t offset)
@@ -45,7 +31,7 @@ void prio_record(struct lttng_ctx_field *field,
 {
 	int prio;
 
-	prio = wrapper_task_prio_sym(current);
+	prio = task_prio(current);
 	lib_ring_buffer_align_ctx(ctx, lttng_alignof(prio));
 	chan->ops->event_write(ctx, &prio, sizeof(prio));
 }
@@ -55,19 +41,12 @@ void prio_get_value(struct lttng_ctx_field *field,
 		struct lttng_probe_ctx *lttng_probe_ctx,
 		union lttng_ctx_value *value)
 {
-	value->s64 = wrapper_task_prio_sym(current);
+	value->s64 = task_prio(current);
 }
 
 int lttng_add_prio_to_ctx(struct lttng_ctx **ctx)
 {
 	struct lttng_ctx_field *field;
-	int ret;
-
-	if (!wrapper_task_prio_sym) {
-		ret = wrapper_task_prio_init();
-		if (ret)
-			return ret;
-	}
 
 	field = lttng_append_context(ctx);
 	if (!field)
