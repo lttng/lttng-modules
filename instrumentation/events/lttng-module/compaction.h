@@ -7,9 +7,6 @@
 
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/types.h>
-#include <linux/version.h>
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0)
 
 LTTNG_TRACEPOINT_EVENT_CLASS(compaction_isolate_template,
 
@@ -56,50 +53,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(compaction_isolate_template,
 	TP_ARGS(start_pfn, end_pfn, nr_scanned, nr_taken)
 )
 
-#else /* #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0) */
-
-LTTNG_TRACEPOINT_EVENT_CLASS(compaction_isolate_template,
-
-	TP_PROTO(unsigned long nr_scanned,
-		unsigned long nr_taken),
-
-	TP_ARGS(nr_scanned, nr_taken),
-
-	TP_FIELDS(
-		ctf_integer(unsigned long, nr_scanned, nr_scanned)
-		ctf_integer(unsigned long, nr_taken, nr_taken)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(compaction_isolate_template,
-
-	mm_compaction_isolate_migratepages,
-
-	compaction_isolate_migratepages,
-
-	TP_PROTO(unsigned long nr_scanned,
-		unsigned long nr_taken),
-
-	TP_ARGS(nr_scanned, nr_taken)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(compaction_isolate_template,
-
-	mm_compaction_isolate_freepages,
-
-	compaction_isolate_freepages,
-
-	TP_PROTO(unsigned long nr_scanned,
-		unsigned long nr_taken),
-
-	TP_ARGS(nr_scanned, nr_taken)
-)
-
-#endif /* #else #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0) */
-
-#if LTTNG_KERNEL_RANGE(3,12,30, 3,13,0) || \
-	LTTNG_KERNEL_RANGE(3,14,25, 3,15,0) || \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
 LTTNG_TRACEPOINT_EVENT_CODE_MAP(mm_compaction_migratepages,
 
 	compaction_migratepages,
@@ -135,22 +88,6 @@ LTTNG_TRACEPOINT_EVENT_CODE_MAP(mm_compaction_migratepages,
 
 	TP_code_post()
 )
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0)) */
-LTTNG_TRACEPOINT_EVENT_MAP(mm_compaction_migratepages,
-
-	compaction_migratepages,
-
-	TP_PROTO(unsigned long nr_migrated,
-		unsigned long nr_failed),
-
-	TP_ARGS(nr_migrated, nr_failed),
-
-	TP_FIELDS(
-		ctf_integer(unsigned long, nr_migrated, nr_migrated)
-		ctf_integer(unsigned long, nr_failed, nr_failed)
-	)
-)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0)) */
 
 #endif /* LTTNG_TRACE_COMPACTION_H */
 
