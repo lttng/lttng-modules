@@ -14,7 +14,6 @@
 #include <wrapper/ringbuffer/frontend_types.h>
 #include <wrapper/irqflags.h>
 #include <lttng-tracer.h>
-#include <blacklist/kprobes.h>
 
 static
 int lttng_kprobes_handler_pre(struct kprobe *p, struct pt_regs *regs)
