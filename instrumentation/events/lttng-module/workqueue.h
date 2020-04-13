@@ -7,7 +7,6 @@
 
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/workqueue.h>
-#include <linux/version.h>
 
 #ifndef _TRACE_WORKQUEUE_DEF_
 #define _TRACE_WORKQUEUE_DEF_
@@ -40,17 +39,10 @@ LTTNG_TRACEPOINT_EVENT_CLASS(workqueue_work,
  */
 LTTNG_TRACEPOINT_EVENT(workqueue_queue_work,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
 	TP_PROTO(unsigned int req_cpu, struct pool_workqueue *pwq,
 		 struct work_struct *work),
 
 	TP_ARGS(req_cpu, pwq, work),
-#else
-	TP_PROTO(unsigned int req_cpu, struct cpu_workqueue_struct *cwq,
-		 struct work_struct *work),
-
-	TP_ARGS(req_cpu, cwq, work),
-#endif
 
 	TP_FIELDS(
 		ctf_integer_hex(void *, work, work)
@@ -92,7 +84,6 @@ LTTNG_TRACEPOINT_EVENT(workqueue_execute_start,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
 /**
  * workqueue_execute_end - called immediately after the workqueue callback
  * @work:	pointer to struct work_struct
@@ -111,20 +102,6 @@ LTTNG_TRACEPOINT_EVENT(workqueue_execute_end,
 		ctf_integer_hex(void *, function, function)
 	)
 )
-#else
-/**
- * workqueue_execute_end - called immediately after the workqueue callback
- * @work:	pointer to struct work_struct
- *
- * Allows to track workqueue execution.
- */
-LTTNG_TRACEPOINT_EVENT_INSTANCE(workqueue_work, workqueue_execute_end,
-
-	TP_PROTO(struct work_struct *work),
-
-	TP_ARGS(work)
-)
-#endif
 
 #endif /*  LTTNG_TRACE_WORKQUEUE_H */
 
