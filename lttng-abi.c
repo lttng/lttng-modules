@@ -34,7 +34,6 @@
 #include <wrapper/ringbuffer/vfs.h>
 #include <wrapper/ringbuffer/backend.h>
 #include <wrapper/ringbuffer/frontend.h>
-#include <wrapper/poll.h>
 #include <wrapper/file.h>
 #include <lttng-string-utils.h>
 #include <lttng-abi.h>
@@ -777,7 +776,6 @@ unsigned int lttng_metadata_ring_buffer_poll(struct file *filp,
 	unsigned int mask = 0;
 
 	if (filp->f_mode & FMODE_READ) {
-		poll_wait_set_exclusive(wait);
 		poll_wait(filp, &stream->read_wait, wait);
 
 		finalized = stream->finalized;
@@ -1505,7 +1503,6 @@ unsigned int lttng_channel_poll(struct file *file, poll_table *wait)
 	unsigned int mask = 0;
 
 	if (file->f_mode & FMODE_READ) {
-		poll_wait_set_exclusive(wait);
 		poll_wait(file, channel->ops->get_hp_wait_queue(channel->chan),
 			  wait);
 

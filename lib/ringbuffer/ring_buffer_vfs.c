@@ -14,7 +14,6 @@
 #include <wrapper/ringbuffer/backend.h>
 #include <wrapper/ringbuffer/frontend.h>
 #include <wrapper/ringbuffer/vfs.h>
-#include <wrapper/poll.h>
 #include <lttng-tracer.h>
 
 static int put_ulong(unsigned long val, unsigned long arg)
@@ -106,7 +105,6 @@ unsigned int lib_ring_buffer_poll(struct file *filp, poll_table *wait,
 	int finalized, disabled;
 
 	if (filp->f_mode & FMODE_READ) {
-		poll_wait_set_exclusive(wait);
 		poll_wait(filp, &buf->read_wait, wait);
 
 		finalized = lib_ring_buffer_is_finalized(config, buf);
