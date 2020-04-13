@@ -484,7 +484,7 @@ void lttng_inline_memcpy(void *dest, const void *src,
 		*(uint64_t *) dest = *(const uint64_t *) src;
 		break;
 	default:
-		inline_memcpy(dest, src, len);
+		memcpy(dest, src, len);
 	}
 }
 
