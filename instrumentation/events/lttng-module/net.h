@@ -13,7 +13,6 @@
 #include <linux/tcp.h>
 #include <linux/udp.h>
 #include <linux/icmp.h>
-#include <linux/version.h>
 #include <lttng-endian.h>
 #include <net/sock.h>
 
@@ -697,8 +696,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_template,
 	TP_ARGS(skb)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
-
 /* Trace events for the receive entry points */
 LTTNG_TRACEPOINT_EVENT_CLASS(net_dev_receive_entry_template,
 
@@ -766,10 +763,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_receive_entry_template,
 	TP_ARGS(skb)
 )
 
-#endif /* kernel > 3.14 */
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
-
 LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_receive_entry_template,
 
 	netif_receive_skb_list_entry,
@@ -780,10 +773,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_receive_entry_template,
 
 	TP_ARGS(skb)
 )
-
-#endif /* kernel > 4.19 */
-
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0))
 
 /* Trace events for the receive exit points */
 LTTNG_TRACEPOINT_EVENT_CLASS(net_dev_receive_exit_template,
@@ -862,8 +851,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_receive_exit_template,
 
 	TP_ARGS(ret)
 )
-
-#endif /* kernel > 5.0.0 */
 
 #endif /* LTTNG_TRACE_NET_H */
 
