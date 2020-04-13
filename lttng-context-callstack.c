@@ -46,6 +46,7 @@
 #include "lttng-events.h"
 #include "wrapper/ringbuffer/backend.h"
 #include "wrapper/ringbuffer/frontend.h"
+#include "wrapper/kallsyms.h"
 #include "lttng-tracer.h"
 #include "lttng-endian.h"
 
