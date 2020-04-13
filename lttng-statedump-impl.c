@@ -33,17 +33,13 @@
 #include <linux/mutex.h>
 #include <linux/device.h>
 #include <linux/fdtable.h>
+#include <linux/irq.h>
 
 #include <lttng-events.h>
 #include <lttng-tracer.h>
 #include <wrapper/namespace.h>
-#include <wrapper/irq.h>
 #include <wrapper/genhd.h>
 #include <wrapper/file.h>
-
-#ifdef CONFIG_LTTNG_HAS_LIST_IRQ
-#include <linux/irq.h>
-#endif
 
 /* Define the tracepoints, but do not build the probes */
 #define CREATE_TRACE_POINTS
@@ -334,8 +330,6 @@ int lttng_enumerate_vm_maps(struct lttng_session *session)
 }
 #endif
 
-#ifdef CONFIG_LTTNG_HAS_LIST_IRQ
-
 static
 int lttng_list_interrupts(struct lttng_session *session)
 {
@@ -360,13 +354,6 @@ int lttng_list_interrupts(struct lttng_session *session)
 	}
 	return 0;
 }
-#else
-static inline
-int lttng_list_interrupts(struct lttng_session *session)
-{
-	return 0;
-}
-#endif
 
 /*
  * Statedump the task's namespaces using the proc filesystem inode number as
