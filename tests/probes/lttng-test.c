@@ -80,15 +80,9 @@ end:
 	return written;
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
 static const struct proc_ops lttng_test_filter_event_proc_ops = {
 	.proc_write = lttng_test_filter_event_write,
 };
-#else
-static const struct file_operations lttng_test_filter_event_proc_ops = {
-	.write = lttng_test_filter_event_write,
-};
-#endif
 
 static
 int __init lttng_test_init(void)
