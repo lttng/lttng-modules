@@ -399,7 +399,33 @@ LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0))
+LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
+
+	writeback_global_dirty_state,
+
+	TP_PROTO(struct wb_domain *domain,
+		 unsigned long background_thresh,
+		 unsigned long dirty_thresh
+	),
+
+	TP_ARGS(domain,
+		background_thresh,
+		dirty_thresh
+	),
+
+	TP_FIELDS(
+		ctf_integer(unsigned long, nr_dirty, global_node_page_state(NR_FILE_DIRTY))
+		ctf_integer(unsigned long, nr_writeback, global_node_page_state(NR_WRITEBACK))
+		ctf_integer(unsigned long, nr_unstable, global_node_page_state(NR_UNSTABLE_NFS))
+		ctf_integer(unsigned long, nr_dirtied, global_node_page_state(NR_DIRTIED))
+		ctf_integer(unsigned long, nr_written, global_node_page_state(NR_WRITTEN))
+		ctf_integer(unsigned long, background_thresh, background_thresh)
+		ctf_integer(unsigned long, dirty_thresh, dirty_thresh)
+		ctf_integer(unsigned long, dirty_limit, domain->dirty_limit)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
 LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 
 	writeback_global_dirty_state,
@@ -528,7 +554,56 @@ LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0))
+
+LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
+
+	writeback_balance_dirty_pages,
+
+	TP_PROTO(struct wb_domain *domain,
+		 struct bdi_writeback *wb,
+		 struct dirty_throttle_control *sdtc,
+		 unsigned long dirty_ratelimit,
+		 unsigned long task_ratelimit,
+		 unsigned long dirtied,
+		 unsigned long period,
+		 long pause,
+		 unsigned long start_time),
+
+	TP_ARGS(domain, wb, sdtc,
+		dirty_ratelimit, task_ratelimit,
+		dirtied, period, pause, start_time
+	),
+
+	TP_FIELDS(
+		ctf_array_text(char, bdi, dev_name(wb->bdi->dev), 32)
+		ctf_integer(unsigned long, limit, domain->dirty_limit)
+		ctf_integer(unsigned long, setpoint,
+			(domain->dirty_limit + (sdtc->thresh + sdtc->bg_thresh) / 2) / 2)
+		ctf_integer(unsigned long, dirty, sdtc->dirty)
+		ctf_integer(unsigned long, bdi_setpoint,
+			((domain->dirty_limit + (sdtc->thresh + sdtc->bg_thresh) / 2) / 2) *
+				sdtc->wb_thresh / (sdtc->thresh + 1))
+		ctf_integer(unsigned long, bdi_dirty, sdtc->wb_dirty)
+		ctf_integer(unsigned long, dirty_ratelimit,
+			KBps(dirty_ratelimit))
+		ctf_integer(unsigned long, task_ratelimit,
+			KBps(task_ratelimit))
+		ctf_integer(unsigned int, dirtied, dirtied)
+		ctf_integer(unsigned int, dirtied_pause,
+			current->nr_dirtied_pause)
+		ctf_integer(unsigned long, paused,
+			(jiffies - start_time) * 1000 / HZ)
+		ctf_integer(long, pause, pause * 1000 / HZ)
+		ctf_integer(unsigned long, period,
+			period * 1000 / HZ)
+		ctf_integer(long, think,
+			current->dirty_paused_when == 0 ? 0 :
+				(long)(jiffies - current->dirty_paused_when) * 1000/HZ)
+	)
+)
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0))
 
 LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 
