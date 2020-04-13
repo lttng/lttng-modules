@@ -17,8 +17,7 @@
 #include <wrapper/ringbuffer/frontend_types.h>
 #include <lttng-tracer.h>
 
-#if !defined(LTTNG_MNT_NS_MISSING_HEADER) && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+#if !defined(LTTNG_MNT_NS_MISSING_HEADER)
 
 #include <../fs/mount.h>
 

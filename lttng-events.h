@@ -731,8 +731,7 @@ int lttng_add_cgroup_ns_to_ctx(struct lttng_ctx **ctx)
 }
 #endif
 
-#if defined(CONFIG_IPC_NS) && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+#if defined(CONFIG_IPC_NS)
 int lttng_add_ipc_ns_to_ctx(struct lttng_ctx **ctx);
 #else
 static inline
@@ -742,8 +741,7 @@ int lttng_add_ipc_ns_to_ctx(struct lttng_ctx **ctx)
 }
 #endif
 
-#if !defined(LTTNG_MNT_NS_MISSING_HEADER) && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+#if !defined(LTTNG_MNT_NS_MISSING_HEADER)
 int lttng_add_mnt_ns_to_ctx(struct lttng_ctx **ctx);
 #else
 static inline
@@ -753,8 +751,7 @@ int lttng_add_mnt_ns_to_ctx(struct lttng_ctx **ctx)
 }
 #endif
 
-#if defined(CONFIG_NET_NS) && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+#if defined(CONFIG_NET_NS)
 int lttng_add_net_ns_to_ctx(struct lttng_ctx **ctx);
 #else
 static inline
@@ -764,8 +761,7 @@ int lttng_add_net_ns_to_ctx(struct lttng_ctx **ctx)
 }
 #endif
 
-#if defined(CONFIG_PID_NS) && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+#if defined(CONFIG_PID_NS)
 int lttng_add_pid_ns_to_ctx(struct lttng_ctx **ctx);
 #else
 static inline
@@ -775,8 +771,7 @@ int lttng_add_pid_ns_to_ctx(struct lttng_ctx **ctx)
 }
 #endif
 
-#if defined(CONFIG_USER_NS) && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+#if defined(CONFIG_USER_NS)
 int lttng_add_user_ns_to_ctx(struct lttng_ctx **ctx);
 #else
 static inline
@@ -786,8 +781,7 @@ int lttng_add_user_ns_to_ctx(struct lttng_ctx **ctx)
 }
 #endif
 
-#if defined(CONFIG_UTS_NS) && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+#if defined(CONFIG_UTS_NS)
 int lttng_add_uts_ns_to_ctx(struct lttng_ctx **ctx);
 #else
 static inline

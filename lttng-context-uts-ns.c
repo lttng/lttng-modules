@@ -17,8 +17,7 @@
 #include <wrapper/ringbuffer/frontend_types.h>
 #include <lttng-tracer.h>
 
-#if defined(CONFIG_UTS_NS) && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+#if defined(CONFIG_UTS_NS)
 
 static
 size_t uts_ns_get_size(size_t offset)
