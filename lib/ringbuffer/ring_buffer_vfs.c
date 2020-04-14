@@ -11,9 +11,9 @@
 #include <linux/fs.h>
 #include <linux/compat.h>
 
-#include <wrapper/ringbuffer/backend.h>
-#include <wrapper/ringbuffer/frontend.h>
-#include <wrapper/ringbuffer/vfs.h>
+#include <include/ringbuffer/backend.h>
+#include <include/ringbuffer/frontend.h>
+#include <include/ringbuffer/vfs.h>
 #include <lttng-tracer.h>
 
 static int put_ulong(unsigned long val, unsigned long arg)

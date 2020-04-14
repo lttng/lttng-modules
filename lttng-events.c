@@ -32,8 +32,8 @@
 #include <lttng-endian.h>
 #include <lttng-string-utils.h>
 #include <lttng-tracepoint.h>
-#include <wrapper/ringbuffer/backend.h>
-#include <wrapper/ringbuffer/frontend.h>
+#include <include/ringbuffer/backend.h>
+#include <include/ringbuffer/frontend.h>
 
 #define METADATA_CACHE_DEFAULT_SIZE 4096
 

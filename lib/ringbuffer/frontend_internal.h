@@ -12,9 +12,9 @@
 #ifndef _LIB_RING_BUFFER_FRONTEND_INTERNAL_H
 #define _LIB_RING_BUFFER_FRONTEND_INTERNAL_H
 
-#include <wrapper/ringbuffer/config.h>
-#include <wrapper/ringbuffer/backend_types.h>
-#include <wrapper/ringbuffer/frontend_types.h>
+#include <include/ringbuffer/config.h>
+#include <include/ringbuffer/backend_types.h>
+#include <include/ringbuffer/frontend_types.h>
 #include <lib/prio_heap/lttng_prio_heap.h>	/* For per-CPU read-side iterator */
 
 /* Buffer offset macros */

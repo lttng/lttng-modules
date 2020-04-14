@@ -15,7 +15,7 @@
 #include <linux/nsproxy.h>
 #include <net/net_namespace.h>
 #include <lttng-events.h>
-#include <wrapper/ringbuffer/frontend_types.h>
+#include <include/ringbuffer/frontend_types.h>
 #include <lttng-tracer.h>
 
 #if defined(CONFIG_NET_NS)

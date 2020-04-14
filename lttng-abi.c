@@ -31,9 +31,9 @@
 #include <linux/slab.h>
 #include <linux/err.h>
 #include <linux/kref.h>
-#include <wrapper/ringbuffer/vfs.h>
-#include <wrapper/ringbuffer/backend.h>
-#include <wrapper/ringbuffer/frontend.h>
+#include <include/ringbuffer/vfs.h>
+#include <include/ringbuffer/backend.h>
+#include <include/ringbuffer/frontend.h>
 #include <lttng-string-utils.h>
 #include <lttng-abi.h>
 #include <lttng-abi-old.h>

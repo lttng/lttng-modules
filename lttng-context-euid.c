@@ -13,7 +13,7 @@
 #include <linux/sched.h>
 #include <lttng-events.h>
 #include <lttng-tracer.h>
-#include <wrapper/ringbuffer/frontend_types.h>
+#include <include/ringbuffer/frontend_types.h>
 #include <wrapper/user_namespace.h>
 
 static

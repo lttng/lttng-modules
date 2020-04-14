@@ -12,7 +12,7 @@
 #include <linux/sched.h>
 #include <linux/utsname.h>
 #include <lttng-events.h>
-#include <wrapper/ringbuffer/frontend_types.h>
+#include <include/ringbuffer/frontend_types.h>
 #include <lttng-tracer.h>
 
 #define LTTNG_HOSTNAME_CTX_LEN	(__NEW_UTS_LEN + 1)

@@ -10,9 +10,9 @@
 #ifndef _LIB_RING_BUFFER_ITERATOR_H
 #define _LIB_RING_BUFFER_ITERATOR_H
 
-#include <wrapper/ringbuffer/backend.h>
-#include <wrapper/ringbuffer/frontend.h>
-#include <wrapper/ringbuffer/vfs.h>
+#include <include/ringbuffer/backend.h>
+#include <include/ringbuffer/frontend.h>
+#include <include/ringbuffer/vfs.h>
 
 /*
  * lib_ring_buffer_get_next_record advances the buffer read position to the next

@@ -44,8 +44,8 @@
 #include <linux/stacktrace.h>
 #include <linux/spinlock.h>
 #include "lttng-events.h"
-#include "wrapper/ringbuffer/backend.h"
-#include "wrapper/ringbuffer/frontend.h"
+#include "include/ringbuffer/backend.h"
+#include "include/ringbuffer/frontend.h"
 #include "lttng-tracer.h"
 #include "lttng-endian.h"
 

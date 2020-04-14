@@ -15,7 +15,7 @@
 #include <linux/cpu.h>
 #include <linux/mm.h>
 #include <lttng-events.h>
-#include <wrapper/ringbuffer/frontend_types.h>
+#include <include/ringbuffer/frontend_types.h>
 #include <lttng-tracer.h>
 
 static

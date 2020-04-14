@@ -14,7 +14,7 @@
 #include <linux/sched.h>
 #include <lttng-events.h>
 #include <linux/nsproxy.h>
-#include <wrapper/ringbuffer/frontend_types.h>
+#include <include/ringbuffer/frontend_types.h>
 #include <lttng-tracer.h>
 
 #if !defined(LTTNG_MNT_NS_MISSING_HEADER)

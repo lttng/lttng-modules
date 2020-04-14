@@ -13,7 +13,7 @@
 #ifndef _LIB_RING_BUFFER_FRONTEND_API_H
 #define _LIB_RING_BUFFER_FRONTEND_API_H
 
-#include <wrapper/ringbuffer/frontend.h>
+#include <include/ringbuffer/frontend.h>
 #include <linux/errno.h>
 #include <linux/prefetch.h>
 #include <linux/percpu-defs.h>

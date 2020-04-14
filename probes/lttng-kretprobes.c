@@ -12,7 +12,7 @@
 #include <linux/slab.h>
 #include <linux/kref.h>
 #include <lttng-events.h>
-#include <wrapper/ringbuffer/frontend_types.h>
+#include <include/ringbuffer/frontend_types.h>
 #include <wrapper/irqflags.h>
 #include <lttng-tracer.h>
 

@@ -13,7 +13,7 @@
 #include <wrapper/trace-clock.h>
 #include <lttng-events.h>
 #include <lttng-tracer.h>
-#include <wrapper/ringbuffer/frontend_types.h>
+#include <include/ringbuffer/frontend_types.h>
 
 #define LTTNG_COMPACT_EVENT_BITS	5
 #define LTTNG_COMPACT_TSC_BITS		27
@@ -190,7 +190,7 @@ size_t record_header_size(const struct lib_ring_buffer_config *config,
 	return offset - orig_offset;
 }
 
-#include <wrapper/ringbuffer/api.h>
+#include <include/ringbuffer/api.h>
 
 static
 void lttng_write_event_header_slow(const struct lib_ring_buffer_config *config,

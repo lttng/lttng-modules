@@ -13,8 +13,8 @@
 #define _LIB_RING_BUFFER_FRONTEND_TYPES_H
 
 #include <linux/kref.h>
-#include <wrapper/ringbuffer/config.h>
-#include <wrapper/ringbuffer/backend_types.h>
+#include <include/ringbuffer/config.h>
+#include <include/ringbuffer/backend_types.h>
 #include <lib/prio_heap/lttng_prio_heap.h>	/* For per-CPU read-side iterator */
 #include <lttng-cpuhotplug.h>
 

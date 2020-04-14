@@ -24,8 +24,8 @@
 #include <linux/uaccess.h>
 
 /* Internal helpers */
-#include <wrapper/ringbuffer/backend_internal.h>
-#include <wrapper/ringbuffer/frontend_internal.h>
+#include <include/ringbuffer/backend_internal.h>
+#include <include/ringbuffer/frontend_internal.h>
 
 /* Ring buffer backend API */
 

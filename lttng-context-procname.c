@@ -11,7 +11,7 @@
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <lttng-events.h>
-#include <wrapper/ringbuffer/frontend_types.h>
+#include <include/ringbuffer/frontend_types.h>
 #include <lttng-tracer.h>
 #include <lttng-endian.h>
 

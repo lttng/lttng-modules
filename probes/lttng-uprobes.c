@@ -19,7 +19,7 @@
 #include <lttng-events.h>
 #include <lttng-tracer.h>
 #include <wrapper/irqflags.h>
-#include <wrapper/ringbuffer/frontend_types.h>
+#include <include/ringbuffer/frontend_types.h>
 
 static
 int lttng_uprobes_handler_pre(struct uprobe_consumer *uc, struct pt_regs *regs)

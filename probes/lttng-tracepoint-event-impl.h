@@ -15,8 +15,8 @@
 #include <probes/lttng.h>
 #include <probes/lttng-types.h>
 #include <probes/lttng-probe-user.h>
-#include <wrapper/ringbuffer/frontend_types.h>
-#include <wrapper/ringbuffer/backend.h>
+#include <include/ringbuffer/frontend_types.h>
+#include <include/ringbuffer/backend.h>
 #include <wrapper/rcu.h>
 #include <wrapper/user_namespace.h>
 #include <lttng-events.h>

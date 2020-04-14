@@ -17,9 +17,9 @@
 #include <linux/vmalloc.h>
 #include <linux/oom.h>
 
-#include <wrapper/ringbuffer/config.h>
-#include <wrapper/ringbuffer/backend.h>
-#include <wrapper/ringbuffer/frontend.h>
+#include <include/ringbuffer/config.h>
+#include <include/ringbuffer/backend.h>
+#include <include/ringbuffer/frontend.h>
 
 /**
  * lib_ring_buffer_backend_allocate - allocate a channel buffer

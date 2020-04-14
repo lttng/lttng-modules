@@ -50,7 +50,7 @@ size_t record_header_size(const struct lib_ring_buffer_config *config,
 	return 0;
 }
 
-#include <wrapper/ringbuffer/api.h>
+#include <include/ringbuffer/api.h>
 
 static u64 client_ring_buffer_clock_read(struct channel *chan)
 {
