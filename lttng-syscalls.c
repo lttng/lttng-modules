@@ -391,7 +391,7 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 	if (unlikely(in_compat_syscall())) {
 		struct lttng_syscall_filter *filter;
 
-		filter = lttng_rcu_dereference(chan->sc_filter);
+		filter = rcu_dereference_raw_check(chan->sc_filter);
 		if (filter) {
 			if (id < 0 || id >= NR_compat_syscalls
 				|| !test_bit(id, filter->sc_compat)) {
@@ -405,7 +405,7 @@ void syscall_entry_probe(void *__data, struct pt_regs *regs, long id)
 	} else {
 		struct lttng_syscall_filter *filter;
 
-		filter = lttng_rcu_dereference(chan->sc_filter);
+		filter = rcu_dereference_raw_check(chan->sc_filter);
 		if (filter) {
 			if (id < 0 || id >= NR_syscalls
 				|| !test_bit(id, filter->sc)) {
@@ -545,7 +545,7 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 	if (unlikely(in_compat_syscall())) {
 		struct lttng_syscall_filter *filter;
 
-		filter = lttng_rcu_dereference(chan->sc_filter);
+		filter = rcu_dereference_raw_check(chan->sc_filter);
 		if (filter) {
 			if (id < 0 || id >= NR_compat_syscalls
 				|| !test_bit(id, filter->sc_compat)) {
@@ -559,7 +559,7 @@ void syscall_exit_probe(void *__data, struct pt_regs *regs, long ret)
 	} else {
 		struct lttng_syscall_filter *filter;
 
-		filter = lttng_rcu_dereference(chan->sc_filter);
+		filter = rcu_dereference_raw_check(chan->sc_filter);
 		if (filter) {
 			if (id < 0 || id >= NR_syscalls
 				|| !test_bit(id, filter->sc)) {

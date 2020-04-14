@@ -17,7 +17,6 @@
 #include <probes/lttng-probe-user.h>
 #include <include/ringbuffer/frontend_types.h>
 #include <include/ringbuffer/backend.h>
-#include <wrapper/rcu.h>
 #include <wrapper/user_namespace.h>
 #include <lttng-events.h>
 #include <lttng-tracer-core.h>
@@ -1156,25 +1155,25 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 		return;							      \
 	if (unlikely(!READ_ONCE(__event->enabled)))			      \
 		return;							      \
-	__lf = lttng_rcu_dereference(__session->pid_tracker.p);		      \
+	__lf = rcu_dereference_raw_check(__session->pid_tracker.p);	      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf, current->tgid)))    \
 		return;							      \
-	__lf = lttng_rcu_dereference(__session->vpid_tracker.p);	      \
+	__lf = rcu_dereference_raw_check(__session->vpid_tracker.p);	      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf, task_tgid_vnr(current)))) \
 		return;							      \
-	__lf = lttng_rcu_dereference(__session->uid_tracker.p);		      \
+	__lf = rcu_dereference_raw_check(__session->uid_tracker.p);	      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
 			lttng_current_uid())))				      \
 		return;							      \
-	__lf = lttng_rcu_dereference(__session->vuid_tracker.p);	      \
+	__lf = rcu_dereference_raw_check(__session->vuid_tracker.p);	      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
 			lttng_current_vuid())))				      \
 		return;							      \
-	__lf = lttng_rcu_dereference(__session->gid_tracker.p);		      \
+	__lf = rcu_dereference_raw_check(__session->gid_tracker.p);	      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
 			lttng_current_gid())))				      \
 		return;							      \
-	__lf = lttng_rcu_dereference(__session->vgid_tracker.p);	      \
+	__lf = rcu_dereference_raw_check(__session->vgid_tracker.p);	      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
 			lttng_current_vgid())))				      \
 		return;							      \
@@ -1187,7 +1186,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 									      \
 		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data, \
 				tp_locvar, _args);				      \
-		lttng_list_for_each_entry_rcu(bc_runtime, &__event->bytecode_runtime_head, node) { \
+		list_for_each_entry_rcu_notrace(bc_runtime, &__event->bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->filter(bc_runtime, &__lttng_probe_ctx,	      \
 					__stackvar.__filter_stack_data) & LTTNG_FILTER_RECORD_FLAG)) { \
 				__filter_record = 1;			      \
@@ -1251,25 +1250,25 @@ static void __event_probe__##_name(void *__data)			      \
 		return;							      \
 	if (unlikely(!READ_ONCE(__event->enabled)))			      \
 		return;							      \
-	__lf = lttng_rcu_dereference(__session->pid_tracker.p);		      \
+	__lf = rcu_dereference_raw_check(__session->pid_tracker.p);	      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf, current->tgid)))    \
 		return;							      \
-	__lf = lttng_rcu_dereference(__session->vpid_tracker.p);	      \
+	__lf = rcu_dereference_raw_check(__session->vpid_tracker.p);	      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf, task_tgid_vnr(current)))) \
 		return;							      \
-	__lf = lttng_rcu_dereference(__session->uid_tracker.p);		      \
+	__lf = rcu_dereference_raw_check(__session->uid_tracker.p);	      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
 			lttng_current_uid())))				      \
 		return;							      \
-	__lf = lttng_rcu_dereference(__session->vuid_tracker.p);	      \
+	__lf = rcu_dereference_raw_check(__session->vuid_tracker.p);	      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
 			lttng_current_vuid())))				      \
 		return;							      \
-	__lf = lttng_rcu_dereference(__session->gid_tracker.p);		      \
+	__lf = rcu_dereference_raw_check(__session->gid_tracker.p);	      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
 			lttng_current_gid())))				      \
 		return;							      \
-	__lf = lttng_rcu_dereference(__session->vgid_tracker.p);	      \
+	__lf = rcu_dereference_raw_check(__session->vgid_tracker.p);	      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
 			lttng_current_vgid())))				      \
 		return;							      \
@@ -1282,7 +1281,7 @@ static void __event_probe__##_name(void *__data)			      \
 									      \
 		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data, \
 				tp_locvar);				      \
-		lttng_list_for_each_entry_rcu(bc_runtime, &__event->bytecode_runtime_head, node) { \
+		list_for_each_entry_rcu_notrace(bc_runtime, &__event->bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->filter(bc_runtime, &__lttng_probe_ctx,	\
 					__stackvar.__filter_stack_data) & LTTNG_FILTER_RECORD_FLAG)) { \
 				__filter_record = 1;			      \
