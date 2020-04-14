@@ -25,7 +25,7 @@
 #include <asm/local.h>
 #include <lttng-kernel-version.h>
 #include <lttng-clock.h>
-#include <wrapper/random.h>
+#include <linux/random.h>
 
 extern struct lttng_trace_clock *lttng_trace_clock;
 
@@ -111,7 +111,11 @@ static inline u64 trace_clock_freq_monotonic(void)
 
 static inline int trace_clock_uuid_monotonic(char *uuid)
 {
-	return wrapper_get_bootid(uuid);
+	unsigned char *boot_id;
+
+	boot_id = get_kernel_boot_id();
+	sprintf(uuid, "%pU", boot_id);
+	return 0;
 }
 
 static inline const char *trace_clock_name_monotonic(void)

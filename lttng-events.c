@@ -24,7 +24,7 @@
 #include <linux/vmalloc.h>
 #include <linux/limits.h>
 
-#include <wrapper/random.h>
+#include <linux/random.h>
 #include <lttng-kernel-version.h>
 #include <lttng-events.h>
 #include <lttng-tracer.h>
@@ -2574,7 +2574,7 @@ static
 int _lttng_session_metadata_statedump(struct lttng_session *session)
 {
 	unsigned char *uuid_c = session->uuid.b;
-	unsigned char uuid_s[37], clock_uuid_s[BOOT_ID_LEN];
+	unsigned char uuid_s[LTTNG_MODULES_UUID_STR_LEN], clock_uuid_s[LTTNG_MODULES_UUID_STR_LEN];
 	const char *product_uuid;
 	struct lttng_channel *chan;
 	struct lttng_event *event;

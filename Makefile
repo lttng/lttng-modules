@@ -63,7 +63,7 @@ ifneq ($(KERNELRELEASE),)
                        lttng-context-interruptible.o \
                        lttng-context-need-reschedule.o \
                        lttng-context-callstack.o lttng-calibrate.o \
-                       lttng-context-hostname.o wrapper/random.o \
+                       lttng-context-hostname.o \
                        probes/lttng.o wrapper/trace-clock.o \
                        lttng-tracker-id.o \
                        lttng-filter.o lttng-filter-interpreter.o \
