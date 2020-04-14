@@ -25,7 +25,6 @@
 #include <asm/local.h>
 #include <lttng-kernel-version.h>
 #include <lttng-clock.h>
-#include <wrapper/compiler.h>
 #include <wrapper/random.h>
 
 extern struct lttng_trace_clock *lttng_trace_clock;

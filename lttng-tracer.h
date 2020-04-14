@@ -22,7 +22,6 @@
 #include <asm/local.h>
 
 #include <wrapper/trace-clock.h>
-#include <wrapper/compiler.h>
 #include <lttng-tracer-core.h>
 #include <lttng-events.h>
 
@@ -64,5 +63,7 @@
 
 #define LTTNG_RFLAG_EXTENDED		RING_BUFFER_RFLAG_END
 #define LTTNG_RFLAG_END			(LTTNG_RFLAG_EXTENDED << 1)
+
+#define __LTTNG_COMPOUND_LITERAL(type, ...)	(type[]) { __VA_ARGS__ }
 
 #endif /* _LTTNG_TRACER_H */

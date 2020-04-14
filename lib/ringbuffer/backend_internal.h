@@ -10,7 +10,6 @@
 #ifndef _LIB_RING_BUFFER_BACKEND_INTERNAL_H
 #define _LIB_RING_BUFFER_BACKEND_INTERNAL_H
 
-#include <wrapper/compiler.h>
 #include <include/ringbuffer/config.h>
 #include <include/ringbuffer/backend_types.h>
 #include <include/ringbuffer/frontend_types.h>
