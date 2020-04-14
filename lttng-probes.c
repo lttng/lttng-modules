@@ -12,7 +12,7 @@
 #include <linux/mutex.h>
 #include <linux/seq_file.h>
 
-#include <lttng-events.h>
+#include <lttng/lttng-events.h>
 
 /*
  * probe list is protected by sessions lock.

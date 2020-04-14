@@ -9,7 +9,7 @@
  */
 
 #include <linux/module.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-tracer.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
@@ -17,7 +17,7 @@
  */
 #include <trace/events/vmscan.h>
 
-#include <lttng-kernel-version.h>
+#include <lttng/lttng-kernel-version.h>
 
 /*
  * Create LTTng tracepoint probes.

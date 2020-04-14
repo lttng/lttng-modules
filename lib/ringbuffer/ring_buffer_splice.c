@@ -14,9 +14,9 @@
 #include <linux/fs.h>
 #include <linux/splice.h>
 
-#include <include/ringbuffer/backend.h>
-#include <include/ringbuffer/frontend.h>
-#include <include/ringbuffer/vfs.h>
+#include <ringbuffer/backend.h>
+#include <ringbuffer/frontend.h>
+#include <ringbuffer/vfs.h>
 
 #if 0
 #define printk_dbg(fmt, args...) printk(fmt, args)

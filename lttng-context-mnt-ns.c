@@ -12,10 +12,10 @@
 #include <linux/module.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
-#include <lttng-events.h>
+#include <lttng/lttng-events.h>
 #include <linux/nsproxy.h>
-#include <include/ringbuffer/frontend_types.h>
-#include <lttng-tracer.h>
+#include <ringbuffer/frontend_types.h>
+#include <lttng/lttng-tracer.h>
 
 #if !defined(LTTNG_MNT_NS_MISSING_HEADER)
 

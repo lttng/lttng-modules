@@ -36,8 +36,8 @@
 #include <linux/irq.h>
 #include <linux/genhd.h>
 
-#include <lttng-events.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-events.h>
+#include <lttng/lttng-tracer.h>
 
 /* Define the tracepoints, but do not build the probes */
 #define CREATE_TRACE_POINTS

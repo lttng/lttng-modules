@@ -22,9 +22,9 @@
 #include <asm/ptrace.h>
 #include <asm/syscall.h>
 
-#include <lib/bitfield.h>
-#include <lttng-events.h>
-#include "lttng-tracepoint.h"
+#include <lttng/bitfield.h>
+#include <lttng/lttng-events.h>
+#include <lttng/lttng-tracepoint.h>
 
 #define LTTNG_SYSCALL_NR_ARGS	6
 

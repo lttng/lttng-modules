@@ -11,7 +11,7 @@
 #include <linux/module.h>
 #include <linux/device.h>
 #include <linux/mm.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-tracer.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
@@ -19,7 +19,7 @@
  */
 #include <trace/events/writeback.h>
 
-#include <lttng-kernel-version.h>
+#include <lttng/lttng-kernel-version.h>
 
 /* #if <check version number if global_dirty_limit will be exported> */
 

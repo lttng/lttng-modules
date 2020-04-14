@@ -10,8 +10,8 @@
 
 #include <linux/module.h>
 #include <linux/device.h>
-#include <lttng-kernel-version.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-kernel-version.h>
+#include <lttng/lttng-tracer.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our

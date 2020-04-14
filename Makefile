@@ -29,7 +29,7 @@ ifneq ($(KERNELRELEASE),)
 
   include $(TOP_LTTNG_MODULES_DIR)/Kbuild.common
 
-  ccflags-y += -I$(TOP_LTTNG_MODULES_DIR)
+  ccflags-y += -I$(TOP_LTTNG_MODULES_DIR)/include
 
   obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-discard.o
   obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-overwrite.o
@@ -64,7 +64,7 @@ ifneq ($(KERNELRELEASE),)
                        lttng-context-need-reschedule.o \
                        lttng-context-callstack.o lttng-calibrate.o \
                        lttng-context-hostname.o \
-                       probes/lttng.o wrapper/trace-clock.o \
+                       probes/lttng.o trace-clock.o \
                        lttng-tracker-id.o \
                        lttng-filter.o lttng-filter-interpreter.o \
                        lttng-filter-specialize.o \

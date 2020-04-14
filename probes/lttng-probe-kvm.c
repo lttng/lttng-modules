@@ -9,7 +9,7 @@
 
 #include <linux/module.h>
 #include <linux/kvm_host.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-tracer.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
@@ -17,7 +17,7 @@
  */
 #include <trace/events/kvm.h>
 
-#include "lttng-tracepoint.h"
+#include <lttng/lttng-tracepoint.h>
 
 /*
  * Create LTTng tracepoint probes.

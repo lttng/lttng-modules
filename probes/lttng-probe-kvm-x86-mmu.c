@@ -9,7 +9,7 @@
 
 #include <linux/module.h>
 #include <linux/kvm_host.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-tracer.h>
 
 #include <kvm/iodev.h>
 
@@ -17,7 +17,7 @@
  * Create the tracepoint static inlines from the kernel to validate that our
  * trace event macros match the kernel we run on.
  */
-#include "lttng-tracepoint.h"
+#include <lttng/lttng-tracepoint.h>
 
 #include <../../arch/x86/kvm/mmutrace.h>
 

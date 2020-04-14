@@ -15,7 +15,7 @@
 #include <../fs/btrfs/volumes.h>
 #include <../fs/btrfs/block-group.h>
 #include <linux/dcache.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-tracer.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our

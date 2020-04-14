@@ -14,7 +14,7 @@
 #include <../fs/ext4/mballoc.h>
 #include <../fs/ext4/ext4_extents.h>
 #include <linux/dcache.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-tracer.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
@@ -22,8 +22,8 @@
  */
 #include <trace/events/ext4.h>
 
-#include <lttng-kernel-version.h>
-#include "lttng-tracepoint.h"
+#include <lttng/lttng-kernel-version.h>
+#include <lttng/lttng-tracepoint.h>
 
 /*
  * Create LTTng tracepoint probes.

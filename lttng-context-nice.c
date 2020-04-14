@@ -10,9 +10,9 @@
 #include <linux/module.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
-#include <lttng-events.h>
-#include <include/ringbuffer/frontend_types.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-events.h>
+#include <ringbuffer/frontend_types.h>
+#include <lttng/lttng-tracer.h>
 
 static
 size_t nice_get_size(size_t offset)

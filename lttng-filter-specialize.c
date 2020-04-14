@@ -8,8 +8,8 @@
  */
 
 #include <linux/slab.h>
-#include <lttng-filter.h>
-#include "lib/align.h"
+#include <lttng/lttng-filter.h>
+#include <lttng/align.h>
 
 static ssize_t bytecode_reserve_data(struct bytecode_runtime *runtime,
 		size_t align, size_t len)

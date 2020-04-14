@@ -16,10 +16,10 @@
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/uprobes.h>
-#include <lttng-events.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-events.h>
+#include <lttng/lttng-tracer.h>
 #include <wrapper/irqflags.h>
-#include <include/ringbuffer/frontend_types.h>
+#include <ringbuffer/frontend_types.h>
 
 static
 int lttng_uprobes_handler_pre(struct uprobe_consumer *uc, struct pt_regs *regs)

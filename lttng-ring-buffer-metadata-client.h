@@ -9,8 +9,8 @@
 
 #include <linux/module.h>
 #include <linux/types.h>
-#include <lttng-events.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-events.h>
+#include <lttng/lttng-tracer.h>
 
 static struct lttng_transport lttng_relay_transport;
 
@@ -50,7 +50,7 @@ size_t record_header_size(const struct lib_ring_buffer_config *config,
 	return 0;
 }
 
-#include <include/ringbuffer/api.h>
+#include <ringbuffer/api.h>
 
 static u64 client_ring_buffer_clock_read(struct channel *chan)
 {

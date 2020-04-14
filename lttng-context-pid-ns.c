@@ -13,9 +13,9 @@
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/pid_namespace.h>
-#include <lttng-events.h>
-#include <include/ringbuffer/frontend_types.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-events.h>
+#include <ringbuffer/frontend_types.h>
+#include <lttng/lttng-tracer.h>
 
 #if defined(CONFIG_PID_NS)
 

@@ -10,8 +10,8 @@
 #include <linux/hrtimer.h>
 #include <linux/time.h>
 
-#include <lttng-tracer.h>
-#include <lttng-clock.h>	/* From lttng-modules */
+#include <lttng/lttng-tracer.h>
+#include <lttng/lttng-clock.h>	/* From lttng-modules */
 
 static u64 trace_clock_read64_example(void)
 {

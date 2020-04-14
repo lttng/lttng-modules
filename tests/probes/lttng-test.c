@@ -13,8 +13,8 @@
 #include <linux/byteorder/generic.h>
 #include <asm/byteorder.h>
 
-#include <lttng-events.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-events.h>
+#include <lttng/lttng-tracer.h>
 
 #define TP_MODULE_NOAUTOLOAD
 #define LTTNG_PACKAGE_BUILD

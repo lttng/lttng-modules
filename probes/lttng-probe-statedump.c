@@ -15,8 +15,8 @@
 #include <linux/netdevice.h>
 #include <linux/inetdevice.h>
 #include <linux/sched.h>
-#include <lttng-events.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-events.h>
+#include <lttng/lttng-tracer.h>
 
 /*
  * Create LTTng tracepoint probes.

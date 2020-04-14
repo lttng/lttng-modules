@@ -10,7 +10,7 @@
 
 #include <linux/module.h>
 #include <linux/idr.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-tracer.h>
 
 struct cpu_workqueue_struct;
 struct pool_workqueue;
@@ -21,7 +21,7 @@ struct pool_workqueue;
  */
 #include <trace/events/workqueue.h>
 
-#include "lttng-tracepoint.h"
+#include <lttng/lttng-tracepoint.h>
 
 /*
  * Create LTTng tracepoint probes.

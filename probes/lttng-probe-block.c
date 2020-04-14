@@ -9,8 +9,8 @@
 
 #include <linux/module.h>
 #include <linux/blktrace_api.h>
-#include <lttng-tracer.h>
-#include <lttng-kernel-version.h>
+#include <lttng/lttng-tracer.h>
+#include <lttng/lttng-kernel-version.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
@@ -18,7 +18,7 @@
  */
 #include <trace/events/block.h>
 
-#include "lttng-tracepoint.h"
+#include <lttng/lttng-tracepoint.h>
 
 /*
  * Create LTTng tracepoint probes.

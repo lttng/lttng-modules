@@ -10,7 +10,7 @@
 #include <linux/list.h>
 #include <linux/slab.h>
 
-#include <lttng-filter.h>
+#include <lttng/lttng-filter.h>
 
 static const char *opnames[] = {
 	[ FILTER_OP_UNKNOWN ] = "UNKNOWN",

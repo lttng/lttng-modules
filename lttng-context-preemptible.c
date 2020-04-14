@@ -11,9 +11,9 @@
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/irqflags.h>
-#include <lttng-events.h>
-#include <include/ringbuffer/frontend_types.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-events.h>
+#include <ringbuffer/frontend_types.h>
+#include <lttng/lttng-tracer.h>
 
 /*
  * We nest twice in preempt disabling within LTTng: one nesting is done

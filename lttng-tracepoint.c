@@ -15,7 +15,7 @@
 #include <linux/jhash.h>
 #include <linux/module.h>
 
-#include <lttng-tracepoint.h>
+#include <lttng/lttng-tracepoint.h>
 
 /*
  * Protect the tracepoint table. lttng_tracepoint_mutex nests within

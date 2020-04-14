@@ -31,16 +31,16 @@
 #include <linux/slab.h>
 #include <linux/err.h>
 #include <linux/kref.h>
-#include <include/ringbuffer/vfs.h>
-#include <include/ringbuffer/backend.h>
-#include <include/ringbuffer/frontend.h>
-#include <lttng-string-utils.h>
-#include <lttng-abi.h>
-#include <lttng-abi-old.h>
-#include <lttng-events.h>
-#include <lttng-tracer.h>
-#include <lttng-tp-mempool.h>
-#include <lib/ringbuffer/frontend_types.h>
+#include <ringbuffer/vfs.h>
+#include <ringbuffer/backend.h>
+#include <ringbuffer/frontend.h>
+#include <lttng/lttng-string-utils.h>
+#include <lttng/lttng-abi.h>
+#include <lttng/lttng-abi-old.h>
+#include <lttng/lttng-events.h>
+#include <lttng/lttng-tracer.h>
+#include <lttng/lttng-tp-mempool.h>
+#include <ringbuffer/frontend_types.h>
 
 /*
  * This is LTTng's own personal way to create a system call as an external

@@ -7,7 +7,7 @@
 
 #include <linux/uaccess.h>
 #include <linux/module.h>
-#include <probes/lttng-probe-user.h>
+#include <lttng/lttng-probe-user.h>
 
 /*
  * Calculate string length. Include final null terminating character if there is

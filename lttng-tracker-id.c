@@ -15,7 +15,7 @@
 #include <linux/hash.h>
 #include <linux/rcupdate.h>
 
-#include <lttng-events.h>
+#include <lttng/lttng-events.h>
 
 /*
  * Hash table is allocated and freed when there are no possible

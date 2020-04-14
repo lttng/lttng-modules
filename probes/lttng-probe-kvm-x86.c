@@ -9,7 +9,7 @@
 
 #include <linux/module.h>
 #include <linux/kvm_host.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-tracer.h>
 
 /* TODO: check for header availability in Makefile */
 #include <../../arch/x86/kvm/kvm_emulate.h>
@@ -22,7 +22,7 @@
  */
 #include <trace/events/kvm.h>
 
-#include "lttng-tracepoint.h"
+#include <lttng/lttng-tracepoint.h>
 
 /*
  * Create LTTng tracepoint probes.

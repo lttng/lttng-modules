@@ -11,9 +11,9 @@
 
 #include <linux/module.h>
 #include <linux/sched.h>
-#include <lttng-events.h>
-#include <lttng-tracer.h>
-#include <include/ringbuffer/frontend_types.h>
+#include <lttng/lttng-events.h>
+#include <lttng/lttng-tracer.h>
+#include <ringbuffer/frontend_types.h>
 #include <wrapper/user_namespace.h>
 
 static

@@ -11,8 +11,8 @@
 #include <linux/list.h>
 #include <linux/mutex.h>
 #include <linux/slab.h>
-#include <lttng-events.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-events.h>
+#include <lttng/lttng-tracer.h>
 
 /*
  * The filter implementation requires that two consecutive "get" for the

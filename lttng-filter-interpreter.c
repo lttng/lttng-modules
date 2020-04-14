@@ -12,8 +12,8 @@
 #include <linux/limits.h>
 #include <linux/swab.h>
 
-#include <lttng-filter.h>
-#include <lttng-string-utils.h>
+#include <lttng/lttng-filter.h>
+#include <lttng/lttng-string-utils.h>
 
 STACK_FRAME_NON_STANDARD(lttng_filter_interpret_bytecode);
 

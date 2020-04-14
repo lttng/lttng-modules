@@ -10,10 +10,10 @@
 #include <linux/module.h>
 #include <linux/kprobes.h>
 #include <linux/slab.h>
-#include <lttng-events.h>
-#include <include/ringbuffer/frontend_types.h>
+#include <lttng/lttng-events.h>
+#include <ringbuffer/frontend_types.h>
 #include <wrapper/irqflags.h>
-#include <lttng-tracer.h>
+#include <lttng/lttng-tracer.h>
 
 static
 int lttng_kprobes_handler_pre(struct kprobe *p, struct pt_regs *regs)

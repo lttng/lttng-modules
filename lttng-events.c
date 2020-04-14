@@ -25,15 +25,15 @@
 #include <linux/limits.h>
 
 #include <linux/random.h>
-#include <lttng-kernel-version.h>
-#include <lttng-events.h>
-#include <lttng-tracer.h>
-#include <lttng-abi-old.h>
-#include <lttng-endian.h>
-#include <lttng-string-utils.h>
-#include <lttng-tracepoint.h>
-#include <include/ringbuffer/backend.h>
-#include <include/ringbuffer/frontend.h>
+#include <lttng/lttng-kernel-version.h>
+#include <lttng/lttng-events.h>
+#include <lttng/lttng-tracer.h>
+#include <lttng/lttng-abi-old.h>
+#include <lttng/lttng-endian.h>
+#include <lttng/lttng-string-utils.h>
+#include <lttng/lttng-tracepoint.h>
+#include <ringbuffer/backend.h>
+#include <ringbuffer/frontend.h>
 
 #define METADATA_CACHE_DEFAULT_SIZE 4096
 

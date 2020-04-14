@@ -45,11 +45,11 @@
 #include <linux/timer.h>
 #include <asm/cacheflush.h>
 
-#include <include/ringbuffer/config.h>
-#include <include/ringbuffer/backend.h>
-#include <include/ringbuffer/frontend.h>
-#include <include/ringbuffer/iterator.h>
-#include <include/ringbuffer/nohz.h>
+#include <ringbuffer/config.h>
+#include <ringbuffer/backend.h>
+#include <ringbuffer/frontend.h>
+#include <ringbuffer/iterator.h>
+#include <ringbuffer/nohz.h>
 
 /*
  * Internal structure representing offsets to use at a sub-buffer switch.
