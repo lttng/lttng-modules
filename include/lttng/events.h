@@ -455,6 +455,7 @@ struct lttng_metadata_stream {
 	struct list_head list;		/* Stream list */
 	struct lttng_transport *transport;
 	uint64_t version;		/* Current version of the metadata cache */
+	bool coherent;			/* Stream in a coherent state */
 };
 
 #define LTTNG_DYNAMIC_LEN_STACK_SIZE	128
@@ -529,6 +530,7 @@ struct lttng_metadata_cache {
 	char *data;			/* Metadata cache */
 	unsigned int cache_alloc;	/* Metadata allocated size (bytes) */
 	unsigned int metadata_written;	/* Number of bytes written in metadata cache */
+	int producing;			/* Metadata being produced (incomplete) */
 	struct kref refcount;		/* Metadata cache usage */
 	struct list_head metadata_stream;	/* Metadata stream list */
 	uuid_le uuid;			/* Trace session unique ID (copy) */
@@ -609,7 +611,7 @@ int lttng_probes_init(void);
 void lttng_probes_exit(void);
 
 int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
-		struct channel *chan);
+		struct channel *chan, bool *coherent);
 
 int lttng_id_tracker_get_node_id(const struct lttng_id_hash_node *node);
 int lttng_id_tracker_empty_set(struct lttng_id_tracker *lf);
