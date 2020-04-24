@@ -1588,7 +1588,7 @@ void lttng_session_lazy_sync_enablers(struct lttng_session *session)
  * was written and a negative value on error.
  */
 int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
-		struct channel *chan)
+		struct channel *chan, bool *coherent)
 {
 	struct lib_ring_buffer_ctx ctx;
 	int ret = 0;
@@ -1627,6 +1627,7 @@ int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 	ret = stream->transport->ops.event_reserve(&ctx, 0);
 	if (ret != 0) {
 		printk(KERN_WARNING "LTTng: Metadata event reservation failed\n");
+		stream->coherent = false;
 		goto end;
 	}
 	stream->transport->ops.event_write(&ctx,
@@ -1634,11 +1635,34 @@ int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 			reserve_len);
 	stream->transport->ops.event_commit(&ctx);
 	stream->metadata_in += reserve_len;
+	if (reserve_len < len || stream->metadata_cache->producing != 0)
+		stream->coherent = false;
+	else
+		stream->coherent = true;
 	ret = reserve_len;
 
 end:
+	if (coherent)
+		*coherent = stream->coherent;
 	mutex_unlock(&stream->metadata_cache->lock);
 	return ret;
+}
+
+static
+void lttng_metadata_begin(struct lttng_session *session)
+{
+	mutex_lock(&session->metadata_cache->lock);
+	session->metadata_cache->producing++;
+	mutex_unlock(&session->metadata_cache->lock);
+}
+
+static
+void lttng_metadata_end(struct lttng_session *session)
+{
+	mutex_lock(&session->metadata_cache->lock);
+	WARN_ON_ONCE(!session->metadata_cache->producing);
+	session->metadata_cache->producing--;
+	mutex_unlock(&session->metadata_cache->lock);
 }
 
 /*
@@ -1646,6 +1670,8 @@ end:
  * Must be called with sessions_mutex held.
  * The metadata cache lock protects us from concurrent read access from
  * thread outputting metadata content to ring buffer.
+ * The content of the printf is printed as a single atomic metadata
+ * transaction.
  */
 int lttng_metadata_printf(struct lttng_session *session,
 			  const char *fmt, ...)
@@ -1665,6 +1691,7 @@ int lttng_metadata_printf(struct lttng_session *session,
 
 	len = strlen(str);
 	mutex_lock(&session->metadata_cache->lock);
+	session->metadata_cache->producing++;
 	if (session->metadata_cache->metadata_written + len >
 			session->metadata_cache->cache_alloc) {
 		char *tmp_cache_realloc;
@@ -1690,6 +1717,7 @@ int lttng_metadata_printf(struct lttng_session *session,
 			session->metadata_cache->metadata_written,
 			str, len);
 	session->metadata_cache->metadata_written += len;
+	session->metadata_cache->producing--;
 	mutex_unlock(&session->metadata_cache->lock);
 	kfree(str);
 
@@ -1699,6 +1727,7 @@ int lttng_metadata_printf(struct lttng_session *session,
 	return 0;
 
 err:
+	session->metadata_cache->producing--;
 	mutex_unlock(&session->metadata_cache->lock);
 	kfree(str);
 	return -ENOMEM;
@@ -2236,6 +2265,8 @@ int _lttng_fields_metadata_statedump(struct lttng_session *session,
 
 /*
  * Must be called with sessions_mutex held.
+ * The entire event metadata is printed as a single atomic metadata
+ * transaction.
  */
 static
 int _lttng_event_metadata_statedump(struct lttng_session *session,
@@ -2248,6 +2279,8 @@ int _lttng_event_metadata_statedump(struct lttng_session *session,
 		return 0;
 	if (chan->channel_type == METADATA_CHANNEL)
 		return 0;
+
+	lttng_metadata_begin(session);
 
 	ret = lttng_metadata_printf(session,
 		"event {\n"
@@ -2298,12 +2331,15 @@ int _lttng_event_metadata_statedump(struct lttng_session *session,
 
 	event->metadata_dumped = 1;
 end:
+	lttng_metadata_end(session);
 	return ret;
 
 }
 
 /*
  * Must be called with sessions_mutex held.
+ * The entire channel metadata is printed as a single atomic metadata
+ * transaction.
  */
 static
 int _lttng_channel_metadata_statedump(struct lttng_session *session,
@@ -2316,6 +2352,8 @@ int _lttng_channel_metadata_statedump(struct lttng_session *session,
 
 	if (chan->channel_type == METADATA_CHANNEL)
 		return 0;
+
+	lttng_metadata_begin(session);
 
 	WARN_ON_ONCE(!chan->header_type);
 	ret = lttng_metadata_printf(session,
@@ -2350,6 +2388,7 @@ int _lttng_channel_metadata_statedump(struct lttng_session *session,
 
 	chan->metadata_dumped = 1;
 end:
+	lttng_metadata_end(session);
 	return ret;
 }
 
@@ -2536,6 +2575,9 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 
 	if (!READ_ONCE(session->active))
 		return 0;
+
+	lttng_metadata_begin(session);
+
 	if (session->metadata_dumped)
 		goto skip_session;
 
@@ -2697,6 +2739,7 @@ skip_session:
 	}
 	session->metadata_dumped = 1;
 end:
+	lttng_metadata_end(session);
 	return ret;
 }
 

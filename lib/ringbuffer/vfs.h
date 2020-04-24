@@ -112,6 +112,12 @@ ssize_t vfs_lib_ring_buffer_splice_read(struct file *in, loff_t *ppos,
  * so it can be read again.
  */
 #define RING_BUFFER_METADATA_CACHE_DUMP		_IO(0xF6, 0x10)
+/*
+ * Get next metadata subbuffer, returning a flag indicating whether the
+ * metadata is guaranteed to be in a consistent state at the end of this
+ * sub-buffer (can be parsed).
+ */
+#define RING_BUFFER_GET_NEXT_SUBBUF_METADATA_CHECK	_IOR(0xF6, 0x12, uint32_t)
 
 #ifdef CONFIG_COMPAT
 /* Get a snapshot of the current ring buffer producer and consumer positions */
@@ -156,6 +162,13 @@ ssize_t vfs_lib_ring_buffer_splice_read(struct file *in, loff_t *ppos,
 /* Flush the current sub-buffer, even if empty. */
 #define RING_BUFFER_COMPAT_FLUSH_EMPTY			\
 	RING_BUFFER_FLUSH_EMPTY
+/*
+ * Get next metadata subbuffer, returning a flag indicating whether the
+ * metadata is guaranteed to be in a consistent state at the end of this
+ * sub-buffer (can be parsed).
+ */
+#define RING_BUFFER_COMPAT_GET_NEXT_SUBBUF_METADATA_CHECK \
+	RING_BUFFER_GET_NEXT_SUBBUF_METADATA_CHECK
 #endif /* CONFIG_COMPAT */
 
 #endif /* _LIB_RING_BUFFER_VFS_H */
