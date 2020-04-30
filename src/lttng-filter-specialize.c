@@ -313,9 +313,7 @@ static int specialize_load_object(const struct lttng_event_field *field,
 		struct vstack_load *load, bool is_context)
 {
 	load->type = LOAD_OBJECT;
-	/*
-	 * LTTng-UST layout all integer fields as s64 on the stack for the filter.
-	 */
+
 	switch (field->type.atype) {
 	case atype_integer:
 		if (field->type.u.integer.signedness)
