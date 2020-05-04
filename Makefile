@@ -65,6 +65,7 @@ ifneq ($(KERNELRELEASE),)
   lttng-wrapper-objs := wrapper/page_alloc.o \
                         wrapper/random.o \
                         wrapper/trace-clock.o \
+                        wrapper/kallsyms.o \
                         wrapper/irqdesc.o \
                         wrapper/fdtable.o \
                         lttng-wrapper-impl.o

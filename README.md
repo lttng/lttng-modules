@@ -65,7 +65,8 @@ Make sure your target kernel has the following config options enabled:
   - `CONFIG_HIGH_RES_TIMERS`: needed for LTTng 2.x clock source
   - `CONFIG_TRACEPOINTS`: kernel tracepoint instrumentation
      (enabled as a side-effect of any of the perf/ftrace/blktrace
-     instrumentation features)
+     instrumentation features).
+  - `CONFIG_KPROBES` (5.7+): use kallsyms for kernel 5.7 and newer.
 
 
 ### Supported (optional) kernel config options

@@ -14,6 +14,7 @@
 #define _LTTNG_WRAPPER_KALLSYMS_H
 
 #include <linux/kallsyms.h>
+#include <linux/version.h>
 
 /*
  * PowerPC ABIv1 needs KALLSYMS_ALL to get the function descriptor,
@@ -25,12 +26,26 @@
 # endif
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0))
+
+unsigned long wrapper_kallsyms_lookup_name(const char *name);
+
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0)) */
+
+static inline
+unsigned long wrapper_kallsyms_lookup_name(const char *name)
+{
+	return kallsyms_lookup_name(name);
+}
+
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0)) */
+
 static inline
 unsigned long kallsyms_lookup_funcptr(const char *name)
 {
 	unsigned long addr;
 
-	addr = kallsyms_lookup_name(name);
+	addr = wrapper_kallsyms_lookup_name(name);
 #ifdef CONFIG_ARM
 #ifdef CONFIG_THUMB2_KERNEL
 	if (addr)
@@ -43,6 +58,7 @@ unsigned long kallsyms_lookup_funcptr(const char *name)
 static inline
 unsigned long kallsyms_lookup_dataptr(const char *name)
 {
-	return kallsyms_lookup_name(name);
+	return wrapper_kallsyms_lookup_name(name);
 }
+
 #endif /* _LTTNG_WRAPPER_KALLSYMS_H */
