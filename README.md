@@ -66,6 +66,7 @@ Make sure your target kernel has the following config options enabled:
   - `CONFIG_TRACEPOINTS`: kernel tracepoint instrumentation
      (enabled as a side-effect of any of the perf/ftrace/blktrace
      instrumentation features).
+  - `CONFIG_KPROBES` (5.7+): use kallsyms for kernel 5.7 and newer.
 
 
 ### Supported (optional) kernel config options
