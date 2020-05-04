@@ -55,6 +55,7 @@ end:
 	filp_close(file, current->files);
 	return ret;
 }
+EXPORT_SYMBOL_GPL(wrapper_get_bootid);
 
 #else
 
@@ -62,5 +63,6 @@ int wrapper_get_bootid(char *bootid)
 {
 	return -ENOSYS;
 }
+EXPORT_SYMBOL_GPL(wrapper_get_bootid);
 
 #endif

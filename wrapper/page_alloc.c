@@ -52,6 +52,7 @@ int wrapper_get_pfnblock_flags_mask_init(void)
 		return -1;
 	return 0;
 }
+EXPORT_SYMBOL_GPL(wrapper_get_pfnblock_flags_mask_init);
 
 #else
 
@@ -94,6 +95,7 @@ int wrapper_get_pageblock_flags_mask_init(void)
 		return -1;
 	return 0;
 }
+EXPORT_SYMBOL_GPL(wrapper_get_pfnblock_flags_mask_init);
 
 #else
 

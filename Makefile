@@ -41,6 +41,8 @@ ifneq ($(KERNELRELEASE),)
 
   obj-$(CONFIG_LTTNG) += lttng-tracer.o
 
+  obj-$(CONFIG_LTTNG) += lttng-wrapper.o
+
   lttng-tracer-objs := lttng-events.o lttng-abi.o lttng-string-utils.o \
                        lttng-probes.o lttng-context.o \
                        lttng-context-pid.o lttng-context-procname.o \
@@ -63,15 +65,21 @@ ifneq ($(KERNELRELEASE),)
                        lttng-context-interruptible.o \
                        lttng-context-need-reschedule.o \
                        lttng-context-callstack.o lttng-calibrate.o \
-                       lttng-context-hostname.o wrapper/random.o \
-                       probes/lttng.o wrapper/trace-clock.o \
-                       wrapper/page_alloc.o \
+                       lttng-context-hostname.o \
+                       probes/lttng.o \
                        lttng-tracker-id.o \
                        lttng-filter.o lttng-filter-interpreter.o \
                        lttng-filter-specialize.o \
                        lttng-filter-validator.o \
                        probes/lttng-probe-user.o \
-                       lttng-tp-mempool.o
+                       lttng-tp-mempool.o \
+
+  lttng-wrapper-objs := wrapper/page_alloc.o \
+                        wrapper/random.o \
+                        wrapper/trace-clock.o \
+                        wrapper/irqdesc.o \
+                        wrapper/fdtable.o \
+                        lttng-wrapper-impl.o
 
   ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
     lttng-tracer-objs += lttng-syscalls.o
@@ -122,8 +130,7 @@ ifneq ($(KERNELRELEASE),)
   endif
 
   obj-$(CONFIG_LTTNG) += lttng-statedump.o
-  lttng-statedump-objs := lttng-statedump-impl.o wrapper/irqdesc.o \
-                          wrapper/fdtable.o
+  lttng-statedump-objs := lttng-statedump-impl.o
 
   obj-$(CONFIG_LTTNG) += probes/
   obj-$(CONFIG_LTTNG) += lib/
