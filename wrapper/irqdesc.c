@@ -34,6 +34,7 @@ struct irq_desc *wrapper_irq_to_desc(unsigned int irq)
 		return NULL;
 	}
 }
+EXPORT_SYMBOL_GPL(wrapper_irq_to_desc);
 
 #else
 
@@ -44,5 +45,6 @@ struct irq_desc *wrapper_irq_to_desc(unsigned int irq)
 {
 	return irq_to_desc(irq);
 }
+EXPORT_SYMBOL_GPL(wrapper_irq_to_desc);
 
 #endif
