@@ -321,7 +321,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	field->u.perf_counter = perf_field;
 	lttng_context_update(*ctx);
 
-	wrapper_vmalloc_sync_all();
+	wrapper_vmalloc_sync_mappings();
 	return 0;
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))

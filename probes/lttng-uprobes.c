@@ -161,7 +161,7 @@ int lttng_uprobes_add_callsite(struct lttng_event *event,
 	}
 
 	/* Ensure the memory we just allocated don't trigger page faults. */
-	wrapper_vmalloc_sync_all();
+	wrapper_vmalloc_sync_mappings();
 
 	uprobe_handler->event = event;
 	uprobe_handler->up_consumer.handler = lttng_uprobes_handler_pre;

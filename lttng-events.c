@@ -30,7 +30,7 @@
 #include <linux/dmi.h>
 
 #include <wrapper/uuid.h>
-#include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
+#include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
 #include <wrapper/random.h>
 #include <wrapper/tracepoint.h>
 #include <wrapper/list.h>
@@ -2795,9 +2795,9 @@ end:
  * Registers a transport which can be used as output to extract the data out of
  * LTTng. The module calling this registration function must ensure that no
  * trap-inducing code will be executed by the transport functions. E.g.
- * vmalloc_sync_all() must be called between a vmalloc and the moment the memory
+ * vmalloc_sync_mappings() must be called between a vmalloc and the moment the memory
  * is made visible to the transport function. This registration acts as a
- * vmalloc_sync_all. Therefore, only if the module allocates virtual memory
+ * vmalloc_sync_mappings. Therefore, only if the module allocates virtual memory
  * after its registration must it synchronize the TLBs.
  */
 void lttng_transport_register(struct lttng_transport *transport)
@@ -2805,9 +2805,9 @@ void lttng_transport_register(struct lttng_transport *transport)
 	/*
 	 * Make sure no page fault can be triggered by the module about to be
 	 * registered. We deal with this here so we don't have to call
-	 * vmalloc_sync_all() in each module's init.
+	 * vmalloc_sync_mappings() in each module's init.
 	 */
-	wrapper_vmalloc_sync_all();
+	wrapper_vmalloc_sync_mappings();
 
 	mutex_lock(&sessions_mutex);
 	list_add_tail(&transport->node, &lttng_transport_list);

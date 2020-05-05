@@ -9,7 +9,7 @@
 
 #include <linux/module.h>
 #include <linux/types.h>
-#include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
+#include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
 #include <lttng-events.h>
 #include <lttng-tracer.h>
 
@@ -427,7 +427,7 @@ static int __init lttng_ring_buffer_client_init(void)
 	 * This vmalloc sync all also takes care of the lib ring buffer
 	 * vmalloc'd module pages when it is built as a module into LTTng.
 	 */
-	wrapper_vmalloc_sync_all();
+	wrapper_vmalloc_sync_mappings();
 	lttng_transport_register(&lttng_relay_transport);
 	return 0;
 }

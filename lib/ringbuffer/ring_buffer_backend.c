@@ -17,7 +17,7 @@
 #include <linux/vmalloc.h>
 
 #include <wrapper/mm.h>
-#include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
+#include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
 #include <wrapper/ringbuffer/config.h>
 #include <wrapper/ringbuffer/backend.h>
 #include <wrapper/ringbuffer/frontend.h>
@@ -156,7 +156,7 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 	 * If kmalloc ever uses vmalloc underneath, make sure the buffer pages
 	 * will not fault.
 	 */
-	wrapper_vmalloc_sync_all();
+	wrapper_vmalloc_sync_mappings();
 	wrapper_clear_current_oom_origin();
 	vfree(pages);
 	return 0;

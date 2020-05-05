@@ -152,7 +152,7 @@ int __lttng_add_callstack_generic(struct lttng_ctx **ctx,
 	sequence_field->priv = fdata;
 	sequence_field->destroy = lttng_callstack_sequence_destroy;
 
-	wrapper_vmalloc_sync_all();
+	wrapper_vmalloc_sync_mappings();
 	return 0;
 
 error_create:
