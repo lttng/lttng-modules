@@ -30,7 +30,7 @@
 #include <linux/uaccess.h>
 #include <linux/slab.h>
 #include <linux/err.h>
-#include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
+#include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
 #include <wrapper/ringbuffer/vfs.h>
 #include <wrapper/ringbuffer/backend.h>
 #include <wrapper/ringbuffer/frontend.h>
@@ -1832,7 +1832,7 @@ int __init lttng_abi_init(void)
 {
 	int ret = 0;
 
-	wrapper_vmalloc_sync_all();
+	wrapper_vmalloc_sync_mappings();
 	lttng_clock_ref();
 
 	ret = lttng_tp_mempool_init();

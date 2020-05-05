@@ -98,7 +98,7 @@ int __init lttng_test_init(void)
 	int ret = 0;
 
 	(void) wrapper_lttng_fixup_sig(THIS_MODULE);
-	wrapper_vmalloc_sync_all();
+	wrapper_vmalloc_sync_mappings();
 	lttng_test_filter_event_dentry =
 			proc_create_data(LTTNG_TEST_FILTER_EVENT_FILE,
 				S_IRUGO | S_IWUGO, NULL,

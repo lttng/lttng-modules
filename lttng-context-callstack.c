@@ -141,7 +141,7 @@ int __lttng_add_callstack_generic(struct lttng_ctx **ctx,
 	field->record = lttng_callstack_record;
 	field->priv = fdata;
 	field->destroy = lttng_callstack_destroy;
-	wrapper_vmalloc_sync_all();
+	wrapper_vmalloc_sync_mappings();
 	return 0;
 
 error_create:

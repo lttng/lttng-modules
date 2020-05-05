@@ -15,7 +15,7 @@
 #include <probes/lttng.h>
 #include <probes/lttng-types.h>
 #include <probes/lttng-probe-user.h>
-#include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_all() */
+#include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
 #include <wrapper/ringbuffer/frontend_types.h>
 #include <wrapper/ringbuffer/backend.h>
 #include <wrapper/rcu.h>
@@ -1352,7 +1352,7 @@ static __used struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 #ifndef TP_MODULE_NOINIT
 static int TP_ID(__lttng_events_init__, TRACE_SYSTEM)(void)
 {
-	wrapper_vmalloc_sync_all();
+	wrapper_vmalloc_sync_mappings();
 	return lttng_probe_register(&TP_ID(__probe_desc___, TRACE_SYSTEM));
 }
 

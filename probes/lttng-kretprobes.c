@@ -221,7 +221,7 @@ int lttng_kretprobes_register(const char *name,
 	 * Well.. kprobes itself puts the page fault handler on the blacklist,
 	 * but we can never be too careful.
 	 */
-	wrapper_vmalloc_sync_all();
+	wrapper_vmalloc_sync_mappings();
 
 	ret = register_kretprobe(&lttng_krp->krp);
 	if (ret)

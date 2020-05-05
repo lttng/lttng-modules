@@ -68,7 +68,7 @@ int lttng_add_need_reschedule_to_ctx(struct lttng_ctx **ctx)
 	field->record = need_reschedule_record;
 	field->get_value = need_reschedule_get_value;
 	lttng_context_update(*ctx);
-	wrapper_vmalloc_sync_all();
+	wrapper_vmalloc_sync_mappings();
 	return 0;
 }
 EXPORT_SYMBOL_GPL(lttng_add_need_reschedule_to_ctx);
