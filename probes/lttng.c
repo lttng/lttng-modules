@@ -116,7 +116,7 @@ int __init lttng_logger_init(void)
 {
 	int ret = 0;
 
-	wrapper_vmalloc_sync_all();
+	wrapper_vmalloc_sync_mappings();
 
 	/* /dev/lttng-logger */
 	ret = misc_register(&logger_dev);

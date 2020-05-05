@@ -68,7 +68,7 @@ int lttng_add_cpu_id_to_ctx(struct lttng_ctx **ctx)
 	field->record = cpu_id_record;
 	field->get_value = cpu_id_get_value;
 	lttng_context_update(*ctx);
-	wrapper_vmalloc_sync_all();
+	wrapper_vmalloc_sync_mappings();
 	return 0;
 }
 EXPORT_SYMBOL_GPL(lttng_add_cpu_id_to_ctx);

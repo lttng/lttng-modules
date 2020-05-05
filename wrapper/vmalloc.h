@@ -21,8 +21,35 @@
 #include <linux/kallsyms.h>
 #include <wrapper/kallsyms.h>
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0))
+
 static inline
-void wrapper_vmalloc_sync_all(void)
+void wrapper_vmalloc_sync_mappings(void)
+{
+	void (*vmalloc_sync_mappings_sym)(void);
+
+	vmalloc_sync_mappings_sym = (void *) kallsyms_lookup_funcptr("vmalloc_sync_mappings");
+	if (vmalloc_sync_mappings_sym) {
+		vmalloc_sync_mappings_sym();
+	} else {
+#ifdef CONFIG_X86
+		/*
+		 * Only x86 needs vmalloc_sync_mappings to make sure LTTng does not
+		 * trigger recursive page faults.
+		 */
+		printk_once(KERN_WARNING "LTTng: vmalloc_sync_mappings symbol lookup failed.\n");
+		printk_once(KERN_WARNING "Page fault handler and NMI tracing might trigger faults.\n");
+#endif
+	}
+}
+
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0)) */
+
+/*
+ * Map vmalloc_sync_mappings to vmalloc_sync_all() on kernels before 5.7.
+ */
+static inline
+void wrapper_vmalloc_sync_mappings(void)
 {
 	void (*vmalloc_sync_all_sym)(void);
 
@@ -40,13 +67,29 @@ void wrapper_vmalloc_sync_all(void)
 #endif
 	}
 }
+
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0)) */
+
 #else
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0))
+
 static inline
-void wrapper_vmalloc_sync_all(void)
+void wrapper_vmalloc_sync_mappings(void)
+{
+	return vmalloc_sync_mappings();
+}
+
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0)) */
+
+static inline
+void wrapper_vmalloc_sync_mappings(void)
 {
 	return vmalloc_sync_all();
 }
+
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0)) */
+
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
@@ -61,7 +104,7 @@ void *lttng_kvmalloc_node(unsigned long size, gfp_t flags, int node)
 		 * Make sure we don't trigger recursive page faults in the
 		 * tracing fast path.
 		 */
-		wrapper_vmalloc_sync_all();
+		wrapper_vmalloc_sync_mappings();
 	}
 	return ret;
 }

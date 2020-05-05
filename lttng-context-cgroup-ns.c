@@ -97,7 +97,7 @@ int lttng_add_cgroup_ns_to_ctx(struct lttng_ctx **ctx)
 	field->record = cgroup_ns_record;
 	field->get_value = cgroup_ns_get_value;
 	lttng_context_update(*ctx);
-	wrapper_vmalloc_sync_all();
+	wrapper_vmalloc_sync_mappings();
 	return 0;
 }
 EXPORT_SYMBOL_GPL(lttng_add_cgroup_ns_to_ctx);
