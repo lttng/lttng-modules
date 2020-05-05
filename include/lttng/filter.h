@@ -182,6 +182,7 @@ struct load_ptr {
 };
 
 struct estack_entry {
+	enum entry_type type;
 	union {
 		int64_t v;
 
@@ -204,6 +205,9 @@ struct estack {
 #define estack_ax_v	ax
 #define estack_bx_v	bx
 
+#define estack_ax_t	ax_t
+#define estack_bx_t	bx_t
+
 #define estack_ax(stack, top)					\
 	({							\
 		BUG_ON((top) <= FILTER_STACK_EMPTY);		\
@@ -216,19 +220,23 @@ struct estack {
 		&(stack)->e[(top) - 1];				\
 	})
 
-#define estack_push(stack, top, ax, bx)				\
+#define estack_push(stack, top, ax, bx, ax_t, bx_t)		\
 	do {							\
 		BUG_ON((top) >= FILTER_STACK_LEN - 1);		\
 		(stack)->e[(top) - 1].u.v = (bx);		\
+		(stack)->e[(top) - 1].type = (bx_t);		\
 		(bx) = (ax);					\
+		(bx_t) = (ax_t);				\
 		++(top);					\
 	} while (0)
 
-#define estack_pop(stack, top, ax, bx)				\
+#define estack_pop(stack, top, ax, bx, ax_t, bx_t)		\
 	do {							\
 		BUG_ON((top) <= FILTER_STACK_EMPTY);		\
 		(ax) = (bx);					\
+		(ax_t) = (bx_t);				\
 		(bx) = (stack)->e[(top) - 2].u.v;		\
+		(bx_t) = (stack)->e[(top) - 2].type;		\
 		(top)--;					\
 	} while (0)
 
