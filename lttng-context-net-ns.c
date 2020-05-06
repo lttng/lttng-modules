@@ -14,11 +14,11 @@
 #include <linux/sched.h>
 #include <linux/nsproxy.h>
 #include <net/net_namespace.h>
-#include <lttng-events.h>
+#include <lttng/events.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 #include <wrapper/namespace.h>
-#include <lttng-tracer.h>
+#include <lttng/tracer.h>
 
 #if defined(CONFIG_NET_NS) && \
 	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))

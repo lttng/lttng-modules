@@ -15,8 +15,8 @@
 #include <linux/namei.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
-#include <lttng-events.h>
-#include <lttng-tracer.h>
+#include <lttng/events.h>
+#include <lttng/tracer.h>
 #include <wrapper/irqflags.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/uprobes.h>

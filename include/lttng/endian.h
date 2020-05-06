@@ -3,7 +3,7 @@
 #define _LTTNG_ENDIAN_H
 
 /*
- * lttng-endian.h
+ * lttng/endian.h
  *
  * Copyright (C) 2010-2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */

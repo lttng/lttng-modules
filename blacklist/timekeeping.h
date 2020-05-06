@@ -10,7 +10,7 @@
 #ifndef _LTTNG_BLACKLIST_TIMEKEEPING_H
 #define _LTTNG_BLACKLIST_TIMEKEEPING_H
 
-#include <lttng-kernel-version.h>
+#include <lttng/kernel-version.h>
 
 #if ((LTTNG_KERNEL_RANGE(3,10,0, 3,10,14) && !LTTNG_RHEL_KERNEL_RANGE(3,10,0,123,0,0, 3,10,14,0,0,0)) \
 	|| LTTNG_KERNEL_RANGE(3,11,0, 3,11,3))

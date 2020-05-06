@@ -24,11 +24,11 @@ These files are licensed under an MIT-style license. See LICENSES/MIT
 for details.
 
 include/lttng/prio_heap.h
-lib/prio_heap/lttng_prio_heap.c
 include/lttng/bitfield.h
-filter-bytecode.h
+include/lttng/filter-bytecode.h
+include/filter.h
+lib/prio_heap/lttng_prio_heap.c
 lttng-filter-interpreter.c
 lttng-filter-specialize.c
 lttng-filter-validator.c
 lttng-filter.c
-lttng-filter.h

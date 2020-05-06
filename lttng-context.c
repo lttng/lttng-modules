@@ -12,8 +12,8 @@
 #include <linux/mutex.h>
 #include <linux/slab.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
-#include <lttng-events.h>
-#include <lttng-tracer.h>
+#include <lttng/events.h>
+#include <lttng/tracer.h>
 
 /*
  * The filter implementation requires that two consecutive "get" for the

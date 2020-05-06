@@ -16,7 +16,7 @@
 #include <ringbuffer/config.h>
 #include <ringbuffer/backend_types.h>
 #include <lttng/prio_heap.h>	/* For per-CPU read-side iterator */
-#include <lttng-cpuhotplug.h>
+#include <lttng/cpuhotplug.h>
 
 /*
  * A switch is done during tracing or as a final flush after tracing (so it

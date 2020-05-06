@@ -15,7 +15,7 @@
 #include <linux/jhash.h>
 #include <linux/module.h>
 
-#include <lttng-tracepoint.h>
+#include <lttng/tracepoint.h>
 #include <wrapper/list.h>
 #include <wrapper/tracepoint.h>
 

@@ -12,7 +12,7 @@
 #include <linux/videodev2.h>
 #include <media/videobuf2-core.h>
 #include <media/v4l2-common.h>
-#include <lttng-tracer.h>
+#include <lttng/tracer.h>
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
  * trace event macros match the kernel we run on.

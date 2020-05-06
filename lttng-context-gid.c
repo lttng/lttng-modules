@@ -11,8 +11,8 @@
 
 #include <linux/module.h>
 #include <linux/sched.h>
-#include <lttng-events.h>
-#include <lttng-tracer.h>
+#include <lttng/events.h>
+#include <lttng/tracer.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 #include <wrapper/user_namespace.h>

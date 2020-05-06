@@ -17,7 +17,7 @@
 #include <linux/mm.h>
 #include <linux/miscdevice.h>
 #include <wrapper/vmalloc.h>
-#include <lttng-events.h>
+#include <lttng/events.h>
 
 #define TP_MODULE_NOAUTOLOAD
 #define LTTNG_PACKAGE_BUILD

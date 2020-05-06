@@ -14,7 +14,7 @@
 #include <linux/udp.h>
 #include <linux/icmp.h>
 #include <linux/version.h>
-#include <lttng-endian.h>
+#include <lttng/endian.h>
 #include <net/sock.h>
 
 #ifndef ONCE_LTTNG_NET_H

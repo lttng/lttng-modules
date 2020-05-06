@@ -22,8 +22,8 @@
 #include <linux/percpu.h>
 #include <linux/version.h>
 #include <asm/local.h>
-#include <lttng-kernel-version.h>
-#include <lttng-clock.h>
+#include <lttng/kernel-version.h>
+#include <lttng/clock.h>
 #include <wrapper/compiler.h>
 #include <wrapper/percpu-defs.h>
 #include <wrapper/random.h>

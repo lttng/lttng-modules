@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
  *
- * lttng-tp-mempool.h
+ * lttng/tp-mempool.h
  *
  * Copyright (C) 2018 Julien Desfossez <jdesfossez@efficios.com>
  */

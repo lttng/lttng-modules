@@ -12,16 +12,16 @@
 #include <asm/byteorder.h>
 #include <linux/swab.h>
 
-#include <lttng/types.h>
-#include <lttng/probe-user.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
 #include <ringbuffer/frontend_types.h>
 #include <ringbuffer/backend.h>
 #include <wrapper/rcu.h>
 #include <wrapper/user_namespace.h>
-#include <lttng-events.h>
-#include <lttng-tracer-core.h>
-#include <lttng-tp-mempool.h>
+#include <lttng/types.h>
+#include <lttng/probe-user.h>
+#include <lttng/events.h>
+#include <lttng/tracer-core.h>
+#include <lttng/tp-mempool.h>
 
 #define __LTTNG_NULL_STRING	"(null)"
 

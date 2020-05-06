@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
  *
- * lttng-tracer-core.h
+ * lttng/tracer-core.h
  *
  * This contains the core definitions for the Linux Trace Toolkit Next
  * Generation tracer.

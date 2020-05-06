@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
  *
- * lttng-abi.h
+ * lttng/abi.h
  *
  * LTTng ABI header
  *
@@ -225,7 +225,7 @@ struct lttng_kernel_tracker_args {
 };
 
 /* LTTng file descriptor ioctl */
-/* lttng-abi-old.h reserve 0x40, 0x41, 0x42, 0x43, and 0x44. */
+/* lttng/abi-old.h reserve 0x40, 0x41, 0x42, 0x43, and 0x44. */
 #define LTTNG_KERNEL_SESSION			_IO(0xF6, 0x45)
 #define LTTNG_KERNEL_TRACER_VERSION		\
 	_IOR(0xF6, 0x46, struct lttng_kernel_tracer_version)
@@ -238,7 +238,7 @@ struct lttng_kernel_tracker_args {
 	_IOR(0xF6, 0x4B, struct lttng_kernel_tracer_abi_version)
 
 /* Session FD ioctl */
-/* lttng-abi-old.h reserve 0x50, 0x51, 0x52, and 0x53. */
+/* lttng/abi-old.h reserve 0x50, 0x51, 0x52, and 0x53. */
 #define LTTNG_KERNEL_METADATA			\
 	_IOW(0xF6, 0x54, struct lttng_kernel_channel)
 #define LTTNG_KERNEL_CHANNEL			\
@@ -258,7 +258,7 @@ struct lttng_kernel_tracker_args {
 #define LTTNG_KERNEL_SESSION_LIST_TRACKER_PIDS	_IO(0xF6, 0x58)
 #define LTTNG_KERNEL_SESSION_METADATA_REGEN	_IO(0xF6, 0x59)
 
-/* lttng-abi-old.h reserve 0x5A and 0x5B. */
+/* lttng/abi-old.h reserve 0x5A and 0x5B. */
 #define LTTNG_KERNEL_SESSION_STATEDUMP		_IO(0xF6, 0x5C)
 #define LTTNG_KERNEL_SESSION_SET_NAME		\
 	_IOR(0xF6, 0x5D, struct lttng_kernel_session_name)
@@ -266,7 +266,7 @@ struct lttng_kernel_tracker_args {
 	_IOR(0xF6, 0x5E, struct lttng_kernel_session_creation_time)
 
 /* Channel FD ioctl */
-/* lttng-abi-old.h reserve 0x60 and 0x61. */
+/* lttng/abi-old.h reserve 0x60 and 0x61. */
 #define LTTNG_KERNEL_STREAM			_IO(0xF6, 0x62)
 #define LTTNG_KERNEL_EVENT			\
 	_IOW(0xF6, 0x63, struct lttng_kernel_event)
@@ -274,12 +274,12 @@ struct lttng_kernel_tracker_args {
 	_IOWR(0xF6, 0x64, struct lttng_kernel_syscall_mask)
 
 /* Event and Channel FD ioctl */
-/* lttng-abi-old.h reserve 0x70. */
+/* lttng/abi-old.h reserve 0x70. */
 #define LTTNG_KERNEL_CONTEXT			\
 	_IOW(0xF6, 0x71, struct lttng_kernel_context)
 
 /* Event, Channel and Session ioctl */
-/* lttng-abi-old.h reserve 0x80 and 0x81. */
+/* lttng/abi-old.h reserve 0x80 and 0x81. */
 #define LTTNG_KERNEL_ENABLE			_IO(0xF6, 0x82)
 #define LTTNG_KERNEL_DISABLE			_IO(0xF6, 0x83)
 

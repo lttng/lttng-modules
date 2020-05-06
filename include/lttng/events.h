@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
  *
- * lttng-events.h
+ * lttng/events.h
  *
  * Holds LTTng per-session event registry.
  *
@@ -14,13 +14,13 @@
 #include <linux/list.h>
 #include <linux/kprobes.h>
 #include <linux/kref.h>
-#include <lttng-cpuhotplug.h>
 #include <linux/uuid.h>
 #include <wrapper/uprobes.h>
-#include <lttng-tracer.h>
-#include <lttng-abi.h>
-#include <lttng-abi-old.h>
-#include <lttng-endian.h>
+#include <lttng/cpuhotplug.h>
+#include <lttng/tracer.h>
+#include <lttng/abi.h>
+#include <lttng/abi-old.h>
+#include <lttng/endian.h>
 
 #define lttng_is_signed_type(type)	(((type)(-1)) < 0)
 

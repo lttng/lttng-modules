@@ -8,7 +8,7 @@
 #include <linux/slab.h>
 #include <linux/percpu.h>
 
-#include <lttng-tp-mempool.h>
+#include <lttng/tp-mempool.h>
 
 struct lttng_tp_buf_entry {
 	int cpu; /* To make sure we return the entry to the right pool. */

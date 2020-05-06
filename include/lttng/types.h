@@ -15,9 +15,9 @@
 #define _LTTNG_PROBES_LTTNG_TYPES_H
 
 #include <linux/seq_file.h>
-#include <lttng-events.h>
-#include <lttng-tracer.h>
-#include <lttng-endian.h>
+#include <lttng/events.h>
+#include <lttng/tracer.h>
+#include <lttng/endian.h>
 
 #endif /* _LTTNG_PROBES_LTTNG_TYPES_H */
 

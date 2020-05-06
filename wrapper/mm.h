@@ -11,7 +11,7 @@
 #include <linux/mm.h>
 #include <linux/oom.h>
 
-#include <lttng-kernel-version.h>
+#include <lttng/kernel-version.h>
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0) \
 		|| LTTNG_UBUNTU_KERNEL_RANGE(4,4,25,44, 4,5,0,0))

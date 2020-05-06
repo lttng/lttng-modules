@@ -5,7 +5,7 @@
 
 #include <linux/types.h>
 
-#include <lttng-string-utils.h>
+#include <lttng/string-utils.h>
 
 enum star_glob_pattern_type_flags {
 	STAR_GLOB_PATTERN_TYPE_FLAG_NONE 	= 0,

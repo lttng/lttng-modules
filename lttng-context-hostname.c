@@ -11,10 +11,10 @@
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/utsname.h>
-#include <lttng-events.h>
+#include <lttng/events.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
-#include <lttng-tracer.h>
+#include <lttng/tracer.h>
 
 #define LTTNG_HOSTNAME_CTX_LEN	(__NEW_UTS_LEN + 1)
 

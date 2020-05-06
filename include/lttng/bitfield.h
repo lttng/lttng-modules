@@ -7,7 +7,7 @@
 #define _BABELTRACE_BITFIELD_H
 
 #include <linux/types.h>
-#include <lttng-endian.h>
+#include <lttng/endian.h>
 
 #ifndef CHAR_BIT
 #define CHAR_BIT 8

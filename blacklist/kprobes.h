@@ -10,7 +10,7 @@
 #ifndef _LTTNG_BLACKLIST_KPROBES_H
 #define _LTTNG_BLACKLIST_KPROBES_H
 
-#include <lttng-kernel-version.h>
+#include <lttng/kernel-version.h>
 
 #if LTTNG_KERNEL_RANGE(4,20,0, 4,20,13) \
 	|| LTTNG_KERNEL_RANGE(4,19,9, 4,19,26) \

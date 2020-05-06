@@ -11,7 +11,7 @@
 #include <linux/module.h>
 #include <net/9p/9p.h>
 #include <net/9p/client.h>
-#include <lttng-tracer.h>
+#include <lttng/tracer.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our

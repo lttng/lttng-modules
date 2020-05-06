@@ -7,8 +7,8 @@
  * Copyright (C) 2010-2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */
 
-#include <lttng-abi.h>
-#include <lttng-events.h>
+#include <lttng/abi.h>
+#include <lttng/events.h>
 
 noinline
 void lttng_calibrate_kretprobe(void)

@@ -10,7 +10,7 @@
 #ifndef _LTTNG_WRAPPER_RANDOM_H
 #define _LTTNG_WRAPPER_RANDOM_H
 
-#include <lttng-clock.h>
+#include <lttng/clock.h>
 
 #define BOOT_ID_LEN	LTTNG_MODULES_UUID_STR_LEN
 

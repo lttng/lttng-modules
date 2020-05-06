@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
  *
- * lttng-abi-old.h
+ * lttng/abi-old.h
  *
  * LTTng old ABI header (without support for compat 32/64 bits)
  *
@@ -11,7 +11,7 @@
 #define _LTTNG_ABI_OLD_H
 
 #include <linux/fs.h>
-#include <lttng-abi.h>
+#include <lttng/abi.h>
 
 /*
  * LTTng DebugFS ABI structures.

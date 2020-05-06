@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT
  *
- * lttng-filter.h
+ * lttng/filter.h
  *
  * LTTng modules filter header.
  *
@@ -12,8 +12,8 @@
 
 #include <linux/kernel.h>
 
-#include <lttng-events.h>
-#include <filter-bytecode.h>
+#include <lttng/events.h>
+#include <lttng/filter-bytecode.h>
 
 /* Filter stack length, in number of entries */
 #define FILTER_STACK_LEN	10	/* includes 2 dummy */

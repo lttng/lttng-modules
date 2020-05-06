@@ -11,11 +11,11 @@
 #include <linux/kprobes.h>
 #include <linux/slab.h>
 #include <linux/kref.h>
-#include <lttng-events.h>
+#include <lttng/events.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 #include <wrapper/irqflags.h>
-#include <lttng-tracer.h>
+#include <lttng/tracer.h>
 #include <blacklist/kprobes.h>
 
 enum lttng_kretprobe_type {

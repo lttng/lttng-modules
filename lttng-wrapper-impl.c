@@ -6,7 +6,7 @@
  */
 
 #include <linux/module.h>
-#include <lttng-tracer.h>
+#include <lttng/tracer.h>
 
 static int __init lttng_wrapper_init(void)
 {

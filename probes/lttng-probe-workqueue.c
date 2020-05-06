@@ -10,7 +10,7 @@
 
 #include <linux/module.h>
 #include <linux/idr.h>
-#include <lttng-tracer.h>
+#include <lttng/tracer.h>
 
 struct cpu_workqueue_struct;
 struct pool_workqueue;

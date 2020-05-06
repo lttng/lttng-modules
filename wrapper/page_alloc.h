@@ -12,7 +12,7 @@
 #ifndef _LTTNG_WRAPPER_PAGE_ALLOC_H
 #define _LTTNG_WRAPPER_PAGE_ALLOC_H
 
-#include <lttng-kernel-version.h>
+#include <lttng/kernel-version.h>
 
 /*
  * We need to redefine get_pfnblock_flags_mask to our wrapper, because

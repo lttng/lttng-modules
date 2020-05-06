@@ -37,12 +37,12 @@
 #include <wrapper/poll.h>
 #include <wrapper/file.h>
 #include <wrapper/kref.h>
-#include <lttng-string-utils.h>
-#include <lttng-abi.h>
-#include <lttng-abi-old.h>
-#include <lttng-events.h>
-#include <lttng-tracer.h>
-#include <lttng-tp-mempool.h>
+#include <lttng/string-utils.h>
+#include <lttng/abi.h>
+#include <lttng/abi-old.h>
+#include <lttng/events.h>
+#include <lttng/tracer.h>
+#include <lttng/tp-mempool.h>
 #include <ringbuffer/frontend_types.h>
 
 /*

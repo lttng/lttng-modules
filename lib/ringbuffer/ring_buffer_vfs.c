@@ -15,7 +15,7 @@
 #include <ringbuffer/frontend.h>
 #include <ringbuffer/vfs.h>
 #include <wrapper/poll.h>
-#include <lttng-tracer.h>
+#include <lttng/tracer.h>
 
 static int put_ulong(unsigned long val, unsigned long arg)
 {

@@ -13,11 +13,11 @@
 #include <linux/list.h>
 #include <linux/string.h>
 #include <linux/cpu.h>
-#include <lttng-events.h>
+#include <lttng/events.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 #include <wrapper/perf.h>
-#include <lttng-tracer.h>
+#include <lttng/tracer.h>
 
 static
 size_t perf_counter_get_size(size_t offset)

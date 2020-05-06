@@ -12,8 +12,8 @@
 #include <lttng/bitfield.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
 #include <wrapper/trace-clock.h>
-#include <lttng-events.h>
-#include <lttng-tracer.h>
+#include <lttng/events.h>
+#include <lttng/tracer.h>
 #include <ringbuffer/frontend_types.h>
 
 #define LTTNG_COMPACT_EVENT_BITS	5

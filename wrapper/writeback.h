@@ -12,7 +12,7 @@
 #ifndef _LTTNG_WRAPPER_WRITEBACK_H
 #define _LTTNG_WRAPPER_WRITEBACK_H
 
-#include <lttng-kernel-version.h>
+#include <lttng/kernel-version.h>
 
 #ifdef CONFIG_KALLSYMS_ALL
 #include <linux/kallsyms.h>

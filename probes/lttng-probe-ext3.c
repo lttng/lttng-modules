@@ -12,7 +12,7 @@
 #include <linux/fs.h>
 #include <linux/dcache.h>
 #include <linux/version.h>
-#include <lttng-tracer.h>
+#include <lttng/tracer.h>
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
 #include <../fs/ext3/ext3.h>

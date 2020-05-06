@@ -18,7 +18,7 @@
 #include <wrapper/tracepoint.h>
 #include <wrapper/rcu.h>
 #include <wrapper/list.h>
-#include <lttng-events.h>
+#include <lttng/events.h>
 
 /*
  * Hash table is allocated and freed when there are no possible

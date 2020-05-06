@@ -12,12 +12,12 @@
 #include <linux/module.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
-#include <lttng-events.h>
+#include <lttng/events.h>
 #include <linux/nsproxy.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 #include <wrapper/namespace.h>
-#include <lttng-tracer.h>
+#include <lttng/tracer.h>
 
 #if !defined(LTTNG_MNT_NS_MISSING_HEADER) && \
 	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))

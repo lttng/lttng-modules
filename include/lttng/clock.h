@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
  *
- * lttng-clock.h
+ * lttng/clock.h
  *
  * Copyright (C) 2014 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */

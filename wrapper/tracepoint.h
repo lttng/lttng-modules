@@ -23,7 +23,7 @@
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
 
-#include <lttng-tracepoint.h>
+#include <lttng/tracepoint.h>
 
 #define lttng_wrapper_tracepoint_probe_register lttng_tracepoint_probe_register
 #define lttng_wrapper_tracepoint_probe_unregister lttng_tracepoint_probe_unregister

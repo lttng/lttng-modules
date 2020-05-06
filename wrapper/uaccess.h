@@ -11,7 +11,7 @@
 #define _LTTNG_WRAPPER_UACCESS_H
 
 #include <linux/uaccess.h>
-#include <lttng-kernel-version.h>
+#include <lttng/kernel-version.h>
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0) || \
 	LTTNG_RHEL_KERNEL_RANGE(4,18,0,147,0,0, 4,19,0,0,0,0))

@@ -11,7 +11,7 @@
 #define _LTTNG_WRAPPER_SYSCALL_H
 
 #include <asm/syscall.h>
-#include <lttng-kernel-version.h>
+#include <lttng/kernel-version.h>
 
 #define LTTNG_SYSCALL_NR_ARGS 6
 

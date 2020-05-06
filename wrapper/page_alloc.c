@@ -9,7 +9,7 @@
  * Copyright (C) 2015 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */
 
-#include <lttng-kernel-version.h>
+#include <lttng/kernel-version.h>
 
 #if (defined(CONFIG_KALLSYMS) \
 	&& (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,2)	\

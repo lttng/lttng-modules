@@ -15,7 +15,7 @@
 #include <wrapper/page_alloc.h>
 #include <linux/module.h>
 #include <linux/mm.h>
-#include <lttng-tracer.h>
+#include <lttng/tracer.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our

@@ -27,7 +27,7 @@
 #include <wrapper/file.h>
 #include <wrapper/rcu.h>
 #include <wrapper/syscall.h>
-#include <lttng-events.h>
+#include <lttng/events.h>
 
 #ifndef CONFIG_COMPAT
 # ifndef is_compat_task

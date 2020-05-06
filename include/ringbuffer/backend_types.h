@@ -12,8 +12,8 @@
 
 #include <linux/cpumask.h>
 #include <linux/types.h>
-#include <lttng-kernel-version.h>
-#include <lttng-cpuhotplug.h>
+#include <lttng/kernel-version.h>
+#include <lttng/cpuhotplug.h>
 
 struct lib_ring_buffer_backend_page {
 	void *virt;			/* page virtual address (cached) */

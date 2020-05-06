@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT
  *
- * filter-bytecode.h
+ * lttng/filter-bytecode.h
  *
  * LTTng filter bytecode
  *

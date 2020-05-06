@@ -13,11 +13,11 @@
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/cgroup.h>
-#include <lttng-events.h>
+#include <lttng/events.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 #include <wrapper/namespace.h>
-#include <lttng-tracer.h>
+#include <lttng/tracer.h>
 
 #if defined(CONFIG_CGROUPS) && \
 	((LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0)) || \

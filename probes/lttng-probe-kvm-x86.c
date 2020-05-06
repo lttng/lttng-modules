@@ -9,8 +9,8 @@
 
 #include <linux/module.h>
 #include <linux/kvm_host.h>
-#include <lttng-tracer.h>
-#include <lttng-kernel-version.h>
+#include <lttng/tracer.h>
+#include <lttng/kernel-version.h>
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0))
 #include <kvm_emulate.h>

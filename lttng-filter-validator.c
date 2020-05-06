@@ -12,7 +12,7 @@
 #include <linux/slab.h>
 
 #include <wrapper/list.h>
-#include <lttng-filter.h>
+#include <lttng/filter.h>
 
 #define MERGE_POINT_TABLE_BITS		7
 #define MERGE_POINT_TABLE_SIZE		(1U << MERGE_POINT_TABLE_BITS)

@@ -3,7 +3,7 @@
 #define _LTTNG_TRACER_H
 
 /*
- * lttng-tracer.h
+ * lttng/tracer.h
  *
  * This contains the definitions for the Linux Trace Toolkit Next
  * Generation tracer.
@@ -24,8 +24,8 @@
 #include <wrapper/trace-clock.h>
 #include <wrapper/compiler.h>
 #include <wrapper/vmalloc.h>
-#include <lttng-tracer-core.h>
-#include <lttng-events.h>
+#include <lttng/tracer-core.h>
+#include <lttng/events.h>
 
 #define LTTNG_MODULES_MAJOR_VERSION 2
 #define LTTNG_MODULES_MINOR_VERSION 12

@@ -33,8 +33,8 @@
 #include <linux/mutex.h>
 #include <linux/device.h>
 
-#include <lttng-events.h>
-#include <lttng-tracer.h>
+#include <lttng/events.h>
+#include <lttng/tracer.h>
 #include <wrapper/irqdesc.h>
 #include <wrapper/fdtable.h>
 #include <wrapper/namespace.h>

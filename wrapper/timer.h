@@ -12,7 +12,7 @@
 
 #include <linux/version.h>
 #include <linux/timer.h>
-#include <lttng-kernel-version.h>
+#include <lttng/kernel-version.h>
 
 /*
  * In the olden days, pinned timers were initialized normaly with init_timer()

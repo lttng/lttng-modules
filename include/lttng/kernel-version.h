@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
  *
- * lttng-kernel-version.h
+ * lttng/kernel-version.h
  *
  * Contains helpers to check more complex kernel version conditions.
  *

@@ -43,12 +43,12 @@
 #include <linux/utsname.h>
 #include <linux/stacktrace.h>
 #include <linux/spinlock.h>
-#include "lttng-events.h"
 #include <ringbuffer/backend.h>
 #include <ringbuffer/frontend.h>
+#include <lttng/events.h>
+#include <lttng/tracer.h>
+#include <lttng/endian.h>
 #include "wrapper/vmalloc.h"
-#include "lttng-tracer.h"
-#include "lttng-endian.h"
 
 #ifdef CONFIG_ARCH_STACKWALK
 #include "lttng-context-callstack-stackwalk-impl.h"
