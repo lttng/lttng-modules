@@ -22,7 +22,7 @@
 #include <asm/ptrace.h>
 #include <asm/syscall.h>
 
-#include <lib/bitfield.h>
+#include <lttng/bitfield.h>
 #include <wrapper/tracepoint.h>
 #include <wrapper/file.h>
 #include <wrapper/rcu.h>

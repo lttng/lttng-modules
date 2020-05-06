@@ -8,7 +8,7 @@
  */
 
 #include <linux/slab.h>
-#include <lib/prio_heap/lttng_prio_heap.h>
+#include <lttng/prio_heap.h>
 #include <wrapper/vmalloc.h>
 
 #ifdef DEBUG_HEAP

@@ -23,9 +23,9 @@ wrapper/list.h
 These files are licensed under an MIT-style license. See LICENSES/MIT
 for details.
 
-lib/prio_heap/lttng_prio_heap.h
+include/lttng/prio_heap.h
 lib/prio_heap/lttng_prio_heap.c
-lib/bitfield.h
+include/lttng/bitfield.h
 filter-bytecode.h
 lttng-filter-interpreter.c
 lttng-filter-specialize.c

@@ -9,7 +9,7 @@
 
 #include <linux/module.h>
 #include <linux/types.h>
-#include <lib/bitfield.h>
+#include <lttng/bitfield.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
 #include <wrapper/trace-clock.h>
 #include <lttng-events.h>

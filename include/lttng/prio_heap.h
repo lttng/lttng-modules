@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: MIT
  *
- * lttng_prio_heap.h
+ * lttng/prio_heap.h
  *
  * Priority heap containing pointers. Based on CLRS, chapter 6.
  *

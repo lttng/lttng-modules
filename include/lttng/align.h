@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
  *
- * lib/align.h
+ * lttng/align.h
  *
  * Copyright (C) 2010-2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */
@@ -11,7 +11,7 @@
 #ifdef __KERNEL__
 
 #include <linux/types.h>
-#include <lib/bug.h>
+#include <lttng/bug.h>
 
 #define ALIGN_FLOOR(x, a)	__ALIGN_FLOOR_MASK(x, (typeof(x)) (a) - 1)
 #define __ALIGN_FLOOR_MASK(x, mask)	((x) & ~(mask))

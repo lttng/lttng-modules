@@ -15,7 +15,7 @@
 #include <linux/kref.h>
 #include <ringbuffer/config.h>
 #include <ringbuffer/backend_types.h>
-#include <lib/prio_heap/lttng_prio_heap.h>	/* For per-CPU read-side iterator */
+#include <lttng/prio_heap.h>	/* For per-CPU read-side iterator */
 #include <lttng-cpuhotplug.h>
 
 /*
