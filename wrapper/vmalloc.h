@@ -216,7 +216,7 @@ void *lttng_kvmalloc_node(unsigned long size, gfp_t flags, int node)
 		 * Make sure we don't trigger recursive page faults in the
 		 * tracing fast path.
 		 */
-		wrapper_vmalloc_sync_all();
+		wrapper_vmalloc_sync_mappings();
 	}
 	return ret;
 }
