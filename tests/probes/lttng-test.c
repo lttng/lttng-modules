@@ -20,10 +20,10 @@
 #define TP_MODULE_NOAUTOLOAD
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module
+#define TRACE_INCLUDE_PATH instrumentation/events
 #define TRACE_INCLUDE_FILE lttng-test
 #define LTTNG_INSTRUMENTATION
-#include <instrumentation/events/lttng-module/lttng-test.h>
+#include <instrumentation/events/lttng-test.h>
 
 DEFINE_TRACE(lttng_test_filter_event);
 

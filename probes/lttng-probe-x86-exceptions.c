@@ -26,9 +26,9 @@
  */
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module/arch/x86
+#define TRACE_INCLUDE_PATH instrumentation/events/arch/x86
 
-#include <instrumentation/events/lttng-module/arch/x86/exceptions.h>
+#include <instrumentation/events/arch/x86/exceptions.h>
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");

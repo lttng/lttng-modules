@@ -31,9 +31,9 @@
  */
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module
+#define TRACE_INCLUDE_PATH instrumentation/events
 
-#include <instrumentation/events/lttng-module/ext3.h>
+#include <instrumentation/events/ext3.h>
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com>, Paul Woegerer <paul_woegerer@mentor.com>, and Andrew Gabbasov <andrew_gabbasov@mentor.com>");

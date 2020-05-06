@@ -24,9 +24,9 @@
  */
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module
+#define TRACE_INCLUDE_PATH instrumentation/events
 
-#include <instrumentation/events/lttng-module/skb.h>
+#include <instrumentation/events/skb.h>
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Wade Farnsworth <wade_farnsworth@mentor.com>");

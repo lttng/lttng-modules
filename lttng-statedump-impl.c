@@ -50,10 +50,10 @@
 
 /* Define the tracepoints, but do not build the probes */
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module
+#define TRACE_INCLUDE_PATH instrumentation/events
 #define TRACE_INCLUDE_FILE lttng-statedump
 #define LTTNG_INSTRUMENTATION
-#include <instrumentation/events/lttng-module/lttng-statedump.h>
+#include <instrumentation/events/lttng-statedump.h>
 
 DEFINE_TRACE(lttng_statedump_block_device);
 DEFINE_TRACE(lttng_statedump_end);

@@ -22,11 +22,11 @@
 #define TP_MODULE_NOAUTOLOAD
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module
+#define TRACE_INCLUDE_PATH instrumentation/events
 #define TRACE_INCLUDE_FILE lttng
 #define LTTNG_INSTRUMENTATION
 
-#include <instrumentation/events/lttng-module/lttng.h>
+#include <instrumentation/events/lttng.h>
 
 /* Events written through logger are truncated at 1024 bytes */
 #define LTTNG_LOGGER_COUNT_MAX	1024

@@ -1,6 +1,6 @@
 * Workflow for updating patches from newer kernel:
 
-Pull the new headers from mainline kernel to lttng-modules/.
+Pull the new headers from mainline kernel to this subdirectory.
 Update those headers to fix the lttng-modules instrumentation style.
 
 
@@ -10,10 +10,10 @@ Update those headers to fix the lttng-modules instrumentation style.
 a) instrument the kernel with new trace events headers. If you want that
    instrumentation distributed, you will have to push those changes into
    the upstream Linux kernel first,
-b) copy those headers into lttng-modules/ directory,
+b) copy those headers into this subdirectory,
 c) look at a diff from other headers between mainline kernel version and 
-   lttng-modules/, and use that as a recipe to alter the new
-   lttng-modules/ headers.
+   those in this subdirectory, and use that as a recipe to alter the new
+   headers copy.
 d) create a new file in probes/ for the new trace event header you added,
 e) add it to probes/Makefile,
 f) build, make modules_install,

@@ -23,7 +23,7 @@
  */
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
-#define TRACE_INCLUDE_PATH instrumentation/events/lttng-module
+#define TRACE_INCLUDE_PATH instrumentation/events
 
 static int extract_sensitive_payload;
 module_param(extract_sensitive_payload, int, 0644);
@@ -31,7 +31,7 @@ MODULE_PARM_DESC(extract_sensitive_payload,
 		"Whether to extract possibly sensitive data from events (i2c "
 		"buffer contents) or not (1 or 0, default: 0).");
 
-#include <instrumentation/events/lttng-module/i2c.h>
+#include <instrumentation/events/i2c.h>
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Simon Marchi <simon.marchi@ericsson.com>");
