@@ -18,6 +18,9 @@ void lttng_guid_gen(guid_t *u)
 	return guid_gen(u);
 }
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0)) */
+
+typedef uuid_le guid_t;
+
 static inline
 void lttng_guid_gen(guid_t *u)
 {
