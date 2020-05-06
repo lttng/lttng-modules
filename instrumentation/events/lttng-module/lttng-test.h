@@ -5,7 +5,7 @@
 #if !defined(LTTNG_TRACE_LTTNG_TEST_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_LTTNG_TEST_H
 
-#include <probes/lttng-tracepoint-event.h>
+#include <lttng/tracepoint-event.h>
 #include <linux/types.h>
 #include <linux/version.h>
 
@@ -55,4 +55,4 @@ LTTNG_TRACEPOINT_EVENT(lttng_test_filter_event,
 #endif /*  LTTNG_TRACE_LTTNG_TEST_H */
 
 /* This part must be outside protection */
-#include <probes/define_trace.h>
+#include <lttng/define_trace.h>

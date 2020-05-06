@@ -5,7 +5,7 @@
 #if !defined(LTTNG_TRACE_9P_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_9P_H
 
-#include <probes/lttng-tracepoint-event.h>
+#include <lttng/tracepoint-event.h>
 #include <linux/version.h>
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
@@ -54,4 +54,4 @@ LTTNG_TRACEPOINT_EVENT(9p_protocol_dump,
 #endif /* LTTNG_TRACE_9P_H */
 
 /* This part must be outside protection */
-#include <probes/define_trace.h>
+#include <lttng/define_trace.h>

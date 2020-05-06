@@ -9,7 +9,7 @@
 #if !defined(_TRACE_SYSCALLS_INTEGERS_H) || defined(TRACE_HEADER_MULTI_READ)
 #define _TRACE_SYSCALLS_INTEGERS_H
 
-#include <probes/lttng-tracepoint-event.h>
+#include <lttng/tracepoint-event.h>
 #include <linux/syscalls.h>
 #include "x86-32-syscalls_integers_override.h"
 #include "syscalls_integers_override.h"
@@ -822,7 +822,7 @@ SC_LTTNG_TRACEPOINT_EVENT(mmap_pgoff,
 #endif /*  _TRACE_SYSCALLS_INTEGERS_H */
 
 /* This part must be outside protection */
-#include <probes/define_trace.h>
+#include <lttng/define_trace.h>
 
 #else /* CREATE_SYSCALL_TABLE */
 

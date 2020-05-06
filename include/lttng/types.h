@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
  *
- * probes/lttng-types.h
+ * lttng/types.h
  *
  * LTTng types.
  *
@@ -15,12 +15,14 @@
 #define _LTTNG_PROBES_LTTNG_TYPES_H
 
 #include <linux/seq_file.h>
-#include <probes/lttng.h>
 #include <lttng-events.h>
 #include <lttng-tracer.h>
 #include <lttng-endian.h>
 
 #endif /* _LTTNG_PROBES_LTTNG_TYPES_H */
+
+#undef PARAMS
+#define PARAMS(args...)		args
 
 /* Export enumerations */
 

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
  *
- * lttng-tracepoint-event-impl.h
+ * lttng/tracepoint-event-impl.h
  *
  * Copyright (C) 2009 Steven Rostedt <rostedt@goodmis.org>
  * Copyright (C) 2009-2014 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
@@ -12,9 +12,8 @@
 #include <asm/byteorder.h>
 #include <linux/swab.h>
 
-#include <probes/lttng.h>
-#include <probes/lttng-types.h>
-#include <probes/lttng-probe-user.h>
+#include <lttng/types.h>
+#include <lttng/probe-user.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
 #include <ringbuffer/frontend_types.h>
 #include <ringbuffer/backend.h>
@@ -25,6 +24,9 @@
 #include <lttng-tp-mempool.h>
 
 #define __LTTNG_NULL_STRING	"(null)"
+
+#undef PARAMS
+#define PARAMS(args...)		args
 
 /*
  * Macro declarations used for all stages.
@@ -118,7 +120,7 @@
  */
 
 /* Reset all macros within TRACEPOINT_EVENT */
-#include <probes/lttng-events-reset.h>
+#include <lttng/events-reset.h>
 
 #undef TP_PROTO
 #define TP_PROTO(...)	__VA_ARGS__
@@ -144,7 +146,7 @@ void trace_##_name(void);
  * class and the instance using the class actually match.
  */
 
-#include <probes/lttng-events-reset.h>	/* Reset all macros within TRACE_EVENT */
+#include <lttng/events-reset.h>	/* Reset all macros within TRACE_EVENT */
 
 #undef TP_PROTO
 #define TP_PROTO(...)	__VA_ARGS__
@@ -175,7 +177,7 @@ void __event_template_proto___##_name(void);
  *
  * Unfolding the enums
  */
-#include <probes/lttng-events-reset.h>	/* Reset all macros within TRACE_EVENT */
+#include <lttng/events-reset.h>	/* Reset all macros within TRACE_EVENT */
 
 /* Enumeration entry (single value) */
 #undef ctf_enum_value
@@ -249,9 +251,9 @@ void __event_template_proto___##_name(void);
  */
 
 /* Reset all macros within TRACEPOINT_EVENT */
-#include <probes/lttng-events-reset.h>
-#include <probes/lttng-events-write.h>
-#include <probes/lttng-events-nowrite.h>
+#include <lttng/events-reset.h>
+#include <lttng/events-write.h>
+#include <lttng/events-nowrite.h>
 
 #undef _ctf_integer_ext
 #define _ctf_integer_ext(_type, _item, _src, _byte_order, _base, _user, _nowrite) \
@@ -452,7 +454,7 @@ void __event_template_proto___##_name(void);
  */
 
 /* Reset all macros within TRACEPOINT_EVENT */
-#include <probes/lttng-events-reset.h>
+#include <lttng/events-reset.h>
 
 #undef TP_PROTO
 #define TP_PROTO(...)	__VA_ARGS__
@@ -474,8 +476,8 @@ static void __event_probe__##_name(void *__data);
  */
 
 /* Reset all macros within TRACEPOINT_EVENT */
-#include <probes/lttng-events-reset.h>
-#include <probes/lttng-events-write.h>
+#include <lttng/events-reset.h>
+#include <lttng/events-write.h>
 
 #undef _ctf_integer_ext
 #define _ctf_integer_ext(_type, _item, _src, _byte_order, _base, _user, _nowrite) \
@@ -600,9 +602,9 @@ error:									      \
  */
 
 /* Reset all macros within TRACEPOINT_EVENT */
-#include <probes/lttng-events-reset.h>
-#include <probes/lttng-events-write.h>
-#include <probes/lttng-events-nowrite.h>
+#include <lttng/events-reset.h>
+#include <lttng/events-write.h>
+#include <lttng/events-nowrite.h>
 
 #undef _ctf_integer_ext_fetched
 #define _ctf_integer_ext_fetched(_type, _item, _src, _byte_order, _base, _nowrite) \
@@ -791,8 +793,8 @@ void __event_prepare_filter_stack__##_name(char *__stack_data,		      \
  */
 
 /* Reset all macros within TRACEPOINT_EVENT */
-#include <probes/lttng-events-reset.h>
-#include <probes/lttng-events-write.h>
+#include <lttng/events-reset.h>
+#include <lttng/events-write.h>
 
 #undef _ctf_integer_ext
 #define _ctf_integer_ext(_type, _item, _src, _byte_order, _base, _user, _nowrite) \
@@ -880,8 +882,8 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
  */
 
 /* Reset all macros within TRACEPOINT_EVENT */
-#include <probes/lttng-events-reset.h>
-#include <probes/lttng-events-write.h>
+#include <lttng/events-reset.h>
+#include <lttng/events-write.h>
 
 #undef _ctf_integer_ext_fetched
 #define _ctf_integer_ext_fetched(_type, _item, _src, _byte_order, _base, _nowrite) \
@@ -1325,7 +1327,7 @@ __post:									      \
 
 /* Named field types must be defined in lttng-types.h */
 
-#include <probes/lttng-events-reset.h>	/* Reset all macros within LTTNG_TRACEPOINT_EVENT */
+#include <lttng/events-reset.h>	/* Reset all macros within LTTNG_TRACEPOINT_EVENT */
 
 #ifndef TP_PROBE_CB
 #define TP_PROBE_CB(_template)	&__event_probe__##_template
@@ -1354,7 +1356,7 @@ static const struct lttng_event_desc __event_desc___##_map = {		\
  * Create an array of event description pointers.
  */
 
-#include <probes/lttng-events-reset.h>	/* Reset all macros within LTTNG_TRACEPOINT_EVENT */
+#include <lttng/events-reset.h>	/* Reset all macros within LTTNG_TRACEPOINT_EVENT */
 
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map) \
@@ -1402,7 +1404,7 @@ static __used struct lttng_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
  * Register/unregister probes at module load/unload.
  */
 
-#include <probes/lttng-events-reset.h>	/* Reset all macros within LTTNG_TRACEPOINT_EVENT */
+#include <lttng/events-reset.h>	/* Reset all macros within LTTNG_TRACEPOINT_EVENT */
 
 #define TP_ID1(_token, _system)	_token##_system
 #define TP_ID(_token, _system)	TP_ID1(_token, _system)

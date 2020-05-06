@@ -5,7 +5,7 @@
 #if !defined(LTTNG_TRACE_EXT3_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_EXT3_H
 
-#include <probes/lttng-tracepoint-event.h>
+#include <lttng/tracepoint-event.h>
 #include <linux/version.h>
 
 LTTNG_TRACEPOINT_EVENT(ext3_free_inode,
@@ -519,4 +519,4 @@ LTTNG_TRACEPOINT_EVENT(ext3_load_inode,
 #endif /* LTTNG_TRACE_EXT3_H */
 
 /* This part must be outside protection */
-#include <probes/define_trace.h>
+#include <lttng/define_trace.h>

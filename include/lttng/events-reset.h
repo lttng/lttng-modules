@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
  *
- * lttng-events-reset.h
+ * lttng/events-reset.h
  *
  * Copyright (C) 2010-2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */

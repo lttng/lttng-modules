@@ -10,7 +10,7 @@
 #include <linux/ktime.h>
 #include <linux/string.h>
 #include <asm/sections.h>
-#include <probes/lttng-tracepoint-event.h>
+#include <lttng/tracepoint-event.h>
 
 /*
  * The preemptirq probe is built when CONFIG_PREEMPTIRQ_EVENTS is defined.
@@ -95,6 +95,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(preemptirq_template, preempt_enable,
 #endif /* LTTNG_TRACE_PREEMPTIRQ_H */
 
 /* This part must be outside protection */
-#include <probes/define_trace.h>
+#include <lttng/define_trace.h>
 
 #endif /* CONFIG_PREEMPTIRQ_EVENTS */

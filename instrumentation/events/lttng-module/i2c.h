@@ -5,7 +5,7 @@
 #if !defined(LTTNG_TRACE_I2C_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_I2C_H
 
-#include <probes/lttng-tracepoint-event.h>
+#include <lttng/tracepoint-event.h>
 
 /*
  * __i2c_transfer() write request
@@ -117,4 +117,4 @@ LTTNG_TRACEPOINT_EVENT(i2c_result,
 #endif /*  LTTNG_TRACE_I2C_H */
 
 /* This part must be outside protection */
-#include <probes/define_trace.h>
+#include <lttng/define_trace.h>

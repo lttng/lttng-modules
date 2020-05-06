@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
  *
- * lttng-probe-user.h
+ * lttng/probe-user.h
  *
  * Copyright (C) 2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */

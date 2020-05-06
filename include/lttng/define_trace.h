@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
  *
- * define_trace.h
+ * lttng/define_trace.h
  *
  * Copyright (C) 2009 Steven Rostedt <rostedt@goodmis.org>
  * Copyright (C) 2010-2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
@@ -84,7 +84,7 @@
 #define DECLARE_TRACE(name, proto, args)
 
 #ifdef LTTNG_PACKAGE_BUILD
-#include <probes/lttng-tracepoint-event-impl.h>
+#include <lttng/tracepoint-event-impl.h>
 #endif
 
 #undef LTTNG_TRACEPOINT_EVENT

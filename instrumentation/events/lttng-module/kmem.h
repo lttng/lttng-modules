@@ -5,7 +5,7 @@
 #if !defined(LTTNG_TRACE_KMEM_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_KMEM_H
 
-#include <probes/lttng-tracepoint-event.h>
+#include <lttng/tracepoint-event.h>
 #include <linux/types.h>
 #include <linux/version.h>
 
@@ -335,4 +335,4 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
 #endif /* LTTNG_TRACE_KMEM_H */
 
 /* This part must be outside protection */
-#include <probes/define_trace.h>
+#include <lttng/define_trace.h>

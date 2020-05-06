@@ -5,7 +5,7 @@
 #if !defined(LTTNG_TRACE_SCHED_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_SCHED_H
 
-#include <probes/lttng-tracepoint-event.h>
+#include <lttng/tracepoint-event.h>
 #include <linux/sched.h>
 #include <linux/pid_namespace.h>
 #include <linux/binfmts.h>
@@ -627,4 +627,4 @@ LTTNG_TRACEPOINT_EVENT(sched_pi_setprio,
 #endif /* LTTNG_TRACE_SCHED_H */
 
 /* This part must be outside protection */
-#include <probes/define_trace.h>
+#include <lttng/define_trace.h>

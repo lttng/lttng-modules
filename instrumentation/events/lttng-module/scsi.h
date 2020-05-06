@@ -5,7 +5,7 @@
 #if !defined(LTTNG_TRACE_SCSI_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_SCSI_H
 
-#include <probes/lttng-tracepoint-event.h>
+#include <lttng/tracepoint-event.h>
 #include <scsi/scsi_cmnd.h>
 #include <scsi/scsi_host.h>
 #include <linux/trace_seq.h>
@@ -487,4 +487,4 @@ LTTNG_TRACEPOINT_EVENT(scsi_eh_wakeup,
 #endif /*  LTTNG_TRACE_SCSI_H */
 
 /* This part must be outside protection */
-#include <probes/define_trace.h>
+#include <lttng/define_trace.h>

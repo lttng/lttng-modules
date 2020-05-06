@@ -9,7 +9,7 @@
 #if !defined(_TRACE_SYSCALLS_POINTERS_H) || defined(TRACE_HEADER_MULTI_READ)
 #define _TRACE_SYSCALLS_POINTERS_H
 
-#include <probes/lttng-tracepoint-event.h>
+#include <lttng/tracepoint-event.h>
 #include <linux/syscalls.h>
 #include "arm-64-syscalls_pointers_override.h"
 #include "syscalls_pointers_override.h"
@@ -1166,7 +1166,7 @@ SC_LTTNG_TRACEPOINT_EVENT(process_vm_writev,
 #endif /*  _TRACE_SYSCALLS_POINTERS_H */
 
 /* This part must be outside protection */
-#include <probes/define_trace.h>
+#include <lttng/define_trace.h>
 
 #else /* CREATE_SYSCALL_TABLE */
 

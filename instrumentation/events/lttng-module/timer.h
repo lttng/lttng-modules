@@ -5,7 +5,7 @@
 #if !defined(LTTNG_TRACE_TIMER_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_TIMER_H
 
-#include <probes/lttng-tracepoint-event.h>
+#include <lttng/tracepoint-event.h>
 
 #ifndef _TRACE_TIMER_DEF_
 #define _TRACE_TIMER_DEF_
@@ -394,4 +394,4 @@ LTTNG_TRACEPOINT_EVENT_MAP(itimer_expire,
 #endif /*  LTTNG_TRACE_TIMER_H */
 
 /* This part must be outside protection */
-#include <probes/define_trace.h>
+#include <lttng/define_trace.h>

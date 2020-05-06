@@ -5,7 +5,7 @@
 #if !defined(LTTNG_TRACE_REGMAP_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_REGMAP_H
 
-#include <probes/lttng-tracepoint-event.h>
+#include <lttng/tracepoint-event.h>
 #include <linux/ktime.h>
 #include <linux/version.h>
 
@@ -142,4 +142,4 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(regmap_bool, regmap_cache_bypass,
 #endif /* LTTNG_TRACE_REGMAP_H */
 
 /* This part must be outside protection */
-#include <probes/define_trace.h>
+#include <lttng/define_trace.h>

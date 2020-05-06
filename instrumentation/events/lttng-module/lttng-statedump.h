@@ -5,7 +5,7 @@
 #if !defined(LTTNG_TRACE_LTTNG_STATEDUMP_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_LTTNG_STATEDUMP_H
 
-#include <probes/lttng-tracepoint-event.h>
+#include <lttng/tracepoint-event.h>
 #include <linux/nsproxy.h>
 #include <linux/cgroup.h>
 #include <linux/ipc_namespace.h>
@@ -268,4 +268,4 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_cpu_topology,
 #endif /*  LTTNG_TRACE_LTTNG_STATEDUMP_H */
 
 /* This part must be outside protection */
-#include <probes/define_trace.h>
+#include <lttng/define_trace.h>
