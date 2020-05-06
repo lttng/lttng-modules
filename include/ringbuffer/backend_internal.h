@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only OR LGPL-2.1-only)
  *
- * lib/ringbuffer/backend_internal.h
+ * ringbuffer/backend_internal.h
  *
  * Ring buffer backend (internal helpers).
  *
@@ -11,9 +11,10 @@
 #define _LIB_RING_BUFFER_BACKEND_INTERNAL_H
 
 #include <wrapper/compiler.h>
-#include <wrapper/ringbuffer/config.h>
-#include <wrapper/ringbuffer/backend_types.h>
-#include <wrapper/ringbuffer/frontend_types.h>
+#include <wrapper/inline_memcpy.h>
+#include <ringbuffer/config.h>
+#include <ringbuffer/backend_types.h>
+#include <ringbuffer/frontend_types.h>
 #include <linux/string.h>
 #include <linux/uaccess.h>
 

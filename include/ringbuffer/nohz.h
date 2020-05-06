@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only OR LGPL-2.1-only)
  *
- * lib/ringbuffer/nohz.h
+ * ringbuffer/nohz.h
  *
  * Copyright (C) 2011-2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */

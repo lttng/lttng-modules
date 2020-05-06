@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only OR LGPL-2.1-only)
  *
- * lib/ringbuffer/config.h
+ * ringbuffer/config.h
  *
  * Ring buffer configuration header. Note: after declaring the standard inline
  * functions, clients should also include linux/ringbuffer/api.h.
@@ -301,6 +301,6 @@ int lib_ring_buffer_check_config(const struct lib_ring_buffer_config *config,
 	return 0;
 }
 
-#include <wrapper/ringbuffer/vatomic.h>
+#include <ringbuffer/vatomic.h>
 
 #endif /* _LIB_RING_BUFFER_CONFIG_H */

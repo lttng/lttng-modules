@@ -18,7 +18,7 @@
 #include <lttng-events.h>
 #include <lttng-tracer.h>
 #include <wrapper/irqflags.h>
-#include <wrapper/ringbuffer/frontend_types.h>
+#include <ringbuffer/frontend_types.h>
 #include <wrapper/uprobes.h>
 #include <wrapper/vmalloc.h>
 

@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only OR LGPL-2.1-only)
  *
- * lib/ringbuffer/iterator.h
+ * ringbuffer/iterator.h
  *
  * Ring buffer and channel iterators.
  *
@@ -10,9 +10,9 @@
 #ifndef _LIB_RING_BUFFER_ITERATOR_H
 #define _LIB_RING_BUFFER_ITERATOR_H
 
-#include <wrapper/ringbuffer/backend.h>
-#include <wrapper/ringbuffer/frontend.h>
-#include <wrapper/ringbuffer/vfs.h>
+#include <ringbuffer/backend.h>
+#include <ringbuffer/frontend.h>
+#include <ringbuffer/vfs.h>
 
 /*
  * lib_ring_buffer_get_next_record advances the buffer read position to the next

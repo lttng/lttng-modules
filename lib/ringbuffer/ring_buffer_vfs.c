@@ -11,9 +11,9 @@
 #include <linux/fs.h>
 #include <linux/compat.h>
 
-#include <wrapper/ringbuffer/backend.h>
-#include <wrapper/ringbuffer/frontend.h>
-#include <wrapper/ringbuffer/vfs.h>
+#include <ringbuffer/backend.h>
+#include <ringbuffer/frontend.h>
+#include <ringbuffer/vfs.h>
 #include <wrapper/poll.h>
 #include <lttng-tracer.h>
 

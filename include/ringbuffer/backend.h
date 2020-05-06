@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only OR LGPL-2.1-only)
  *
- * lib/ringbuffer/backend.h
+ * ringbuffer/backend.h
  *
  * Ring buffer backend (API).
  *
@@ -24,8 +24,8 @@
 #include <wrapper/uaccess.h>
 
 /* Internal helpers */
-#include <wrapper/ringbuffer/backend_internal.h>
-#include <wrapper/ringbuffer/frontend_internal.h>
+#include <ringbuffer/backend_internal.h>
+#include <ringbuffer/frontend_internal.h>
 
 /* Ring buffer backend API */
 

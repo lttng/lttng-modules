@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only OR LGPL-2.1-only)
  *
- * linux/ringbuffer/frontend_internal.h
+ * ringbuffer/frontend_internal.h
  *
  * Ring Buffer Library Synchronization Header (internal helpers).
  *
@@ -12,9 +12,9 @@
 #ifndef _LIB_RING_BUFFER_FRONTEND_INTERNAL_H
 #define _LIB_RING_BUFFER_FRONTEND_INTERNAL_H
 
-#include <wrapper/ringbuffer/config.h>
-#include <wrapper/ringbuffer/backend_types.h>
-#include <wrapper/ringbuffer/frontend_types.h>
+#include <ringbuffer/config.h>
+#include <ringbuffer/backend_types.h>
+#include <ringbuffer/frontend_types.h>
 #include <lib/prio_heap/lttng_prio_heap.h>	/* For per-CPU read-side iterator */
 
 /* Buffer offset macros */

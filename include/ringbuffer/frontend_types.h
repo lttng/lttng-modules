@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only OR LGPL-2.1-only)
  *
- * lib/ringbuffer/frontend_types.h
+ * ringbuffer/frontend_types.h
  *
  * Ring Buffer Library Synchronization Header (types).
  *
@@ -13,8 +13,8 @@
 #define _LIB_RING_BUFFER_FRONTEND_TYPES_H
 
 #include <linux/kref.h>
-#include <wrapper/ringbuffer/config.h>
-#include <wrapper/ringbuffer/backend_types.h>
+#include <ringbuffer/config.h>
+#include <ringbuffer/backend_types.h>
 #include <lib/prio_heap/lttng_prio_heap.h>	/* For per-CPU read-side iterator */
 #include <lttng-cpuhotplug.h>
 

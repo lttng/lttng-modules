@@ -14,7 +14,7 @@
 #include <linux/sched.h>
 #include <lttng-events.h>
 #include <linux/nsproxy.h>
-#include <wrapper/ringbuffer/frontend_types.h>
+#include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 #include <wrapper/namespace.h>
 #include <lttng-tracer.h>

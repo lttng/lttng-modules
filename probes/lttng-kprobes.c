@@ -11,7 +11,7 @@
 #include <linux/kprobes.h>
 #include <linux/slab.h>
 #include <lttng-events.h>
-#include <wrapper/ringbuffer/frontend_types.h>
+#include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 #include <wrapper/irqflags.h>
 #include <lttng-tracer.h>

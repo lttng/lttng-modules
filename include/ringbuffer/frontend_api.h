@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only OR LGPL-2.1-only)
  *
- * lib/ringbuffer/frontend_api.h
+ * ringbuffer/frontend_api.h
  *
  * Ring Buffer Library Synchronization Header (buffer write API).
  *
@@ -13,7 +13,7 @@
 #ifndef _LIB_RING_BUFFER_FRONTEND_API_H
 #define _LIB_RING_BUFFER_FRONTEND_API_H
 
-#include <wrapper/ringbuffer/frontend.h>
+#include <ringbuffer/frontend.h>
 #include <wrapper/percpu-defs.h>
 #include <linux/errno.h>
 #include <linux/prefetch.h>

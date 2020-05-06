@@ -9,7 +9,7 @@
  * Copyright (C) 2010-2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */
 
-#include <wrapper/ringbuffer/iterator.h>
+#include <ringbuffer/iterator.h>
 #include <wrapper/file.h>
 #include <wrapper/uaccess.h>
 #include <linux/jiffies.h>

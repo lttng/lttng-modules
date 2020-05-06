@@ -16,8 +16,8 @@
 #include <probes/lttng-types.h>
 #include <probes/lttng-probe-user.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
-#include <wrapper/ringbuffer/frontend_types.h>
-#include <wrapper/ringbuffer/backend.h>
+#include <ringbuffer/frontend_types.h>
+#include <ringbuffer/backend.h>
 #include <wrapper/rcu.h>
 #include <wrapper/user_namespace.h>
 #include <lttng-events.h>

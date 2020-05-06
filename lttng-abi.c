@@ -31,9 +31,9 @@
 #include <linux/slab.h>
 #include <linux/err.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
-#include <wrapper/ringbuffer/vfs.h>
-#include <wrapper/ringbuffer/backend.h>
-#include <wrapper/ringbuffer/frontend.h>
+#include <ringbuffer/vfs.h>
+#include <ringbuffer/backend.h>
+#include <ringbuffer/frontend.h>
 #include <wrapper/poll.h>
 #include <wrapper/file.h>
 #include <wrapper/kref.h>
@@ -43,7 +43,7 @@
 #include <lttng-events.h>
 #include <lttng-tracer.h>
 #include <lttng-tp-mempool.h>
-#include <lib/ringbuffer/frontend_types.h>
+#include <ringbuffer/frontend_types.h>
 
 /*
  * This is LTTng's own personal way to create a system call as an external

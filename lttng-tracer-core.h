@@ -19,7 +19,7 @@
 #define RING_BUFFER_ALIGN
 #endif
 
-#include <wrapper/ringbuffer/config.h>
+#include <ringbuffer/config.h>
 
 struct lttng_session;
 struct lttng_channel;

@@ -29,7 +29,7 @@ ifneq ($(KERNELRELEASE),)
 
   include $(TOP_LTTNG_MODULES_DIR)/Kbuild.common
 
-  ccflags-y += -I$(TOP_LTTNG_MODULES_DIR)
+  ccflags-y += -I$(TOP_LTTNG_MODULES_DIR) -I$(TOP_LTTNG_MODULES_DIR)/include
 
   obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-discard.o
   obj-$(CONFIG_LTTNG) += lttng-ring-buffer-client-overwrite.o

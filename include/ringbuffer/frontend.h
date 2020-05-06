@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only OR LGPL-2.1-only)
  *
- * lib/ringbuffer/frontend.h
+ * ringbuffer/frontend.h
  *
  * Ring Buffer Library Synchronization Header (API).
  *
@@ -33,7 +33,7 @@
 #include <asm/local.h>
 
 /* Internal helpers */
-#include <wrapper/ringbuffer/frontend_internal.h>
+#include <ringbuffer/frontend_internal.h>
 
 /* Max ring buffer nesting count, see lib_ring_buffer_get_cpu(). */
 #define RING_BUFFER_MAX_NESTING 4

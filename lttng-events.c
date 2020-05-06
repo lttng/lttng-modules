@@ -41,8 +41,8 @@
 #include <lttng-abi-old.h>
 #include <lttng-endian.h>
 #include <lttng-string-utils.h>
-#include <wrapper/ringbuffer/backend.h>
-#include <wrapper/ringbuffer/frontend.h>
+#include <ringbuffer/backend.h>
+#include <ringbuffer/frontend.h>
 #include <wrapper/time.h>
 
 #define METADATA_CACHE_DEFAULT_SIZE 4096

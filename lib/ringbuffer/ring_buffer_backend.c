@@ -18,9 +18,9 @@
 
 #include <wrapper/mm.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
-#include <wrapper/ringbuffer/config.h>
-#include <wrapper/ringbuffer/backend.h>
-#include <wrapper/ringbuffer/frontend.h>
+#include <ringbuffer/config.h>
+#include <ringbuffer/backend.h>
+#include <ringbuffer/frontend.h>
 
 /**
  * lib_ring_buffer_backend_allocate - allocate a channel buffer
