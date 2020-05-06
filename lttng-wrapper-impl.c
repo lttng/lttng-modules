@@ -21,7 +21,7 @@ static void __exit lttng_exit(void)
 
 module_exit(lttng_exit);
 
-#include "extra_version/patches.i"
+#include <generated/patches.i>
 #ifdef LTTNG_EXTRA_VERSION_GIT
 MODULE_INFO(extra_version_git, LTTNG_EXTRA_VERSION_GIT);
 #endif

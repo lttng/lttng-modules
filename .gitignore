@@ -149,3 +149,4 @@ x509.genkey
 
 # lttng-modules specific
 /extra_version
+/include/generated
