@@ -19,9 +19,9 @@ if test ! -d "${TOP_LTTNG_MODULES_DIR}/${INCLUDE_DIR}"; then
 	mkdir "${TOP_LTTNG_MODULES_DIR}/${INCLUDE_DIR}"
 fi
 
-if test ! -f "${TOP_LTTNG_MODULES_DIR}/${INCLUDE_DIR}/patches.i" || \
-	test x"$(cat "${TMPFILE}")" != x"$(cat "${TOP_LTTNG_MODULES_DIR}/${INCLUDE_DIR}/patches.i")"; then
-	mv "${TMPFILE}" "${TOP_LTTNG_MODULES_DIR}/${INCLUDE_DIR}/patches.i"
+if test ! -f "${TOP_LTTNG_MODULES_DIR}/${INCLUDE_DIR}/patches.h" || \
+	test x"$(cat "${TMPFILE}")" != x"$(cat "${TOP_LTTNG_MODULES_DIR}/${INCLUDE_DIR}/patches.h")"; then
+	mv "${TMPFILE}" "${TOP_LTTNG_MODULES_DIR}/${INCLUDE_DIR}/patches.h"
 fi
 
 rm -f "${TMPFILE}"
