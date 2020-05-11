@@ -429,6 +429,9 @@ static int dynamic_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		stack_top->u.ptr.field = gid->field;
 		break;
 	}
+
+	stack_top->type = REG_PTR;
+
 	return 0;
 
 end:
