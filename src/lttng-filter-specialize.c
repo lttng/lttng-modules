@@ -407,6 +407,7 @@ static int specialize_context_lookup(struct lttng_ctx *ctx,
 	memset(&gid, 0, sizeof(gid));
 	gid.ctx_index = idx;
 	gid.elem.type = load->object_type;
+	gid.elem.rev_bo = load->rev_bo;
 	gid.field = field;
 	data_offset = bytecode_push_data(runtime, &gid,
 		__alignof__(gid), sizeof(gid));
@@ -477,6 +478,7 @@ static int specialize_payload_lookup(const struct lttng_event_desc *event_desc,
 	memset(&gid, 0, sizeof(gid));
 	gid.offset = field_offset;
 	gid.elem.type = load->object_type;
+	gid.elem.rev_bo = load->rev_bo;
 	gid.field = field;
 	data_offset = bytecode_push_data(runtime, &gid,
 		__alignof__(gid), sizeof(gid));
