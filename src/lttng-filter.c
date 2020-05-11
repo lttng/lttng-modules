@@ -459,7 +459,7 @@ int _lttng_filter_link_bytecode(const struct lttng_event_desc *event_desc,
 	return 0;
 
 link_error:
-	runtime->p.filter = lttng_filter_false;
+	runtime->p.filter = lttng_filter_interpret_bytecode_false;
 	runtime->p.link_failed = 1;
 	list_add_rcu(&runtime->p.node, insert_loc);
 alloc_error:
@@ -472,7 +472,7 @@ void lttng_filter_sync_state(struct lttng_bytecode_runtime *runtime)
 	struct lttng_filter_bytecode_node *bc = runtime->bc;
 
 	if (!bc->enabler->enabled || runtime->link_failed)
-		runtime->filter = lttng_filter_false;
+		runtime->filter = lttng_filter_interpret_bytecode_false;
 	else
 		runtime->filter = lttng_filter_interpret_bytecode;
 }

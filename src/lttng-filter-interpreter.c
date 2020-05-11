@@ -15,8 +15,6 @@
 #include <lttng/filter.h>
 #include <lttng/string-utils.h>
 
-LTTNG_STACK_FRAME_NON_STANDARD(lttng_filter_interpret_bytecode);
-
 /*
  * get_char should be called with page fault handler disabled if it is expected
  * to handle user-space read.
@@ -209,7 +207,7 @@ int stack_strcmp(struct estack *stack, int top, const char *cmp_type)
 	return diff;
 }
 
-uint64_t lttng_filter_false(void *filter_data,
+uint64_t lttng_filter_interpret_bytecode_false(void *filter_data,
 		struct lttng_probe_ctx *lttng_probe_ctx,
 		const char *filter_stack_data)
 {
@@ -361,13 +359,6 @@ static int dynamic_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 	int ret;
 	const struct filter_get_index_data *gid;
 
-	/*
-	 * Types nested within variants need to perform dynamic lookup
-	 * based on the field descriptions. LTTng-UST does not implement
-	 * variants for now.
-	 */
-	if (stack_top->u.ptr.field)
-		return -EINVAL;
 	gid = (const struct filter_get_index_data *) &runtime->data[index];
 	switch (stack_top->u.ptr.type) {
 	case LOAD_OBJECT:
@@ -383,7 +374,7 @@ static int dynamic_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			stack_top->u.ptr.ptr = ptr;
 			stack_top->u.ptr.object_type = gid->elem.type;
 			stack_top->u.ptr.rev_bo = gid->elem.rev_bo;
-			/* field is only used for types nested within variants. */
+			BUG_ON(stack_top->u.ptr.field->type.atype != atype_array_nestable);
 			stack_top->u.ptr.field = NULL;
 			break;
 		}
@@ -402,7 +393,7 @@ static int dynamic_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			stack_top->u.ptr.ptr = ptr;
 			stack_top->u.ptr.object_type = gid->elem.type;
 			stack_top->u.ptr.rev_bo = gid->elem.rev_bo;
-			/* field is only used for types nested within variants. */
+			BUG_ON(stack_top->u.ptr.field->type.atype != atype_sequence_nestable);
 			stack_top->u.ptr.field = NULL;
 			break;
 		}
@@ -435,8 +426,7 @@ static int dynamic_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			stack_top->u.ptr.ptr = *(const char * const *) stack_top->u.ptr.ptr;
 		stack_top->u.ptr.object_type = gid->elem.type;
 		stack_top->u.ptr.type = LOAD_OBJECT;
-		/* field is only used for types nested within variants. */
-		stack_top->u.ptr.field = NULL;
+		stack_top->u.ptr.field = gid->field;
 		break;
 	}
 	return 0;
@@ -603,16 +593,86 @@ end:
 	return ret;
 }
 
+static
+int lttng_bytecode_interpret_format_output(struct estack_entry *ax,
+		struct lttng_interpreter_output *output)
+{
+	int ret;
+
+again:
+	switch (ax->type) {
+	case REG_S64:
+		output->type = LTTNG_INTERPRETER_TYPE_S64;
+		output->u.s = ax->u.v;
+		break;
+	case REG_U64:
+		output->type = LTTNG_INTERPRETER_TYPE_U64;
+		output->u.u = (uint64_t) ax->u.v;
+		break;
+	case REG_STRING:
+		output->type = LTTNG_INTERPRETER_TYPE_STRING;
+		output->u.str.str = ax->u.s.str;
+		output->u.str.len = ax->u.s.seq_len;
+		break;
+	case REG_PTR:
+		switch (ax->u.ptr.object_type) {
+		case OBJECT_TYPE_S8:
+		case OBJECT_TYPE_S16:
+		case OBJECT_TYPE_S32:
+		case OBJECT_TYPE_S64:
+		case OBJECT_TYPE_U8:
+		case OBJECT_TYPE_U16:
+		case OBJECT_TYPE_U32:
+		case OBJECT_TYPE_U64:
+		case OBJECT_TYPE_DOUBLE:
+		case OBJECT_TYPE_STRING:
+		case OBJECT_TYPE_STRING_SEQUENCE:
+			ret = dynamic_load_field(ax);
+			if (ret)
+				return ret;
+			/* Retry after loading ptr into stack top. */
+			goto again;
+		case OBJECT_TYPE_SEQUENCE:
+			output->type = LTTNG_INTERPRETER_TYPE_SEQUENCE;
+			output->u.sequence.ptr = *(const char **) (ax->u.ptr.ptr + sizeof(unsigned long));
+			output->u.sequence.nr_elem = *(unsigned long *) ax->u.ptr.ptr;
+			output->u.sequence.nested_type = ax->u.ptr.field->type.u.sequence_nestable.elem_type;
+			break;
+		case OBJECT_TYPE_ARRAY:
+			/* Skip count (unsigned long) */
+			output->type = LTTNG_INTERPRETER_TYPE_SEQUENCE;
+			output->u.sequence.ptr = *(const char **) (ax->u.ptr.ptr + sizeof(unsigned long));
+			output->u.sequence.nr_elem = ax->u.ptr.field->type.u.array_nestable.length;
+			output->u.sequence.nested_type = ax->u.ptr.field->type.u.array_nestable.elem_type;
+			break;
+		case OBJECT_TYPE_STRUCT:
+		case OBJECT_TYPE_VARIANT:
+		default:
+			return -EINVAL;
+		}
+
+		break;
+	case REG_STAR_GLOB_STRING:
+	case REG_TYPE_UNKNOWN:
+	default:
+		return -EINVAL;
+	}
+
+	return LTTNG_FILTER_RECORD_FLAG;
+}
+
 /*
  * Return 0 (discard), or raise the 0x1 flag (log event).
  * Currently, other flags are kept for future extensions and have no
  * effect.
  */
-uint64_t lttng_filter_interpret_bytecode(void *filter_data,
+static
+uint64_t bytecode_interpret(void *interpreter_data,
 		struct lttng_probe_ctx *lttng_probe_ctx,
-		const char *filter_stack_data)
+		const char *interpreter_stack_data,
+		struct lttng_interpreter_output *output)
 {
-	struct bytecode_runtime *bytecode = filter_data;
+	struct bytecode_runtime *bytecode = interpreter_data;
 	void *pc, *next_pc, *start_pc;
 	int ret = -EINVAL;
 	uint64_t retval = 0;
@@ -786,6 +846,12 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 			case REG_DOUBLE:
 			case REG_STRING:
 			case REG_PTR:
+				if (!output) {
+					ret = -EINVAL;
+					goto end;
+				}
+				retval = 0;
+				break;
 			case REG_STAR_GLOB_STRING:
 			case REG_TYPE_UNKNOWN:
 				ret = -EINVAL;
@@ -1188,7 +1254,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 				ref->offset);
 			estack_push(stack, top, ax, bx, ax_t, bx_t);
 			estack_ax(stack, top)->u.s.str =
-				*(const char * const *) &filter_stack_data[ref->offset];
+				*(const char * const *) &interpreter_stack_data[ref->offset];
 			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
 				dbg_printk("Filter warning: loading a NULL string.\n");
 				ret = -EINVAL;
@@ -1213,9 +1279,9 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 				ref->offset);
 			estack_push(stack, top, ax, bx, ax_t, bx_t);
 			estack_ax(stack, top)->u.s.seq_len =
-				*(unsigned long *) &filter_stack_data[ref->offset];
+				*(unsigned long *) &interpreter_stack_data[ref->offset];
 			estack_ax(stack, top)->u.s.str =
-				*(const char **) (&filter_stack_data[ref->offset
+				*(const char **) (&interpreter_stack_data[ref->offset
 								+ sizeof(unsigned long)]);
 			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
 				dbg_printk("Filter warning: loading a NULL sequence.\n");
@@ -1238,7 +1304,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 				ref->offset);
 			estack_push(stack, top, ax, bx, ax_t, bx_t);
 			estack_ax_v =
-				((struct literal_numeric *) &filter_stack_data[ref->offset])->v;
+				((struct literal_numeric *) &interpreter_stack_data[ref->offset])->v;
 			estack_ax_t = REG_S64;
 			dbg_printk("ref load s64 %lld\n",
 				(long long) estack_ax_v);
@@ -1387,7 +1453,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 				ref->offset);
 			estack_push(stack, top, ax, bx, ax_t, bx_t);
 			estack_ax(stack, top)->u.s.user_str =
-				*(const char * const *) &filter_stack_data[ref->offset];
+				*(const char * const *) &interpreter_stack_data[ref->offset];
 			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
 				dbg_printk("Filter warning: loading a NULL string.\n");
 				ret = -EINVAL;
@@ -1412,9 +1478,9 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 				ref->offset);
 			estack_push(stack, top, ax, bx, ax_t, bx_t);
 			estack_ax(stack, top)->u.s.seq_len =
-				*(unsigned long *) &filter_stack_data[ref->offset];
+				*(unsigned long *) &interpreter_stack_data[ref->offset];
 			estack_ax(stack, top)->u.s.user_str =
-				*(const char **) (&filter_stack_data[ref->offset
+				*(const char **) (&interpreter_stack_data[ref->offset
 								+ sizeof(unsigned long)]);
 			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
 				dbg_printk("Filter warning: loading a NULL sequence.\n");
@@ -1451,7 +1517,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 			dbg_printk("op get app payload root\n");
 			estack_push(stack, top, ax, bx, ax_t, bx_t);
 			estack_ax(stack, top)->u.ptr.type = LOAD_ROOT_PAYLOAD;
-			estack_ax(stack, top)->u.ptr.ptr = filter_stack_data;
+			estack_ax(stack, top)->u.ptr.ptr = interpreter_stack_data;
 			/* "field" only needed for variants. */
 			estack_ax(stack, top)->u.ptr.field = NULL;
 			estack_ax(stack, top)->type = REG_PTR;
@@ -1656,7 +1722,22 @@ end:
 	/* Return _DISCARD on error. */
 	if (ret)
 		return LTTNG_FILTER_DISCARD;
+
+	if (output) {
+		return lttng_bytecode_interpret_format_output(
+				estack_ax(stack, top), output);
+	}
+
 	return retval;
+}
+LTTNG_STACK_FRAME_NON_STANDARD(bytecode_interpret);
+
+uint64_t lttng_filter_interpret_bytecode(void *filter_data,
+		struct lttng_probe_ctx *lttng_probe_ctx,
+		const char *filter_stack_data)
+{
+	return bytecode_interpret(filter_data, lttng_probe_ctx,
+			filter_stack_data, NULL);
 }
 
 #undef START_OP
