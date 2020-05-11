@@ -511,7 +511,7 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 	{
 		uint16_t tmp;
 
-		dbg_printk("op load field s16\n");
+		dbg_printk("op load field u16\n");
 		tmp = *(uint16_t *) stack_top->u.ptr.ptr;
 		if (stack_top->u.ptr.rev_bo)
 			__swab16s(&tmp);
