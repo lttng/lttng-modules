@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: MIT
  *
- * lttng-filter-interpreter.c
+ * lttng-bytecode-interpreter.c
  *
- * LTTng modules filter interpreter.
+ * LTTng modules bytecode interpreter.
  *
  * Copyright (C) 2010-2016 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */
@@ -12,7 +12,7 @@
 #include <wrapper/types.h>
 #include <linux/swab.h>
 
-#include <lttng/filter.h>
+#include <lttng/lttng-bytecode.h>
 #include <lttng/string-utils.h>
 
 /*
@@ -207,11 +207,11 @@ int stack_strcmp(struct estack *stack, int top, const char *cmp_type)
 	return diff;
 }
 
-uint64_t lttng_filter_interpret_bytecode_false(void *filter_data,
+uint64_t lttng_bytecode_filter_interpret_false(void *filter_data,
 		struct lttng_probe_ctx *lttng_probe_ctx,
 		const char *filter_stack_data)
 {
-	return LTTNG_FILTER_DISCARD;
+	return LTTNG_INTERPRETER_DISCARD;
 }
 
 #ifdef INTERPRETER_USE_SWITCH
@@ -225,9 +225,9 @@ uint64_t lttng_filter_interpret_bytecode_false(void *filter_data,
 	for (pc = next_pc = start_pc; pc - start_pc < bytecode->len;	\
 			pc = next_pc) {					\
 		dbg_printk("LTTng: Executing op %s (%u)\n",		\
-			lttng_filter_print_op((unsigned int) *(filter_opcode_t *) pc), \
-			(unsigned int) *(filter_opcode_t *) pc); 	\
-		switch (*(filter_opcode_t *) pc)	{
+			lttng_bytecode_print_op((unsigned int) *(bytecode_opcode_t *) pc), \
+			(unsigned int) *(bytecode_opcode_t *) pc); 	\
+		switch (*(bytecode_opcode_t *) pc)	{
 
 #define OP(name)	case name
 
@@ -247,14 +247,14 @@ uint64_t lttng_filter_interpret_bytecode_false(void *filter_data,
 	pc = next_pc = start_pc;					\
 	if (unlikely(pc - start_pc >= bytecode->len))			\
 		goto end;						\
-	goto *dispatch[*(filter_opcode_t *) pc];
+	goto *dispatch[*(bytecode_opcode_t *) pc];
 
 #define OP(name)							\
 LABEL_##name
 
 #define PO								\
 		pc = next_pc;						\
-		goto *dispatch[*(filter_opcode_t *) pc];
+		goto *dispatch[*(bytecode_opcode_t *) pc];
 
 #define END_OP
 
@@ -310,11 +310,11 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 	}
 	case atype_array_nestable:
 		if (!lttng_is_bytewise_integer(field->type.u.array_nestable.elem_type)) {
-			printk(KERN_WARNING "LTTng: filter: Array nesting only supports integer types.\n");
+			printk(KERN_WARNING "LTTng: bytecode: Array nesting only supports integer types.\n");
 			return -EINVAL;
 		}
 		if (field->type.u.array_nestable.elem_type->u.integer.encoding == lttng_encode_none) {
-			printk(KERN_WARNING "LTTng: filter: Only string arrays are supported for contexts.\n");
+			printk(KERN_WARNING "LTTng: bytecode: Only string arrays are supported for contexts.\n");
 			return -EINVAL;
 		}
 		ptr->object_type = OBJECT_TYPE_STRING;
@@ -323,11 +323,11 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		break;
 	case atype_sequence_nestable:
 		if (!lttng_is_bytewise_integer(field->type.u.sequence_nestable.elem_type)) {
-			printk(KERN_WARNING "LTTng: filter: Sequence nesting only supports integer types.\n");
+			printk(KERN_WARNING "LTTng: bytecode: Sequence nesting only supports integer types.\n");
 			return -EINVAL;
 		}
 		if (field->type.u.sequence_nestable.elem_type->u.integer.encoding == lttng_encode_none) {
-			printk(KERN_WARNING "LTTng: filter: Only string sequences are supported for contexts.\n");
+			printk(KERN_WARNING "LTTng: bytecode: Only string sequences are supported for contexts.\n");
 			return -EINVAL;
 		}
 		ptr->object_type = OBJECT_TYPE_STRING;
@@ -340,13 +340,13 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		ptr->ptr = v.str;
 		break;
 	case atype_struct_nestable:
-		printk(KERN_WARNING "LTTng: filter: Structure type cannot be loaded.\n");
+		printk(KERN_WARNING "LTTng: bytecode: Structure type cannot be loaded.\n");
 		return -EINVAL;
 	case atype_variant_nestable:
-		printk(KERN_WARNING "LTTng: filter: Variant type cannot be loaded.\n");
+		printk(KERN_WARNING "LTTng: bytecode: Variant type cannot be loaded.\n");
 		return -EINVAL;
 	default:
-		printk(KERN_WARNING "LTTng: filter: Unknown type: %d", (int) field->type.atype);
+		printk(KERN_WARNING "LTTng: bytecode: Unknown type: %d", (int) field->type.atype);
 		return -EINVAL;
 	}
 	return 0;
@@ -357,9 +357,9 @@ static int dynamic_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		uint64_t index, struct estack_entry *stack_top)
 {
 	int ret;
-	const struct filter_get_index_data *gid;
+	const struct bytecode_get_index_data *gid;
 
-	gid = (const struct filter_get_index_data *) &runtime->data[index];
+	gid = (const struct bytecode_get_index_data *) &runtime->data[index];
 	switch (stack_top->u.ptr.type) {
 	case LOAD_OBJECT:
 		switch (stack_top->u.ptr.object_type) {
@@ -398,12 +398,12 @@ static int dynamic_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			break;
 		}
 		case OBJECT_TYPE_STRUCT:
-			printk(KERN_WARNING "LTTng: filter: Nested structures are not supported yet.\n");
+			printk(KERN_WARNING "LTTng: bytecode: Nested structures are not supported yet.\n");
 			ret = -EINVAL;
 			goto end;
 		case OBJECT_TYPE_VARIANT:
 		default:
-			printk(KERN_WARNING "LTTng: filter: Unexpected get index type %d",
+			printk(KERN_WARNING "LTTng: bytecode: Unexpected get index type %d",
 				(int) stack_top->u.ptr.object_type);
 			ret = -EINVAL;
 			goto end;
@@ -450,7 +450,7 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 	case LOAD_ROOT_APP_CONTEXT:
 	case LOAD_ROOT_PAYLOAD:
 	default:
-		dbg_printk("Filter warning: cannot load root, missing field name.\n");
+		dbg_printk("Bytecode warning: cannot load root, missing field name.\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -545,7 +545,7 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 		str = (const char *) stack_top->u.ptr.ptr;
 		stack_top->u.s.str = str;
 		if (unlikely(!stack_top->u.s.str)) {
-			dbg_printk("Filter warning: loading a NULL string.\n");
+			dbg_printk("Bytecode warning: loading a NULL string.\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -564,7 +564,7 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 		stack_top->u.s.seq_len = *(unsigned long *) ptr;
 		stack_top->u.s.str = *(const char **) (ptr + sizeof(unsigned long));
 		if (unlikely(!stack_top->u.s.str)) {
-			dbg_printk("Filter warning: loading a NULL sequence.\n");
+			dbg_printk("Bytecode warning: loading a NULL sequence.\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -587,7 +587,7 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 	case OBJECT_TYPE_ARRAY:
 	case OBJECT_TYPE_STRUCT:
 	case OBJECT_TYPE_VARIANT:
-		printk(KERN_WARNING "LTTng: filter: Sequences, arrays, struct and variant cannot be loaded (nested types).\n");
+		printk(KERN_WARNING "LTTng: bytecode: Sequences, arrays, struct and variant cannot be loaded (nested types).\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -662,7 +662,7 @@ again:
 		return -EINVAL;
 	}
 
-	return LTTNG_FILTER_RECORD_FLAG;
+	return LTTNG_INTERPRETER_RECORD_FLAG;
 }
 
 /*
@@ -684,164 +684,164 @@ uint64_t bytecode_interpret(void *interpreter_data,
 	struct estack *stack = &_stack;
 	register int64_t ax = 0, bx = 0;
 	register enum entry_type ax_t = REG_TYPE_UNKNOWN, bx_t = REG_TYPE_UNKNOWN;
-	register int top = FILTER_STACK_EMPTY;
+	register int top = INTERPRETER_STACK_EMPTY;
 #ifndef INTERPRETER_USE_SWITCH
-	static void *dispatch[NR_FILTER_OPS] = {
-		[ FILTER_OP_UNKNOWN ] = &&LABEL_FILTER_OP_UNKNOWN,
+	static void *dispatch[NR_BYTECODE_OPS] = {
+		[ BYTECODE_OP_UNKNOWN ] = &&LABEL_BYTECODE_OP_UNKNOWN,
 
-		[ FILTER_OP_RETURN ] = &&LABEL_FILTER_OP_RETURN,
+		[ BYTECODE_OP_RETURN ] = &&LABEL_BYTECODE_OP_RETURN,
 
 		/* binary */
-		[ FILTER_OP_MUL ] = &&LABEL_FILTER_OP_MUL,
-		[ FILTER_OP_DIV ] = &&LABEL_FILTER_OP_DIV,
-		[ FILTER_OP_MOD ] = &&LABEL_FILTER_OP_MOD,
-		[ FILTER_OP_PLUS ] = &&LABEL_FILTER_OP_PLUS,
-		[ FILTER_OP_MINUS ] = &&LABEL_FILTER_OP_MINUS,
-		[ FILTER_OP_BIT_RSHIFT ] = &&LABEL_FILTER_OP_BIT_RSHIFT,
-		[ FILTER_OP_BIT_LSHIFT ] = &&LABEL_FILTER_OP_BIT_LSHIFT,
-		[ FILTER_OP_BIT_AND ] = &&LABEL_FILTER_OP_BIT_AND,
-		[ FILTER_OP_BIT_OR ] = &&LABEL_FILTER_OP_BIT_OR,
-		[ FILTER_OP_BIT_XOR ] = &&LABEL_FILTER_OP_BIT_XOR,
+		[ BYTECODE_OP_MUL ] = &&LABEL_BYTECODE_OP_MUL,
+		[ BYTECODE_OP_DIV ] = &&LABEL_BYTECODE_OP_DIV,
+		[ BYTECODE_OP_MOD ] = &&LABEL_BYTECODE_OP_MOD,
+		[ BYTECODE_OP_PLUS ] = &&LABEL_BYTECODE_OP_PLUS,
+		[ BYTECODE_OP_MINUS ] = &&LABEL_BYTECODE_OP_MINUS,
+		[ BYTECODE_OP_BIT_RSHIFT ] = &&LABEL_BYTECODE_OP_BIT_RSHIFT,
+		[ BYTECODE_OP_BIT_LSHIFT ] = &&LABEL_BYTECODE_OP_BIT_LSHIFT,
+		[ BYTECODE_OP_BIT_AND ] = &&LABEL_BYTECODE_OP_BIT_AND,
+		[ BYTECODE_OP_BIT_OR ] = &&LABEL_BYTECODE_OP_BIT_OR,
+		[ BYTECODE_OP_BIT_XOR ] = &&LABEL_BYTECODE_OP_BIT_XOR,
 
 		/* binary comparators */
-		[ FILTER_OP_EQ ] = &&LABEL_FILTER_OP_EQ,
-		[ FILTER_OP_NE ] = &&LABEL_FILTER_OP_NE,
-		[ FILTER_OP_GT ] = &&LABEL_FILTER_OP_GT,
-		[ FILTER_OP_LT ] = &&LABEL_FILTER_OP_LT,
-		[ FILTER_OP_GE ] = &&LABEL_FILTER_OP_GE,
-		[ FILTER_OP_LE ] = &&LABEL_FILTER_OP_LE,
+		[ BYTECODE_OP_EQ ] = &&LABEL_BYTECODE_OP_EQ,
+		[ BYTECODE_OP_NE ] = &&LABEL_BYTECODE_OP_NE,
+		[ BYTECODE_OP_GT ] = &&LABEL_BYTECODE_OP_GT,
+		[ BYTECODE_OP_LT ] = &&LABEL_BYTECODE_OP_LT,
+		[ BYTECODE_OP_GE ] = &&LABEL_BYTECODE_OP_GE,
+		[ BYTECODE_OP_LE ] = &&LABEL_BYTECODE_OP_LE,
 
 		/* string binary comparator */
-		[ FILTER_OP_EQ_STRING ] = &&LABEL_FILTER_OP_EQ_STRING,
-		[ FILTER_OP_NE_STRING ] = &&LABEL_FILTER_OP_NE_STRING,
-		[ FILTER_OP_GT_STRING ] = &&LABEL_FILTER_OP_GT_STRING,
-		[ FILTER_OP_LT_STRING ] = &&LABEL_FILTER_OP_LT_STRING,
-		[ FILTER_OP_GE_STRING ] = &&LABEL_FILTER_OP_GE_STRING,
-		[ FILTER_OP_LE_STRING ] = &&LABEL_FILTER_OP_LE_STRING,
+		[ BYTECODE_OP_EQ_STRING ] = &&LABEL_BYTECODE_OP_EQ_STRING,
+		[ BYTECODE_OP_NE_STRING ] = &&LABEL_BYTECODE_OP_NE_STRING,
+		[ BYTECODE_OP_GT_STRING ] = &&LABEL_BYTECODE_OP_GT_STRING,
+		[ BYTECODE_OP_LT_STRING ] = &&LABEL_BYTECODE_OP_LT_STRING,
+		[ BYTECODE_OP_GE_STRING ] = &&LABEL_BYTECODE_OP_GE_STRING,
+		[ BYTECODE_OP_LE_STRING ] = &&LABEL_BYTECODE_OP_LE_STRING,
 
 		/* globbing pattern binary comparator */
-		[ FILTER_OP_EQ_STAR_GLOB_STRING ] = &&LABEL_FILTER_OP_EQ_STAR_GLOB_STRING,
-		[ FILTER_OP_NE_STAR_GLOB_STRING ] = &&LABEL_FILTER_OP_NE_STAR_GLOB_STRING,
+		[ BYTECODE_OP_EQ_STAR_GLOB_STRING ] = &&LABEL_BYTECODE_OP_EQ_STAR_GLOB_STRING,
+		[ BYTECODE_OP_NE_STAR_GLOB_STRING ] = &&LABEL_BYTECODE_OP_NE_STAR_GLOB_STRING,
 
 		/* s64 binary comparator */
-		[ FILTER_OP_EQ_S64 ] = &&LABEL_FILTER_OP_EQ_S64,
-		[ FILTER_OP_NE_S64 ] = &&LABEL_FILTER_OP_NE_S64,
-		[ FILTER_OP_GT_S64 ] = &&LABEL_FILTER_OP_GT_S64,
-		[ FILTER_OP_LT_S64 ] = &&LABEL_FILTER_OP_LT_S64,
-		[ FILTER_OP_GE_S64 ] = &&LABEL_FILTER_OP_GE_S64,
-		[ FILTER_OP_LE_S64 ] = &&LABEL_FILTER_OP_LE_S64,
+		[ BYTECODE_OP_EQ_S64 ] = &&LABEL_BYTECODE_OP_EQ_S64,
+		[ BYTECODE_OP_NE_S64 ] = &&LABEL_BYTECODE_OP_NE_S64,
+		[ BYTECODE_OP_GT_S64 ] = &&LABEL_BYTECODE_OP_GT_S64,
+		[ BYTECODE_OP_LT_S64 ] = &&LABEL_BYTECODE_OP_LT_S64,
+		[ BYTECODE_OP_GE_S64 ] = &&LABEL_BYTECODE_OP_GE_S64,
+		[ BYTECODE_OP_LE_S64 ] = &&LABEL_BYTECODE_OP_LE_S64,
 
 		/* double binary comparator */
-		[ FILTER_OP_EQ_DOUBLE ] = &&LABEL_FILTER_OP_EQ_DOUBLE,
-		[ FILTER_OP_NE_DOUBLE ] = &&LABEL_FILTER_OP_NE_DOUBLE,
-		[ FILTER_OP_GT_DOUBLE ] = &&LABEL_FILTER_OP_GT_DOUBLE,
-		[ FILTER_OP_LT_DOUBLE ] = &&LABEL_FILTER_OP_LT_DOUBLE,
-		[ FILTER_OP_GE_DOUBLE ] = &&LABEL_FILTER_OP_GE_DOUBLE,
-		[ FILTER_OP_LE_DOUBLE ] = &&LABEL_FILTER_OP_LE_DOUBLE,
+		[ BYTECODE_OP_EQ_DOUBLE ] = &&LABEL_BYTECODE_OP_EQ_DOUBLE,
+		[ BYTECODE_OP_NE_DOUBLE ] = &&LABEL_BYTECODE_OP_NE_DOUBLE,
+		[ BYTECODE_OP_GT_DOUBLE ] = &&LABEL_BYTECODE_OP_GT_DOUBLE,
+		[ BYTECODE_OP_LT_DOUBLE ] = &&LABEL_BYTECODE_OP_LT_DOUBLE,
+		[ BYTECODE_OP_GE_DOUBLE ] = &&LABEL_BYTECODE_OP_GE_DOUBLE,
+		[ BYTECODE_OP_LE_DOUBLE ] = &&LABEL_BYTECODE_OP_LE_DOUBLE,
 
 		/* Mixed S64-double binary comparators */
-		[ FILTER_OP_EQ_DOUBLE_S64 ] = &&LABEL_FILTER_OP_EQ_DOUBLE_S64,
-		[ FILTER_OP_NE_DOUBLE_S64 ] = &&LABEL_FILTER_OP_NE_DOUBLE_S64,
-		[ FILTER_OP_GT_DOUBLE_S64 ] = &&LABEL_FILTER_OP_GT_DOUBLE_S64,
-		[ FILTER_OP_LT_DOUBLE_S64 ] = &&LABEL_FILTER_OP_LT_DOUBLE_S64,
-		[ FILTER_OP_GE_DOUBLE_S64 ] = &&LABEL_FILTER_OP_GE_DOUBLE_S64,
-		[ FILTER_OP_LE_DOUBLE_S64 ] = &&LABEL_FILTER_OP_LE_DOUBLE_S64,
+		[ BYTECODE_OP_EQ_DOUBLE_S64 ] = &&LABEL_BYTECODE_OP_EQ_DOUBLE_S64,
+		[ BYTECODE_OP_NE_DOUBLE_S64 ] = &&LABEL_BYTECODE_OP_NE_DOUBLE_S64,
+		[ BYTECODE_OP_GT_DOUBLE_S64 ] = &&LABEL_BYTECODE_OP_GT_DOUBLE_S64,
+		[ BYTECODE_OP_LT_DOUBLE_S64 ] = &&LABEL_BYTECODE_OP_LT_DOUBLE_S64,
+		[ BYTECODE_OP_GE_DOUBLE_S64 ] = &&LABEL_BYTECODE_OP_GE_DOUBLE_S64,
+		[ BYTECODE_OP_LE_DOUBLE_S64 ] = &&LABEL_BYTECODE_OP_LE_DOUBLE_S64,
 
-		[ FILTER_OP_EQ_S64_DOUBLE ] = &&LABEL_FILTER_OP_EQ_S64_DOUBLE,
-		[ FILTER_OP_NE_S64_DOUBLE ] = &&LABEL_FILTER_OP_NE_S64_DOUBLE,
-		[ FILTER_OP_GT_S64_DOUBLE ] = &&LABEL_FILTER_OP_GT_S64_DOUBLE,
-		[ FILTER_OP_LT_S64_DOUBLE ] = &&LABEL_FILTER_OP_LT_S64_DOUBLE,
-		[ FILTER_OP_GE_S64_DOUBLE ] = &&LABEL_FILTER_OP_GE_S64_DOUBLE,
-		[ FILTER_OP_LE_S64_DOUBLE ] = &&LABEL_FILTER_OP_LE_S64_DOUBLE,
+		[ BYTECODE_OP_EQ_S64_DOUBLE ] = &&LABEL_BYTECODE_OP_EQ_S64_DOUBLE,
+		[ BYTECODE_OP_NE_S64_DOUBLE ] = &&LABEL_BYTECODE_OP_NE_S64_DOUBLE,
+		[ BYTECODE_OP_GT_S64_DOUBLE ] = &&LABEL_BYTECODE_OP_GT_S64_DOUBLE,
+		[ BYTECODE_OP_LT_S64_DOUBLE ] = &&LABEL_BYTECODE_OP_LT_S64_DOUBLE,
+		[ BYTECODE_OP_GE_S64_DOUBLE ] = &&LABEL_BYTECODE_OP_GE_S64_DOUBLE,
+		[ BYTECODE_OP_LE_S64_DOUBLE ] = &&LABEL_BYTECODE_OP_LE_S64_DOUBLE,
 
 		/* unary */
-		[ FILTER_OP_UNARY_PLUS ] = &&LABEL_FILTER_OP_UNARY_PLUS,
-		[ FILTER_OP_UNARY_MINUS ] = &&LABEL_FILTER_OP_UNARY_MINUS,
-		[ FILTER_OP_UNARY_NOT ] = &&LABEL_FILTER_OP_UNARY_NOT,
-		[ FILTER_OP_UNARY_PLUS_S64 ] = &&LABEL_FILTER_OP_UNARY_PLUS_S64,
-		[ FILTER_OP_UNARY_MINUS_S64 ] = &&LABEL_FILTER_OP_UNARY_MINUS_S64,
-		[ FILTER_OP_UNARY_NOT_S64 ] = &&LABEL_FILTER_OP_UNARY_NOT_S64,
-		[ FILTER_OP_UNARY_PLUS_DOUBLE ] = &&LABEL_FILTER_OP_UNARY_PLUS_DOUBLE,
-		[ FILTER_OP_UNARY_MINUS_DOUBLE ] = &&LABEL_FILTER_OP_UNARY_MINUS_DOUBLE,
-		[ FILTER_OP_UNARY_NOT_DOUBLE ] = &&LABEL_FILTER_OP_UNARY_NOT_DOUBLE,
+		[ BYTECODE_OP_UNARY_PLUS ] = &&LABEL_BYTECODE_OP_UNARY_PLUS,
+		[ BYTECODE_OP_UNARY_MINUS ] = &&LABEL_BYTECODE_OP_UNARY_MINUS,
+		[ BYTECODE_OP_UNARY_NOT ] = &&LABEL_BYTECODE_OP_UNARY_NOT,
+		[ BYTECODE_OP_UNARY_PLUS_S64 ] = &&LABEL_BYTECODE_OP_UNARY_PLUS_S64,
+		[ BYTECODE_OP_UNARY_MINUS_S64 ] = &&LABEL_BYTECODE_OP_UNARY_MINUS_S64,
+		[ BYTECODE_OP_UNARY_NOT_S64 ] = &&LABEL_BYTECODE_OP_UNARY_NOT_S64,
+		[ BYTECODE_OP_UNARY_PLUS_DOUBLE ] = &&LABEL_BYTECODE_OP_UNARY_PLUS_DOUBLE,
+		[ BYTECODE_OP_UNARY_MINUS_DOUBLE ] = &&LABEL_BYTECODE_OP_UNARY_MINUS_DOUBLE,
+		[ BYTECODE_OP_UNARY_NOT_DOUBLE ] = &&LABEL_BYTECODE_OP_UNARY_NOT_DOUBLE,
 
 		/* logical */
-		[ FILTER_OP_AND ] = &&LABEL_FILTER_OP_AND,
-		[ FILTER_OP_OR ] = &&LABEL_FILTER_OP_OR,
+		[ BYTECODE_OP_AND ] = &&LABEL_BYTECODE_OP_AND,
+		[ BYTECODE_OP_OR ] = &&LABEL_BYTECODE_OP_OR,
 
 		/* load field ref */
-		[ FILTER_OP_LOAD_FIELD_REF ] = &&LABEL_FILTER_OP_LOAD_FIELD_REF,
-		[ FILTER_OP_LOAD_FIELD_REF_STRING ] = &&LABEL_FILTER_OP_LOAD_FIELD_REF_STRING,
-		[ FILTER_OP_LOAD_FIELD_REF_SEQUENCE ] = &&LABEL_FILTER_OP_LOAD_FIELD_REF_SEQUENCE,
-		[ FILTER_OP_LOAD_FIELD_REF_S64 ] = &&LABEL_FILTER_OP_LOAD_FIELD_REF_S64,
-		[ FILTER_OP_LOAD_FIELD_REF_DOUBLE ] = &&LABEL_FILTER_OP_LOAD_FIELD_REF_DOUBLE,
+		[ BYTECODE_OP_LOAD_FIELD_REF ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_REF,
+		[ BYTECODE_OP_LOAD_FIELD_REF_STRING ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_REF_STRING,
+		[ BYTECODE_OP_LOAD_FIELD_REF_SEQUENCE ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_REF_SEQUENCE,
+		[ BYTECODE_OP_LOAD_FIELD_REF_S64 ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_REF_S64,
+		[ BYTECODE_OP_LOAD_FIELD_REF_DOUBLE ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_REF_DOUBLE,
 
 		/* load from immediate operand */
-		[ FILTER_OP_LOAD_STRING ] = &&LABEL_FILTER_OP_LOAD_STRING,
-		[ FILTER_OP_LOAD_STAR_GLOB_STRING ] = &&LABEL_FILTER_OP_LOAD_STAR_GLOB_STRING,
-		[ FILTER_OP_LOAD_S64 ] = &&LABEL_FILTER_OP_LOAD_S64,
-		[ FILTER_OP_LOAD_DOUBLE ] = &&LABEL_FILTER_OP_LOAD_DOUBLE,
+		[ BYTECODE_OP_LOAD_STRING ] = &&LABEL_BYTECODE_OP_LOAD_STRING,
+		[ BYTECODE_OP_LOAD_STAR_GLOB_STRING ] = &&LABEL_BYTECODE_OP_LOAD_STAR_GLOB_STRING,
+		[ BYTECODE_OP_LOAD_S64 ] = &&LABEL_BYTECODE_OP_LOAD_S64,
+		[ BYTECODE_OP_LOAD_DOUBLE ] = &&LABEL_BYTECODE_OP_LOAD_DOUBLE,
 
 		/* cast */
-		[ FILTER_OP_CAST_TO_S64 ] = &&LABEL_FILTER_OP_CAST_TO_S64,
-		[ FILTER_OP_CAST_DOUBLE_TO_S64 ] = &&LABEL_FILTER_OP_CAST_DOUBLE_TO_S64,
-		[ FILTER_OP_CAST_NOP ] = &&LABEL_FILTER_OP_CAST_NOP,
+		[ BYTECODE_OP_CAST_TO_S64 ] = &&LABEL_BYTECODE_OP_CAST_TO_S64,
+		[ BYTECODE_OP_CAST_DOUBLE_TO_S64 ] = &&LABEL_BYTECODE_OP_CAST_DOUBLE_TO_S64,
+		[ BYTECODE_OP_CAST_NOP ] = &&LABEL_BYTECODE_OP_CAST_NOP,
 
 		/* get context ref */
-		[ FILTER_OP_GET_CONTEXT_REF ] = &&LABEL_FILTER_OP_GET_CONTEXT_REF,
-		[ FILTER_OP_GET_CONTEXT_REF_STRING ] = &&LABEL_FILTER_OP_GET_CONTEXT_REF_STRING,
-		[ FILTER_OP_GET_CONTEXT_REF_S64 ] = &&LABEL_FILTER_OP_GET_CONTEXT_REF_S64,
-		[ FILTER_OP_GET_CONTEXT_REF_DOUBLE ] = &&LABEL_FILTER_OP_GET_CONTEXT_REF_DOUBLE,
+		[ BYTECODE_OP_GET_CONTEXT_REF ] = &&LABEL_BYTECODE_OP_GET_CONTEXT_REF,
+		[ BYTECODE_OP_GET_CONTEXT_REF_STRING ] = &&LABEL_BYTECODE_OP_GET_CONTEXT_REF_STRING,
+		[ BYTECODE_OP_GET_CONTEXT_REF_S64 ] = &&LABEL_BYTECODE_OP_GET_CONTEXT_REF_S64,
+		[ BYTECODE_OP_GET_CONTEXT_REF_DOUBLE ] = &&LABEL_BYTECODE_OP_GET_CONTEXT_REF_DOUBLE,
 
 		/* load userspace field ref */
-		[ FILTER_OP_LOAD_FIELD_REF_USER_STRING ] = &&LABEL_FILTER_OP_LOAD_FIELD_REF_USER_STRING,
-		[ FILTER_OP_LOAD_FIELD_REF_USER_SEQUENCE ] = &&LABEL_FILTER_OP_LOAD_FIELD_REF_USER_SEQUENCE,
+		[ BYTECODE_OP_LOAD_FIELD_REF_USER_STRING ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_REF_USER_STRING,
+		[ BYTECODE_OP_LOAD_FIELD_REF_USER_SEQUENCE ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_REF_USER_SEQUENCE,
 
 		/* Instructions for recursive traversal through composed types. */
-		[ FILTER_OP_GET_CONTEXT_ROOT ] = &&LABEL_FILTER_OP_GET_CONTEXT_ROOT,
-		[ FILTER_OP_GET_APP_CONTEXT_ROOT ] = &&LABEL_FILTER_OP_GET_APP_CONTEXT_ROOT,
-		[ FILTER_OP_GET_PAYLOAD_ROOT ] = &&LABEL_FILTER_OP_GET_PAYLOAD_ROOT,
+		[ BYTECODE_OP_GET_CONTEXT_ROOT ] = &&LABEL_BYTECODE_OP_GET_CONTEXT_ROOT,
+		[ BYTECODE_OP_GET_APP_CONTEXT_ROOT ] = &&LABEL_BYTECODE_OP_GET_APP_CONTEXT_ROOT,
+		[ BYTECODE_OP_GET_PAYLOAD_ROOT ] = &&LABEL_BYTECODE_OP_GET_PAYLOAD_ROOT,
 
-		[ FILTER_OP_GET_SYMBOL ] = &&LABEL_FILTER_OP_GET_SYMBOL,
-		[ FILTER_OP_GET_SYMBOL_FIELD ] = &&LABEL_FILTER_OP_GET_SYMBOL_FIELD,
-		[ FILTER_OP_GET_INDEX_U16 ] = &&LABEL_FILTER_OP_GET_INDEX_U16,
-		[ FILTER_OP_GET_INDEX_U64 ] = &&LABEL_FILTER_OP_GET_INDEX_U64,
+		[ BYTECODE_OP_GET_SYMBOL ] = &&LABEL_BYTECODE_OP_GET_SYMBOL,
+		[ BYTECODE_OP_GET_SYMBOL_FIELD ] = &&LABEL_BYTECODE_OP_GET_SYMBOL_FIELD,
+		[ BYTECODE_OP_GET_INDEX_U16 ] = &&LABEL_BYTECODE_OP_GET_INDEX_U16,
+		[ BYTECODE_OP_GET_INDEX_U64 ] = &&LABEL_BYTECODE_OP_GET_INDEX_U64,
 
-		[ FILTER_OP_LOAD_FIELD ] = &&LABEL_FILTER_OP_LOAD_FIELD,
-		[ FILTER_OP_LOAD_FIELD_S8	 ] = &&LABEL_FILTER_OP_LOAD_FIELD_S8,
-		[ FILTER_OP_LOAD_FIELD_S16 ] = &&LABEL_FILTER_OP_LOAD_FIELD_S16,
-		[ FILTER_OP_LOAD_FIELD_S32 ] = &&LABEL_FILTER_OP_LOAD_FIELD_S32,
-		[ FILTER_OP_LOAD_FIELD_S64 ] = &&LABEL_FILTER_OP_LOAD_FIELD_S64,
-		[ FILTER_OP_LOAD_FIELD_U8 ] = &&LABEL_FILTER_OP_LOAD_FIELD_U8,
-		[ FILTER_OP_LOAD_FIELD_U16 ] = &&LABEL_FILTER_OP_LOAD_FIELD_U16,
-		[ FILTER_OP_LOAD_FIELD_U32 ] = &&LABEL_FILTER_OP_LOAD_FIELD_U32,
-		[ FILTER_OP_LOAD_FIELD_U64 ] = &&LABEL_FILTER_OP_LOAD_FIELD_U64,
-		[ FILTER_OP_LOAD_FIELD_STRING ] = &&LABEL_FILTER_OP_LOAD_FIELD_STRING,
-		[ FILTER_OP_LOAD_FIELD_SEQUENCE ] = &&LABEL_FILTER_OP_LOAD_FIELD_SEQUENCE,
-		[ FILTER_OP_LOAD_FIELD_DOUBLE ] = &&LABEL_FILTER_OP_LOAD_FIELD_DOUBLE,
+		[ BYTECODE_OP_LOAD_FIELD ] = &&LABEL_BYTECODE_OP_LOAD_FIELD,
+		[ BYTECODE_OP_LOAD_FIELD_S8	 ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_S8,
+		[ BYTECODE_OP_LOAD_FIELD_S16 ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_S16,
+		[ BYTECODE_OP_LOAD_FIELD_S32 ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_S32,
+		[ BYTECODE_OP_LOAD_FIELD_S64 ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_S64,
+		[ BYTECODE_OP_LOAD_FIELD_U8 ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_U8,
+		[ BYTECODE_OP_LOAD_FIELD_U16 ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_U16,
+		[ BYTECODE_OP_LOAD_FIELD_U32 ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_U32,
+		[ BYTECODE_OP_LOAD_FIELD_U64 ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_U64,
+		[ BYTECODE_OP_LOAD_FIELD_STRING ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_STRING,
+		[ BYTECODE_OP_LOAD_FIELD_SEQUENCE ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_SEQUENCE,
+		[ BYTECODE_OP_LOAD_FIELD_DOUBLE ] = &&LABEL_BYTECODE_OP_LOAD_FIELD_DOUBLE,
 
-		[ FILTER_OP_UNARY_BIT_NOT ] = &&LABEL_FILTER_OP_UNARY_BIT_NOT,
+		[ BYTECODE_OP_UNARY_BIT_NOT ] = &&LABEL_BYTECODE_OP_UNARY_BIT_NOT,
 
-		[ FILTER_OP_RETURN_S64 ] = &&LABEL_FILTER_OP_RETURN_S64,
+		[ BYTECODE_OP_RETURN_S64 ] = &&LABEL_BYTECODE_OP_RETURN_S64,
 	};
 #endif /* #ifndef INTERPRETER_USE_SWITCH */
 
 	START_OP
 
-		OP(FILTER_OP_UNKNOWN):
-		OP(FILTER_OP_LOAD_FIELD_REF):
-		OP(FILTER_OP_GET_CONTEXT_REF):
+		OP(BYTECODE_OP_UNKNOWN):
+		OP(BYTECODE_OP_LOAD_FIELD_REF):
+		OP(BYTECODE_OP_GET_CONTEXT_REF):
 #ifdef INTERPRETER_USE_SWITCH
 		default:
 #endif /* INTERPRETER_USE_SWITCH */
-			printk(KERN_WARNING "LTTng: filter: unknown bytecode op %u\n",
-				(unsigned int) *(filter_opcode_t *) pc);
+			printk(KERN_WARNING "LTTng: bytecode: unknown bytecode op %u\n",
+				(unsigned int) *(bytecode_opcode_t *) pc);
 			ret = -EINVAL;
 			goto end;
 
-		OP(FILTER_OP_RETURN):
-		OP(FILTER_OP_RETURN_S64):
-			/* LTTNG_FILTER_DISCARD or LTTNG_FILTER_RECORD_FLAG */
+		OP(BYTECODE_OP_RETURN):
+		OP(BYTECODE_OP_RETURN_S64):
+			/* LTTNG_INTERPRETER_DISCARD or LTTNG_INTERPRETER_RECORD_FLAG */
 			switch (estack_ax_t) {
 			case REG_S64:
 			case REG_U64:
@@ -865,28 +865,28 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			goto end;
 
 		/* binary */
-		OP(FILTER_OP_MUL):
-		OP(FILTER_OP_DIV):
-		OP(FILTER_OP_MOD):
-		OP(FILTER_OP_PLUS):
-		OP(FILTER_OP_MINUS):
-			printk(KERN_WARNING "LTTng: filter: unsupported bytecode op %u\n",
-				(unsigned int) *(filter_opcode_t *) pc);
+		OP(BYTECODE_OP_MUL):
+		OP(BYTECODE_OP_DIV):
+		OP(BYTECODE_OP_MOD):
+		OP(BYTECODE_OP_PLUS):
+		OP(BYTECODE_OP_MINUS):
+			printk(KERN_WARNING "LTTng: bytecode: unsupported bytecode op %u\n",
+				(unsigned int) *(bytecode_opcode_t *) pc);
 			ret = -EINVAL;
 			goto end;
 
-		OP(FILTER_OP_EQ):
-		OP(FILTER_OP_NE):
-		OP(FILTER_OP_GT):
-		OP(FILTER_OP_LT):
-		OP(FILTER_OP_GE):
-		OP(FILTER_OP_LE):
-			printk(KERN_WARNING "LTTng: filter: unsupported non-specialized bytecode op %u\n",
-				(unsigned int) *(filter_opcode_t *) pc);
+		OP(BYTECODE_OP_EQ):
+		OP(BYTECODE_OP_NE):
+		OP(BYTECODE_OP_GT):
+		OP(BYTECODE_OP_LT):
+		OP(BYTECODE_OP_GE):
+		OP(BYTECODE_OP_LE):
+			printk(KERN_WARNING "LTTng: bytecode: unsupported non-specialized bytecode op %u\n",
+				(unsigned int) *(bytecode_opcode_t *) pc);
 			ret = -EINVAL;
 			goto end;
 
-		OP(FILTER_OP_EQ_STRING):
+		OP(BYTECODE_OP_EQ_STRING):
 		{
 			int res;
 
@@ -897,7 +897,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct binary_op);
 			PO;
 		}
-		OP(FILTER_OP_NE_STRING):
+		OP(BYTECODE_OP_NE_STRING):
 		{
 			int res;
 
@@ -908,7 +908,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct binary_op);
 			PO;
 		}
-		OP(FILTER_OP_GT_STRING):
+		OP(BYTECODE_OP_GT_STRING):
 		{
 			int res;
 
@@ -919,7 +919,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct binary_op);
 			PO;
 		}
-		OP(FILTER_OP_LT_STRING):
+		OP(BYTECODE_OP_LT_STRING):
 		{
 			int res;
 
@@ -930,7 +930,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct binary_op);
 			PO;
 		}
-		OP(FILTER_OP_GE_STRING):
+		OP(BYTECODE_OP_GE_STRING):
 		{
 			int res;
 
@@ -941,7 +941,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct binary_op);
 			PO;
 		}
-		OP(FILTER_OP_LE_STRING):
+		OP(BYTECODE_OP_LE_STRING):
 		{
 			int res;
 
@@ -953,7 +953,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_EQ_STAR_GLOB_STRING):
+		OP(BYTECODE_OP_EQ_STAR_GLOB_STRING):
 		{
 			int res;
 
@@ -964,7 +964,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct binary_op);
 			PO;
 		}
-		OP(FILTER_OP_NE_STAR_GLOB_STRING):
+		OP(BYTECODE_OP_NE_STAR_GLOB_STRING):
 		{
 			int res;
 
@@ -976,7 +976,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_EQ_S64):
+		OP(BYTECODE_OP_EQ_S64):
 		{
 			int res;
 
@@ -987,7 +987,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct binary_op);
 			PO;
 		}
-		OP(FILTER_OP_NE_S64):
+		OP(BYTECODE_OP_NE_S64):
 		{
 			int res;
 
@@ -998,7 +998,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct binary_op);
 			PO;
 		}
-		OP(FILTER_OP_GT_S64):
+		OP(BYTECODE_OP_GT_S64):
 		{
 			int res;
 
@@ -1009,7 +1009,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct binary_op);
 			PO;
 		}
-		OP(FILTER_OP_LT_S64):
+		OP(BYTECODE_OP_LT_S64):
 		{
 			int res;
 
@@ -1020,7 +1020,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct binary_op);
 			PO;
 		}
-		OP(FILTER_OP_GE_S64):
+		OP(BYTECODE_OP_GE_S64):
 		{
 			int res;
 
@@ -1031,7 +1031,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct binary_op);
 			PO;
 		}
-		OP(FILTER_OP_LE_S64):
+		OP(BYTECODE_OP_LE_S64):
 		{
 			int res;
 
@@ -1043,35 +1043,35 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_EQ_DOUBLE):
-		OP(FILTER_OP_NE_DOUBLE):
-		OP(FILTER_OP_GT_DOUBLE):
-		OP(FILTER_OP_LT_DOUBLE):
-		OP(FILTER_OP_GE_DOUBLE):
-		OP(FILTER_OP_LE_DOUBLE):
+		OP(BYTECODE_OP_EQ_DOUBLE):
+		OP(BYTECODE_OP_NE_DOUBLE):
+		OP(BYTECODE_OP_GT_DOUBLE):
+		OP(BYTECODE_OP_LT_DOUBLE):
+		OP(BYTECODE_OP_GE_DOUBLE):
+		OP(BYTECODE_OP_LE_DOUBLE):
 		{
 			BUG_ON(1);
 			PO;
 		}
 
 		/* Mixed S64-double binary comparators */
-		OP(FILTER_OP_EQ_DOUBLE_S64):
-		OP(FILTER_OP_NE_DOUBLE_S64):
-		OP(FILTER_OP_GT_DOUBLE_S64):
-		OP(FILTER_OP_LT_DOUBLE_S64):
-		OP(FILTER_OP_GE_DOUBLE_S64):
-		OP(FILTER_OP_LE_DOUBLE_S64):
-		OP(FILTER_OP_EQ_S64_DOUBLE):
-		OP(FILTER_OP_NE_S64_DOUBLE):
-		OP(FILTER_OP_GT_S64_DOUBLE):
-		OP(FILTER_OP_LT_S64_DOUBLE):
-		OP(FILTER_OP_GE_S64_DOUBLE):
-		OP(FILTER_OP_LE_S64_DOUBLE):
+		OP(BYTECODE_OP_EQ_DOUBLE_S64):
+		OP(BYTECODE_OP_NE_DOUBLE_S64):
+		OP(BYTECODE_OP_GT_DOUBLE_S64):
+		OP(BYTECODE_OP_LT_DOUBLE_S64):
+		OP(BYTECODE_OP_GE_DOUBLE_S64):
+		OP(BYTECODE_OP_LE_DOUBLE_S64):
+		OP(BYTECODE_OP_EQ_S64_DOUBLE):
+		OP(BYTECODE_OP_NE_S64_DOUBLE):
+		OP(BYTECODE_OP_GT_S64_DOUBLE):
+		OP(BYTECODE_OP_LT_S64_DOUBLE):
+		OP(BYTECODE_OP_GE_S64_DOUBLE):
+		OP(BYTECODE_OP_LE_S64_DOUBLE):
 		{
 			BUG_ON(1);
 			PO;
 		}
-		OP(FILTER_OP_BIT_RSHIFT):
+		OP(BYTECODE_OP_BIT_RSHIFT):
 		{
 			int64_t res;
 
@@ -1092,7 +1092,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct binary_op);
 			PO;
 		}
-		OP(FILTER_OP_BIT_LSHIFT):
+		OP(BYTECODE_OP_BIT_LSHIFT):
 		{
 			int64_t res;
 
@@ -1113,7 +1113,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct binary_op);
 			PO;
 		}
-		OP(FILTER_OP_BIT_AND):
+		OP(BYTECODE_OP_BIT_AND):
 		{
 			int64_t res;
 
@@ -1129,7 +1129,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct binary_op);
 			PO;
 		}
-		OP(FILTER_OP_BIT_OR):
+		OP(BYTECODE_OP_BIT_OR):
 		{
 			int64_t res;
 
@@ -1145,7 +1145,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct binary_op);
 			PO;
 		}
-		OP(FILTER_OP_BIT_XOR):
+		OP(BYTECODE_OP_BIT_XOR):
 		{
 			int64_t res;
 
@@ -1163,16 +1163,16 @@ uint64_t bytecode_interpret(void *interpreter_data,
 		}
 
 		/* unary */
-		OP(FILTER_OP_UNARY_PLUS):
-		OP(FILTER_OP_UNARY_MINUS):
-		OP(FILTER_OP_UNARY_NOT):
-			printk(KERN_WARNING "LTTng: filter: unsupported non-specialized bytecode op %u\n",
-				(unsigned int) *(filter_opcode_t *) pc);
+		OP(BYTECODE_OP_UNARY_PLUS):
+		OP(BYTECODE_OP_UNARY_MINUS):
+		OP(BYTECODE_OP_UNARY_NOT):
+			printk(KERN_WARNING "LTTng: bytecode: unsupported non-specialized bytecode op %u\n",
+				(unsigned int) *(bytecode_opcode_t *) pc);
 			ret = -EINVAL;
 			goto end;
 
 
-		OP(FILTER_OP_UNARY_BIT_NOT):
+		OP(BYTECODE_OP_UNARY_BIT_NOT):
 		{
 			estack_ax_v = ~(uint64_t) estack_ax_v;
 			estack_ax_t = REG_S64;
@@ -1180,39 +1180,39 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_UNARY_PLUS_S64):
+		OP(BYTECODE_OP_UNARY_PLUS_S64):
 		{
 			next_pc += sizeof(struct unary_op);
 			PO;
 		}
-		OP(FILTER_OP_UNARY_MINUS_S64):
+		OP(BYTECODE_OP_UNARY_MINUS_S64):
 		{
 			estack_ax_v = -estack_ax_v;
 			estack_ax_t = REG_S64;
 			next_pc += sizeof(struct unary_op);
 			PO;
 		}
-		OP(FILTER_OP_UNARY_PLUS_DOUBLE):
-		OP(FILTER_OP_UNARY_MINUS_DOUBLE):
+		OP(BYTECODE_OP_UNARY_PLUS_DOUBLE):
+		OP(BYTECODE_OP_UNARY_MINUS_DOUBLE):
 		{
 			BUG_ON(1);
 			PO;
 		}
-		OP(FILTER_OP_UNARY_NOT_S64):
+		OP(BYTECODE_OP_UNARY_NOT_S64):
 		{
 			estack_ax_v = !estack_ax_v;
 			estack_ax_t = REG_S64;
 			next_pc += sizeof(struct unary_op);
 			PO;
 		}
-		OP(FILTER_OP_UNARY_NOT_DOUBLE):
+		OP(BYTECODE_OP_UNARY_NOT_DOUBLE):
 		{
 			BUG_ON(1);
 			PO;
 		}
 
 		/* logical */
-		OP(FILTER_OP_AND):
+		OP(BYTECODE_OP_AND):
 		{
 			struct logical_op *insn = (struct logical_op *) pc;
 
@@ -1228,7 +1228,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			}
 			PO;
 		}
-		OP(FILTER_OP_OR):
+		OP(BYTECODE_OP_OR):
 		{
 			struct logical_op *insn = (struct logical_op *) pc;
 
@@ -1249,7 +1249,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 
 
 		/* load field ref */
-		OP(FILTER_OP_LOAD_FIELD_REF_STRING):
+		OP(BYTECODE_OP_LOAD_FIELD_REF_STRING):
 		{
 			struct load_op *insn = (struct load_op *) pc;
 			struct field_ref *ref = (struct field_ref *) insn->data;
@@ -1260,7 +1260,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			estack_ax(stack, top)->u.s.str =
 				*(const char * const *) &interpreter_stack_data[ref->offset];
 			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
-				dbg_printk("Filter warning: loading a NULL string.\n");
+				dbg_printk("Bytecode warning: loading a NULL string.\n");
 				ret = -EINVAL;
 				goto end;
 			}
@@ -1274,7 +1274,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_LOAD_FIELD_REF_SEQUENCE):
+		OP(BYTECODE_OP_LOAD_FIELD_REF_SEQUENCE):
 		{
 			struct load_op *insn = (struct load_op *) pc;
 			struct field_ref *ref = (struct field_ref *) insn->data;
@@ -1288,7 +1288,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 				*(const char **) (&interpreter_stack_data[ref->offset
 								+ sizeof(unsigned long)]);
 			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
-				dbg_printk("Filter warning: loading a NULL sequence.\n");
+				dbg_printk("Bytecode warning: loading a NULL sequence.\n");
 				ret = -EINVAL;
 				goto end;
 			}
@@ -1299,7 +1299,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_LOAD_FIELD_REF_S64):
+		OP(BYTECODE_OP_LOAD_FIELD_REF_S64):
 		{
 			struct load_op *insn = (struct load_op *) pc;
 			struct field_ref *ref = (struct field_ref *) insn->data;
@@ -1316,14 +1316,14 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_LOAD_FIELD_REF_DOUBLE):
+		OP(BYTECODE_OP_LOAD_FIELD_REF_DOUBLE):
 		{
 			BUG_ON(1);
 			PO;
 		}
 
 		/* load from immediate operand */
-		OP(FILTER_OP_LOAD_STRING):
+		OP(BYTECODE_OP_LOAD_STRING):
 		{
 			struct load_op *insn = (struct load_op *) pc;
 
@@ -1338,7 +1338,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_LOAD_STAR_GLOB_STRING):
+		OP(BYTECODE_OP_LOAD_STAR_GLOB_STRING):
 		{
 			struct load_op *insn = (struct load_op *) pc;
 
@@ -1353,7 +1353,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_LOAD_S64):
+		OP(BYTECODE_OP_LOAD_S64):
 		{
 			struct load_op *insn = (struct load_op *) pc;
 
@@ -1367,33 +1367,33 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_LOAD_DOUBLE):
+		OP(BYTECODE_OP_LOAD_DOUBLE):
 		{
 			BUG_ON(1);
 			PO;
 		}
 
 		/* cast */
-		OP(FILTER_OP_CAST_TO_S64):
-			printk(KERN_WARNING "LTTng: filter: unsupported non-specialized bytecode op %u\n",
-				(unsigned int) *(filter_opcode_t *) pc);
+		OP(BYTECODE_OP_CAST_TO_S64):
+			printk(KERN_WARNING "LTTng: bytecode: unsupported non-specialized bytecode op %u\n",
+				(unsigned int) *(bytecode_opcode_t *) pc);
 			ret = -EINVAL;
 			goto end;
 
-		OP(FILTER_OP_CAST_DOUBLE_TO_S64):
+		OP(BYTECODE_OP_CAST_DOUBLE_TO_S64):
 		{
 			BUG_ON(1);
 			PO;
 		}
 
-		OP(FILTER_OP_CAST_NOP):
+		OP(BYTECODE_OP_CAST_NOP):
 		{
 			next_pc += sizeof(struct cast_op);
 			PO;
 		}
 
 		/* get context ref */
-		OP(FILTER_OP_GET_CONTEXT_REF_STRING):
+		OP(BYTECODE_OP_GET_CONTEXT_REF_STRING):
 		{
 			struct load_op *insn = (struct load_op *) pc;
 			struct field_ref *ref = (struct field_ref *) insn->data;
@@ -1407,7 +1407,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			estack_push(stack, top, ax, bx, ax_t, bx_t);
 			estack_ax(stack, top)->u.s.str = v.str;
 			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
-				dbg_printk("Filter warning: loading a NULL string.\n");
+				dbg_printk("Bytecode warning: loading a NULL string.\n");
 				ret = -EINVAL;
 				goto end;
 			}
@@ -1421,7 +1421,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_GET_CONTEXT_REF_S64):
+		OP(BYTECODE_OP_GET_CONTEXT_REF_S64):
 		{
 			struct load_op *insn = (struct load_op *) pc;
 			struct field_ref *ref = (struct field_ref *) insn->data;
@@ -1441,14 +1441,14 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_GET_CONTEXT_REF_DOUBLE):
+		OP(BYTECODE_OP_GET_CONTEXT_REF_DOUBLE):
 		{
 			BUG_ON(1);
 			PO;
 		}
 
 		/* load userspace field ref */
-		OP(FILTER_OP_LOAD_FIELD_REF_USER_STRING):
+		OP(BYTECODE_OP_LOAD_FIELD_REF_USER_STRING):
 		{
 			struct load_op *insn = (struct load_op *) pc;
 			struct field_ref *ref = (struct field_ref *) insn->data;
@@ -1459,7 +1459,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			estack_ax(stack, top)->u.s.user_str =
 				*(const char * const *) &interpreter_stack_data[ref->offset];
 			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
-				dbg_printk("Filter warning: loading a NULL string.\n");
+				dbg_printk("Bytecode warning: loading a NULL string.\n");
 				ret = -EINVAL;
 				goto end;
 			}
@@ -1473,7 +1473,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_LOAD_FIELD_REF_USER_SEQUENCE):
+		OP(BYTECODE_OP_LOAD_FIELD_REF_USER_SEQUENCE):
 		{
 			struct load_op *insn = (struct load_op *) pc;
 			struct field_ref *ref = (struct field_ref *) insn->data;
@@ -1487,7 +1487,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 				*(const char **) (&interpreter_stack_data[ref->offset
 								+ sizeof(unsigned long)]);
 			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
-				dbg_printk("Filter warning: loading a NULL sequence.\n");
+				dbg_printk("Bytecode warning: loading a NULL sequence.\n");
 				ret = -EINVAL;
 				goto end;
 			}
@@ -1498,7 +1498,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_GET_CONTEXT_ROOT):
+		OP(BYTECODE_OP_GET_CONTEXT_ROOT):
 		{
 			dbg_printk("op get context root\n");
 			estack_push(stack, top, ax, bx, ax_t, bx_t);
@@ -1510,13 +1510,13 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_GET_APP_CONTEXT_ROOT):
+		OP(BYTECODE_OP_GET_APP_CONTEXT_ROOT):
 		{
 			BUG_ON(1);
 			PO;
 		}
 
-		OP(FILTER_OP_GET_PAYLOAD_ROOT):
+		OP(BYTECODE_OP_GET_PAYLOAD_ROOT):
 		{
 			dbg_printk("op get app payload root\n");
 			estack_push(stack, top, ax, bx, ax_t, bx_t);
@@ -1529,12 +1529,12 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_GET_SYMBOL):
+		OP(BYTECODE_OP_GET_SYMBOL):
 		{
 			dbg_printk("op get symbol\n");
 			switch (estack_ax(stack, top)->u.ptr.type) {
 			case LOAD_OBJECT:
-				printk(KERN_WARNING "LTTng: filter: Nested fields not implemented yet.\n");
+				printk(KERN_WARNING "LTTng: bytecode: Nested fields not implemented yet.\n");
 				ret = -EINVAL;
 				goto end;
 			case LOAD_ROOT_CONTEXT:
@@ -1551,7 +1551,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_GET_SYMBOL_FIELD):
+		OP(BYTECODE_OP_GET_SYMBOL_FIELD):
 		{
 			/*
 			 * Used for first variant encountered in a
@@ -1561,7 +1561,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			goto end;
 		}
 
-		OP(FILTER_OP_GET_INDEX_U16):
+		OP(BYTECODE_OP_GET_INDEX_U16):
 		{
 			struct load_op *insn = (struct load_op *) pc;
 			struct get_index_u16 *index = (struct get_index_u16 *) insn->data;
@@ -1576,7 +1576,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_GET_INDEX_U64):
+		OP(BYTECODE_OP_GET_INDEX_U64):
 		{
 			struct load_op *insn = (struct load_op *) pc;
 			struct get_index_u64 *index = (struct get_index_u64 *) insn->data;
@@ -1591,7 +1591,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_LOAD_FIELD):
+		OP(BYTECODE_OP_LOAD_FIELD):
 		{
 			dbg_printk("op load field\n");
 			ret = dynamic_load_field(estack_ax(stack, top));
@@ -1603,7 +1603,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_LOAD_FIELD_S8):
+		OP(BYTECODE_OP_LOAD_FIELD_S8):
 		{
 			dbg_printk("op load field s8\n");
 
@@ -1612,7 +1612,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct load_op);
 			PO;
 		}
-		OP(FILTER_OP_LOAD_FIELD_S16):
+		OP(BYTECODE_OP_LOAD_FIELD_S16):
 		{
 			dbg_printk("op load field s16\n");
 
@@ -1621,7 +1621,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct load_op);
 			PO;
 		}
-		OP(FILTER_OP_LOAD_FIELD_S32):
+		OP(BYTECODE_OP_LOAD_FIELD_S32):
 		{
 			dbg_printk("op load field s32\n");
 
@@ -1630,7 +1630,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct load_op);
 			PO;
 		}
-		OP(FILTER_OP_LOAD_FIELD_S64):
+		OP(BYTECODE_OP_LOAD_FIELD_S64):
 		{
 			dbg_printk("op load field s64\n");
 
@@ -1639,7 +1639,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct load_op);
 			PO;
 		}
-		OP(FILTER_OP_LOAD_FIELD_U8):
+		OP(BYTECODE_OP_LOAD_FIELD_U8):
 		{
 			dbg_printk("op load field u8\n");
 
@@ -1648,7 +1648,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct load_op);
 			PO;
 		}
-		OP(FILTER_OP_LOAD_FIELD_U16):
+		OP(BYTECODE_OP_LOAD_FIELD_U16):
 		{
 			dbg_printk("op load field u16\n");
 
@@ -1657,7 +1657,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct load_op);
 			PO;
 		}
-		OP(FILTER_OP_LOAD_FIELD_U32):
+		OP(BYTECODE_OP_LOAD_FIELD_U32):
 		{
 			dbg_printk("op load field u32\n");
 
@@ -1666,7 +1666,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct load_op);
 			PO;
 		}
-		OP(FILTER_OP_LOAD_FIELD_U64):
+		OP(BYTECODE_OP_LOAD_FIELD_U64):
 		{
 			dbg_printk("op load field u64\n");
 
@@ -1675,13 +1675,13 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			next_pc += sizeof(struct load_op);
 			PO;
 		}
-		OP(FILTER_OP_LOAD_FIELD_DOUBLE):
+		OP(BYTECODE_OP_LOAD_FIELD_DOUBLE):
 		{
 			ret = -EINVAL;
 			goto end;
 		}
 
-		OP(FILTER_OP_LOAD_FIELD_STRING):
+		OP(BYTECODE_OP_LOAD_FIELD_STRING):
 		{
 			const char *str;
 
@@ -1689,7 +1689,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			str = (const char *) estack_ax(stack, top)->u.ptr.ptr;
 			estack_ax(stack, top)->u.s.str = str;
 			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
-				dbg_printk("Filter warning: loading a NULL string.\n");
+				dbg_printk("Bytecode warning: loading a NULL string.\n");
 				ret = -EINVAL;
 				goto end;
 			}
@@ -1701,7 +1701,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			PO;
 		}
 
-		OP(FILTER_OP_LOAD_FIELD_SEQUENCE):
+		OP(BYTECODE_OP_LOAD_FIELD_SEQUENCE):
 		{
 			const char *ptr;
 
@@ -1710,7 +1710,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			estack_ax(stack, top)->u.s.seq_len = *(unsigned long *) ptr;
 			estack_ax(stack, top)->u.s.str = *(const char **) (ptr + sizeof(unsigned long));
 			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
-				dbg_printk("Filter warning: loading a NULL sequence.\n");
+				dbg_printk("Bytecode warning: loading a NULL sequence.\n");
 				ret = -EINVAL;
 				goto end;
 			}
@@ -1725,7 +1725,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 end:
 	/* Return _DISCARD on error. */
 	if (ret)
-		return LTTNG_FILTER_DISCARD;
+		return LTTNG_INTERPRETER_DISCARD;
 
 	if (output) {
 		return lttng_bytecode_interpret_format_output(
@@ -1736,7 +1736,7 @@ end:
 }
 LTTNG_STACK_FRAME_NON_STANDARD(bytecode_interpret);
 
-uint64_t lttng_filter_interpret_bytecode(void *filter_data,
+uint64_t lttng_bytecode_filter_interpret(void *filter_data,
 		struct lttng_probe_ctx *lttng_probe_ctx,
 		const char *filter_stack_data)
 {

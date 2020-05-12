@@ -249,11 +249,11 @@ struct lttng_bytecode_node {
 };
 
 /*
- * Filter return value masks.
+ * Bytecode interpreter return value masks.
  */
-enum lttng_filter_ret {
-	LTTNG_FILTER_DISCARD = 0,
-	LTTNG_FILTER_RECORD_FLAG = (1ULL << 0),
+enum lttng_bytecode_interpreter_ret {
+	LTTNG_INTERPRETER_DISCARD = 0,
+	LTTNG_INTERPRETER_RECORD_FLAG = (1ULL << 0),
 	/* Other bits are kept for future use. */
 };
 

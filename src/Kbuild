@@ -45,9 +45,9 @@ lttng-tracer-objs := lib/msgpack/msgpack.o \
                      lttng-context-hostname.o \
                      probes/lttng.o \
                      lttng-tracker-id.o \
-                     lttng-filter.o lttng-filter-interpreter.o \
-                     lttng-filter-specialize.o \
-                     lttng-filter-validator.o \
+                     lttng-bytecode.o lttng-bytecode-interpreter.o \
+                     lttng-bytecode-specialize.o \
+                     lttng-bytecode-validator.o \
                      probes/lttng-probe-user.o \
                      lttng-tp-mempool.o \
                      lttng-event-notifier-notification.o
