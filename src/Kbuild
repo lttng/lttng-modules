@@ -19,7 +19,8 @@ obj-$(CONFIG_LTTNG) += lttng-tracer.o
 
 obj-$(CONFIG_LTTNG) += lttng-wrapper.o
 
-lttng-tracer-objs := lttng-events.o lttng-abi.o lttng-string-utils.o \
+lttng-tracer-objs := lib/msgpack/msgpack.o \
+                     lttng-events.o lttng-abi.o lttng-string-utils.o \
                      lttng-probes.o lttng-context.o \
                      lttng-context-pid.o lttng-context-procname.o \
                      lttng-context-prio.o lttng-context-nice.o \
