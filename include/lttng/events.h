@@ -232,14 +232,20 @@ enum lttng_event_type {
 	LTTNG_TYPE_ENABLER = 1,
 };
 
-struct lttng_filter_bytecode_node {
+enum lttng_bytecode_node_type {
+	LTTNG_BYTECODE_NODE_TYPE_FILTER,
+};
+
+struct lttng_bytecode_node {
+	enum lttng_bytecode_node_type type;
 	struct list_head node;
 	struct lttng_enabler *enabler;
-	/*
-	 * struct lttng_kernel_filter_bytecode has var. sized array, must be
-	 * last field.
-	 */
-	struct lttng_kernel_filter_bytecode bc;
+	struct {
+		uint32_t len;
+		uint32_t reloc_offset;
+		uint64_t seqnum;
+		char data[];
+	} bc;
 };
 
 /*
@@ -253,8 +259,9 @@ enum lttng_filter_ret {
 
 struct lttng_bytecode_runtime {
 	/* Associated bytecode */
-	struct lttng_filter_bytecode_node *bc;
-	uint64_t (*filter)(void *filter_data, struct lttng_probe_ctx *lttng_probe_ctx,
+	struct lttng_bytecode_node *bc;
+	uint64_t (*filter)(void *filter_data,
+			struct lttng_probe_ctx *lttng_probe_ctx,
 			const char *filter_stack_data);
 	int link_failed;
 	struct list_head node;	/* list of bytecode runtime in event */

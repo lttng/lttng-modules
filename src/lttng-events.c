@@ -2217,7 +2217,7 @@ static
 int lttng_enabler_attach_filter_bytecode(struct lttng_enabler *enabler,
 		struct lttng_kernel_filter_bytecode __user *bytecode)
 {
-	struct lttng_filter_bytecode_node *bytecode_node;
+	struct lttng_bytecode_node *bytecode_node;
 	uint32_t bytecode_len;
 	int ret;
 
@@ -2233,6 +2233,7 @@ int lttng_enabler_attach_filter_bytecode(struct lttng_enabler *enabler,
 	if (ret)
 		goto error_free;
 
+	bytecode_node->type = LTTNG_BYTECODE_NODE_TYPE_FILTER;
 	bytecode_node->enabler = enabler;
 	/* Enforce length based on allocated size */
 	bytecode_node->bc.len = bytecode_len;
@@ -2282,7 +2283,7 @@ int lttng_event_enabler_attach_context(struct lttng_event_enabler *event_enabler
 static
 void lttng_enabler_destroy(struct lttng_enabler *enabler)
 {
-	struct lttng_filter_bytecode_node *filter_node, *tmp_filter_node;
+	struct lttng_bytecode_node *filter_node, *tmp_filter_node;
 
 	/* Destroy filter bytecode */
 	list_for_each_entry_safe(filter_node, tmp_filter_node,

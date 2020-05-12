@@ -378,13 +378,13 @@ int apply_reloc(const struct lttng_event_desc *event_desc,
 }
 
 static
-int bytecode_is_linked(struct lttng_filter_bytecode_node *filter_bytecode,
+int bytecode_is_linked(struct lttng_bytecode_node *bytecode,
 		struct list_head *bytecode_runtime_head)
 {
 	struct lttng_bytecode_runtime *bc_runtime;
 
 	list_for_each_entry(bc_runtime, bytecode_runtime_head, node) {
-		if (bc_runtime->bc == filter_bytecode)
+		if (bc_runtime->bc == bytecode)
 			return 1;
 	}
 	return 0;
@@ -397,44 +397,44 @@ int bytecode_is_linked(struct lttng_filter_bytecode_node *filter_bytecode,
 static
 int _lttng_filter_link_bytecode(const struct lttng_event_desc *event_desc,
 		struct lttng_ctx *ctx,
-		struct lttng_filter_bytecode_node *filter_bytecode,
+		struct lttng_bytecode_node *bytecode,
 		struct list_head *insert_loc)
 {
 	int ret, offset, next_offset;
 	struct bytecode_runtime *runtime = NULL;
 	size_t runtime_alloc_len;
 
-	if (!filter_bytecode)
+	if (!bytecode)
 		return 0;
 	/* Bytecode already linked */
-	if (bytecode_is_linked(filter_bytecode, insert_loc))
+	if (bytecode_is_linked(bytecode, insert_loc))
 		return 0;
 
 	dbg_printk("Linking...\n");
 
 	/* We don't need the reloc table in the runtime */
-	runtime_alloc_len = sizeof(*runtime) + filter_bytecode->bc.reloc_offset;
+	runtime_alloc_len = sizeof(*runtime) + bytecode->bc.reloc_offset;
 	runtime = kzalloc(runtime_alloc_len, GFP_KERNEL);
 	if (!runtime) {
 		ret = -ENOMEM;
 		goto alloc_error;
 	}
-	runtime->p.bc = filter_bytecode;
+	runtime->p.bc = bytecode;
 	runtime->p.ctx = ctx;
-	runtime->len = filter_bytecode->bc.reloc_offset;
+	runtime->len = bytecode->bc.reloc_offset;
 	/* copy original bytecode */
-	memcpy(runtime->code, filter_bytecode->bc.data, runtime->len);
+	memcpy(runtime->code, bytecode->bc.data, runtime->len);
 	/*
 	 * apply relocs. Those are a uint16_t (offset in bytecode)
 	 * followed by a string (field name).
 	 */
-	for (offset = filter_bytecode->bc.reloc_offset;
-			offset < filter_bytecode->bc.len;
+	for (offset = bytecode->bc.reloc_offset;
+			offset < bytecode->bc.len;
 			offset = next_offset) {
 		uint16_t reloc_offset =
-			*(uint16_t *) &filter_bytecode->bc.data[offset];
+			*(uint16_t *) &bytecode->bc.data[offset];
 		const char *name =
-			(const char *) &filter_bytecode->bc.data[offset + sizeof(uint16_t)];
+			(const char *) &bytecode->bc.data[offset + sizeof(uint16_t)];
 
 		ret = apply_reloc(event_desc, runtime, runtime->len, reloc_offset, name);
 		if (ret) {
@@ -469,7 +469,7 @@ alloc_error:
 
 void lttng_filter_sync_state(struct lttng_bytecode_runtime *runtime)
 {
-	struct lttng_filter_bytecode_node *bc = runtime->bc;
+	struct lttng_bytecode_node *bc = runtime->bc;
 
 	if (!bc->enabler->enabled || runtime->link_failed)
 		runtime->filter = lttng_filter_interpret_bytecode_false;
@@ -485,7 +485,7 @@ void lttng_enabler_link_bytecode(const struct lttng_event_desc *event_desc,
 		struct list_head *bytecode_runtime_head,
 		struct lttng_enabler *enabler)
 {
-	struct lttng_filter_bytecode_node *bc;
+	struct lttng_bytecode_node *bc;
 	struct lttng_bytecode_runtime *runtime;
 
 	/* Can only be called for events with desc attached */
@@ -536,7 +536,7 @@ void lttng_enabler_link_bytecode(const struct lttng_event_desc *event_desc,
  * We own the filter_bytecode if we return success.
  */
 int lttng_filter_enabler_attach_bytecode(struct lttng_enabler *enabler,
-		struct lttng_filter_bytecode_node *filter_bytecode)
+		struct lttng_bytecode_node *filter_bytecode)
 {
 	list_add(&filter_bytecode->node, &enabler->filter_bytecode_head);
 	return 0;
@@ -544,7 +544,7 @@ int lttng_filter_enabler_attach_bytecode(struct lttng_enabler *enabler,
 
 void lttng_free_enabler_filter_bytecode(struct lttng_enabler *enabler)
 {
-	struct lttng_filter_bytecode_node *filter_bytecode, *tmp;
+	struct lttng_bytecode_node *filter_bytecode, *tmp;
 
 	list_for_each_entry_safe(filter_bytecode, tmp,
 			&enabler->filter_bytecode_head, node) {
