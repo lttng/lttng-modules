@@ -93,9 +93,6 @@
 #undef ctf_integer_network_hex
 #define ctf_integer_network_hex(_type, _item, _src)
 
-#undef ctf_float
-#define ctf_float(_type, _item, _src)
-
 #undef ctf_array
 #define ctf_array(_type, _item, _src, _length)
 
@@ -153,9 +150,6 @@
 /* "nowrite" */
 #undef ctf_integer_nowrite
 #define ctf_integer_nowrite(_type, _item, _src)
-
-#undef ctf_float_nowrite
-#define ctf_float_nowrite(_type, _item, _src)
 
 #undef ctf_array_nowrite
 #define ctf_array_nowrite(_type, _item, _src, _length)
