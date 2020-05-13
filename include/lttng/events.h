@@ -260,9 +260,11 @@ enum lttng_bytecode_interpreter_ret {
 struct lttng_bytecode_runtime {
 	/* Associated bytecode */
 	struct lttng_bytecode_node *bc;
-	uint64_t (*filter)(void *filter_data,
-			struct lttng_probe_ctx *lttng_probe_ctx,
-			const char *filter_stack_data);
+	union {
+		uint64_t (*filter)(void *filter_data,
+				struct lttng_probe_ctx *lttng_probe_ctx,
+				const char *filter_stack_data);
+	} interpreter_funcs;
 	int link_failed;
 	struct list_head node;	/* list of bytecode runtime in event */
 	struct lttng_ctx *ctx;

@@ -1249,7 +1249,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data, \
 				tp_locvar, _args);				      \
 		lttng_list_for_each_entry_rcu(bc_runtime, &__event->filter_bytecode_runtime_head, node) { \
-			if (unlikely(bc_runtime->filter(bc_runtime, &__lttng_probe_ctx,	      \
+			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx,	      \
 					__stackvar.__filter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG)) { \
 				__filter_record = 1;			      \
 				break;					      \
@@ -1345,7 +1345,7 @@ static void __event_probe__##_name(void *__data)			      \
 		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data, \
 				tp_locvar);				      \
 		lttng_list_for_each_entry_rcu(bc_runtime, &__event->filter_bytecode_runtime_head, node) { \
-			if (unlikely(bc_runtime->filter(bc_runtime, &__lttng_probe_ctx,	\
+			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx,	\
 					__stackvar.__filter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG)) { \
 				__filter_record = 1;			      \
 				break;					      \
@@ -1441,7 +1441,7 @@ static void __event_notifier_probe__##_name(void *__data, _proto)	      \
 		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data,	\
 				tp_locvar, _args);				        \
 		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->filter_bytecode_runtime_head, node) { \
-			if (unlikely(bc_runtime->filter(bc_runtime, &__lttng_probe_ctx,	\
+			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx, \
 					__stackvar.__filter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG)) \
 				__filter_record = 1;			      \
 		}							      \
@@ -1484,7 +1484,7 @@ static void __event_notifier_probe__##_name(void *__data)		      \
 		__event_prepare_filter_stack__##_name(__stackvar.__filter_stack_data,	      \
 				tp_locvar);						      \
 		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->filter_bytecode_runtime_head, node) { \
-			if (unlikely(bc_runtime->filter(bc_runtime, &__lttng_probe_ctx,	      \
+			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx, \
 					__stackvar.__filter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG)) \
 				__filter_record = 1;			      \
 		}							      \
