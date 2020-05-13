@@ -493,32 +493,43 @@ void lttng_bytecode_filter_sync_state(struct lttng_bytecode_runtime *runtime)
 }
 
 /*
- * Link bytecode for all enablers referenced by an event.
+ * Given the lists of bytecode programs of an instance (trigger or event) and
+ * of a matching enabler, try to link all the enabler's bytecode programs with
+ * the instance.
+ *
+ * This function is called after we confirmed that name enabler and the
+ * instance are matching names (or glob pattern matching).
  */
 void lttng_enabler_link_bytecode(const struct lttng_event_desc *event_desc,
 		struct lttng_ctx *ctx,
-		struct list_head *bytecode_runtime_head,
-		struct lttng_enabler *enabler)
+		struct list_head *instance_bytecode_head,
+		struct list_head *enabler_bytecode_head)
 {
-	struct lttng_bytecode_node *bc;
+	struct lttng_bytecode_node *enabler_bc;
 	struct lttng_bytecode_runtime *runtime;
 
-	/* Can only be called for events with desc attached */
 	WARN_ON_ONCE(!event_desc);
 
-	/* Link each bytecode. */
-	list_for_each_entry(bc, &enabler->filter_bytecode_head, node) {
+	/* Go over all the bytecode programs of the enabler.  */
+	list_for_each_entry(enabler_bc, enabler_bytecode_head, node) {
 		int found = 0, ret;
 		struct list_head *insert_loc;
 
-		list_for_each_entry(runtime,
-				bytecode_runtime_head, node) {
-			if (runtime->bc == bc) {
+		/*
+		 * Check if the current enabler bytecode program is already
+		 * linked with the instance.
+		 */
+		list_for_each_entry(runtime, instance_bytecode_head, node) {
+			if (runtime->bc == enabler_bc) {
 				found = 1;
 				break;
 			}
 		}
-		/* Skip bytecode already linked */
+
+		/*
+		 * Skip bytecode already linked, go to the next enabler
+		 * bytecode program.
+		 */
 		if (found)
 			continue;
 
@@ -528,18 +539,18 @@ void lttng_enabler_link_bytecode(const struct lttng_event_desc *event_desc,
 		 * insert the new bytecode right after it.
 		 */
 		list_for_each_entry_reverse(runtime,
-				bytecode_runtime_head, node) {
-			if (runtime->bc->bc.seqnum <= bc->bc.seqnum) {
+				instance_bytecode_head, node) {
+			if (runtime->bc->bc.seqnum <= enabler_bc->bc.seqnum) {
 				/* insert here */
 				insert_loc = &runtime->node;
 				goto add_within;
 			}
 		}
 		/* Add to head to list */
-		insert_loc = bytecode_runtime_head;
+		insert_loc = instance_bytecode_head;
 	add_within:
 		dbg_printk("linking bytecode\n");
-		ret = link_bytecode(event_desc, ctx, bc, insert_loc);
+		ret = link_bytecode(event_desc, ctx, enabler_bc, insert_loc);
 		if (ret) {
 			dbg_printk("[lttng filter] warning: cannot link event bytecode\n");
 		}
