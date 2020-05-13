@@ -467,7 +467,7 @@ alloc_error:
 	return ret;
 }
 
-void lttng_filter_sync_state(struct lttng_bytecode_runtime *runtime)
+void lttng_bytecode_filter_sync_state(struct lttng_bytecode_runtime *runtime)
 {
 	struct lttng_bytecode_node *bc = runtime->bc;
 
