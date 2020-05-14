@@ -32,6 +32,19 @@ struct class *wrapper_get_block_class(void)
 	return ptr_block_class;
 }
 
+/*
+ * Canary function to check for 'block_class' at compile time.
+ *
+ * From 'include/linux/genhd.h':
+ *
+ *   extern struct class block_class;
+ */
+static inline
+struct class *__canary__get_block_class(void)
+{
+	return &block_class;
+}
+
 static inline
 struct device_type *wrapper_get_disk_type(void)
 {
@@ -44,6 +57,16 @@ struct device_type *wrapper_get_disk_type(void)
 	}
 	return ptr_disk_type;
 }
+
+/*
+ * No canary for 'disk_type', it's only defined in 'block/genhd.c'.
+ *
+ * static inline
+ * struct device_type *__canary__get_disk_type(void)
+ * {
+ * 	return &disk_type;
+ * }
+ */
 
 #else
 

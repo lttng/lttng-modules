@@ -36,6 +36,21 @@ ssize_t wrapper_splice_to_pipe(struct pipe_inode_info *pipe,
 	}
 }
 
+/*
+ * Canary function to check for 'splice_to_pipe()' at compile time.
+ *
+ * From 'include/linux/splice.h':
+ *
+ *   extern ssize_t splice_to_pipe(struct pipe_inode_info *,
+ *                                 struct splice_pipe_desc *spd);
+ */
+__attribute__((unused)) static
+ssize_t __canary__splice_to_pipe(struct pipe_inode_info *pipe,
+				struct splice_pipe_desc *spd)
+{
+	return splice_to_pipe(pipe, spd);
+}
+
 #else
 
 #include <linux/fs.h>
