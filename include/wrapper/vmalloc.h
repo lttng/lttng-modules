@@ -20,8 +20,15 @@
 
 #include <linux/kallsyms.h>
 #include <wrapper/kallsyms.h>
+#include <lttng/kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)) \
+  || LTTNG_KERNEL_RANGE(5,4,28, 5,5,0)            \
+  || LTTNG_KERNEL_RANGE(5,2,37, 5,3,0)            \
+  || LTTNG_KERNEL_RANGE(4,19,113, 4,20,0)         \
+  || LTTNG_KERNEL_RANGE(4,14,175, 4,15,0)         \
+  || LTTNG_KERNEL_RANGE(4,9,218, 4,10,0)          \
+  || LTTNG_KERNEL_RANGE(4,4,218, 4,5,0)
 
 static inline
 void wrapper_vmalloc_sync_mappings(void)
@@ -72,7 +79,13 @@ void wrapper_vmalloc_sync_mappings(void)
 
 #else
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)) \
+  || LTTNG_KERNEL_RANGE(5,4,28, 5,5,0)            \
+  || LTTNG_KERNEL_RANGE(5,2,37, 5,3,0)            \
+  || LTTNG_KERNEL_RANGE(4,19,113, 4,20,0)         \
+  || LTTNG_KERNEL_RANGE(4,14,175, 4,15,0)         \
+  || LTTNG_KERNEL_RANGE(4,9,218, 4,10,0)          \
+  || LTTNG_KERNEL_RANGE(4,4,218, 4,5,0)
 
 static inline
 void wrapper_vmalloc_sync_mappings(void)
