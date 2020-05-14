@@ -52,6 +52,19 @@ int wrapper_uprobe_register(struct inode *inode, loff_t offset, struct uprobe_co
 	}
 }
 
+/*
+ * Canary function to check for 'uprobe_register()' at compile time.
+ *
+ * From 'include/linux/uprobes.h':
+ *
+ *   extern int uprobe_register(struct inode *inode, loff_t offset, struct uprobe_consumer *uc);
+ */
+static inline
+int __canary__uprobe_register(struct inode *inode, loff_t offset, struct uprobe_consumer *uc)
+{
+	return uprobe_register(inode, offset, uc);
+}
+
 static inline
 void wrapper_uprobe_unregister(struct inode *inode, loff_t offset, struct uprobe_consumer *uc)
 {
@@ -66,6 +79,20 @@ void wrapper_uprobe_unregister(struct inode *inode, loff_t offset, struct uprobe
                 WARN_ON(1);
         }
 }
+
+/*
+ * Canary function to check for 'uprobe_unregister()' at compile time.
+ *
+ * From 'include/linux/uprobes.h':
+ *
+ *   extern void uprobe_unregister(struct inode *inode, loff_t offset, struct uprobe_consumer *uc);
+ */
+static inline
+int __canary__uprobe_unregister(struct inode *inode, loff_t offset, struct uprobe_consumer *uc)
+{
+	return uprobe_unregister(inode, offset, uc);
+}
+
 #endif
 #else
 /* Version <  3.5, before uprobe was added. */

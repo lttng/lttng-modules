@@ -68,6 +68,17 @@ int wrapper_tracepoint_module_notify(struct notifier_block *nb,
 	}
 }
 
+/*
+ * No canary for 'tracepoint_module_notify()', it's only defined in 'kernel/tracepoint.c'.
+ *
+ * static inline
+ * int __canary__tracepoint_module_notify(struct notifier_block *nb,
+ * 		unsigned long val, struct module *mod)
+ * {
+ * 	return tracepoint_module_notify(nb, val, mod);
+ * }
+ */
+
 #endif /* #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0) && defined(CONFIG_MODULE_SIG)) */
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0) && defined(CONFIG_MODULE_SIG) && defined(MODULE))

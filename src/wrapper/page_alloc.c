@@ -54,6 +54,25 @@ int wrapper_get_pfnblock_flags_mask_init(void)
 }
 EXPORT_SYMBOL_GPL(wrapper_get_pfnblock_flags_mask_init);
 
+/*
+ * Canary function to check for 'get_pfnblock_flags_mask()' at compile time.
+ *
+ * From 'include/linux/pageblock-flags.h':
+ *
+ *   unsigned long get_pfnblock_flags_mask(struct page *page,
+ *                                         unsigned long pfn,
+ *                                         unsigned long end_bitidx,
+ *                                         unsigned long mask);
+ */
+__attribute__((unused)) static
+unsigned long __canary__get_pfnblock_flags_mask(struct page *page,
+						unsigned long pfn,
+						unsigned long end_bitidx,
+						unsigned long mask)
+{
+	return get_pfnblock_flags_mask(page, pfn, end_bitidx, mask);
+}
+
 #else
 
 #include <linux/pageblock-flags.h>

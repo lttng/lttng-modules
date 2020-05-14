@@ -37,6 +37,20 @@ unsigned long wrapper_global_dirty_limit(void)
 		return 0;
 	}
 }
+
+/*
+ * Canary function to check for 'global_wb_domain' at compile time.
+ *
+ * From 'include/linux/writeback.h':
+ *
+ *   extern struct wb_domain global_wb_domain;
+ */
+static inline
+unsigned long __canary__global_wb_domain(void)
+{
+	return global_wb_domain.dirty_limit;
+}
+
 #else
 
 static unsigned long *global_dirty_limit_sym;
@@ -54,6 +68,20 @@ unsigned long wrapper_global_dirty_limit(void)
 		return 0;
 	}
 }
+
+/*
+ * Canary function to check for 'global_dirty_limit' at compile time.
+ *
+ * From 'include/linux/writeback.h':
+ *
+ *   extern unsigned long global_dirty_limit;
+ */
+static inline
+unsigned long __canary__global_dirty_limit(void)
+{
+	return global_dirty_limit;
+}
+
 #endif
 
 #else /* CONFIG_KALLSYMS_ALL */

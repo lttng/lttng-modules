@@ -64,10 +64,23 @@ void wrapper_vmalloc_sync_mappings(void)
 	}
 }
 
+/*
+ * Canary function to check for 'vmalloc_sync_mappings()' at compile time.
+ *
+ * From 'include/linux/vmalloc.h':
+ *
+ *   void vmalloc_sync_mappings(void);
+ */
+static inline
+void __canary__vmalloc_sync_mappings(void)
+{
+	vmalloc_sync_mappings();
+}
+
 #else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)) */
 
 /*
- * Map vmalloc_sync_mappings to vmalloc_sync_all() on kernels before 5.7.
+ * Map vmalloc_sync_mappings to vmalloc_sync_all() on kernels before 5.6.
  */
 static inline
 void wrapper_vmalloc_sync_mappings(void)
@@ -87,6 +100,19 @@ void wrapper_vmalloc_sync_mappings(void)
 		printk_once(KERN_WARNING "Page fault handler and NMI tracing might trigger faults.\n");
 #endif
 	}
+}
+
+/*
+ * Canary function to check for 'vmalloc_sync_all()' at compile time.
+ *
+ * From 'include/linux/vmalloc.h':
+ *
+ *   void vmalloc_sync_all(void);
+ */
+static inline
+void __canary__vmalloc_sync_all(void)
+{
+	vmalloc_sync_all();
 }
 
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)) */
@@ -202,6 +228,26 @@ void *__lttng_vmalloc_node_range(unsigned long size, unsigned long align,
 	if (node != NUMA_NO_NODE)
 		print_vmalloc_node_range_warning();
 	return __vmalloc(size, gfp_mask, prot);
+}
+
+/*
+ * Canary function to check for '__vmalloc_node_range()' at compile time.
+ *
+ * From 'include/linux/vmalloc.h':
+ *
+ *   extern void *__vmalloc_node_range(unsigned long size, unsigned long align,
+ *                           unsigned long start, unsigned long end, gfp_t gfp_mask,
+ *                           pgprot_t prot, unsigned long vm_flags, int node,
+ *                           const void *caller);
+ */
+static inline
+void *__canary____lttng_vmalloc_node_range(unsigned long size, unsigned long align,
+			unsigned long start, unsigned long end, gfp_t gfp_mask,
+			pgprot_t prot, unsigned long vm_flags, int node,
+			const void *caller)
+{
+	return __vmalloc_node_range(size, align, start, end, gfp_mask, prot,
+			vm_flags, node, caller);
 }
 
 /**
