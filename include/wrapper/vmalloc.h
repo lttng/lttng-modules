@@ -21,7 +21,7 @@
 #include <linux/kallsyms.h>
 #include <wrapper/kallsyms.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
 
 static inline
 void wrapper_vmalloc_sync_mappings(void)
@@ -43,7 +43,7 @@ void wrapper_vmalloc_sync_mappings(void)
 	}
 }
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0)) */
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)) */
 
 /*
  * Map vmalloc_sync_mappings to vmalloc_sync_all() on kernels before 5.7.
@@ -68,11 +68,11 @@ void wrapper_vmalloc_sync_mappings(void)
 	}
 }
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0)) */
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)) */
 
 #else
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
 
 static inline
 void wrapper_vmalloc_sync_mappings(void)
@@ -80,7 +80,7 @@ void wrapper_vmalloc_sync_mappings(void)
 	return vmalloc_sync_mappings();
 }
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0)) */
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)) */
 
 static inline
 void wrapper_vmalloc_sync_mappings(void)
@@ -88,7 +88,7 @@ void wrapper_vmalloc_sync_mappings(void)
 	return vmalloc_sync_all();
 }
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0)) */
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)) */
 
 #endif
 
