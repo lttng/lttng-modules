@@ -29,6 +29,19 @@ int wrapper_task_prio_init(void)
 	return 0;
 }
 
+/*
+ * Canary function to check for 'task_prio()' at compile time.
+ *
+ * From 'include/linux/sched.h':
+ *
+ *   extern int task_prio(const struct task_struct *p);
+ */
+__attribute__((unused)) static
+int __canary__task_prio(const struct task_struct *p)
+{
+	return task_prio(p);
+}
+
 static
 size_t prio_get_size(size_t offset)
 {
