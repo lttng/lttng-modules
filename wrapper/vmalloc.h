@@ -23,6 +23,7 @@
 #include <lttng-kernel-version.h>
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0) \
+  || LTTNG_KERNEL_RANGE(5,5,12, 5,6,0)            \
   || LTTNG_KERNEL_RANGE(5,4,28, 5,5,0)            \
   || LTTNG_KERNEL_RANGE(5,2,37, 5,3,0)            \
   || LTTNG_KERNEL_RANGE(4,19,113, 4,20,0)         \
@@ -83,6 +84,7 @@ void wrapper_vmalloc_sync_mappings(void)
 #else
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0) \
+  || LTTNG_KERNEL_RANGE(5,5,12, 5,6,0)            \
   || LTTNG_KERNEL_RANGE(5,4,28, 5,5,0)            \
   || LTTNG_KERNEL_RANGE(5,2,37, 5,3,0)            \
   || LTTNG_KERNEL_RANGE(4,19,113, 4,20,0)         \
