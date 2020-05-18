@@ -28,7 +28,10 @@
   || LTTNG_KERNEL_RANGE(4,19,113, 4,20,0)         \
   || LTTNG_KERNEL_RANGE(4,14,175, 4,15,0)         \
   || LTTNG_KERNEL_RANGE(4,9,218, 4,10,0)          \
-  || LTTNG_KERNEL_RANGE(4,4,218, 4,5,0))
+  || LTTNG_KERNEL_RANGE(4,4,218, 4,5,0))	  \
+  || LTTNG_UBUNTU_KERNEL_RANGE(4,15,18,97, 4,16,0,0) \
+  || LTTNG_UBUNTU_KERNEL_RANGE(5,0,21,48, 5,1,0,0)   \
+  || LTTNG_UBUNTU_KERNEL_RANGE(5,3,18,52, 5,4,0,0)
 
 static inline
 void wrapper_vmalloc_sync_mappings(void)
@@ -85,7 +88,10 @@ void wrapper_vmalloc_sync_mappings(void)
   || LTTNG_KERNEL_RANGE(4,19,113, 4,20,0)         \
   || LTTNG_KERNEL_RANGE(4,14,175, 4,15,0)         \
   || LTTNG_KERNEL_RANGE(4,9,218, 4,10,0)          \
-  || LTTNG_KERNEL_RANGE(4,4,218, 4,5,0))
+  || LTTNG_KERNEL_RANGE(4,4,218, 4,5,0))	  \
+  || LTTNG_UBUNTU_KERNEL_RANGE(4,15,18,97, 4,18,0,0) \
+  || LTTNG_UBUNTU_KERNEL_RANGE(5,0,21,48, 5,1,0,0)   \
+  || LTTNG_UBUNTU_KERNEL_RANGE(5,3,18,52, 5,4,0,0)
 
 static inline
 void wrapper_vmalloc_sync_mappings(void)
