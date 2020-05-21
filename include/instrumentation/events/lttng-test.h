@@ -18,6 +18,7 @@ LTTNG_TRACEPOINT_ENUM(
 		ctf_enum_auto("AUTO: EXPECT 28")
 		ctf_enum_range("RANGE: 101 TO 303", 101, 303)
 		ctf_enum_auto("AUTO: EXPECT 304")
+		ctf_enum_value("VALUE: -1", -1)
 	)
 )
 
@@ -30,6 +31,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_test_filter_event,
 		ctf_integer(int, intfield, anint)
 		ctf_integer_hex(int, intfield2, anint)
 		ctf_integer(long, longfield, anint)
+		ctf_integer(int, signedfield, -1)
 		ctf_integer_network(int, netintfield, netint)
 		ctf_integer_network_hex(int, netintfieldhex, netint)
 		ctf_array(long, arrfield1, values, 3)
@@ -49,6 +51,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_test_filter_event,
 		ctf_enum(lttng_test_filter_event_enum, int, enum28, 28)
 		ctf_enum(lttng_test_filter_event_enum, int, enum202, 202)
 		ctf_enum(lttng_test_filter_event_enum, int, enum304, 304)
+		ctf_enum(lttng_test_filter_event_enum, int, enumnegative, -1)
 	)
 )
 
