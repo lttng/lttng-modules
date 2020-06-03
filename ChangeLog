@@ -1,3 +1,18 @@
+2020-06-02 (National Leave the Office Early Day (or Simply Stay Home ?) LTTng modules 2.12.1
+	* Fix: Implement RING_BUFFER_GET_NEXT_SUBBUF_METADATA_CHECK
+	* fix: vmalloc_sync_mappings was backported to v5.5.12
+	* Update: Additional kernel ranges for vmalloc_sync_mappings
+	* Update: Use vmalloc_sync_mappings for stable kernels
+	* Fix: Use vmalloc_sync_mappings on kernel 5.6 as well
+	* fix: add missing guid_t type to wrapper
+	* Fix: missing wrapper rename to wrapper_vmalloc_sync_mappings
+	* Update for kernel 5.7: use vmalloc_sync_mappings on kernels >= 5.7
+	* Unbreak LTTng for kernel 5.7
+	* Move lttng wrappers into own module
+	* Introduce lttng_guid_gen wrapper for kernels >= 5.7.0
+	* instrumentation: update x86 kvm instrumentation for kernel >= 5.7.0
+	* instrumentation: update mm_vmscan for kernel >= 5.7.0
+
 2020-04-08 (The Day After National Beer Day) LTTng modules 2.12.0
 	* fix: uaccess wrapper for CentOS >= 4.18.0-147
 	* fix: ext4 instrumentation for CentOS >= 4.18.0-147
