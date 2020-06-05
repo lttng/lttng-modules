@@ -5,8 +5,45 @@
 #include <lttng/tracepoint-event.h>
 #include <linux/version.h>
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+#include <../arch/x86/include/asm/traps.h>
+#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0)) */
+
+/* Only define this enum once. */
+
+#ifndef ONCE_LTTNG_EXCEPTIONS_H
+#define ONCE_LTTNG_EXCEPTIONS_H
+
+enum {
+	X86_PF_PROT =	1 << 0,
+	X86_PF_WRITE =	1 << 1,
+	X86_PF_USER =	1 << 2,
+	X86_PF_RSVD =	1 << 3,
+	X86_PF_INSTR =	1 << 4,
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0))
+	X86_PF_PK =	1 << 5,
+#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0)) */
+};
+
+#endif /* ONCE_LTTNG_EXCEPTIONS_H */
+
+#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0)) */
+
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM x86_exceptions
+
+LTTNG_TRACEPOINT_ENUM(lttng_x86_pf_error_code,
+	TP_ENUM_VALUES(
+		ctf_enum_value("PROTECTION_FAULT",	X86_PF_PROT)
+		ctf_enum_value("WRITE_ACCESS",		X86_PF_WRITE)
+		ctf_enum_value("USER_MODE",		X86_PF_USER)
+		ctf_enum_value("RESERVED_BIT",		X86_PF_RSVD)
+		ctf_enum_value("INSTRUCTION_FETCH",	X86_PF_INSTR)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0))
+		ctf_enum_value("PROTECTION_KEYS_BLOCK", X86_PF_PK)
+#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0)) */
+	)
+)
 
 LTTNG_TRACEPOINT_EVENT_CLASS(x86_exceptions_class,
 
@@ -24,7 +61,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(x86_exceptions_class,
 		 * Currently, only 5 low bits are used. Should be made
 		 * larger if error codes are added to the kernel.
 		 */
-		ctf_integer_hex(unsigned char, error_code, error_code)
+		ctf_enum(lttng_x86_pf_error_code, unsigned char, error_code, error_code)
 	)
 )
 
