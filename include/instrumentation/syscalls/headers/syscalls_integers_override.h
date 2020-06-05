@@ -2,6 +2,119 @@
 
 #ifndef CREATE_SYSCALL_TABLE
 
+/*
+ * The `flags` argument of the mmap syscall is split in two parts:
+ * - The type of mapping is described by the four least significant bits of the 4
+ *   bytes integer,
+ * - The options on the mapping are described by the remaining 28 most
+ *   significant bits.
+ */
+#define MAPPING_TYPE_RESERVED_BITS 4
+#define LTTNG_MMAP_FLAGS_TO_CTF(x) ((x) >> MAPPING_TYPE_RESERVED_BITS)
+
+/*
+ * Enumeration of the mmap flags, as described in the 'mmap'
+ * system call man page.
+ */
+SC_LTTNG_TRACEPOINT_ENUM(lttng_mmap_protection,
+	TP_ENUM_VALUES(
+		ctf_enum_value("PROT_EXEC",	PROT_EXEC)
+		ctf_enum_value("PROT_READ",	PROT_READ)
+		ctf_enum_value("PROT_WRITE",	PROT_WRITE)
+		ctf_enum_value("PROT_NONE",	PROT_NONE)
+	)
+)
+
+SC_LTTNG_TRACEPOINT_ENUM(lttng_mmap_flags_mapping_type,
+	TP_ENUM_VALUES(
+		ctf_enum_value("MAP_SHARED",		MAP_SHARED)
+		ctf_enum_value("MAP_PRIVATE",		MAP_PRIVATE)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+		ctf_enum_value("MAP_SHARED_VALIDATE",	MAP_SHARED_VALIDATE)
+#endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0)) */
+	)
+)
+
+/*
+ * Shift the values of the options so we can read them from the `flags` integer
+ * directly.
+ */
+SC_LTTNG_TRACEPOINT_ENUM(lttng_mmap_flags_options,
+	TP_ENUM_VALUES(
+		ctf_enum_value("<none>",		0)
+		ctf_enum_value("MAP_32BIT",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_32BIT))
+		ctf_enum_value("MAP_ANONYMOUS",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_ANONYMOUS))
+		ctf_enum_value("MAP_DENYWRITE",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_DENYWRITE))
+		ctf_enum_value("MAP_EXECUTABLE",	LTTNG_MMAP_FLAGS_TO_CTF(MAP_EXECUTABLE))
+		ctf_enum_value("MAP_FIXED",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_FIXED))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,17,0))
+		ctf_enum_value("MAP_FIXED_NOREPLACE",	LTTNG_MMAP_FLAGS_TO_CTF(MAP_FIXED_NOREPLACE))
+#endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(4,17,0)) */
+		ctf_enum_value("MAP_GROWSDOWN",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_GROWSDOWN))
+		ctf_enum_value("MAP_HUGETLB",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_HUGETLB))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+		ctf_enum_value("MAP_HUGETLB_2MB",	LTTNG_MMAP_FLAGS_TO_CTF(MAP_HUGE_2MB))
+		ctf_enum_value("MAP_HUGETLB_1GB", 	LTTNG_MMAP_FLAGS_TO_CTF(MAP_HUGE_1GB))
+#endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0)) */
+		ctf_enum_value("MAP_LOCKED",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_LOCKED))
+		ctf_enum_value("MAP_NONBLOCK",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_NONBLOCK))
+		ctf_enum_value("MAP_NORESERVE",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_NORESERVE))
+		ctf_enum_value("MAP_POPULATE",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_POPULATE))
+		ctf_enum_value("MAP_STACK",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_STACK))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+		ctf_enum_value("MAP_SYNC",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_SYNC))
+#endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0)) */
+		ctf_enum_value("MAP_UNINITIALIZED",	LTTNG_MMAP_FLAGS_TO_CTF(MAP_UNINITIALIZED))
+	)
+)
+
+#define LTTNG_MMAP_FLAGS_TYPE						\
+{									\
+	.name = "type",							\
+	.type = {							\
+		.atype = atype_enum_nestable,				\
+		.u = {							\
+			.enum_nestable = {				\
+				.desc = &__enum_lttng_mmap_flags_mapping_type,		\
+				.container_type =  __LTTNG_COMPOUND_LITERAL(		\
+					struct lttng_type, __type_integer(uint32_t,	\
+						4, 1, -1, __BYTE_ORDER, 16, none)),	\
+			},						\
+		},							\
+	},								\
+}
+
+#define LTTNG_MMAP_FLAGS_OPTIONS					\
+{									\
+	.name = "options",						\
+	.type = {							\
+		.atype = atype_enum_nestable,				\
+		.u = {							\
+			.enum_nestable = {				\
+				.desc = &__enum_lttng_mmap_flags_options,	    \
+				.container_type = __LTTNG_COMPOUND_LITERAL(	    \
+					struct lttng_type, __type_integer(uint32_t, \
+						28, 1, -1, __BYTE_ORDER, 16, none)),\
+			},						\
+		},							\
+	},								\
+}
+
+#if (__BYTE_ORDER == __LITTLE_ENDIAN)
+#define LTTNG_MMAP_FLAGS			\
+	[0] = LTTNG_MMAP_FLAGS_TYPE,		\
+	[1] = LTTNG_MMAP_FLAGS_OPTIONS,
+
+#else
+#define LTTNG_MMAP_FLAGS			\
+	[0] = LTTNG_MMAP_FLAGS_OPTIONS,		\
+	[1] = LTTNG_MMAP_FLAGS_TYPE,
+#endif
+
+/*
+ * Use a custom field here so that tracer writes a single integer and the
+ * work of splitting it up in two fields is left to the trace reader.
+ */
 #define OVERRIDE_32_mmap
 #define OVERRIDE_64_mmap
 SC_LTTNG_TRACEPOINT_EVENT(mmap,
@@ -13,8 +126,26 @@ SC_LTTNG_TRACEPOINT_EVENT(mmap,
 	TP_FIELDS(sc_exit(ctf_integer_hex(unsigned long, ret, ret))
 		sc_in(ctf_integer_hex(unsigned long, addr, addr))
 		sc_in(ctf_integer(size_t, len, len))
-		sc_in(ctf_integer(int, prot, prot))
-		sc_in(ctf_integer(int, flags, flags))
+		sc_in(ctf_enum(lttng_mmap_protection, int, prot, prot))
+		sc_in(
+			ctf_custom_field(
+				ctf_custom_type(
+					{
+						.atype = atype_struct_nestable,
+						.u.struct_nestable.nr_fields = 2,
+						.u.struct_nestable.fields =
+							__LTTNG_COMPOUND_LITERAL(struct lttng_event_field,
+								LTTNG_MMAP_FLAGS
+							),
+						.u.struct_nestable.alignment = lttng_alignof(uint32_t) * CHAR_BIT,
+					}
+				),
+				flags,
+				ctf_custom_code(
+					ctf_integer_type(uint32_t, flags)
+				)
+			)
+		)
 		sc_in(ctf_integer(int, fd, fd))
 		sc_in(ctf_integer(off_t, offset, off))
 	)

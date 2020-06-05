@@ -19,6 +19,7 @@
 #include <linux/file.h>
 #include <linux/anon_inodes.h>
 #include <linux/fcntl.h>
+#include <linux/mman.h>
 #include <asm/ptrace.h>
 #include <asm/syscall.h>
 
