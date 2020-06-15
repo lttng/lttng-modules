@@ -42,19 +42,38 @@ static void lib_ring_buffer_pipe_buf_release(struct pipe_inode_info *pipe,
 	__free_page(pbuf->page);
 }
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,8,0))
 static const struct pipe_buf_operations ring_buffer_pipe_buf_ops = {
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(5,1,0))
-	.can_merge = 0,
-#endif
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
-	.map = generic_pipe_buf_map,
-	.unmap = generic_pipe_buf_unmap,
-#endif
+	.release = lib_ring_buffer_pipe_buf_release,
+	.try_steal = generic_pipe_buf_try_steal,
+	.get = generic_pipe_buf_get
+};
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(5,1,0))
+static const struct pipe_buf_operations ring_buffer_pipe_buf_ops = {
 	.confirm = generic_pipe_buf_confirm,
 	.release = lib_ring_buffer_pipe_buf_release,
 	.steal = generic_pipe_buf_steal,
-	.get = generic_pipe_buf_get,
+	.get = generic_pipe_buf_get
 };
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
+static const struct pipe_buf_operations ring_buffer_pipe_buf_ops = {
+	.can_merge = 0,
+	.confirm = generic_pipe_buf_confirm,
+	.release = lib_ring_buffer_pipe_buf_release,
+	.steal = generic_pipe_buf_steal,
+	.get = generic_pipe_buf_get
+};
+#else
+static const struct pipe_buf_operations ring_buffer_pipe_buf_ops = {
+	.can_merge = 0,
+	.map = generic_pipe_buf_map,
+	.unmap = generic_pipe_buf_unmap,
+	.confirm = generic_pipe_buf_confirm,
+	.release = lib_ring_buffer_pipe_buf_release,
+	.steal = generic_pipe_buf_steal,
+	.get = generic_pipe_buf_get
+};
+#endif
 
 /*
  * Page release operation after splice pipe_to_file ends.
