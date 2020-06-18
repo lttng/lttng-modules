@@ -681,15 +681,9 @@ LTTNG_TRACEPOINT_EVENT(block_bio_complete,
  */
 LTTNG_TRACEPOINT_EVENT(block_bio_complete,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
 	TP_PROTO(struct request_queue *q, struct bio *bio, int error),
 
 	TP_ARGS(q, bio, error),
-#else
-	TP_PROTO(struct request_queue *q, struct bio *bio),
-
-	TP_ARGS(q, bio),
-#endif
 
 	TP_FIELDS(
 		ctf_integer(dev_t, dev, bio_dev(bio))
@@ -727,7 +721,7 @@ LTTNG_TRACEPOINT_EVENT(block_bio_complete,
 			bio->bi_iter.bi_size)
 	)
 )
-#else
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
 /**
  * block_bio_complete - completed all work on the block operation
  * @q: queue holding the block operation
@@ -747,11 +741,32 @@ LTTNG_TRACEPOINT_EVENT(block_bio_complete,
 		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
 		ctf_integer(sector_t, sector, bio->bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
 		ctf_integer(int, error, error)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			lttng_bio_op(bio), lttng_bio_rw(bio), bio->bi_size)
+	)
+)
 #else
+/**
+ * block_bio_complete - completed all work on the block operation
+ * @q: queue holding the block operation
+ * @bio: block operation completed
+ * @error: io error value
+ *
+ * This tracepoint indicates there is no further work to do on this
+ * block IO operation @bio.
+ */
+LTTNG_TRACEPOINT_EVENT(block_bio_complete,
+
+	TP_PROTO(struct request_queue *q, struct bio *bio),
+
+	TP_ARGS(q, bio),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
+		ctf_integer(sector_t, sector, bio->bi_sector)
+		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
 		ctf_integer(int, error, 0)
-#endif
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
 			lttng_bio_op(bio), lttng_bio_rw(bio), bio->bi_size)
 	)
