@@ -683,11 +683,15 @@ extern struct lttng_ctx *lttng_static_ctx;
 int lttng_context_init(void);
 void lttng_context_exit(void);
 struct lttng_ctx_field *lttng_append_context(struct lttng_ctx **ctx);
+ssize_t lttng_append_context_index(struct lttng_ctx **ctx_p);
+struct lttng_ctx_field *lttng_get_context_field_from_index(struct lttng_ctx *ctx,
+		size_t index);
 void lttng_context_update(struct lttng_ctx *ctx);
 int lttng_find_context(struct lttng_ctx *ctx, const char *name);
 int lttng_get_context_index(struct lttng_ctx *ctx, const char *name);
 void lttng_remove_context_field(struct lttng_ctx **ctx,
 				struct lttng_ctx_field *field);
+void lttng_remove_context_field_index(struct lttng_ctx **ctx_p, size_t index);
 void lttng_destroy_context(struct lttng_ctx *ctx);
 int lttng_add_pid_to_ctx(struct lttng_ctx **ctx);
 int lttng_add_cpu_id_to_ctx(struct lttng_ctx **ctx);

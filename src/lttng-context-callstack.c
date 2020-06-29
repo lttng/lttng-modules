@@ -105,6 +105,7 @@ int __lttng_add_callstack_generic(struct lttng_ctx **ctx,
 	const char *ctx_name = lttng_cs_ctx_mode_name(mode);
 	const char *ctx_length_name = lttng_cs_ctx_mode_length_name(mode);
 	struct lttng_ctx_field *length_field, *sequence_field;
+	ssize_t length_index, sequence_index;
 	struct lttng_event_field *field;
 	struct field_data *fdata;
 	int ret;
@@ -112,18 +113,22 @@ int __lttng_add_callstack_generic(struct lttng_ctx **ctx,
 	ret = init_type(mode);
 	if (ret)
 		return ret;
-	length_field = lttng_append_context(ctx);
-	if (!length_field)
-		return -ENOMEM;
-	sequence_field = lttng_append_context(ctx);
-	if (!sequence_field) {
-		lttng_remove_context_field(ctx, length_field);
-		return -ENOMEM;
+	if (lttng_find_context(*ctx, ctx_name))
+		return -EEXIST;
+	length_index = lttng_append_context_index(ctx);
+	if (length_index < 0) {
+		ret = -ENOMEM;
+		goto error_length;
 	}
-	if (lttng_find_context(*ctx, ctx_name)) {
-		ret = -EEXIST;
-		goto error_find;
+	sequence_index = lttng_append_context_index(ctx);
+	if (sequence_index < 0) {
+		ret = -ENOMEM;
+		goto error_sequence;
 	}
+	length_field = lttng_get_context_field_from_index(*ctx, length_index);
+	WARN_ON_ONCE(!length_field);
+	sequence_field = lttng_get_context_field_from_index(*ctx, sequence_index);
+	WARN_ON_ONCE(!sequence_field);
 	fdata = field_data_create(mode);
 	if (!fdata) {
 		ret = -ENOMEM;
@@ -156,10 +161,10 @@ int __lttng_add_callstack_generic(struct lttng_ctx **ctx,
 	return 0;
 
 error_create:
-	field_data_free(fdata);
-error_find:
-	lttng_remove_context_field(ctx, sequence_field);
-	lttng_remove_context_field(ctx, length_field);
+	lttng_remove_context_field_index(ctx, sequence_index);
+error_sequence:
+	lttng_remove_context_field_index(ctx, length_index);
+error_length:
 	return ret;
 }
 
