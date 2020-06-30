@@ -56,8 +56,8 @@ Here are its key components:
 
   The ring buffer library can be configured to be used in various
   use-cases by creating a specialized ring buffer "client" (template).
-  include/ringbuffer/config.h details the various configurations which
-  are supported.
+  include/ringbuffer/config.h details the various configuration
+  parameters which are supported.
 
 
 * LTTng modules ring buffer clients
