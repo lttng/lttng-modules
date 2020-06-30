@@ -151,6 +151,7 @@ int __lttng_add_callstack_generic(struct lttng_ctx **ctx,
 	field = &sequence_field->event_field;
 	field->name = ctx_name;
 	field->type.atype = atype_sequence_nestable;
+	field->type.u.sequence_nestable.length_name = ctx_length_name;
 	field->type.u.sequence_nestable.elem_type = &sequence_elem_type;
 	field->type.u.sequence_nestable.alignment = 0;
 	sequence_field->get_size_arg = lttng_callstack_sequence_get_size;
