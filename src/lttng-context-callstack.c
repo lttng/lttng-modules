@@ -146,6 +146,7 @@ int __lttng_add_callstack_generic(struct lttng_ctx **ctx,
 	field->type.u.integer.encoding = lttng_encode_none;
 	length_field->get_size_arg = lttng_callstack_length_get_size;
 	length_field->record = lttng_callstack_length_record;
+	length_field->priv = fdata;
 
 	field = &sequence_field->event_field;
 	field->name = ctx_name;
