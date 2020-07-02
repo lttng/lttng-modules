@@ -14,36 +14,10 @@
 
 #include <linux/genhd.h>
 
-#ifdef CONFIG_KALLSYMS
+#ifdef CONFIG_KALLSYMS_ALL
 
 #include <linux/kallsyms.h>
 #include <wrapper/kallsyms.h>
-
-static inline
-char *wrapper_disk_name(struct gendisk *hd, int partno, char *buf)
-{
-	char *(*disk_name_sym)(struct gendisk *hd, int partno, char *buf);
-
-	disk_name_sym = (void *) kallsyms_lookup_funcptr("disk_name");
-	if (disk_name_sym) {
-		return disk_name_sym(hd, partno, buf);
-	} else {
-		printk_once(KERN_WARNING "LTTng: disk_name symbol lookup failed.\n");
-		return NULL;
-	}
-}
-
-#else
-
-static inline
-char *wrapper_disk_name(struct gendisk *hd, int partno, char *buf)
-{
-	return disk_name(hd, partno, buf);
-}
-
-#endif
-
-#ifdef CONFIG_KALLSYMS_ALL
 
 static inline
 struct class *wrapper_get_block_class(void)
