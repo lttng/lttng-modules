@@ -138,10 +138,19 @@ int lttng_enumerate_block_devices(struct lttng_session *session)
 
 		disk_part_iter_init(&piter, disk, DISK_PITER_INCL_PART0);
 		while ((part = disk_part_iter_next(&piter))) {
+			struct block_device bdev;
 			char name_buf[BDEVNAME_SIZE];
-			char *p;
+			const char *p;
 
-			p = wrapper_disk_name(disk, part->partno, name_buf);
+			/*
+			 * Create a partial 'struct blockdevice' to use
+			 * 'bdevname()' which is a simple wrapper over
+			 * 'disk_name()' but has the honor to be EXPORT_SYMBOL.
+			 */
+			bdev.bd_disk = disk;
+			bdev.bd_part = part;
+
+			p = bdevname(&bdev, name_buf);
 			if (!p) {
 				disk_part_iter_exit(&piter);
 				class_dev_iter_exit(&iter);
