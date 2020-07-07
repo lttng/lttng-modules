@@ -10,6 +10,7 @@
  */
 
 #include <lttng/kernel-version.h>
+#include <linux/module.h>
 
 #if (defined(CONFIG_KALLSYMS) \
 	&& (LINUX_VERSION_CODE < KERNEL_VERSION(3,4,0)))
