@@ -88,9 +88,9 @@ void wrapper_uprobe_unregister(struct inode *inode, loff_t offset, struct uprobe
  *   extern void uprobe_unregister(struct inode *inode, loff_t offset, struct uprobe_consumer *uc);
  */
 static inline
-int __canary__uprobe_unregister(struct inode *inode, loff_t offset, struct uprobe_consumer *uc)
+void __canary__uprobe_unregister(struct inode *inode, loff_t offset, struct uprobe_consumer *uc)
 {
-	return uprobe_unregister(inode, offset, uc);
+	uprobe_unregister(inode, offset, uc);
 }
 
 #endif
