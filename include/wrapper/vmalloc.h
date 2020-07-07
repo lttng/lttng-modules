@@ -117,9 +117,19 @@ void __canary__vmalloc_sync_all(void)
 
 #endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)) */
 
-#else
+#else /* CONFIG_KALLSYMS */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0) \
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,8,0))
+
+/*
+ * wrapper_vmalloc_sync_mappings was removed in v5.8, the vmalloc mappings
+ * are now synchronized when they are created or torn down.
+ */
+static inline
+void wrapper_vmalloc_sync_mappings(void)
+{}
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0) \
   || LTTNG_KERNEL_RANGE(5,5,12, 5,6,0)            \
   || LTTNG_KERNEL_RANGE(5,4,28, 5,5,0)            \
   || LTTNG_KERNEL_RANGE(5,2,37, 5,3,0)            \
