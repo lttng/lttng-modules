@@ -262,7 +262,7 @@ void *__canary____lttng_vmalloc_node_range(unsigned long size, unsigned long ali
 			vm_flags, node, caller);
 }
 
-#else /* (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0)) */
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
 
 /*
  * kallsyms wrapper of __vmalloc_node with a fallback to kmalloc_node.
@@ -305,6 +305,54 @@ static inline
 void *__canary____lttng_vmalloc_node_range(unsigned long size, unsigned long align,
 			unsigned long start, unsigned long end, gfp_t gfp_mask,
 			pgprot_t prot, int node, const void *caller)
+{
+	return __vmalloc_node_range(size, align, start, end, gfp_mask, prot,
+			node, caller);
+}
+
+#else /* (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)) */
+
+/*
+ * kallsyms wrapper of __vmalloc_node with a fallback to kmalloc_node.
+ */
+static inline
+void *__lttng_vmalloc_node_range(unsigned long size, unsigned long align,
+			unsigned long start, unsigned long end, gfp_t gfp_mask,
+			pgprot_t prot, unsigned long vm_flags, int node,
+			void *caller)
+{
+#ifdef CONFIG_KALLSYMS
+	/*
+	 * If we have KALLSYMS, get * __vmalloc_node_range which is not exported.
+	 */
+	void *(*lttng__vmalloc_node_range)(unsigned long size, unsigned long align,
+			unsigned long start, unsigned long end, gfp_t gfp_mask,
+			pgprot_t prot, int node, void *caller);
+
+	lttng__vmalloc_node_range = (void *) kallsyms_lookup_funcptr("__vmalloc_node_range");
+	if (lttng__vmalloc_node_range)
+		return lttng__vmalloc_node_range(size, align, start, end, gfp_mask, prot,
+				node, caller);
+#endif
+	if (node != NUMA_NO_NODE)
+		print_vmalloc_node_range_warning();
+	return __vmalloc(size, gfp_mask, prot);
+}
+
+/*
+ * Canary function to check for '__vmalloc_node_range()' at compile time.
+ *
+ * From 'include/linux/vmalloc.h':
+ *
+ *   extern void *__vmalloc_node_range(unsigned long size, unsigned long align,
+ *                           unsigned long start, unsigned long end, gfp_t gfp_mask,
+ *                           pgprot_t prot, unsigned long vm_flags, int node,
+ *                           void *caller);
+ */
+static inline
+void *__canary____lttng_vmalloc_node_range(unsigned long size, unsigned long align,
+			unsigned long start, unsigned long end, gfp_t gfp_mask,
+			pgprot_t prot, int node, void *caller)
 {
 	return __vmalloc_node_range(size, align, start, end, gfp_mask, prot,
 			node, caller);
