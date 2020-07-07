@@ -51,7 +51,7 @@ unsigned long __canary__global_wb_domain(void)
 	return global_wb_domain.dirty_limit;
 }
 
-#else
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0)
 
 static unsigned long *global_dirty_limit_sym;
 
@@ -88,11 +88,13 @@ unsigned long __canary__global_dirty_limit(void)
 
 #include <linux/writeback.h>
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0)
 static inline
 unsigned long wrapper_global_dirty_limit(void)
 {
 	return global_dirty_limit;
 }
+#endif
 
 #endif
 
