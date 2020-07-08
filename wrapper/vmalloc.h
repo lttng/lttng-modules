@@ -310,7 +310,7 @@ void *__canary____lttng_vmalloc_node_range(unsigned long size, unsigned long ali
 			node, caller);
 }
 
-#else /* (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)) */
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
 
 /*
  * kallsyms wrapper of __vmalloc_node with a fallback to kmalloc_node.
@@ -356,6 +356,20 @@ void *__canary____lttng_vmalloc_node_range(unsigned long size, unsigned long ali
 {
 	return __vmalloc_node_range(size, align, start, end, gfp_mask, prot,
 			node, caller);
+}
+
+#else /* (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38)) */
+
+/*
+ * Basic fallback for kernel prior to 2.6.38 without __vmalloc_node_range()
+ */
+static inline
+void *__lttng_vmalloc_node_range(unsigned long size, unsigned long align,
+			unsigned long start, unsigned long end, gfp_t gfp_mask,
+			pgprot_t prot, unsigned long vm_flags, int node,
+			void *caller)
+{
+	return __vmalloc(size, gfp_mask, prot);
 }
 
 #endif
