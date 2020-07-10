@@ -1090,8 +1090,12 @@ int lttng_metadata_ring_buffer_release(struct inode *inode, struct file *file)
 	struct lttng_metadata_stream *stream = file->private_data;
 	struct lib_ring_buffer *buf = stream->priv;
 
+	mutex_lock(&stream->metadata_cache->lock);
+	list_del(&stream->list);
+	mutex_unlock(&stream->metadata_cache->lock);
 	kref_put(&stream->metadata_cache->refcount, metadata_cache_destroy);
 	module_put(stream->transport->owner);
+	kfree(stream);
 	return lib_ring_buffer_release(inode, file, buf);
 }
 
@@ -1243,8 +1247,10 @@ int lttng_abi_open_metadata_stream(struct file *channel_file)
 	if (ret < 0)
 		goto fd_error;
 
+	mutex_lock(&session->metadata_cache->lock);
 	list_add(&metadata_stream->list,
 		&session->metadata_cache->metadata_stream);
+	mutex_unlock(&session->metadata_cache->lock);
 	return ret;
 
 fd_error:

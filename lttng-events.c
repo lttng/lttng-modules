@@ -1696,9 +1696,9 @@ void lttng_metadata_end(struct lttng_session *session)
 	if (atomic_dec_return(&session->metadata_cache->producing) == 0) {
 		struct lttng_metadata_stream *stream;
 
-		mutex_unlock(&session->metadata_cache->lock);
 		list_for_each_entry(stream, &session->metadata_cache->metadata_stream, list)
 			wake_up_interruptible(&stream->read_wait);
+		mutex_unlock(&session->metadata_cache->lock);
 	}
 }
 
