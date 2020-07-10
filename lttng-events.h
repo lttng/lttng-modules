@@ -549,7 +549,7 @@ struct lttng_metadata_cache {
 	char *data;			/* Metadata cache */
 	unsigned int cache_alloc;	/* Metadata allocated size (bytes) */
 	unsigned int metadata_written;	/* Number of bytes written in metadata cache */
-	int producing;			/* Metadata being produced (incomplete) */
+	atomic_t producing;		/* Metadata being produced (incomplete) */
 	struct kref refcount;		/* Metadata cache usage */
 	struct list_head metadata_stream;	/* Metadata stream list */
 	uuid_le uuid;			/* Trace session unique ID (copy) */

@@ -1669,7 +1669,7 @@ int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 			reserve_len);
 	stream->transport->ops.event_commit(&ctx);
 	stream->metadata_in += reserve_len;
-	if (reserve_len < len || stream->metadata_cache->producing != 0)
+	if (reserve_len < len)
 		stream->coherent = false;
 	else
 		stream->coherent = true;
@@ -1685,18 +1685,21 @@ end:
 static
 void lttng_metadata_begin(struct lttng_session *session)
 {
-	mutex_lock(&session->metadata_cache->lock);
-	session->metadata_cache->producing++;
-	mutex_unlock(&session->metadata_cache->lock);
+	if (atomic_inc_return(&session->metadata_cache->producing) == 1)
+		mutex_lock(&session->metadata_cache->lock);
 }
 
 static
 void lttng_metadata_end(struct lttng_session *session)
 {
-	mutex_lock(&session->metadata_cache->lock);
-	WARN_ON_ONCE(!session->metadata_cache->producing);
-	session->metadata_cache->producing--;
-	mutex_unlock(&session->metadata_cache->lock);
+	WARN_ON_ONCE(!atomic_read(&session->metadata_cache->producing));
+	if (atomic_dec_return(&session->metadata_cache->producing) == 0) {
+		struct lttng_metadata_stream *stream;
+
+		mutex_unlock(&session->metadata_cache->lock);
+		list_for_each_entry(stream, &session->metadata_cache->metadata_stream, list)
+			wake_up_interruptible(&stream->read_wait);
+	}
 }
 
 /*
@@ -1713,7 +1716,6 @@ int lttng_metadata_printf(struct lttng_session *session,
 	char *str;
 	size_t len;
 	va_list ap;
-	struct lttng_metadata_stream *stream;
 
 	WARN_ON_ONCE(!READ_ONCE(session->active));
 
@@ -1724,8 +1726,7 @@ int lttng_metadata_printf(struct lttng_session *session,
 		return -ENOMEM;
 
 	len = strlen(str);
-	mutex_lock(&session->metadata_cache->lock);
-	session->metadata_cache->producing++;
+	WARN_ON_ONCE(!atomic_read(&session->metadata_cache->producing));
 	if (session->metadata_cache->metadata_written + len >
 			session->metadata_cache->cache_alloc) {
 		char *tmp_cache_realloc;
@@ -1751,18 +1752,11 @@ int lttng_metadata_printf(struct lttng_session *session,
 			session->metadata_cache->metadata_written,
 			str, len);
 	session->metadata_cache->metadata_written += len;
-	session->metadata_cache->producing--;
-	mutex_unlock(&session->metadata_cache->lock);
 	kfree(str);
-
-	list_for_each_entry(stream, &session->metadata_cache->metadata_stream, list)
-		wake_up_interruptible(&stream->read_wait);
 
 	return 0;
 
 err:
-	session->metadata_cache->producing--;
-	mutex_unlock(&session->metadata_cache->lock);
 	kfree(str);
 	return -ENOMEM;
 }
