@@ -199,8 +199,10 @@ void lttng_session_destroy(struct lttng_session *session)
 		BUG_ON(chan->channel_type == METADATA_CHANNEL);
 		_lttng_channel_destroy(chan);
 	}
+	mutex_lock(&session->metadata_cache->lock);
 	list_for_each_entry(metadata_stream, &session->metadata_cache->metadata_stream, list)
 		_lttng_metadata_channel_hangup(metadata_stream);
+	mutex_unlock(&session->metadata_cache->lock);
 	if (session->pid_tracker)
 		lttng_pid_tracker_destroy(session->pid_tracker);
 	kref_put(&session->metadata_cache->refcount, metadata_cache_destroy);
