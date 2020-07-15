@@ -18,4 +18,9 @@ lttng-lib-ring-buffer-objs := \
   prio_heap/lttng_prio_heap.o \
   ../wrapper/splice.o
 
+obj-$(CONFIG_LTTNG) += lttng-counter.o
+
+lttng-counter-objs := \
+  counter/counter.o
+
 # vim:syntax=make

@@ -52,6 +52,7 @@
 static LIST_HEAD(sessions);
 static LIST_HEAD(event_notifier_groups);
 static LIST_HEAD(lttng_transport_list);
+static LIST_HEAD(lttng_counter_transport_list);
 /*
  * Protect the sessions and metadata caches.
  */
@@ -757,6 +758,18 @@ void _lttng_metadata_channel_hangup(struct lttng_metadata_stream *stream)
 {
 	stream->finalized = 1;
 	wake_up_interruptible(&stream->read_wait);
+}
+
+static
+struct lttng_counter_transport *lttng_counter_transport_find(const char *name)
+{
+	struct lttng_counter_transport *transport;
+
+	list_for_each_entry(transport, &lttng_counter_transport_list, node) {
+		if (!strcmp(transport->name, name))
+			return transport;
+	}
+	return NULL;
 }
 
 /*
@@ -3877,6 +3890,29 @@ void lttng_transport_unregister(struct lttng_transport *transport)
 	mutex_unlock(&sessions_mutex);
 }
 EXPORT_SYMBOL_GPL(lttng_transport_unregister);
+
+void lttng_counter_transport_register(struct lttng_counter_transport *transport)
+{
+	/*
+	 * Make sure no page fault can be triggered by the module about to be
+	 * registered. We deal with this here so we don't have to call
+	 * vmalloc_sync_mappings() in each module's init.
+	 */
+	wrapper_vmalloc_sync_mappings();
+
+	mutex_lock(&sessions_mutex);
+	list_add_tail(&transport->node, &lttng_counter_transport_list);
+	mutex_unlock(&sessions_mutex);
+}
+EXPORT_SYMBOL_GPL(lttng_counter_transport_register);
+
+void lttng_counter_transport_unregister(struct lttng_counter_transport *transport)
+{
+	mutex_lock(&sessions_mutex);
+	list_del(&transport->node);
+	mutex_unlock(&sessions_mutex);
+}
+EXPORT_SYMBOL_GPL(lttng_counter_transport_unregister);
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
 
