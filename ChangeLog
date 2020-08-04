@@ -1,3 +1,22 @@
+2020-08-04 (National Chocolate Chip Cookie Day) LTTng modules 2.12.2
+	* Fix: Lock metadata cache on session destroy
+	* Fix: metadata stream leak, missing list removal and locking
+	* Fix: coherent state not changed atomically with metadata written
+	* fix: include module.h for EXPORT_SYMBOL_GPL
+	* fix: __lttng_vmalloc_node_range const caller introduced in v3.6
+	* fix: version range for overflow_callback
+	* fix: global_dirty_limit was introduced in v3.1
+	* fix: wrapper_uprobe_unregister is a void function
+	* fix: prior to v4.0, __vmalloc_node_range had no vm_flags param
+	* fix: vmalloc on v5.8 without KALLSYMS
+	* Detect missing symbols used with kallsyms_lookup at compile time
+	* Use exported symbol bdevname() instead of disk_name()
+	* Add git-review config
+	* fix: mm: remove vmalloc_sync_(un)mappings() (v5.8)
+	* fix: mm/writeback: discard NR_UNSTABLE_NFS, use NR_WRITEBACK (v5.8)
+	* fix: block: remove the error argument to the block_bio_complete (v5.8)
+	* fix: pipe_buf_operations rework (v5.8)
+
 2020-06-02 (National Leave the Office Early Day (or Simply Stay Home ?) LTTng modules 2.12.1
 	* Fix: Implement RING_BUFFER_GET_NEXT_SUBBUF_METADATA_CHECK
 	* fix: vmalloc_sync_mappings was backported to v5.5.12
