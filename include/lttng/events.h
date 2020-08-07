@@ -356,6 +356,7 @@ struct lttng_event {
 struct lttng_event_notifier {
 	enum lttng_event_type evtype;	/* First field. */
 	uint64_t user_token;
+	uint64_t error_counter_index;
 	int enabled;
 	int registered;			/* has reg'd tracepoint probe */
 	const struct lttng_event_desc *desc;
@@ -426,6 +427,7 @@ struct lttng_event_enabler {
 
 struct lttng_event_notifier_enabler {
 	struct lttng_enabler base;
+	uint64_t error_counter_index;
 	struct list_head node;	/* List of event_notifier enablers */
 	struct lttng_event_notifier_group *group;
 
@@ -675,6 +677,14 @@ struct lttng_session {
 	char creation_time[LTTNG_KERNEL_SESSION_CREATION_TIME_ISO8601_LEN];
 };
 
+struct lttng_counter {
+	struct file *file;		/* File associated to counter. */
+	struct file *owner;
+	struct lttng_counter_transport *transport;
+	struct lib_counter *counter;
+	struct lttng_counter_ops *ops;
+};
+
 struct lttng_event_notifier_group {
 	struct file *file;		/* File associated to event notifier group */
 	struct file *notif_file;	/* File used to expose notifications to userspace. */
@@ -759,7 +769,23 @@ int lttng_session_metadata_regenerate(struct lttng_session *session);
 int lttng_session_statedump(struct lttng_session *session);
 void metadata_cache_destroy(struct kref *kref);
 
+struct lttng_counter *lttng_kernel_counter_create(
+		const char *counter_transport_name, size_t number_dimensions,
+		const size_t *dimensions_sizes);
+int lttng_kernel_counter_read(struct lttng_counter *counter,
+		const size_t *dimension_indexes, int32_t cpu,
+		int64_t *val, bool *overflow, bool *underflow);
+int lttng_kernel_counter_aggregate(struct lttng_counter *counter,
+		const size_t *dimension_indexes, int64_t *val,
+		bool *overflow, bool *underflow);
+int lttng_kernel_counter_clear(struct lttng_counter *counter,
+		const size_t *dimension_indexes);
+
+
 struct lttng_event_notifier_group *lttng_event_notifier_group_create(void);
+int lttng_event_notifier_group_create_error_counter(
+		struct file *event_notifier_group_file,
+		const struct lttng_kernel_counter_conf *error_counter_conf);
 void lttng_event_notifier_group_destroy(
 		struct lttng_event_notifier_group *event_notifier_group);
 
@@ -795,6 +821,7 @@ struct lttng_event *lttng_event_compat_old_create(struct lttng_channel *chan,
 struct lttng_event_notifier *lttng_event_notifier_create(
 				const struct lttng_event_desc *event_notifier_desc,
 				uint64_t id,
+				uint64_t error_counter_idx,
 				struct lttng_event_notifier_group *event_notifier_group,
 				struct lttng_kernel_event_notifier *event_notifier_param,
 				void *filter,
@@ -802,6 +829,7 @@ struct lttng_event_notifier *lttng_event_notifier_create(
 struct lttng_event_notifier *_lttng_event_notifier_create(
 				const struct lttng_event_desc *event_notifier_desc,
 				uint64_t id,
+				uint64_t error_counter_idx,
 				struct lttng_event_notifier_group *event_notifier_group,
 				struct lttng_kernel_event_notifier *event_notifier_param,
 				void *filter,

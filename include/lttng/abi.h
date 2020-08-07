@@ -11,6 +11,7 @@
 #define _LTTNG_ABI_H
 
 #include <linux/fs.h>
+#include <linux/types.h>
 
 /*
  * Major/minor version of ABI exposed to lttng tools. Major number
@@ -140,8 +141,67 @@ struct lttng_kernel_event {
 #define LTTNG_KERNEL_EVENT_NOTIFIER_PADDING1	16
 struct lttng_kernel_event_notifier {
 	struct lttng_kernel_event event;
+	uint64_t error_counter_index;
 
 	char padding[LTTNG_KERNEL_EVENT_NOTIFIER_PADDING1];
+} __attribute__((packed));
+
+enum lttng_kernel_counter_arithmetic {
+    LTTNG_KERNEL_COUNTER_ARITHMETIC_MODULAR = 1,
+};
+
+enum lttng_kernel_counter_bitness {
+    LTTNG_KERNEL_COUNTER_BITNESS_32 = 1,
+    LTTNG_KERNEL_COUNTER_BITNESS_64 = 2,
+};
+
+struct lttng_kernel_counter_dimension {
+	uint64_t size;
+	uint64_t underflow_index;
+	uint64_t overflow_index;
+	uint8_t has_underflow;
+	uint8_t has_overflow;
+} __attribute__((packed));
+
+#define LTTNG_KERNEL_COUNTER_DIMENSION_MAX 4
+struct lttng_kernel_counter_conf {
+	uint32_t arithmetic;	/* enum lttng_kernel_counter_arithmetic */
+	uint32_t bitness;	/* enum lttng_kernel_counter_bitness */
+	uint32_t number_dimensions;
+	int64_t global_sum_step;
+	struct lttng_kernel_counter_dimension dimensions[LTTNG_KERNEL_COUNTER_DIMENSION_MAX];
+} __attribute__((packed));
+
+struct lttng_kernel_counter_index {
+	uint32_t number_dimensions;
+	uint64_t dimension_indexes[LTTNG_KERNEL_COUNTER_DIMENSION_MAX];
+} __attribute__((packed));
+
+struct lttng_kernel_counter_value {
+	int64_t value;
+	uint8_t underflow;
+	uint8_t overflow;
+} __attribute__((packed));
+
+#define LTTNG_KERNEL_COUNTER_READ_PADDING 32
+struct lttng_kernel_counter_read {
+	struct lttng_kernel_counter_index index;
+	int32_t cpu;	/* -1 for global counter, >= 0 for specific cpu. */
+	struct lttng_kernel_counter_value value;	/* output */
+	char padding[LTTNG_KERNEL_COUNTER_READ_PADDING];
+} __attribute__((packed));
+
+#define LTTNG_KERNEL_COUNTER_AGGREGATE_PADDING 32
+struct lttng_kernel_counter_aggregate {
+	struct lttng_kernel_counter_index index;
+	struct lttng_kernel_counter_value value;	/* output */
+	char padding[LTTNG_KERNEL_COUNTER_AGGREGATE_PADDING];
+} __attribute__((packed));
+
+#define LTTNG_KERNEL_COUNTER_CLEAR_PADDING 32
+struct lttng_kernel_counter_clear {
+	struct lttng_kernel_counter_index index;
+	char padding[LTTNG_KERNEL_COUNTER_CLEAR_PADDING];
 } __attribute__((packed));
 
 #define LTTNG_KERNEL_EVENT_NOTIFIER_NOTIFICATION_PADDING 32
@@ -329,10 +389,14 @@ struct lttng_kernel_tracker_args {
 #define LTTNG_KERNEL_CONTEXT			\
 	_IOW(0xF6, 0x71, struct lttng_kernel_context)
 
-/* Event, Event notifier, Channel and Session ioctl */
+/* Event, Event notifier, Channel, Counter and Session ioctl */
 /* lttng/abi-old.h reserve 0x80 and 0x81. */
 #define LTTNG_KERNEL_ENABLE			_IO(0xF6, 0x82)
 #define LTTNG_KERNEL_DISABLE			_IO(0xF6, 0x83)
+
+/* Trigger group and session ioctl */
+#define LTTNG_KERNEL_COUNTER \
+	_IOW(0xF6, 0x84, struct lttng_kernel_counter_conf)
 
 /* Event and Event notifier FD ioctl */
 #define LTTNG_KERNEL_FILTER			_IO(0xF6, 0x90)
@@ -354,6 +418,15 @@ struct lttng_kernel_tracker_args {
 
 /* Event notifier file descriptor ioctl */
 #define LTTNG_KERNEL_CAPTURE			_IO(0xF6, 0xB8)
+
+/* Counter file descriptor ioctl */
+#define LTTNG_KERNEL_COUNTER_READ \
+	_IOWR(0xF6, 0xC0, struct lttng_kernel_counter_read)
+#define LTTNG_KERNEL_COUNTER_AGGREGATE \
+	_IOWR(0xF6, 0xC1, struct lttng_kernel_counter_aggregate)
+#define LTTNG_KERNEL_COUNTER_CLEAR \
+	_IOW(0xF6, 0xC2, struct lttng_kernel_counter_clear)
+
 
 /*
  * LTTng-specific ioctls for the lib ringbuffer.

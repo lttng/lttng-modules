@@ -69,6 +69,17 @@ static struct file_operations lttng_stream_ring_buffer_file_operations;
 static int put_u64(uint64_t val, unsigned long arg);
 static int put_u32(uint32_t val, unsigned long arg);
 
+static int validate_zeroed_padding(char *p, size_t len)
+{
+	size_t i;
+
+	for (i = 0; i < len; i++) {
+		if (p[i])
+			return -1;
+	}
+	return 0;
+}
+
 /*
  * Teardown management: opened file descriptors keep a refcount on the module,
  * so it can only exit when all file descriptors are closed.
@@ -594,6 +605,135 @@ int lttng_abi_session_set_creation_time(struct lttng_session *session,
 	strcpy(session->creation_time, time->iso8601);
 	return 0;
 }
+
+static
+int lttng_counter_release(struct inode *inode, struct file *file)
+{
+	struct lttng_counter *counter = file->private_data;
+
+	if (counter) {
+		/*
+		 * Do not destroy the counter itself. Wait of the owner
+		 * (event_notifier group) to be destroyed.
+		 */
+		fput(counter->owner);
+	}
+
+	return 0;
+}
+
+static
+long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+{
+	struct lttng_counter *counter = file->private_data;
+	size_t indexes[LTTNG_KERNEL_COUNTER_DIMENSION_MAX] = { 0 };
+	int i;
+
+	switch (cmd) {
+	case LTTNG_KERNEL_COUNTER_READ:
+	{
+		struct lttng_kernel_counter_read local_counter_read;
+		struct lttng_kernel_counter_read __user *ucounter_read =
+				(struct lttng_kernel_counter_read __user *) arg;
+		bool overflow, underflow;
+		int64_t value;
+		int32_t cpu;
+		int ret;
+
+		if (copy_from_user(&local_counter_read, ucounter_read,
+					sizeof(local_counter_read)))
+			return -EFAULT;
+		if (validate_zeroed_padding(local_counter_read.padding,
+				sizeof(local_counter_read.padding)))
+			return -EINVAL;
+
+		/* Cast all indexes into size_t. */
+		for (i = 0; i < local_counter_read.index.number_dimensions; i++)
+			indexes[i] = (size_t) local_counter_read.index.dimension_indexes[i];
+		cpu = local_counter_read.cpu;
+
+		ret = lttng_kernel_counter_read(counter, indexes, cpu, &value,
+				&overflow, &underflow);
+		if (ret)
+			return ret;
+		local_counter_read.value.value = value;
+		local_counter_read.value.overflow = overflow;
+		local_counter_read.value.underflow = underflow;
+
+		if (copy_to_user(&ucounter_read->value, &local_counter_read.value,
+					sizeof(local_counter_read.value)))
+			return -EFAULT;
+
+		return 0;
+	}
+	case LTTNG_KERNEL_COUNTER_AGGREGATE:
+	{
+		struct lttng_kernel_counter_aggregate local_counter_aggregate;
+		struct lttng_kernel_counter_aggregate __user *ucounter_aggregate =
+				(struct lttng_kernel_counter_aggregate __user *) arg;
+		bool overflow, underflow;
+		int64_t value;
+		int ret;
+
+		if (copy_from_user(&local_counter_aggregate, ucounter_aggregate,
+					sizeof(local_counter_aggregate)))
+			return -EFAULT;
+		if (validate_zeroed_padding(local_counter_aggregate.padding,
+				sizeof(local_counter_aggregate.padding)))
+			return -EINVAL;
+
+		/* Cast all indexes into size_t. */
+		for (i = 0; i < local_counter_aggregate.index.number_dimensions; i++)
+			indexes[i] = (size_t) local_counter_aggregate.index.dimension_indexes[i];
+
+		ret = lttng_kernel_counter_aggregate(counter, indexes, &value,
+				&overflow, &underflow);
+		if (ret)
+			return ret;
+		local_counter_aggregate.value.value = value;
+		local_counter_aggregate.value.overflow = overflow;
+		local_counter_aggregate.value.underflow = underflow;
+
+		if (copy_to_user(&ucounter_aggregate->value, &local_counter_aggregate.value,
+					sizeof(local_counter_aggregate.value)))
+			return -EFAULT;
+
+		return 0;
+	}
+	case LTTNG_KERNEL_COUNTER_CLEAR:
+	{
+		struct lttng_kernel_counter_clear local_counter_clear;
+		struct lttng_kernel_counter_clear __user *ucounter_clear =
+				(struct lttng_kernel_counter_clear __user *) arg;
+
+		if (copy_from_user(&local_counter_clear, ucounter_clear,
+					sizeof(local_counter_clear)))
+			return -EFAULT;
+		if (validate_zeroed_padding(local_counter_clear.padding,
+				sizeof(local_counter_clear.padding)))
+			return -EINVAL;
+
+		/* Cast all indexes into size_t. */
+		for (i = 0; i < local_counter_clear.index.number_dimensions; i++)
+			indexes[i] = (size_t) local_counter_clear.index.dimension_indexes[i];
+
+		return lttng_kernel_counter_clear(counter, indexes);
+	}
+	default:
+		WARN_ON_ONCE(1);
+		return -ENOSYS;
+	}
+}
+
+static const struct file_operations lttng_counter_fops = {
+	.owner = THIS_MODULE,
+	.release = lttng_counter_release,
+	.unlocked_ioctl = lttng_counter_ioctl,
+#ifdef CONFIG_COMPAT
+	.compat_ioctl = lttng_counter_ioctl,
+#endif
+};
+
 
 static
 enum tracker_type get_tracker_type(struct lttng_kernel_tracker_args *tracker)
@@ -1902,7 +2042,9 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 		 * It will stay invariant for the rest of the session.
 		 */
 		event_notifier = lttng_event_notifier_create(NULL,
-				event_notifier_param->event.token, event_notifier_group,
+				event_notifier_param->event.token,
+				event_notifier_param->error_counter_index,
+				event_notifier_group,
 				event_notifier_param, NULL,
 				event_notifier_param->event.instrumentation);
 		WARN_ON_ONCE(!event_notifier);
@@ -1928,6 +2070,106 @@ inval_instr:
 }
 
 static
+long lttng_abi_event_notifier_group_create_error_counter(
+		struct file *event_notifier_group_file,
+		const struct lttng_kernel_counter_conf *error_counter_conf)
+{
+	int counter_fd, ret;
+	char *counter_transport_name;
+	size_t counter_len;
+	struct lttng_counter *counter = NULL;
+	struct file *counter_file;
+	struct lttng_event_notifier_group *event_notifier_group =
+			(struct lttng_event_notifier_group *) event_notifier_group_file->private_data;
+
+	if (error_counter_conf->arithmetic != LTTNG_KERNEL_COUNTER_ARITHMETIC_MODULAR) {
+		printk(KERN_ERR "LTTng: event_notifier: Error counter of the wrong arithmetic type.\n");
+		return -EINVAL;
+	}
+
+	if (error_counter_conf->number_dimensions != 1) {
+		printk(KERN_ERR "LTTng: event_notifier: Error counter has more than one dimension.\n");
+		return -EINVAL;
+	}
+
+	switch (error_counter_conf->bitness) {
+	case LTTNG_KERNEL_COUNTER_BITNESS_64:
+		counter_transport_name = "counter-per-cpu-64-modular";
+		break;
+	case LTTNG_KERNEL_COUNTER_BITNESS_32:
+		counter_transport_name = "counter-per-cpu-32-modular";
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	/*
+	 * Lock sessions to provide mutual exclusion against concurrent
+	 * modification of event_notifier group, which would result in
+	 * overwriting the error counter if set concurrently.
+	 */
+	lttng_lock_sessions();
+
+	if (event_notifier_group->error_counter) {
+		printk(KERN_ERR "Error counter already created in event_notifier group\n");
+		ret = -EBUSY;
+		goto fd_error;
+	}
+
+	counter_fd = lttng_get_unused_fd();
+	if (counter_fd < 0) {
+		ret = counter_fd;
+		goto fd_error;
+	}
+
+	counter_file = anon_inode_getfile("[lttng_counter]",
+				       &lttng_counter_fops,
+				       NULL, O_RDONLY);
+	if (IS_ERR(counter_file)) {
+		ret = PTR_ERR(counter_file);
+		goto file_error;
+	}
+
+	counter_len = error_counter_conf->dimensions[0].size;
+
+	if (!atomic_long_add_unless(&event_notifier_group_file->f_count, 1, LONG_MAX)) {
+		ret = -EOVERFLOW;
+		goto refcount_error;
+	}
+
+	counter = lttng_kernel_counter_create(counter_transport_name,
+			1, &counter_len);
+	if (!counter) {
+		ret = -EINVAL;
+		goto counter_error;
+	}
+
+	event_notifier_group->error_counter = counter;
+	event_notifier_group->error_counter_len = counter_len;
+
+	counter->file = counter_file;
+	counter->owner = event_notifier_group->file;
+	counter_file->private_data = counter;
+	/* Ownership transferred. */
+	counter = NULL;
+
+	fd_install(counter_fd, counter_file);
+	lttng_unlock_sessions();
+
+	return counter_fd;
+
+counter_error:
+	atomic_long_dec(&event_notifier_group_file->f_count);
+refcount_error:
+	fput(counter_file);
+file_error:
+	put_unused_fd(counter_fd);
+fd_error:
+	lttng_unlock_sessions();
+	return ret;
+}
+
+static
 long lttng_event_notifier_group_ioctl(struct file *file, unsigned int cmd,
 		unsigned long arg)
 {
@@ -1945,6 +2187,17 @@ long lttng_event_notifier_group_ioctl(struct file *file, unsigned int cmd,
 				sizeof(uevent_notifier_param)))
 			return -EFAULT;
 		return lttng_abi_create_event_notifier(file, &uevent_notifier_param);
+	}
+	case LTTNG_KERNEL_COUNTER:
+	{
+		struct lttng_kernel_counter_conf uerror_counter_conf;
+
+		if (copy_from_user(&uerror_counter_conf,
+				(struct lttng_kernel_counter_conf __user *) arg,
+				sizeof(uerror_counter_conf)))
+			return -EFAULT;
+		return lttng_abi_event_notifier_group_create_error_counter(file,
+				&uerror_counter_conf);
 	}
 	default:
 		return -ENOIOCTLCMD;

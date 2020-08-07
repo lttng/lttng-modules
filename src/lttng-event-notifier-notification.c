@@ -348,6 +348,23 @@ end:
 }
 
 static
+void record_error(struct lttng_event_notifier *event_notifier)
+{
+
+	struct lttng_event_notifier_group *event_notifier_group = event_notifier->group;
+	size_t dimension_index[1];
+	int ret;
+
+	dimension_index[0] = event_notifier->error_counter_index;
+
+	ret = event_notifier_group->error_counter->ops->counter_add(
+			event_notifier_group->error_counter->counter,
+			dimension_index, 1);
+	if (ret)
+		WARN_ON_ONCE(1);
+}
+
+static
 void notification_send(struct lttng_event_notifier_notification *notif,
 		struct lttng_event_notifier *event_notifier)
 {
@@ -375,9 +392,7 @@ void notification_send(struct lttng_event_notifier_notification *notif,
 			lttng_alignof(kernel_notif), -1);
 	ret = event_notifier_group->ops->event_reserve(&ctx, 0);
 	if (ret < 0) {
-		//TODO: error handling with counter maps
-		//silently drop for now.
-		WARN_ON_ONCE(1);
+		record_error(event_notifier);
 		return;
 	}
 

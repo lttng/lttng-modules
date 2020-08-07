@@ -1402,6 +1402,7 @@ int create_unknown_event_notifier(
 	struct lttng_event_notifier_group *group = event_notifier_enabler->group;
 	struct lttng_kernel_event_notifier event_notifier_param;
 	uint64_t user_token = event_notifier_enabler->base.user_token;
+	uint64_t error_counter_index = event_notifier_enabler->error_counter_index;
 	struct lttng_enabler *base_enabler = lttng_event_notifier_enabler_as_enabler(
 		event_notifier_enabler);
 	struct hlist_head *unknown_dispatch_list;
@@ -1464,7 +1465,7 @@ int create_unknown_event_notifier(
 	event_notifier_param.event.u.syscall.entryexit = entryexit;
 
 	notifier = _lttng_event_notifier_create(desc, user_token,
-		group, &event_notifier_param, NULL,
+		error_counter_index, group, &event_notifier_param, NULL,
 		event_notifier_param.event.instrumentation);
 	if (IS_ERR(notifier)) {
 		printk(KERN_INFO "Unable to create unknown notifier %s\n",
@@ -1487,6 +1488,7 @@ static int create_matching_event_notifiers(
 	struct lttng_event_notifier_group *group = event_notifier_enabler->group;
 	const struct lttng_event_desc *desc;
 	uint64_t user_token = event_notifier_enabler->base.user_token;
+	uint64_t error_counter_index = event_notifier_enabler->error_counter_index;
 	unsigned int i;
 	int ret = 0;
 
@@ -1544,9 +1546,9 @@ static int create_matching_event_notifiers(
 		event_notifier_param.event.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		event_notifier_param.event.instrumentation = LTTNG_KERNEL_SYSCALL;
 
-		event_notifier = _lttng_event_notifier_create(desc, user_token, group,
-			&event_notifier_param, filter,
-			event_notifier_param.event.instrumentation);
+		event_notifier = _lttng_event_notifier_create(desc, user_token,
+			error_counter_index, group, &event_notifier_param,
+			filter, event_notifier_param.event.instrumentation);
 		if (IS_ERR(event_notifier)) {
 			printk(KERN_INFO "Unable to create event_notifier %s\n",
 				desc->name);
