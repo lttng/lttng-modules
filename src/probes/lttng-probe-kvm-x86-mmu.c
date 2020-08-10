@@ -25,6 +25,7 @@
 #include <wrapper/tracepoint.h>
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,9,0))
+#include <../../arch/x86/kvm/mmu/mmu_internal.h>
 #include <../../arch/x86/kvm/mmu/mmutrace.h>
 #else
 #include <../../arch/x86/kvm/mmutrace.h>
