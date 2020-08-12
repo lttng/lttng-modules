@@ -130,7 +130,7 @@ struct tracepoint_entry *add_tracepoint(const char *name)
 	lttng_hlist_for_each_entry(e, head, hlist) {
 		if (!strcmp(name, e->name)) {
 			printk(KERN_NOTICE
-				"tracepoint %s busy\n", name);
+				"LTTng: tracepoint %s busy\n", name);
 			return ERR_PTR(-EEXIST);        /* Already there */
 		}
 	}

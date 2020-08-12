@@ -374,7 +374,7 @@ int apply_reloc(struct lttng_event *event,
 		 */
 		return 0;
 	default:
-		printk(KERN_WARNING "Unknown reloc op type %u\n", op->op);
+		printk(KERN_WARNING "LTTng: filter: Unknown reloc op type %u\n", op->op);
 		return -EINVAL;
 	}
 	return 0;

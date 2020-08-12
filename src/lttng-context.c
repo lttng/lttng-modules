@@ -256,95 +256,95 @@ int lttng_context_init(void)
 
 	ret = lttng_add_hostname_to_ctx(&lttng_static_ctx);
 	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_hostname_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_hostname_to_ctx");
 	}
 	ret = lttng_add_nice_to_ctx(&lttng_static_ctx);
 	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_nice_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_nice_to_ctx");
 	}
 	ret = lttng_add_pid_to_ctx(&lttng_static_ctx);
 	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_pid_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_pid_to_ctx");
 	}
 	ret = lttng_add_ppid_to_ctx(&lttng_static_ctx);
 	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_ppid_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_ppid_to_ctx");
 	}
 	ret = lttng_add_prio_to_ctx(&lttng_static_ctx);
 	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_prio_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_prio_to_ctx");
 	}
 	ret = lttng_add_procname_to_ctx(&lttng_static_ctx);
 	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_procname_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_procname_to_ctx");
 	}
 	ret = lttng_add_tid_to_ctx(&lttng_static_ctx);
 	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_tid_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_tid_to_ctx");
 	}
 	ret = lttng_add_vppid_to_ctx(&lttng_static_ctx);
 	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_vppid_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_vppid_to_ctx");
 	}
 	ret = lttng_add_vtid_to_ctx(&lttng_static_ctx);
 	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_vtid_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_vtid_to_ctx");
 	}
 	ret = lttng_add_vpid_to_ctx(&lttng_static_ctx);
 	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_vpid_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_vpid_to_ctx");
 	}
 	ret = lttng_add_cpu_id_to_ctx(&lttng_static_ctx);
 	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_cpu_id_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_cpu_id_to_ctx");
 	}
 	ret = lttng_add_interruptible_to_ctx(&lttng_static_ctx);
 	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_interruptible_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_interruptible_to_ctx");
 	}
 	ret = lttng_add_need_reschedule_to_ctx(&lttng_static_ctx);
 	if (ret) {
-		printk(KERN_WARNING "Cannot add context lttng_add_need_reschedule_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_need_reschedule_to_ctx");
 	}
 	ret = lttng_add_preemptible_to_ctx(&lttng_static_ctx);
 	if (ret && ret != -ENOSYS) {
-		printk(KERN_WARNING "Cannot add context lttng_add_preemptible_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_preemptible_to_ctx");
 	}
 	ret = lttng_add_migratable_to_ctx(&lttng_static_ctx);
 	if (ret && ret != -ENOSYS) {
-		printk(KERN_WARNING "Cannot add context lttng_add_migratable_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_migratable_to_ctx");
 	}
 	ret = lttng_add_cgroup_ns_to_ctx(&lttng_static_ctx);
 	if (ret && ret != -ENOSYS) {
-		printk(KERN_WARNING "Cannot add context lttng_add_cgroup_ns_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_cgroup_ns_to_ctx");
 	}
 	ret = lttng_add_ipc_ns_to_ctx(&lttng_static_ctx);
 	if (ret && ret != -ENOSYS) {
-		printk(KERN_WARNING "Cannot add context lttng_add_ipc_ns_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_ipc_ns_to_ctx");
 	}
 	ret = lttng_add_mnt_ns_to_ctx(&lttng_static_ctx);
 	if (ret && ret != -ENOSYS) {
-		printk(KERN_WARNING "Cannot add context lttng_add_mnt_ns_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_mnt_ns_to_ctx");
 	}
 	ret = lttng_add_net_ns_to_ctx(&lttng_static_ctx);
 	if (ret && ret != -ENOSYS) {
-		printk(KERN_WARNING "Cannot add context lttng_add_net_ns_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_net_ns_to_ctx");
 	}
 	ret = lttng_add_pid_ns_to_ctx(&lttng_static_ctx);
 	if (ret && ret != -ENOSYS) {
-		printk(KERN_WARNING "Cannot add context lttng_add_pid_ns_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_pid_ns_to_ctx");
 	}
 	ret = lttng_add_user_ns_to_ctx(&lttng_static_ctx);
 	if (ret && ret != -ENOSYS) {
-		printk(KERN_WARNING "Cannot add context lttng_add_user_ns_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_user_ns_to_ctx");
 	}
 	ret = lttng_add_uts_ns_to_ctx(&lttng_static_ctx);
 	if (ret && ret != -ENOSYS) {
-		printk(KERN_WARNING "Cannot add context lttng_add_uts_ns_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_uts_ns_to_ctx");
 	}
 	ret = lttng_add_time_ns_to_ctx(&lttng_static_ctx);
 	if (ret && ret != -ENOSYS) {
-		printk(KERN_WARNING "Cannot add context lttng_add_time_ns_to_ctx");
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_time_ns_to_ctx");
 	}
 	/* TODO: perf counters for filtering */
 	return 0;

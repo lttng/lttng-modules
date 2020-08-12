@@ -283,7 +283,7 @@ int lttng_cpuhp_rb_backend_prepare(unsigned int cpu,
 	ret = lib_ring_buffer_create(buf, chanb, cpu);
 	if (ret) {
 		printk(KERN_ERR
-		  "ring_buffer_cpu_hp_callback: cpu %d "
+		  "LTTng: ring_buffer_cpu_hp_callback: cpu %d "
 		  "buffer creation failed\n", cpu);
 		return ret;
 	}
@@ -324,7 +324,7 @@ int lib_ring_buffer_cpu_hp_callback(struct notifier_block *nb,
 		ret = lib_ring_buffer_create(buf, chanb, cpu);
 		if (ret) {
 			printk(KERN_ERR
-			  "ring_buffer_cpu_hp_callback: cpu %d "
+			  "LTTng: ring_buffer_cpu_hp_callback: cpu %d "
 			  "buffer creation failed\n", cpu);
 			return NOTIFY_BAD;
 		}

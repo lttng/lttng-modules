@@ -566,7 +566,7 @@ struct channel *_channel_create(const char *name,
 		 * using lttng_relay_transport.ops.
 		 */
 		if (!try_module_get(THIS_MODULE)) {
-			printk(KERN_WARNING "LTT : Can't lock transport module.\n");
+			printk(KERN_WARNING "LTTng: Can't lock transport module.\n");
 			goto error;
 		}
 		chan->backend.priv_ops = &lttng_relay_transport.ops;

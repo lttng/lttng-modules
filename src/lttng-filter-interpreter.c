@@ -234,7 +234,7 @@ uint64_t lttng_filter_false(void *filter_data,
 	start_pc = &bytecode->data[0];					\
 	for (pc = next_pc = start_pc; pc - start_pc < bytecode->len;	\
 			pc = next_pc) {					\
-		dbg_printk("Executing op %s (%u)\n",			\
+		dbg_printk("LTTng: Executing op %s (%u)\n",		\
 			lttng_filter_print_op((unsigned int) *(filter_opcode_t *) pc), \
 			(unsigned int) *(filter_opcode_t *) pc); 	\
 		switch (*(filter_opcode_t *) pc)	{
@@ -317,11 +317,11 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 	}
 	case atype_array_nestable:
 		if (!lttng_is_bytewise_integer(field->type.u.array_nestable.elem_type)) {
-			printk(KERN_WARNING "Array nesting only supports integer types.\n");
+			printk(KERN_WARNING "LTTng: filter: Array nesting only supports integer types.\n");
 			return -EINVAL;
 		}
 		if (field->type.u.array_nestable.elem_type->u.integer.encoding == lttng_encode_none) {
-			printk(KERN_WARNING "Only string arrays are supported for contexts.\n");
+			printk(KERN_WARNING "LTTng: filter: Only string arrays are supported for contexts.\n");
 			return -EINVAL;
 		}
 		ptr->object_type = OBJECT_TYPE_STRING;
@@ -330,11 +330,11 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		break;
 	case atype_sequence_nestable:
 		if (!lttng_is_bytewise_integer(field->type.u.sequence_nestable.elem_type)) {
-			printk(KERN_WARNING "Sequence nesting only supports integer types.\n");
+			printk(KERN_WARNING "LTTng: filter: Sequence nesting only supports integer types.\n");
 			return -EINVAL;
 		}
 		if (field->type.u.sequence_nestable.elem_type->u.integer.encoding == lttng_encode_none) {
-			printk(KERN_WARNING "Only string sequences are supported for contexts.\n");
+			printk(KERN_WARNING "LTTng: filter: Only string sequences are supported for contexts.\n");
 			return -EINVAL;
 		}
 		ptr->object_type = OBJECT_TYPE_STRING;
@@ -347,13 +347,13 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		ptr->ptr = v.str;
 		break;
 	case atype_struct_nestable:
-		printk(KERN_WARNING "Structure type cannot be loaded.\n");
+		printk(KERN_WARNING "LTTng: filter: Structure type cannot be loaded.\n");
 		return -EINVAL;
 	case atype_variant_nestable:
-		printk(KERN_WARNING "Variant type cannot be loaded.\n");
+		printk(KERN_WARNING "LTTng: filter: Variant type cannot be loaded.\n");
 		return -EINVAL;
 	default:
-		printk(KERN_WARNING "Unknown type: %d", (int) field->type.atype);
+		printk(KERN_WARNING "LTTng: filter: Unknown type: %d", (int) field->type.atype);
 		return -EINVAL;
 	}
 	return 0;
@@ -412,12 +412,12 @@ static int dynamic_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			break;
 		}
 		case OBJECT_TYPE_STRUCT:
-			printk(KERN_WARNING "Nested structures are not supported yet.\n");
+			printk(KERN_WARNING "LTTng: filter: Nested structures are not supported yet.\n");
 			ret = -EINVAL;
 			goto end;
 		case OBJECT_TYPE_VARIANT:
 		default:
-			printk(KERN_WARNING "Unexpected get index type %d",
+			printk(KERN_WARNING "LTTng: filter: Unexpected get index type %d",
 				(int) stack_top->u.ptr.object_type);
 			ret = -EINVAL;
 			goto end;
@@ -588,7 +588,7 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 	case OBJECT_TYPE_ARRAY:
 	case OBJECT_TYPE_STRUCT:
 	case OBJECT_TYPE_VARIANT:
-		printk(KERN_WARNING "Sequences, arrays, struct and variant cannot be loaded (nested types).\n");
+		printk(KERN_WARNING "LTTng: filter: Sequences, arrays, struct and variant cannot be loaded (nested types).\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -764,7 +764,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 #ifdef INTERPRETER_USE_SWITCH
 		default:
 #endif /* INTERPRETER_USE_SWITCH */
-			printk(KERN_WARNING "unknown bytecode op %u\n",
+			printk(KERN_WARNING "LTTng: filter: unknown bytecode op %u\n",
 				(unsigned int) *(filter_opcode_t *) pc);
 			ret = -EINVAL;
 			goto end;
@@ -782,7 +782,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 		OP(FILTER_OP_MOD):
 		OP(FILTER_OP_PLUS):
 		OP(FILTER_OP_MINUS):
-			printk(KERN_WARNING "unsupported bytecode op %u\n",
+			printk(KERN_WARNING "LTTng: filter: unsupported bytecode op %u\n",
 				(unsigned int) *(filter_opcode_t *) pc);
 			ret = -EINVAL;
 			goto end;
@@ -793,7 +793,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 		OP(FILTER_OP_LT):
 		OP(FILTER_OP_GE):
 		OP(FILTER_OP_LE):
-			printk(KERN_WARNING "unsupported non-specialized bytecode op %u\n",
+			printk(KERN_WARNING "LTTng: filter: unsupported non-specialized bytecode op %u\n",
 				(unsigned int) *(filter_opcode_t *) pc);
 			ret = -EINVAL;
 			goto end;
@@ -1034,7 +1034,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 		OP(FILTER_OP_UNARY_PLUS):
 		OP(FILTER_OP_UNARY_MINUS):
 		OP(FILTER_OP_UNARY_NOT):
-			printk(KERN_WARNING "unsupported non-specialized bytecode op %u\n",
+			printk(KERN_WARNING "LTTng: filter: unsupported non-specialized bytecode op %u\n",
 				(unsigned int) *(filter_opcode_t *) pc);
 			ret = -EINVAL;
 			goto end;
@@ -1237,7 +1237,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 
 		/* cast */
 		OP(FILTER_OP_CAST_TO_S64):
-			printk(KERN_WARNING "unsupported non-specialized bytecode op %u\n",
+			printk(KERN_WARNING "LTTng: filter: unsupported non-specialized bytecode op %u\n",
 				(unsigned int) *(filter_opcode_t *) pc);
 			ret = -EINVAL;
 			goto end;
@@ -1391,7 +1391,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 			dbg_printk("op get symbol\n");
 			switch (estack_ax(stack, top)->u.ptr.type) {
 			case LOAD_OBJECT:
-				printk(KERN_WARNING "Nested fields not implemented yet.\n");
+				printk(KERN_WARNING "LTTng: filter: Nested fields not implemented yet.\n");
 				ret = -EINVAL;
 				goto end;
 			case LOAD_ROOT_CONTEXT:

@@ -23,14 +23,14 @@
 
 #ifdef DEBUG
 #define dbg_printk(fmt, args...)				\
-	printk(KERN_DEBUG "[debug bytecode in %s:%s@%u] " fmt,		\
+	printk(KERN_DEBUG "LTTng: [debug bytecode in %s:%s@%u] " fmt,		\
 		__FILE__, __func__, __LINE__, ## args)
 #else
 #define dbg_printk(fmt, args...)				\
 do {								\
 	/* do nothing but check printf format */		\
 	if (0)							\
-		printk(KERN_DEBUG "[debug bytecode in %s:%s@%u] " fmt,	\
+		printk(KERN_DEBUG "LTTng: [debug bytecode in %s:%s@%u] " fmt,	\
 			__FILE__, __func__, __LINE__, ## args);	\
 } while (0)
 #endif
@@ -138,7 +138,7 @@ static inline
 int vstack_push(struct vstack *stack)
 {
 	if (stack->top >= FILTER_STACK_LEN - 1) {
-		printk(KERN_WARNING "Stack full\n");
+		printk(KERN_WARNING "LTTng: filter: Stack full\n");
 		return -EINVAL;
 	}
 	++stack->top;
@@ -149,7 +149,7 @@ static inline
 int vstack_pop(struct vstack *stack)
 {
 	if (unlikely(stack->top < 0)) {
-		printk(KERN_WARNING "Stack empty\n");
+		printk(KERN_WARNING "LTTng: filter: Stack empty\n");
 		return -EINVAL;
 	}
 	stack->top--;

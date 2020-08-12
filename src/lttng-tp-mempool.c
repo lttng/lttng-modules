@@ -96,7 +96,7 @@ void lttng_tp_mempool_destroy(void)
 			i++;
 		}
 		if (i < LTTNG_TP_MEMPOOL_NR_BUF_PER_CPU) {
-			printk(KERN_WARNING "Leak detected in tp-mempool\n");
+			printk(KERN_WARNING "LTTng: Leak detected in tp-mempool\n");
 		}
 	}
 	free_percpu(pool);

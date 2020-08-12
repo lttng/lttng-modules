@@ -128,7 +128,7 @@ static struct inode *get_inode_from_fd(int fd)
 	 */
 	file = fcheck(fd);
 	if (file == NULL) {
-		printk(KERN_WARNING "Cannot access file backing the fd(%d)\n", fd);
+		printk(KERN_WARNING "LTTng: Cannot access file backing the fd(%d)\n", fd);
 		inode = NULL;
 		goto error;
 	}
@@ -136,7 +136,7 @@ static struct inode *get_inode_from_fd(int fd)
 	/* Grab a reference on the inode. */
 	inode = igrab(file->f_path.dentry->d_inode);
 	if (inode == NULL)
-		printk(KERN_WARNING "Cannot grab a reference on the inode.\n");
+		printk(KERN_WARNING "LTTng: Cannot grab a reference on the inode.\n");
 error:
 	rcu_read_unlock();
 	return inode;
@@ -155,7 +155,7 @@ int lttng_uprobes_add_callsite(struct lttng_event *event,
 
 	uprobe_handler = kzalloc(sizeof(struct lttng_uprobe_handler), GFP_KERNEL);
 	if (!uprobe_handler) {
-		printk(KERN_WARNING "Error allocating uprobe_uprobe_handlers");
+		printk(KERN_WARNING "LTTng: Error allocating uprobe_handler");
 		ret = -ENOMEM;
 		goto end;
 	}
@@ -174,7 +174,7 @@ int lttng_uprobes_add_callsite(struct lttng_event *event,
 	ret = wrapper_uprobe_register(event->u.uprobe.inode,
 		      uprobe_handler->offset, &uprobe_handler->up_consumer);
 	if (ret) {
-		printk(KERN_WARNING "Error registering probe on inode %lu "
+		printk(KERN_WARNING "LTTng: Error registering probe on inode %lu "
 		       "and offset 0x%llx\n", event->u.uprobe.inode->i_ino,
 		       uprobe_handler->offset);
 		ret = -1;
@@ -203,7 +203,7 @@ int lttng_uprobes_register(const char *name, int fd, struct lttng_event *event)
 
 	inode = get_inode_from_fd(fd);
 	if (!inode) {
-		printk(KERN_WARNING "Cannot get inode from fd\n");
+		printk(KERN_WARNING "LTTng: Cannot get inode from fd\n");
 		ret = -EBADF;
 		goto inode_error;
 	}

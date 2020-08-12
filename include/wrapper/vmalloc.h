@@ -59,7 +59,7 @@ void wrapper_vmalloc_sync_mappings(void)
 		 * trigger recursive page faults.
 		 */
 		printk_once(KERN_WARNING "LTTng: vmalloc_sync_mappings symbol lookup failed.\n");
-		printk_once(KERN_WARNING "Page fault handler and NMI tracing might trigger faults.\n");
+		printk_once(KERN_WARNING "LTTng: Page fault handler and NMI tracing might trigger faults.\n");
 #endif
 	}
 }
@@ -97,7 +97,7 @@ void wrapper_vmalloc_sync_mappings(void)
 		 * trigger recursive page faults.
 		 */
 		printk_once(KERN_WARNING "LTTng: vmalloc_sync_all symbol lookup failed.\n");
-		printk_once(KERN_WARNING "Page fault handler and NMI tracing might trigger faults.\n");
+		printk_once(KERN_WARNING "LTTng: Page fault handler and NMI tracing might trigger faults.\n");
 #endif
 	}
 }
@@ -208,8 +208,8 @@ static inline
 void print_vmalloc_node_range_warning(void)
 {
 	printk_once(KERN_WARNING "LTTng: __vmalloc_node_range symbol lookup failed.\n");
-	printk_once(KERN_WARNING "Tracer performance will be degraded on NUMA systems.\n");
-	printk_once(KERN_WARNING "Please rebuild your kernel with CONFIG_KALLSYMS enabled.\n");
+	printk_once(KERN_WARNING "LTTng: Tracer performance will be degraded on NUMA systems.\n");
+	printk_once(KERN_WARNING "LTTng: Please rebuild your kernel with CONFIG_KALLSYMS enabled.\n");
 }
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0))

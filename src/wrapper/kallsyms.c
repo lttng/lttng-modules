@@ -61,7 +61,7 @@ unsigned long wrapper_kallsyms_lookup_name(const char *name)
 	if (kallsyms_lookup_name_sym)
 		return kallsyms_lookup_name_sym(name);
 	else {
-		printk_once(KERN_WARNING "LTTng requires kallsyms_lookup_name\n");
+		printk_once(KERN_WARNING "LTTng: requires kallsyms_lookup_name\n");
 		return 0;
 	}
 }

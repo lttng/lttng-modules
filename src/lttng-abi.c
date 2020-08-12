@@ -1080,7 +1080,7 @@ int lttng_metadata_ring_buffer_open(struct inode *inode, struct file *file)
 	 * session, we need to keep our own reference on the transport.
 	 */
 	if (!try_module_get(stream->transport->owner)) {
-		printk(KERN_WARNING "LTT : Can't lock transport module.\n");
+		printk(KERN_WARNING "LTTng: Can't lock transport module.\n");
 		return -EBUSY;
 	}
 	return lib_ring_buffer_open(inode, file, buf);
@@ -1234,7 +1234,7 @@ int lttng_abi_open_metadata_stream(struct file *channel_file)
 	 * session, we need to keep our own reference on the transport.
 	 */
 	if (!try_module_get(metadata_stream->transport->owner)) {
-		printk(KERN_WARNING "LTT : Can't lock transport module.\n");
+		printk(KERN_WARNING "LTTng: Can't lock transport module.\n");
 		ret = -EINVAL;
 		goto notransport;
 	}
@@ -2018,7 +2018,7 @@ int __init lttng_abi_init(void)
 					&lttng_proc_ops, NULL);
 
 	if (!lttng_proc_dentry) {
-		printk(KERN_ERR "Error creating LTTng control file\n");
+		printk(KERN_ERR "LTTng: Error creating control file\n");
 		ret = -ENOMEM;
 		goto error;
 	}

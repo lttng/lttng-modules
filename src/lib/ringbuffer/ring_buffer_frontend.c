@@ -1455,7 +1455,7 @@ void lib_ring_buffer_print_subbuffer_errors(struct lib_ring_buffer *buf,
 
 	if (subbuf_offset(commit_count, chan) != 0)
 		printk(KERN_WARNING
-		       "ring buffer %s, cpu %d: "
+		       "LTTng: ring buffer %s, cpu %d: "
 		       "commit count in subbuffer %lu,\n"
 		       "expecting multiples of %lu bytes\n"
 		       "  [ %lu bytes committed, %lu bytes reader-visible ]\n",
@@ -1463,7 +1463,7 @@ void lib_ring_buffer_print_subbuffer_errors(struct lib_ring_buffer *buf,
 		       chan->backend.subbuf_size,
 		       commit_count, commit_count_sb);
 
-	printk(KERN_DEBUG "ring buffer: %s, cpu %d: %lu bytes committed\n",
+	printk(KERN_DEBUG "LTTng: ring buffer: %s, cpu %d: %lu bytes committed\n",
 	       chan->backend.name, cpu, commit_count);
 }
 
@@ -1484,7 +1484,7 @@ void lib_ring_buffer_print_buffer_errors(struct lib_ring_buffer *buf,
 	cons_offset = atomic_long_read(&buf->consumed);
 	if (write_offset != cons_offset)
 		printk(KERN_DEBUG
-		       "ring buffer %s, cpu %d: "
+		       "LTTng: ring buffer %s, cpu %d: "
 		       "non-consumed data\n"
 		       "  [ %lu bytes written, %lu bytes read ]\n",
 		       chan->backend.name, cpu, write_offset, cons_offset);
@@ -1507,13 +1507,13 @@ void lib_ring_buffer_print_records_count(struct channel *chan,
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	if (!strcmp(chan->backend.name, "relay-metadata")) {
-		printk(KERN_DEBUG "ring buffer %s: %lu records written, "
+		printk(KERN_DEBUG "LTTng: ring buffer %s: %lu records written, "
 			"%lu records overrun\n",
 			chan->backend.name,
 			v_read(config, &buf->records_count),
 			v_read(config, &buf->records_overrun));
 	} else {
-		printk(KERN_DEBUG "ring buffer %s, cpu %d: %lu records written, "
+		printk(KERN_DEBUG "LTTng: ring buffer %s, cpu %d: %lu records written, "
 			"%lu records overrun\n",
 			chan->backend.name, cpu,
 			v_read(config, &buf->records_count),
@@ -1542,7 +1542,7 @@ void lib_ring_buffer_print_errors(struct channel *chan,
 		    || v_read(config, &buf->records_lost_wrap)
 		    || v_read(config, &buf->records_lost_big))
 			printk(KERN_WARNING
-				"ring buffer %s, cpu %d: records were lost. Caused by:\n"
+				"LTTng: ring buffer %s, cpu %d: records were lost. Caused by:\n"
 				"  [ %lu buffer full, %lu nest buffer wrap-around, "
 				"%lu event too big ]\n",
 				chan->backend.name, cpu,

@@ -19,10 +19,15 @@
 #include <ringbuffer/frontend.h>
 #include <ringbuffer/vfs.h>
 
-#if 0
+#ifdef DEBUG
 #define printk_dbg(fmt, args...) printk(fmt, args)
 #else
-#define printk_dbg(fmt, args...)
+#define printk_dbg(fmt, args...)			\
+do {							\
+	/* do nothing but check printf format */	\
+	if (0)						\
+		printk(fmt, ## args);			\
+} while (0)
 #endif
 
 loff_t vfs_lib_ring_buffer_no_llseek(struct file *file, loff_t offset,
@@ -131,7 +136,7 @@ static int subbuf_splice_actor(struct file *in,
 	nr_pages = min_t(unsigned int, subbuf_pages, PIPE_DEF_BUFFERS);
 	roffset = consumed_old & PAGE_MASK;
 	poff = consumed_old & ~PAGE_MASK;
-	printk_dbg(KERN_DEBUG "SPLICE actor len %zu pos %zd write_pos %ld\n",
+	printk_dbg(KERN_DEBUG "LTTng: SPLICE actor len %zu pos %zd write_pos %ld\n",
 		   len, (ssize_t)*ppos, lib_ring_buffer_get_offset(config, buf));
 
 	for (; spd.nr_pages < nr_pages; spd.nr_pages++) {
@@ -142,7 +147,7 @@ static int subbuf_splice_actor(struct file *in,
 
 		if (!len)
 			break;
-		printk_dbg(KERN_DEBUG "SPLICE actor loop len %zu roffset %ld\n",
+		printk_dbg(KERN_DEBUG "LTTng: SPLICE actor loop len %zu roffset %ld\n",
 			   len, roffset);
 
 		/*
@@ -202,11 +207,11 @@ ssize_t lib_ring_buffer_splice_read(struct file *in, loff_t *ppos,
 	ret = 0;
 	spliced = 0;
 
-	printk_dbg(KERN_DEBUG "SPLICE read len %zu pos %zd\n", len,
+	printk_dbg(KERN_DEBUG "LTTng: SPLICE read len %zu pos %zd\n", len,
 		   (ssize_t)*ppos);
 	while (len && !spliced) {
 		ret = subbuf_splice_actor(in, ppos, pipe, len, flags, buf);
-		printk_dbg(KERN_DEBUG "SPLICE read loop ret %d\n", ret);
+		printk_dbg(KERN_DEBUG "LTTng: SPLICE read loop ret %d\n", ret);
 		if (ret < 0)
 			break;
 		else if (!ret) {

@@ -502,12 +502,12 @@ struct lttng_channel *lttng_channel_create(struct lttng_session *session,
 		goto active;	/* Refuse to add channel to active session */
 	transport = lttng_transport_find(transport_name);
 	if (!transport) {
-		printk(KERN_WARNING "LTTng transport %s not found\n",
+		printk(KERN_WARNING "LTTng: transport %s not found\n",
 		       transport_name);
 		goto notransport;
 	}
 	if (!try_module_get(transport->owner)) {
-		printk(KERN_WARNING "LTT : Can't lock transport module.\n");
+		printk(KERN_WARNING "LTTng: Can't lock transport module.\n");
 		goto notransport;
 	}
 	chan = kzalloc(sizeof(struct lttng_channel), GFP_KERNEL);
@@ -1320,7 +1320,7 @@ void lttng_create_tracepoint_if_missing(struct lttng_enabler *enabler)
 					NULL, NULL, desc,
 					LTTNG_KERNEL_TRACEPOINT);
 			if (!event) {
-				printk(KERN_INFO "Unable to create event %s\n",
+				printk(KERN_INFO "LTTng: Unable to create event %s\n",
 					probe_desc->event_desc[i]->name);
 			}
 		}

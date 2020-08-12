@@ -121,7 +121,7 @@ int __init lttng_logger_init(void)
 	/* /dev/lttng-logger */
 	ret = misc_register(&logger_dev);
 	if (ret) {
-		printk(KERN_ERR "Error creating LTTng logger device\n");
+		printk(KERN_ERR "LTTng: Error creating logger device\n");
 		goto error;
 	}
 
@@ -130,7 +130,7 @@ int __init lttng_logger_init(void)
 				S_IRUGO | S_IWUGO, NULL,
 				&lttng_logger_proc_ops, NULL);
 	if (!lttng_logger_dentry) {
-		printk(KERN_ERR "Error creating LTTng logger proc file\n");
+		printk(KERN_ERR "LTTng: Error creating logger proc file\n");
 		ret = -ENOMEM;
 		goto error_proc;
 	}

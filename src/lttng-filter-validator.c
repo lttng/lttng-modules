@@ -87,7 +87,7 @@ int merge_point_add_check(struct mp_table *mp_table, unsigned long target_pc,
 				target_pc, hash);
 		kfree(mp_node);
 		if (merge_points_compare(stack, &lookup_node->stack)) {
-			printk(KERN_WARNING "Merge points differ for offset %lu\n",
+			printk(KERN_WARNING "LTTng: filter: Merge points differ for offset %lu\n",
 				target_pc);
 			return -EINVAL;
 		}
@@ -180,15 +180,15 @@ unknown:
 	return 1;
 
 error_empty:
-	printk(KERN_WARNING "empty stack for '%s' binary operator\n", str);
+	printk(KERN_WARNING "LTTng: filter: empty stack for '%s' binary operator\n", str);
 	return -EINVAL;
 
 error_mismatch:
-	printk(KERN_WARNING "type mismatch for '%s' binary operator\n", str);
+	printk(KERN_WARNING "LTTng: filter: type mismatch for '%s' binary operator\n", str);
 	return -EINVAL;
 
 error_type:
-	printk(KERN_WARNING "unknown type for '%s' binary operator\n", str);
+	printk(KERN_WARNING "LTTng: filter: unknown type for '%s' binary operator\n", str);
 	return -EINVAL;
 }
 
@@ -239,11 +239,11 @@ unknown:
 	return 1;
 
 error_empty:
-	printk(KERN_WARNING "empty stack for '%s' binary operator\n", str);
+	printk(KERN_WARNING "LTTng: filter: empty stack for '%s' binary operator\n", str);
 	return -EINVAL;
 
 error_type:
-	printk(KERN_WARNING "unknown type for '%s' binary operator\n", str);
+	printk(KERN_WARNING "LTTng: filter: unknown type for '%s' binary operator\n", str);
 	return -EINVAL;
 }
 
@@ -279,7 +279,7 @@ int bytecode_validate_overflow(struct bytecode_runtime *bytecode,
 	case FILTER_OP_UNKNOWN:
 	default:
 	{
-		printk(KERN_WARNING "unknown bytecode op %u\n",
+		printk(KERN_WARNING "LTTng: filter: unknown bytecode op %u\n",
 			(unsigned int) *(filter_opcode_t *) pc);
 		ret = -EINVAL;
 		break;
@@ -328,7 +328,7 @@ int bytecode_validate_overflow(struct bytecode_runtime *bytecode,
 	case FILTER_OP_UNARY_MINUS_DOUBLE:
 	case FILTER_OP_UNARY_NOT_DOUBLE:
 	{
-		printk(KERN_WARNING "unsupported bytecode op %u\n",
+		printk(KERN_WARNING "LTTng: filter: unsupported bytecode op %u\n",
 			(unsigned int) *(filter_opcode_t *) pc);
 		ret = -EINVAL;
 		break;
@@ -397,7 +397,7 @@ int bytecode_validate_overflow(struct bytecode_runtime *bytecode,
 	/* load field ref */
 	case FILTER_OP_LOAD_FIELD_REF:
 	{
-		printk(KERN_WARNING "Unknown field ref type\n");
+		printk(KERN_WARNING "LTTng: filter: Unknown field ref type\n");
 		ret = -EINVAL;
 		break;
 	}
@@ -405,7 +405,7 @@ int bytecode_validate_overflow(struct bytecode_runtime *bytecode,
 	/* get context ref */
 	case FILTER_OP_GET_CONTEXT_REF:
 	{
-		printk(KERN_WARNING "Unknown field ref type\n");
+		printk(KERN_WARNING "LTTng: filter: Unknown field ref type\n");
 		ret = -EINVAL;
 		break;
 	}
@@ -504,7 +504,7 @@ int bytecode_validate_overflow(struct bytecode_runtime *bytecode,
 	}
 
 	case FILTER_OP_GET_SYMBOL_FIELD:
-		printk(KERN_WARNING "Unexpected get symbol field\n");
+		printk(KERN_WARNING "LTTng: filter: Unexpected get symbol field\n");
 		ret = -EINVAL;
 		break;
 
@@ -564,7 +564,7 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 	case FILTER_OP_UNKNOWN:
 	default:
 	{
-		printk(KERN_WARNING "unknown bytecode op %u\n",
+		printk(KERN_WARNING "LTTng: filter: unknown bytecode op %u\n",
 			(unsigned int) *(filter_opcode_t *) pc);
 		ret = -EINVAL;
 		goto end;
@@ -609,7 +609,7 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 	case FILTER_OP_CAST_DOUBLE_TO_S64:
 	case FILTER_OP_GET_CONTEXT_REF_DOUBLE:
 	{
-		printk(KERN_WARNING "unsupported bytecode op %u\n",
+		printk(KERN_WARNING "LTTng: filter: unsupported bytecode op %u\n",
 			(unsigned int) *(filter_opcode_t *) pc);
 		ret = -EINVAL;
 		goto end;
@@ -666,13 +666,13 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 	case FILTER_OP_LE_STRING:
 	{
 		if (!vstack_ax(stack) || !vstack_bx(stack)) {
-			printk(KERN_WARNING "Empty stack\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n");
 			ret = -EINVAL;
 			goto end;
 		}
 		if (vstack_ax(stack)->type != REG_STRING
 				|| vstack_bx(stack)->type != REG_STRING) {
-			printk(KERN_WARNING "Unexpected register type for string comparator\n");
+			printk(KERN_WARNING "LTTng: filter: Unexpected register type for string comparator\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -684,13 +684,13 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 	case FILTER_OP_NE_STAR_GLOB_STRING:
 	{
 		if (!vstack_ax(stack) || !vstack_bx(stack)) {
-			printk(KERN_WARNING "Empty stack\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n");
 			ret = -EINVAL;
 			goto end;
 		}
 		if (vstack_ax(stack)->type != REG_STAR_GLOB_STRING
 				&& vstack_bx(stack)->type != REG_STAR_GLOB_STRING) {
-			printk(KERN_WARNING "Unexpected register type for globbing pattern comparator\n");
+			printk(KERN_WARNING "LTTng: filter: Unexpected register type for globbing pattern comparator\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -705,13 +705,13 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 	case FILTER_OP_LE_S64:
 	{
 		if (!vstack_ax(stack) || !vstack_bx(stack)) {
-			printk(KERN_WARNING "Empty stack\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n");
 			ret = -EINVAL;
 			goto end;
 		}
 		if (vstack_ax(stack)->type != REG_S64
 				|| vstack_bx(stack)->type != REG_S64) {
-			printk(KERN_WARNING "Unexpected register type for s64 comparator\n");
+			printk(KERN_WARNING "LTTng: filter: Unexpected register type for s64 comparator\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -750,20 +750,20 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 	case FILTER_OP_UNARY_NOT:
 	{
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n");
 			ret = -EINVAL;
 			goto end;
 		}
 		switch (vstack_ax(stack)->type) {
 		default:
 		case REG_DOUBLE:
-			printk(KERN_WARNING "unknown register type\n");
+			printk(KERN_WARNING "LTTng: filter: unknown register type\n");
 			ret = -EINVAL;
 			goto end;
 
 		case REG_STRING:
 		case REG_STAR_GLOB_STRING:
-			printk(KERN_WARNING "Unary op can only be applied to numeric or floating point registers\n");
+			printk(KERN_WARNING "LTTng: filter: Unary op can only be applied to numeric or floating point registers\n");
 			ret = -EINVAL;
 			goto end;
 		case REG_S64:
@@ -775,20 +775,20 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 	case FILTER_OP_UNARY_BIT_NOT:
 	{
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n");
 			ret = -EINVAL;
 			goto end;
 		}
 		switch (vstack_ax(stack)->type) {
 		default:
-			printk(KERN_WARNING "unknown register type\n");
+			printk(KERN_WARNING "LTTng: filter: unknown register type\n");
 			ret = -EINVAL;
 			goto end;
 
 		case REG_STRING:
 		case REG_STAR_GLOB_STRING:
 		case REG_DOUBLE:
-			printk(KERN_WARNING "Unary bitwise op can only be applied to numeric registers\n");
+			printk(KERN_WARNING "LTTng: filter: Unary bitwise op can only be applied to numeric registers\n");
 			ret = -EINVAL;
 			goto end;
 		case REG_S64:
@@ -804,12 +804,12 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 	case FILTER_OP_UNARY_NOT_S64:
 	{
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n");
 			ret = -EINVAL;
 			goto end;
 		}
 		if (vstack_ax(stack)->type != REG_S64) {
-			printk(KERN_WARNING "Invalid register type\n");
+			printk(KERN_WARNING "LTTng: filter: Invalid register type\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -823,12 +823,12 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 		struct logical_op *insn = (struct logical_op *) pc;
 
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n");
 			ret = -EINVAL;
 			goto end;
 		}
 		if (vstack_ax(stack)->type != REG_S64) {
-			printk(KERN_WARNING "Logical comparator expects S64 register\n");
+			printk(KERN_WARNING "LTTng: filter: Logical comparator expects S64 register\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -836,7 +836,7 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 		dbg_printk("Validate jumping to bytecode offset %u\n",
 			(unsigned int) insn->skip_offset);
 		if (unlikely(start_pc + insn->skip_offset <= pc)) {
-			printk(KERN_WARNING "Loops are not allowed in bytecode\n");
+			printk(KERN_WARNING "LTTng: filter: Loops are not allowed in bytecode\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -846,7 +846,7 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 	/* load field ref */
 	case FILTER_OP_LOAD_FIELD_REF:
 	{
-		printk(KERN_WARNING "Unknown field ref type\n");
+		printk(KERN_WARNING "LTTng: filter: Unknown field ref type\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -889,20 +889,20 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 		struct cast_op *insn = (struct cast_op *) pc;
 
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n");
 			ret = -EINVAL;
 			goto end;
 		}
 		switch (vstack_ax(stack)->type) {
 		default:
 		case REG_DOUBLE:
-			printk(KERN_WARNING "unknown register type\n");
+			printk(KERN_WARNING "LTTng: filter: unknown register type\n");
 			ret = -EINVAL;
 			goto end;
 
 		case REG_STRING:
 		case REG_STAR_GLOB_STRING:
-			printk(KERN_WARNING "Cast op can only be applied to numeric or floating point registers\n");
+			printk(KERN_WARNING "LTTng: filter: Cast op can only be applied to numeric or floating point registers\n");
 			ret = -EINVAL;
 			goto end;
 		case REG_S64:
@@ -910,7 +910,7 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 		}
 		if (insn->op == FILTER_OP_CAST_DOUBLE_TO_S64) {
 			if (vstack_ax(stack)->type != REG_DOUBLE) {
-				printk(KERN_WARNING "Cast expects double\n");
+				printk(KERN_WARNING "LTTng: filter: Cast expects double\n");
 				ret = -EINVAL;
 				goto end;
 			}
@@ -925,7 +925,7 @@ int validate_instruction_context(struct bytecode_runtime *bytecode,
 	/* get context ref */
 	case FILTER_OP_GET_CONTEXT_REF:
 	{
-		printk(KERN_WARNING "Unknown get context ref type\n");
+		printk(KERN_WARNING "LTTng: filter: Unknown get context ref type\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -1109,7 +1109,7 @@ int validate_instruction_all_contexts(struct bytecode_runtime *bytecode,
 		dbg_printk("Filter: validate merge point at offset %lu\n",
 				target_pc);
 		if (merge_points_compare(stack, &mp_node->stack)) {
-			printk(KERN_WARNING "Merge points differ for offset %lu\n",
+			printk(KERN_WARNING "LTTng: filter: Merge points differ for offset %lu\n",
 				target_pc);
 			return -EINVAL;
 		}
@@ -1141,7 +1141,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	case FILTER_OP_UNKNOWN:
 	default:
 	{
-		printk(KERN_WARNING "unknown bytecode op %u\n",
+		printk(KERN_WARNING "LTTng: filter: unknown bytecode op %u\n",
 			(unsigned int) *(filter_opcode_t *) pc);
 		ret = -EINVAL;
 		goto end;
@@ -1150,7 +1150,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	case FILTER_OP_RETURN:
 	{
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -1159,7 +1159,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 		case REG_TYPE_UNKNOWN:
 			break;
 		default:
-			printk(KERN_WARNING "Unexpected register type %d at end of bytecode\n",
+			printk(KERN_WARNING "LTTng: filter: Unexpected register type %d at end of bytecode\n",
 				(int) vstack_ax(stack)->type);
 			ret = -EINVAL;
 			goto end;
@@ -1172,7 +1172,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	case FILTER_OP_RETURN_S64:
 	{
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -1181,7 +1181,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 			break;
 		default:
 		case REG_TYPE_UNKNOWN:
-			printk(KERN_WARNING "Unexpected register type %d at end of bytecode\n",
+			printk(KERN_WARNING "LTTng: filter: Unexpected register type %d at end of bytecode\n",
 				(int) vstack_ax(stack)->type);
 			ret = -EINVAL;
 			goto end;
@@ -1224,7 +1224,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	case FILTER_OP_LOAD_DOUBLE:
 	case FILTER_OP_CAST_DOUBLE_TO_S64:
 	{
-		printk(KERN_WARNING "unsupported bytecode op %u\n",
+		printk(KERN_WARNING "LTTng: filter: unsupported bytecode op %u\n",
 			(unsigned int) *(filter_opcode_t *) pc);
 		ret = -EINVAL;
 		goto end;
@@ -1262,7 +1262,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 			goto end;
 		}
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -1274,7 +1274,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 		case REG_TYPE_UNKNOWN:
 			break;
 		default:
-			printk(KERN_WARNING "Unexpected register type %d for operation\n",
+			printk(KERN_WARNING "LTTng: filter: Unexpected register type %d for operation\n",
 				(int) vstack_ax(stack)->type);
 			ret = -EINVAL;
 			goto end;
@@ -1291,7 +1291,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	{
 		/* Pop 1, push 1 */
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -1300,7 +1300,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 		case REG_TYPE_UNKNOWN:
 			break;
 		default:
-			printk(KERN_WARNING "Unexpected register type %d for operation\n",
+			printk(KERN_WARNING "LTTng: filter: Unexpected register type %d for operation\n",
 				(int) vstack_ax(stack)->type);
 			ret = -EINVAL;
 			goto end;
@@ -1317,7 +1317,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	{
 		/* Pop 1, push 1 */
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -1325,7 +1325,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 		case REG_S64:
 			break;
 		default:
-			printk(KERN_WARNING "Unexpected register type %d for operation\n",
+			printk(KERN_WARNING "LTTng: filter: Unexpected register type %d for operation\n",
 				(int) vstack_ax(stack)->type);
 			ret = -EINVAL;
 			goto end;
@@ -1340,7 +1340,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	{
 		/* Pop 1, push 1 */
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -1349,7 +1349,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 		case REG_TYPE_UNKNOWN:
 			break;
 		default:
-			printk(KERN_WARNING "Unexpected register type %d for operation\n",
+			printk(KERN_WARNING "LTTng: filter: Unexpected register type %d for operation\n",
 				(int) vstack_ax(stack)->type);
 			ret = -EINVAL;
 			goto end;
@@ -1364,7 +1364,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	{
 		/* Pop 1, push 1 */
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -1374,7 +1374,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 			break;
 		case REG_DOUBLE:
 		default:
-			printk(KERN_WARNING "Unexpected register type %d for operation\n",
+			printk(KERN_WARNING "LTTng: filter: Unexpected register type %d for operation\n",
 				(int) vstack_ax(stack)->type);
 			ret = -EINVAL;
 			goto end;
@@ -1401,7 +1401,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 		}
 
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -1410,7 +1410,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 		case REG_S64:
 			break;
 		default:
-			printk(KERN_WARNING "Incorrect register type %d for operation\n",
+			printk(KERN_WARNING "LTTng: filter: Incorrect register type %d for operation\n",
 				(int) vstack_ax(stack)->type);
 			ret = -EINVAL;
 			goto end;
@@ -1429,14 +1429,14 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	/* load field ref */
 	case FILTER_OP_LOAD_FIELD_REF:
 	{
-		printk(KERN_WARNING "Unknown field ref type\n");
+		printk(KERN_WARNING "LTTng: filter: Unknown field ref type\n");
 		ret = -EINVAL;
 		goto end;
 	}
 	/* get context ref */
 	case FILTER_OP_GET_CONTEXT_REF:
 	{
-		printk(KERN_WARNING "Unknown get context ref type\n");
+		printk(KERN_WARNING "LTTng: filter: Unknown get context ref type\n");
 		ret = -EINVAL;
 		goto end;
 	}
@@ -1509,7 +1509,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	{
 		/* Pop 1, push 1 */
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -1519,7 +1519,7 @@ int exec_insn(struct bytecode_runtime *bytecode,
 		case REG_TYPE_UNKNOWN:
 			break;
 		default:
-			printk(KERN_WARNING "Incorrect register type %d for cast\n",
+			printk(KERN_WARNING "LTTng: filter: Incorrect register type %d for cast\n",
 				(int) vstack_ax(stack)->type);
 			ret = -EINVAL;
 			goto end;
@@ -1554,12 +1554,12 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	{
 		/* Pop 1, push 1 */
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
 		if (vstack_ax(stack)->type != REG_PTR) {
-			printk(KERN_WARNING "Expecting pointer on top of stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Expecting pointer on top of stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -1579,12 +1579,12 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	{
 		/* Pop 1, push 1 */
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
 		if (vstack_ax(stack)->type != REG_PTR) {
-			printk(KERN_WARNING "Expecting pointer on top of stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Expecting pointer on top of stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -1598,12 +1598,12 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	{
 		/* Pop 1, push 1 */
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
 		if (vstack_ax(stack)->type != REG_PTR) {
-			printk(KERN_WARNING "Expecting pointer on top of stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Expecting pointer on top of stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -1616,12 +1616,12 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	{
 		/* Pop 1, push 1 */
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
 		if (vstack_ax(stack)->type != REG_PTR) {
-			printk(KERN_WARNING "Expecting pointer on top of stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Expecting pointer on top of stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -1635,12 +1635,12 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	{
 		/* Pop 1, push 1 */
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
 		if (vstack_ax(stack)->type != REG_PTR) {
-			printk(KERN_WARNING "Expecting pointer on top of stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Expecting pointer on top of stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -1652,12 +1652,12 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	{
 		/* Pop 1, push 1 */
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
 		if (vstack_ax(stack)->type != REG_PTR) {
-			printk(KERN_WARNING "Expecting pointer on top of stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Expecting pointer on top of stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -1669,12 +1669,12 @@ int exec_insn(struct bytecode_runtime *bytecode,
 	{
 		/* Pop 1, push 1 */
 		if (!vstack_ax(stack)) {
-			printk(KERN_WARNING "Empty stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Empty stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
 		if (vstack_ax(stack)->type != REG_PTR) {
-			printk(KERN_WARNING "Expecting pointer on top of stack\n\n");
+			printk(KERN_WARNING "LTTng: filter: Expecting pointer on top of stack\n\n");
 			ret = -EINVAL;
 			goto end;
 		}
@@ -1702,7 +1702,7 @@ int lttng_filter_validate_bytecode(struct bytecode_runtime *bytecode)
 
 	mp_table = kzalloc(sizeof(*mp_table), GFP_KERNEL);
 	if (!mp_table) {
-		printk(KERN_WARNING "Error allocating hash table for bytecode validation\n");
+		printk(KERN_WARNING "LTTng: filter: Error allocating hash table for bytecode validation\n");
 		return -ENOMEM;
 	}
 	start_pc = &bytecode->code[0];
@@ -1711,7 +1711,7 @@ int lttng_filter_validate_bytecode(struct bytecode_runtime *bytecode)
 		ret = bytecode_validate_overflow(bytecode, start_pc, pc);
 		if (ret != 0) {
 			if (ret == -ERANGE)
-				printk(KERN_WARNING "filter bytecode overflow\n");
+				printk(KERN_WARNING "LTTng: filter: filter bytecode overflow\n");
 			goto end;
 		}
 		dbg_printk("Validating op %s (%u)\n",
@@ -1734,7 +1734,7 @@ int lttng_filter_validate_bytecode(struct bytecode_runtime *bytecode)
 end:
 	if (delete_all_nodes(mp_table)) {
 		if (!ret) {
-			printk(KERN_WARNING "Unexpected merge points\n");
+			printk(KERN_WARNING "LTTng: filter: Unexpected merge points\n");
 			ret = -EINVAL;
 		}
 	}

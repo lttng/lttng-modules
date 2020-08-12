@@ -69,7 +69,7 @@ void lttng_clock_ref(void)
 
 		ret = try_module_get(lttng_trace_clock_mod);
 		if (!ret) {
-			printk(KERN_ERR "LTTng-clock cannot get clock plugin module\n");
+			printk(KERN_ERR "LTTng: LTTng-clock cannot get clock plugin module\n");
 			WRITE_ONCE(lttng_trace_clock, NULL);
 			lttng_trace_clock_mod = NULL;
 		}

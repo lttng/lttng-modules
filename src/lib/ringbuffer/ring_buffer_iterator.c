@@ -296,7 +296,7 @@ ssize_t channel_get_next_record(struct channel *chan,
 		 */
 		if (chan->iter.last_timestamp
 		    > (buf->iter.timestamp + MAX_CLOCK_DELTA)) {
-			printk(KERN_WARNING "ring_buffer: timestamps going "
+			printk(KERN_WARNING "LTTng: ring_buffer: timestamps going "
 			       "backward. Last time %llu ns, cpu %d, "
 			       "current time %llu ns, cpu %d, "
 			       "delta %llu ns.\n",
