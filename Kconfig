@@ -2,7 +2,7 @@
 
 config LTTNG
 	tristate "LTTng support"
-	select TRACEPOINTS
+	select TRACING
 	help
 	  LTTng is an open source tracing framework for Linux.
 
