@@ -460,6 +460,20 @@ LTTNG_TRACEPOINT_EVENT(ext4_mb_release_group_pa,
 )
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,9,0))
+LTTNG_TRACEPOINT_EVENT(ext4_discard_preallocations,
+	TP_PROTO(struct inode *inode, unsigned int len, unsigned int needed),
+
+	TP_ARGS(inode, len, needed),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
+		ctf_integer(ino_t, ino, inode->i_ino)
+		ctf_integer(unsigned int, len, len)
+		ctf_integer(unsigned int, needed, needed)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT(ext4_discard_preallocations,
 	TP_PROTO(struct inode *inode),
 
@@ -470,6 +484,7 @@ LTTNG_TRACEPOINT_EVENT(ext4_discard_preallocations,
 		ctf_integer(ino_t, ino, inode->i_ino)
 	)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT(ext4_mb_discard_preallocations,
 	TP_PROTO(struct super_block *sb, int needed),
