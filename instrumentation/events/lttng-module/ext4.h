@@ -1041,12 +1041,27 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__bitmap_load, ext4_mb_buddy_bitmap_load,
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,9,0))
+LTTNG_TRACEPOINT_EVENT(ext4_read_block_bitmap_load,
+	TP_PROTO(struct super_block *sb, unsigned long group, bool prefetch),
+
+	TP_ARGS(sb, group, prefetch),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, sb->s_dev)
+		ctf_integer(__u32, group, group)
+		ctf_integer(bool, prefetch, prefetch)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__bitmap_load, ext4_read_block_bitmap_load,
 
 	TP_PROTO(struct super_block *sb, unsigned long group),
 
 	TP_ARGS(sb, group)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__bitmap_load, ext4_load_inode_bitmap,
 
