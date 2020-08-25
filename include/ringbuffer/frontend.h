@@ -79,7 +79,7 @@ void *channel_destroy(struct channel *chan);
 #define for_each_channel_cpu(cpu, chan)					\
 	for ((cpu) = -1;						\
 		({ (cpu) = cpumask_next(cpu, (chan)->backend.cpumask);	\
-		   smp_read_barrier_depends(); (cpu) < nr_cpu_ids; });)
+		   smp_rmb(); (cpu) < nr_cpu_ids; });)
 
 extern struct lib_ring_buffer *channel_get_ring_buffer(
 				const struct lib_ring_buffer_config *config,
@@ -155,7 +155,7 @@ static inline
 int lib_ring_buffer_is_finalized(const struct lib_ring_buffer_config *config,
 				 struct lib_ring_buffer *buf)
 {
-	int finalized = READ_ONCE(buf->finalized);
+	int finalized = LTTNG_READ_ONCE(buf->finalized);
 	/*
 	 * Read finalized before counters.
 	 */

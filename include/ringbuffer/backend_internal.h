@@ -368,7 +368,7 @@ void lib_ring_buffer_clear_noref(const struct lib_ring_buffer_config *config,
 	 * Performing a volatile access to read the sb_pages, because we want to
 	 * read a coherent version of the pointer and the associated noref flag.
 	 */
-	id = READ_ONCE(bufb->buf_wsb[idx].id);
+	id = LTTNG_READ_ONCE(bufb->buf_wsb[idx].id);
 	for (;;) {
 		/* This check is called on the fast path for each record. */
 		if (likely(!subbuffer_id_is_noref(config, id))) {

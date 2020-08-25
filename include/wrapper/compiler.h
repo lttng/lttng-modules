@@ -9,6 +9,7 @@
 #define _LTTNG_WRAPPER_COMPILER_H
 
 #include <linux/compiler.h>
+#include <linux/version.h>
 
 /*
  * Don't allow compiling with buggy compiler.
@@ -37,6 +38,23 @@
 
 #ifndef WRITE_ONCE
 # define WRITE_ONCE(x, val)	({ ACCESS_ONCE(x) = val; })
+#endif
+
+/*
+ * In v4.15 a smp read barrier was added to READ_ONCE to replace
+ * lockless_dereference(), replicate this behavior on prior kernels
+ * and remove calls to smp_read_barrier_depends which was dropped
+ * in v5.9.
+ */
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+#define LTTNG_READ_ONCE(x)	READ_ONCE(x)
+#else
+#define LTTNG_READ_ONCE(x)			\
+({						\
+	typeof(x) __val = READ_ONCE(x);		\
+	smp_read_barrier_depends();		\
+	__val;					\
+})
 #endif
 
 #define __LTTNG_COMPOUND_LITERAL(type, ...)	(type[]) { __VA_ARGS__ }

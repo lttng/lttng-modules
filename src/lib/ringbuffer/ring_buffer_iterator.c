@@ -46,7 +46,7 @@ restart:
 	switch (iter->state) {
 	case ITER_GET_SUBBUF:
 		ret = lib_ring_buffer_get_next_subbuf(buf);
-		if (ret && !READ_ONCE(buf->finalized)
+		if (ret && !LTTNG_READ_ONCE(buf->finalized)
 		    && config->alloc == RING_BUFFER_ALLOC_GLOBAL) {
 			/*
 			 * Use "pull" scheme for global buffers. The reader

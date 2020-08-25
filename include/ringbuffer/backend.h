@@ -156,7 +156,7 @@ size_t lib_ring_buffer_do_strcpy(const struct lib_ring_buffer_config *config,
 		 * Only read source character once, in case it is
 		 * modified concurrently.
 		 */
-		c = READ_ONCE(src[count]);
+		c = LTTNG_READ_ONCE(src[count]);
 		if (!c)
 			break;
 		lib_ring_buffer_do_copy(config, &dest[count], &c, 1);
