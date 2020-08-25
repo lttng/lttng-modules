@@ -160,33 +160,30 @@ static inline void put_trace_clock(void)
 
 static inline u64 trace_clock_read64(void)
 {
-	struct lttng_trace_clock *ltc = READ_ONCE(lttng_trace_clock);
+	struct lttng_trace_clock *ltc = LTTNG_READ_ONCE(lttng_trace_clock);
 
 	if (likely(!ltc)) {
 		return trace_clock_read64_monotonic();
 	} else {
-		read_barrier_depends();	/* load ltc before content */
 		return ltc->read64();
 	}
 }
 
 static inline u64 trace_clock_freq(void)
 {
-	struct lttng_trace_clock *ltc = READ_ONCE(lttng_trace_clock);
+	struct lttng_trace_clock *ltc = LTTNG_READ_ONCE(lttng_trace_clock);
 
 	if (!ltc) {
 		return trace_clock_freq_monotonic();
 	} else {
-		read_barrier_depends();	/* load ltc before content */
 		return ltc->freq();
 	}
 }
 
 static inline int trace_clock_uuid(char *uuid)
 {
-	struct lttng_trace_clock *ltc = READ_ONCE(lttng_trace_clock);
+	struct lttng_trace_clock *ltc = LTTNG_READ_ONCE(lttng_trace_clock);
 
-	read_barrier_depends();	/* load ltc before content */
 	/* Use default UUID cb when NULL */
 	if (!ltc || !ltc->uuid) {
 		return trace_clock_uuid_monotonic(uuid);
@@ -197,24 +194,22 @@ static inline int trace_clock_uuid(char *uuid)
 
 static inline const char *trace_clock_name(void)
 {
-	struct lttng_trace_clock *ltc = READ_ONCE(lttng_trace_clock);
+	struct lttng_trace_clock *ltc = LTTNG_READ_ONCE(lttng_trace_clock);
 
 	if (!ltc) {
 		return trace_clock_name_monotonic();
 	} else {
-		read_barrier_depends();	/* load ltc before content */
 		return ltc->name();
 	}
 }
 
 static inline const char *trace_clock_description(void)
 {
-	struct lttng_trace_clock *ltc = READ_ONCE(lttng_trace_clock);
+	struct lttng_trace_clock *ltc = LTTNG_READ_ONCE(lttng_trace_clock);
 
 	if (!ltc) {
 		return trace_clock_description_monotonic();
 	} else {
-		read_barrier_depends();	/* load ltc before content */
 		return ltc->description();
 	}
 }

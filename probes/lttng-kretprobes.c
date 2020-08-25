@@ -51,11 +51,11 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 		unsigned long parent_ip;
 	} payload;
 
-	if (unlikely(!READ_ONCE(chan->session->active)))
+	if (unlikely(!LTTNG_READ_ONCE(chan->session->active)))
 		return 0;
-	if (unlikely(!READ_ONCE(chan->enabled)))
+	if (unlikely(!LTTNG_READ_ONCE(chan->enabled)))
 		return 0;
-	if (unlikely(!READ_ONCE(event->enabled)))
+	if (unlikely(!LTTNG_READ_ONCE(event->enabled)))
 		return 0;
 
 	payload.ip = (unsigned long) krpi->rp->kp.addr;

@@ -1719,7 +1719,7 @@ int lttng_metadata_printf(struct lttng_session *session,
 	size_t len;
 	va_list ap;
 
-	WARN_ON_ONCE(!READ_ONCE(session->active));
+	WARN_ON_ONCE(!LTTNG_READ_ONCE(session->active));
 
 	va_start(ap, fmt);
 	str = kvasprintf(GFP_KERNEL, fmt, ap);
@@ -2305,7 +2305,7 @@ int _lttng_event_metadata_statedump(struct lttng_session *session,
 {
 	int ret = 0;
 
-	if (event->metadata_dumped || !READ_ONCE(session->active))
+	if (event->metadata_dumped || !LTTNG_READ_ONCE(session->active))
 		return 0;
 	if (chan->channel_type == METADATA_CHANNEL)
 		return 0;
@@ -2377,7 +2377,7 @@ int _lttng_channel_metadata_statedump(struct lttng_session *session,
 {
 	int ret = 0;
 
-	if (chan->metadata_dumped || !READ_ONCE(session->active))
+	if (chan->metadata_dumped || !LTTNG_READ_ONCE(session->active))
 		return 0;
 
 	if (chan->channel_type == METADATA_CHANNEL)
@@ -2604,7 +2604,7 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 	struct lttng_event *event;
 	int ret = 0;
 
-	if (!READ_ONCE(session->active))
+	if (!LTTNG_READ_ONCE(session->active))
 		return 0;
 
 	lttng_metadata_begin(session);
