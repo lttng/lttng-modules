@@ -40,11 +40,11 @@ int lttng_uprobes_handler_pre(struct uprobe_consumer *uc, struct pt_regs *regs)
 		unsigned long ip;
 	} payload;
 
-	if (unlikely(!READ_ONCE(chan->session->active)))
+	if (unlikely(!LTTNG_READ_ONCE(chan->session->active)))
 		return 0;
-	if (unlikely(!READ_ONCE(chan->enabled)))
+	if (unlikely(!LTTNG_READ_ONCE(chan->enabled)))
 		return 0;
-	if (unlikely(!READ_ONCE(event->enabled)))
+	if (unlikely(!LTTNG_READ_ONCE(event->enabled)))
 		return 0;
 
 	lib_ring_buffer_ctx_init(&ctx, chan->chan, &lttng_probe_ctx,

@@ -1131,11 +1131,11 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 									      \
 	if (!_TP_SESSION_CHECK(session, __session))			      \
 		return;							      \
-	if (unlikely(!READ_ONCE(__session->active)))			      \
+	if (unlikely(!LTTNG_READ_ONCE(__session->active)))		      \
 		return;							      \
-	if (unlikely(!READ_ONCE(__chan->enabled)))			      \
+	if (unlikely(!LTTNG_READ_ONCE(__chan->enabled)))		      \
 		return;							      \
-	if (unlikely(!READ_ONCE(__event->enabled)))			      \
+	if (unlikely(!LTTNG_READ_ONCE(__event->enabled)))		      \
 		return;							      \
 	__lpf = lttng_rcu_dereference(__session->pid_tracker);		      \
 	if (__lpf && likely(!lttng_pid_tracker_lookup(__lpf, current->tgid))) \
@@ -1205,11 +1205,11 @@ static void __event_probe__##_name(void *__data)			      \
 									      \
 	if (!_TP_SESSION_CHECK(session, __session))			      \
 		return;							      \
-	if (unlikely(!READ_ONCE(__session->active)))			      \
+	if (unlikely(!LTTNG_READ_ONCE(__session->active)))		      \
 		return;							      \
-	if (unlikely(!READ_ONCE(__chan->enabled)))			      \
+	if (unlikely(!LTTNG_READ_ONCE(__chan->enabled)))		      \
 		return;							      \
-	if (unlikely(!READ_ONCE(__event->enabled)))			      \
+	if (unlikely(!LTTNG_READ_ONCE(__event->enabled)))		      \
 		return;							      \
 	__lpf = lttng_rcu_dereference(__session->pid_tracker);		      \
 	if (__lpf && likely(!lttng_pid_tracker_lookup(__lpf, current->tgid)))  \

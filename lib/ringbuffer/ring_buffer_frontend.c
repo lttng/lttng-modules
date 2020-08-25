@@ -1074,7 +1074,7 @@ int lib_ring_buffer_snapshot(struct lib_ring_buffer *buf,
 	int finalized;
 
 retry:
-	finalized = READ_ONCE(buf->finalized);
+	finalized = LTTNG_READ_ONCE(buf->finalized);
 	/*
 	 * Read finalized before counters.
 	 */
@@ -1245,7 +1245,7 @@ int lib_ring_buffer_get_subbuf(struct lib_ring_buffer *buf,
 		return -EBUSY;
 	}
 retry:
-	finalized = READ_ONCE(buf->finalized);
+	finalized = LTTNG_READ_ONCE(buf->finalized);
 	/*
 	 * Read finalized before counters.
 	 */
