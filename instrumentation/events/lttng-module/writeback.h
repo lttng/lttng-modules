@@ -386,34 +386,48 @@ LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_balance_dirty_wait, writeback_wbc_balanc
 #endif
 LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_writepage, writeback_wbc_writepage)
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,9,0))
 LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 	TP_PROTO(struct bdi_writeback *wb,
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
 		 struct wb_writeback_work *work,
-#else
-		 unsigned long *older_than_this,
-#endif
+		 unsigned long dirtied_before,
 		 int moved),
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
-	TP_ARGS(wb, work, moved),
-#else
-	TP_ARGS(wb, older_than_this, moved),
-#endif
+	TP_ARGS(wb, work, dirtied_before, moved),
 	TP_FIELDS(
 		ctf_array_text(char, name, dev_name(wb->bdi->dev), 32)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
-#else
+		ctf_integer(unsigned long, older, dirtied_before)
+		ctf_integer(int, moved, moved)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
+	TP_PROTO(struct bdi_writeback *wb,
+		 struct wb_writeback_work *work,
+		 int moved),
+	TP_ARGS(wb, work, moved),
+	TP_FIELDS(
+		ctf_array_text(char, name, dev_name(wb->bdi->dev), 32)
+		ctf_integer(int, moved, moved)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
+LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
+	TP_PROTO(struct bdi_writeback *wb,
+		 unsigned long *older_than_this,
+		 int moved),
+	TP_ARGS(wb, older_than_this, moved),
+	TP_FIELDS(
+		ctf_array_text(char, name, dev_name(wb->bdi->dev), 32)
 		ctf_integer(unsigned long, older,
 			older_than_this ? *older_than_this : 0)
 		ctf_integer(long, age,
 			older_than_this ?
 				(jiffies - *older_than_this) * 1000 / HZ
 				: -1)
-#endif
 		ctf_integer(int, moved, moved)
 	)
 )
+#endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,8,0))
 LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
@@ -462,7 +476,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 		ctf_integer(unsigned long, dirty_limit, global_dirty_limit)
 	)
 )
-#else
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
 LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 
 	writeback_global_dirty_state,
@@ -486,7 +500,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 		ctf_integer(unsigned long, dirty_limit, global_dirty_limit)
 	)
 )
-#endif
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
