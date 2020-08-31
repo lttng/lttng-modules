@@ -46,7 +46,21 @@ static inline struct backing_dev_info *lttng_inode_to_bdi(struct inode *inode)
 
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,9,0))
+#define show_inode_state(state)					\
+	__print_flags(state, "|",				\
+		{I_DIRTY_SYNC,		"I_DIRTY_SYNC"},	\
+		{I_DIRTY_DATASYNC,	"I_DIRTY_DATASYNC"},	\
+		{I_DIRTY_PAGES,		"I_DIRTY_PAGES"},	\
+		{I_NEW,			"I_NEW"},		\
+		{I_WILL_FREE,		"I_WILL_FREE"},		\
+		{I_FREEING,		"I_FREEING"},		\
+		{I_CLEAR,		"I_CLEAR"},		\
+		{I_SYNC,		"I_SYNC"},		\
+		{I_DIRTY_TIME,		"I_DIRTY_TIME"},	\
+		{I_REFERENCED,		"I_REFERENCED"}		\
+	)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0))
 #define show_inode_state(state)					\
 	__print_flags(state, "|",				\
 		{I_DIRTY_SYNC,		"I_DIRTY_SYNC"},	\
