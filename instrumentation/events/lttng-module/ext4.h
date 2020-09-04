@@ -547,7 +547,8 @@ LTTNG_TRACEPOINT_EVENT(ext4_mb_release_group_pa,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,9,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,9,0) || \
+	LTTNG_KERNEL_RANGE(5,8,6, 5,9,0))
 LTTNG_TRACEPOINT_EVENT(ext4_discard_preallocations,
 	TP_PROTO(struct inode *inode, unsigned int len, unsigned int needed),
 

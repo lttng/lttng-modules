@@ -386,7 +386,13 @@ LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_balance_dirty_wait, writeback_wbc_balanc
 #endif
 LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_writepage, writeback_wbc_writepage)
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,9,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,9,0) || \
+	LTTNG_KERNEL_RANGE(5,8,6, 5,9,0) || \
+	LTTNG_KERNEL_RANGE(5,4,62, 5,5,0) || \
+	LTTNG_KERNEL_RANGE(4,19,143, 4,20,0) || \
+	LTTNG_KERNEL_RANGE(4,14,196, 4,15,0) || \
+	LTTNG_KERNEL_RANGE(4,9,235, 4,10,0) || \
+	LTTNG_KERNEL_RANGE(4,4,235, 4,5,0))
 LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 	TP_PROTO(struct bdi_writeback *wb,
 		 struct wb_writeback_work *work,
