@@ -393,7 +393,8 @@ LTTNG_TRACEPOINT_EVENT(rcu_fqs,
  */
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))	\
 	|| LTTNG_KERNEL_RANGE(5,5,6, 5,6,0)		\
-	|| LTTNG_KERNEL_RANGE(5,4,22, 5,5,0)
+	|| LTTNG_KERNEL_RANGE(5,4,22, 5,5,0)		\
+	|| LTTNG_UBUNTU_KERNEL_RANGE(5,0,21,46, 5,1,0,0)
 LTTNG_TRACEPOINT_EVENT(rcu_dyntick,
 
 	TP_PROTO(const char *polarity, long oldnesting, long newnesting, int dynticks),
