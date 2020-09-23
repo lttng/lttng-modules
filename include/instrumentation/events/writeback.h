@@ -390,7 +390,8 @@ LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_writepage, writeback_wbc_writepage)
 	LTTNG_KERNEL_RANGE(4,19,143, 4,20,0) || \
 	LTTNG_KERNEL_RANGE(4,14,196, 4,15,0) || \
 	LTTNG_KERNEL_RANGE(4,9,235, 4,10,0) || \
-	LTTNG_KERNEL_RANGE(4,4,235, 4,5,0))
+	LTTNG_KERNEL_RANGE(4,4,235, 4,5,0) || \
+	LTTNG_UBUNTU_KERNEL_RANGE(4,15,18,119, 4,16,0,0))
 LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 	TP_PROTO(struct bdi_writeback *wb,
 		 struct wb_writeback_work *work,
