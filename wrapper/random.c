@@ -28,21 +28,12 @@ int wrapper_get_bootid(char *bootid)
 	struct file *file;
 	int ret;
 	ssize_t len;
-	mm_segment_t old_fs;
 
 	file = filp_open("/proc/sys/kernel/random/boot_id", O_RDONLY, 0);
 	if (IS_ERR(file))
 		return PTR_ERR(file);
 
-	old_fs = get_fs();
-	set_fs(KERNEL_DS);
-
-	if (!file->f_op || !file->f_op->read) {
-		ret = -EINVAL;
-		goto end;
-	}
-
-	len = file->f_op->read(file, bootid, BOOT_ID_LEN - 1, &file->f_pos);
+	len = kernel_read(file, bootid, BOOT_ID_LEN - 1, &file->f_pos);
 	if (len != BOOT_ID_LEN - 1) {
 		ret = -EINVAL;
 		goto end;
@@ -51,7 +42,6 @@ int wrapper_get_bootid(char *bootid)
 	bootid[BOOT_ID_LEN - 1] = '\0';
 	ret = 0;
 end:
-	set_fs(old_fs);
 	filp_close(file, current->files);
 	return ret;
 }
