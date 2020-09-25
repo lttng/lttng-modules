@@ -81,16 +81,14 @@ static
 int stack_star_glob_match(struct estack *stack, int top, const char *cmp_type)
 {
 	bool has_user = false;
-	mm_segment_t old_fs;
 	int result;
 	struct estack_entry *pattern_reg;
 	struct estack_entry *candidate_reg;
 
+	/* Disable the page fault handler when reading from userspace. */
 	if (estack_bx(stack, top)->u.s.user
 			|| estack_ax(stack, top)->u.s.user) {
 		has_user = true;
-		old_fs = get_fs();
-		set_fs(KERNEL_DS);
 		pagefault_disable();
 	}
 
@@ -106,10 +104,8 @@ int stack_star_glob_match(struct estack *stack, int top, const char *cmp_type)
 	/* Perform the match operation. */
 	result = !strutils_star_glob_match_char_cb(get_char_at_cb,
 		pattern_reg, get_char_at_cb, candidate_reg);
-	if (has_user) {
+	if (has_user)
 		pagefault_enable();
-		set_fs(old_fs);
-	}
 
 	return result;
 }
@@ -119,13 +115,10 @@ int stack_strcmp(struct estack *stack, int top, const char *cmp_type)
 {
 	size_t offset_bx = 0, offset_ax = 0;
 	int diff, has_user = 0;
-	mm_segment_t old_fs;
 
 	if (estack_bx(stack, top)->u.s.user
 			|| estack_ax(stack, top)->u.s.user) {
 		has_user = 1;
-		old_fs = get_fs();
-		set_fs(KERNEL_DS);
 		pagefault_disable();
 	}
 
@@ -210,10 +203,9 @@ int stack_strcmp(struct estack *stack, int top, const char *cmp_type)
 		offset_bx++;
 		offset_ax++;
 	}
-	if (has_user) {
+	if (has_user)
 		pagefault_enable();
-		set_fs(old_fs);
-	}
+
 	return diff;
 }
 
