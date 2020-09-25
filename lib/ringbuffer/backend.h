@@ -277,7 +277,6 @@ void lib_ring_buffer_copy_from_user_inatomic(const struct lib_ring_buffer_config
 	size_t offset = ctx->buf_offset;
 	struct lib_ring_buffer_backend_pages *backend_pages;
 	unsigned long ret;
-	mm_segment_t old_fs = get_fs();
 
 	if (unlikely(!len))
 		return;
@@ -287,7 +286,6 @@ void lib_ring_buffer_copy_from_user_inatomic(const struct lib_ring_buffer_config
 	index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
 	pagecpy = min_t(size_t, len, (-offset) & ~PAGE_MASK);
 
-	set_fs(KERNEL_DS);
 	pagefault_disable();
 	if (unlikely(!lttng_access_ok(VERIFY_READ, src, len)))
 		goto fill_buffer;
@@ -304,14 +302,12 @@ void lib_ring_buffer_copy_from_user_inatomic(const struct lib_ring_buffer_config
 		_lib_ring_buffer_copy_from_user_inatomic(bufb, offset, src, len, 0);
 	}
 	pagefault_enable();
-	set_fs(old_fs);
 	ctx->buf_offset += len;
 
 	return;
 
 fill_buffer:
 	pagefault_enable();
-	set_fs(old_fs);
 	/*
 	 * In the error path we call the slow path version to avoid
 	 * the pollution of static inline code.
@@ -347,7 +343,6 @@ void lib_ring_buffer_strcpy_from_user_inatomic(const struct lib_ring_buffer_conf
 	size_t index, pagecpy;
 	size_t offset = ctx->buf_offset;
 	struct lib_ring_buffer_backend_pages *backend_pages;
-	mm_segment_t old_fs = get_fs();
 
 	if (unlikely(!len))
 		return;
@@ -357,7 +352,6 @@ void lib_ring_buffer_strcpy_from_user_inatomic(const struct lib_ring_buffer_conf
 	index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
 	pagecpy = min_t(size_t, len, (-offset) & ~PAGE_MASK);
 
-	set_fs(KERNEL_DS);
 	pagefault_disable();
 	if (unlikely(!lttng_access_ok(VERIFY_READ, src, len)))
 		goto fill_buffer;
@@ -388,14 +382,12 @@ void lib_ring_buffer_strcpy_from_user_inatomic(const struct lib_ring_buffer_conf
 					len, 0, pad);
 	}
 	pagefault_enable();
-	set_fs(old_fs);
 	ctx->buf_offset += len;
 
 	return;
 
 fill_buffer:
 	pagefault_enable();
-	set_fs(old_fs);
 	/*
 	 * In the error path we call the slow path version to avoid
 	 * the pollution of static inline code.
@@ -447,16 +439,12 @@ unsigned long lib_ring_buffer_copy_from_user_check_nofault(void *dest,
 						unsigned long len)
 {
 	unsigned long ret;
-	mm_segment_t old_fs;
 
 	if (!lttng_access_ok(VERIFY_READ, src, len))
 		return 1;
-	old_fs = get_fs();
-	set_fs(KERNEL_DS);
 	pagefault_disable();
 	ret = __copy_from_user_inatomic(dest, src, len);
 	pagefault_enable();
-	set_fs(old_fs);
 	return ret;
 }
 
