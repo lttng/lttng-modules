@@ -21,13 +21,10 @@
 long lttng_strlen_user_inatomic(const char *addr)
 {
 	long count = 0;
-	mm_segment_t old_fs;
 
 	if (!addr)
 		return 0;
 
-	old_fs = get_fs();
-	set_fs(KERNEL_DS);
 	pagefault_disable();
 	for (;;) {
 		char v;
@@ -50,7 +47,6 @@ long lttng_strlen_user_inatomic(const char *addr)
 		addr++;
 	}
 	pagefault_enable();
-	set_fs(old_fs);
 	return count;
 }
 EXPORT_SYMBOL_GPL(lttng_strlen_user_inatomic);
