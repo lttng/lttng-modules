@@ -50,7 +50,7 @@ struct lttng_kernel_channel {
 	uint64_t num_subbuf;
 	unsigned int switch_timer_interval;	/* usecs */
 	unsigned int read_timer_interval;	/* usecs */
-	enum lttng_kernel_output output;	/* splice, mmap */
+	uint32_t output;			/* enum lttng_kernel_output (splice, mmap) */
 	int overwrite;				/* 1: overwrite, 0: discard */
 	char padding[LTTNG_KERNEL_CHANNEL_PADDING];
 } __attribute__((packed));
@@ -122,7 +122,7 @@ struct lttng_kernel_syscall {
 #define LTTNG_KERNEL_EVENT_PADDING2	LTTNG_KERNEL_SYM_NAME_LEN + 32
 struct lttng_kernel_event {
 	char name[LTTNG_KERNEL_SYM_NAME_LEN];	/* event name */
-	enum lttng_kernel_instrumentation instrumentation;
+	uint32_t instrumentation;		/* enum lttng_kernel_instrumentation */
 	char padding[LTTNG_KERNEL_EVENT_PADDING1];
 
 	/* Per instrumentation type configuration */
@@ -160,7 +160,7 @@ enum lttng_kernel_calibrate_type {
 };
 
 struct lttng_kernel_calibrate {
-	enum lttng_kernel_calibrate_type type;	/* type (input) */
+	uint32_t type;	/* enum lttng_kernel_calibrate_type (input) */
 } __attribute__((packed));
 
 struct lttng_kernel_syscall_mask {
@@ -218,7 +218,7 @@ struct lttng_kernel_perf_counter_ctx {
 #define LTTNG_KERNEL_CONTEXT_PADDING1	16
 #define LTTNG_KERNEL_CONTEXT_PADDING2	LTTNG_KERNEL_SYM_NAME_LEN + 32
 struct lttng_kernel_context {
-	enum lttng_kernel_context_type ctx;
+	uint32_t ctx;	/*enum lttng_kernel_context_type */
 	char padding[LTTNG_KERNEL_CONTEXT_PADDING1];
 
 	union {
@@ -247,7 +247,7 @@ enum lttng_kernel_tracker_type {
 };
 
 struct lttng_kernel_tracker_args {
-	enum lttng_kernel_tracker_type type;
+	uint32_t type;	/* enum lttng_kernel_tracker_type */
 	int32_t id;
 };
 
