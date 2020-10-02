@@ -9,7 +9,7 @@
 #define _LTTNG_WRAPPER_FS_H
 
 #include <linux/fs.h>
-#include <lttng/kernel-version.h>
+#include <lttng-kernel-version.h>
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
 
