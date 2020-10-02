@@ -14,7 +14,7 @@
 /* boot_id depends on sysctl */
 #if defined(CONFIG_SYSCTL)
 
-#include <linux/fs.h>
+#include <wrapper/fs.h>
 #include <linux/file.h>
 #include <linux/sched.h>
 #include <linux/uaccess.h>
@@ -33,7 +33,7 @@ int wrapper_get_bootid(char *bootid)
 	if (IS_ERR(file))
 		return PTR_ERR(file);
 
-	len = kernel_read(file, bootid, BOOT_ID_LEN - 1, &file->f_pos);
+	len = lttng_kernel_read(file, bootid, BOOT_ID_LEN - 1, &file->f_pos);
 	if (len != BOOT_ID_LEN - 1) {
 		ret = -EINVAL;
 		goto end;
