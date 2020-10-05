@@ -1,4 +1,7 @@
-2020-10-02 (World Smile Day) LTTng modules 2.12.3
+2020-10-05 (National Get Funky Day) LTTng modules 2.12.3
+	* Cleanup: lttng-syscalls: silence warning about uninitialized bitmap variable
+	* fix: backport 'Add 'kernel_read' wrapper for kernels < v4.14'
+	* Add 'kernel_read' wrapper for kernels < v4.14
 	* fix: Use 'kernel_read' to read from procfs
 	* fix: don't allow userspace copy to read kernel memory
 	* fix: Add a 1MB limit to lttng_strlen_user_inatomic
