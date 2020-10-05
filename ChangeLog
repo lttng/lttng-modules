@@ -1,3 +1,23 @@
+2020-10-05 (National Get Funky Day) LTTng modules 2.11.6
+	* Cleanup: lttng-syscalls: silence warning about uninitialized bitmap variable
+	* fix: backport 'Add 'kernel_read' wrapper for kernels < v4.14'
+	* Add 'kernel_read' wrapper for kernels < v4.14
+	* fix: Use 'kernel_read' to read from procfs
+	* fix: don't allow userspace copy to read kernel memory
+	* fix: Add a 1MB limit to lttng_strlen_user_inatomic
+	* fix: Adjust ranges for Ubuntu 4.15.0-119 kernel
+	* fix: Adjust ranges for Ubuntu HWE 5.0 kernels
+	* Fix: system call filter table
+	* fix: version ranges for ext4_discard_preallocations and writeback_queue_io
+	* fix: writeback: Fix sync livelock due to b_dirty_time processing (v5.9)
+	* fix: writeback: Drop I_DIRTY_TIME_EXPIRE (v5.9)
+	* fix: removal of [smp_]read_barrier_depends (v5.9)
+	* fix: ext4: indicate via a block bitmap read is prefetched… (v5.9)
+	* fix: ext4: limit the length of per-inode prealloc list (v5.9)
+	* fix: KVM: x86/mmu: Make kvm_mmu_page definition and accessor internal-only (v5.9)
+	* fix: Move mmutrace.h into the mmu/ sub-directory (v5.9)
+	* Kconfig: fix dependency issue when building in-tree without CONFIG_FTRACE
+
 2020-08-04 (National Chocolate Chip Cookie Day) LTTng modules 2.11.5
 	* fix: no __lttng_vmalloc_node_range() prior to v2.6.38
 	* Fix: Lock metadata cache on session destroy
