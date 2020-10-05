@@ -719,7 +719,7 @@ int fill_table(const struct trace_syscall_entry *table, size_t table_len,
 			ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_COMPAT;
 			break;
 		}
-		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
+		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN - 1);
 		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
 		chan_table[i] = _lttng_event_create(chan, &ev, filter,
