@@ -1057,7 +1057,6 @@ int lttng_syscall_filter_enable(struct lttng_channel *chan,
 	if (syscall_nr < 0)
 		return -ENOENT;
 
-
 	switch (event->u.syscall.entryexit) {
 	case LTTNG_SYSCALL_ENTRY:
 		switch (event->u.syscall.abi) {
@@ -1067,6 +1066,8 @@ int lttng_syscall_filter_enable(struct lttng_channel *chan,
 		case LTTNG_SYSCALL_ABI_COMPAT:
 			bitmap = filter->sc_compat_entry;
 			break;
+		default:
+			return -EINVAL;
 		}
 		break;
 	case LTTNG_SYSCALL_EXIT:
@@ -1077,6 +1078,8 @@ int lttng_syscall_filter_enable(struct lttng_channel *chan,
 		case LTTNG_SYSCALL_ABI_COMPAT:
 			bitmap = filter->sc_compat_exit;
 			break;
+		default:
+			return -EINVAL;
 		}
 		break;
 	default:
@@ -1113,7 +1116,6 @@ int lttng_syscall_filter_disable(struct lttng_channel *chan,
 	if (syscall_nr < 0)
 		return -ENOENT;
 
-
 	switch (event->u.syscall.entryexit) {
 	case LTTNG_SYSCALL_ENTRY:
 		switch (event->u.syscall.abi) {
@@ -1123,6 +1125,8 @@ int lttng_syscall_filter_disable(struct lttng_channel *chan,
 		case LTTNG_SYSCALL_ABI_COMPAT:
 			bitmap = filter->sc_compat_entry;
 			break;
+		default:
+			return -EINVAL;
 		}
 		break;
 	case LTTNG_SYSCALL_EXIT:
@@ -1133,6 +1137,8 @@ int lttng_syscall_filter_disable(struct lttng_channel *chan,
 		case LTTNG_SYSCALL_ABI_COMPAT:
 			bitmap = filter->sc_compat_exit;
 			break;
+		default:
+			return -EINVAL;
 		}
 		break;
 	default:
