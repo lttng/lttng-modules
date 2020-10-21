@@ -181,12 +181,12 @@ SC_LTTNG_TRACEPOINT_EVENT(clone,
 							__LTTNG_COMPOUND_LITERAL(struct lttng_event_field,
 								LTTNG_CLONE_FLAGS
 							),
-						.u.struct_nestable.alignment = lttng_alignof(uint32_t) * CHAR_BIT,
+						.u.struct_nestable.alignment = lttng_alignof(unsigned long) * CHAR_BIT,
 					}
 				),
 				flags,
 				ctf_custom_code(
-					ctf_integer_type(uint32_t, clone_flags)
+					ctf_integer_type(unsigned long, clone_flags)
 				)
 			)
 		)
