@@ -8,7 +8,7 @@
  */
 
 #include <wrapper/uaccess.h>
-#include <wrapper/frame.h>
+#include <wrapper/objtool.h>
 #include <wrapper/types.h>
 #include <linux/swab.h>
 
