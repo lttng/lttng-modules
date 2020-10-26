@@ -163,7 +163,25 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_mmu_page_class, kvm_mmu_prepare_zap_page,
 	TP_ARGS(sp)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0))
+
+LTTNG_TRACEPOINT_EVENT_MAP(
+	mark_mmio_spte,
+
+	kvm_mmu_mark_mmio_spte,
+
+	TP_PROTO(u64 *sptep, gfn_t gfn, u64 spte),
+	TP_ARGS(sptep, gfn, spte),
+
+	TP_FIELDS(
+		ctf_integer_hex(void *, sptep, sptep)
+		ctf_integer(gfn_t, gfn, gfn)
+		ctf_integer(unsigned, access, spte & ACC_ALL)
+		ctf_integer(unsigned int, gen, get_mmio_spte_generation(spte))
+	)
+)
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
 
 LTTNG_TRACEPOINT_EVENT_MAP(
 	mark_mmio_spte,
