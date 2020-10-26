@@ -1274,6 +1274,18 @@ LTTNG_TRACEPOINT_EVENT(ext4_ext_load_extent,
 	)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0))
+LTTNG_TRACEPOINT_EVENT(ext4_load_inode,
+	TP_PROTO(struct super_block *sb, unsigned long ino),
+
+	TP_ARGS(sb, ino),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, sb->s_dev)
+		ctf_integer(ino_t, ino, ino)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT(ext4_load_inode,
 	TP_PROTO(struct inode *inode),
 
@@ -1284,6 +1296,7 @@ LTTNG_TRACEPOINT_EVENT(ext4_load_inode,
 		ctf_integer(ino_t, ino, inode->i_ino)
 	)
 )
+#endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,5,0))
 
@@ -1893,6 +1906,34 @@ LTTNG_TRACEPOINT_EVENT(ext4_es_shrink_exit,
 	)
 )
 
+#endif
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0))
+LTTNG_TRACEPOINT_EVENT(ext4_fc_replay_scan,
+	TP_PROTO(struct super_block *sb, int error, int off),
+
+	TP_ARGS(sb, error, off),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, sb->s_dev)
+		ctf_integer(int, error, error)
+		ctf_integer(int, off, off)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT(ext4_fc_replay,
+	TP_PROTO(struct super_block *sb, int tag, int ino, int priv1, int priv2),
+
+	TP_ARGS(sb, tag, ino, priv1, priv2),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, sb->s_dev)
+		ctf_integer(int, tag, tag)
+		ctf_integer(int, ino, ino)
+		ctf_integer(int, priv1, priv1)
+		ctf_integer(int, priv2, priv2)
+	)
+)
 #endif
 
 #endif /* LTTNG_TRACE_EXT4_H */
