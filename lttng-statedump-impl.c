@@ -55,26 +55,76 @@
 #define LTTNG_INSTRUMENTATION
 #include <instrumentation/events/lttng-module/lttng-statedump.h>
 
-DEFINE_TRACE(lttng_statedump_block_device);
-DEFINE_TRACE(lttng_statedump_end);
-DEFINE_TRACE(lttng_statedump_interrupt);
-DEFINE_TRACE(lttng_statedump_file_descriptor);
-DEFINE_TRACE(lttng_statedump_start);
-DEFINE_TRACE(lttng_statedump_process_state);
-DEFINE_TRACE(lttng_statedump_process_pid_ns);
+LTTNG_DEFINE_TRACE(lttng_statedump_block_device,
+	TP_PROTO(struct lttng_session *session,
+		dev_t dev, const char *diskname),
+	TP_ARGS(session, dev, diskname));
+
+LTTNG_DEFINE_TRACE(lttng_statedump_end,
+	TP_PROTO(struct lttng_session *session),
+	TP_ARGS(session));
+
+LTTNG_DEFINE_TRACE(lttng_statedump_interrupt,
+	TP_PROTO(struct lttng_session *session,
+		unsigned int irq, const char *chip_name,
+		struct irqaction *action),
+	TP_ARGS(session, irq, chip_name, action));
+
+LTTNG_DEFINE_TRACE(lttng_statedump_file_descriptor,
+	TP_PROTO(struct lttng_session *session,
+		struct files_struct *files,
+		int fd, const char *filename,
+		unsigned int flags, fmode_t fmode),
+	TP_ARGS(session, files, fd, filename, flags, fmode));
+
+LTTNG_DEFINE_TRACE(lttng_statedump_start,
+	TP_PROTO(struct lttng_session *session),
+	TP_ARGS(session));
+
+LTTNG_DEFINE_TRACE(lttng_statedump_process_state,
+	TP_PROTO(struct lttng_session *session,
+		struct task_struct *p,
+		int type, int mode, int submode, int status,
+		struct files_struct *files),
+	TP_ARGS(session, p, type, mode, submode, status, files));
+
+LTTNG_DEFINE_TRACE(lttng_statedump_process_pid_ns,
+	TP_PROTO(struct lttng_session *session,
+		struct task_struct *p,
+		struct pid_namespace *pid_ns),
+	TP_ARGS(session, p, pid_ns));
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0))
-DEFINE_TRACE(lttng_statedump_process_cgroup_ns);
+LTTNG_DEFINE_TRACE(lttng_statedump_process_cgroup_ns,
+	TP_PROTO(struct lttng_session *session,
+		struct task_struct *p,
+		struct cgroup_namespace *cgroup_ns),
+	TP_ARGS(session, p, cgroup_ns));
 #endif
-DEFINE_TRACE(lttng_statedump_process_ipc_ns);
+
+LTTNG_DEFINE_TRACE(lttng_statedump_process_ipc_ns,
+	TP_PROTO(struct lttng_session *session,
+		struct task_struct *p,
+		struct ipc_namespace *ipc_ns),
+	TP_ARGS(session, p, ipc_ns));
+
 #ifndef LTTNG_MNT_NS_MISSING_HEADER
-DEFINE_TRACE(lttng_statedump_process_mnt_ns);
+LTTNG_DEFINE_TRACE(lttng_statedump_process_mnt_ns,
+	TP_PROTO(struct lttng_session *session,
+		struct task_struct *p,
+		struct mnt_namespace *mnt_ns),
+	TP_ARGS(session, p, mnt_ns));
 #endif
-DEFINE_TRACE(lttng_statedump_process_net_ns);
-DEFINE_TRACE(lttng_statedump_process_user_ns);
-DEFINE_TRACE(lttng_statedump_process_uts_ns);
-DEFINE_TRACE(lttng_statedump_network_interface);
+
+LTTNG_DEFINE_TRACE(lttng_statedump_network_interface,
+	TP_PROTO(struct lttng_session *session,
+		struct net_device *dev, struct in_ifaddr *ifa),
+	TP_ARGS(session, dev, ifa));
+
 #ifdef LTTNG_HAVE_STATEDUMP_CPU_TOPOLOGY
-DEFINE_TRACE(lttng_statedump_cpu_topology);
+LTTNG_DEFINE_TRACE(lttng_statedump_cpu_topology,
+	TP_PROTO(struct lttng_session *session, struct cpuinfo_x86 *c),
+	TP_ARGS(session, c));
 #endif
 
 struct lttng_fd_ctx {
