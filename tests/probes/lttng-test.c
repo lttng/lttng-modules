@@ -26,7 +26,12 @@
 #define LTTNG_INSTRUMENTATION
 #include <instrumentation/events/lttng-module/lttng-test.h>
 
-DEFINE_TRACE(lttng_test_filter_event);
+LTTNG_DEFINE_TRACE(lttng_test_filter_event,
+	PARAMS(int anint, int netint, long *values,
+		char *text, size_t textlen,
+		char *etext, uint32_t * net_values),
+	PARAMS(anint, netint, values, text, textlen, etext, net_values)
+);
 
 #define LTTNG_TEST_FILTER_EVENT_FILE	"lttng-test-filter-event"
 

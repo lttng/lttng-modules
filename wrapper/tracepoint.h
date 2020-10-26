@@ -20,6 +20,14 @@
 
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0))
+#define LTTNG_DEFINE_TRACE(name, proto, args)		\
+	DEFINE_TRACE(name, PARAMS(proto), PARAMS(args))
+#else
+#define LTTNG_DEFINE_TRACE(name, proto, args)		\
+	DEFINE_TRACE(name)
+#endif
+
 #ifndef HAVE_KABI_2635_TRACEPOINT
 
 #define kabi_2635_tracepoint_probe_register tracepoint_probe_register
