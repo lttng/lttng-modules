@@ -118,11 +118,12 @@ struct lttng_kernel_syscall {
 /*
  * For syscall tracing, name = "*" means "enable all".
  */
-#define LTTNG_KERNEL_EVENT_PADDING1	16
+#define LTTNG_KERNEL_EVENT_PADDING1	8
 #define LTTNG_KERNEL_EVENT_PADDING2	LTTNG_KERNEL_SYM_NAME_LEN + 32
 struct lttng_kernel_event {
 	char name[LTTNG_KERNEL_SYM_NAME_LEN];	/* event name */
 	uint32_t instrumentation;		/* enum lttng_kernel_instrumentation */
+	uint64_t token;				/* User-provided token */
 	char padding[LTTNG_KERNEL_EVENT_PADDING1];
 
 	/* Per instrumentation type configuration */
