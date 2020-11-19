@@ -320,7 +320,6 @@ struct lttng_event {
 		} kretprobe;
 		struct lttng_uprobe uprobe;
 		struct {
-			char *syscall_name;
 			enum lttng_syscall_entryexit entryexit;
 			enum lttng_syscall_abi abi;
 		} syscall;
