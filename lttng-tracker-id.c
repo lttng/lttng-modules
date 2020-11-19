@@ -75,6 +75,7 @@ int lttng_id_tracker_add(struct lttng_id_tracker *lf, int id)
 	struct lttng_id_tracker_rcu *p = lf->p;
 	uint32_t hash = hash_32(id, 32);
 	bool allocated = false;
+	int ret;
 
 	if (!p) {
 		p = lttng_id_tracker_rcu_create();
@@ -84,18 +85,28 @@ int lttng_id_tracker_add(struct lttng_id_tracker *lf, int id)
 	}
 	head = &p->id_hash[hash & (LTTNG_ID_TABLE_SIZE - 1)];
 	lttng_hlist_for_each_entry(e, head, hlist) {
-		if (id == e->id)
-			return -EEXIST;
+		if (id == e->id) {
+			ret = -EEXIST;
+			goto error;
+		}
 	}
 	e = kmalloc(sizeof(struct lttng_id_hash_node), GFP_KERNEL);
-	if (!e)
-		return -ENOMEM;
+	if (!e) {
+		ret = -ENOMEM;
+		goto error;
+	}
 	e->id = id;
 	hlist_add_head_rcu(&e->hlist, head);
 	if (allocated) {
 		rcu_assign_pointer(lf->p, p);
 	}
 	return 0;
+
+error:
+	if (allocated) {
+		kfree(p);
+	}
+	return ret;
 }
 
 static
