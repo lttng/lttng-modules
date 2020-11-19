@@ -1008,15 +1008,16 @@ uint32_t get_sc_tables_len(void)
 }
 
 static
-const char *get_syscall_name(struct lttng_event *event)
+const char *get_syscall_name(const char *desc_name,
+		enum lttng_syscall_abi abi,
+		enum lttng_syscall_entryexit entryexit)
 {
 	size_t prefix_len = 0;
 
-	WARN_ON_ONCE(event->instrumentation != LTTNG_KERNEL_SYSCALL);
 
-	switch (event->u.syscall.entryexit) {
+	switch (entryexit) {
 	case LTTNG_SYSCALL_ENTRY:
-		switch (event->u.syscall.abi) {
+		switch (abi) {
 		case LTTNG_SYSCALL_ABI_NATIVE:
 			prefix_len = strlen(SYSCALL_ENTRY_STR);
 			break;
@@ -1026,7 +1027,7 @@ const char *get_syscall_name(struct lttng_event *event)
 		}
 		break;
 	case LTTNG_SYSCALL_EXIT:
-		switch (event->u.syscall.abi) {
+		switch (abi) {
 		case LTTNG_SYSCALL_ABI_NATIVE:
 			prefix_len = strlen(SYSCALL_EXIT_STR);
 			break;
@@ -1037,22 +1038,22 @@ const char *get_syscall_name(struct lttng_event *event)
 		break;
 	}
 	WARN_ON_ONCE(prefix_len == 0);
-	return event->desc->name + prefix_len;
+	return desc_name + prefix_len;
 }
 
-int lttng_syscall_filter_enable_event(struct lttng_channel *chan,
-		struct lttng_event *event)
+static
+int lttng_syscall_filter_enable(
+		struct lttng_syscall_filter *filter,
+		const char *desc_name, enum lttng_syscall_abi abi,
+		enum lttng_syscall_entryexit entryexit)
 {
-	struct lttng_syscall_filter *filter = chan->sc_filter;
 	const char *syscall_name;
 	unsigned long *bitmap;
 	int syscall_nr;
 
-	WARN_ON_ONCE(!chan->sc_table);
+	syscall_name = get_syscall_name(desc_name, abi, entryexit);
 
-	syscall_name = get_syscall_name(event);
-
-	switch (event->u.syscall.abi) {
+	switch (abi) {
 	case LTTNG_SYSCALL_ABI_NATIVE:
 		syscall_nr = get_syscall_nr(syscall_name);
 		break;
@@ -1065,9 +1066,9 @@ int lttng_syscall_filter_enable_event(struct lttng_channel *chan,
 	if (syscall_nr < 0)
 		return -ENOENT;
 
-	switch (event->u.syscall.entryexit) {
+	switch (entryexit) {
 	case LTTNG_SYSCALL_ENTRY:
-		switch (event->u.syscall.abi) {
+		switch (abi) {
 		case LTTNG_SYSCALL_ABI_NATIVE:
 			bitmap = filter->sc_entry;
 			break;
@@ -1079,7 +1080,7 @@ int lttng_syscall_filter_enable_event(struct lttng_channel *chan,
 		}
 		break;
 	case LTTNG_SYSCALL_EXIT:
-		switch (event->u.syscall.abi) {
+		switch (abi) {
 		case LTTNG_SYSCALL_ABI_NATIVE:
 			bitmap = filter->sc_exit;
 			break;
@@ -1099,19 +1100,30 @@ int lttng_syscall_filter_enable_event(struct lttng_channel *chan,
 	return 0;
 }
 
-int lttng_syscall_filter_disable_event(struct lttng_channel *chan,
+int lttng_syscall_filter_enable_event(
+		struct lttng_channel *channel,
 		struct lttng_event *event)
 {
-	struct lttng_syscall_filter *filter = chan->sc_filter;
+	WARN_ON_ONCE(event->instrumentation != LTTNG_KERNEL_SYSCALL);
+
+	return lttng_syscall_filter_enable(channel->sc_filter,
+		event->desc->name, event->u.syscall.abi,
+		event->u.syscall.entryexit);
+}
+
+static
+int lttng_syscall_filter_disable(
+		struct lttng_syscall_filter *filter,
+		const char *desc_name, enum lttng_syscall_abi abi,
+		enum lttng_syscall_entryexit entryexit)
+{
 	const char *syscall_name;
 	unsigned long *bitmap;
 	int syscall_nr;
 
-	WARN_ON_ONCE(!chan->sc_table);
+	syscall_name = get_syscall_name(desc_name, abi, entryexit);
 
-	syscall_name = get_syscall_name(event);
-
-	switch (event->u.syscall.abi) {
+	switch (abi) {
 	case LTTNG_SYSCALL_ABI_NATIVE:
 		syscall_nr = get_syscall_nr(syscall_name);
 		break;
@@ -1124,9 +1136,9 @@ int lttng_syscall_filter_disable_event(struct lttng_channel *chan,
 	if (syscall_nr < 0)
 		return -ENOENT;
 
-	switch (event->u.syscall.entryexit) {
+	switch (entryexit) {
 	case LTTNG_SYSCALL_ENTRY:
-		switch (event->u.syscall.abi) {
+		switch (abi) {
 		case LTTNG_SYSCALL_ABI_NATIVE:
 			bitmap = filter->sc_entry;
 			break;
@@ -1138,7 +1150,7 @@ int lttng_syscall_filter_disable_event(struct lttng_channel *chan,
 		}
 		break;
 	case LTTNG_SYSCALL_EXIT:
-		switch (event->u.syscall.abi) {
+		switch (abi) {
 		case LTTNG_SYSCALL_ABI_NATIVE:
 			bitmap = filter->sc_exit;
 			break;
@@ -1157,6 +1169,15 @@ int lttng_syscall_filter_disable_event(struct lttng_channel *chan,
 	bitmap_clear(bitmap, syscall_nr, 1);
 
 	return 0;
+}
+
+int lttng_syscall_filter_disable_event(
+		struct lttng_channel *channel,
+		struct lttng_event *event)
+{
+	return lttng_syscall_filter_disable(channel->sc_filter,
+		event->desc->name, event->u.syscall.abi,
+		event->u.syscall.entryexit);
 }
 
 static
