@@ -10,12 +10,12 @@
 #ifndef _LTTNG_EVENTS_H
 #define _LTTNG_EVENTS_H
 
-#include <linux/irq_work.h>
 #include <linux/version.h>
 #include <linux/list.h>
 #include <linux/kprobes.h>
 #include <linux/kref.h>
 #include <linux/uuid.h>
+#include <linux/irq_work.h>
 #include <wrapper/uprobes.h>
 #include <lttng/cpuhotplug.h>
 #include <lttng/tracer.h>
