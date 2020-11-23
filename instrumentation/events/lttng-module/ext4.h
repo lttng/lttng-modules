@@ -1446,6 +1446,7 @@ LTTNG_TRACEPOINT_EVENT(ext4_load_inode,
 	)
 )
 #endif
+#endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,5,0))
 
