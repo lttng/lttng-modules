@@ -116,6 +116,24 @@ LTTNG_DEFINE_TRACE(lttng_statedump_process_mnt_ns,
 	TP_ARGS(session, p, mnt_ns));
 #endif
 
+LTTNG_DEFINE_TRACE(lttng_statedump_process_net_ns,
+	TP_PROTO(struct lttng_session *session,
+		struct task_struct *p,
+		struct net *net_ns),
+	TP_ARGS(session, p, net_ns));
+
+LTTNG_DEFINE_TRACE(lttng_statedump_process_user_ns,
+	TP_PROTO(struct lttng_session *session,
+		struct task_struct *p,
+		struct user_namespace *user_ns),
+	TP_ARGS(session, p, user_ns));
+
+LTTNG_DEFINE_TRACE(lttng_statedump_process_uts_ns,
+	TP_PROTO(struct lttng_session *session,
+		struct task_struct *p,
+		struct uts_namespace *uts_ns),
+	TP_ARGS(session, p, uts_ns));
+
 LTTNG_DEFINE_TRACE(lttng_statedump_network_interface,
 	TP_PROTO(struct lttng_session *session,
 		struct net_device *dev, struct in_ifaddr *ifa),
