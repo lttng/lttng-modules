@@ -72,10 +72,9 @@ LTTNG_DEFINE_TRACE(lttng_statedump_interrupt,
 
 LTTNG_DEFINE_TRACE(lttng_statedump_file_descriptor,
 	TP_PROTO(struct lttng_session *session,
-		struct files_struct *files,
-		int fd, const char *filename,
+		struct task_struct *p, int fd, const char *filename,
 		unsigned int flags, fmode_t fmode),
-	TP_ARGS(session, files, fd, filename, flags, fmode));
+	TP_ARGS(session, p, fd, filename, flags, fmode));
 
 LTTNG_DEFINE_TRACE(lttng_statedump_start,
 	TP_PROTO(struct lttng_session *session),
@@ -85,8 +84,8 @@ LTTNG_DEFINE_TRACE(lttng_statedump_process_state,
 	TP_PROTO(struct lttng_session *session,
 		struct task_struct *p,
 		int type, int mode, int submode, int status,
-		struct files_struct *files),
-	TP_ARGS(session, p, type, mode, submode, status, files));
+		struct pid_namespace *pid_ns),
+	TP_ARGS(session, p, type, mode, submode, status, pid_ns));
 
 LTTNG_DEFINE_TRACE(lttng_statedump_network_interface,
 	TP_PROTO(struct lttng_session *session,
