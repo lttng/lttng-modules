@@ -91,9 +91,9 @@ struct lttng_kernel_event_callsite {
 } __attribute__((packed));
 
 enum lttng_kernel_syscall_entryexit {
-	LTTNG_KERNEL_SYSCALL_ENTRYEXIT = 0,
-	LTTNG_KERNEL_SYSCALL_ENTRY = 1,		/* Not implemented. */
-	LTTNG_KERNEL_SYSCALL_EXIT = 2,		/* Not implemented. */
+	LTTNG_KERNEL_SYSCALL_ENTRYEXIT	= 0,
+	LTTNG_KERNEL_SYSCALL_ENTRY	= 1,
+	LTTNG_KERNEL_SYSCALL_EXIT	= 2,
 };
 
 enum lttng_kernel_syscall_abi {
