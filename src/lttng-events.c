@@ -2225,7 +2225,7 @@ int lttng_enabler_attach_filter_bytecode(struct lttng_enabler *enabler,
 	ret = get_user(bytecode_len, &bytecode->len);
 	if (ret)
 		return ret;
-	bytecode_node = kzalloc(sizeof(*bytecode_node) + bytecode_len,
+	bytecode_node = lttng_kvzalloc(sizeof(*bytecode_node) + bytecode_len,
 			GFP_KERNEL);
 	if (!bytecode_node)
 		return -ENOMEM;
@@ -2243,7 +2243,7 @@ int lttng_enabler_attach_filter_bytecode(struct lttng_enabler *enabler,
 	return 0;
 
 error_free:
-	kfree(bytecode_node);
+	lttng_kvfree(bytecode_node);
 	return ret;
 }
 
@@ -2289,7 +2289,7 @@ void lttng_enabler_destroy(struct lttng_enabler *enabler)
 	/* Destroy filter bytecode */
 	list_for_each_entry_safe(filter_node, tmp_filter_node,
 			&enabler->filter_bytecode_head, node) {
-		kfree(filter_node);
+		lttng_kvfree(filter_node);
 	}
 }
 
