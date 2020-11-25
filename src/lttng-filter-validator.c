@@ -215,8 +215,6 @@ int bin_op_bitwise_check(struct vstack *stack, filter_opcode_t opcode,
 		case REG_DOUBLE:
 			goto error_type;
 		case REG_TYPE_UNKNOWN:
-		case REG_STRING:
-		case REG_STAR_GLOB_STRING:
 		case REG_S64:
 			goto unknown;
 		}
