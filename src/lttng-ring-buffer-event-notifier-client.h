@@ -14,6 +14,7 @@
 #include <lttng/abi.h>
 #include <lttng/events.h>
 #include <lttng/tracer.h>
+#include <wrapper/limits.h>
 
 static struct lttng_transport lttng_relay_transport;
 

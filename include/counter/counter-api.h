@@ -15,6 +15,7 @@
 #include <linux/bitops.h>
 #include <counter/counter.h>
 #include <counter/counter-internal.h>
+#include <wrapper/limits.h>
 
 /*
  * Using unsigned arithmetic because overflow is defined.
