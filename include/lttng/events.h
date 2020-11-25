@@ -393,7 +393,7 @@ struct lttng_enabler {
 
 	enum lttng_enabler_format_type format_type;
 
-	/* head list of struct lttng_ust_filter_bytecode_node */
+	/* head list of struct lttng_bytecode_node */
 	struct list_head filter_bytecode_head;
 
 	struct lttng_kernel_event event_param;
