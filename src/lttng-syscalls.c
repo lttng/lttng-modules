@@ -388,16 +388,19 @@ struct lttng_syscall_filter {
 	DECLARE_BITMAP(sc_compat_exit, NR_compat_syscalls);
 };
 
-static void syscall_entry_event_unknown(struct lttng_event *event,
+static void syscall_entry_event_unknown(struct hlist_head *unknown_action_list_head,
 	struct pt_regs *regs, long id)
 {
 	unsigned long args[LTTNG_SYSCALL_NR_ARGS];
+	struct lttng_event *event;
 
 	lttng_syscall_get_arguments(current, regs, args);
-	if (unlikely(in_compat_syscall()))
-		__event_probe__compat_syscall_entry_unknown(event, id, args);
-	else
-		__event_probe__syscall_entry_unknown(event, id, args);
+	hlist_for_each_entry_rcu(event, unknown_action_list_head, u.syscall.node) {
+		if (unlikely(in_compat_syscall()))
+			__event_probe__compat_syscall_entry_unknown(event, id, args);
+		else
+			__event_probe__syscall_entry_unknown(event, id, args);
+	}
 }
 
 static void syscall_entry_event_notifier_unknown(
@@ -433,15 +436,19 @@ static void syscall_exit_event_notifier_unknown(
 }
 
 static __always_inline
-void syscall_entry_call_func(void *func, unsigned int nrargs, void *data,
+void syscall_entry_call_func(struct hlist_head *action_list,
+		void *func, unsigned int nrargs,
 		struct pt_regs *regs)
 {
+	struct lttng_event *event;
+
 	switch (nrargs) {
 	case 0:
 	{
 		void (*fptr)(void *__data) = func;
 
-		fptr(data);
+		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+			fptr(event);
 		break;
 	}
 	case 1:
@@ -450,7 +457,8 @@ void syscall_entry_call_func(void *func, unsigned int nrargs, void *data,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		fptr(data, args[0]);
+		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+			fptr(event, args[0]);
 		break;
 	}
 	case 2:
@@ -461,7 +469,8 @@ void syscall_entry_call_func(void *func, unsigned int nrargs, void *data,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		fptr(data, args[0], args[1]);
+		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+			fptr(event, args[0], args[1]);
 		break;
 	}
 	case 3:
@@ -473,7 +482,8 @@ void syscall_entry_call_func(void *func, unsigned int nrargs, void *data,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		fptr(data, args[0], args[1], args[2]);
+		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+			fptr(event, args[0], args[1], args[2]);
 		break;
 	}
 	case 4:
@@ -486,7 +496,8 @@ void syscall_entry_call_func(void *func, unsigned int nrargs, void *data,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		fptr(data, args[0], args[1], args[2], args[3]);
+		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+			fptr(event, args[0], args[1], args[2], args[3]);
 		break;
 	}
 	case 5:
@@ -500,7 +511,8 @@ void syscall_entry_call_func(void *func, unsigned int nrargs, void *data,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		fptr(data, args[0], args[1], args[2], args[3], args[4]);
+		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+			fptr(event, args[0], args[1], args[2], args[3], args[4]);
 		break;
 	}
 	case 6:
@@ -515,8 +527,9 @@ void syscall_entry_call_func(void *func, unsigned int nrargs, void *data,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		fptr(data, args[0], args[1], args[2],
-			args[3], args[4], args[5]);
+		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+			fptr(event, args[0], args[1], args[2],
+			     args[3], args[4], args[5]);
 		break;
 	}
 	default:
@@ -627,7 +640,7 @@ void syscall_entry_event_notifier_call_func(struct hlist_head *dispatch_list,
 void syscall_entry_event_probe(void *__data, struct pt_regs *regs, long id)
 {
 	struct lttng_channel *chan = __data;
-	struct lttng_event *event, *unknown_event;
+	struct hlist_head *action_list, *unknown_action_list;
 	const struct trace_syscall_entry *table, *entry;
 	size_t table_len;
 
@@ -635,40 +648,45 @@ void syscall_entry_event_probe(void *__data, struct pt_regs *regs, long id)
 		struct lttng_syscall_filter *filter = chan->sc_filter;
 
 		if (id < 0 || id >= NR_compat_syscalls
-			|| (!READ_ONCE(chan->syscall_all) && !test_bit(id, filter->sc_compat_entry))) {
+			|| (!READ_ONCE(chan->syscall_all_entry) && !test_bit(id, filter->sc_compat_entry))) {
 			/* System call filtered out. */
 			return;
 		}
 		table = compat_sc_table;
 		table_len = ARRAY_SIZE(compat_sc_table);
-		unknown_event = chan->sc_compat_unknown;
+		unknown_action_list = &chan->sc_compat_unknown;
 	} else {
 		struct lttng_syscall_filter *filter = chan->sc_filter;
 
 		if (id < 0 || id >= NR_syscalls
-			|| (!READ_ONCE(chan->syscall_all) && !test_bit(id, filter->sc_entry))) {
+			|| (!READ_ONCE(chan->syscall_all_entry) && !test_bit(id, filter->sc_entry))) {
 			/* System call filtered out. */
 			return;
 		}
 		table = sc_table;
 		table_len = ARRAY_SIZE(sc_table);
-		unknown_event = chan->sc_unknown;
+		unknown_action_list = &chan->sc_unknown;
 	}
 	if (unlikely(id < 0 || id >= table_len)) {
-		syscall_entry_event_unknown(unknown_event, regs, id);
+		syscall_entry_event_unknown(unknown_action_list, regs, id);
 		return;
 	}
-	if (unlikely(in_compat_syscall()))
-		event = chan->compat_sc_table[id];
-	else
-		event = chan->sc_table[id];
-	if (unlikely(!event)) {
-		syscall_entry_event_unknown(unknown_event, regs, id);
-		return;
-	}
+
 	entry = &table[id];
-	WARN_ON_ONCE(!entry->event_func);
-	syscall_entry_call_func(entry->event_func, entry->nrargs, event, regs);
+	if (!entry->event_func) {
+		syscall_entry_event_unknown(unknown_action_list, regs, id);
+		return;
+	}
+
+	if (unlikely(in_compat_syscall())) {
+		action_list = &chan->compat_sc_table[id];
+	} else {
+		action_list = &chan->sc_table[id];
+	}
+	if (unlikely(hlist_empty(action_list)))
+		return;
+
+	syscall_entry_call_func(action_list, entry->event_func, entry->nrargs, regs);
 }
 
 void syscall_entry_event_notifier_probe(void *__data, struct pt_regs *regs,
@@ -730,83 +748,48 @@ void syscall_entry_event_notifier_probe(void *__data, struct pt_regs *regs,
 			entry->event_notifier_func, entry->nrargs, regs);
 }
 
-static void syscall_exit_event_unknown(struct lttng_event *event,
+static void syscall_exit_event_unknown(struct hlist_head *unknown_action_list_head,
 	struct pt_regs *regs, long id, long ret)
 {
 	unsigned long args[LTTNG_SYSCALL_NR_ARGS];
+	struct lttng_event *event;
 
 	lttng_syscall_get_arguments(current, regs, args);
-	if (unlikely(in_compat_syscall()))
-		__event_probe__compat_syscall_exit_unknown(event, id, ret,
-			args);
-	else
-		__event_probe__syscall_exit_unknown(event, id, ret, args);
+	hlist_for_each_entry_rcu(event, unknown_action_list_head, u.syscall.node) {
+		if (unlikely(in_compat_syscall()))
+			__event_probe__compat_syscall_exit_unknown(event, id, ret,
+				args);
+		else
+			__event_probe__syscall_exit_unknown(event, id, ret, args);
+	}
 }
 
-void syscall_exit_event_probe(void *__data, struct pt_regs *regs, long ret)
+static __always_inline
+void syscall_exit_call_func(struct hlist_head *action_list,
+		void *func, unsigned int nrargs,
+		struct pt_regs *regs, long ret)
 {
-	struct lttng_channel *chan = __data;
-	struct lttng_event *event, *unknown_event;
-	const struct trace_syscall_entry *table, *entry;
-	size_t table_len;
-	long id;
+	struct lttng_event *event;
 
-	id = syscall_get_nr(current, regs);
-	if (unlikely(in_compat_syscall())) {
-		struct lttng_syscall_filter *filter = chan->sc_filter;
-
-		if (id < 0 || id >= NR_compat_syscalls
-			|| (!READ_ONCE(chan->syscall_all) && !test_bit(id, filter->sc_compat_exit))) {
-			/* System call filtered out. */
-			return;
-		}
-		table = compat_sc_exit_table;
-		table_len = ARRAY_SIZE(compat_sc_exit_table);
-		unknown_event = chan->compat_sc_exit_unknown;
-	} else {
-		struct lttng_syscall_filter *filter = chan->sc_filter;
-
-		if (id < 0 || id >= NR_syscalls
-			|| (!READ_ONCE(chan->syscall_all) && !test_bit(id, filter->sc_exit))) {
-			/* System call filtered out. */
-			return;
-		}
-		table = sc_exit_table;
-		table_len = ARRAY_SIZE(sc_exit_table);
-		unknown_event = chan->sc_exit_unknown;
-	}
-	if (unlikely(id < 0 || id >= table_len)) {
-		syscall_exit_event_unknown(unknown_event, regs, id, ret);
-		return;
-	}
-	if (unlikely(in_compat_syscall()))
-		event = chan->compat_sc_exit_table[id];
-	else
-		event = chan->sc_exit_table[id];
-	if (unlikely(!event)) {
-		syscall_exit_event_unknown(unknown_event, regs, id, ret);
-		return;
-	}
-	entry = &table[id];
-	WARN_ON_ONCE(!entry->event_func);
-
-	switch (entry->nrargs) {
+	switch (nrargs) {
 	case 0:
 	{
-		void (*fptr)(void *__data, long ret) = entry->event_func;
+		void (*fptr)(void *__data, long ret) = func;
 
-		fptr(event, ret);
+		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+			fptr(event, ret);
 		break;
 	}
 	case 1:
 	{
 		void (*fptr)(void *__data,
 			long ret,
-			unsigned long arg0) = entry->event_func;
+			unsigned long arg0) = func;
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		fptr(event, ret, args[0]);
+		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+			fptr(event, ret, args[0]);
 		break;
 	}
 	case 2:
@@ -814,11 +797,12 @@ void syscall_exit_event_probe(void *__data, struct pt_regs *regs, long ret)
 		void (*fptr)(void *__data,
 			long ret,
 			unsigned long arg0,
-			unsigned long arg1) = entry->event_func;
+			unsigned long arg1) = func;
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		fptr(event, ret, args[0], args[1]);
+		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+			fptr(event, ret, args[0], args[1]);
 		break;
 	}
 	case 3:
@@ -827,11 +811,12 @@ void syscall_exit_event_probe(void *__data, struct pt_regs *regs, long ret)
 			long ret,
 			unsigned long arg0,
 			unsigned long arg1,
-			unsigned long arg2) = entry->event_func;
+			unsigned long arg2) = func;
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		fptr(event, ret, args[0], args[1], args[2]);
+		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+			fptr(event, ret, args[0], args[1], args[2]);
 		break;
 	}
 	case 4:
@@ -841,11 +826,12 @@ void syscall_exit_event_probe(void *__data, struct pt_regs *regs, long ret)
 			unsigned long arg0,
 			unsigned long arg1,
 			unsigned long arg2,
-			unsigned long arg3) = entry->event_func;
+			unsigned long arg3) = func;
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		fptr(event, ret, args[0], args[1], args[2], args[3]);
+		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+			fptr(event, ret, args[0], args[1], args[2], args[3]);
 		break;
 	}
 	case 5:
@@ -856,11 +842,12 @@ void syscall_exit_event_probe(void *__data, struct pt_regs *regs, long ret)
 			unsigned long arg1,
 			unsigned long arg2,
 			unsigned long arg3,
-			unsigned long arg4) = entry->event_func;
+			unsigned long arg4) = func;
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		fptr(event, ret, args[0], args[1], args[2], args[3], args[4]);
+		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+			fptr(event, ret, args[0], args[1], args[2], args[3], args[4]);
 		break;
 	}
 	case 6:
@@ -872,17 +859,74 @@ void syscall_exit_event_probe(void *__data, struct pt_regs *regs, long ret)
 			unsigned long arg2,
 			unsigned long arg3,
 			unsigned long arg4,
-			unsigned long arg5) = entry->event_func;
+			unsigned long arg5) = func;
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		fptr(event, ret, args[0], args[1], args[2],
-			args[3], args[4], args[5]);
+		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+			fptr(event, ret, args[0], args[1], args[2],
+			     args[3], args[4], args[5]);
 		break;
 	}
 	default:
 		break;
 	}
+}
+
+void syscall_exit_event_probe(void *__data, struct pt_regs *regs, long ret)
+{
+	struct lttng_channel *chan = __data;
+	struct hlist_head *action_list, *unknown_action_list;
+	const struct trace_syscall_entry *table, *entry;
+	size_t table_len;
+	long id;
+
+	id = syscall_get_nr(current, regs);
+
+	if (unlikely(in_compat_syscall())) {
+		struct lttng_syscall_filter *filter = chan->sc_filter;
+
+		if (id < 0 || id >= NR_compat_syscalls
+			|| (!READ_ONCE(chan->syscall_all_exit) && !test_bit(id, filter->sc_compat_exit))) {
+			/* System call filtered out. */
+			return;
+		}
+		table = compat_sc_exit_table;
+		table_len = ARRAY_SIZE(compat_sc_exit_table);
+		unknown_action_list = &chan->compat_sc_exit_unknown;
+	} else {
+		struct lttng_syscall_filter *filter = chan->sc_filter;
+
+		if (id < 0 || id >= NR_syscalls
+			|| (!READ_ONCE(chan->syscall_all_exit) && !test_bit(id, filter->sc_exit))) {
+			/* System call filtered out. */
+			return;
+		}
+		table = sc_exit_table;
+		table_len = ARRAY_SIZE(sc_exit_table);
+		unknown_action_list = &chan->sc_exit_unknown;
+	}
+	if (unlikely(id < 0 || id >= table_len)) {
+		syscall_exit_event_unknown(unknown_action_list, regs, id, ret);
+		return;
+	}
+
+	entry = &table[id];
+	if (!entry->event_func) {
+		syscall_exit_event_unknown(unknown_action_list, regs, id, ret);
+		return;
+	}
+
+	if (unlikely(in_compat_syscall())) {
+		action_list = &chan->compat_sc_exit_table[id];
+	} else {
+		action_list = &chan->sc_exit_table[id];
+	}
+	if (unlikely(hlist_empty(action_list)))
+		return;
+
+	syscall_exit_call_func(action_list, entry->event_func, entry->nrargs,
+			       regs, ret);
 }
 
 static __always_inline
@@ -1057,28 +1101,44 @@ void syscall_exit_event_notifier_probe(void *__data, struct pt_regs *regs,
  * Should be called with sessions lock held.
  */
 static
-int fill_event_table(const struct trace_syscall_entry *table, size_t table_len,
-	struct lttng_event **chan_table, struct lttng_channel *chan,
+int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *table, size_t table_len,
+	struct hlist_head *chan_table, struct lttng_event_enabler *event_enabler,
 	void *filter, enum sc_type type)
 {
-	const struct lttng_event_desc *desc;
+	struct lttng_channel *chan = event_enabler->chan;
+	struct lttng_session *session = chan->session;
 	unsigned int i;
 
-	/* Allocate events for each syscall, insert into table */
+	/* Allocate events for each syscall matching enabler, insert into table */
 	for (i = 0; i < table_len; i++) {
+		const struct lttng_event_desc *desc = table[i].desc;
 		struct lttng_kernel_event ev;
-		desc = table[i].desc;
+		struct lttng_event *event;
+		struct hlist_head *head;
+		bool found = false;
 
 		if (!desc) {
 			/* Unknown syscall */
 			continue;
 		}
-		/*
-		 * Skip those already populated by previous failed
-		 * register for this channel.
-		 */
-		if (chan_table[i])
+		if (lttng_desc_match_enabler(desc,
+				lttng_event_enabler_as_enabler(event_enabler)) <= 0)
 			continue;
+		/*
+		 * Check if already created.
+		 */
+		head = utils_borrow_hash_table_bucket(
+			session->events_ht.table, LTTNG_EVENT_HT_SIZE,
+			desc->name);
+		lttng_hlist_for_each_entry(event, head, hlist) {
+			if (event->desc == desc
+				&& event->chan == event_enabler->chan)
+				found = true;
+		}
+		if (found)
+			continue;
+
+		/* We need to create an event for this syscall/enabler. */
 		memset(&ev, 0, sizeof(ev));
 		switch (type) {
 		case SC_TYPE_ENTRY:
@@ -1101,18 +1161,19 @@ int fill_event_table(const struct trace_syscall_entry *table, size_t table_len,
 		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN - 1);
 		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
-		chan_table[i] = _lttng_event_create(chan, &ev, filter,
-						desc, ev.instrumentation);
-		WARN_ON_ONCE(!chan_table[i]);
-		if (IS_ERR(chan_table[i])) {
+		event = _lttng_event_create(chan, &ev, filter,
+					    desc, ev.instrumentation);
+		WARN_ON_ONCE(!event);
+		if (IS_ERR(event)) {
 			/*
 			 * If something goes wrong in event registration
 			 * after the first one, we have no choice but to
 			 * leave the previous events in there, until
 			 * deleted by session teardown.
 			 */
-			return PTR_ERR(chan_table[i]);
+			return PTR_ERR(event);
 		}
+		hlist_add_head(&event->u.syscall.node, &chan_table[i]);
 	}
 	return 0;
 }
@@ -1120,8 +1181,9 @@ int fill_event_table(const struct trace_syscall_entry *table, size_t table_len,
 /*
  * Should be called with sessions lock held.
  */
-int lttng_syscalls_register_event(struct lttng_channel *chan, void *filter)
+int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, void *filter)
 {
+	struct lttng_channel *chan = event_enabler->chan;
 	struct lttng_kernel_event ev;
 	int ret;
 
@@ -1160,9 +1222,10 @@ int lttng_syscalls_register_event(struct lttng_channel *chan, void *filter)
 			return -ENOMEM;
 	}
 #endif
-	if (!chan->sc_unknown) {
+	if (hlist_empty(&chan->sc_unknown)) {
 		const struct lttng_event_desc *desc =
 			&__event_desc___syscall_entry_unknown;
+		struct lttng_event *event;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
@@ -1170,18 +1233,19 @@ int lttng_syscalls_register_event(struct lttng_channel *chan, void *filter)
 		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_ENTRY;
 		ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_NATIVE;
-		chan->sc_unknown = _lttng_event_create(chan, &ev, filter,
-						desc,
-						ev.instrumentation);
-		WARN_ON_ONCE(!chan->sc_unknown);
-		if (IS_ERR(chan->sc_unknown)) {
-			return PTR_ERR(chan->sc_unknown);
+		event = _lttng_event_create(chan, &ev, filter, desc,
+					    ev.instrumentation);
+		WARN_ON_ONCE(!event);
+		if (IS_ERR(event)) {
+			return PTR_ERR(event);
 		}
+		hlist_add_head(&event->u.syscall.node, &chan->sc_unknown);
 	}
 
-	if (!chan->sc_compat_unknown) {
+	if (hlist_empty(&chan->sc_compat_unknown)) {
 		const struct lttng_event_desc *desc =
 			&__event_desc___compat_syscall_entry_unknown;
+		struct lttng_event *event;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
@@ -1189,18 +1253,19 @@ int lttng_syscalls_register_event(struct lttng_channel *chan, void *filter)
 		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_ENTRY;
 		ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_COMPAT;
-		chan->sc_compat_unknown = _lttng_event_create(chan, &ev, filter,
-						desc,
-						ev.instrumentation);
-		WARN_ON_ONCE(!chan->sc_unknown);
-		if (IS_ERR(chan->sc_compat_unknown)) {
-			return PTR_ERR(chan->sc_compat_unknown);
+		event = _lttng_event_create(chan, &ev, filter, desc,
+					    ev.instrumentation);
+		WARN_ON_ONCE(!event);
+		if (IS_ERR(event)) {
+			return PTR_ERR(event);
 		}
+		hlist_add_head(&event->u.syscall.node, &chan->sc_compat_unknown);
 	}
 
-	if (!chan->compat_sc_exit_unknown) {
+	if (hlist_empty(&chan->compat_sc_exit_unknown)) {
 		const struct lttng_event_desc *desc =
 			&__event_desc___compat_syscall_exit_unknown;
+		struct lttng_event *event;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
@@ -1208,18 +1273,19 @@ int lttng_syscalls_register_event(struct lttng_channel *chan, void *filter)
 		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_EXIT;
 		ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_COMPAT;
-		chan->compat_sc_exit_unknown = _lttng_event_create(chan, &ev,
-						filter, desc,
-						ev.instrumentation);
-		WARN_ON_ONCE(!chan->compat_sc_exit_unknown);
-		if (IS_ERR(chan->compat_sc_exit_unknown)) {
-			return PTR_ERR(chan->compat_sc_exit_unknown);
+		event = _lttng_event_create(chan, &ev, filter, desc,
+					    ev.instrumentation);
+		WARN_ON_ONCE(!event);
+		if (IS_ERR(event)) {
+			return PTR_ERR(event);
 		}
+		hlist_add_head(&event->u.syscall.node, &chan->compat_sc_exit_unknown);
 	}
 
-	if (!chan->sc_exit_unknown) {
+	if (hlist_empty(&chan->sc_exit_unknown)) {
 		const struct lttng_event_desc *desc =
 			&__event_desc___syscall_exit_unknown;
+		struct lttng_event *event;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
@@ -1227,31 +1293,32 @@ int lttng_syscalls_register_event(struct lttng_channel *chan, void *filter)
 		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_EXIT;
 		ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_NATIVE;
-		chan->sc_exit_unknown = _lttng_event_create(chan, &ev, filter,
-						desc, ev.instrumentation);
-		WARN_ON_ONCE(!chan->sc_exit_unknown);
-		if (IS_ERR(chan->sc_exit_unknown)) {
-			return PTR_ERR(chan->sc_exit_unknown);
+		event = _lttng_event_create(chan, &ev, filter, desc,
+					    ev.instrumentation);
+		WARN_ON_ONCE(!event);
+		if (IS_ERR(event)) {
+			return PTR_ERR(event);
 		}
+		hlist_add_head(&event->u.syscall.node, &chan->sc_exit_unknown);
 	}
 
-	ret = fill_event_table(sc_table, ARRAY_SIZE(sc_table),
-			chan->sc_table, chan, filter, SC_TYPE_ENTRY);
+	ret = lttng_create_syscall_event_if_missing(sc_table, ARRAY_SIZE(sc_table),
+			chan->sc_table, event_enabler, filter, SC_TYPE_ENTRY);
 	if (ret)
 		return ret;
-	ret = fill_event_table(sc_exit_table, ARRAY_SIZE(sc_exit_table),
-			chan->sc_exit_table, chan, filter, SC_TYPE_EXIT);
+	ret = lttng_create_syscall_event_if_missing(sc_exit_table, ARRAY_SIZE(sc_exit_table),
+			chan->sc_exit_table, event_enabler, filter, SC_TYPE_EXIT);
 	if (ret)
 		return ret;
 
 #ifdef CONFIG_COMPAT
-	ret = fill_event_table(compat_sc_table, ARRAY_SIZE(compat_sc_table),
-			chan->compat_sc_table, chan, filter,
+	ret = lttng_create_syscall_event_if_missing(compat_sc_table, ARRAY_SIZE(compat_sc_table),
+			chan->compat_sc_table, event_enabler, filter,
 			SC_TYPE_COMPAT_ENTRY);
 	if (ret)
 		return ret;
-	ret = fill_event_table(compat_sc_exit_table, ARRAY_SIZE(compat_sc_exit_table),
-			chan->compat_sc_exit_table, chan, filter,
+	ret = lttng_create_syscall_event_if_missing(compat_sc_exit_table, ARRAY_SIZE(compat_sc_exit_table),
+			chan->compat_sc_exit_table, event_enabler, filter,
 			SC_TYPE_COMPAT_EXIT);
 	if (ret)
 		return ret;
@@ -1628,7 +1695,7 @@ end:
 /*
  * Unregister the syscall event_notifier probes from the callsites.
  */
-int lttng_syscalls_unregister_event_notifier(
+int lttng_syscalls_unregister_event_notifier_group(
 		struct lttng_event_notifier_group *event_notifier_group)
 {
 	int ret;
@@ -1662,7 +1729,7 @@ int lttng_syscalls_unregister_event_notifier(
 	return 0;
 }
 
-int lttng_syscalls_unregister_event(struct lttng_channel *chan)
+int lttng_syscalls_unregister_channel(struct lttng_channel *chan)
 {
 	int ret;
 
@@ -2125,7 +2192,8 @@ long lttng_channel_syscall_mask(struct lttng_channel *channel,
 		char state;
 
 		if (channel->sc_table) {
-			if (!READ_ONCE(channel->syscall_all) && filter)
+			if (!(READ_ONCE(channel->syscall_all_entry)
+					|| READ_ONCE(channel->syscall_all_exit)) && filter)
 				state = test_bit(bit, filter->sc_entry)
 					|| test_bit(bit, filter->sc_exit);
 			else
@@ -2139,7 +2207,8 @@ long lttng_channel_syscall_mask(struct lttng_channel *channel,
 		char state;
 
 		if (channel->compat_sc_table) {
-			if (!READ_ONCE(channel->syscall_all) && filter)
+			if (!(READ_ONCE(channel->syscall_all_entry)
+					|| READ_ONCE(channel->syscall_all_exit)) && filter)
 				state = test_bit(bit - ARRAY_SIZE(sc_table),
 						filter->sc_compat_entry)
 					|| test_bit(bit - ARRAY_SIZE(sc_table),

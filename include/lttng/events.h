@@ -338,6 +338,7 @@ struct lttng_event {
 		struct {
 			enum lttng_syscall_entryexit entryexit;
 			enum lttng_syscall_abi abi;
+			struct hlist_node node;			/* chain registered syscall event */
 		} syscall;
 	} u;
 	struct list_head list;		/* Event list in session */
@@ -578,18 +579,19 @@ struct lttng_channel {
 	struct list_head list;		/* Channel list */
 	struct lttng_channel_ops *ops;
 	struct lttng_transport *transport;
-	struct lttng_event **sc_table;	/* for syscall tracing */
-	struct lttng_event **compat_sc_table;
-	struct lttng_event **sc_exit_table;	/* for syscall exit tracing */
-	struct lttng_event **compat_sc_exit_table;
-	struct lttng_event *sc_unknown;	/* for unknown syscalls */
-	struct lttng_event *sc_compat_unknown;
-	struct lttng_event *sc_exit_unknown;
-	struct lttng_event *compat_sc_exit_unknown;
+	struct hlist_head *sc_table;	/* for syscall tracing */
+	struct hlist_head *compat_sc_table;
+	struct hlist_head *sc_exit_table;	/* for syscall exit tracing */
+	struct hlist_head *compat_sc_exit_table;
+	struct hlist_head sc_unknown;	/* for unknown syscalls */
+	struct hlist_head sc_compat_unknown;
+	struct hlist_head sc_exit_unknown;
+	struct hlist_head compat_sc_exit_unknown;
 	struct lttng_syscall_filter *sc_filter;
 	int header_type;		/* 0: unset, 1: compact, 2: large */
 	enum channel_type channel_type;
-	int syscall_all;
+	int syscall_all_entry;
+	int syscall_all_exit;
 	unsigned int metadata_dumped:1,
 		sys_enter_registered:1,
 		sys_exit_registered:1,
@@ -887,8 +889,8 @@ int lttng_desc_match_enabler(const struct lttng_event_desc *desc,
 		struct lttng_enabler *enabler);
 
 #if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
-int lttng_syscalls_register_event(struct lttng_channel *chan, void *filter);
-int lttng_syscalls_unregister_event(struct lttng_channel *chan);
+int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, void *filter);
+int lttng_syscalls_unregister_channel(struct lttng_channel *chan);
 int lttng_syscalls_destroy_event(struct lttng_channel *chan);
 int lttng_syscall_filter_enable_event(
 		struct lttng_channel *chan,
@@ -905,17 +907,17 @@ int lttng_syscalls_register_event_notifier(
 		void *filter);
 int lttng_syscals_create_matching_event_notifiers(
 		struct lttng_event_notifier_enabler *event_notifier_enabler, void *filter);
-int lttng_syscalls_unregister_event_notifier(struct lttng_event_notifier_group *group);
+int lttng_syscalls_unregister_event_notifier_group(struct lttng_event_notifier_group *group);
 int lttng_syscall_filter_enable_event_notifier(struct lttng_event_notifier *event_notifier);
 int lttng_syscall_filter_disable_event_notifier(struct lttng_event_notifier *event_notifier);
 #else
 static inline int lttng_syscalls_register_event(
-		struct lttng_channel *chan, void *filter)
+		struct lttng_event_enabler *event_enabler, void *filter)
 {
 	return -ENOSYS;
 }
 
-static inline int lttng_syscalls_unregister_event(struct lttng_channel *chan)
+static inline int lttng_syscalls_unregister_channel(struct lttng_channel *chan)
 {
 	return 0;
 }
@@ -949,7 +951,7 @@ static inline int lttng_syscalls_register_event_notifier(
 	return -ENOSYS;
 }
 
-static inline int lttng_syscalls_unregister_event_notifier(
+static inline int lttng_syscalls_unregister_event_notifier_group(
 		struct lttng_event_notifier_group *group)
 {
 	return 0;

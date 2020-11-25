@@ -337,7 +337,7 @@ void lttng_session_destroy(struct lttng_session *session)
 	mutex_lock(&sessions_mutex);
 	WRITE_ONCE(session->active, 0);
 	list_for_each_entry(chan, &session->chan, list) {
-		ret = lttng_syscalls_unregister_event(chan);
+		ret = lttng_syscalls_unregister_channel(chan);
 		WARN_ON(ret);
 	}
 	list_for_each_entry(event, &session->events, list) {
@@ -386,7 +386,7 @@ void lttng_event_notifier_group_destroy(
 
 	mutex_lock(&sessions_mutex);
 
-	ret = lttng_syscalls_unregister_event_notifier(event_notifier_group);
+	ret = lttng_syscalls_unregister_event_notifier_group(event_notifier_group);
 	WARN_ON(ret);
 
 	list_for_each_entry_safe(event_notifier, tmpevent_notifier,
@@ -2065,7 +2065,7 @@ void lttng_create_syscall_event_if_missing(struct lttng_event_enabler *event_ena
 {
 	int ret;
 
-	ret = lttng_syscalls_register_event(event_enabler->chan, NULL);
+	ret = lttng_syscalls_register_event(event_enabler, NULL);
 	WARN_ON_ONCE(ret);
 }
 
@@ -2115,14 +2115,17 @@ int lttng_event_enabler_ref_events(struct lttng_event_enabler *event_enabler)
 	struct lttng_event *event;
 
 	if (base_enabler->event_param.instrumentation == LTTNG_KERNEL_SYSCALL &&
-			base_enabler->event_param.u.syscall.entryexit == LTTNG_KERNEL_SYSCALL_ENTRYEXIT &&
 			base_enabler->event_param.u.syscall.abi == LTTNG_KERNEL_SYSCALL_ABI_ALL &&
 			base_enabler->event_param.u.syscall.match == LTTNG_KERNEL_SYSCALL_MATCH_NAME &&
 			!strcmp(base_enabler->event_param.name, "*")) {
-		if (base_enabler->enabled)
-			WRITE_ONCE(chan->syscall_all, 1);
-		else
-			WRITE_ONCE(chan->syscall_all, 0);
+		int enabled = base_enabler->enabled;
+		enum lttng_kernel_syscall_entryexit entryexit = base_enabler->event_param.u.syscall.entryexit;
+
+		if (entryexit == LTTNG_KERNEL_SYSCALL_ENTRY || entryexit == LTTNG_KERNEL_SYSCALL_ENTRYEXIT)
+			WRITE_ONCE(chan->syscall_all_entry, enabled);
+
+		if (entryexit == LTTNG_KERNEL_SYSCALL_EXIT || entryexit == LTTNG_KERNEL_SYSCALL_ENTRYEXIT)
+			WRITE_ONCE(chan->syscall_all_exit, enabled);
 	}
 
 	/* First ensure that probe events are created for this enabler. */
