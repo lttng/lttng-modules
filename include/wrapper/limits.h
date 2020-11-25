@@ -8,7 +8,7 @@
 #ifndef _LTTNG_WRAPPER_LIMITS_H
 #define _LTTNG_WRAPPER_LIMITS_H
 
-#include <linux/limits.h>
+#include <linux/kernel.h>
 
 #ifndef SIZE_MAX
 #define SIZE_MAX	(~(size_t)0)
