@@ -13,8 +13,12 @@
 #include <lttng/event-notifier-notification.h>
 
 /*
- * FIXME: this probably too low but it needs to be below 1024 bytes to avoid
- * the frame to be larger than the 1024 limit enforced by the kernel.
+ * The capture buffer size needs to be below 1024 bytes to avoid the
+ * frame to be larger than the 1024 limit enforced by the kernel. If we
+ * ever need to increase it, we will need to use a memory allocation
+ * scheme which allows allocating temporary memory chunks from the
+ * instrumentation sites. This could be done by adapting lttng
+ * tp-mempool to become nmi-safe and lock-free.
  */
 #define CAPTURE_BUFFER_SIZE 512
 
