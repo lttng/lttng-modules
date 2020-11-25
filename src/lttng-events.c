@@ -1713,7 +1713,7 @@ int lttng_desc_match_enabler(const struct lttng_event_desc *desc,
 			return -EINVAL;
 		}
 		switch (enabler->event_param.u.syscall.match) {
-		case LTTNG_SYSCALL_MATCH_NAME:
+		case LTTNG_KERNEL_SYSCALL_MATCH_NAME:
 			switch (enabler->format_type) {
 			case LTTNG_ENABLER_FORMAT_STAR_GLOB:
 				return lttng_match_enabler_star_glob(desc_name, enabler_name);
@@ -1723,7 +1723,7 @@ int lttng_desc_match_enabler(const struct lttng_event_desc *desc,
 				return -EINVAL;
 			}
 			break;
-		case LTTNG_SYSCALL_MATCH_NR:
+		case LTTNG_KERNEL_SYSCALL_MATCH_NR:
 			return -EINVAL;	/* Not implemented. */
 		default:
 			return -EINVAL;
@@ -1938,7 +1938,7 @@ int lttng_event_enabler_ref_events(struct lttng_event_enabler *event_enabler)
 	if (base_enabler->event_param.instrumentation == LTTNG_KERNEL_SYSCALL &&
 			base_enabler->event_param.u.syscall.entryexit == LTTNG_KERNEL_SYSCALL_ENTRYEXIT &&
 			base_enabler->event_param.u.syscall.abi == LTTNG_KERNEL_SYSCALL_ABI_ALL &&
-			base_enabler->event_param.u.syscall.match == LTTNG_SYSCALL_MATCH_NAME &&
+			base_enabler->event_param.u.syscall.match == LTTNG_KERNEL_SYSCALL_MATCH_NAME &&
 			!strcmp(base_enabler->event_param.name, "*")) {
 		if (base_enabler->enabled)
 			WRITE_ONCE(chan->syscall_all, 1);

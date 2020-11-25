@@ -1598,7 +1598,7 @@ int lttng_abi_validate_event_param(struct lttng_kernel_event *event_param)
 			return -EINVAL;
 		}
 		switch (event_param->u.syscall.match) {
-		case LTTNG_SYSCALL_MATCH_NAME:
+		case LTTNG_KERNEL_SYSCALL_MATCH_NAME:
 			break;
 		default:
 			return -EINVAL;

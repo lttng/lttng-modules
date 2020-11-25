@@ -103,8 +103,8 @@ enum lttng_kernel_syscall_abi {
 };
 
 enum lttng_kernel_syscall_match {
-	LTTNG_SYSCALL_MATCH_NAME = 0,
-	LTTNG_SYSCALL_MATCH_NR = 1,		/* Not implemented. */
+	LTTNG_KERNEL_SYSCALL_MATCH_NAME = 0,
+	LTTNG_KERNEL_SYSCALL_MATCH_NR = 1,		/* Not implemented. */
 };
 
 struct lttng_kernel_syscall {
