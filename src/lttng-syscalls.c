@@ -522,7 +522,7 @@ void syscall_entry_event_probe(void *__data, struct pt_regs *regs, long id)
 		return;
 	}
 	entry = &table[id];
-	WARN_ON_ONCE(!entry);
+	WARN_ON_ONCE(!entry->event_func);
 	syscall_entry_call_func(entry->event_func, entry->nrargs, event, regs);
 }
 
@@ -584,7 +584,7 @@ void syscall_exit_event_probe(void *__data, struct pt_regs *regs, long ret)
 		return;
 	}
 	entry = &table[id];
-	WARN_ON_ONCE(!entry);
+	WARN_ON_ONCE(!entry->event_func);
 
 	switch (entry->nrargs) {
 	case 0:
