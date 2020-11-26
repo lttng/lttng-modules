@@ -12,6 +12,7 @@
 #include <counter/counter.h>
 #include <counter/counter-internal.h>
 #include <wrapper/vmalloc.h>
+#include <wrapper/limits.h>
 
 static size_t lttng_counter_get_dimension_nr_elements(struct lib_counter_dimension *dimension)
 {
