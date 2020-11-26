@@ -138,12 +138,12 @@ struct lttng_kernel_event {
 	} u;
 } __attribute__((packed));
 
-#define LTTNG_KERNEL_EVENT_NOTIFIER_PADDING1	16
+#define LTTNG_KERNEL_EVENT_NOTIFIER_PADDING	32
 struct lttng_kernel_event_notifier {
 	struct lttng_kernel_event event;
 	uint64_t error_counter_index;
 
-	char padding[LTTNG_KERNEL_EVENT_NOTIFIER_PADDING1];
+	char padding[LTTNG_KERNEL_EVENT_NOTIFIER_PADDING];
 } __attribute__((packed));
 
 enum lttng_kernel_counter_arithmetic {
