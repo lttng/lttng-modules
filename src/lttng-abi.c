@@ -2144,8 +2144,13 @@ long lttng_abi_event_notifier_group_create_error_counter(
 		goto counter_error;
 	}
 
-	event_notifier_group->error_counter = counter;
 	event_notifier_group->error_counter_len = counter_len;
+	/*
+	 * store-release to publish error counter matches load-acquire
+	 * in record_error. Ensures the counter is created and the
+	 * error_counter_len is set before they are used.
+	 */
+	smp_store_release(&event_notifier_group->error_counter, counter);
 
 	counter->file = counter_file;
 	counter->owner = event_notifier_group->file;

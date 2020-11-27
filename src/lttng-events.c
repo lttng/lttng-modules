@@ -412,6 +412,7 @@ void lttng_event_notifier_group_destroy(
 
 	if (event_notifier_group->error_counter) {
 		struct lttng_counter *error_counter = event_notifier_group->error_counter;
+
 		error_counter->ops->counter_destroy(error_counter->counter);
 		module_put(error_counter->transport->owner);
 		lttng_kvfree(error_counter);
@@ -1071,6 +1072,7 @@ struct lttng_event_notifier *_lttng_event_notifier_create(
 		void *filter, enum lttng_kernel_instrumentation itype)
 {
 	struct lttng_event_notifier *event_notifier;
+	struct lttng_counter *error_counter;
 	const char *event_name;
 	struct hlist_head *head;
 	int ret;
@@ -1234,9 +1236,12 @@ struct lttng_event_notifier *_lttng_event_notifier_create(
 
 	/*
 	 * Clear the error counter bucket. The sessiond keeps track of which
-	 * bucket is currently in use. We trust it.
+	 * bucket is currently in use. We trust it. The session lock
+	 * synchronizes against concurrent creation of the error
+	 * counter.
 	 */
-	if (event_notifier_group->error_counter) {
+	error_counter = event_notifier_group->error_counter;
+	if (error_counter) {
 		size_t dimension_index[1];
 
 		/*
@@ -1250,9 +1255,7 @@ struct lttng_event_notifier *_lttng_event_notifier_create(
 		}
 
 		dimension_index[0] = event_notifier->error_counter_index;
-		ret = event_notifier_group->error_counter->ops->counter_clear(
-				event_notifier_group->error_counter->counter,
-				dimension_index);
+		ret = error_counter->ops->counter_clear(error_counter->counter, dimension_index);
 		if (ret) {
 			printk(KERN_INFO "LTTng: event_notifier: Unable to clear error counter bucket %llu\n",
 				event_notifier->error_counter_index);
