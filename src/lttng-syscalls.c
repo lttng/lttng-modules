@@ -1935,6 +1935,9 @@ int lttng_syscall_filter_enable_event_notifier(
 		case LTTNG_SYSCALL_ABI_COMPAT:
 			dispatch_list = &group->event_notifier_compat_syscall_dispatch[syscall_id];
 			break;
+		default:
+			ret = -EINVAL;
+			goto end;
 		}
 		break;
 	case LTTNG_SYSCALL_EXIT:
@@ -1945,8 +1948,14 @@ int lttng_syscall_filter_enable_event_notifier(
 		case LTTNG_SYSCALL_ABI_COMPAT:
 			dispatch_list = &group->event_notifier_exit_compat_syscall_dispatch[syscall_id];
 			break;
+		default:
+			ret = -EINVAL;
+			goto end;
 		}
 		break;
+	default:
+		ret = -EINVAL;
+		goto end;
 	}
 
 	hlist_add_head_rcu(&notifier->u.syscall.node, dispatch_list);
