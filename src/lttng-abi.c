@@ -37,6 +37,7 @@
 #include <wrapper/poll.h>
 #include <wrapper/file.h>
 #include <wrapper/kref.h>
+#include <wrapper/barrier.h>
 #include <lttng/string-utils.h>
 #include <lttng/abi.h>
 #include <lttng/abi-old.h>
@@ -2150,7 +2151,7 @@ long lttng_abi_event_notifier_group_create_error_counter(
 	 * in record_error. Ensures the counter is created and the
 	 * error_counter_len is set before they are used.
 	 */
-	smp_store_release(&event_notifier_group->error_counter, counter);
+	lttng_smp_store_release(&event_notifier_group->error_counter, counter);
 
 	counter->file = counter_file;
 	counter->owner = event_notifier_group->file;

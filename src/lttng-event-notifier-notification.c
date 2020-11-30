@@ -11,6 +11,7 @@
 #include <lttng/events.h>
 #include <lttng/msgpack.h>
 #include <lttng/event-notifier-notification.h>
+#include <wrapper/barrier.h>
 
 /*
  * The capture buffer size needs to be below 1024 bytes to avoid the
@@ -357,11 +358,11 @@ void record_error(struct lttng_event_notifier *event_notifier)
 	int ret;
 
 	/*
-	 * smp_load_acquire paired with smp_store_release orders
+	 * lttng_smp_load_acquire paired with lttng_smp_store_release orders
 	 * creation of the error counter and setting error_counter_len
 	 * before the error_counter is used.
 	 */
-	error_counter = smp_load_acquire(&event_notifier_group->error_counter);
+	error_counter = lttng_smp_load_acquire(&event_notifier_group->error_counter);
 	/* This group may not have an error counter attached to it. */
 	if (!error_counter)
 		return;
