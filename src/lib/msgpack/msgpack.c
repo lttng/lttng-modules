@@ -55,6 +55,7 @@
 #include <linux/bug.h>
 #include <linux/string.h>
 #include <linux/types.h>
+#include <asm/byteorder.h>
 
 #include <lttng/msgpack.h>
 
