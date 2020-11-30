@@ -395,7 +395,7 @@ static void syscall_entry_event_unknown(struct hlist_head *unknown_action_list_h
 	struct lttng_event *event;
 
 	lttng_syscall_get_arguments(current, regs, args);
-	hlist_for_each_entry_rcu(event, unknown_action_list_head, u.syscall.node) {
+	lttng_hlist_for_each_entry_rcu(event, unknown_action_list_head, u.syscall.node) {
 		if (unlikely(in_compat_syscall()))
 			__event_probe__compat_syscall_entry_unknown(event, id, args);
 		else
@@ -447,7 +447,7 @@ void syscall_entry_call_func(struct hlist_head *action_list,
 	{
 		void (*fptr)(void *__data) = func;
 
-		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
 			fptr(event);
 		break;
 	}
@@ -457,7 +457,7 @@ void syscall_entry_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
 			fptr(event, args[0]);
 		break;
 	}
@@ -469,7 +469,7 @@ void syscall_entry_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
 			fptr(event, args[0], args[1]);
 		break;
 	}
@@ -482,7 +482,7 @@ void syscall_entry_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
 			fptr(event, args[0], args[1], args[2]);
 		break;
 	}
@@ -496,7 +496,7 @@ void syscall_entry_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
 			fptr(event, args[0], args[1], args[2], args[3]);
 		break;
 	}
@@ -511,7 +511,7 @@ void syscall_entry_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
 			fptr(event, args[0], args[1], args[2], args[3], args[4]);
 		break;
 	}
@@ -527,7 +527,7 @@ void syscall_entry_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
 			fptr(event, args[0], args[1], args[2],
 			     args[3], args[4], args[5]);
 		break;
@@ -755,7 +755,7 @@ static void syscall_exit_event_unknown(struct hlist_head *unknown_action_list_he
 	struct lttng_event *event;
 
 	lttng_syscall_get_arguments(current, regs, args);
-	hlist_for_each_entry_rcu(event, unknown_action_list_head, u.syscall.node) {
+	lttng_hlist_for_each_entry_rcu(event, unknown_action_list_head, u.syscall.node) {
 		if (unlikely(in_compat_syscall()))
 			__event_probe__compat_syscall_exit_unknown(event, id, ret,
 				args);
@@ -776,7 +776,7 @@ void syscall_exit_call_func(struct hlist_head *action_list,
 	{
 		void (*fptr)(void *__data, long ret) = func;
 
-		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
 			fptr(event, ret);
 		break;
 	}
@@ -788,7 +788,7 @@ void syscall_exit_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
 			fptr(event, ret, args[0]);
 		break;
 	}
@@ -801,7 +801,7 @@ void syscall_exit_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
 			fptr(event, ret, args[0], args[1]);
 		break;
 	}
@@ -815,7 +815,7 @@ void syscall_exit_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
 			fptr(event, ret, args[0], args[1], args[2]);
 		break;
 	}
@@ -830,7 +830,7 @@ void syscall_exit_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
 			fptr(event, ret, args[0], args[1], args[2], args[3]);
 		break;
 	}
@@ -846,7 +846,7 @@ void syscall_exit_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
 			fptr(event, ret, args[0], args[1], args[2], args[3], args[4]);
 		break;
 	}
@@ -863,7 +863,7 @@ void syscall_exit_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
+		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
 			fptr(event, ret, args[0], args[1], args[2],
 			     args[3], args[4], args[5]);
 		break;
