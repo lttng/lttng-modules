@@ -11,7 +11,11 @@
 #define _LTTNG_WRAPPER_BARRIER_H
 
 #include <linux/version.h>
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0)
 #include <asm/barrier.h>
+#else
+#include <asm/system.h>
+#endif
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)
 
