@@ -147,12 +147,12 @@ struct lttng_kernel_event_notifier {
 } __attribute__((packed));
 
 enum lttng_kernel_counter_arithmetic {
-    LTTNG_KERNEL_COUNTER_ARITHMETIC_MODULAR = 1,
+	LTTNG_KERNEL_COUNTER_ARITHMETIC_MODULAR = 1,
 };
 
 enum lttng_kernel_counter_bitness {
-    LTTNG_KERNEL_COUNTER_BITNESS_32 = 1,
-    LTTNG_KERNEL_COUNTER_BITNESS_64 = 2,
+	LTTNG_KERNEL_COUNTER_BITNESS_32 = 1,
+	LTTNG_KERNEL_COUNTER_BITNESS_64 = 2,
 };
 
 struct lttng_kernel_counter_dimension {
