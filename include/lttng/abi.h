@@ -18,7 +18,7 @@
  * should be increased when an incompatible ABI change is done.
  */
 #define LTTNG_MODULES_ABI_MAJOR_VERSION		2
-#define LTTNG_MODULES_ABI_MINOR_VERSION		5
+#define LTTNG_MODULES_ABI_MINOR_VERSION		6
 
 #define LTTNG_KERNEL_SYM_NAME_LEN	256
 #define LTTNG_KERNEL_SESSION_NAME_LEN	256
