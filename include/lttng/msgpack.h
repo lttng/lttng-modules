@@ -49,7 +49,6 @@ int lttng_msgpack_write_unsigned_integer(
 		struct lttng_msgpack_writer *writer, uint64_t value);
 int lttng_msgpack_write_signed_integer(
 		struct lttng_msgpack_writer *writer, int64_t value);
-int lttng_msgpack_write_double(struct lttng_msgpack_writer *writer, double value);
 int lttng_msgpack_write_str(struct lttng_msgpack_writer *writer,
 		const char *value);
 int lttng_msgpack_begin_map(struct lttng_msgpack_writer *writer, size_t count);

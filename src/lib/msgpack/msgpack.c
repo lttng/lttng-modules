@@ -144,20 +144,6 @@ static inline int lttng_msgpack_append_u64(
 	return lttng_msgpack_append_buffer(writer, (uint8_t *) &value, sizeof(value));
 }
 
-static inline int lttng_msgpack_append_f64(
-		struct lttng_msgpack_writer *writer, double value)
-{
-
-	union {
-		double d;
-		uint64_t u;
-	} u;
-
-	u.d = value;
-
-	return lttng_msgpack_append_u64(writer, u.u);
-}
-
 static inline int lttng_msgpack_append_i8(
 		struct lttng_msgpack_writer *writer, int8_t value)
 {
@@ -180,23 +166,6 @@ static inline int lttng_msgpack_append_i64(
 		struct lttng_msgpack_writer *writer, int64_t value)
 {
 	return lttng_msgpack_append_u64(writer, (uint64_t) value);
-}
-
-static inline int lttng_msgpack_encode_f64(
-		struct lttng_msgpack_writer *writer, double value)
-{
-	int ret;
-
-	ret = lttng_msgpack_append_u8(writer, MSGPACK_FLOAT64_ID);
-	if (ret)
-		goto end;
-
-	ret = lttng_msgpack_append_f64(writer, value);
-	if (ret)
-		goto end;
-
-end:
-	return ret;
 }
 
 static inline int lttng_msgpack_encode_fixmap(
@@ -492,11 +461,6 @@ int lttng_msgpack_write_signed_integer(struct lttng_msgpack_writer *writer, int6
 
 end:
 	return ret;
-}
-
-int lttng_msgpack_write_double(struct lttng_msgpack_writer *writer, double value)
-{
-	return lttng_msgpack_encode_f64(writer, value);
 }
 
 void lttng_msgpack_writer_init(struct lttng_msgpack_writer *writer,
