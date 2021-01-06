@@ -20,7 +20,7 @@
 /*
  * Using unsigned arithmetic because overflow is defined.
  */
-static inline int __lttng_counter_add(const struct lib_counter_config *config,
+static __always_inline int __lttng_counter_add(const struct lib_counter_config *config,
 				       enum lib_counter_config_alloc alloc,
 				       enum lib_counter_config_sync sync,
 				       struct lib_counter *counter,
@@ -226,7 +226,7 @@ static inline int __lttng_counter_add(const struct lib_counter_config *config,
 	return 0;
 }
 
-static inline int __lttng_counter_add_percpu(const struct lib_counter_config *config,
+static __always_inline int __lttng_counter_add_percpu(const struct lib_counter_config *config,
 				     struct lib_counter *counter,
 				     const size_t *dimension_indexes, int64_t v)
 {
@@ -243,7 +243,7 @@ static inline int __lttng_counter_add_percpu(const struct lib_counter_config *co
 	return 0;
 }
 
-static inline int __lttng_counter_add_global(const struct lib_counter_config *config,
+static __always_inline int __lttng_counter_add_global(const struct lib_counter_config *config,
 				     struct lib_counter *counter,
 				     const size_t *dimension_indexes, int64_t v)
 {
@@ -251,7 +251,7 @@ static inline int __lttng_counter_add_global(const struct lib_counter_config *co
 				   dimension_indexes, v, NULL);
 }
 
-static inline int lttng_counter_add(const struct lib_counter_config *config,
+static __always_inline int lttng_counter_add(const struct lib_counter_config *config,
 				    struct lib_counter *counter,
 				    const size_t *dimension_indexes, int64_t v)
 {
@@ -266,14 +266,14 @@ static inline int lttng_counter_add(const struct lib_counter_config *config,
 	}
 }
 
-static inline int lttng_counter_inc(const struct lib_counter_config *config,
+static __always_inline int lttng_counter_inc(const struct lib_counter_config *config,
 				     struct lib_counter *counter,
 				     const size_t *dimension_indexes)
 {
 	return lttng_counter_add(config, counter, dimension_indexes, 1);
 }
 
-static inline int lttng_counter_dec(const struct lib_counter_config *config,
+static __always_inline int lttng_counter_dec(const struct lib_counter_config *config,
 				    struct lib_counter *counter,
 				    const size_t *dimension_indexes)
 {
