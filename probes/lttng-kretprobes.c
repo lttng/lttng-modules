@@ -8,7 +8,7 @@
  */
 
 #include <linux/module.h>
-#include <linux/kprobes.h>
+#include <wrapper/kprobes.h>
 #include <linux/slab.h>
 #include <linux/kref.h>
 #include <lttng-events.h>
@@ -36,7 +36,7 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 			      enum lttng_kretprobe_type type)
 {
 	struct lttng_krp *lttng_krp =
-		container_of(krpi->rp, struct lttng_krp, krp);
+		container_of(lttng_get_kretprobe(krpi), struct lttng_krp, krp);
 	struct lttng_event *event =
 		lttng_krp->event[type];
 	struct lttng_probe_ctx lttng_probe_ctx = {
@@ -58,7 +58,7 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 	if (unlikely(!LTTNG_READ_ONCE(event->enabled)))
 		return 0;
 
-	payload.ip = (unsigned long) krpi->rp->kp.addr;
+	payload.ip = (unsigned long) lttng_get_kretprobe(krpi)->kp.addr;
 	payload.parent_ip = (unsigned long) krpi->ret_addr;
 
 	lib_ring_buffer_ctx_init(&ctx, chan->chan, &lttng_probe_ctx, sizeof(payload),
