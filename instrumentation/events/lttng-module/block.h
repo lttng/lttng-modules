@@ -1355,6 +1355,34 @@ LTTNG_TRACEPOINT_EVENT(block_split,
 )
 #endif
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,11,0))
+/**
+ * block_bio_remap - map request for a logical device to the raw device
+ * @bio: revised operation
+ * @dev: original device for the operation
+ * @from: original sector for the operation
+ *
+ * An operation for a logical device has been mapped to the
+ * raw block device.
+ */
+LTTNG_TRACEPOINT_EVENT(block_bio_remap,
+
+	TP_PROTO(struct bio *bio, dev_t dev, sector_t from),
+
+	TP_ARGS(bio, dev, from),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, bio_dev(bio))
+		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
+		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			lttng_bio_op(bio), lttng_bio_rw(bio),
+			bio->bi_iter.bi_size)
+		ctf_integer(dev_t, old_dev, dev)
+		ctf_integer(sector_t, old_sector, from)
+	)
+)
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
 /**
  * block_bio_remap - map request for a logical device to the raw device
  * @q: queue holding the operation
@@ -1373,27 +1401,54 @@ LTTNG_TRACEPOINT_EVENT(block_bio_remap,
 	TP_ARGS(q, bio, dev, from),
 
 	TP_FIELDS(
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
 		ctf_integer(dev_t, dev, bio_dev(bio))
-#else
-		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
-#endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
 			lttng_bio_op(bio), lttng_bio_rw(bio),
 			bio->bi_iter.bi_size)
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
-		ctf_integer(sector_t, sector, bio->bi_sector)
-		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
-		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			lttng_bio_op(bio), lttng_bio_rw(bio), bio->bi_size)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		ctf_integer(dev_t, old_dev, dev)
 		ctf_integer(sector_t, old_sector, from)
 	)
 )
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+LTTNG_TRACEPOINT_EVENT(block_bio_remap,
+
+	TP_PROTO(struct request_queue *q, struct bio *bio, dev_t dev,
+		 sector_t from),
+
+	TP_ARGS(q, bio, dev, from),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
+		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
+		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			lttng_bio_op(bio), lttng_bio_rw(bio),
+			bio->bi_iter.bi_size)
+		ctf_integer(dev_t, old_dev, dev)
+		ctf_integer(sector_t, old_sector, from)
+	)
+)
+#else
+LTTNG_TRACEPOINT_EVENT(block_bio_remap,
+
+	TP_PROTO(struct request_queue *q, struct bio *bio, dev_t dev,
+		 sector_t from),
+
+	TP_ARGS(q, bio, dev, from),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
+		ctf_integer(sector_t, sector, bio->bi_sector)
+		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			lttng_bio_op(bio), lttng_bio_rw(bio), bio->bi_size)
+		ctf_integer(dev_t, old_dev, dev)
+		ctf_integer(sector_t, old_sector, from)
+	)
+)
+#endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,11,0))
 /**
