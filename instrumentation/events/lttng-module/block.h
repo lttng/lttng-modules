@@ -1257,6 +1257,36 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_unplug, block_unplug,
 	TP_ARGS(q, depth, explicit)
 )
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,11,0))
+/**
+ * block_split - split a single bio struct into two bio structs
+ * @bio: block operation being split
+ * @new_sector: The starting sector for the new bio
+ *
+ * The bio request @bio needs to be split into two bio requests.  The newly
+ * created @bio request starts at @new_sector. This split may be required due to
+ * hardware limitations such as operation crossing device boundaries in a RAID
+ * system.
+ */
+LTTNG_TRACEPOINT_EVENT(block_split,
+
+	TP_PROTO(struct bio *bio, unsigned int new_sector),
+
+	TP_ARGS(bio, new_sector),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, bio_dev(bio))
+		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			lttng_bio_op(bio), lttng_bio_rw(bio),
+			bio->bi_iter.bi_size)
+		ctf_integer(sector_t, new_sector, new_sector)
+		ctf_integer(pid_t, tid, current->pid)
+		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
+	)
+)
+
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
 /**
  * block_split - split a single bio struct into two bio structs
  * @q: queue containing the bio
@@ -1276,26 +1306,54 @@ LTTNG_TRACEPOINT_EVENT(block_split,
 	TP_ARGS(q, bio, new_sector),
 
 	TP_FIELDS(
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
 		ctf_integer(dev_t, dev, bio_dev(bio))
-#else
-		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
-#endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
 			lttng_bio_op(bio), lttng_bio_rw(bio),
 			bio->bi_iter.bi_size)
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
-		ctf_integer(sector_t, sector, bio->bi_sector)
-		blk_rwbs_ctf_integer(unsigned int, rwbs,
-			lttng_bio_op(bio), lttng_bio_rw(bio), bio->bi_size)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
 		ctf_integer(sector_t, new_sector, new_sector)
 		ctf_integer(pid_t, tid, current->pid)
 		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
 	)
 )
+#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+LTTNG_TRACEPOINT_EVENT(block_split,
+
+	TP_PROTO(struct request_queue *q, struct bio *bio,
+		 unsigned int new_sector),
+
+	TP_ARGS(q, bio, new_sector),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
+		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			lttng_bio_op(bio), lttng_bio_rw(bio),
+			bio->bi_iter.bi_size)
+		ctf_integer(sector_t, new_sector, new_sector)
+		ctf_integer(pid_t, tid, current->pid)
+		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
+	)
+)
+#else
+LTTNG_TRACEPOINT_EVENT(block_split,
+
+	TP_PROTO(struct request_queue *q, struct bio *bio,
+		 unsigned int new_sector),
+
+	TP_ARGS(q, bio, new_sector),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
+		ctf_integer(sector_t, sector, bio->bi_sector)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			lttng_bio_op(bio), lttng_bio_rw(bio), bio->bi_size)
+		ctf_integer(sector_t, new_sector, new_sector)
+		ctf_integer(pid_t, tid, current->pid)
+		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
+	)
+)
+#endif
 
 /**
  * block_bio_remap - map request for a logical device to the raw device
