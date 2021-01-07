@@ -11,6 +11,20 @@
 #include <linux/version.h>
 #include <linux/fdtable.h>
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,11,0))
+static inline
+struct file *lttng_lookup_fd_rcu(unsigned int fd)
+{
+	return lookup_fd_rcu(fd);
+}
+#else
+static inline
+struct file *lttng_lookup_fd_rcu(unsigned int fd)
+{
+	return fcheck(fd);
+}
+#endif
+
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
 
 int lttng_iterate_fd(struct files_struct *files,
