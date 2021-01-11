@@ -1,3 +1,20 @@
+2021-01-11 (National Clean Off Your Desk Day) LTTng modules 2.12.4
+	* fix: adjust version range for trace_find_free_extent()
+	* Improve the release script
+	* Add release maintainer script
+	* fix: statedump: undefined symbols caused by incorrect patch backport
+	* fix: include order for older kernels
+	* fix: tracepoint: Optimize using static_call() (v5.10)
+	* fix: KVM: x86/mmu: Return unique RET_PF_* values if the fault was fixed (v5.10)
+	* fix: kvm: x86/mmu: Add TDP MMU PF handler (v5.10)
+	* fix: KVM: x86: Add intr/vectoring info and error code to kvm_exit tracepoint (v5.10)
+	* fix: ext4: fast commit recovery path (v5.10)
+	* fix: btrfs: make ordered extent tracepoint take btrfs_inode (v5.10)
+	* fix: btrfs: tracepoints: output proper root owner for trace_find_free_extent() (v5.10)
+	* fix: objtool: Rename frame.h -> objtool.h (v5.10)
+	* Fix: ressource leak in id tracker
+	* fix: strncpy equals destination size warning
+
 2020-10-05 (National Get Funky Day) LTTng modules 2.12.3
 	* Cleanup: lttng-syscalls: silence warning about uninitialized bitmap variable
 	* fix: backport 'Add 'kernel_read' wrapper for kernels < v4.14'
