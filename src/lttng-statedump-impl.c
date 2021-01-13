@@ -194,6 +194,61 @@ enum lttng_process_status {
 	LTTNG_DEAD = 7,
 };
 
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,11,0))
+
+#define LTTNG_PART_STRUCT_TYPE struct block_device
+
+static
+int lttng_get_part_name(struct gendisk *disk, struct block_device *part, char *name_buf)
+{
+	const char *p;
+
+	p = bdevname(part, name_buf);
+	if (!p)
+		return -ENOSYS;
+
+	return 0;
+}
+
+static
+dev_t lttng_get_part_devt(struct block_device *part)
+{
+	return part->bd_dev;
+}
+
+#else
+
+#define LTTNG_PART_STRUCT_TYPE struct hd_struct
+
+static
+int lttng_get_part_name(struct gendisk *disk, struct hd_struct *part, char *name_buf)
+{
+	const char *p;
+	struct block_device bdev;
+
+	/*
+	 * Create a partial 'struct blockdevice' to use
+	 * 'bdevname()' which is a simple wrapper over
+	 * 'disk_name()' but has the honor to be EXPORT_SYMBOL.
+	 */
+	bdev.bd_disk = disk;
+	bdev.bd_part = part;
+
+	p = bdevname(&bdev, name_buf);
+	if (!p)
+		return -ENOSYS;
+
+	return 0;
+}
+
+static
+dev_t lttng_get_part_devt(struct hd_struct *part)
+{
+	return part_devt(part);
+}
+#endif
+
 static
 int lttng_enumerate_block_devices(struct lttng_session *session)
 {
@@ -213,7 +268,7 @@ int lttng_enumerate_block_devices(struct lttng_session *session)
 	while ((dev = class_dev_iter_next(&iter))) {
 		struct disk_part_iter piter;
 		struct gendisk *disk = dev_to_disk(dev);
-		struct hd_struct *part;
+		LTTNG_PART_STRUCT_TYPE *part;
 
 		/*
 		 * Don't show empty devices or things that have been
@@ -225,26 +280,15 @@ int lttng_enumerate_block_devices(struct lttng_session *session)
 
 		disk_part_iter_init(&piter, disk, DISK_PITER_INCL_PART0);
 		while ((part = disk_part_iter_next(&piter))) {
-			struct block_device bdev;
 			char name_buf[BDEVNAME_SIZE];
-			const char *p;
 
-			/*
-			 * Create a partial 'struct blockdevice' to use
-			 * 'bdevname()' which is a simple wrapper over
-			 * 'disk_name()' but has the honor to be EXPORT_SYMBOL.
-			 */
-			bdev.bd_disk = disk;
-			bdev.bd_part = part;
-
-			p = bdevname(&bdev, name_buf);
-			if (!p) {
+			if (lttng_get_part_name(disk, part, name_buf) == -ENOSYS) {
 				disk_part_iter_exit(&piter);
 				class_dev_iter_exit(&iter);
 				return -ENOSYS;
 			}
 			trace_lttng_statedump_block_device(session,
-					part_devt(part), name_buf);
+					lttng_get_part_devt(part), name_buf);
 		}
 		disk_part_iter_exit(&piter);
 	}
