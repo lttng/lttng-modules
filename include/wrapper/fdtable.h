@@ -10,6 +10,7 @@
 
 #include <linux/version.h>
 #include <linux/fdtable.h>
+#include <linux/sched.h>
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,11,0))
 static inline
