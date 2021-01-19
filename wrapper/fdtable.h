@@ -10,6 +10,7 @@
 
 #include <lttng-kernel-version.h>
 #include <linux/fdtable.h>
+#include <linux/sched.h>
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
 static inline
