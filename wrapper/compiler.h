@@ -25,6 +25,16 @@
 #   error Your gcc version produces clobbered frame accesses
 #  endif
 # endif
+
+/*
+ * https://gcc.gnu.org/bugzilla/show_bug.cgi?id=63293
+ */
+# ifdef __aarch64__
+#  if GCC_VERSION < 50100
+#   error Your gcc version performs unsafe access to deallocated stack
+#  endif
+# endif
+
 #endif
 
 /*
