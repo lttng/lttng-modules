@@ -1,5 +1,9 @@
 # SPDX-License-Identifier: (GPL-2.0 OR LGPL-2.1)
 
+ccflags-y += -DLTTNG_LINUX_MAJOR=$(VERSION)
+ccflags-y += -DLTTNG_LINUX_MINOR=$(PATCHLEVEL)
+ccflags-y += -DLTTNG_LINUX_PATCH=$(SUBLEVEL)
+
 # Work-around for distro-specific public modules ABI breakages.
 # Some distributions break the public module instrumentation ABI
 # compared to upstream stable kernels without providing other mean than
