@@ -10,7 +10,7 @@
 #ifndef _LTTNG_WRAPPER_RCU_H
 #define _LTTNG_WRAPPER_RCU_H
 
-#include <linux/version.h>
+#include <lttng/kernel-version.h>
 #include <linux/rculist.h>
 #include <linux/rcupdate.h>
 #include <wrapper/list.h>

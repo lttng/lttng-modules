@@ -469,7 +469,7 @@ static void lib_ring_buffer_stop_read_timer(struct lib_ring_buffer *buf)
 	buf->read_timer_enabled = 0;
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 
 enum cpuhp_state lttng_rb_hp_prepare;
 enum cpuhp_state lttng_rb_hp_online;
@@ -540,7 +540,7 @@ int lttng_cpuhp_rb_frontend_offline(unsigned int cpu,
 }
 EXPORT_SYMBOL_GPL(lttng_cpuhp_rb_frontend_offline);
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
 #ifdef CONFIG_HOTPLUG_CPU
 
@@ -602,7 +602,7 @@ int lib_ring_buffer_cpu_hp_callback(struct notifier_block *nb,
 
 #endif
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
 #if defined(CONFIG_NO_HZ) && defined(CONFIG_LIB_RING_BUFFER)
 /*
@@ -708,7 +708,7 @@ static void channel_unregister_notifiers(struct channel *chan)
 		 * concurrency.
 		 */
 #endif /* CONFIG_NO_HZ */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 		{
 			int ret;
 
@@ -719,7 +719,7 @@ static void channel_unregister_notifiers(struct channel *chan)
 				&chan->cpuhp_prepare.node);
 			WARN_ON(ret);
 		}
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 		{
 			int cpu;
 
@@ -743,7 +743,7 @@ static void channel_unregister_notifiers(struct channel *chan)
 			}
 #endif
 		}
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 	} else {
 		struct lib_ring_buffer *buf = chan->backend.buf;
 
@@ -873,7 +873,7 @@ struct channel *channel_create(const struct lib_ring_buffer_config *config,
 	init_irq_work(&chan->wakeup_pending, lib_ring_buffer_pending_wakeup_chan);
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 		chan->cpuhp_prepare.component = LTTNG_RING_BUFFER_FRONTEND;
 		ret = cpuhp_state_add_instance_nocalls(lttng_rb_hp_prepare,
 			&chan->cpuhp_prepare.node);
@@ -885,7 +885,7 @@ struct channel *channel_create(const struct lib_ring_buffer_config *config,
 			&chan->cpuhp_online.node);
 		if (ret)
 			goto cpuhp_online_error;
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 		{
 			int cpu;
 			/*
@@ -921,7 +921,7 @@ struct channel *channel_create(const struct lib_ring_buffer_config *config,
 			}
 #endif
 		}
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
 #if defined(CONFIG_NO_HZ) && defined(CONFIG_LIB_RING_BUFFER)
 		/* Only benefit from NO_HZ idle with per-cpu buffers for now. */
@@ -941,13 +941,13 @@ struct channel *channel_create(const struct lib_ring_buffer_config *config,
 
 	return chan;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 cpuhp_online_error:
 	ret = cpuhp_state_remove_instance_nocalls(lttng_rb_hp_prepare,
 			&chan->cpuhp_prepare.node);
 	WARN_ON(ret);
 cpuhp_prepare_error:
-#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#endif /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 error_free_backend:
 	channel_backend_free(&chan->backend);
 error:

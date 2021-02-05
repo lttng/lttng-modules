@@ -3,11 +3,11 @@
 #define LTTNG_TRACE_EXCEPTIONS_H
 
 #include <lttng/tracepoint-event.h>
-#include <linux/version.h>
+#include <lttng/kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0))
 #include <../arch/x86/include/asm/traps.h>
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0)) */
 
 /* Only define this enum once. */
 
@@ -20,14 +20,14 @@ enum {
 	X86_PF_USER =	1 << 2,
 	X86_PF_RSVD =	1 << 3,
 	X86_PF_INSTR =	1 << 4,
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,6,0))
 	X86_PF_PK =	1 << 5,
-#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0)) */
+#endif /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,6,0)) */
 };
 
 #endif /* ONCE_LTTNG_EXCEPTIONS_H */
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0)) */
 
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM x86_exceptions
@@ -39,9 +39,9 @@ LTTNG_TRACEPOINT_ENUM(lttng_x86_pf_error_code,
 		ctf_enum_value("USER_MODE",		X86_PF_USER)
 		ctf_enum_value("RESERVED_BIT",		X86_PF_RSVD)
 		ctf_enum_value("INSTRUCTION_FETCH",	X86_PF_INSTR)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,6,0))
 		ctf_enum_value("PROTECTION_KEYS_BLOCK", X86_PF_PK)
-#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0)) */
+#endif /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,6,0)) */
 	)
 )
 

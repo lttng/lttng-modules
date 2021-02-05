@@ -10,7 +10,7 @@
 #ifndef _LTTNG_EVENTS_H
 #define _LTTNG_EVENTS_H
 
-#include <linux/version.h>
+#include <lttng/kernel-version.h>
 #include <linux/list.h>
 #include <linux/kprobes.h>
 #include <linux/kref.h>
@@ -157,7 +157,7 @@ union lttng_ctx_value {
  * lttng_ctx_field because cpu hotplug needs fixed-location addresses.
  */
 struct lttng_perf_counter_field {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 	struct lttng_cpuhp_node cpuhp_prepare;
 	struct lttng_cpuhp_node cpuhp_online;
 #else
@@ -1039,7 +1039,7 @@ int lttng_add_migratable_to_ctx(struct lttng_ctx **ctx)
 int lttng_add_callstack_to_ctx(struct lttng_ctx **ctx, int type);
 
 #if defined(CONFIG_CGROUPS) && \
-	((LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0)) || \
+	((LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,6,0)) || \
 	 LTTNG_UBUNTU_KERNEL_RANGE(4,4,0,0, 4,5,0,0))
 int lttng_add_cgroup_ns_to_ctx(struct lttng_ctx **ctx);
 #else
@@ -1051,7 +1051,7 @@ int lttng_add_cgroup_ns_to_ctx(struct lttng_ctx **ctx)
 #endif
 
 #if defined(CONFIG_IPC_NS) && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 int lttng_add_ipc_ns_to_ctx(struct lttng_ctx **ctx);
 #else
 static inline
@@ -1062,7 +1062,7 @@ int lttng_add_ipc_ns_to_ctx(struct lttng_ctx **ctx)
 #endif
 
 #if !defined(LTTNG_MNT_NS_MISSING_HEADER) && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 int lttng_add_mnt_ns_to_ctx(struct lttng_ctx **ctx);
 #else
 static inline
@@ -1073,7 +1073,7 @@ int lttng_add_mnt_ns_to_ctx(struct lttng_ctx **ctx)
 #endif
 
 #if defined(CONFIG_NET_NS) && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 int lttng_add_net_ns_to_ctx(struct lttng_ctx **ctx);
 #else
 static inline
@@ -1084,7 +1084,7 @@ int lttng_add_net_ns_to_ctx(struct lttng_ctx **ctx)
 #endif
 
 #if defined(CONFIG_PID_NS) && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 int lttng_add_pid_ns_to_ctx(struct lttng_ctx **ctx);
 #else
 static inline
@@ -1095,7 +1095,7 @@ int lttng_add_pid_ns_to_ctx(struct lttng_ctx **ctx)
 #endif
 
 #if defined(CONFIG_USER_NS) && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 int lttng_add_user_ns_to_ctx(struct lttng_ctx **ctx);
 #else
 static inline
@@ -1106,7 +1106,7 @@ int lttng_add_user_ns_to_ctx(struct lttng_ctx **ctx)
 #endif
 
 #if defined(CONFIG_UTS_NS) && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 int lttng_add_uts_ns_to_ctx(struct lttng_ctx **ctx);
 #else
 static inline
@@ -1117,7 +1117,7 @@ int lttng_add_uts_ns_to_ctx(struct lttng_ctx **ctx)
 #endif
 
 #if defined(CONFIG_TIME_NS) && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
 int lttng_add_time_ns_to_ctx(struct lttng_ctx **ctx);
 #else
 static inline

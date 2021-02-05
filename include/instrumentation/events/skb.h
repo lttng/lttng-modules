@@ -8,7 +8,7 @@
 #include <lttng/tracepoint-event.h>
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
-#include <linux/version.h>
+#include <lttng/kernel-version.h>
 
 /*
  * Tracepoint for free an sk_buff:

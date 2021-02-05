@@ -91,7 +91,7 @@ struct timeval;
 struct itimerval;
 struct itimerspec;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
 typedef __kernel_old_time_t time_t;
 #endif
 

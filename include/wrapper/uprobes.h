@@ -14,13 +14,13 @@
 #ifndef _LTTNG_WRAPPER_UPROBES_H
 #define _LTTNG_WRAPPER_UPROBES_H
 
-#include <linux/version.h>
+#include <lttng/kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 #include <linux/uprobes.h>
 
 /* Use kallsym lookup for version before 3.9. */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,9,0))
 
 static inline
 int wrapper_uprobe_register(struct inode *inode, loff_t offset, struct uprobe_consumer *uc)

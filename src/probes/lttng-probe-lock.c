@@ -9,7 +9,7 @@
  */
 
 #include <linux/module.h>
-#include <linux/version.h>
+#include <lttng/kernel-version.h>
 #include <lttng/tracer.h>
 
 /*

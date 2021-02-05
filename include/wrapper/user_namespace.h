@@ -9,11 +9,11 @@
 #ifndef _LTTNG_WRAPPER_USER_NAMESPACE_H
 #define _LTTNG_WRAPPER_USER_NAMESPACE_H
 
-#include <linux/version.h>
+#include <lttng/kernel-version.h>
 #include <linux/user_namespace.h>
 
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
+#if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3, 5, 0)
 
 #define lttng_current_xxuid(xxx)				\
 	(from_kuid_munged(&init_user_ns, current_##xxx()))

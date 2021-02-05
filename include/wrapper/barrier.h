@@ -10,14 +10,14 @@
 #ifndef _LTTNG_WRAPPER_BARRIER_H
 #define _LTTNG_WRAPPER_BARRIER_H
 
-#include <linux/version.h>
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0)
+#include <lttng/kernel-version.h>
+#if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0)
 #include <asm/barrier.h>
 #else
 #include <asm/system.h>
 #endif
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)
+#if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0)
 
 #define lttng_smp_store_release(x, v) smp_store_release(x, v)
 #define lttng_smp_load_acquire(x) smp_load_acquire(x)

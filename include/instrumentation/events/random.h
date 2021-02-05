@@ -38,7 +38,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(random__mix_pool_bytes, mix_pool_bytes_noloc
 	TP_ARGS(pool_name, bytes, IP)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,2,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,2,0))
 LTTNG_TRACEPOINT_EVENT_MAP(credit_entropy_bits,
 
 	random_credit_entropy_bits,

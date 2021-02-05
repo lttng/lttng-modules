@@ -16,7 +16,7 @@
 #define LTTNG_TRACE_MODULE_H
 
 #include <lttng/tracepoint-event.h>
-#include <linux/version.h>
+#include <lttng/kernel-version.h>
 #include <linux/kernel.h>
 
 #ifdef CONFIG_MODULES
@@ -31,7 +31,7 @@ LTTNG_TRACEPOINT_ENUM(taint,
 	TP_ENUM_VALUES(
 		ctf_enum_value("PROPRIETARY_MODULE", 1UL << TAINT_PROPRIETARY_MODULE)
 		ctf_enum_value("FORCED_MODULE", 1UL << TAINT_FORCED_MODULE)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,15,0))
 		ctf_enum_value("CPU_OUT_OF_SPEC", 1UL << TAINT_CPU_OUT_OF_SPEC)
 #else
 		ctf_enum_value("UNSAFE_SMP", 1UL << TAINT_UNSAFE_SMP)
@@ -45,22 +45,22 @@ LTTNG_TRACEPOINT_ENUM(taint,
 		ctf_enum_value("WARN", 1UL << TAINT_WARN)
 		ctf_enum_value("CRAP", 1UL << TAINT_CRAP)
 		ctf_enum_value("FIRMWARE_WORKAROUND", 1UL << TAINT_FIRMWARE_WORKAROUND)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,2,0))
 		ctf_enum_value("OOT_MODULE", 1UL << TAINT_OOT_MODULE)
 #endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,15,0))
 		ctf_enum_value("UNSIGNED_MODULE", 1UL << TAINT_UNSIGNED_MODULE)
 #endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,17,0))
 		ctf_enum_value("SOFTLOCKUP", 1UL << TAINT_SOFTLOCKUP)
 #endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,0,0))
 		ctf_enum_value("LIVEPATCH", 1UL << TAINT_LIVEPATCH)
 #endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0))
 		ctf_enum_value("AUX", 1UL << TAINT_AUX)
 #endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,17,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,17,0))
 		ctf_enum_value("RANDSTRUCT", 1UL << TAINT_RANDSTRUCT)
 #endif
 	)
@@ -100,7 +100,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(module_refcnt,
 
 	TP_FIELDS(
 		ctf_integer_hex(unsigned long, ip, ip)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,19,0))
 		ctf_integer(int, refcnt, atomic_read(&mod->refcnt))
 #else
 		ctf_integer(int, refcnt, __this_cpu_read(mod->refptr->incs) + __this_cpu_read(mod->refptr->decs))

@@ -19,7 +19,7 @@
  * the get_pageblock_migratetype() macro uses it.
  */
 #if (defined(CONFIG_KALLSYMS) \
-	&& (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,2)	\
+	&& (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,19,2)	\
 		|| LTTNG_KERNEL_RANGE(3,14,36, 3,15,0)		\
 		|| LTTNG_KERNEL_RANGE(3,18,10, 3,19,0)		\
 		|| LTTNG_DEBIAN_KERNEL_RANGE(3,16,7,9,0,0, 3,17,0,0,0,0) \

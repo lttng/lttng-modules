@@ -9,14 +9,14 @@
 #include <scsi/scsi_cmnd.h>
 #include <scsi/scsi_host.h>
 #include <linux/trace_seq.h>
-#include <linux/version.h>
+#include <lttng/kernel-version.h>
 
 #ifndef _TRACE_SCSI_DEF
 #define _TRACE_SCSI_DEF
 
 #define scsi_opcode_name(opcode)	{ opcode, #opcode }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,7,0) \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,7,0) \
 	|| LTTNG_SLE_KERNEL_RANGE(4,4,9,36,0,0, 4,5,0,0,0,0))
 
 #define show_opcode_name(val)					\
@@ -112,7 +112,7 @@
 		scsi_opcode_name(ATA_16),			\
 		scsi_opcode_name(ATA_12))
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0) \
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,19,0) \
 	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,327,0,0, 3,11,0,0,0,0))
 
 #define show_opcode_name(val)					\
@@ -210,7 +210,7 @@
 		scsi_opcode_name(ATA_16),			\
 		scsi_opcode_name(ATA_12))
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,19,0)) */
 
 #define show_opcode_name(val)					\
 	__print_symbolic(val,					\
@@ -307,7 +307,7 @@
 		scsi_opcode_name(ATA_16),			\
 		scsi_opcode_name(ATA_12))
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,19,0)) */
 
 #define scsi_hostbyte_name(result)	{ result, #result }
 #define show_hostbyte_name(val)					\

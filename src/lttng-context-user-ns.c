@@ -20,7 +20,7 @@
 #include <lttng/tracer.h>
 
 #if defined(CONFIG_USER_NS) && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 
 static
 size_t user_ns_get_size(size_t offset)

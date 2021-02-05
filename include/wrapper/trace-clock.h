@@ -20,7 +20,7 @@
 #include <linux/time.h>
 #include <linux/hrtimer.h>
 #include <linux/percpu.h>
-#include <linux/version.h>
+#include <lttng/kernel-version.h>
 #include <asm/local.h>
 #include <lttng/kernel-version.h>
 #include <lttng/clock.h>
@@ -51,7 +51,7 @@ extern struct lttng_trace_clock *lttng_trace_clock;
  * this feature on 64-bit architectures.
  */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0) \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,17,0) \
 	&& BITS_PER_LONG == 64 \
 	&& !defined(LTTNG_CLOCK_NMI_SAFE_BROKEN))
 #define LTTNG_USE_NMI_SAFE_CLOCK

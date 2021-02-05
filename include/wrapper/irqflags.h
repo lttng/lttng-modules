@@ -10,7 +10,7 @@
 #ifndef _LTTNG_WRAPPER_IRQFLAGS_H
 #define _LTTNG_WRAPPER_IRQFLAGS_H
 
-#include <linux/version.h>
+#include <lttng/kernel-version.h>
 #include <linux/irqflags.h>
 
 #ifdef CONFIG_X86

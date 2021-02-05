@@ -12,11 +12,11 @@
 #include <lttng/tracer.h>
 #include <lttng/kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,1,0))
 #include <kvm/iodev.h>
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,1,0)) */
 #include <../../virt/kvm/iodev.h>
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,1,0)) */
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
@@ -24,14 +24,14 @@
  */
 #include <wrapper/tracepoint.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,9,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0))
 #include <../../arch/x86/kvm/mmu/mmu_internal.h>
 #include <../../arch/x86/kvm/mmu/mmutrace.h>
 #else
 #include <../../arch/x86/kvm/mmutrace.h>
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0))
 #include <../arch/x86/kvm/mmu.h>
 #include <../arch/x86/kvm/mmu/spte.h>
 #endif

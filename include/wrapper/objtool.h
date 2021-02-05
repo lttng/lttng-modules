@@ -8,16 +8,16 @@
 #ifndef _LTTNG_WRAPPER_OBJTOOL_H
 #define _LTTNG_WRAPPER_OBJTOOL_H
 
-#include <linux/version.h>
+#include <lttng/kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0))
 #include <linux/objtool.h>
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,6,0))
 #include <linux/frame.h>
 #endif
 
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,6,0))
 
 #define LTTNG_STACK_FRAME_NON_STANDARD(func) \
 	STACK_FRAME_NON_STANDARD(func)

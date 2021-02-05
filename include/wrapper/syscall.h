@@ -15,12 +15,12 @@
 
 #define LTTNG_SYSCALL_NR_ARGS 6
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,1,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,1,0))
 
 #define lttng_syscall_get_arguments(task, regs, args) \
 	syscall_get_arguments(task, regs, args)
 
-#else /* LINUX_VERSION_CODE >= KERNEL_VERSION(5,1,0) */
+#else /* LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,1,0) */
 
 static inline
 void lttng_syscall_get_arguments(struct task_struct *task,
@@ -29,6 +29,6 @@ void lttng_syscall_get_arguments(struct task_struct *task,
 	syscall_get_arguments(task, regs, 0, LTTNG_SYSCALL_NR_ARGS, args);
 }
 
-#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(5,1,0) */
+#endif /* LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,1,0) */
 
 #endif /* _LTTNG_WRAPPER_SYSCALL_H */

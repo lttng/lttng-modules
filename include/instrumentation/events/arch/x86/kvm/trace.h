@@ -5,10 +5,10 @@
 #include <lttng/tracepoint-event.h>
 #include <asm/vmx.h>
 #include <asm/svm.h>
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 #include <asm/clocksource.h>
 #endif
-#include <linux/version.h>
+#include <lttng/kernel-version.h>
 #include <../arch/x86/kvm/lapic.h>
 #include <../arch/x86/kvm/kvm_cache_regs.h>
 
@@ -115,7 +115,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(kvm_apic, kvm_x86_apic,
 /*
  * Tracepoint for kvm guest exit:
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0))
 LTTNG_TRACEPOINT_EVENT_CODE_MAP(kvm_exit, kvm_x86_exit,
 	TP_PROTO(unsigned int exit_reason, struct kvm_vcpu *vcpu, u32 isa),
 	TP_ARGS(exit_reason, vcpu, isa),
@@ -145,7 +145,7 @@ LTTNG_TRACEPOINT_EVENT_CODE_MAP(kvm_exit, kvm_x86_exit,
 
 	TP_code_post()
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,7,0))
 LTTNG_TRACEPOINT_EVENT_CODE_MAP(kvm_exit, kvm_x86_exit,
 	TP_PROTO(unsigned int exit_reason, struct kvm_vcpu *vcpu, u32 isa),
 	TP_ARGS(exit_reason, vcpu, isa),
@@ -480,21 +480,21 @@ LTTNG_TRACEPOINT_EVENT_MAP(kvm_emulate_insn, kvm_x86_emulate_insn,
 	TP_ARGS(vcpu, failed),
 
 	TP_FIELDS(
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,1,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,1,0))
 		ctf_integer(__u64, rip, vcpu->arch.emulate_ctxt.decode.fetch.start)
 		ctf_integer(__u32, csbase, kvm_x86_ops->get_segment_base(vcpu, VCPU_SREG_CS))
 		ctf_integer(__u8, len, vcpu->arch.emulate_ctxt.decode.eip
 				- vcpu->arch.emulate_ctxt.decode.fetch.start)
 		ctf_array(__u8, insn, vcpu->arch.emulate_ctxt.decode.fetch.data, 15)
 		ctf_integer(__u8, flags, kei_decode_mode(vcpu->arch.emulate_ctxt.mode))
-#elif (LINUX_VERSION_CODE < KERNEL_VERSION(3,17,0))
+#elif (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,17,0))
 		ctf_integer(__u64, rip, vcpu->arch.emulate_ctxt.fetch.start)
 		ctf_integer(__u32, csbase, kvm_x86_ops->get_segment_base(vcpu, VCPU_SREG_CS))
 		ctf_integer(__u8, len, vcpu->arch.emulate_ctxt._eip
 				- vcpu->arch.emulate_ctxt.fetch.start)
 		ctf_array(__u8, insn, vcpu->arch.emulate_ctxt.fetch.data, 15)
 		ctf_integer(__u8, flags, kei_decode_mode(vcpu->arch.emulate_ctxt.mode))
-#elif (LINUX_VERSION_CODE < KERNEL_VERSION(5,7,0))
+#elif (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(5,7,0))
 		ctf_integer(__u64, rip, vcpu->arch.emulate_ctxt._eip -
 				(vcpu->arch.emulate_ctxt.fetch.ptr -
 					vcpu->arch.emulate_ctxt.fetch.data))
@@ -533,7 +533,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,11,0))
 LTTNG_TRACEPOINT_EVENT_MAP(kvm_write_tsc_offset, kvm_x86_write_tsc_offset,
 	TP_PROTO(unsigned int vcpu_id, __u64 previous_tsc_offset,
 		 __u64 next_tsc_offset),
@@ -547,7 +547,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(kvm_write_tsc_offset, kvm_x86_write_tsc_offset,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 #ifdef CONFIG_X86_64
 
 LTTNG_TRACEPOINT_EVENT_MAP(kvm_update_master_clock, kvm_x86_update_master_clock,
@@ -578,7 +578,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(kvm_track_tsc, kvm_x86_track_tsc,
 )
 
 #endif /* CONFIG_X86_64 */
-#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0) */
+#endif /* LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0) */
 
 #endif /* LTTNG_TRACE_KVM_H */
 

@@ -54,7 +54,7 @@ struct channel {
 
 	unsigned long switch_timer_interval;	/* Buffer flush (jiffies) */
 	unsigned long read_timer_interval;	/* Reader wakeup (jiffies) */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 	struct lttng_cpuhp_node cpuhp_prepare;
 	struct lttng_cpuhp_node cpuhp_online;
 	struct lttng_cpuhp_node cpuhp_iter_online;

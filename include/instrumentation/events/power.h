@@ -7,7 +7,7 @@
 
 #include <lttng/tracepoint-event.h>
 #include <linux/ktime.h>
-#include <linux/version.h>
+#include <lttng/kernel-version.h>
 
 LTTNG_TRACEPOINT_EVENT_CLASS(power_cpu,
 
@@ -59,7 +59,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(machine_suspend,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(power_wakeup_source,
 
 	TP_PROTO(const char *name, unsigned int state),
@@ -160,7 +160,7 @@ enum {
    events get removed */
 static inline void trace_power_start(u64 type, u64 state, u64 cpuid) {};
 static inline void trace_power_end(u64 cpuid) {};
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0))
 static inline void trace_power_start_rcuidle(u64 type, u64 state, u64 cpuid) {};
 static inline void trace_power_end_rcuidle(u64 cpuid) {};
 #endif

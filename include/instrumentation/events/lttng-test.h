@@ -7,7 +7,7 @@
 
 #include <lttng/tracepoint-event.h>
 #include <linux/types.h>
-#include <linux/version.h>
+#include <lttng/kernel-version.h>
 
 LTTNG_TRACEPOINT_ENUM(
 	lttng_test_filter_event_enum,
