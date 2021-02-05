@@ -2,7 +2,7 @@
  *
  * lttng/kernel-version.h
  *
- * Contains helpers to check more complex kernel version conditions.
+ * Contains helpers to check kernel version conditions.
  *
  * Copyright (C) 2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */
@@ -15,6 +15,49 @@
 
 #define LTTNG_KERNEL_VERSION(a, b, c) KERNEL_VERSION(a, b, c)
 #define LTTNG_LINUX_VERSION_CODE LINUX_VERSION_CODE
+
+/*
+ * The following defines are extracted from the toplevel Linux Makefile and
+ * passed on the command line -with '-D'.
+ */
+
+#ifndef LTTNG_LINUX_MAJOR
+#define LTTNG_LINUX_MAJOR 0
+#endif
+
+#ifndef LTTNG_LINUX_MINOR
+#define LTTNG_LINUX_MINOR 0
+#endif
+
+#ifndef LTTNG_LINUX_PATCH
+#define LTTNG_LINUX_PATCH 0
+#endif
+
+/*
+ * Some stable releases have overflowed the 8bits allocated to the sublevel in
+ * the version code. To determine if the current kernel is affected, use the
+ * sublevel version from the Makefile. This is currently true for the 4.4.256
+ * and 4.9.256 stable releases.
+ *
+ * When the sublevel has overflowed, use the values from the Makefile instead
+ * of LINUX_VERSION_CODE from the kernel headers and allocate 16bits.
+ * Otherwise, keep using the version code from the headers to minimise the
+ * behavior change and avoid regressions.
+ */
+#if (LTTNG_LINUX_PATCH >= 256)
+
+#define LTTNG_KERNEL_VERSION(a, b, c) \
+	(((a) << 24) + ((b) << 16) + (c))
+
+#define LTTNG_LINUX_VERSION_CODE \
+	LTTNG_KERNEL_VERSION(LTTNG_LINUX_MAJOR, LTTNG_LINUX_MINOR, LTTNG_LINUX_PATCH)
+
+#else
+
+#define LTTNG_KERNEL_VERSION(a, b, c) KERNEL_VERSION(a, b, c)
+#define LTTNG_LINUX_VERSION_CODE LINUX_VERSION_CODE
+
+#endif
 
 /*
  * This macro checks if the kernel version is between the two specified
