@@ -96,8 +96,8 @@ LTTNG_TRACEPOINT_EVENT(writeback_dirty_page,
 	TP_PROTO(struct page *page, struct address_space *mapping),
 	TP_ARGS(page, mapping),
 	TP_FIELDS(
-		ctf_array_text(char, name,
-			mapping ? dev_name(lttng_inode_to_bdi(mapping->host)->dev) : "(unknown)", 32)
+		ctf_string(name,
+			mapping ? dev_name(lttng_inode_to_bdi(mapping->host)->dev) : "(unknown)")
 		ctf_integer(unsigned long, ino, mapping ? mapping->host->i_ino : 0)
 		ctf_integer(pgoff_t, index, page->index)
 	)
@@ -108,9 +108,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_dirty_inode_template,
 	TP_ARGS(inode, flags),
 	TP_FIELDS(
 		/* may be called for files on pseudo FSes w/ unregistered bdi */
-		ctf_array_text(char, name,
+		ctf_string(name,
 			lttng_inode_to_bdi(inode)->dev ?
-				dev_name(lttng_inode_to_bdi(inode)->dev) : "(unknown)", 32)
+				dev_name(lttng_inode_to_bdi(inode)->dev) : "(unknown)")
 		ctf_integer(unsigned long, ino, inode->i_ino)
 		ctf_integer(unsigned long, state, inode->i_state)
 		ctf_integer(unsigned long, flags, flags)
@@ -128,8 +128,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_write_inode_template,
 	TP_PROTO(struct inode *inode, struct writeback_control *wbc),
 	TP_ARGS(inode, wbc),
 	TP_FIELDS(
-		ctf_array_text(char, name,
-			dev_name(lttng_inode_to_bdi(inode)->dev), 32)
+		ctf_string(name,
+			dev_name(lttng_inode_to_bdi(inode)->dev))
 		ctf_integer(unsigned long, ino, inode->i_ino)
 		ctf_integer(int, sync_mode, wbc->sync_mode)
 	)
@@ -148,8 +148,8 @@ LTTNG_TRACEPOINT_EVENT(writeback_dirty_page,
 	TP_PROTO(struct page *page, struct address_space *mapping),
 	TP_ARGS(page, mapping),
 	TP_FIELDS(
-		ctf_array_text(char, name,
-			mapping ? dev_name(mapping->backing_dev_info->dev) : "(unknown)", 32)
+		ctf_string(name,
+			mapping ? dev_name(mapping->backing_dev_info->dev) : "(unknown)")
 		ctf_integer(unsigned long, ino, mapping ? mapping->host->i_ino : 0)
 		ctf_integer(pgoff_t, index, page->index)
 	)
@@ -160,10 +160,10 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_dirty_inode_template,
 	TP_ARGS(inode, flags),
 	TP_FIELDS(
 		/* may be called for files on pseudo FSes w/ unregistered bdi */
-		ctf_array_text(char, name,
+		ctf_string(name,
 			inode->i_mapping->backing_dev_info->dev ?
 				dev_name(inode->i_mapping->backing_dev_info->dev)
-				: "(unknown)", 32)
+				: "(unknown)")
 		ctf_integer(unsigned long, ino, inode->i_ino)
 		ctf_integer(unsigned long, flags, flags)
 	)
@@ -179,8 +179,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_write_inode_template,
 	TP_PROTO(struct inode *inode, struct writeback_control *wbc),
 	TP_ARGS(inode, wbc),
 	TP_FIELDS(
-		ctf_array_text(char, name,
-			dev_name(inode->i_mapping->backing_dev_info->dev), 32)
+		ctf_string(name,
+			dev_name(inode->i_mapping->backing_dev_info->dev))
 		ctf_integer(unsigned long, ino, inode->i_ino)
 		ctf_integer(int, sync_mode, wbc->sync_mode)
 	)
@@ -201,8 +201,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
 	TP_PROTO(struct bdi_writeback *wb, struct wb_writeback_work *work),
 	TP_ARGS(wb, work),
 	TP_FIELDS(
-		ctf_array_text(char, name, wb->bdi->dev ? dev_name(wb->bdi->dev) :
-				"(unknown)", 32)
+		ctf_string(name, wb->bdi->dev ? dev_name(wb->bdi->dev) :
+				"(unknown)")
 	)
 )
 
@@ -212,8 +212,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
 	TP_PROTO(struct backing_dev_info *bdi, struct wb_writeback_work *work),
 	TP_ARGS(bdi, work),
 	TP_FIELDS(
-		ctf_array_text(char, name, bdi->dev ? dev_name(bdi->dev) :
-				"(unknown)", 32)
+		ctf_string(name, bdi->dev ? dev_name(bdi->dev) :
+				"(unknown)")
 	)
 )
 
@@ -223,9 +223,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
 	TP_PROTO(struct backing_dev_info *bdi, struct wb_writeback_work *work),
 	TP_ARGS(bdi, work),
 	TP_FIELDS(
-		ctf_array_text(char, name,
+		ctf_string(name,
 			dev_name(bdi->dev ? bdi->dev :
-				default_backing_dev_info.dev), 32)
+				default_backing_dev_info.dev))
 	)
 )
 
@@ -270,8 +270,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_class,
 	TP_PROTO(struct bdi_writeback *wb),
 	TP_ARGS(wb),
 	TP_FIELDS(
-		ctf_array_text(char, name,
-			dev_name(wb->bdi->dev), 32)
+		ctf_string(name,
+			dev_name(wb->bdi->dev))
 	)
 )
 
@@ -290,8 +290,8 @@ LTTNG_TRACEPOINT_EVENT(writeback_bdi_register,
 	TP_PROTO(struct backing_dev_info *bdi),
 	TP_ARGS(bdi),
 	TP_FIELDS(
-		ctf_array_text(char, name,
-			dev_name(bdi->dev), 32)
+		ctf_string(name,
+			dev_name(bdi->dev))
 	)
 )
 
@@ -301,8 +301,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_class,
 	TP_PROTO(struct backing_dev_info *bdi),
 	TP_ARGS(bdi),
 	TP_FIELDS(
-		ctf_array_text(char, name,
-			dev_name(bdi->dev), 32)
+		ctf_string(name,
+			dev_name(bdi->dev))
 	)
 )
 
@@ -343,7 +343,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_written,
 	TP_ARGS(bdi, written),
 
 	TP_FIELDS(
-		ctf_array_text(char, name, dev_name(bdi->dev), 32)
+		ctf_string(name, dev_name(bdi->dev))
 		ctf_integer(int, written, written)
 	)
 )
@@ -353,7 +353,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_wbc_class,
 	TP_PROTO(struct writeback_control *wbc, struct backing_dev_info *bdi),
 	TP_ARGS(wbc, bdi),
 	TP_FIELDS(
-		ctf_array_text(char, name, dev_name(bdi->dev), 32)
+		ctf_string(name, dev_name(bdi->dev))
 		ctf_integer(long, nr_to_write, wbc->nr_to_write)
 		ctf_integer(long, pages_skipped, wbc->pages_skipped)
 		ctf_integer(int, sync_mode, wbc->sync_mode)
@@ -401,7 +401,7 @@ LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 		 int moved),
 	TP_ARGS(wb, work, dirtied_before, moved),
 	TP_FIELDS(
-		ctf_array_text(char, name, dev_name(wb->bdi->dev), 32)
+		ctf_string(name, dev_name(wb->bdi->dev))
 		ctf_integer(unsigned long, older, dirtied_before)
 		ctf_integer(int, moved, moved)
 	)
@@ -413,7 +413,7 @@ LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 		 int moved),
 	TP_ARGS(wb, work, moved),
 	TP_FIELDS(
-		ctf_array_text(char, name, dev_name(wb->bdi->dev), 32)
+		ctf_string(name, dev_name(wb->bdi->dev))
 		ctf_integer(int, moved, moved)
 	)
 )
@@ -424,7 +424,7 @@ LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 		 int moved),
 	TP_ARGS(wb, older_than_this, moved),
 	TP_FIELDS(
-		ctf_array_text(char, name, dev_name(wb->bdi->dev), 32)
+		ctf_string(name, dev_name(wb->bdi->dev))
 		ctf_integer(unsigned long, older,
 			older_than_this ? *older_than_this : 0)
 		ctf_integer(long, age,
@@ -526,7 +526,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 	TP_ARGS(wb, dirty_rate, task_ratelimit),
 
 	TP_FIELDS(
-		ctf_array_text(char, bdi, dev_name(wb->bdi->dev), 32)
+		ctf_string(bdi, dev_name(wb->bdi->dev))
 		ctf_integer(unsigned long, write_bw, KBps(wb->bdi->wb.write_bandwidth))
 		ctf_integer(unsigned long, avg_write_bw, KBps(wb->bdi->wb.avg_write_bandwidth))
 		ctf_integer(unsigned long, dirty_rate, KBps(dirty_rate))
@@ -550,7 +550,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 	TP_ARGS(bdi, dirty_rate, task_ratelimit),
 
 	TP_FIELDS(
-		ctf_array_text(char, bdi, dev_name(bdi->dev), 32)
+		ctf_string(bdi, dev_name(bdi->dev))
 		ctf_integer(unsigned long, write_bw, KBps(bdi->wb.write_bandwidth))
 		ctf_integer(unsigned long, avg_write_bw, KBps(bdi->wb.avg_write_bandwidth))
 		ctf_integer(unsigned long, dirty_rate, KBps(dirty_rate))
@@ -574,7 +574,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 	TP_ARGS(bdi, dirty_rate, task_ratelimit),
 
 	TP_FIELDS(
-		ctf_array_text(char, bdi, dev_name(bdi->dev), 32)
+		ctf_string(bdi, dev_name(bdi->dev))
 		ctf_integer(unsigned long, write_bw, KBps(bdi->write_bandwidth))
 		ctf_integer(unsigned long, avg_write_bw, KBps(bdi->avg_write_bandwidth))
 		ctf_integer(unsigned long, dirty_rate, KBps(dirty_rate))
@@ -612,7 +612,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 	),
 
 	TP_FIELDS(
-		ctf_array_text(char, bdi, dev_name(wb->bdi->dev), 32)
+		ctf_string(bdi, dev_name(wb->bdi->dev))
 		ctf_integer(unsigned long, limit, global_dirty_limit)
 		ctf_integer(unsigned long, setpoint,
 			(global_dirty_limit + (thresh + bg_thresh) / 2) / 2)
@@ -670,7 +670,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 	),
 
 	TP_FIELDS(
-		ctf_array_text(char, bdi, dev_name(bdi->dev), 32)
+		ctf_string(bdi, dev_name(bdi->dev))
 		ctf_integer(unsigned long, limit, global_dirty_limit)
 		ctf_integer(unsigned long, setpoint,
 			(global_dirty_limit + (thresh + bg_thresh) / 2) / 2)
@@ -709,8 +709,8 @@ LTTNG_TRACEPOINT_EVENT(writeback_sb_inodes_requeue,
 	TP_ARGS(inode),
 
 	TP_FIELDS(
-		ctf_array_text(char, name,
-			dev_name(lttng_inode_to_bdi(inode)->dev), 32)
+		ctf_string(name,
+			dev_name(lttng_inode_to_bdi(inode)->dev))
 		ctf_integer(unsigned long, ino, inode->i_ino)
 		ctf_integer(unsigned long, state, inode->i_state)
 		ctf_integer(unsigned long, dirtied_when, inode->dirtied_when)
@@ -757,8 +757,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_single_inode_template,
 	TP_ARGS(inode, wbc, nr_to_write),
 
 	TP_FIELDS(
-		ctf_array_text(char, name,
-			dev_name(lttng_inode_to_bdi(inode)->dev), 32)
+		ctf_string(name,
+			dev_name(lttng_inode_to_bdi(inode)->dev))
 		ctf_integer(unsigned long, ino, inode->i_ino)
 		ctf_integer(unsigned long, state, inode->i_state)
 		ctf_integer(unsigned long, dirtied_when, inode->dirtied_when)
