@@ -183,11 +183,11 @@
 /* RT patch */
 
 #define LTTNG_RT_KERNEL_VERSION(a, b, c, d) \
-	(((LTTNG_KERNEL_VERSION(a, b, c)) << 8) + (d))
+	(((LTTNG_KERNEL_VERSION(a, b, c)) << 16) + (d))
 
 #ifdef RT_PATCH_VERSION
 #define LTTNG_RT_VERSION_CODE \
-	((LTTNG_LINUX_VERSION_CODE << 8) + RT_PATCH_VERSION)
+	((LTTNG_LINUX_VERSION_CODE << 16) + RT_PATCH_VERSION)
 #else
 #define LTTNG_RT_VERSION_CODE 	0
 #endif
