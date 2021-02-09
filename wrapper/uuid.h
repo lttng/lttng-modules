@@ -8,16 +8,16 @@
 #ifndef _LTTNG_WRAPPER_UUID_H
 #define _LTTNG_WRAPPER_UUID_H
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 #include <linux/uuid.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,7,0))
 static inline
 void lttng_guid_gen(guid_t *u)
 {
 	return guid_gen(u);
 }
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,7,0)) */
 
 typedef uuid_le guid_t;
 
@@ -26,6 +26,6 @@ void lttng_guid_gen(guid_t *u)
 {
 	return uuid_le_gen(u);
 }
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,7,0)) */
 
 #endif /* _LTTNG_WRAPPER_UUID_H */

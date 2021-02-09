@@ -3,12 +3,12 @@
 #define LTTNG_TRACE_KVM_MAIN_H
 
 #include <probes/lttng-tracepoint-event.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM kvm
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,38))
 
 LTTNG_TRACEPOINT_EVENT(kvm_userspace_exit,
 	    TP_PROTO(__u32 reason, int errno),
@@ -21,7 +21,7 @@ LTTNG_TRACEPOINT_EVENT(kvm_userspace_exit,
 )
 #endif
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,6,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,6,0))
 #if defined(__KVM_HAVE_IOAPIC)
 #undef __KVM_HAVE_IRQ_LINE
 #define __KVM_HAVE_IRQ_LINE
@@ -101,7 +101,7 @@ LTTNG_TRACEPOINT_EVENT(kvm_mmio,
 	)
 )
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0) \
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0) \
 	|| LTTNG_KERNEL_RANGE(4,14,14, 4,15,0) \
 	|| LTTNG_DEBIAN_KERNEL_RANGE(4,14,13,0,1,0, 4,15,0,0,0,0) \
 	|| LTTNG_KERNEL_RANGE(4,9,77, 4,10,0) \
@@ -142,7 +142,7 @@ LTTNG_TRACEPOINT_EVENT(kvm_mmio,
 
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,34))
 
 #define kvm_fpu_load_symbol	\
 	{0, "unload"},		\
@@ -157,7 +157,7 @@ LTTNG_TRACEPOINT_EVENT(kvm_fpu,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0) \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,18,0) \
 	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,327,0,0, 3,11,0,0,0,0))
 
 LTTNG_TRACEPOINT_EVENT(kvm_age_page,
@@ -189,7 +189,7 @@ LTTNG_TRACEPOINT_EVENT(kvm_age_page,
 #endif
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,38))
 
 #ifdef CONFIG_KVM_ASYNC_PF
 LTTNG_TRACEPOINT_EVENT_CLASS(kvm_async_get_page_class,
@@ -244,7 +244,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_async_pf_nopresent_ready, kvm_async_pf_ready
 	TP_ARGS(token, gva)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0) \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,13,0) \
 	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,229,0,0, 3,11,0,0,0,0))
 
 LTTNG_TRACEPOINT_EVENT(
@@ -258,7 +258,7 @@ LTTNG_TRACEPOINT_EVENT(
 	)
 )
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,13,0)) */
 
 LTTNG_TRACEPOINT_EVENT(
 	kvm_async_pf_completed,
@@ -272,7 +272,7 @@ LTTNG_TRACEPOINT_EVENT(
 	)
 )
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,13,0)) */
 
 #endif
 

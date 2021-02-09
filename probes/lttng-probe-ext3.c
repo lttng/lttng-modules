@@ -11,10 +11,10 @@
 #include <linux/module.h>
 #include <linux/fs.h>
 #include <linux/dcache.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 #include <lttng-tracer.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0))
 #include <../fs/ext3/ext3.h>
 #else
 #include <linux/ext3_fs_i.h>

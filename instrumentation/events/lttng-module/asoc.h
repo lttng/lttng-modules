@@ -7,28 +7,28 @@
 
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/ktime.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 #define DAPM_DIRECT "(direct)"
 
 #ifndef _TRACE_ASOC_DEF
 #define _TRACE_ASOC_DEF
 struct snd_soc_jack;
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,19,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,19,0))
 struct snd_soc_codec;
 #endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0) && \
-	LINUX_VERSION_CODE < KERNEL_VERSION(3,16,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0) && \
+	LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,16,0))
 struct snd_soc_platform;
 #endif
 struct snd_soc_card;
 struct snd_soc_dapm_widget;
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 struct snd_soc_dapm_path;
 #endif
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0) \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,16,0) \
 	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,514,0,0, 3,11,0,0,0,0))
 #define CODEC_NAME_FIELD component.name
 #define CODEC_ID_FIELD component.id
@@ -37,7 +37,7 @@ struct snd_soc_dapm_path;
 #define CODEC_ID_FIELD id
 #endif
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,16,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,16,0))
 /*
  * Log register events
  */
@@ -79,8 +79,8 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_reg, snd_soc_reg_read,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0) && \
-	LINUX_VERSION_CODE < KERNEL_VERSION(3,16,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0) && \
+	LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,16,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_preg,
 
 	TP_PROTO(struct snd_soc_platform *platform, unsigned int reg,
@@ -224,7 +224,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_dapm_widget, snd_soc_dapm_widge
 
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,2,0))
 LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_walk_done,
 
 	asoc_snd_soc_dapm_walk_done,
@@ -242,7 +242,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_walk_done,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0))
 LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_path,
 
 	asoc_snd_soc_dapm_path,
@@ -262,7 +262,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_path,
 		ctf_integer(int, path_dir, dir)
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_output_path,
 
 	asoc_snd_soc_dapm_output_path,
@@ -300,7 +300,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_input_path,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_connected,
 
 	asoc_snd_soc_dapm_connected,
@@ -329,7 +329,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_irq,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_report,
 
 	asoc_snd_soc_jack_report,
@@ -389,7 +389,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_notify,
 )
 #endif
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,19,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,19,0))
 LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_cache_sync,
 
 	asoc_snd_soc_cache_sync,

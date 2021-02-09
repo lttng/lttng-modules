@@ -14,7 +14,7 @@
 #include <linux/module.h>
 #include <wrapper/kallsyms.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,7,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,7,0))
 
 #ifndef CONFIG_KPROBES
 # error "LTTng-modules requires CONFIG_KPROBES on kernels >= 5.7.0"

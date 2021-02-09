@@ -78,21 +78,21 @@ int _lttng_field_statedump(struct lttng_session *session,
 
 void synchronize_trace(void)
 {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,1,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,1,0))
 	synchronize_rcu();
 #else
 	synchronize_sched();
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0))
 #ifdef CONFIG_PREEMPT_RT_FULL
 	synchronize_rcu();
 #endif
-#else /* (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0)) */
+#else /* (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0)) */
 #ifdef CONFIG_PREEMPT_RT
 	synchronize_rcu();
 #endif
-#endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0)) */
+#endif /* (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0)) */
 }
 
 void lttng_lock_sessions(void)
@@ -2862,7 +2862,7 @@ void lttng_transport_unregister(struct lttng_transport *transport)
 }
 EXPORT_SYMBOL_GPL(lttng_transport_unregister);
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 
 enum cpuhp_state lttng_hp_prepare;
 enum cpuhp_state lttng_hp_online;
@@ -2978,7 +2978,7 @@ static void __exit lttng_exit_cpu_hotplug(void)
 	cpuhp_remove_multi_state(lttng_hp_prepare);
 }
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 static int lttng_init_cpu_hotplug(void)
 {
 	return 0;
@@ -2986,7 +2986,7 @@ static int lttng_init_cpu_hotplug(void)
 static void lttng_exit_cpu_hotplug(void)
 {
 }
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
 
 static int __init lttng_events_init(void)

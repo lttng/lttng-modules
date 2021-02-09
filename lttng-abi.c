@@ -52,7 +52,7 @@
 
 static struct proc_dir_entry *lttng_proc_dentry;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
 static const struct proc_ops lttng_proc_ops;
 #else
 static const struct file_operations lttng_proc_ops;
@@ -360,7 +360,7 @@ long lttng_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	}
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
 static const struct proc_ops lttng_proc_ops = {
 	.proc_ioctl = lttng_ioctl,
 #ifdef CONFIG_COMPAT

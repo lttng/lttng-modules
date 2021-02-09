@@ -10,7 +10,7 @@
 
 struct lttng_cpuhp_node;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 
 #include <linux/cpuhotplug.h>
 

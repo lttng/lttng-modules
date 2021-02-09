@@ -8,9 +8,9 @@
 #ifndef _LTTNG_BUG_H
 #define _LTTNG_BUG_H
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,38))
 #define LTTNG_BUILD_BUG_ON(cond) BUILD_BUG_ON(cond)
 #else
 #define LTTNG_BUILD_BUG_ON(cond) MAYBE_BUILD_BUG_ON(cond)

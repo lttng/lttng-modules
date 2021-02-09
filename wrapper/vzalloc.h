@@ -8,7 +8,7 @@
 #ifndef _LTTNG_WRAPPER_VZALLOC_H
 #define _LTTNG_WRAPPER_VZALLOC_H
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 #include <linux/vmalloc.h>
 
 #if LTTNG_KERNEL_RANGE(2,6,36, 2,6,37)

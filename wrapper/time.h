@@ -9,13 +9,13 @@
 #ifndef _LTTNG_WRAPPER_TIME_H
 #define _LTTNG_WRAPPER_TIME_H
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 /*
  * Use 64bit timespec on kernels that have it, this makes 32bit arch
  * y2038 compliant.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,17,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,17,0))
 # define LTTNG_KERNEL_HAS_TIMESPEC64
 #endif
 

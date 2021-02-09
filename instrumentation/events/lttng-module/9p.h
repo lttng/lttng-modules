@@ -6,9 +6,9 @@
 #define LTTNG_TRACE_9P_H
 
 #include <probes/lttng-tracepoint-event.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0))
 LTTNG_TRACEPOINT_EVENT(9p_client_req,
 
 	TP_PROTO(struct p9_client *clnt, int8_t type, int tag),

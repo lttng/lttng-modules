@@ -6,7 +6,7 @@
 #define LTTNG_TRACE_SOCK_H
 
 #include <probes/lttng-tracepoint-event.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 #include <net/sock.h>
 
 LTTNG_TRACEPOINT_EVENT(sock_rcvqueue_full,
@@ -22,7 +22,7 @@ LTTNG_TRACEPOINT_EVENT(sock_rcvqueue_full,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,19,0))
 
 LTTNG_TRACEPOINT_EVENT(sock_exceed_buf_limit,
 
@@ -43,7 +43,7 @@ LTTNG_TRACEPOINT_EVENT(sock_exceed_buf_limit,
 	)
 )
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0))
 
 LTTNG_TRACEPOINT_EVENT(sock_exceed_buf_limit,
 
@@ -60,7 +60,7 @@ LTTNG_TRACEPOINT_EVENT(sock_exceed_buf_limit,
 	)
 )
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0)) */
 
 LTTNG_TRACEPOINT_EVENT(sock_exceed_buf_limit,
 
@@ -77,7 +77,7 @@ LTTNG_TRACEPOINT_EVENT(sock_exceed_buf_limit,
 	)
 )
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0)) */
 
 #endif /* LTTNG_TRACE_SOCK_H */
 

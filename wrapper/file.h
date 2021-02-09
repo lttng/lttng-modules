@@ -10,10 +10,10 @@
 #ifndef _LTTNG_WRAPPER_FILE_H
 #define _LTTNG_WRAPPER_FILE_H
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 #include <linux/file.h>
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0)
+#if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,19,0)
 
 static
 inline int lttng_get_unused_fd(void)
@@ -23,7 +23,7 @@ inline int lttng_get_unused_fd(void)
 
 #define lttng_f_dentry	f_path.dentry
 
-#else /* #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0) */
+#else /* #if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,19,0) */
 
 static
 inline int lttng_get_unused_fd(void)
@@ -33,6 +33,6 @@ inline int lttng_get_unused_fd(void)
 
 #define lttng_f_dentry	f_dentry
 
-#endif /* #else #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0) */
+#endif /* #else #if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,19,0) */
 
 #endif /* _LTTNG_WRAPPER_FILE_H */

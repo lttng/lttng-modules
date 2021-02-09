@@ -87,7 +87,7 @@ end:
 	return written;
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
 static const struct proc_ops lttng_test_filter_event_proc_ops = {
 	.proc_write = lttng_test_filter_event_write,
 };

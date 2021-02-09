@@ -3,18 +3,18 @@
 #define LTTNG_TRACE_KVM_MMU_H
 
 #include <probes/lttng-tracepoint-event.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0))
 #include <linux/trace_events.h>
-#else /* if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
+#else /* if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0)) */
 #include <linux/ftrace_event.h>
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0)) */
 
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM kvm_mmu
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,1,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,1,0) || \
 	LTTNG_RHEL_KERNEL_RANGE(4,18,0,147,0,0, 4,19,0,0,0,0))
 
 #define LTTNG_KVM_MMU_PAGE_FIELDS \
@@ -23,7 +23,7 @@
 	ctf_integer(__u32, root_count, (sp)->root_count) \
 	ctf_integer(bool, unsync, (sp)->unsync)
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,11,0))
 
 #define LTTNG_KVM_MMU_PAGE_FIELDS \
 	ctf_integer(unsigned long, mmu_valid_gen, (sp)->mmu_valid_gen) \
@@ -32,7 +32,7 @@
 	ctf_integer(__u32, root_count, (sp)->root_count) \
 	ctf_integer(bool, unsync, (sp)->unsync)
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,11,0)) */
 
 #define LTTNG_KVM_MMU_PAGE_FIELDS \
 	ctf_integer(__u64, gfn, (sp)->gfn) \
@@ -40,9 +40,9 @@
 	ctf_integer(__u32, root_count, (sp)->root_count) \
 	ctf_integer(bool, unsync, (sp)->unsync)
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,11,0)) */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,6,0))
 /*
  * A pagetable walk has started
  */
@@ -56,7 +56,7 @@ LTTNG_TRACEPOINT_EVENT(
 		ctf_integer(__u32, pferr, pferr)
 	)
 )
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,6,0)) */
 /*
  * A pagetable walk has started
  */
@@ -72,7 +72,7 @@ LTTNG_TRACEPOINT_EVENT(
 			| (!!fetch_fault << 4))
 	)
 )
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,6,0)) */
 
 /* We just walked a paging element */
 LTTNG_TRACEPOINT_EVENT(
@@ -163,7 +163,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_mmu_page_class, kvm_mmu_prepare_zap_page,
 	TP_ARGS(sp)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0))
 
 LTTNG_TRACEPOINT_EVENT_MAP(
 	mark_mmio_spte,
@@ -181,7 +181,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(
 	)
 )
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,11,0))
 
 LTTNG_TRACEPOINT_EVENT_MAP(
 	mark_mmio_spte,
@@ -199,7 +199,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(
 	)
 )
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,11,0)) */
 
 LTTNG_TRACEPOINT_EVENT_MAP(
 	mark_mmio_spte,
@@ -216,7 +216,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(
 	)
 )
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,11,0)) */
 
 LTTNG_TRACEPOINT_EVENT_MAP(
 	handle_mmio_page_fault,
@@ -233,7 +233,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0))
 LTTNG_TRACEPOINT_EVENT_MAP(
 	fast_page_fault,
 
@@ -253,7 +253,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(
 		ctf_integer(int, ret, ret)
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0) || \
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0) || \
 	LTTNG_KERNEL_RANGE(4,19,103, 4,20,0) || \
 	LTTNG_KERNEL_RANGE(5,4,19, 5,5,0) || \
 	LTTNG_KERNEL_RANGE(5,5,3, 5,6,0) || \

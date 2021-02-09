@@ -9,7 +9,7 @@
 #define _LTTNG_WRAPPER_COMPILER_H
 
 #include <linux/compiler.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 /*
  * Don't allow compiling with buggy compiler.
@@ -56,7 +56,7 @@
  * and remove calls to smp_read_barrier_depends which was dropped
  * in v5.9.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0))
 #define LTTNG_READ_ONCE(x)	READ_ONCE(x)
 #else
 #define LTTNG_READ_ONCE(x)			\

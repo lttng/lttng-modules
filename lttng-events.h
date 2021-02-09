@@ -10,7 +10,7 @@
 #ifndef _LTTNG_EVENTS_H
 #define _LTTNG_EVENTS_H
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 #include <linux/list.h>
 #include <linux/kprobes.h>
 #include <linux/kref.h>
@@ -175,7 +175,7 @@ union lttng_ctx_value {
  * lttng_ctx_field because cpu hotplug needs fixed-location addresses.
  */
 struct lttng_perf_counter_field {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 	struct lttng_cpuhp_node cpuhp_prepare;
 	struct lttng_cpuhp_node cpuhp_online;
 #else
@@ -738,7 +738,7 @@ int lttng_add_migratable_to_ctx(struct lttng_ctx **ctx)
 
 int lttng_add_callstack_to_ctx(struct lttng_ctx **ctx, int type);
 
-#if defined(CONFIG_PERF_EVENTS) && (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
+#if defined(CONFIG_PERF_EVENTS) && (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,33))
 int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  uint64_t config,
 				  const char *name,
@@ -887,7 +887,7 @@ int lttng_calibrate(struct lttng_kernel_calibrate *calibrate);
 extern const struct file_operations lttng_tracepoint_list_fops;
 extern const struct file_operations lttng_syscall_list_fops;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,35))
 #define TRACEPOINT_HAS_DATA_ARG
 #endif
 

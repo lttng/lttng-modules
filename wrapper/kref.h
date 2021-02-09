@@ -16,24 +16,24 @@
 
 #include <linux/kref.h>
 #include <linux/rculist.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 /*
  * lttng_kref_get: get reference count, checking for overflow.
  *
  * Return 1 if reference is taken, 0 otherwise (overflow).
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0))
 static inline int lttng_kref_get(struct kref *kref)
 {
 	kref_get(kref);
 	return 1;
 }
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0)) */
 static inline int lttng_kref_get(struct kref *kref)
 {
 	return atomic_add_unless(&kref->refcount, 1, INT_MAX);
 }
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0)) */
 
 #endif /* _LTTNG_WRAPPER_KREF_H */

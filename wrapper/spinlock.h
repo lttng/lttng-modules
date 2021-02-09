@@ -8,9 +8,9 @@
 #ifndef _LTTNG_WRAPPER_SPINLOCK_H
 #define _LTTNG_WRAPPER_SPINLOCK_H
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,33))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(2,6,33))
 
 #include <linux/string.h>
 

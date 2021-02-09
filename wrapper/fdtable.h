@@ -8,11 +8,11 @@
 #ifndef _LTTNG_WRAPPER_FDTABLE_H
 #define _LTTNG_WRAPPER_FDTABLE_H
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 #include <linux/fdtable.h>
 #include <linux/sched.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,11,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
 static inline
 struct file *lttng_lookup_fd_rcu(unsigned int fd)
 {
@@ -26,7 +26,7 @@ struct file *lttng_lookup_fd_rcu(unsigned int fd)
 }
 #endif
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,7,0))
 
 int lttng_iterate_fd(struct files_struct *files,
 		unsigned int first,
@@ -44,7 +44,7 @@ int lttng_iterate_fd(struct files_struct *files,
 
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0))
 
 static inline bool lttng_close_on_exec(int fd, const struct fdtable *fdt)
 {
