@@ -9,9 +9,9 @@
 #define _LTTNG_WRAPPER_KPROBES_H
 
 #include <linux/kprobes.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,11,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
 
 static inline
 struct kretprobe *lttng_get_kretprobe(struct kretprobe_instance *ri)
@@ -19,7 +19,7 @@ struct kretprobe *lttng_get_kretprobe(struct kretprobe_instance *ri)
 	return get_kretprobe(ri);
 }
 
-#else /* LINUX_VERSION_CODE >= KERNEL_VERSION(5,11,0) */
+#else /* LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0) */
 
 static inline
 struct kretprobe *lttng_get_kretprobe(struct kretprobe_instance *ri)
@@ -27,6 +27,6 @@ struct kretprobe *lttng_get_kretprobe(struct kretprobe_instance *ri)
 	return ri->rp;
 }
 
-#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(5,11,0) */
+#endif /* LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0) */
 
 #endif /* _LTTNG_WRAPPER_KPROBES_H */

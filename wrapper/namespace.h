@@ -10,15 +10,15 @@
 #ifndef _LTTNG_WRAPPER_NAMESPACE_H
 #define _LTTNG_WRAPPER_NAMESPACE_H
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,19,0))
 #define lttng_ns_inum ns.inum
 #else
 #define lttng_ns_inum proc_inum
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 #define lttng_user_ns_parent parent
 #else
 #define lttng_user_ns_parent creator->user_ns

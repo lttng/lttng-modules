@@ -259,7 +259,7 @@ void channel_backend_reset(struct channel_backend *chanb)
 	chanb->start_tsc = config->cb.ring_buffer_clock_read(chan);
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 
 /*
  * No need to implement a "dead" callback to do a buffer switch here,
@@ -291,7 +291,7 @@ int lttng_cpuhp_rb_backend_prepare(unsigned int cpu,
 }
 EXPORT_SYMBOL_GPL(lttng_cpuhp_rb_backend_prepare);
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
 #ifdef CONFIG_HOTPLUG_CPU
 
@@ -341,7 +341,7 @@ int lib_ring_buffer_cpu_hp_callback(struct notifier_block *nb,
 
 #endif
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
 /**
  * channel_backend_init - initialize a channel backend
@@ -419,13 +419,13 @@ int channel_backend_init(struct channel_backend *chanb,
 		if (!chanb->buf)
 			goto free_cpumask;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 		chanb->cpuhp_prepare.component = LTTNG_RING_BUFFER_BACKEND;
 		ret = cpuhp_state_add_instance(lttng_rb_hp_prepare,
 			&chanb->cpuhp_prepare.node);
 		if (ret)
 			goto free_bufs;
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
 		{
 			/*
@@ -462,7 +462,7 @@ int channel_backend_init(struct channel_backend *chanb,
 			}
 #endif
 		}
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 	} else {
 		chanb->buf = kzalloc(sizeof(struct lib_ring_buffer), GFP_KERNEL);
 		if (!chanb->buf)
@@ -477,18 +477,18 @@ int channel_backend_init(struct channel_backend *chanb,
 
 free_bufs:
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 		/*
 		 * Teardown of lttng_rb_hp_prepare instance
 		 * on "add" error is handled within cpu hotplug,
 		 * no teardown to do from the caller.
 		 */
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 #ifdef CONFIG_HOTPLUG_CPU
 		put_online_cpus();
 		unregister_hotcpu_notifier(&chanb->cpu_hp_notifier);
 #endif
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 		for_each_possible_cpu(i) {
 			struct lib_ring_buffer *buf =
 				per_cpu_ptr(chanb->buf, i);
@@ -517,15 +517,15 @@ void channel_backend_unregister_notifiers(struct channel_backend *chanb)
 	const struct lib_ring_buffer_config *config = &chanb->config;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 		int ret;
 
 		ret = cpuhp_state_remove_instance(lttng_rb_hp_prepare,
 				&chanb->cpuhp_prepare.node);
 		WARN_ON(ret);
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 		unregister_hotcpu_notifier(&chanb->cpu_hp_notifier);
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 	}
 }
 

@@ -7,7 +7,7 @@
 
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/workqueue.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 #ifndef _TRACE_WORKQUEUE_DEF_
 #define _TRACE_WORKQUEUE_DEF_
@@ -40,7 +40,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(workqueue_work,
  */
 LTTNG_TRACEPOINT_EVENT(workqueue_queue_work,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,9,0))
 	TP_PROTO(unsigned int req_cpu, struct pool_workqueue *pwq,
 		 struct work_struct *work),
 
@@ -92,7 +92,7 @@ LTTNG_TRACEPOINT_EVENT(workqueue_execute_start,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
 /**
  * workqueue_execute_end - called immediately after the workqueue callback
  * @work:	pointer to struct work_struct

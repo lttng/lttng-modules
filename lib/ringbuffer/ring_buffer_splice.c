@@ -12,7 +12,7 @@
 
 #include <linux/module.h>
 #include <linux/fs.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 #include <wrapper/splice.h>
 #include <wrapper/ringbuffer/backend.h>
@@ -42,20 +42,20 @@ static void lib_ring_buffer_pipe_buf_release(struct pipe_inode_info *pipe,
 	__free_page(pbuf->page);
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,8,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,8,0))
 static const struct pipe_buf_operations ring_buffer_pipe_buf_ops = {
 	.release = lib_ring_buffer_pipe_buf_release,
 	.try_steal = generic_pipe_buf_try_steal,
 	.get = generic_pipe_buf_get
 };
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(5,1,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,1,0))
 static const struct pipe_buf_operations ring_buffer_pipe_buf_ops = {
 	.confirm = generic_pipe_buf_confirm,
 	.release = lib_ring_buffer_pipe_buf_release,
 	.steal = generic_pipe_buf_steal,
 	.get = generic_pipe_buf_get
 };
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,15,0))
 static const struct pipe_buf_operations ring_buffer_pipe_buf_ops = {
 	.can_merge = 0,
 	.confirm = generic_pipe_buf_confirm,
@@ -103,7 +103,7 @@ static int subbuf_splice_actor(struct file *in,
 		.pages = pages,
 		.nr_pages = 0,
 		.partial = partial,
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,12,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(4,12,0))
 		.flags = flags,
 #endif
 		.ops = &ring_buffer_pipe_buf_ops,

@@ -12,7 +12,7 @@
 #ifndef _LTTNG_WRAPPER_VMALLOC_H
 #define _LTTNG_WRAPPER_VMALLOC_H
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 #include <linux/vmalloc.h>
 #include <linux/mm.h>
 
@@ -22,7 +22,7 @@
 #include <wrapper/kallsyms.h>
 #include <lttng-kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,8,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,8,0))
 
 /*
  * wrapper_vmalloc_sync_mappings was removed in v5.8, the vmalloc mappings
@@ -32,7 +32,7 @@ static inline
 void wrapper_vmalloc_sync_mappings(void)
 {}
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0) \
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0) \
   || LTTNG_KERNEL_RANGE(5,5,12, 5,6,0)            \
   || LTTNG_KERNEL_RANGE(5,4,28, 5,5,0)            \
   || LTTNG_KERNEL_RANGE(5,2,37, 5,3,0)            \
@@ -77,7 +77,7 @@ void __canary__vmalloc_sync_mappings(void)
 	vmalloc_sync_mappings();
 }
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0)) */
 
 /*
  * Map vmalloc_sync_mappings to vmalloc_sync_all() on kernels before 5.6.
@@ -115,11 +115,11 @@ void __canary__vmalloc_sync_all(void)
 	vmalloc_sync_all();
 }
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0)) */
 
 #else /* CONFIG_KALLSYMS */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,8,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,8,0))
 
 /*
  * wrapper_vmalloc_sync_mappings was removed in v5.8, the vmalloc mappings
@@ -129,7 +129,7 @@ static inline
 void wrapper_vmalloc_sync_mappings(void)
 {}
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0) \
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0) \
   || LTTNG_KERNEL_RANGE(5,5,12, 5,6,0)            \
   || LTTNG_KERNEL_RANGE(5,4,28, 5,5,0)            \
   || LTTNG_KERNEL_RANGE(5,2,37, 5,3,0)            \
@@ -147,7 +147,7 @@ void wrapper_vmalloc_sync_mappings(void)
 	return vmalloc_sync_mappings();
 }
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0)) */
 
 static inline
 void wrapper_vmalloc_sync_mappings(void)
@@ -155,11 +155,11 @@ void wrapper_vmalloc_sync_mappings(void)
 	return vmalloc_sync_all();
 }
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0)) */
 
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,12,0))
 static inline
 void *lttng_kvmalloc_node(unsigned long size, gfp_t flags, int node)
 {
@@ -212,7 +212,7 @@ void print_vmalloc_node_range_warning(void)
 	printk_once(KERN_WARNING "Please rebuild your kernel with CONFIG_KALLSYMS enabled.\n");
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,0,0))
 
 /*
  * kallsyms wrapper of __vmalloc_node with a fallback to kmalloc_node.
@@ -262,7 +262,7 @@ void *__canary____lttng_vmalloc_node_range(unsigned long size, unsigned long ali
 			vm_flags, node, caller);
 }
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,6,0))
 
 /*
  * kallsyms wrapper of __vmalloc_node with a fallback to kmalloc_node.
@@ -310,7 +310,7 @@ void *__canary____lttng_vmalloc_node_range(unsigned long size, unsigned long ali
 			node, caller);
 }
 
-#else /* (LINUX_VERSION_CODE >= KERNEL_VERSION(3,6,0)) */
+#else /* (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,6,0)) */
 
 /*
  * kallsyms wrapper of __vmalloc_node with a fallback to kmalloc_node.

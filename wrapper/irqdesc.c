@@ -13,8 +13,8 @@
 #include <linux/module.h>
 
 #if (defined(CONFIG_KALLSYMS) && \
-	((LINUX_VERSION_CODE >= KERNEL_VERSION(5,11,0)) || \
-	 (LINUX_VERSION_CODE < KERNEL_VERSION(3,4,0))))
+	((LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0)) || \
+	 (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,4,0))))
 
 #include <linux/kallsyms.h>
 #include <linux/interrupt.h>

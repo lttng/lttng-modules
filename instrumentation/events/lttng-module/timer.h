@@ -11,17 +11,17 @@
 #define _TRACE_TIMER_DEF_
 #include <linux/hrtimer.h>
 #include <linux/timer.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 struct timer_list;
 
 #endif /* _TRACE_TIMER_DEF_ */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 #define lttng_ktime_get_tv64(kt)	(kt)
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 #define lttng_ktime_get_tv64(kt)	((kt).tv64)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
 LTTNG_TRACEPOINT_EVENT_CLASS(timer_class,
 
@@ -45,7 +45,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(timer_class, timer_init,
 	TP_ARGS(timer)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0) || \
 	LTTNG_RHEL_KERNEL_RANGE(3,10,0,957,0,0, 3,11,0,0,0,0))
 /**
  * timer_start - called when the timer is started
@@ -68,7 +68,7 @@ LTTNG_TRACEPOINT_EVENT(timer_start,
 		ctf_integer(unsigned int, flags, flags)
 	)
 )
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0)) */
 /**
  * timer_start - called when the timer is started
  * @timer:	pointer to struct timer_list
@@ -87,9 +87,9 @@ LTTNG_TRACEPOINT_EVENT(timer_start,
 		ctf_integer(unsigned long, now, jiffies)
 	)
 )
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0)) */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,2,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,2,0))
 /**
  * timer_expire_entry - called immediately before the timer callback
  * @timer:	pointer to struct timer_list
@@ -184,7 +184,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_init,
  * hrtimer_start - called when the hrtimer is started
  * @timer: pointer to struct hrtimer
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,16,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,16,0) || \
 	LTTNG_RT_KERNEL_RANGE(4,14,0,0, 4,15,0,0))
 LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_start,
 
@@ -294,7 +294,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(timer_hrtimer_class, hrtimer_cancel,
  *		zero, otherwise it is started
  * @expires:	the itimers expiry time
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,5,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,5,0))
 LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
 
 	timer_itimer_state,
@@ -313,7 +313,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
 		ctf_integer(long, interval_nsec, value->it_interval.tv_nsec)
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0))
 LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
 
 	timer_itimer_state,
@@ -332,7 +332,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
 		ctf_integer(long, interval_usec, value->it_interval.tv_usec)
 	)
 )
-#else /* if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
+#else /* if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0)) */
 LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
 
 	timer_itimer_state,
@@ -351,7 +351,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
 		ctf_integer(long, interval_usec, value->it_interval.tv_usec)
 	)
 )
-#endif /* #else (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
+#endif /* #else (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0)) */
 
 /**
  * itimer_expire - called when itimer expires
@@ -359,7 +359,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(itimer_state,
  * @pid:	pid of the process which owns the timer
  * @now:	current time, used to calculate the latency of itimer
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0))
 LTTNG_TRACEPOINT_EVENT_MAP(itimer_expire,
 
 	timer_itimer_expire,
@@ -374,7 +374,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(itimer_expire,
 		ctf_integer(unsigned long long, now, now)
 	)
 )
-#else /* if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
+#else /* if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0)) */
 LTTNG_TRACEPOINT_EVENT_MAP(itimer_expire,
 
 	timer_itimer_expire,
@@ -389,7 +389,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(itimer_expire,
 		ctf_integer(cputime_t, now, now)
 	)
 )
-#endif /* #else (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
+#endif /* #else (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0)) */
 
 #endif /*  LTTNG_TRACE_TIMER_H */
 

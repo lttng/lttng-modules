@@ -7,7 +7,7 @@
 
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/jbd.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 LTTNG_TRACEPOINT_EVENT(jbd_checkpoint,
 
@@ -29,7 +29,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(jbd_commit,
 
 	TP_FIELDS(
 		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
 		ctf_integer(char, sync_commit, commit_transaction->t_synchronous_commit)
 #endif
 		ctf_integer(int, transaction, commit_transaction->t_tid)
@@ -72,7 +72,7 @@ LTTNG_TRACEPOINT_EVENT(jbd_drop_transaction,
 
 	TP_FIELDS(
 		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
 		ctf_integer(char, sync_commit, commit_transaction->t_synchronous_commit)
 #endif
 		ctf_integer(int, transaction, commit_transaction->t_tid)
@@ -86,7 +86,7 @@ LTTNG_TRACEPOINT_EVENT(jbd_end_commit,
 
 	TP_FIELDS(
 		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
 		ctf_integer(char, sync_commit, commit_transaction->t_synchronous_commit)
 #endif
 		ctf_integer(int, transaction, commit_transaction->t_tid)
@@ -101,7 +101,7 @@ LTTNG_TRACEPOINT_EVENT(jbd_do_submit_data,
 
 	TP_FIELDS(
 		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
 		ctf_integer(char, sync_commit, commit_transaction->t_synchronous_commit)
 #endif
 		ctf_integer(int, transaction, commit_transaction->t_tid)
@@ -124,7 +124,7 @@ LTTNG_TRACEPOINT_EVENT(jbd_cleanup_journal_tail,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT_MAP(journal_write_superblock,
 
 	jbd_journal_write_superblock,

@@ -3,7 +3,7 @@
 #define LTTNG_TRACE_IRQ_VECTORS_H
 
 #include <probes/lttng-tracepoint-event.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM x86_irq_vectors

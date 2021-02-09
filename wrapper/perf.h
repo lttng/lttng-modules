@@ -12,7 +12,7 @@
 
 #ifdef CONFIG_PERF_EVENTS
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0))
 static inline struct perf_event *
 wrapper_perf_event_create_kernel_counter(struct perf_event_attr *attr,
 				int cpu,
@@ -21,7 +21,7 @@ wrapper_perf_event_create_kernel_counter(struct perf_event_attr *attr,
 {
 	return perf_event_create_kernel_counter(attr, cpu, task, callback, NULL);
 }
-#else /* (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0)) */
+#else /* (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0)) */
 static inline struct perf_event *
 wrapper_perf_event_create_kernel_counter(struct perf_event_attr *attr,
 				int cpu,
@@ -30,7 +30,7 @@ wrapper_perf_event_create_kernel_counter(struct perf_event_attr *attr,
 {
 	return perf_event_create_kernel_counter(attr, cpu, task, callback);
 }
-#endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0)) */
+#endif /* (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0)) */
 
 #endif /* CONFIG_PERF_EVENTS */
 

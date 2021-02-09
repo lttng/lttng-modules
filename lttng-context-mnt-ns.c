@@ -20,7 +20,7 @@
 #include <lttng-tracer.h>
 
 #if !defined(LTTNG_MNT_NS_MISSING_HEADER) && \
-	(LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 
 #include <../fs/mount.h>
 

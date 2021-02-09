@@ -11,7 +11,7 @@
 #include <linux/fs.h>
 #include <lttng-kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0))
 
 static inline
 ssize_t lttng_kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
@@ -19,7 +19,7 @@ ssize_t lttng_kernel_read(struct file *file, void *buf, size_t count, loff_t *po
 	return kernel_read(file, buf, count, pos);
 }
 
-#else /* LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0) */
+#else /* LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) */
 
 static inline
 ssize_t lttng_kernel_read(struct file *file, void *buf, size_t count, loff_t *pos)
@@ -38,6 +38,6 @@ ssize_t lttng_kernel_read(struct file *file, void *buf, size_t count, loff_t *po
 	return len;
 }
 
-#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0) */
+#endif /* LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) */
 
 #endif /* _LTTNG_WRAPPER_FS_H */
