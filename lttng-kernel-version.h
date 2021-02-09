@@ -106,13 +106,13 @@
 		LTTNG_DEBIAN_KERNEL_VERSION(a_high, b_high, c_high, d_high, e_high, f_high))
 
 #define LTTNG_RHEL_KERNEL_VERSION(a, b, c, d, e, f) \
-	(((LTTNG_KERNEL_VERSION(a, b, c)) * 10000000ULL) + ((d) * 10000) + ((e) * 100) + (f))
+	(((LTTNG_KERNEL_VERSION(a, b, c)) * 100000000ULL) + ((d) * 10000) + ((e) * 100) + (f))
 
 /* RHEL */
 
 #ifdef RHEL_API_VERSION
 #define LTTNG_RHEL_VERSION_CODE \
-	((LTTNG_LINUX_VERSION_CODE * 10000000ULL) + RHEL_API_VERSION)
+	((LTTNG_LINUX_VERSION_CODE * 100000000ULL) + RHEL_API_VERSION)
 #else
 #define LTTNG_RHEL_VERSION_CODE		0
 #endif
