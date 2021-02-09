@@ -127,11 +127,11 @@
 /* SUSE Linux enterprise */
 
 #define LTTNG_SLE_KERNEL_VERSION(a, b, c, d, e, f) \
-	(((LTTNG_KERNEL_VERSION(a, b, c)) * 10000000ULL) + ((d) * 10000) + ((e) * 100) + (f))
+	(((LTTNG_KERNEL_VERSION(a, b, c)) * 100000000ULL) + ((d) * 100000) + ((e) * 100) + (f))
 
 #ifdef SLE_API_VERSION
 #define LTTNG_SLE_VERSION_CODE \
-	((LTTNG_LINUX_VERSION_CODE * 10000000ULL) + SLE_API_VERSION)
+	((LTTNG_LINUX_VERSION_CODE * 100000000ULL) + SLE_API_VERSION)
 #else
 #define LTTNG_SLE_VERSION_CODE 	0
 #endif
