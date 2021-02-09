@@ -52,19 +52,22 @@
  * of LINUX_VERSION_CODE from the kernel headers and allocate 16bits.
  * Otherwise, keep using the version code from the headers to minimise the
  * behavior change and avoid regressions.
+ *
+ * Cast the result to uint64_t to prevent overflowing when we append distro
+ * specific version information.
  */
 #if (LTTNG_LINUX_PATCH >= 256)
 
 #define LTTNG_KERNEL_VERSION(a, b, c) \
-	(((a) << 24) + ((b) << 16) + (c))
+	((((a) << 24) + ((b) << 16) + (c)) * 1ULL)
 
 #define LTTNG_LINUX_VERSION_CODE \
 	LTTNG_KERNEL_VERSION(LTTNG_LINUX_MAJOR, LTTNG_LINUX_MINOR, LTTNG_LINUX_PATCH)
 
 #else
 
-#define LTTNG_KERNEL_VERSION(a, b, c) KERNEL_VERSION(a, b, c)
-#define LTTNG_LINUX_VERSION_CODE LINUX_VERSION_CODE
+#define LTTNG_KERNEL_VERSION(a, b, c) (KERNEL_VERSION(a, b, c) * 1ULL)
+#define LTTNG_LINUX_VERSION_CODE (LINUX_VERSION_CODE * 1ULL)
 
 #endif
 
