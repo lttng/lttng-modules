@@ -13,9 +13,6 @@
 #include <linux/version.h>
 #include <generated/utsrelease.h>
 
-#define LTTNG_KERNEL_VERSION(a, b, c) KERNEL_VERSION(a, b, c)
-#define LTTNG_LINUX_VERSION_CODE LINUX_VERSION_CODE
-
 /*
  * The following defines are extracted from the toplevel Linux Makefile and
  * passed on the command line -with '-D'.
