@@ -23,7 +23,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 #include <linux/irqflags.h>
 
 #ifdef CONFIG_X86

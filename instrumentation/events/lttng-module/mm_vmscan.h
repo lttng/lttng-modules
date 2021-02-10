@@ -8,7 +8,7 @@
 #include <linux/types.h>
 #include <linux/mm.h>
 #include <linux/memcontrol.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 #ifndef _TRACE_VMSCAN_DEF
 #define _TRACE_VMSCAN_DEF
@@ -18,14 +18,14 @@
 #define RECLAIM_WB_SYNC		0x0004u /* Unused, all reclaim async */
 #define RECLAIM_WB_ASYNC	0x0008u
 
-#if ((LINUX_VERSION_CODE <= KERNEL_VERSION(3,0,38)) || \
+#if ((LTTNG_LINUX_VERSION_CODE <= LTTNG_KERNEL_VERSION(3,0,38)) || \
 	LTTNG_KERNEL_RANGE(3,1,0, 3,2,0))
 typedef int isolate_mode_t;
 #endif
 
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,2,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,2,0))
 
 #include <linux/mm_inline.h>
 
@@ -34,7 +34,7 @@ typedef int isolate_mode_t;
 	(RECLAIM_WB_ASYNC) \
 	)
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,5,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,5,0))
 
 #include <linux/mm_inline.h>
 
@@ -62,7 +62,7 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_kswapd_sleep,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,8,0))
 
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_kswapd_wake,
 
@@ -93,7 +93,7 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_kswapd_wake,
 
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,17,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,17,0))
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_wakeup_kswapd,
 
 	TP_PROTO(int nid, int zid, int order, gfp_t gfp_flags),
@@ -122,7 +122,7 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_wakeup_kswapd,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,2,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,2,0))
 
 LTTNG_TRACEPOINT_EVENT_CLASS(mm_vmscan_direct_reclaim_begin_template,
 
@@ -157,7 +157,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_direct_reclaim_begin_template, mm_vmsc
 	TP_ARGS(order, gfp_flags)
 )
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,8,0))
 
 LTTNG_TRACEPOINT_EVENT_CLASS(mm_vmscan_direct_reclaim_begin_template,
 
@@ -264,7 +264,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_direct_reclaim_end_template, mm_vmscan
 	TP_ARGS(nr_reclaimed)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,16,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,16,0))
 LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_start,
 
 	mm_vmscan_shrink_slab_start,
@@ -289,7 +289,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_start,
 		ctf_integer(int, priority, priority)
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0))
 LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_start,
 
 	mm_vmscan_shrink_slab_start,
@@ -304,11 +304,11 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_start,
 
 	TP_FIELDS(
 		ctf_integer_hex(struct shrinker *, shr, shr)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,0))
 		ctf_integer_hex(void *, shrink, shr->scan_objects)
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,0)) */
 		ctf_integer_hex(void *, shrink, shr->shrink)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,0)) */
 		ctf_integer(long, nr_objects_to_shrink, nr_objects_to_shrink)
 		ctf_integer(gfp_t, gfp_flags, sc->gfp_mask)
 		ctf_integer(unsigned long, pgs_scanned, pgs_scanned)
@@ -320,7 +320,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_start,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,16,0))
 LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_end,
 
 	mm_vmscan_shrink_slab_end,
@@ -341,7 +341,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_end,
 		ctf_integer(long, total_scan, total_scan)
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0))
 LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_end,
 
 	mm_vmscan_shrink_slab_end,
@@ -353,11 +353,11 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_end,
 
 	TP_FIELDS(
 		ctf_integer_hex(struct shrinker *, shr, shr)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,0))
 		ctf_integer_hex(void *, shrink, shr->scan_objects)
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,0)) */
 		ctf_integer_hex(void *, shrink, shr->shrink)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,0)) */
 		ctf_integer(long, unused_scan, unused_scan_cnt)
 		ctf_integer(long, new_scan, new_scan_cnt)
 		ctf_integer(int, retval, shrinker_retval)
@@ -366,7 +366,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_end,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0))
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_isolate,
 
 	TP_PROTO(int classzone_idx,
@@ -394,7 +394,7 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_isolate,
 		ctf_integer(int, lru, lru)
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,8,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(mm_vmscan_lru_isolate_template,
 
 	TP_PROTO(int classzone_idx,
@@ -461,12 +461,12 @@ LTTNG_TRACEPOINT_EVENT_CLASS(mm_vmscan_lru_isolate_template,
 		unsigned long nr_requested,
 		unsigned long nr_scanned,
 		unsigned long nr_taken,
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
 		unsigned long nr_lumpy_taken,
 		unsigned long nr_lumpy_dirty,
 		unsigned long nr_lumpy_failed,
 #endif
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,3,0))
 		isolate_mode_t isolate_mode
 #else
 		isolate_mode_t isolate_mode,
@@ -475,10 +475,10 @@ LTTNG_TRACEPOINT_EVENT_CLASS(mm_vmscan_lru_isolate_template,
 	),
 
 	TP_ARGS(order, nr_requested, nr_scanned, nr_taken,
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
 		nr_lumpy_taken, nr_lumpy_dirty, nr_lumpy_failed,
 #endif
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,3,0))
 		isolate_mode
 #else
 		isolate_mode, file
@@ -491,13 +491,13 @@ LTTNG_TRACEPOINT_EVENT_CLASS(mm_vmscan_lru_isolate_template,
 		ctf_integer(unsigned long, nr_requested, nr_requested)
 		ctf_integer(unsigned long, nr_scanned, nr_scanned)
 		ctf_integer(unsigned long, nr_taken, nr_taken)
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
 		ctf_integer(unsigned long, nr_lumpy_taken, nr_lumpy_taken)
 		ctf_integer(unsigned long, nr_lumpy_dirty, nr_lumpy_dirty)
 		ctf_integer(unsigned long, nr_lumpy_failed, nr_lumpy_failed)
 #endif
 		ctf_integer(isolate_mode_t, isolate_mode, isolate_mode)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,3,0))
 		ctf_integer(int, file, file)
 #endif
 	)
@@ -509,12 +509,12 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_lru_isolate_template, mm_vmscan_lru_is
 		unsigned long nr_requested,
 		unsigned long nr_scanned,
 		unsigned long nr_taken,
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
 		unsigned long nr_lumpy_taken,
 		unsigned long nr_lumpy_dirty,
 		unsigned long nr_lumpy_failed,
 #endif
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,3,0))
 		isolate_mode_t isolate_mode
 #else
 		isolate_mode_t isolate_mode,
@@ -523,10 +523,10 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_lru_isolate_template, mm_vmscan_lru_is
 	),
 
 	TP_ARGS(order, nr_requested, nr_scanned, nr_taken,
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
 		nr_lumpy_taken, nr_lumpy_dirty, nr_lumpy_failed,
 #endif
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,3,0))
 		isolate_mode
 #else
 		isolate_mode, file
@@ -541,12 +541,12 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_lru_isolate_template, mm_vmscan_memcg_
 		unsigned long nr_requested,
 		unsigned long nr_scanned,
 		unsigned long nr_taken,
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
 		unsigned long nr_lumpy_taken,
 		unsigned long nr_lumpy_dirty,
 		unsigned long nr_lumpy_failed,
 #endif
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,3,0))
 		isolate_mode_t isolate_mode
 #else
 		isolate_mode_t isolate_mode,
@@ -555,10 +555,10 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_lru_isolate_template, mm_vmscan_memcg_
 	),
 
 	TP_ARGS(order, nr_requested, nr_scanned, nr_taken,
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
 		nr_lumpy_taken, nr_lumpy_dirty, nr_lumpy_failed,
 #endif
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,3,0))
 		isolate_mode
 #else
 		isolate_mode, file
@@ -567,7 +567,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(mm_vmscan_lru_isolate_template, mm_vmscan_memcg_
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,2,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,2,0))
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_writepage,
 
 	TP_PROTO(struct page *page),
@@ -580,7 +580,7 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_writepage,
 				page_is_file_cache(page)))
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,5,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,5,0))
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_writepage,
 
 	TP_PROTO(struct page *page),
@@ -607,7 +607,7 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_writepage,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,2,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,2,0))
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 
 	TP_PROTO(int nid,
@@ -632,7 +632,7 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 		ctf_integer(int, reclaim_flags, trace_reclaim_flags(file))
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,17,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,17,0))
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 
 	TP_PROTO(int nid,
@@ -656,7 +656,7 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 		ctf_integer(int, reclaim_flags, trace_shrink_flags(file))
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0))
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 
 	TP_PROTO(int nid,
@@ -686,7 +686,7 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 		ctf_integer(int, reclaim_flags, trace_shrink_flags(file))
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,8,0))
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 
 	TP_PROTO(int nid,
@@ -703,7 +703,7 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 		ctf_integer(int, reclaim_flags, trace_shrink_flags(file))
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,5,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,5,0))
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 
 	TP_PROTO(struct zone *zone,
@@ -721,7 +721,7 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 		ctf_integer(int, reclaim_flags, trace_shrink_flags(file))
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,37))
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 
 	TP_PROTO(int nid, int zid,
@@ -741,7 +741,7 @@ LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_shrink_inactive,
 )
 #endif
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT_MAP(replace_swap_token,
 
 	mm_vmscan_replace_swap_token,

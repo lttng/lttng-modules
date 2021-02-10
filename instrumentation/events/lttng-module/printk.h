@@ -5,9 +5,9 @@
 #define LTTNG_TRACE_PRINTK_H
 
 #include <probes/lttng-tracepoint-event.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,10,0))
 
 LTTNG_TRACEPOINT_EVENT_MAP(console,
 
@@ -22,7 +22,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(console,
 	)
 )
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 
 LTTNG_TRACEPOINT_EVENT_MAP(console,
 
@@ -39,7 +39,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(console,
 	)
 )
 
-#else /* (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0)) */
+#else /* (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0)) */
 
 LTTNG_TRACEPOINT_EVENT_MAP(console,
 

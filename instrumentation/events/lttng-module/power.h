@@ -6,9 +6,9 @@
 
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/ktime.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,38))
 LTTNG_TRACEPOINT_EVENT_CLASS(power_cpu,
 
 	TP_PROTO(unsigned int state, unsigned int cpu_id),
@@ -60,7 +60,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(machine_suspend,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(power_wakeup_source,
 
 	TP_PROTO(const char *name, unsigned int state),
@@ -92,7 +92,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(power_wakeup_source, wakeup_source_deactivat
 )
 #endif
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,38))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(2,6,38))
 #undef CONFIG_EVENT_POWER_TRACING_DEPRECATED
 #define CONFIG_EVENT_POWER_TRACING_DEPRECATED
 #define _PWR_EVENT_AVOID_DOUBLE_DEFINING_DEPRECATED
@@ -106,7 +106,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(power_wakeup_source, wakeup_source_deactivat
  */
 LTTNG_TRACEPOINT_EVENT_CLASS(power,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,36))
 	TP_PROTO(unsigned int type, unsigned int state, unsigned int cpu_id),
 
 	TP_ARGS(type, state, cpu_id),
@@ -119,7 +119,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(power,
 	TP_FIELDS(
 		ctf_integer(u64, type, type)
 		ctf_integer(u64, state, state)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,36))
 		ctf_integer(u64, cpu_id, cpu_id)
 #endif
 	)
@@ -127,7 +127,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(power,
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(power, power_start,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,36))
 	TP_PROTO(unsigned int type, unsigned int state, unsigned int cpu_id),
 
 	TP_ARGS(type, state, cpu_id)
@@ -140,7 +140,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(power, power_start,
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(power, power_frequency,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,36))
 	TP_PROTO(unsigned int type, unsigned int state, unsigned int cpu_id),
 
 	TP_ARGS(type, state, cpu_id)
@@ -153,7 +153,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(power, power_frequency,
 
 LTTNG_TRACEPOINT_EVENT(power_end,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,36))
 	TP_PROTO(unsigned int cpu_id),
 
 	TP_ARGS(cpu_id),
@@ -164,7 +164,7 @@ LTTNG_TRACEPOINT_EVENT(power_end,
 #endif
 
 	TP_FIELDS(
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,36))
 		ctf_integer(u64, cpu_id, cpu_id)
 #else
 		ctf_integer(u64, dummy, 0xffff)
@@ -197,7 +197,7 @@ enum {
    events get removed */
 static inline void trace_power_start(u64 type, u64 state, u64 cpuid) {};
 static inline void trace_power_end(u64 cpuid) {};
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0))
 static inline void trace_power_start_rcuidle(u64 type, u64 state, u64 cpuid) {};
 static inline void trace_power_end_rcuidle(u64 cpuid) {};
 #endif
@@ -206,7 +206,7 @@ static inline void trace_power_frequency(u64 type, u64 state, u64 cpuid) {};
 
 #endif /* CONFIG_EVENT_POWER_TRACING_DEPRECATED */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,37))
 /*
  * The clock events are used for clock enable/disable and for
  *  clock rate change

@@ -351,7 +351,7 @@ void lib_ring_buffer_iterator_init(struct channel *chan, struct lib_ring_buffer 
 		list_add(&buf->iter.empty_node, &chan->iter.empty_head);
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 
 int lttng_cpuhp_rb_iter_online(unsigned int cpu,
 		struct lttng_cpuhp_node *node)
@@ -368,7 +368,7 @@ int lttng_cpuhp_rb_iter_online(unsigned int cpu,
 }
 EXPORT_SYMBOL_GPL(lttng_cpuhp_rb_iter_online);
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
 #ifdef CONFIG_HOTPLUG_CPU
 static
@@ -400,7 +400,7 @@ int channel_iterator_cpu_hotplug(struct notifier_block *nb,
 }
 #endif
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
 int channel_iterator_init(struct channel *chan)
 {
@@ -417,13 +417,13 @@ int channel_iterator_init(struct channel *chan)
 		if (ret)
 			return ret;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 		chan->cpuhp_iter_online.component = LTTNG_RING_BUFFER_ITER;
 		ret = cpuhp_state_add_instance(lttng_rb_hp_online,
 			&chan->cpuhp_iter_online.node);
 		if (ret)
 			return ret;
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 		{
 			int cpu;
 
@@ -452,7 +452,7 @@ int channel_iterator_init(struct channel *chan)
 			}
 #endif
 		}
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 	} else {
 		buf = channel_get_ring_buffer(config, chan, 0);
 		lib_ring_buffer_iterator_init(chan, buf);
@@ -465,7 +465,7 @@ void channel_iterator_unregister_notifiers(struct channel *chan)
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 		{
 			int ret;
 
@@ -473,10 +473,10 @@ void channel_iterator_unregister_notifiers(struct channel *chan)
 				&chan->cpuhp_iter_online.node);
 			WARN_ON(ret);
 		}
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 		chan->hp_iter_enable = 0;
 		unregister_cpu_notifier(&chan->hp_iter_notifier);
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 	}
 }
 

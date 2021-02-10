@@ -21,9 +21,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,6,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,6,0))
 
 #include <linux/frame.h>
 

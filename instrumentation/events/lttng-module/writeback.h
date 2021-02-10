@@ -8,7 +8,7 @@
 #include <linux/tracepoint.h>
 #include <linux/backing-dev.h>
 #include <linux/writeback.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 #ifndef _TRACE_WRITEBACK_DEF_
 #define _TRACE_WRITEBACK_DEF_
@@ -21,7 +21,7 @@
  *  commit a212b105b07d75b48b1a166378282e8a77fbf53d which inlines
  *  inode_to_bdi but not sb_is_blkdev_sb making it unusable by modules.
  */
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,0,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(4,0,0))
 static inline struct backing_dev_info *lttng_inode_to_bdi(struct inode *inode)
 {
 	struct super_block *sb;
@@ -41,11 +41,11 @@ static inline struct backing_dev_info *lttng_inode_to_bdi(struct inode *inode)
 {
 	return inode_to_bdi(inode);
 }
-#endif /* #if (LINUX_VERSION_CODE < KERNEL_VERSION(4,0,0)) */
+#endif /* #if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(4,0,0)) */
 
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,0,0))
 #define show_inode_state(state)					\
 	__print_flags(state, "|",				\
 		{I_DIRTY_SYNC,		"I_DIRTY_SYNC"},	\
@@ -60,7 +60,7 @@ static inline struct backing_dev_info *lttng_inode_to_bdi(struct inode *inode)
 		{I_DIRTY_TIME_EXPIRED,	"I_DIRTY_TIME_EXPIRED"}, \
 		{I_REFERENCED,		"I_REFERENCED"}		\
 	)
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,0,0)) */
 #define show_inode_state(state)					\
 	__print_flags(state, "|",				\
 		{I_DIRTY_SYNC,		"I_DIRTY_SYNC"},	\
@@ -73,9 +73,9 @@ static inline struct backing_dev_info *lttng_inode_to_bdi(struct inode *inode)
 		{I_SYNC,		"I_SYNC"},		\
 		{I_REFERENCED,		"I_REFERENCED"}		\
 	)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,0,0)) */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,0,0))
 
 LTTNG_TRACEPOINT_EVENT(writeback_dirty_page,
 	TP_PROTO(struct page *page, struct address_space *mapping),
@@ -127,7 +127,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_write_inode_template, name, \
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WRITE_INODE(writeback_write_inode_start)
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WRITE_INODE(writeback_write_inode)
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,9,0))
 
 LTTNG_TRACEPOINT_EVENT(writeback_dirty_page,
 	TP_PROTO(struct page *page, struct address_space *mapping),
@@ -178,9 +178,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_write_inode_template, name, \
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WRITE_INODE(writeback_write_inode_start)
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WRITE_INODE(writeback_write_inode)
 
-#endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0)) */
+#endif /* (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,9,0)) */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0))
 
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
 	TP_PROTO(struct bdi_writeback *wb, struct wb_writeback_work *work),
@@ -191,7 +191,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
 	)
 )
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,0,0))
 
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
 	TP_PROTO(struct backing_dev_info *bdi, struct wb_writeback_work *work),
@@ -202,7 +202,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
 	)
 )
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,0,0)) */
 
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
 	TP_PROTO(struct backing_dev_info *bdi, struct wb_writeback_work *work),
@@ -214,28 +214,28 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
 	)
 )
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,0,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,0,0)) */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0))
 
 #define LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(name) \
 LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_work_class, name, \
 	TP_PROTO(struct bdi_writeback *wb, struct wb_writeback_work *work), \
 	TP_ARGS(wb, work))
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0)) */
 
 #define LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(name) \
 LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_work_class, name, \
 	TP_PROTO(struct backing_dev_info *bdi, struct wb_writeback_work *work), \
 	TP_ARGS(bdi, work))
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0)) */
 
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_nothread)
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_queue)
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_exec)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0))
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_start)
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_written)
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_wait)
@@ -249,7 +249,7 @@ LTTNG_TRACEPOINT_EVENT(writeback_pages_written,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0))
 
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_class,
 	TP_PROTO(struct bdi_writeback *wb),
@@ -280,7 +280,7 @@ LTTNG_TRACEPOINT_EVENT(writeback_bdi_register,
 	)
 )
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0)) */
 
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_class,
 	TP_PROTO(struct backing_dev_info *bdi),
@@ -304,10 +304,10 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(writeback_class, name, map, \
 
 DEFINE_WRITEBACK_EVENT(writeback_bdi_register)
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0)) */
 
 DEFINE_WRITEBACK_EVENT(writeback_nowork)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,38))
 DEFINE_WRITEBACK_EVENT(writeback_wake_background)
 #endif
 DEFINE_WRITEBACK_EVENT(writeback_wake_thread)
@@ -346,7 +346,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_wbc_class,
 		ctf_integer(int, for_background, wbc->for_background)
 		ctf_integer(int, for_reclaim, wbc->for_reclaim)
 		ctf_integer(int, range_cyclic, wbc->range_cyclic)
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,1,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,1,0))
 		ctf_integer(int, more_io, wbc->more_io)
 		ctf_integer(unsigned long, older_than_this,
 			wbc->older_than_this ? *wbc->older_than_this : 0)
@@ -361,7 +361,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_wbc_class,
 LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(writeback_wbc_class, name, map, \
 	TP_PROTO(struct writeback_control *wbc, struct backing_dev_info *bdi), \
 	TP_ARGS(wbc, bdi))
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,1,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,1,0))
 LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_writeback_start, writeback_wbc_writeback_start)
 LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_writeback_written, writeback_wbc_writeback_written)
 LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_writeback_wait, writeback_wbc_writeback_wait)
@@ -371,7 +371,7 @@ LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_balance_dirty_wait, writeback_wbc_balanc
 #endif
 LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_writepage, writeback_wbc_writepage)
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,9,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0) || \
 	LTTNG_KERNEL_RANGE(5,8,6, 5,9,0) || \
 	LTTNG_KERNEL_RANGE(5,4,62, 5,5,0) || \
 	LTTNG_KERNEL_RANGE(4,19,143, 4,20,0) || \
@@ -391,7 +391,7 @@ LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 		ctf_integer(int, moved, moved)
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,2,0))
 LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 	TP_PROTO(struct bdi_writeback *wb,
 		 struct wb_writeback_work *work,
@@ -402,7 +402,7 @@ LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 		ctf_integer(int, moved, moved)
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0))
 LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 	TP_PROTO(struct bdi_writeback *wb,
 		 unsigned long *older_than_this,
@@ -421,7 +421,7 @@ LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0))
 LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 
 	writeback_global_dirty_state,
@@ -445,7 +445,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 		ctf_integer(unsigned long, dirty_limit, global_dirty_limit)
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0))
 LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 
 	writeback_global_dirty_state,
@@ -471,11 +471,11 @@ LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,2,0))
 
 #define KBps(x)			((x) << (PAGE_SHIFT - 10))
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0))
 
 LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 
@@ -499,7 +499,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 	)
 )
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0))
 
 LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 
@@ -523,7 +523,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 	)
 )
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0)) */
 
 LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 
@@ -547,9 +547,9 @@ LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 	)
 )
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0)) */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0))
 
 LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 
@@ -601,7 +601,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 	)
 )
 
-#else /* #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0)) */
+#else /* #if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0)) */
 
 LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 
@@ -616,7 +616,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 		 unsigned long dirty_ratelimit,
 		 unsigned long task_ratelimit,
 		 unsigned long dirtied,
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,3,0))
 		 unsigned long period,
 #endif
 		 long pause,
@@ -624,7 +624,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 
 	TP_ARGS(bdi, thresh, bg_thresh, dirty, bdi_thresh, bdi_dirty,
 		dirty_ratelimit, task_ratelimit,
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,3,0))
 		dirtied, period, pause, start_time
 #else
 		dirtied, pause, start_time
@@ -651,7 +651,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 		ctf_integer(unsigned long, paused,
 			(jiffies - start_time) * 1000 / HZ)
 		ctf_integer(long, pause, pause * 1000 / HZ)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,3,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,3,0))
 		ctf_integer(unsigned long, period,
 			period * 1000 / HZ)
 		ctf_integer(long, think,
@@ -660,11 +660,11 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 #endif
 	)
 )
-#endif /* #else #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,3,0)) */
+#endif /* #else #if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0)) */
 
-#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,2,0)) */
+#endif /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,2,0)) */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT(writeback_sb_inodes_requeue,
 
 	TP_PROTO(struct inode *inode),
@@ -680,7 +680,7 @@ LTTNG_TRACEPOINT_EVENT(writeback_sb_inodes_requeue,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,37))
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_congest_waited_template,
 
 	TP_PROTO(unsigned int usec_timeout, unsigned int usec_delayed),
@@ -708,7 +708,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_congest_waited_template, writeback_wai
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_single_inode_template,
 
 	TP_PROTO(struct inode *inode,
@@ -732,7 +732,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_single_inode_template,
 	)
 )
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_single_inode_template, writeback_single_inode_requeue,
 	TP_PROTO(struct inode *inode,
 		struct writeback_control *wbc,

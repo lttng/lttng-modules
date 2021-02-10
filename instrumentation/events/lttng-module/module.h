@@ -15,7 +15,7 @@
 #define LTTNG_TRACE_MODULE_H
 
 #include <probes/lttng-tracepoint-event.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 #ifdef CONFIG_MODULES
 
@@ -53,7 +53,7 @@ LTTNG_TRACEPOINT_EVENT(module_free,
 
 LTTNG_TRACEPOINT_EVENT_CLASS(module_refcnt,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,35))
 	TP_PROTO(struct module *mod, unsigned long ip),
 
 	TP_ARGS(mod, ip),
@@ -65,9 +65,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS(module_refcnt,
 
 	TP_FIELDS(
 		ctf_integer(unsigned long, ip, ip)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,19,0))
 		ctf_integer(int, refcnt, atomic_read(&mod->refcnt))
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,35))
 		ctf_integer(int, refcnt, __this_cpu_read(mod->refptr->incs) + __this_cpu_read(mod->refptr->decs))
 #else
 		ctf_integer(int, refcnt, refcnt)
@@ -78,7 +78,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(module_refcnt,
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(module_refcnt, module_get,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,35))
 	TP_PROTO(struct module *mod, unsigned long ip),
 
 	TP_ARGS(mod, ip)
@@ -91,7 +91,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(module_refcnt, module_get,
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(module_refcnt, module_put,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,35))
 	TP_PROTO(struct module *mod, unsigned long ip),
 
 	TP_ARGS(mod, ip)

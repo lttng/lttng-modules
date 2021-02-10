@@ -33,7 +33,7 @@
 
 
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0)
+#if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0)
 
 static struct wb_domain *global_wb_domain_sym;
 

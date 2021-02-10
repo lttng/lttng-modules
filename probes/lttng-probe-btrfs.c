@@ -23,11 +23,11 @@
 
 #include <linux/module.h>
 #include <linux/fs.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 #include <../fs/btrfs/ctree.h>
 #include <../fs/btrfs/transaction.h>
 #include <../fs/btrfs/volumes.h>
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,4,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,4,0))
 #include <../fs/btrfs/block-group.h>
 #endif
 #include <linux/dcache.h>

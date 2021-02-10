@@ -18,11 +18,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 #include <linux/spinlock.h>
 #include <wrapper/fdtable.h>
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,7,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,7,0))
 
 /*
  * Reimplementation of iterate_fd() for kernels between 2.6.32 and 3.6

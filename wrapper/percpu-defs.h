@@ -23,20 +23,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0)
+#if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,19,0)
 
 #include <linux/percpu-defs.h>
 
 #define lttng_this_cpu_ptr(ptr)		this_cpu_ptr(ptr)
 
-#else /* #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0) */
+#else /* #if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,19,0) */
 
 #include <linux/percpu.h>
 
 #define lttng_this_cpu_ptr(ptr)		(&__get_cpu_var(*(ptr)))
 
-#endif /* #else #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0) */
+#endif /* #else #if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,19,0) */
 
 #endif /* _LTTNG_WRAPPER_PERCPU_DEFS_H */

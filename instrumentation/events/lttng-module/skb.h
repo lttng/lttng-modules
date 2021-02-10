@@ -7,7 +7,7 @@
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 /*
  * Tracepoint for free an sk_buff:
@@ -27,7 +27,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(kfree_skb,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,37))
 LTTNG_TRACEPOINT_EVENT_MAP(consume_skb,
 
 	skb_consume,
@@ -42,7 +42,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(consume_skb,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,32))
 LTTNG_TRACEPOINT_EVENT(skb_copy_datagram_iovec,
 
 	TP_PROTO(const struct sk_buff *skb, int len),

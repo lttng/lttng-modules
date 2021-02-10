@@ -60,7 +60,7 @@ LTTNG_TRACEPOINT_EVENT(irq_handler_exit,
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,37))
 LTTNG_TRACEPOINT_EVENT_CLASS(irq_softirq,
 
 	TP_PROTO(unsigned int vec_nr),
@@ -119,7 +119,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(irq_softirq, softirq_raise,
 
 	TP_ARGS(vec_nr)
 )
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,37)) */
 LTTNG_TRACEPOINT_EVENT_CLASS(irq_softirq,
 
 	TP_PROTO(struct softirq_action *h, struct softirq_action *vec),
@@ -181,7 +181,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(irq_softirq, softirq_raise,
 
 	TP_ARGS(h, vec)
 )
-#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37)) */
+#endif /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,37)) */
 
 #endif /*  LTTNG_TRACE_IRQ_H */
 

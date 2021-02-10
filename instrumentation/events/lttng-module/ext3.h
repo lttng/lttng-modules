@@ -5,7 +5,7 @@
 #define LTTNG_TRACE_EXT3_H
 
 #include <probes/lttng-tracepoint-event.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 LTTNG_TRACEPOINT_EVENT(ext3_free_inode,
 	TP_PROTO(struct inode *inode),
@@ -16,7 +16,7 @@ LTTNG_TRACEPOINT_EVENT(ext3_free_inode,
 		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
 		ctf_integer(ino_t, ino, inode->i_ino)
 		ctf_integer(umode_t, mode, inode->i_mode)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,5,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 		ctf_integer(uid_t, uid, i_uid_read(inode))
 		ctf_integer(gid_t, gid, i_gid_read(inode))
 #else
@@ -189,7 +189,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(ext3__page_op, ext3_releasepage,
 	TP_ARGS(page)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,11,0))
 
 LTTNG_TRACEPOINT_EVENT(ext3_invalidatepage,
 	TP_PROTO(struct page *page, unsigned int offset, unsigned int length),

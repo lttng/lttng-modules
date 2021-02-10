@@ -109,7 +109,7 @@ static const struct file_operations lttng_logger_operations = {
  * Linux 5.6 introduced a separate proc_ops struct for /proc operations
  * to decouple it from the vfs.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
 static const struct proc_ops lttng_logger_proc_ops = {
 	.proc_write = lttng_logger_write,
 };

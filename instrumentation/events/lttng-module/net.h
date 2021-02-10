@@ -10,7 +10,7 @@
 #include <linux/ip.h>
 #include <linux/ipv6.h>
 #include <linux/tcp.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 #include <lttng-endian.h>
 #include <net/sock.h>
 
@@ -438,7 +438,7 @@ LTTNG_TRACEPOINT_ENUM(net_network_header,
 
 LTTNG_TRACEPOINT_EVENT(net_dev_xmit,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,40))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,40))
 	TP_PROTO(struct sk_buff *skb,
 		 int rc,
 		 struct net_device *dev,
@@ -455,7 +455,7 @@ LTTNG_TRACEPOINT_EVENT(net_dev_xmit,
 	TP_FIELDS(
 		ctf_integer_hex(void *, skbaddr, skb)
 		ctf_integer(int, rc, rc)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,40))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,40))
 		ctf_integer(unsigned int, len, skb_len)
 		ctf_string(name, dev->name)
 #else

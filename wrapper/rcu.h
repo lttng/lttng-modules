@@ -23,7 +23,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 #include <linux/rculist.h>
 #include <linux/rcupdate.h>
 #include <wrapper/list.h>

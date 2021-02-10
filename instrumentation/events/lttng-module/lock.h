@@ -1,7 +1,7 @@
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 #undef TRACE_SYSTEM
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,33))
 #define TRACE_SYSTEM lock
 #else
 #define TRACE_SYSTEM lockdep
@@ -30,13 +30,13 @@ LTTNG_TRACEPOINT_EVENT(lock_acquire,
 	TP_FIELDS(
 		ctf_integer(unsigned int, flags, (trylock ? 1 : 0) | (read ? 2 : 0))
 		ctf_string(name, lock->name)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,34))
 		ctf_integer_hex(void *, lockdep_addr, lock)
 #endif
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,35))
 
 LTTNG_TRACEPOINT_EVENT_CLASS(lock,
 
@@ -75,7 +75,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(lock, lock_acquired,
 
 #endif
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,35)) */
 
 LTTNG_TRACEPOINT_EVENT(lock_release,
 
@@ -85,7 +85,7 @@ LTTNG_TRACEPOINT_EVENT(lock_release,
 
 	TP_FIELDS(
 		ctf_string(name, lock->name)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,34))
 		ctf_integer_hex(void *, lockdep_addr, lock)
 #endif
 	)
@@ -101,7 +101,7 @@ LTTNG_TRACEPOINT_EVENT(lock_contended,
 
 	TP_FIELDS(
 		ctf_string(name, lock->name)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,34))
 		ctf_integer_hex(void *, lockdep_addr, lock)
 #endif
 	)
@@ -115,7 +115,7 @@ LTTNG_TRACEPOINT_EVENT(lock_acquired,
 
 	TP_FIELDS(
 		ctf_string(name, lock->name)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,34))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,34))
 		ctf_integer(s64, wait_nsec, wait_nsec)
 		ctf_integer_hex(void *, lockdep_addr, lock)
 #else
@@ -127,7 +127,7 @@ LTTNG_TRACEPOINT_EVENT(lock_acquired,
 
 #endif
 
-#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,35)) */
+#endif /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,35)) */
 
 #endif
 

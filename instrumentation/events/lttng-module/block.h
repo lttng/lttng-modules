@@ -8,11 +8,11 @@
 #include <linux/blktrace_api.h>
 #include <linux/blkdev.h>
 #include <linux/trace_seq.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0))
 #include <scsi/scsi_request.h>
-#endif /* (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
+#endif /* (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0)) */
 
 #ifndef _TRACE_BLOCK_DEF_
 #define _TRACE_BLOCK_DEF_
@@ -33,7 +33,7 @@ enum {
 
 #endif /* _TRACE_BLOCK_DEF_ */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,8,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,73,5,0,0, 4,4,73,6,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,82,6,0,0, 4,4,82,7,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,92,6,0,0, 4,4,92,7,0,0) || \
@@ -61,7 +61,7 @@ enum {
 			| ((rw) & REQ_PREFLUSH ? RWBS_FLAG_PREFLUSH : 0)      \
 			| ((rw) & REQ_FUA ? RWBS_FLAG_FUA : 0))
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0))
 
 #define lttng_req_op(rq)
 #define lttng_req_rw(rq)	((rq)->cmd_flags)
@@ -80,7 +80,7 @@ enum {
 			| ((rw) & REQ_FLUSH ? RWBS_FLAG_FLUSH : 0)	      \
 			| ((rw) & REQ_FUA ? RWBS_FLAG_FUA : 0))
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,37))
 
 #define lttng_req_op(rq)
 #define lttng_req_rw(rq)	((rq)->cmd_flags)
@@ -97,7 +97,7 @@ enum {
 			| ((rw) & REQ_META ? RWBS_FLAG_META : 0)	      \
 			| ((rw) & REQ_SECURE ? RWBS_FLAG_SECURE : 0))
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,36))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,36))
 
 #define lttng_req_op(rq)
 #define lttng_req_rw(rq)	((rq)->cmd_flags)
@@ -134,7 +134,7 @@ enum {
 
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,9,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(block_buffer,
 
 	TP_PROTO(struct buffer_head *bh),
@@ -175,9 +175,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_buffer, block_dirty_buffer,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,12,0))
 /* block_rq_with_error event class removed in kernel 4.12 */
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0))
 LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq_with_error,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
@@ -220,7 +220,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq_with_error,
 
 	TP_code_post()
 )
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0)) */
 LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq_with_error,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
@@ -263,9 +263,9 @@ LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq_with_error,
 
 	TP_code_post()
 )
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0)) */
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(4,12,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(4,12,0))
 /**
  * block_rq_abort - abort block operation request
  * @q: queue containing the block operation request
@@ -293,7 +293,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_abort,
  * @q.  For some reason the request was not completed and needs to be
  * put back in the queue.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,12,0))
 LTTNG_TRACEPOINT_EVENT(block_rq_requeue,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
@@ -330,7 +330,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_requeue,
  * do for the request. If @rq->bio is non-NULL then there is
  * additional work required to complete the request.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,12,0))
 LTTNG_TRACEPOINT_EVENT(block_rq_complete,
 
 	TP_PROTO(struct request *rq, int error, unsigned int nr_bytes),
@@ -347,7 +347,7 @@ LTTNG_TRACEPOINT_EVENT(block_rq_complete,
 			lttng_req_op(rq), lttng_req_rw(rq), nr_bytes)
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0))
 LTTNG_TRACEPOINT_EVENT_CODE(block_rq_complete,
 
 	TP_PROTO(struct request_queue *q, struct request *rq,
@@ -385,7 +385,7 @@ LTTNG_TRACEPOINT_EVENT_CODE(block_rq_complete,
 
 	TP_code_post()
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,5)	\
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,5)	\
 	|| LTTNG_KERNEL_RANGE(3,12,21, 3,13,0)		\
 	|| LTTNG_KERNEL_RANGE(3,10,41, 3,11,0)		\
 	|| LTTNG_KERNEL_RANGE(3,4,91, 3,5,0)		\
@@ -430,7 +430,7 @@ LTTNG_TRACEPOINT_EVENT_CODE(block_rq_complete,
 	TP_code_post()
 )
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,15,0)) */
 
 /**
  * block_rq_complete - block IO operation completed by device driver
@@ -450,9 +450,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_complete,
 	TP_ARGS(q, rq)
 )
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,15,0)) */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,12,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(block_rq,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
@@ -471,7 +471,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_rq,
 		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0))
 LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
@@ -519,7 +519,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq,
 
 	TP_code_post()
 )
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0)) */
 LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq,
 
 	TP_PROTO(struct request_queue *q, struct request *rq),
@@ -566,7 +566,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq,
 
 	TP_code_post()
 )
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0)) */
 
 /**
  * block_rq_insert - insert block operation request into queue
@@ -618,24 +618,24 @@ LTTNG_TRACEPOINT_EVENT(block_bio_bounce,
 	TP_ARGS(q, bio),
 
 	TP_FIELDS(
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0))
 		ctf_integer(dev_t, dev, bio_dev(bio))
 #else
 		ctf_integer(dev_t, dev, bio->bi_bdev ? bio->bi_bdev->bd_dev : 0)
 #endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0))
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
 			lttng_bio_op(bio), lttng_bio_rw(bio),
 			bio->bi_iter.bi_size)
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0)) */
 		ctf_integer(sector_t, sector, bio->bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
 			lttng_bio_op(bio), lttng_bio_rw(bio),
 			bio->bi_size)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0)) */
 		ctf_integer(pid_t, tid, current->pid)
 		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
 	)
@@ -652,7 +652,7 @@ LTTNG_TRACEPOINT_EVENT(block_bio_bounce,
  */
 LTTNG_TRACEPOINT_EVENT(block_bio_complete,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,38))
 	TP_PROTO(struct request_queue *q, struct bio *bio, int error),
 
 	TP_ARGS(q, bio, error),
@@ -663,33 +663,33 @@ LTTNG_TRACEPOINT_EVENT(block_bio_complete,
 #endif
 
 	TP_FIELDS(
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0))
 		ctf_integer(dev_t, dev, bio_dev(bio))
 #else
 		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
 #endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0))
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
 		ctf_integer(int, error, error)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
 			lttng_bio_op(bio), lttng_bio_rw(bio),
 			bio->bi_iter.bi_size)
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0)) */
 		ctf_integer(sector_t, sector, bio->bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,38))
 		ctf_integer(int, error, error)
 #else
 		ctf_integer(int, error, 0)
 #endif
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
 			lttng_bio_op(bio), lttng_bio_rw(bio), bio->bi_size)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0)) */
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,9,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(block_bio_merge,
 
 	TP_PROTO(struct request_queue *q, struct request *rq, struct bio *bio),
@@ -697,23 +697,23 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_bio_merge,
 	TP_ARGS(q, rq, bio),
 
 	TP_FIELDS(
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0))
 		ctf_integer(dev_t, dev, bio_dev(bio))
 #else
 		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
 #endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0))
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
 			lttng_bio_op(bio), lttng_bio_rw(bio),
 			bio->bi_iter.bi_size)
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0)) */
 		ctf_integer(sector_t, sector, bio->bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
 			lttng_bio_op(bio), lttng_bio_rw(bio), bio->bi_size)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0)) */
 		ctf_integer(pid_t, tid, current->pid)
 		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
 	)
@@ -763,28 +763,28 @@ LTTNG_TRACEPOINT_EVENT(block_bio_queue,
 	TP_ARGS(q, bio),
 
 	TP_FIELDS(
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0))
 		ctf_integer(dev_t, dev, bio_dev(bio))
 #else
 		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
 #endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0))
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
 			lttng_bio_op(bio), lttng_bio_rw(bio),
 			bio->bi_iter.bi_size)
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0)) */
 		ctf_integer(sector_t, sector, bio->bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
 			lttng_bio_op(bio), lttng_bio_rw(bio), bio->bi_size)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0)) */
 		ctf_integer(pid_t, tid, current->pid)
 		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
 	)
 )
-#else /* if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0)) */
+#else /* if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,9,0)) */
 LTTNG_TRACEPOINT_EVENT_CLASS(block_bio,
 
 	TP_PROTO(struct request_queue *q, struct bio *bio),
@@ -845,7 +845,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_bio, block_bio_queue,
 
 	TP_ARGS(q, bio)
 )
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,9,0)) */
 
 LTTNG_TRACEPOINT_EVENT_CLASS(block_get_rq,
 
@@ -854,12 +854,12 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_get_rq,
 	TP_ARGS(q, bio, rw),
 
 	TP_FIELDS(
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0))
 		ctf_integer(dev_t, dev, bio ? bio_dev(bio) : 0)
 #else
 		ctf_integer(dev_t, dev, bio ? bio->bi_bdev->bd_dev : 0)
 #endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0))
 		ctf_integer(sector_t, sector, bio ? bio->bi_iter.bi_sector : 0)
 		ctf_integer(unsigned int, nr_sector,
 			bio ? bio_sectors(bio) : 0)
@@ -867,7 +867,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_get_rq,
 			bio ? lttng_bio_op(bio) : 0,
 			bio ? lttng_bio_rw(bio) : 0,
 			bio ? bio->bi_iter.bi_size : 0)
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0)) */
 		ctf_integer(sector_t, sector, bio ? bio->bi_sector : 0)
 		ctf_integer(unsigned int, nr_sector,
 			bio ? bio->bi_size >> 9 : 0)
@@ -875,7 +875,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_get_rq,
 			bio ? lttng_bio_op(bio) : 0,
 			bio ? lttng_bio_rw(bio) : 0,
 			bio ? bio->bi_size : 0)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0)) */
 		ctf_integer(pid_t, tid, current->pid)
 		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
         )
@@ -937,7 +937,7 @@ LTTNG_TRACEPOINT_EVENT(block_plug,
 
 LTTNG_TRACEPOINT_EVENT_CLASS(block_unplug,
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,39))
 	TP_PROTO(struct request_queue *q, unsigned int depth, bool explicit),
 
 	TP_ARGS(q, depth, explicit),
@@ -948,7 +948,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_unplug,
 #endif
 
 	TP_FIELDS(
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,39))
 		ctf_integer(int, nr_rq, depth)
 #else
 		ctf_integer(int, nr_rq, q->rq.count[READ] + q->rq.count[WRITE])
@@ -958,7 +958,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_unplug,
 	)
 )
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,39))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(2,6,39))
 /**
  * block_unplug_timer - timed release of operations requests in queue to device driver
  * @q: request queue to unplug
@@ -983,13 +983,13 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_unplug, block_unplug_timer,
  * Unplug request queue @q because device driver is scheduled to work
  * on elements in the request queue.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,39))
 LTTNG_TRACEPOINT_EVENT_INSTANCE(block_unplug, block_unplug,
 #else
 LTTNG_TRACEPOINT_EVENT_INSTANCE(block_unplug, block_unplug_io,
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,39))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,39))
 	TP_PROTO(struct request_queue *q, unsigned int depth, bool explicit),
 
 	TP_ARGS(q, depth, explicit)
@@ -1019,21 +1019,21 @@ LTTNG_TRACEPOINT_EVENT(block_split,
 	TP_ARGS(q, bio, new_sector),
 
 	TP_FIELDS(
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0))
 		ctf_integer(dev_t, dev, bio_dev(bio))
 #else
 		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
 #endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0))
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
 			lttng_bio_op(bio), lttng_bio_rw(bio),
 			bio->bi_iter.bi_size)
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0)) */
 		ctf_integer(sector_t, sector, bio->bi_sector)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
 			lttng_bio_op(bio), lttng_bio_rw(bio), bio->bi_size)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0)) */
 		ctf_integer(sector_t, new_sector, new_sector)
 		ctf_integer(pid_t, tid, current->pid)
 		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
@@ -1050,7 +1050,7 @@ LTTNG_TRACEPOINT_EVENT(block_split,
  * An operation for a logical device has been mapped to the
  * raw block device.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,38))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,38))
 LTTNG_TRACEPOINT_EVENT(block_bio_remap,
 #else
 LTTNG_TRACEPOINT_EVENT(block_remap,
@@ -1062,29 +1062,29 @@ LTTNG_TRACEPOINT_EVENT(block_remap,
 	TP_ARGS(q, bio, dev, from),
 
 	TP_FIELDS(
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0))
 		ctf_integer(dev_t, dev, bio_dev(bio))
 #else
 		ctf_integer(dev_t, dev, bio->bi_bdev->bd_dev)
 #endif
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0))
 		ctf_integer(sector_t, sector, bio->bi_iter.bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio_sectors(bio))
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
 			lttng_bio_op(bio), lttng_bio_rw(bio),
 			bio->bi_iter.bi_size)
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0)) */
 		ctf_integer(sector_t, sector, bio->bi_sector)
 		ctf_integer(unsigned int, nr_sector, bio->bi_size >> 9)
 		blk_rwbs_ctf_integer(unsigned int, rwbs,
 			lttng_bio_op(bio), lttng_bio_rw(bio), bio->bi_size)
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0)) */
 		ctf_integer(dev_t, old_dev, dev)
 		ctf_integer(sector_t, old_sector, from)
 	)
 )
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,32))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,32))
 /**
  * block_rq_remap - map request for a block operation request
  * @q: queue holding the operation

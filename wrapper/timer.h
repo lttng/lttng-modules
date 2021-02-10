@@ -23,7 +23,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 #include <linux/timer.h>
 #include <lttng-kernel-version.h>
 
@@ -39,7 +39,7 @@
  */
 
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0))
 
 #define LTTNG_TIMER_PINNED		TIMER_PINNED
 #define LTTNG_TIMER_FUNC_ARG_TYPE	struct timer_list *
@@ -54,11 +54,11 @@
 	timer_setup(timer, callback, flags)
 
 
-#else /* LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0) */
+#else /* LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0) */
 
 
 # if (LTTNG_RT_VERSION_CODE >= LTTNG_RT_KERNEL_VERSION(4,6,4,8) \
-	|| LINUX_VERSION_CODE >= KERNEL_VERSION(4,8,0))
+	|| LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,8,0))
 
 #define lttng_init_timer_pinned(timer) \
 	init_timer_pinned(timer)
@@ -97,6 +97,6 @@ static inline void lttng_timer_setup(struct timer_list *timer,
 	timer->data = (unsigned long)data;
 }
 
-#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(4,15,0) */
+#endif /* LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0) */
 
 #endif /* _LTTNG_WRAPPER_TIMER_H */

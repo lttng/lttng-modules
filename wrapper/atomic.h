@@ -23,14 +23,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <linux/version.h>
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,37))
+#include <lttng-kernel-version.h>
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,37))
 #include <linux/atomic.h>
 #else
 #include <asm/atomic.h>
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,16,0))
 static inline void lttng_smp_mb__before_atomic(void)
 {
 	smp_mb__before_atomic();
@@ -40,7 +40,7 @@ static inline void lttng_smp_mb__after_atomic(void)
 {
 	smp_mb__after_atomic();
 }
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,16,0)) */
 static inline void lttng_smp_mb__before_atomic(void)
 {
 	smp_mb__before_atomic_inc();
@@ -50,6 +50,6 @@ static inline void lttng_smp_mb__after_atomic(void)
 {
 	smp_mb__after_atomic_inc();
 }
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,16,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,16,0)) */
 
 #endif /* _LTTNG_WRAPPER_ATOMIC_H */

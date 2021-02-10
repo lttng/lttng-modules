@@ -72,7 +72,7 @@ void perf_counter_record(struct lttng_ctx_field *field,
 	chan->ops->event_write(ctx, &value, sizeof(value));
 }
 
-#if defined(CONFIG_PERF_EVENTS) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,99))
+#if defined(CONFIG_PERF_EVENTS) && (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,0,99))
 static
 void overflow_callback(struct perf_event *event,
 		       struct perf_sample_data *data,
@@ -93,7 +93,7 @@ void lttng_destroy_perf_counter_field(struct lttng_ctx_field *field)
 {
 	struct perf_event **events = field->u.perf_counter->e;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 	{
 		int ret;
 
@@ -104,7 +104,7 @@ void lttng_destroy_perf_counter_field(struct lttng_ctx_field *field)
 			&field->u.perf_counter->cpuhp_prepare.node);
 		WARN_ON(ret);
 	}
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 	{
 		int cpu;
 
@@ -116,14 +116,14 @@ void lttng_destroy_perf_counter_field(struct lttng_ctx_field *field)
 		unregister_cpu_notifier(&field->u.perf_counter->nb);
 #endif
 	}
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 	kfree(field->event_field.name);
 	kfree(field->u.perf_counter->attr);
 	lttng_kvfree(events);
 	kfree(field->u.perf_counter);
 }
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 
 int lttng_cpuhp_perf_counter_online(unsigned int cpu,
 		struct lttng_cpuhp_node *node)
@@ -164,7 +164,7 @@ int lttng_cpuhp_perf_counter_dead(unsigned int cpu,
 	return 0;
 }
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
 #ifdef CONFIG_HOTPLUG_CPU
 
@@ -223,7 +223,7 @@ int lttng_perf_counter_cpu_hp_callback(struct notifier_block *nb,
 
 #endif
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
 int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  uint64_t config,
@@ -277,7 +277,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 		goto find_error;
 	}
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 
 	perf_field->cpuhp_prepare.component = LTTNG_CONTEXT_PERF_COUNTERS;
 	ret = cpuhp_state_add_instance(lttng_hp_prepare,
@@ -291,7 +291,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	if (ret)
 		goto cpuhp_online_error;
 
-#else	/* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#else	/* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 	{
 		int cpu;
 
@@ -317,7 +317,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 		put_online_cpus();
 		perf_field->hp_enable = 1;
 	}
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
 	field->destroy = lttng_destroy_perf_counter_field;
 
@@ -337,7 +337,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	wrapper_vmalloc_sync_all();
 	return 0;
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 cpuhp_online_error:
 	{
 		int remove_ret;
@@ -347,7 +347,7 @@ cpuhp_online_error:
 		WARN_ON(remove_ret);
 	}
 cpuhp_prepare_error:
-#else	/* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#else	/* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 counter_busy:
 counter_error:
 	{
@@ -362,7 +362,7 @@ counter_error:
 		unregister_cpu_notifier(&perf_field->nb);
 #endif
 	}
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,10,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 find_error:
 	lttng_remove_context_field(ctx, field);
 append_context_error:

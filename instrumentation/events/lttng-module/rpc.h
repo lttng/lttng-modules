@@ -11,7 +11,7 @@
 #ifndef ONCE_LTTNG_RPC_H
 #define ONCE_LTTNG_RPC_H
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,0))
 static inline
 int lttng_get_clid(const struct rpc_task *task)
 {
@@ -27,11 +27,11 @@ int lttng_get_clid(const struct rpc_task *task)
 	 */
 	return (int) tk_client->cl_clid;
 }
-#endif /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)) */
+#endif /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,0)) */
 
 #endif /* ONCE_LTTNG_RPC_H */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,0,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_status,
 
 	TP_PROTO(const struct rpc_task *task),
@@ -56,7 +56,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_status, rpc_bind_status,
 
 	TP_ARGS(task)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_status,
 
 	TP_PROTO(struct rpc_task *task),
@@ -108,13 +108,13 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_status, rpc_bind_status,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,0,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,0,0))
 LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_status, rpc_connect_status,
 	TP_PROTO(const struct rpc_task *task),
 
 	TP_ARGS(task)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(4,17,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,17,0))
 LTTNG_TRACEPOINT_EVENT(rpc_connect_status,
 	TP_PROTO(const struct rpc_task *task),
 
@@ -126,7 +126,7 @@ LTTNG_TRACEPOINT_EVENT(rpc_connect_status,
 		ctf_integer(int, status, task->tk_status)
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,0))
 LTTNG_TRACEPOINT_EVENT(rpc_connect_status,
 	TP_PROTO(struct rpc_task *task, int status),
 
@@ -152,7 +152,7 @@ LTTNG_TRACEPOINT_EVENT(rpc_connect_status,
 )
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,17,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,17,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_running,
 
 	TP_PROTO(const struct rpc_task *task, const void *action),
@@ -221,7 +221,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(rpc_task_queued, rpc_task_wakeup,
 	TP_ARGS(task, q)
 )
 
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(rpc_task_running,
 
 	TP_PROTO(const struct rpc_clnt *clnt, const struct rpc_task *task, const void *action),

@@ -25,11 +25,11 @@
 #include <lttng-tracer.h>
 #include <lttng-kernel-version.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,1,0))
 #include <kvm/iodev.h>
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,1,0)) */
 #include <../../virt/kvm/iodev.h>
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,1,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,1,0)) */
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our

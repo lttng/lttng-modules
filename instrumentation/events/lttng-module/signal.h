@@ -5,14 +5,14 @@
 #define LTTNG_TRACE_SIGNAL_H
 
 #include <probes/lttng-tracepoint-event.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 #ifndef _TRACE_SIGNAL_DEF
 #define _TRACE_SIGNAL_DEF
 #include <linux/signal.h>
 #include <linux/sched.h>
 #undef LTTNG_FIELDS_SIGINFO
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,20,0) || \
 	LTTNG_RHEL_KERNEL_RANGE(4,18,0,147,0,0, 4,19,0,0,0,0))
 #define LTTNG_FIELDS_SIGINFO(info)				\
 		ctf_integer(int, errno,				\
@@ -23,7 +23,7 @@
 			(info == SEND_SIG_NOINFO) ? 		\
 			SI_USER : 				\
 			((info == SEND_SIG_PRIV) ? SI_KERNEL : info->si_code))
-#else /* LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0) */
+#else /* LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,20,0) */
 #define LTTNG_FIELDS_SIGINFO(info)				\
 		ctf_integer(int, errno,				\
 			(info == SEND_SIG_NOINFO || info == SEND_SIG_FORCED || info == SEND_SIG_PRIV) ? \
@@ -33,7 +33,7 @@
 			(info == SEND_SIG_NOINFO || info == SEND_SIG_FORCED) ? \
 			SI_USER : 				\
 			((info == SEND_SIG_PRIV) ? SI_KERNEL : info->si_code))
-#endif /* LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0) */
+#endif /* LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,20,0) */
 #endif /* _TRACE_SIGNAL_DEF */
 
 /**
@@ -48,7 +48,7 @@
  * SEND_SIG_NOINFO means that si_code is SI_USER, and SEND_SIG_PRIV
  * means that si_code is SI_KERNEL.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,20,0) || \
 	LTTNG_RHEL_KERNEL_RANGE(4,18,0,147,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT(signal_generate,
 
@@ -66,7 +66,7 @@ LTTNG_TRACEPOINT_EVENT(signal_generate,
 		ctf_integer(int, result, result)
 	)
 )
-#elif (LINUX_VERSION_CODE >= KERNEL_VERSION(3,4,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0))
 LTTNG_TRACEPOINT_EVENT(signal_generate,
 
 	TP_PROTO(int sig, struct siginfo *info, struct task_struct *task,
@@ -113,7 +113,7 @@ LTTNG_TRACEPOINT_EVENT(signal_generate,
  * This means, this can show which signals are actually delivered, but
  * matching generated signals and delivered signals may not be correct.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,20,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,20,0) || \
 	LTTNG_RHEL_KERNEL_RANGE(4,18,0,147,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT(signal_deliver,
 
@@ -144,7 +144,7 @@ LTTNG_TRACEPOINT_EVENT(signal_deliver,
 )
 #endif
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,4,0))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,4,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(signal_queue_overflow,
 
 	TP_PROTO(int sig, int group, struct siginfo *info),

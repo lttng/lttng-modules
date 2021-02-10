@@ -6,7 +6,7 @@
 
 #include <probes/lttng-tracepoint-event.h>
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(5,6,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(v4l2_class,
 
 	TP_PROTO(int minor, struct v4l2_buffer *buf),

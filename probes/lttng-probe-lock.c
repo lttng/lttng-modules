@@ -22,14 +22,14 @@
  */
 
 #include <linux/module.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 #include <lttng-tracer.h>
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
  * trace event macros match the kernel we run on.
  */
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,33))
 #include <trace/events/lock.h>
 #else
 #include <trace/events/lockdep.h>

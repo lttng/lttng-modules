@@ -8,10 +8,10 @@
 #include <linux/nsproxy.h>
 #include <linux/pid_namespace.h>
 #include <linux/types.h>
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,19,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,19,0))
 #define lttng_proc_inum ns.inum
 #else
 #define lttng_proc_inum proc_inum
@@ -68,7 +68,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_state,
 		ctf_integer(int, submode, submode)
 		ctf_integer(int, status, status)
 		ctf_integer(int, ns_level, pid_ns ? pid_ns->level : 0)
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 		ctf_integer(unsigned int, ns_inum, pid_ns ? pid_ns->lttng_proc_inum : 0)
 #endif
 		ctf_integer(unsigned int, cpu, task_cpu(p))

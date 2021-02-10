@@ -23,11 +23,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 #include <linux/tracepoint.h>
 #include <linux/module.h>
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(2,6,35))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(2,6,35))
 
 #define DECLARE_EVENT_CLASS(name, proto, args, tstruct, assign, print)
 
@@ -40,14 +40,14 @@
 
 #endif /* HAVE_KABI_2635_TRACEPOINT */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,15,0))
 
 #include <lttng-tracepoint.h>
 
 #define lttng_wrapper_tracepoint_probe_register lttng_tracepoint_probe_register
 #define lttng_wrapper_tracepoint_probe_unregister lttng_tracepoint_probe_unregister
 
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,15,0)) */
 
 #define lttng_wrapper_tracepoint_probe_register kabi_2635_tracepoint_probe_register
 #define lttng_wrapper_tracepoint_probe_unregister kabi_2635_tracepoint_probe_unregister
@@ -63,9 +63,9 @@ void lttng_tracepoint_exit(void)
 {
 }
 
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,15,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,15,0)) */
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0) && defined(CONFIG_MODULE_SIG))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,15,0) && defined(CONFIG_MODULE_SIG))
 
 #include <linux/kallsyms.h>
 #include <wrapper/kallsyms.h>
@@ -87,9 +87,9 @@ int wrapper_tracepoint_module_notify(struct notifier_block *nb,
 	}
 }
 
-#endif /* #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0) && defined(CONFIG_MODULE_SIG)) */
+#endif /* #if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,15,0) && defined(CONFIG_MODULE_SIG)) */
 
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0) && defined(CONFIG_MODULE_SIG) && defined(MODULE))
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,15,0) && defined(CONFIG_MODULE_SIG) && defined(MODULE))
 
 static inline
 int wrapper_lttng_fixup_sig(struct module *mod)
@@ -110,7 +110,7 @@ int wrapper_lttng_fixup_sig(struct module *mod)
 	return ret;
 }
 
-#else /* #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0) && defined(CONFIG_MODULE_SIG) && defined(MODULE)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,15,0) && defined(CONFIG_MODULE_SIG) && defined(MODULE)) */
 
 static inline
 int wrapper_lttng_fixup_sig(struct module *mod)
@@ -118,18 +118,18 @@ int wrapper_lttng_fixup_sig(struct module *mod)
 	return 0;
 }
 
-#endif /* #else #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0) && defined(CONFIG_MODULE_SIG) && defined(MODULE)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,15,0) && defined(CONFIG_MODULE_SIG) && defined(MODULE)) */
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,19,0))
 static inline struct tracepoint *lttng_tracepoint_ptr_deref(tracepoint_ptr_t *p)
 {
 	return tracepoint_ptr_deref(p);
 }
-#else /* #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0)) */
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,19,0)) */
 static inline struct tracepoint *lttng_tracepoint_ptr_deref(struct tracepoint * const *p)
 {
 	return *p;
 }
-#endif /* #else #if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,19,0)) */
 
 #endif /* _LTTNG_WRAPPER_TRACEPOINT_H */

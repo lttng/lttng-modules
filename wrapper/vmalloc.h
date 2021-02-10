@@ -25,7 +25,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <linux/version.h>
+#include <lttng-kernel-version.h>
 #include <linux/vmalloc.h>
 #include <linux/mm.h>
 
@@ -62,7 +62,7 @@ void wrapper_vmalloc_sync_all(void)
 }
 #endif
 
-#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,12,0))
 static inline
 void *lttng_kvmalloc_node(unsigned long size, gfp_t flags, int node)
 {
