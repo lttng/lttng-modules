@@ -14,9 +14,12 @@
 #ifndef _TRACE_WRITEBACK_DEF_
 #define _TRACE_WRITEBACK_DEF_
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0) ||	\
-	LTTNG_KERNEL_RANGE(5,5,3, 5,6,0) ||			\
-	LTTNG_KERNEL_RANGE(5,4,19, 5,5,0))
+/*
+ * Use the GPL-exported bdi_dev_name introduced in kernel 5.7. Do not use
+ * static inline bdi_dev_name in prior kernels because it uses the bdi_unknown_name
+ * symbol which is not exported to GPL modules.
+ */
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,7,0))
 static inline const char *lttng_bdi_dev_name(struct backing_dev_info *bdi)
 {
 	return bdi_dev_name(bdi);
