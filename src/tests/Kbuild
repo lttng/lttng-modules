@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
 
-TOP_LTTNG_MODULES_DIR := $(shell dirname $(lastword $(MAKEFILE_LIST)))/..
+TOP_LTTNG_MODULES_DIR := $(shell dirname $(lastword $(MAKEFILE_LIST)))/../..
 
-include $(TOP_LTTNG_MODULES_DIR)/Kbuild.common
+include $(TOP_LTTNG_MODULES_DIR)/src/Kbuild.common
 
 ccflags-y += -I$(TOP_LTTNG_MODULES_DIR)/include
 

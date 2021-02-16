@@ -1,8 +1,28 @@
 # SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
 
+ifdef CONFIG_LOCALVERSION	# Check if dot-config is included.
+  ifeq ($(CONFIG_TRACEPOINTS),)
+    $(error The option CONFIG_TRACEPOINTS needs to be enabled in your kernel configuration)
+  endif # CONFIG_TRACEPOINTS
+endif # ifdef CONFIG_LOCALVERSION
+
 TOP_LTTNG_MODULES_DIR := $(shell dirname $(lastword $(MAKEFILE_LIST)))/..
 
-include $(TOP_LTTNG_MODULES_DIR)/Kbuild.common
+lttng_check_linux_version = $(shell pwd)/include/linux/version.h
+lttng_check_generated_linux_version = $(shell pwd)/include/generated/uapi/linux/version.h
+
+#
+# Check for stale version.h, which can be a leftover from an old Linux
+# kernel tree moved to a newer kernel version, only pruned by make
+# distclean.
+#
+ifneq ($(wildcard $(lttng_check_linux_version)),)
+  ifneq ($(wildcard $(lttng_check_generated_linux_version)),)
+    $(error Duplicate version.h files found in $(lttng_check_linux_version) and $(lttng_check_generated_linux_version). Consider running make distclean on your kernel, or removing the stale $(lttng_check_linux_version) file)
+  endif
+endif
+
+include $(TOP_LTTNG_MODULES_DIR)/src/Kbuild.common
 
 ccflags-y += -I$(TOP_LTTNG_MODULES_DIR)/include
 
@@ -125,3 +145,4 @@ lttng-statedump-objs := lttng-statedump-impl.o
 
 obj-$(CONFIG_LTTNG) += probes/
 obj-$(CONFIG_LTTNG) += lib/
+obj-$(CONFIG_LTTNG) += tests/

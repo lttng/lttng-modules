@@ -2,7 +2,7 @@
 
 TOP_LTTNG_MODULES_DIR := $(shell dirname $(lastword $(MAKEFILE_LIST)))/../..
 
-include $(TOP_LTTNG_MODULES_DIR)/Kbuild.common
+include $(TOP_LTTNG_MODULES_DIR)/src/Kbuild.common
 
 ccflags-y += -I$(TOP_LTTNG_MODULES_DIR)/include
 
