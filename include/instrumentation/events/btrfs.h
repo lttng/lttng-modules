@@ -1918,7 +1918,8 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__reserved_extent,  btrfs_reserved_extent_f
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0) || \
 	LTTNG_KERNEL_RANGE(5,9,5, 5,10,0) || \
-	LTTNG_KERNEL_RANGE(5,4,78, 5,5,0))
+	LTTNG_KERNEL_RANGE(5,4,78, 5,5,0) || \
+	LTTNG_UBUNTU_KERNEL_RANGE(5,8,18,44, 5,9,0,0))
 LTTNG_TRACEPOINT_EVENT_MAP(find_free_extent,
 
 	btrfs_find_free_extent,
