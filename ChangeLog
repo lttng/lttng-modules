@@ -1,3 +1,26 @@
+2021-02-17 (Random Act of Kindness Day) LTTng modules 2.12.5
+	* fix: Adjust ranges for Ubuntu 5.8.0-44 kernel
+	* fix: missing include for 'task_struct' in fdtable.h
+	* fix: file: Rename fcheck lookup_fd_rcu (v5.11)
+	* Fix: do not use bdi_unknown_name symbol
+	* fix: memcg: fix a crash in wb_workfn when a device disappears (5.6)
+	* Fix: writeback: out-of-bound reads
+	* fix: Add one digit to RHEL major release version
+	* fix: Add one digit to SLES minor release version
+	* fix: RT_PATCH_VERSION is close to overflow
+	* fix: cast LTTNG_KERNEL_VERSION/LTTNG_LINUX_VERSION_CODE to uint64_t
+	* fix: UTS_UBUNTU_RELEASE_ABI is close to overflow
+	* fix: sublevel version overflow in LINUX_VERSION_CODE
+	* Namespace kernel version macros
+	* aarch64: blacklist gcc prior to 5.1
+	* fix: genirq: Restrict export of irq_to_desc() (v5.11)
+	* fix: block: merge struct block_device and struct hd_struct (v5.11)
+	* fix: kprobes: Remove kretprobe hash (v5.11)
+	* fix: block: remove the request_queue argument to the block_bio_remap tracepoint (v5.11)
+	* fix: block: remove the request_queue argument to the block_split tracepoint (v5.11)
+	* fix: block: simplify and extend the block_bio_merge tracepoint class (v5.11)
+	* fix: block: remove the request_queue to argument request based tracepoints (v5.11)
+
 2021-01-11 (National Clean Off Your Desk Day) LTTng modules 2.12.4
 	* fix: adjust version range for trace_find_free_extent()
 	* Improve the release script
