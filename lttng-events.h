@@ -690,6 +690,7 @@ int lttng_enabler_attach_bytecode(struct lttng_enabler *enabler,
 		struct lttng_kernel_filter_bytecode __user *bytecode);
 void lttng_enabler_event_link_bytecode(struct lttng_event *event,
 		struct lttng_enabler *enabler);
+void lttng_free_event_filter_runtime(struct lttng_event *event);
 
 int lttng_probes_init(void);
 
