@@ -20,7 +20,7 @@
  * to handle user-space read.
  */
 static
-char get_char(struct estack_entry *reg, size_t offset)
+char get_char(const struct estack_entry *reg, size_t offset)
 {
 	if (unlikely(offset >= reg->u.s.seq_len))
 		return '\0';
@@ -710,6 +710,39 @@ again:
 
 	return LTTNG_INTERPRETER_RECORD_FLAG;
 }
+
+#ifdef DEBUG
+
+#define DBG_USER_STR_CUTOFF 32
+
+/*
+ * In debug mode, print user string (truncated, if necessary).
+ */
+static inline
+void dbg_load_ref_user_str_printk(const struct estack_entry *user_str_reg)
+{
+	size_t pos = 0;
+	char last_char;
+	char user_str[DBG_USER_STR_CUTOFF];
+
+	pagefault_disable();
+	do {
+		last_char = get_char(user_str_reg, pos);
+		user_str[pos] = last_char;
+		pos++;
+	} while (last_char != '\0' && pos < sizeof(user_str));
+	pagefault_enable();
+
+	user_str[sizeof(user_str) - 1] = '\0';
+	dbg_printk("load field ref user string: '%s%s'\n", user_str,
+		last_char != '\0' ? "[...]" : "");
+}
+#else
+static inline
+void dbg_load_ref_user_str_printk(const struct estack_entry *user_str_reg)
+{
+}
+#endif
 
 /*
  * Return 0 (discard), or raise the 0x1 flag (log event).
@@ -1504,7 +1537,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			estack_push(stack, top, ax, bx, ax_t, bx_t);
 			estack_ax(stack, top)->u.s.user_str =
 				*(const char * const *) &interpreter_stack_data[ref->offset];
-			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
+			if (unlikely(!estack_ax(stack, top)->u.s.user_str)) {
 				dbg_printk("Bytecode warning: loading a NULL string.\n");
 				ret = -EINVAL;
 				goto end;
@@ -1514,7 +1547,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 				ESTACK_STRING_LITERAL_TYPE_NONE;
 			estack_ax(stack, top)->u.s.user = 1;
 			estack_ax(stack, top)->type = REG_STRING;
-			dbg_printk("ref load string %s\n", estack_ax(stack, top)->u.s.str);
+			dbg_load_ref_user_str_printk(estack_ax(stack, top));
 			next_pc += sizeof(struct load_op) + sizeof(struct field_ref);
 			PO;
 		}
@@ -1532,7 +1565,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			estack_ax(stack, top)->u.s.user_str =
 				*(const char **) (&interpreter_stack_data[ref->offset
 								+ sizeof(unsigned long)]);
-			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
+			if (unlikely(!estack_ax(stack, top)->u.s.user_str)) {
 				dbg_printk("Bytecode warning: loading a NULL sequence.\n");
 				ret = -EINVAL;
 				goto end;
