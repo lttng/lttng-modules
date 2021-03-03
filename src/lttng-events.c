@@ -1485,6 +1485,8 @@ int _lttng_event_notifier_unregister(
 static
 void _lttng_event_destroy(struct lttng_event *event)
 {
+	struct lttng_enabler_ref *enabler_ref, *tmp_enabler_ref;
+
 	switch (event->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
 		lttng_event_desc_put(event->desc);
@@ -1510,6 +1512,11 @@ void _lttng_event_destroy(struct lttng_event *event)
 	}
 	list_del(&event->list);
 	lttng_destroy_context(event->ctx);
+	lttng_free_event_filter_runtime(event);
+	/* Free event enabler refs */
+	list_for_each_entry_safe(enabler_ref, tmp_enabler_ref,
+				 &event->enablers_ref_head, node)
+		kfree(enabler_ref);
 	kmem_cache_free(event_cache, event);
 }
 
