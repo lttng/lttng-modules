@@ -603,3 +603,14 @@ void lttng_free_event_filter_runtime(struct lttng_event *event)
 		kfree(runtime);
 	}
 }
+
+void lttng_free_event_notifier_filter_runtime(struct lttng_event_notifier *event_notifier)
+{
+	struct bytecode_runtime *runtime, *tmp;
+
+	list_for_each_entry_safe(runtime, tmp,
+			&event_notifier->filter_bytecode_runtime_head, p.node) {
+		kfree(runtime->data);
+		kfree(runtime);
+	}
+}

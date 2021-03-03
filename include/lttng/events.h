@@ -987,6 +987,7 @@ void lttng_enabler_link_bytecode(const struct lttng_event_desc *event_desc,
 		struct list_head *instance_bytecode_runtime_head,
 		struct list_head *enabler_bytecode_runtime_head);
 void lttng_free_event_filter_runtime(struct lttng_event *event);
+void lttng_free_event_notifier_filter_runtime(struct lttng_event_notifier *event_notifier);
 
 int lttng_probes_init(void);
 
