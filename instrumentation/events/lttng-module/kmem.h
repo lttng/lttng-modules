@@ -87,6 +87,32 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(kmem_alloc_node, kmem_cache_alloc_node,
 	TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node)
 )
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,12,0))
+LTTNG_TRACEPOINT_EVENT(kfree,
+
+	TP_PROTO(unsigned long call_site, const void *ptr),
+
+	TP_ARGS(call_site, ptr),
+
+	TP_FIELDS(
+		ctf_integer_hex(unsigned long, call_site, call_site)
+		ctf_integer_hex(const void *, ptr, ptr)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT(kmem_cache_free,
+
+	TP_PROTO(unsigned long call_site, const void *ptr, const char *name),
+
+	TP_ARGS(call_site, ptr, name),
+
+	TP_FIELDS(
+		ctf_integer_hex(unsigned long, call_site, call_site)
+		ctf_integer_hex(const void *, ptr, ptr)
+		ctf_string(name, name)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT_CLASS(kmem_free,
 
 	TP_PROTO(unsigned long call_site, const void *ptr),
@@ -114,6 +140,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(kmem_free, kmem_cache_free,
 
 	TP_ARGS(call_site, ptr)
 )
+#endif
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(2,6,32))
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,3,0))
