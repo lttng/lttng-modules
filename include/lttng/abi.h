@@ -146,6 +146,8 @@ struct lttng_kernel_event_notifier {
 	char padding[LTTNG_KERNEL_EVENT_NOTIFIER_PADDING];
 } __attribute__((packed));
 
+#define LTTNG_KERNEL_COUNTER_DIMENSION_MAX	4
+
 enum lttng_kernel_counter_arithmetic {
 	LTTNG_KERNEL_COUNTER_ARITHMETIC_MODULAR = 0,
 };
@@ -163,13 +165,15 @@ struct lttng_kernel_counter_dimension {
 	uint8_t has_overflow;
 } __attribute__((packed));
 
-#define LTTNG_KERNEL_COUNTER_DIMENSION_MAX 4
+#define LTTNG_KERNEL_COUNTER_CONF_PADDING1	67
 struct lttng_kernel_counter_conf {
 	uint32_t arithmetic;	/* enum lttng_kernel_counter_arithmetic */
 	uint32_t bitness;	/* enum lttng_kernel_counter_bitness */
 	uint32_t number_dimensions;
 	int64_t global_sum_step;
 	struct lttng_kernel_counter_dimension dimensions[LTTNG_KERNEL_COUNTER_DIMENSION_MAX];
+	uint8_t coalesce_hits;
+	char padding[LTTNG_KERNEL_COUNTER_CONF_PADDING1];
 } __attribute__((packed));
 
 struct lttng_kernel_counter_index {
