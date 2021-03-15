@@ -13,6 +13,13 @@
 #define _LTTNG_WRAPPER_GENHD_H
 
 #include <linux/genhd.h>
+#include <lttng/kernel-version.h>
+
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
+#define LTTNG_DISK_PART_TYPE struct block_device
+#else
+#define LTTNG_DISK_PART_TYPE struct hd_struct
+#endif
 
 #ifdef CONFIG_KALLSYMS_ALL
 
@@ -93,5 +100,60 @@ struct device_type *wrapper_get_disk_type(void)
 }
 
 #endif
+
+/*
+ * This wrapper has an 'int' return type instead of the original 'void', to be
+ * able to report the symbol lookup failure to the caller.
+ *
+ * Return 0 on success, -1 on error.
+ */
+int wrapper_disk_part_iter_init(struct disk_part_iter *piter, struct gendisk *disk,
+                          unsigned int flags);
+LTTNG_DISK_PART_TYPE *wrapper_disk_part_iter_next(struct disk_part_iter *piter);
+void wrapper_disk_part_iter_exit(struct disk_part_iter *piter);
+
+/*
+ * Canary function to check for 'disk_part_iter_init()' at compile time.
+ *
+ * From 'include/linux/genhd.h':
+ *
+ *   extern void disk_part_iter_init(struct disk_part_iter *piter,
+ *                                   struct gendisk *disk, unsigned int flags);
+ *
+ */
+static inline
+void __canary__disk_part_iter_init(struct disk_part_iter *piter, struct gendisk *disk,
+		unsigned int flags)
+{
+	disk_part_iter_init(piter, disk, flags);
+}
+
+/*
+ * Canary function to check for 'disk_part_iter_next()' at compile time.
+ *
+ * From 'include/linux/genhd.h':
+ *
+ *   struct block_device *disk_part_iter_next(struct disk_part_iter *piter);
+ *
+ */
+static inline
+LTTNG_DISK_PART_TYPE *__canary__disk_part_iter_next(struct disk_part_iter *piter)
+{
+	return disk_part_iter_next(piter);
+}
+
+/*
+ * Canary function to check for 'disk_part_iter_exit()' at compile time.
+ *
+ * From 'include/linux/genhd.h':
+ *
+ *   extern void disk_part_iter_exit(struct disk_part_iter *piter);
+ *
+ */
+static inline
+void __canary__disk_part_iter_exit(struct disk_part_iter *piter)
+{
+	return disk_part_iter_exit(piter);
+}
 
 #endif /* _LTTNG_WRAPPER_GENHD_H */
