@@ -704,6 +704,8 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		event_return->enabled = 0;
 		event_return->registered = 1;
 		event_return->instrumentation = itype;
+		INIT_LIST_HEAD(&event_return->bytecode_runtime_head);
+		INIT_LIST_HEAD(&event_return->enablers_ref_head);
 		/*
 		 * Populate lttng_event structure before kretprobe registration.
 		 */
