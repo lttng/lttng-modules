@@ -69,11 +69,13 @@ int lttng_uprobes_event_notifier_handler_pre(struct uprobe_consumer *uc, struct 
 	struct lttng_uprobe_handler *uprobe_handler =
 		container_of(uc, struct lttng_uprobe_handler, up_consumer);
 	struct lttng_event_notifier *event_notifier = uprobe_handler->u.event_notifier;
+	struct lttng_kernel_notifier_ctx notif_ctx;
 
 	if (unlikely(!READ_ONCE(event_notifier->enabled)))
 		return 0;
 
-	event_notifier->send_notification(event_notifier, NULL, NULL);
+	notif_ctx.eval_capture = LTTNG_READ_ONCE(event_notifier->eval_capture);
+	event_notifier->send_notification(event_notifier, NULL, NULL, &notif_ctx);
 	return 0;
 }
 

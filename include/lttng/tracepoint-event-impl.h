@@ -1430,6 +1430,8 @@ static void __event_notifier_probe__##_name(void *__data, _proto)	      \
 	struct probe_local_vars __tp_locvar;				      \
 	struct probe_local_vars *tp_locvar __attribute__((unused)) =	      \
 			&__tp_locvar;					      \
+	struct lttng_kernel_notifier_ctx __notif_ctx;			      \
+	bool __interpreter_stack_prepared = false;			      \
 									      \
 	if (unlikely(!READ_ONCE(__event_notifier->enabled)))		      \
 		return;							      \
@@ -1440,6 +1442,7 @@ static void __event_notifier_probe__##_name(void *__data, _proto)	      \
 									      \
 		__event_prepare_interpreter_stack__##_name(__stackvar.__interpreter_stack_data, \
 				tp_locvar, _args);			      \
+		__interpreter_stack_prepared = true;			      \
 		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->filter_bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx,   	\
 					__stackvar.__interpreter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG))	\
@@ -1449,14 +1452,16 @@ static void __event_notifier_probe__##_name(void *__data, _proto)	      \
 			goto __post;					      \
 	}								      \
 									      \
-	if (unlikely(!list_empty(&__event_notifier->capture_bytecode_runtime_head)))	\
+	__notif_ctx.eval_capture = LTTNG_READ_ONCE(__event_notifier->eval_capture); \
+	if (unlikely(!__interpreter_stack_prepared && __notif_ctx.eval_capture)) \
 		__event_prepare_interpreter_stack__##_name(		      \
 				__stackvar.__interpreter_stack_data,	      \
 				tp_locvar, _args);			      \
 									      \
 	__event_notifier->send_notification(__event_notifier,		      \
 			&__lttng_probe_ctx,				      \
-			__stackvar.__interpreter_stack_data);		      \
+			__stackvar.__interpreter_stack_data,		      \
+			&__notif_ctx);					      \
 									      \
 __post:									      \
 	_code_post							      \
@@ -1481,6 +1486,8 @@ static void __event_notifier_probe__##_name(void *__data)		      \
 	struct probe_local_vars __tp_locvar;				      \
 	struct probe_local_vars *tp_locvar __attribute__((unused)) =	      \
 			&__tp_locvar;					      \
+	struct lttng_kernel_notifier_ctx __notif_ctx;			      \
+	bool __interpreter_stack_prepared = false;			      \
 									      \
 	if (unlikely(!READ_ONCE(__event_notifier->enabled)))		      \
 		return;							      \
@@ -1491,6 +1498,7 @@ static void __event_notifier_probe__##_name(void *__data)		      \
 									      \
 		__event_prepare_interpreter_stack__##_name(__stackvar.__interpreter_stack_data, \
 				tp_locvar);				      \
+		__interpreter_stack_prepared = true;			      \
 		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->filter_bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx,	\
 					__stackvar.__interpreter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG))	\
@@ -1500,14 +1508,16 @@ static void __event_notifier_probe__##_name(void *__data)		      \
 			goto __post;					      \
 	}								      \
 									      \
-	if (unlikely(!list_empty(&__event_notifier->capture_bytecode_runtime_head)))  \
+	__notif_ctx.eval_capture = LTTNG_READ_ONCE(__event_notifier->eval_capture); \
+	if (unlikely(!__interpreter_stack_prepared && __notif_ctx.eval_capture)) \
 		__event_prepare_interpreter_stack__##_name(		      \
 				__stackvar.__interpreter_stack_data,	      \
 				tp_locvar);				      \
 									      \
 	__event_notifier->send_notification(__event_notifier,		      \
 			&__lttng_probe_ctx,				      \
-			__stackvar.__interpreter_stack_data);		      \
+			__stackvar.__interpreter_stack_data,		      \
+			&__notif_ctx);					      \
 __post:									      \
 	_code_post							      \
 	return;								      \

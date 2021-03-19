@@ -426,7 +426,8 @@ void notification_send(struct lttng_event_notifier_notification *notif,
 
 void lttng_event_notifier_notification_send(struct lttng_event_notifier *event_notifier,
 		struct lttng_probe_ctx *lttng_probe_ctx,
-		const char *stack_data)
+		const char *stack_data,
+		struct lttng_kernel_notifier_ctx *notif_ctx)
 {
 	struct lttng_event_notifier_notification notif = { 0 };
 	int ret;
@@ -440,7 +441,7 @@ void lttng_event_notifier_notification_send(struct lttng_event_notifier *event_n
 		goto end;
 	}
 
-	if (unlikely(!list_empty(&event_notifier->capture_bytecode_runtime_head))) {
+	if (unlikely(notif_ctx->eval_capture)) {
 		struct lttng_bytecode_runtime *capture_bc_runtime;
 
 		/*
@@ -449,7 +450,7 @@ void lttng_event_notifier_notification_send(struct lttng_event_notifier *event_n
 		 * `output` parameter to the capture buffer. If the interpreter
 		 * fails, append an empty capture to the buffer.
 		 */
-		list_for_each_entry(capture_bc_runtime,
+		list_for_each_entry_rcu(capture_bc_runtime,
 				&event_notifier->capture_bytecode_runtime_head, node) {
 			struct lttng_interpreter_output output;
 

@@ -353,6 +353,10 @@ struct lttng_event {
 	int has_enablers_without_bytecode;
 };
 
+struct lttng_kernel_notifier_ctx {
+	int eval_capture;
+};
+
 // FIXME: Really similar to lttng_event above. Could those be merged ?
 struct lttng_event_notifier {
 	enum lttng_event_type evtype;	/* First field. */
@@ -385,10 +389,12 @@ struct lttng_event_notifier {
 	size_t num_captures;
 	struct list_head capture_bytecode_runtime_head;
 	int has_enablers_without_bytecode;
+	int eval_capture;		/* Should evaluate capture */
 
 	void (*send_notification)(struct lttng_event_notifier *event_notifier,
 			struct lttng_probe_ctx *lttng_probe_ctx,
-			const char *interpreter_stack_data);
+			const char *interpreter_stack_data,
+			struct lttng_kernel_notifier_ctx *notif_ctx);
 	struct lttng_event_notifier_group *group; /* Weak ref */
 };
 

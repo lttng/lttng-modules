@@ -2768,6 +2768,8 @@ void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group 
 		list_for_each_entry(runtime,
 				&event_notifier->capture_bytecode_runtime_head, node)
 			lttng_bytecode_capture_sync_state(runtime);
+
+		WRITE_ONCE(event_notifier->eval_capture, !!event_notifier->num_captures);
 	}
 }
 
