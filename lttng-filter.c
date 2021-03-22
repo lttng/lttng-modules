@@ -241,12 +241,29 @@ int apply_field_reloc(struct lttng_event *event,
 			op->op = FILTER_OP_LOAD_FIELD_REF_S64;
 			break;
 		case atype_array:
-		case atype_sequence:
+		{
+			const struct lttng_basic_type *elem_type = &field->type.u.array.elem_type;
+
+			if (elem_type != atype_integer || elem_type->u.basic.integer.encoding == lttng_encode_none)
+				return -EINVAL;
 			if (field->user)
 				op->op = FILTER_OP_LOAD_FIELD_REF_USER_SEQUENCE;
 			else
 				op->op = FILTER_OP_LOAD_FIELD_REF_SEQUENCE;
 			break;
+		}
+		case atype_sequence:
+		{
+			const struct lttng_basic_type *elem_type = &field->type.u.sequence.elem_type;
+
+			if (elem_type != atype_integer || elem_type->u.basic.integer.encoding == lttng_encode_none)
+				return -EINVAL;
+			if (field->user)
+				op->op = FILTER_OP_LOAD_FIELD_REF_USER_SEQUENCE;
+			else
+				op->op = FILTER_OP_LOAD_FIELD_REF_SEQUENCE;
+			break;
+		}
 		case atype_string:
 			if (field->user)
 				op->op = FILTER_OP_LOAD_FIELD_REF_USER_STRING;
@@ -311,9 +328,27 @@ int apply_context_reloc(struct lttng_event *event,
 			op->op = FILTER_OP_GET_CONTEXT_REF_S64;
 			break;
 			/* Sequence and array supported as string */
-		case atype_string:
 		case atype_array:
+		{
+			const struct lttng_basic_type *elem_type = &ctx_field->event_field.type.u.array.elem_type;
+
+			if (elem_type != atype_integer || elem_type->u.basic.integer.encoding == lttng_encode_none)
+				return -EINVAL;
+			BUG_ON(ctx_field->event_field.user);
+			op->op = FILTER_OP_GET_CONTEXT_REF_STRING;
+			break;
+		}
 		case atype_sequence:
+		{
+			const struct lttng_basic_type *elem_type = &ctx_field->event_field.type.u.sequence.elem_type;
+
+			if (elem_type != atype_integer || elem_type->u.basic.integer.encoding == lttng_encode_none)
+				return -EINVAL;
+			BUG_ON(ctx_field->event_field.user);
+			op->op = FILTER_OP_GET_CONTEXT_REF_STRING;
+			break;
+		}
+		case atype_string:
 			BUG_ON(ctx_field->event_field.user);
 			op->op = FILTER_OP_GET_CONTEXT_REF_STRING;
 			break;
