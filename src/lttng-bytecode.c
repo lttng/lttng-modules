@@ -244,12 +244,29 @@ int apply_field_reloc(const struct lttng_event_desc *event_desc,
 			op->op = BYTECODE_OP_LOAD_FIELD_REF_S64;
 			break;
 		case atype_array_nestable:
-		case atype_sequence_nestable:
+		{
+			const struct lttng_type *elem_type = field->type.u.array_nestable.elem_type;
+
+			if (!lttng_is_bytewise_integer(elem_type) || elem_type->u.integer.encoding == lttng_encode_none)
+				return -EINVAL;
 			if (field->user)
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_USER_SEQUENCE;
 			else
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_SEQUENCE;
 			break;
+		}
+		case atype_sequence_nestable:
+		{
+			const struct lttng_type *elem_type = field->type.u.sequence_nestable.elem_type;
+
+			if (!lttng_is_bytewise_integer(elem_type) || elem_type->u.integer.encoding == lttng_encode_none)
+				return -EINVAL;
+			if (field->user)
+				op->op = BYTECODE_OP_LOAD_FIELD_REF_USER_SEQUENCE;
+			else
+				op->op = BYTECODE_OP_LOAD_FIELD_REF_SEQUENCE;
+			break;
+		}
 		case atype_string:
 			if (field->user)
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_USER_STRING;
@@ -314,17 +331,25 @@ int apply_context_reloc(struct bytecode_runtime *runtime,
 			op->op = BYTECODE_OP_GET_CONTEXT_REF_STRING;
 			break;
 		case atype_array_nestable:
-			if (!lttng_is_bytewise_integer(ctx_field->event_field.type.u.array_nestable.elem_type))
+		{
+			const struct lttng_type *elem_type = ctx_field->event_field.type.u.array_nestable.elem_type;
+
+			if (!lttng_is_bytewise_integer(elem_type) || elem_type->u.integer.encoding == lttng_encode_none)
 				return -EINVAL;
 			BUG_ON(ctx_field->event_field.user);
 			op->op = BYTECODE_OP_GET_CONTEXT_REF_STRING;
 			break;
+		}
 		case atype_sequence_nestable:
-			if (!lttng_is_bytewise_integer(ctx_field->event_field.type.u.sequence_nestable.elem_type))
+		{
+			const struct lttng_type *elem_type = ctx_field->event_field.type.u.sequence_nestable.elem_type;
+
+			if (!lttng_is_bytewise_integer(elem_type) || elem_type->u.integer.encoding == lttng_encode_none)
 				return -EINVAL;
 			BUG_ON(ctx_field->event_field.user);
 			op->op = BYTECODE_OP_GET_CONTEXT_REF_STRING;
 			break;
+		}
 		case atype_struct_nestable:	/* Unsupported. */
 		case atype_variant_nestable:	/* Unsupported. */
 		default:
