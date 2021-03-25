@@ -23,7 +23,7 @@
 #include <lttng/abi-old.h>
 #include <lttng/endian.h>
 
-#define lttng_is_signed_type(type)	(((type)(-1)) < 0)
+#define lttng_is_signed_type(type)	(((type) -1) < (type) 1)
 
 struct lttng_channel;
 struct lttng_session;
