@@ -19,13 +19,13 @@
 #include <blacklist/kprobes.h>
 
 enum lttng_kretprobe_type {
-	EVENT_ENTRY = 0,
-	EVENT_RETURN = 1,
+	EVENT_ENTRY	= 0,
+	EVENT_EXIT	= 1,
 };
 
 struct lttng_krp {
 	struct kretprobe krp;
-	struct lttng_event *event[2];	/* ENTRY and RETURN */
+	struct lttng_event *event[2];	/* ENTRY and EXIT */
 	struct kref kref_register;
 	struct kref kref_alloc;
 };
@@ -80,10 +80,10 @@ int lttng_kretprobes_handler_entry(struct kretprobe_instance *krpi,
 }
 
 static
-int lttng_kretprobes_handler_return(struct kretprobe_instance *krpi,
-				    struct pt_regs *regs)
+int lttng_kretprobes_handler_exit(struct kretprobe_instance *krpi,
+				  struct pt_regs *regs)
 {
-	return _lttng_kretprobes_handler(krpi, regs, EVENT_RETURN);
+	return _lttng_kretprobes_handler(krpi, regs, EVENT_EXIT);
 }
 
 /*
@@ -108,8 +108,8 @@ int lttng_create_kprobe_event(const char *name, struct lttng_event *event,
 	case EVENT_ENTRY:
 		suffix = "_entry";
 		break;
-	case EVENT_RETURN:
-		suffix = "_return";
+	case EVENT_EXIT:
+		suffix = "_exit";
 		break;
 	}
 	name_len += strlen(suffix);
@@ -163,7 +163,7 @@ int lttng_kretprobes_register(const char *name,
 			   uint64_t offset,
 			   uint64_t addr,
 			   struct lttng_event *event_entry,
-			   struct lttng_event *event_return)
+			   struct lttng_event *event_exit)
 {
 	int ret;
 	struct lttng_krp *lttng_krp;
@@ -175,14 +175,14 @@ int lttng_kretprobes_register(const char *name,
 	ret = lttng_create_kprobe_event(name, event_entry, EVENT_ENTRY);
 	if (ret)
 		goto error;
-	ret = lttng_create_kprobe_event(name, event_return, EVENT_RETURN);
+	ret = lttng_create_kprobe_event(name, event_exit, EVENT_EXIT);
 	if (ret)
-		goto event_return_error;
+		goto event_exit_error;
 	lttng_krp = kzalloc(sizeof(*lttng_krp), GFP_KERNEL);
 	if (!lttng_krp)
 		goto krp_error;
 	lttng_krp->krp.entry_handler = lttng_kretprobes_handler_entry;
-	lttng_krp->krp.handler = lttng_kretprobes_handler_return;
+	lttng_krp->krp.handler = lttng_kretprobes_handler_exit;
 	if (symbol_name) {
 		char *alloc_symbol;
 
@@ -195,7 +195,7 @@ int lttng_kretprobes_register(const char *name,
 			alloc_symbol;
 		event_entry->u.kretprobe.symbol_name =
 			alloc_symbol;
-		event_return->u.kretprobe.symbol_name =
+		event_exit->u.kretprobe.symbol_name =
 			alloc_symbol;
 	}
 	lttng_krp->krp.kp.offset = offset;
@@ -203,9 +203,9 @@ int lttng_kretprobes_register(const char *name,
 
 	/* Allow probe handler to find event structures */
 	lttng_krp->event[EVENT_ENTRY] = event_entry;
-	lttng_krp->event[EVENT_RETURN] = event_return;
+	lttng_krp->event[EVENT_EXIT] = event_exit;
 	event_entry->u.kretprobe.lttng_krp = lttng_krp;
-	event_return->u.kretprobe.lttng_krp = lttng_krp;
+	event_exit->u.kretprobe.lttng_krp = lttng_krp;
 
 	/*
 	 * Both events must be unregistered before the kretprobe is
@@ -233,10 +233,10 @@ register_error:
 name_error:
 	kfree(lttng_krp);
 krp_error:
-	kfree(event_return->desc->fields);
-	kfree(event_return->desc->name);
-	kfree(event_return->desc);
-event_return_error:
+	kfree(event_exit->desc->fields);
+	kfree(event_exit->desc->name);
+	kfree(event_exit->desc);
+event_exit_error:
 	kfree(event_entry->desc->fields);
 	kfree(event_entry->desc->name);
 	kfree(event_entry->desc);
@@ -281,7 +281,7 @@ EXPORT_SYMBOL_GPL(lttng_kretprobes_destroy_private);
 int lttng_kretprobes_event_enable_state(struct lttng_event *event,
 		int enable)
 {
-	struct lttng_event *event_return;
+	struct lttng_event *event_exit;
 	struct lttng_krp *lttng_krp;
 
 	if (event->instrumentation != LTTNG_KERNEL_KRETPROBE) {
@@ -291,9 +291,9 @@ int lttng_kretprobes_event_enable_state(struct lttng_event *event,
 		return -EBUSY;
 	}
 	lttng_krp = event->u.kretprobe.lttng_krp;
-	event_return = lttng_krp->event[EVENT_RETURN];
+	event_exit = lttng_krp->event[EVENT_EXIT];
 	WRITE_ONCE(event->enabled, enable);
-	WRITE_ONCE(event_return->enabled, enable);
+	WRITE_ONCE(event_exit->enabled, enable);
 	return 0;
 }
 EXPORT_SYMBOL_GPL(lttng_kretprobes_event_enable_state);
