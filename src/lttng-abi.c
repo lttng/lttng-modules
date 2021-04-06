@@ -1814,8 +1814,11 @@ int lttng_abi_create_event(struct file *channel_file,
 	ret = lttng_abi_validate_event_param(event_param);
 	if (ret)
 		goto event_error;
-	if (event_param->instrumentation == LTTNG_KERNEL_TRACEPOINT
-			|| event_param->instrumentation == LTTNG_KERNEL_SYSCALL) {
+
+	switch (event_param->instrumentation) {
+	case LTTNG_KERNEL_TRACEPOINT:		/* Fall-through */
+	case LTTNG_KERNEL_SYSCALL:
+	{
 		struct lttng_event_enabler *event_enabler;
 
 		if (strutils_is_star_glob_pattern(event_param->name)) {
@@ -1830,7 +1833,13 @@ int lttng_abi_create_event(struct file *channel_file,
 				event_param, channel);
 		}
 		priv = event_enabler;
-	} else {
+		break;
+	}
+
+	case LTTNG_KERNEL_KPROBE:		/* Fall-through */
+	case LTTNG_KERNEL_KRETPROBE:		/* Fall-through */
+	case LTTNG_KERNEL_UPROBE:
+	{
 		struct lttng_event *event;
 
 		/*
@@ -1846,6 +1855,14 @@ int lttng_abi_create_event(struct file *channel_file,
 			goto event_error;
 		}
 		priv = event;
+		break;
+	}
+
+	case LTTNG_KERNEL_FUNCTION:		/* Fall-through */
+	case LTTNG_KERNEL_NOOP:			/* Fall-through */
+	default:
+		ret = -EINVAL;
+		goto event_error;
 	}
 	event_file->private_data = priv;
 	fd_install(event_fd, event_file);
@@ -2025,8 +2042,10 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 		goto refcount_error;
 	}
 
-	if (event_notifier_param->event.instrumentation == LTTNG_KERNEL_TRACEPOINT
-			|| event_notifier_param->event.instrumentation == LTTNG_KERNEL_SYSCALL) {
+	switch (event_notifier_param->event.instrumentation) {
+	case LTTNG_KERNEL_TRACEPOINT:		/* Fall-through */
+	case LTTNG_KERNEL_SYSCALL:
+	{
 		struct lttng_event_notifier_enabler *enabler;
 
 		if (strutils_is_star_glob_pattern(event_notifier_param->event.name)) {
@@ -2045,7 +2064,13 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 					event_notifier_param);
 		}
 		priv = enabler;
-	} else {
+		break;
+	}
+
+	case LTTNG_KERNEL_KPROBE:		/* Fall-through */
+	case LTTNG_KERNEL_KRETPROBE:		/* Fall-through */
+	case LTTNG_KERNEL_UPROBE:
+	{
 		struct lttng_event_notifier *event_notifier;
 
 		/*
@@ -2064,6 +2089,14 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 			goto event_notifier_error;
 		}
 		priv = event_notifier;
+		break;
+	}
+
+	case LTTNG_KERNEL_FUNCTION:		/* Fall-through */
+	case LTTNG_KERNEL_NOOP:			/* Fall-through */
+	default:
+		ret = -EINVAL;
+		goto event_notifier_error;
 	}
 	event_notifier_file->private_data = priv;
 	fd_install(event_notifier_fd, event_notifier_file);
