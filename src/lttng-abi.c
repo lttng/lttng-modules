@@ -1725,8 +1725,8 @@ int lttng_abi_validate_event_param(struct lttng_kernel_event *event_param)
 	switch (event_param->instrumentation) {
 	case LTTNG_KERNEL_SYSCALL:
 		switch (event_param->u.syscall.entryexit) {
-		case LTTNG_KERNEL_SYSCALL_ENTRY:
-		case LTTNG_KERNEL_SYSCALL_EXIT:
+		case LTTNG_KERNEL_SYSCALL_ENTRY:	/* Fall-through */
+		case LTTNG_KERNEL_SYSCALL_EXIT:		/* Fall-through */
 		case LTTNG_KERNEL_SYSCALL_ENTRYEXIT:
 			break;
 		default:
