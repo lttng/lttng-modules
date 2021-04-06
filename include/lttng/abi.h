@@ -56,11 +56,18 @@ struct lttng_kernel_channel {
 	char padding[LTTNG_KERNEL_CHANNEL_PADDING];
 } __attribute__((packed));
 
+enum lttng_kernel_kretprobe_entryexit {
+	LTTNG_KERNEL_KRETPROBE_ENTRYEXIT = 0,
+	LTTNG_KERNEL_KRETPROBE_ENTRY = 1,
+	LTTNG_KERNEL_KRETPROBE_EXIT = 2,
+};
+
 struct lttng_kernel_kretprobe {
 	uint64_t addr;
 
 	uint64_t offset;
 	char symbol_name[LTTNG_KERNEL_SYM_NAME_LEN];
+	uint8_t entryexit;	/* enum lttng_kernel_kretprobe_entryexit */
 } __attribute__((packed));
 
 /*

@@ -1746,9 +1746,19 @@ int lttng_abi_validate_event_param(struct lttng_kernel_event *event_param)
 		}
 		break;
 
+	case LTTNG_KERNEL_KRETPROBE:
+		switch (event_param->u.kretprobe.entryexit) {
+		case LTTNG_KERNEL_SYSCALL_ENTRYEXIT:
+			break;
+		case LTTNG_KERNEL_SYSCALL_ENTRY:	/* Fall-through */
+		case LTTNG_KERNEL_SYSCALL_EXIT:		/* Fall-through */
+		default:
+			return -EINVAL;
+		}
+		break;
+
 	case LTTNG_KERNEL_TRACEPOINT:	/* Fall-through */
 	case LTTNG_KERNEL_KPROBE:	/* Fall-through */
-	case LTTNG_KERNEL_KRETPROBE:	/* Fall-through */
 	case LTTNG_KERNEL_UPROBE:
 		break;
 
