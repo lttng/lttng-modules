@@ -1746,14 +1746,14 @@ int lttng_abi_validate_event_param(struct lttng_kernel_event *event_param)
 		}
 		break;
 
-	case LTTNG_KERNEL_TRACEPOINT:	/* Fallthrough */
-	case LTTNG_KERNEL_KPROBE:	/* Fallthrough */
-	case LTTNG_KERNEL_KRETPROBE:	/* Fallthrough */
-	case LTTNG_KERNEL_NOOP:		/* Fallthrough */
+	case LTTNG_KERNEL_TRACEPOINT:	/* Fall-through */
+	case LTTNG_KERNEL_KPROBE:	/* Fall-through */
+	case LTTNG_KERNEL_KRETPROBE:	/* Fall-through */
 	case LTTNG_KERNEL_UPROBE:
 		break;
 
-	case LTTNG_KERNEL_FUNCTION:	/* Fallthrough */
+	case LTTNG_KERNEL_FUNCTION:	/* Fall-through */
+	case LTTNG_KERNEL_NOOP:		/* Fall-through */
 	default:
 		return -EINVAL;
 	}
