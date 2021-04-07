@@ -273,7 +273,7 @@ static struct lttng_kernel_enum_entry proto_transport_enum_entries[] = {
 	},
 };
 
-static const struct lttng_enum_desc proto_transport_header_type = {
+static const struct lttng_kernel_enum_desc proto_transport_header_type = {
 	.name = "proto_transport_header_type",
 	.entries = proto_transport_enum_entries,
 	.nr_entries = ARRAY_SIZE(proto_transport_enum_entries),
@@ -302,7 +302,7 @@ static struct lttng_kernel_enum_entry transport_enum_entries[] = {
 	},
 };
 
-static const struct lttng_enum_desc transport_header_type = {
+static const struct lttng_kernel_enum_desc transport_header_type = {
 	.name = "transport_header_type",
 	.entries = transport_enum_entries,
 	.nr_entries = ARRAY_SIZE(transport_enum_entries),

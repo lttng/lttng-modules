@@ -474,7 +474,7 @@ void __event_notifier_template_proto___##_name(void);
 
 #undef LTTNG_TRACEPOINT_ENUM
 #define LTTNG_TRACEPOINT_ENUM(_name, _values)						\
-	static const struct lttng_enum_desc __enum_##_name = {				\
+	static const struct lttng_kernel_enum_desc __enum_##_name = {			\
 		.name = #_name,								\
 		.entries = __enum_values__##_name,					\
 		.nr_entries = ARRAY_SIZE(__enum_values__##_name),			\

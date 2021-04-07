@@ -3267,7 +3267,7 @@ int _lttng_enum_type_statedump(struct lttng_session *session,
 		const struct lttng_type *type,
 		size_t nesting)
 {
-	const struct lttng_enum_desc *enum_desc;
+	const struct lttng_kernel_enum_desc *enum_desc;
 	const struct lttng_type *container_type;
 	int ret;
 	unsigned int i, nr_entries;

@@ -103,7 +103,7 @@ struct lttng_type {
 			enum lttng_kernel_string_encoding encoding;
 		} string;
 		struct {
-			const struct lttng_enum_desc *desc;	/* Enumeration mapping */
+			const struct lttng_kernel_enum_desc *desc;	/* Enumeration mapping */
 			const struct lttng_type *container_type;
 		} enum_nestable;
 		struct {
@@ -130,7 +130,7 @@ struct lttng_type {
 	} u;
 };
 
-struct lttng_enum_desc {
+struct lttng_kernel_enum_desc {
 	const char *name;
 	const struct lttng_kernel_enum_entry *entries;
 	unsigned int nr_entries;
