@@ -36,6 +36,7 @@
 #include <wrapper/types.h>
 #include <lttng/kernel-version.h>
 #include <lttng/events.h>
+#include <lttng/events-internal.h>
 #include <lttng/lttng-bytecode.h>
 #include <lttng/tracer.h>
 #include <lttng/event-notifier-notification.h>
