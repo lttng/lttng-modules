@@ -172,7 +172,7 @@ int _lttng_kprobes_register(const char *symbol_name,
 	lttng_kp->kp.addr = (void *) (unsigned long) addr;
 
 	/*
-	 * Ensure the memory we just allocated don't event_notifier page faults.
+	 * Ensure the memory we just allocated don't notify page faults.
 	 * Well.. kprobes itself puts the page fault handler on the blacklist,
 	 * but we can never be too careful.
 	 */

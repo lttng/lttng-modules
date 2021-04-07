@@ -25,7 +25,7 @@ static LIST_HEAD(_probe_list);
 static LIST_HEAD(lazy_probe_init);
 
 /*
- * lazy_nesting counter ensures we don't event_notifier lazy probe registration
+ * lazy_nesting counter ensures we don't notify lazy probe registration
  * fixup while we are performing the fixup. It is protected by the
  * sessions lock.
  */

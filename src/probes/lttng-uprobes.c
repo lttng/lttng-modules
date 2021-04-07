@@ -210,7 +210,7 @@ int lttng_uprobes_add_callsite(struct lttng_uprobe *uprobe,
 		goto end;
 	}
 
-	/* Ensure the memory we just allocated don't event_notifier page faults. */
+	/* Ensure the memory we just allocated don't notify page faults. */
 	wrapper_vmalloc_sync_mappings();
 
 	uprobe_handler->u.event = priv_data;
