@@ -58,13 +58,13 @@ enum channel_type {
 	METADATA_CHANNEL,
 };
 
-struct lttng_enum_value {
+struct lttng_kernel_enum_value {
 	unsigned long long value;
 	unsigned int signedness:1;
 };
 
-struct lttng_enum_entry {
-	struct lttng_enum_value start, end;	/* start and end are inclusive */
+struct lttng_kernel_enum_entry {
+	struct lttng_kernel_enum_value start, end;	/* start and end are inclusive */
 	const char *string;
 	struct {
 		unsigned int is_auto:1;
@@ -132,7 +132,7 @@ struct lttng_type {
 
 struct lttng_enum_desc {
 	const char *name;
-	const struct lttng_enum_entry *entries;
+	const struct lttng_kernel_enum_entry *entries;
 	unsigned int nr_entries;
 };
 

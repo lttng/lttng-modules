@@ -272,7 +272,7 @@ void __event_notifier_template_proto___##_name(void);
 
 #undef LTTNG_TRACEPOINT_ENUM
 #define LTTNG_TRACEPOINT_ENUM(_name, _values)				\
-	const struct lttng_enum_entry __enum_values__##_name[] = { \
+	const struct lttng_kernel_enum_entry __enum_values__##_name[] = { \
 		_values							\
 	};
 

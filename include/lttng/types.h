@@ -33,7 +33,7 @@
 
 #undef TRACE_EVENT_ENUM
 #define TRACE_EVENT_ENUM(_name, _entries...)				\
-	const struct lttng_enum_entry __trace_event_enum_##_name[] = {	\
+	const struct lttng_kernel_enum_entry __trace_event_enum_##_name[] = {	\
 		PARAMS(_entries)					\
 	};
 

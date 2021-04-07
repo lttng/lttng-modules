@@ -3294,7 +3294,7 @@ int _lttng_enum_type_statedump(struct lttng_session *session,
 		goto end;
 	/* Dump all entries */
 	for (i = 0; i < nr_entries; i++) {
-		const struct lttng_enum_entry *entry = &enum_desc->entries[i];
+		const struct lttng_kernel_enum_entry *entry = &enum_desc->entries[i];
 		int j, len;
 
 		ret = print_tabs(session, nesting + 1);

@@ -235,7 +235,7 @@ static inline enum transport_header_types __get_transport_header_type(struct sk_
 	return TH_NONE;
 }
 
-static struct lttng_enum_entry proto_transport_enum_entries[] = {
+static struct lttng_kernel_enum_entry proto_transport_enum_entries[] = {
 	[0] = {
 		.start = { .value = 0, .signedness = 0, },
 		.end = { .value = IPPROTO_ICMP - 1, .signedness = 0, },
@@ -279,7 +279,7 @@ static const struct lttng_enum_desc proto_transport_header_type = {
 	.nr_entries = ARRAY_SIZE(proto_transport_enum_entries),
 };
 
-static struct lttng_enum_entry transport_enum_entries[] = {
+static struct lttng_kernel_enum_entry transport_enum_entries[] = {
 	[0] = {
 		.start = { .value = TH_NONE, .signedness = 0, },
 		.end = { .value = TH_NONE, .signedness = 0, },
