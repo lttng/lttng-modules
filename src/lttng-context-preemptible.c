@@ -35,7 +35,7 @@ size_t preemptible_get_size(size_t offset)
 }
 
 static
-void preemptible_record(struct lttng_ctx_field *field,
+void preemptible_record(struct lttng_kernel_ctx_field *field,
 		struct lib_ring_buffer_ctx *ctx,
 		struct lttng_channel *chan)
 {
@@ -50,7 +50,7 @@ void preemptible_record(struct lttng_ctx_field *field,
 }
 
 static
-void preemptible_get_value(struct lttng_ctx_field *field,
+void preemptible_get_value(struct lttng_kernel_ctx_field *field,
 		struct lttng_probe_ctx *lttng_probe_ctx,
 		union lttng_ctx_value *value)
 {
@@ -63,9 +63,9 @@ void preemptible_get_value(struct lttng_ctx_field *field,
 		value->s64 = 0;
 }
 
-int lttng_add_preemptible_to_ctx(struct lttng_ctx **ctx)
+int lttng_add_preemptible_to_ctx(struct lttng_kernel_ctx **ctx)
 {
-	struct lttng_ctx_field *field;
+	struct lttng_kernel_ctx_field *field;
 
 	field = lttng_append_context(ctx);
 	if (!field)

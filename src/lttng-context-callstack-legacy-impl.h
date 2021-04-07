@@ -57,18 +57,6 @@ static struct lttng_cs_type cs_types[] = {
 };
 
 static
-const char *lttng_cs_ctx_mode_name(enum lttng_cs_ctx_modes mode)
-{
-	return cs_types[mode].name;
-}
-
-static
-const char *lttng_cs_ctx_mode_length_name(enum lttng_cs_ctx_modes mode)
-{
-	return cs_types[mode].length_name;
-}
-
-static
 int init_type(enum lttng_cs_ctx_modes mode)
 {
 	unsigned long func;
@@ -108,7 +96,7 @@ void lttng_cs_set_init(struct lttng_cs __percpu *cs_set)
 DEFINE_PER_CPU(int, callstack_user_nesting);
 
 static
-struct stack_trace *stack_trace_context(struct lttng_ctx_field *field,
+struct stack_trace *stack_trace_context(struct lttng_kernel_ctx_field *field,
 					struct lib_ring_buffer_ctx *ctx)
 {
 	int buffer_nesting, cs_user_nesting;
@@ -140,7 +128,7 @@ struct stack_trace *stack_trace_context(struct lttng_ctx_field *field,
 }
 
 static
-size_t lttng_callstack_length_get_size(size_t offset, struct lttng_ctx_field *field,
+size_t lttng_callstack_length_get_size(size_t offset, struct lttng_kernel_ctx_field *field,
 				struct lib_ring_buffer_ctx *ctx,
 				struct lttng_channel *chan)
 {
@@ -156,7 +144,7 @@ size_t lttng_callstack_length_get_size(size_t offset, struct lttng_ctx_field *fi
  * resulting callstack is saved to be accessed in the record step.
  */
 static
-size_t lttng_callstack_sequence_get_size(size_t offset, struct lttng_ctx_field *field,
+size_t lttng_callstack_sequence_get_size(size_t offset, struct lttng_kernel_ctx_field *field,
 					struct lib_ring_buffer_ctx *ctx,
 					struct lttng_channel *chan)
 {
@@ -201,7 +189,7 @@ size_t lttng_callstack_sequence_get_size(size_t offset, struct lttng_ctx_field *
 }
 
 static
-void lttng_callstack_length_record(struct lttng_ctx_field *field,
+void lttng_callstack_length_record(struct lttng_kernel_ctx_field *field,
 			struct lib_ring_buffer_ctx *ctx,
 			struct lttng_channel *chan)
 {
@@ -219,7 +207,7 @@ void lttng_callstack_length_record(struct lttng_ctx_field *field,
 	chan->ops->event_write(ctx, &nr_seq_entries, sizeof(unsigned int));
 }
 static
-void lttng_callstack_sequence_record(struct lttng_ctx_field *field,
+void lttng_callstack_sequence_record(struct lttng_kernel_ctx_field *field,
 			struct lib_ring_buffer_ctx *ctx,
 			struct lttng_channel *chan)
 {

@@ -12,6 +12,7 @@
 #include <linux/sched.h>
 #include <linux/syscalls.h>
 #include <lttng/events.h>
+#include <lttng/events-internal.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 #include <lttng/tracer.h>
@@ -27,7 +28,7 @@ size_t vppid_get_size(size_t offset)
 }
 
 static
-void vppid_record(struct lttng_ctx_field *field,
+void vppid_record(struct lttng_kernel_ctx_field *field,
 		  struct lib_ring_buffer_ctx *ctx,
 		  struct lttng_channel *chan)
 {
@@ -59,7 +60,7 @@ void vppid_record(struct lttng_ctx_field *field,
 }
 
 static
-void vppid_get_value(struct lttng_ctx_field *field,
+void vppid_get_value(struct lttng_kernel_ctx_field *field,
 		struct lttng_probe_ctx *lttng_probe_ctx,
 		union lttng_ctx_value *value)
 {
@@ -89,30 +90,24 @@ void vppid_get_value(struct lttng_ctx_field *field,
 	value->s64 = vppid;
 }
 
-int lttng_add_vppid_to_ctx(struct lttng_ctx **ctx)
-{
-	struct lttng_ctx_field *field;
+static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
+	lttng_kernel_static_event_field("vppid",
+		lttng_kernel_static_type_integer_from_type(pid_t, __BYTE_ORDER, 10),
+		false, false, false),
+	vppid_get_size,
+	NULL,
+	vppid_record,
+	vppid_get_value,
+	NULL, NULL);
 
-	field = lttng_append_context(ctx);
-	if (!field)
-		return -ENOMEM;
-	if (lttng_find_context(*ctx, "vppid")) {
-		lttng_remove_context_field(ctx, field);
+int lttng_add_vppid_to_ctx(struct lttng_kernel_ctx **ctx)
+{
+	int ret;
+
+	if (lttng_kernel_find_context(*ctx, ctx_field->event_field->name))
 		return -EEXIST;
-	}
-	field->event_field.name = "vppid";
-	field->event_field.type.type = lttng_kernel_type_integer;
-	field->event_field.type.u.integer.size = sizeof(pid_t) * CHAR_BIT;
-	field->event_field.type.u.integer.alignment = lttng_alignof(pid_t) * CHAR_BIT;
-	field->event_field.type.u.integer.signedness = lttng_is_signed_type(pid_t);
-	field->event_field.type.u.integer.reverse_byte_order = 0;
-	field->event_field.type.u.integer.base = 10;
-	field->event_field.type.u.integer.encoding = lttng_kernel_string_encoding_none;
-	field->get_size = vppid_get_size;
-	field->record = vppid_record;
-	field->get_value = vppid_get_value;
-	lttng_context_update(*ctx);
+	ret = lttng_kernel_context_append(ctx, ctx_field);
 	wrapper_vmalloc_sync_mappings();
-	return 0;
+	return ret;
 }
 EXPORT_SYMBOL_GPL(lttng_add_vppid_to_ctx);

@@ -30,14 +30,15 @@ size_t perf_counter_get_size(size_t offset)
 }
 
 static
-void perf_counter_record(struct lttng_ctx_field *field,
+void perf_counter_record(struct lttng_kernel_ctx_field *field,
 			 struct lib_ring_buffer_ctx *ctx,
 			 struct lttng_channel *chan)
 {
+	struct lttng_perf_counter_field *perf_field = field->priv;
 	struct perf_event *event;
 	uint64_t value;
 
-	event = field->u.perf_counter->e[ctx->cpu];
+	event = perf_field->e[ctx->cpu];
 	if (likely(event)) {
 		if (unlikely(event->state == PERF_EVENT_STATE_ERROR)) {
 			value = 0;
@@ -76,19 +77,20 @@ void overflow_callback(struct perf_event *event, int nmi,
 #endif
 
 static
-void lttng_destroy_perf_counter_field(struct lttng_ctx_field *field)
+void lttng_destroy_perf_counter_ctx_field(struct lttng_kernel_ctx_field *field)
 {
-	struct perf_event **events = field->u.perf_counter->e;
+	struct lttng_perf_counter_field *perf_field = field->priv;
+	struct perf_event **events = perf_field->e;
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 	{
 		int ret;
 
 		ret = cpuhp_state_remove_instance(lttng_hp_online,
-			&field->u.perf_counter->cpuhp_online.node);
+			&perf_field->cpuhp_online.node);
 		WARN_ON(ret);
 		ret = cpuhp_state_remove_instance(lttng_hp_prepare,
-			&field->u.perf_counter->cpuhp_prepare.node);
+			&perf_field->cpuhp_prepare.node);
 		WARN_ON(ret);
 	}
 #else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
@@ -100,14 +102,15 @@ void lttng_destroy_perf_counter_field(struct lttng_ctx_field *field)
 			perf_event_release_kernel(events[cpu]);
 		put_online_cpus();
 #ifdef CONFIG_HOTPLUG_CPU
-		unregister_cpu_notifier(&field->u.perf_counter->nb);
+		unregister_cpu_notifier(&perf_field->nb);
 #endif
 	}
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
-	kfree(field->event_field.name);
-	kfree(field->u.perf_counter->attr);
+	kfree(perf_field->name);
+	kfree(perf_field->attr);
+	kfree(perf_field->event_field);
 	lttng_kvfree(events);
-	kfree(field->u.perf_counter);
+	kfree(perf_field);
 }
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
@@ -212,21 +215,42 @@ int lttng_perf_counter_cpu_hp_callback(struct notifier_block *nb,
 
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
+static const struct lttng_kernel_type_common *field_type =
+	lttng_kernel_static_type_integer_from_type(uint64_t, __BYTE_ORDER, 10);
+
 int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  uint64_t config,
 				  const char *name,
-				  struct lttng_ctx **ctx)
+				  struct lttng_kernel_ctx **ctx)
 {
-	struct lttng_ctx_field *field;
+	struct lttng_kernel_ctx_field ctx_field;
+	struct lttng_kernel_event_field *event_field;
 	struct lttng_perf_counter_field *perf_field;
 	struct perf_event **events;
 	struct perf_event_attr *attr;
 	int ret;
 	char *name_alloc;
 
+	if (lttng_kernel_find_context(*ctx, name))
+		return -EEXIST;
+	name_alloc = kstrdup(name, GFP_KERNEL);
+	if (!name_alloc) {
+		ret = -ENOMEM;
+		goto name_alloc_error;
+	}
+	event_field = kzalloc(sizeof(*event_field), GFP_KERNEL);
+	if (!event_field) {
+		ret = -ENOMEM;
+		goto event_field_alloc_error;
+	}
+	event_field->name = name_alloc;
+	event_field->type = field_type;
+
 	events = lttng_kvzalloc(num_possible_cpus() * sizeof(*events), GFP_KERNEL);
-	if (!events)
-		return -ENOMEM;
+	if (!events) {
+		ret = -ENOMEM;
+		goto event_alloc_error;
+	}
 
 	attr = kzalloc(sizeof(struct perf_event_attr), GFP_KERNEL);
 	if (!attr) {
@@ -247,22 +271,14 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	}
 	perf_field->e = events;
 	perf_field->attr = attr;
+	perf_field->name = name_alloc;
+	perf_field->event_field = event_field;
 
-	name_alloc = kstrdup(name, GFP_KERNEL);
-	if (!name_alloc) {
-		ret = -ENOMEM;
-		goto name_alloc_error;
-	}
-
-	field = lttng_append_context(ctx);
-	if (!field) {
-		ret = -ENOMEM;
-		goto append_context_error;
-	}
-	if (lttng_find_context(*ctx, name_alloc)) {
-		ret = -EEXIST;
-		goto find_error;
-	}
+	ctx_field.event_field = event_field;
+	ctx_field.get_size = perf_counter_get_size;
+	ctx_field.record = perf_counter_record;
+	ctx_field.destroy = lttng_destroy_perf_counter_ctx_field;
+	ctx_field.priv = perf_field;
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 
@@ -306,24 +322,15 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	}
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
-	field->destroy = lttng_destroy_perf_counter_field;
-
-	field->event_field.name = name_alloc;
-	field->event_field.type.type = lttng_kernel_type_integer;
-	field->event_field.type.u.integer.size = sizeof(uint64_t) * CHAR_BIT;
-	field->event_field.type.u.integer.alignment = lttng_alignof(uint64_t) * CHAR_BIT;
-	field->event_field.type.u.integer.signedness = lttng_is_signed_type(uint64_t);
-	field->event_field.type.u.integer.reverse_byte_order = 0;
-	field->event_field.type.u.integer.base = 10;
-	field->event_field.type.u.integer.encoding = lttng_kernel_string_encoding_none;
-	field->get_size = perf_counter_get_size;
-	field->record = perf_counter_record;
-	field->u.perf_counter = perf_field;
-	lttng_context_update(*ctx);
-
-	wrapper_vmalloc_sync_mappings();
+	ret = lttng_kernel_context_append(ctx, &ctx_field);
+	if (ret) {
+		ret = -ENOMEM;
+		goto append_context_error;
+	}
 	return 0;
 
+	/* Error handling. */
+append_context_error:
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 cpuhp_online_error:
 	{
@@ -350,15 +357,15 @@ counter_error:
 #endif
 	}
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
-find_error:
-	lttng_remove_context_field(ctx, field);
-append_context_error:
-	kfree(name_alloc);
-name_alloc_error:
 	kfree(perf_field);
 error_alloc_perf_field:
 	kfree(attr);
 error_attr:
 	lttng_kvfree(events);
+event_alloc_error:
+	kfree(event_field);
+event_field_alloc_error:
+	kfree(name_alloc);
+name_alloc_error:
 	return ret;
 }

@@ -14,6 +14,7 @@
 
 #include <lttng/lttng-bytecode.h>
 #include <lttng/string-utils.h>
+#include <lttng/events-internal.h>
 
 /*
  * get_char should be called with page fault handler disabled if it is expected
@@ -276,20 +277,20 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		uint32_t idx)
 {
 
-	struct lttng_ctx_field *ctx_field;
-	struct lttng_event_field *field;
+	struct lttng_kernel_ctx_field *ctx_field;
+	const struct lttng_kernel_event_field *field;
 	union lttng_ctx_value v;
 
 	ctx_field = &lttng_static_ctx->fields[idx];
-	field = &ctx_field->event_field;
+	field = ctx_field->event_field;
 	ptr->type = LOAD_OBJECT;
 	/* field is only used for types nested within variants. */
 	ptr->field = NULL;
 
-	switch (field->type.type) {
+	switch (field->type->type) {
 	case lttng_kernel_type_integer:
 		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
-		if (field->type.u.integer.signedness) {
+		if (lttng_kernel_get_type_integer(field->type)->signedness) {
 			ptr->object_type = OBJECT_TYPE_S64;
 			ptr->u.s64 = v.s64;
 			ptr->ptr = &ptr->u.s64;
@@ -299,13 +300,13 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			ptr->ptr = &ptr->u.u64;
 		}
 		break;
-	case lttng_kernel_type_enum_nestable:
+	case lttng_kernel_type_enum:
 	{
-		const struct lttng_integer_type *itype =
-			&field->type.u.enum_nestable.container_type->u.integer;
+		const struct lttng_kernel_type_enum *enum_type = lttng_kernel_get_type_enum(field->type);
+		const struct lttng_kernel_type_integer *integer_type = lttng_kernel_get_type_integer(enum_type->container_type);
 
 		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
-		if (itype->signedness) {
+		if (integer_type->signedness) {
 			ptr->object_type = OBJECT_TYPE_SIGNED_ENUM;
 			ptr->u.s64 = v.s64;
 			ptr->ptr = &ptr->u.s64;
@@ -316,12 +317,15 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		}
 		break;
 	}
-	case lttng_kernel_type_array_nestable:
-		if (!lttng_is_bytewise_integer(field->type.u.array_nestable.elem_type)) {
+	case lttng_kernel_type_array:
+	{
+		const struct lttng_kernel_type_array *array_type = lttng_kernel_get_type_array(field->type);
+
+		if (!lttng_kernel_type_is_bytewise_integer(array_type->elem_type)) {
 			printk(KERN_WARNING "LTTng: bytecode: Array nesting only supports integer types.\n");
 			return -EINVAL;
 		}
-		if (field->type.u.array_nestable.elem_type->u.integer.encoding == lttng_kernel_string_encoding_none) {
+		if (array_type->encoding == lttng_kernel_string_encoding_none) {
 			printk(KERN_WARNING "LTTng: bytecode: Only string arrays are supported for contexts.\n");
 			return -EINVAL;
 		}
@@ -329,12 +333,16 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
 		ptr->ptr = v.str;
 		break;
-	case lttng_kernel_type_sequence_nestable:
-		if (!lttng_is_bytewise_integer(field->type.u.sequence_nestable.elem_type)) {
+	}
+	case lttng_kernel_type_sequence:
+	{
+		const struct lttng_kernel_type_sequence *sequence_type = lttng_kernel_get_type_sequence(field->type);
+
+		if (!lttng_kernel_type_is_bytewise_integer(sequence_type->elem_type)) {
 			printk(KERN_WARNING "LTTng: bytecode: Sequence nesting only supports integer types.\n");
 			return -EINVAL;
 		}
-		if (field->type.u.sequence_nestable.elem_type->u.integer.encoding == lttng_kernel_string_encoding_none) {
+		if (sequence_type->encoding == lttng_kernel_string_encoding_none) {
 			printk(KERN_WARNING "LTTng: bytecode: Only string sequences are supported for contexts.\n");
 			return -EINVAL;
 		}
@@ -342,19 +350,20 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
 		ptr->ptr = v.str;
 		break;
+	}
 	case lttng_kernel_type_string:
 		ptr->object_type = OBJECT_TYPE_STRING;
 		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
 		ptr->ptr = v.str;
 		break;
-	case lttng_kernel_type_struct_nestable:
+	case lttng_kernel_type_struct:
 		printk(KERN_WARNING "LTTng: bytecode: Structure type cannot be loaded.\n");
 		return -EINVAL;
-	case lttng_kernel_type_variant_nestable:
+	case lttng_kernel_type_variant:
 		printk(KERN_WARNING "LTTng: bytecode: Variant type cannot be loaded.\n");
 		return -EINVAL;
 	default:
-		printk(KERN_WARNING "LTTng: bytecode: Unknown type: %d", (int) field->type.type);
+		printk(KERN_WARNING "LTTng: bytecode: Unknown type: %d", (int) field->type->type);
 		return -EINVAL;
 	}
 	return 0;
@@ -382,7 +391,7 @@ static int dynamic_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			stack_top->u.ptr.ptr = ptr;
 			stack_top->u.ptr.object_type = gid->elem.type;
 			stack_top->u.ptr.rev_bo = gid->elem.rev_bo;
-			BUG_ON(stack_top->u.ptr.field->type.type != lttng_kernel_type_array_nestable);
+			BUG_ON(stack_top->u.ptr.field->type->type != lttng_kernel_type_array);
 			stack_top->u.ptr.field = NULL;
 			break;
 		}
@@ -401,7 +410,7 @@ static int dynamic_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			stack_top->u.ptr.ptr = ptr;
 			stack_top->u.ptr.object_type = gid->elem.type;
 			stack_top->u.ptr.rev_bo = gid->elem.rev_bo;
-			BUG_ON(stack_top->u.ptr.field->type.type != lttng_kernel_type_sequence_nestable);
+			BUG_ON(stack_top->u.ptr.field->type->type != lttng_kernel_type_sequence);
 			stack_top->u.ptr.field = NULL;
 			break;
 		}
@@ -672,14 +681,14 @@ again:
 			output->type = LTTNG_INTERPRETER_TYPE_SEQUENCE;
 			output->u.sequence.ptr = *(const char **) (ax->u.ptr.ptr + sizeof(unsigned long));
 			output->u.sequence.nr_elem = *(unsigned long *) ax->u.ptr.ptr;
-			output->u.sequence.nested_type = ax->u.ptr.field->type.u.sequence_nestable.elem_type;
+			output->u.sequence.nested_type = lttng_kernel_get_type_sequence(ax->u.ptr.field->type)->elem_type;
 			break;
 		case OBJECT_TYPE_ARRAY:
 			/* Skip count (unsigned long) */
 			output->type = LTTNG_INTERPRETER_TYPE_SEQUENCE;
 			output->u.sequence.ptr = *(const char **) (ax->u.ptr.ptr + sizeof(unsigned long));
-			output->u.sequence.nr_elem = ax->u.ptr.field->type.u.array_nestable.length;
-			output->u.sequence.nested_type = ax->u.ptr.field->type.u.array_nestable.elem_type;
+			output->u.sequence.nr_elem = lttng_kernel_get_type_array(ax->u.ptr.field->type)->length;
+			output->u.sequence.nested_type = lttng_kernel_get_type_array(ax->u.ptr.field->type)->elem_type;
 			break;
 		case OBJECT_TYPE_SIGNED_ENUM:
 			ret = dynamic_load_field(ax);
@@ -1476,7 +1485,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 		{
 			struct load_op *insn = (struct load_op *) pc;
 			struct field_ref *ref = (struct field_ref *) insn->data;
-			struct lttng_ctx_field *ctx_field;
+			struct lttng_kernel_ctx_field *ctx_field;
 			union lttng_ctx_value v;
 
 			dbg_printk("get context ref offset %u type string\n",
@@ -1504,7 +1513,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 		{
 			struct load_op *insn = (struct load_op *) pc;
 			struct field_ref *ref = (struct field_ref *) insn->data;
-			struct lttng_ctx_field *ctx_field;
+			struct lttng_kernel_ctx_field *ctx_field;
 			union lttng_ctx_value v;
 
 			dbg_printk("get context ref offset %u type s64\n",

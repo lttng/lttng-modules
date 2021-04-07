@@ -88,46 +88,29 @@ SC_LTTNG_TRACEPOINT_ENUM(lttng_mmap_flags_options,
 )
 
 #define LTTNG_MMAP_FLAGS_TYPE						\
-{									\
-	.name = "type",							\
-	.type = {							\
-		.type = lttng_kernel_type_enum_nestable,				\
-		.u = {							\
-			.enum_nestable = {				\
-				.desc = &__enum_lttng_mmap_flags_mapping_type,		\
-				.container_type =  __LTTNG_COMPOUND_LITERAL(		\
-					struct lttng_type, __type_integer(uint32_t,	\
-						4, 1, -1, __BYTE_ORDER, 16, none)),	\
-			},						\
-		},							\
-	},								\
-}
+	lttng_kernel_static_event_field("type",				\
+		lttng_kernel_static_type_enum(&__enum_lttng_mmap_flags_mapping_type, \
+				lttng_kernel_static_type_integer(4, 1, 0, __BYTE_ORDER, 16)), \
+		false, false, false)
 
 #define LTTNG_MMAP_FLAGS_OPTIONS					\
-{									\
-	.name = "options",						\
-	.type = {							\
-		.type = lttng_kernel_type_enum_nestable,				\
-		.u = {							\
-			.enum_nestable = {				\
-				.desc = &__enum_lttng_mmap_flags_options,	    \
-				.container_type = __LTTNG_COMPOUND_LITERAL(	    \
-					struct lttng_type, __type_integer(uint32_t, \
-						28, 1, -1, __BYTE_ORDER, 16, none)),\
-			},						\
-		},							\
-	},								\
-}
+	lttng_kernel_static_event_field("options",			\
+		lttng_kernel_static_type_enum(&__enum_lttng_mmap_flags_options, \
+				lttng_kernel_static_type_integer(28, 1, 0, __BYTE_ORDER, 16)), \
+		false, false, false)
 
 #if (__BYTE_ORDER == __LITTLE_ENDIAN)
 #define LTTNG_MMAP_FLAGS			\
+lttng_kernel_static_event_field_array(		\
 	[0] = LTTNG_MMAP_FLAGS_TYPE,		\
-	[1] = LTTNG_MMAP_FLAGS_OPTIONS,
-
+	[1] = LTTNG_MMAP_FLAGS_OPTIONS,		\
+)
 #else
 #define LTTNG_MMAP_FLAGS			\
+lttng_kernel_static_event_field_array(		\
 	[0] = LTTNG_MMAP_FLAGS_OPTIONS,		\
-	[1] = LTTNG_MMAP_FLAGS_TYPE,
+	[1] = LTTNG_MMAP_FLAGS_TYPE,		\
+)
 #endif
 
 /*
@@ -149,15 +132,7 @@ SC_LTTNG_TRACEPOINT_EVENT(mmap,
 		sc_in(
 			ctf_custom_field(
 				ctf_custom_type(
-					{
-						.type = lttng_kernel_type_struct_nestable,
-						.u.struct_nestable.nr_fields = 2,
-						.u.struct_nestable.fields =
-							__LTTNG_COMPOUND_LITERAL(struct lttng_event_field,
-								LTTNG_MMAP_FLAGS
-							),
-						.u.struct_nestable.alignment = lttng_alignof(uint32_t) * CHAR_BIT,
-					}
+					lttng_kernel_static_type_struct(2, LTTNG_MMAP_FLAGS, lttng_alignof(uint32_t) * CHAR_BIT)
 				),
 				flags,
 				ctf_custom_code(

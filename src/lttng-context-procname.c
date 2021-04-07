@@ -11,6 +11,7 @@
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <lttng/events.h>
+#include <lttng/events-internal.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 #include <lttng/tracer.h>
@@ -32,7 +33,7 @@ size_t procname_get_size(size_t offset)
  * could lead to crash in IRQ context and deadlock of the lockdep tracer.
  */
 static
-void procname_record(struct lttng_ctx_field *field,
+void procname_record(struct lttng_kernel_ctx_field *field,
 		 struct lib_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
@@ -40,38 +41,31 @@ void procname_record(struct lttng_ctx_field *field,
 }
 
 static
-void procname_get_value(struct lttng_ctx_field *field,
+void procname_get_value(struct lttng_kernel_ctx_field *field,
 		struct lttng_probe_ctx *lttng_probe_ctx,
 		union lttng_ctx_value *value)
 {
 	value->str = current->comm;
 }
 
-static const struct lttng_type procname_array_elem_type =
-	__type_integer(char, 0, 0, -1, __BYTE_ORDER, 10, UTF8);
+static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
+	lttng_kernel_static_event_field("procname",
+		lttng_kernel_static_type_array_text(sizeof(current->comm)),
+		false, false, false),
+	procname_get_size,
+	NULL,
+	procname_record,
+	procname_get_value,
+	NULL, NULL);
 
-int lttng_add_procname_to_ctx(struct lttng_ctx **ctx)
+int lttng_add_procname_to_ctx(struct lttng_kernel_ctx **ctx)
 {
-	struct lttng_ctx_field *field;
+	int ret;
 
-	field = lttng_append_context(ctx);
-	if (!field)
-		return -ENOMEM;
-	if (lttng_find_context(*ctx, "procname")) {
-		lttng_remove_context_field(ctx, field);
+	if (lttng_kernel_find_context(*ctx, ctx_field->event_field->name))
 		return -EEXIST;
-	}
-	field->event_field.name = "procname";
-	field->event_field.type.type = lttng_kernel_type_array_nestable;
-	field->event_field.type.u.array_nestable.elem_type = &procname_array_elem_type;
-	field->event_field.type.u.array_nestable.length = sizeof(current->comm);
-	field->event_field.type.u.array_nestable.alignment = 0;
-
-	field->get_size = procname_get_size;
-	field->record = procname_record;
-	field->get_value = procname_get_value;
-	lttng_context_update(*ctx);
+	ret = lttng_kernel_context_append(ctx, ctx_field);
 	wrapper_vmalloc_sync_mappings();
-	return 0;
+	return ret;
 }
 EXPORT_SYMBOL_GPL(lttng_add_procname_to_ctx);

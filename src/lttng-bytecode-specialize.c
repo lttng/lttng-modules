@@ -10,6 +10,7 @@
 #include <linux/slab.h>
 #include <lttng/lttng-bytecode.h>
 #include <lttng/align.h>
+#include <lttng/events-internal.h>
 
 static ssize_t bytecode_reserve_data(struct bytecode_runtime *runtime,
 		size_t align, size_t len)
@@ -206,18 +207,20 @@ static int specialize_get_index(struct bytecode_runtime *runtime,
 		switch (stack_top->load.object_type) {
 		case OBJECT_TYPE_ARRAY:
 		{
-			const struct lttng_integer_type *integer_type;
-			const struct lttng_event_field *field;
+			const struct lttng_kernel_event_field *field;
+			const struct lttng_kernel_type_array *array_type;
+			const struct lttng_kernel_type_integer *integer_type;
 			uint32_t elem_len, num_elems;
 			int signedness;
 
 			field = stack_top->load.field;
-			if (!lttng_is_bytewise_integer(field->type.u.array_nestable.elem_type)) {
+			array_type = lttng_kernel_get_type_array(field->type);
+			if (!lttng_kernel_type_is_bytewise_integer(array_type->elem_type)) {
 				ret = -EINVAL;
 				goto end;
 			}
-			integer_type = &field->type.u.array_nestable.elem_type->u.integer;
-			num_elems = field->type.u.array_nestable.length;
+			integer_type = lttng_kernel_get_type_integer(array_type->elem_type);
+			num_elems = array_type->length;
 			elem_len = integer_type->size;
 			signedness = integer_type->signedness;
 			if (index >= num_elems) {
@@ -239,17 +242,19 @@ static int specialize_get_index(struct bytecode_runtime *runtime,
 		}
 		case OBJECT_TYPE_SEQUENCE:
 		{
-			const struct lttng_integer_type *integer_type;
-			const struct lttng_event_field *field;
+			const struct lttng_kernel_event_field *field;
+			const struct lttng_kernel_type_sequence *sequence_type;
+			const struct lttng_kernel_type_integer *integer_type;
 			uint32_t elem_len;
 			int signedness;
 
 			field = stack_top->load.field;
-			if (!lttng_is_bytewise_integer(field->type.u.sequence_nestable.elem_type)) {
+			sequence_type = lttng_kernel_get_type_sequence(field->type);
+			if (!lttng_kernel_type_is_bytewise_integer(sequence_type->elem_type)) {
 				ret = -EINVAL;
 				goto end;
 			}
-			integer_type = &field->type.u.sequence_nestable.elem_type->u.integer;
+			integer_type = lttng_kernel_get_type_integer(sequence_type->elem_type);
 			elem_len = integer_type->size;
 			signedness = integer_type->signedness;
 			ret = specialize_get_index_object_type(&stack_top->load.object_type,
@@ -305,7 +310,7 @@ end:
 	return ret;
 }
 
-static int specialize_context_lookup_name(struct lttng_ctx *ctx,
+static int specialize_context_lookup_name(struct lttng_kernel_ctx *ctx,
 		struct bytecode_runtime *bytecode,
 		struct load_op *insn)
 {
@@ -314,43 +319,46 @@ static int specialize_context_lookup_name(struct lttng_ctx *ctx,
 
 	offset = ((struct get_symbol *) insn->data)->offset;
 	name = bytecode->p.bc->bc.data + bytecode->p.bc->bc.reloc_offset + offset;
-	return lttng_get_context_index(ctx, name);
+	return lttng_kernel_get_context_index(ctx, name);
 }
 
-static int specialize_load_object(const struct lttng_event_field *field,
+static int specialize_load_object(const struct lttng_kernel_event_field *field,
 		struct vstack_load *load, bool is_context)
 {
 	load->type = LOAD_OBJECT;
 
-	switch (field->type.type) {
+	switch (field->type->type) {
 	case lttng_kernel_type_integer:
-		if (field->type.u.integer.signedness)
+		if (lttng_kernel_get_type_integer(field->type)->signedness)
 			load->object_type = OBJECT_TYPE_S64;
 		else
 			load->object_type = OBJECT_TYPE_U64;
 		load->rev_bo = false;
 		break;
-	case lttng_kernel_type_enum_nestable:
+	case lttng_kernel_type_enum:
 	{
-		const struct lttng_integer_type *itype =
-			&field->type.u.enum_nestable.container_type->u.integer;
+		const struct lttng_kernel_type_enum *enum_type = lttng_kernel_get_type_enum(field->type);
+		const struct lttng_kernel_type_integer *integer_type = lttng_kernel_get_type_integer(enum_type->container_type);
 
-		if (itype->signedness)
+		if (integer_type->signedness)
 			load->object_type = OBJECT_TYPE_SIGNED_ENUM;
 		else
 			load->object_type = OBJECT_TYPE_UNSIGNED_ENUM;
 		load->rev_bo = false;
 		break;
 	}
-	case lttng_kernel_type_array_nestable:
-		if (!lttng_is_bytewise_integer(field->type.u.array_nestable.elem_type)) {
+	case lttng_kernel_type_array:
+	{
+		const struct lttng_kernel_type_array *array_type = lttng_kernel_get_type_array(field->type);
+
+		if (!lttng_kernel_type_is_bytewise_integer(array_type->elem_type)) {
 			printk(KERN_WARNING "LTTng: bytecode: Array nesting only supports integer types.\n");
 			return -EINVAL;
 		}
 		if (is_context) {
 			load->object_type = OBJECT_TYPE_STRING;
 		} else {
-			if (field->type.u.array_nestable.elem_type->u.integer.encoding == lttng_kernel_string_encoding_none) {
+			if (array_type->encoding == lttng_kernel_string_encoding_none) {
 				load->object_type = OBJECT_TYPE_ARRAY;
 				load->field = field;
 			} else {
@@ -358,15 +366,19 @@ static int specialize_load_object(const struct lttng_event_field *field,
 			}
 		}
 		break;
-	case lttng_kernel_type_sequence_nestable:
-		if (!lttng_is_bytewise_integer(field->type.u.sequence_nestable.elem_type)) {
+	}
+	case lttng_kernel_type_sequence:
+	{
+		const struct lttng_kernel_type_sequence *sequence_type = lttng_kernel_get_type_sequence(field->type);
+
+		if (!lttng_kernel_type_is_bytewise_integer(sequence_type->elem_type)) {
 			printk(KERN_WARNING "LTTng: bytecode: Sequence nesting only supports integer types.\n");
 			return -EINVAL;
 		}
 		if (is_context) {
 			load->object_type = OBJECT_TYPE_STRING;
 		} else {
-			if (field->type.u.sequence_nestable.elem_type->u.integer.encoding == lttng_kernel_string_encoding_none) {
+			if (sequence_type->encoding == lttng_kernel_string_encoding_none) {
 				load->object_type = OBJECT_TYPE_SEQUENCE;
 				load->field = field;
 			} else {
@@ -374,30 +386,31 @@ static int specialize_load_object(const struct lttng_event_field *field,
 			}
 		}
 		break;
+	}
 	case lttng_kernel_type_string:
 		load->object_type = OBJECT_TYPE_STRING;
 		break;
-	case lttng_kernel_type_struct_nestable:
+	case lttng_kernel_type_struct:
 		printk(KERN_WARNING "LTTng: bytecode: Structure type cannot be loaded.\n");
 		return -EINVAL;
-	case lttng_kernel_type_variant_nestable:
+	case lttng_kernel_type_variant:
 		printk(KERN_WARNING "LTTng: bytecode: Variant type cannot be loaded.\n");
 		return -EINVAL;
 	default:
-		printk(KERN_WARNING "LTTng: bytecode: Unknown type: %d", (int) field->type.type);
+		printk(KERN_WARNING "LTTng: bytecode: Unknown type: %d", (int) field->type->type);
 		return -EINVAL;
 	}
 	return 0;
 }
 
-static int specialize_context_lookup(struct lttng_ctx *ctx,
+static int specialize_context_lookup(struct lttng_kernel_ctx *ctx,
 		struct bytecode_runtime *runtime,
 		struct load_op *insn,
 		struct vstack_load *load)
 {
 	int idx, ret;
-	struct lttng_ctx_field *ctx_field;
-	struct lttng_event_field *field;
+	const struct lttng_kernel_ctx_field *ctx_field;
+	const struct lttng_kernel_event_field *field;
 	struct bytecode_get_index_data gid;
 	ssize_t data_offset;
 
@@ -406,7 +419,7 @@ static int specialize_context_lookup(struct lttng_ctx *ctx,
 		return -ENOENT;
 	}
 	ctx_field = &lttng_static_ctx->fields[idx];
-	field = &ctx_field->event_field;
+	field = ctx_field->event_field;
 	ret = specialize_load_object(field, load, true);
 	if (ret)
 		return ret;
@@ -426,7 +439,7 @@ static int specialize_context_lookup(struct lttng_ctx *ctx,
 	return 0;
 }
 
-static int specialize_payload_lookup(const struct lttng_event_desc *event_desc,
+static int specialize_payload_lookup(const struct lttng_kernel_event_desc *event_desc,
 		struct bytecode_runtime *runtime,
 		struct load_op *insn,
 		struct vstack_load *load)
@@ -436,7 +449,7 @@ static int specialize_payload_lookup(const struct lttng_event_desc *event_desc,
 	unsigned int i, nr_fields;
 	bool found = false;
 	uint32_t field_offset = 0;
-	const struct lttng_event_field *field;
+	const struct lttng_kernel_event_field *field;
 	int ret;
 	struct bytecode_get_index_data gid;
 	ssize_t data_offset;
@@ -445,7 +458,7 @@ static int specialize_payload_lookup(const struct lttng_event_desc *event_desc,
 	offset = ((struct get_symbol *) insn->data)->offset;
 	name = runtime->p.bc->bc.data + runtime->p.bc->bc.reloc_offset + offset;
 	for (i = 0; i < nr_fields; i++) {
-		field = &event_desc->fields[i];
+		field = event_desc->fields[i];
 		if (field->nofilter) {
 			continue;
 		}
@@ -454,13 +467,13 @@ static int specialize_payload_lookup(const struct lttng_event_desc *event_desc,
 			break;
 		}
 		/* compute field offset on stack */
-		switch (field->type.type) {
+		switch (field->type->type) {
 		case lttng_kernel_type_integer:
-		case lttng_kernel_type_enum_nestable:
+		case lttng_kernel_type_enum:
 			field_offset += sizeof(int64_t);
 			break;
-		case lttng_kernel_type_array_nestable:
-		case lttng_kernel_type_sequence_nestable:
+		case lttng_kernel_type_array:
+		case lttng_kernel_type_sequence:
 			field_offset += sizeof(unsigned long);
 			field_offset += sizeof(void *);
 			break;
@@ -500,14 +513,14 @@ end:
 	return ret;
 }
 
-int lttng_bytecode_specialize(const struct lttng_event_desc *event_desc,
+int lttng_bytecode_specialize(const struct lttng_kernel_event_desc *event_desc,
 		struct bytecode_runtime *bytecode)
 {
 	void *pc, *next_pc, *start_pc;
 	int ret = -EINVAL;
 	struct vstack _stack;
 	struct vstack *stack = &_stack;
-	struct lttng_ctx *ctx = bytecode->p.ctx;
+	struct lttng_kernel_ctx *ctx = bytecode->p.ctx;
 
 	vstack_init(stack);
 

@@ -47,8 +47,9 @@ lttng-tracer-objs := lib/msgpack/msgpack.o \
                      lttng-context-vsgid.o \
                      lttng-context-interruptible.o \
                      lttng-context-need-reschedule.o \
-                     lttng-context-callstack.o lttng-calibrate.o \
+                     lttng-calibrate.o \
                      lttng-context-hostname.o \
+		     lttng-context-callstack.o \
                      probes/lttng.o \
                      lttng-tracker-id.o \
                      lttng-bytecode.o lttng-bytecode-interpreter.o \

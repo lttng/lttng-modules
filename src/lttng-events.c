@@ -82,11 +82,12 @@ static
 void _lttng_metadata_channel_hangup(struct lttng_metadata_stream *stream);
 static
 int _lttng_type_statedump(struct lttng_session *session,
-		const struct lttng_type *type,
+		const struct lttng_kernel_type_common *type,
+		enum lttng_kernel_string_encoding parent_encoding,
 		size_t nesting);
 static
 int _lttng_field_statedump(struct lttng_session *session,
-		const struct lttng_event_field *field,
+		const struct lttng_kernel_event_field *field,
 		size_t nesting);
 
 void synchronize_trace(void)
@@ -814,7 +815,7 @@ void _lttng_channel_destroy(struct lttng_channel *chan)
 	chan->ops->channel_destroy(chan->chan);
 	module_put(chan->transport->owner);
 	list_del(&chan->list);
-	lttng_destroy_context(chan->ctx);
+	lttng_kernel_destroy_context(chan->ctx);
 	kfree(chan);
 }
 
@@ -844,7 +845,7 @@ void _lttng_metadata_channel_hangup(struct lttng_metadata_stream *stream)
 struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 				struct lttng_kernel_event *event_param,
 				void *filter,
-				const struct lttng_event_desc *event_desc,
+				const struct lttng_kernel_event_desc *event_desc,
 				enum lttng_kernel_instrumentation itype)
 {
 	struct lttng_session *session = chan->session;
@@ -860,7 +861,7 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 
 	switch (itype) {
 	case LTTNG_KERNEL_TRACEPOINT:
-		event_name = event_desc->name;
+		event_name = event_desc->event_name;
 		break;
 
 	case LTTNG_KERNEL_KPROBE:	/* Fall-through */
@@ -882,7 +883,7 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		LTTNG_EVENT_HT_SIZE, event_name);
 	lttng_hlist_for_each_entry(event, head, hlist) {
 		WARN_ON_ONCE(!event->desc);
-		if (!strncmp(event->desc->name, event_name,
+		if (!strncmp(event->desc->event_name, event_name,
 					LTTNG_KERNEL_SYM_NAME_LEN - 1)
 				&& chan == event->chan) {
 			ret = -EEXIST;
@@ -1086,7 +1087,7 @@ full:
 }
 
 struct lttng_event_notifier *_lttng_event_notifier_create(
-		const struct lttng_event_desc *event_desc,
+		const struct lttng_kernel_event_desc *event_desc,
 		uint64_t token, uint64_t error_counter_index,
 		struct lttng_event_notifier_group *event_notifier_group,
 		struct lttng_kernel_event_notifier *event_notifier_param,
@@ -1100,7 +1101,7 @@ struct lttng_event_notifier *_lttng_event_notifier_create(
 
 	switch (itype) {
 	case LTTNG_KERNEL_TRACEPOINT:
-		event_name = event_desc->name;
+		event_name = event_desc->event_name;
 		break;
 
 	case LTTNG_KERNEL_KPROBE:	/* Fall-through */
@@ -1122,7 +1123,7 @@ struct lttng_event_notifier *_lttng_event_notifier_create(
 		LTTNG_EVENT_NOTIFIER_HT_SIZE, event_name);
 	lttng_hlist_for_each_entry(event_notifier, head, hlist) {
 		WARN_ON_ONCE(!event_notifier->desc);
-		if (!strncmp(event_notifier->desc->name, event_name,
+		if (!strncmp(event_notifier->desc->event_name, event_name,
 					LTTNG_KERNEL_SYM_NAME_LEN - 1)
 				&& event_notifier_group == event_notifier->group
 				&& token == event_notifier->user_token) {
@@ -1325,7 +1326,7 @@ int lttng_kernel_counter_clear(struct lttng_counter *counter,
 struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 				struct lttng_kernel_event *event_param,
 				void *filter,
-				const struct lttng_event_desc *event_desc,
+				const struct lttng_kernel_event_desc *event_desc,
 				enum lttng_kernel_instrumentation itype)
 {
 	struct lttng_event *event;
@@ -1338,7 +1339,7 @@ struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 }
 
 struct lttng_event_notifier *lttng_event_notifier_create(
-		const struct lttng_event_desc *event_desc,
+		const struct lttng_kernel_event_desc *event_desc,
 		uint64_t id, uint64_t error_counter_index,
 		struct lttng_event_notifier_group *event_notifier_group,
 		struct lttng_kernel_event_notifier *event_notifier_param,
@@ -1358,7 +1359,7 @@ struct lttng_event_notifier *lttng_event_notifier_create(
 static
 void register_event(struct lttng_event *event)
 {
-	const struct lttng_event_desc *desc;
+	const struct lttng_kernel_event_desc *desc;
 	int ret = -EINVAL;
 
 	if (event->registered)
@@ -1367,7 +1368,7 @@ void register_event(struct lttng_event *event)
 	desc = event->desc;
 	switch (event->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
-		ret = lttng_wrapper_tracepoint_probe_register(desc->kname,
+		ret = lttng_wrapper_tracepoint_probe_register(desc->event_kname,
 						  desc->probe_callback,
 						  event);
 		break;
@@ -1396,7 +1397,7 @@ void register_event(struct lttng_event *event)
  */
 int _lttng_event_unregister(struct lttng_event *event)
 {
-	const struct lttng_event_desc *desc;
+	const struct lttng_kernel_event_desc *desc;
 	int ret = -EINVAL;
 
 	if (!event->registered)
@@ -1405,7 +1406,7 @@ int _lttng_event_unregister(struct lttng_event *event)
 	desc = event->desc;
 	switch (event->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
-		ret = lttng_wrapper_tracepoint_probe_unregister(event->desc->kname,
+		ret = lttng_wrapper_tracepoint_probe_unregister(event->desc->event_kname,
 						  event->desc->probe_callback,
 						  event);
 		break;
@@ -1446,7 +1447,7 @@ int _lttng_event_unregister(struct lttng_event *event)
 static
 void register_event_notifier(struct lttng_event_notifier *event_notifier)
 {
-	const struct lttng_event_desc *desc;
+	const struct lttng_kernel_event_desc *desc;
 	int ret = -EINVAL;
 
 	if (event_notifier->registered)
@@ -1455,7 +1456,7 @@ void register_event_notifier(struct lttng_event_notifier *event_notifier)
 	desc = event_notifier->desc;
 	switch (event_notifier->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
-		ret = lttng_wrapper_tracepoint_probe_register(desc->kname,
+		ret = lttng_wrapper_tracepoint_probe_register(desc->event_kname,
 						  desc->event_notifier_callback,
 						  event_notifier);
 		break;
@@ -1483,7 +1484,7 @@ static
 int _lttng_event_notifier_unregister(
 		struct lttng_event_notifier *event_notifier)
 {
-	const struct lttng_event_desc *desc;
+	const struct lttng_kernel_event_desc *desc;
 	int ret = -EINVAL;
 
 	if (!event_notifier->registered)
@@ -1492,7 +1493,7 @@ int _lttng_event_notifier_unregister(
 	desc = event_notifier->desc;
 	switch (event_notifier->instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
-		ret = lttng_wrapper_tracepoint_probe_unregister(event_notifier->desc->kname,
+		ret = lttng_wrapper_tracepoint_probe_unregister(event_notifier->desc->event_kname,
 						  event_notifier->desc->event_notifier_callback,
 						  event_notifier);
 		break;
@@ -1559,7 +1560,7 @@ void _lttng_event_destroy(struct lttng_event *event)
 		WARN_ON_ONCE(1);
 	}
 	list_del(&event->list);
-	lttng_destroy_context(event->ctx);
+	lttng_kernel_destroy_context(event->ctx);
 	lttng_free_event_filter_runtime(event);
 	/* Free event enabler refs */
 	list_for_each_entry_safe(enabler_ref, tmp_enabler_ref,
@@ -1884,7 +1885,7 @@ int lttng_match_enabler_name(const char *desc_name,
 	return 1;
 }
 
-int lttng_desc_match_enabler(const struct lttng_event_desc *desc,
+int lttng_desc_match_enabler(const struct lttng_kernel_event_desc *desc,
 		struct lttng_enabler *enabler)
 {
 	const char *desc_name, *enabler_name;
@@ -1893,7 +1894,7 @@ int lttng_desc_match_enabler(const struct lttng_event_desc *desc,
 	enabler_name = enabler->event_param.name;
 	switch (enabler->event_param.instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:
-		desc_name = desc->name;
+		desc_name = desc->event_name;
 		switch (enabler->format_type) {
 		case LTTNG_ENABLER_FORMAT_STAR_GLOB:
 			return lttng_match_enabler_star_glob(desc_name, enabler_name);
@@ -1905,7 +1906,7 @@ int lttng_desc_match_enabler(const struct lttng_event_desc *desc,
 		break;
 
 	case LTTNG_KERNEL_SYSCALL:
-		desc_name = desc->name;
+		desc_name = desc->event_name;
 		if (!strncmp(desc_name, "compat_", strlen("compat_"))) {
 			desc_name += strlen("compat_");
 			compat = true;
@@ -2024,8 +2025,8 @@ static
 void lttng_create_tracepoint_event_if_missing(struct lttng_event_enabler *event_enabler)
 {
 	struct lttng_session *session = event_enabler->chan->session;
-	struct lttng_probe_desc *probe_desc;
-	const struct lttng_event_desc *desc;
+	struct lttng_kernel_probe_desc *probe_desc;
+	const struct lttng_kernel_event_desc *desc;
 	int i;
 	struct list_head *probe_list;
 
@@ -2051,7 +2052,7 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_enabler *event_
 			 */
 			head = utils_borrow_hash_table_bucket(
 				session->events_ht.table, LTTNG_EVENT_HT_SIZE,
-				desc->name);
+				desc->event_name);
 			lttng_hlist_for_each_entry(event, head, hlist) {
 				if (event->desc == desc
 						&& event->chan == event_enabler->chan)
@@ -2069,7 +2070,7 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_enabler *event_
 					LTTNG_KERNEL_TRACEPOINT);
 			if (!event) {
 				printk(KERN_INFO "LTTng: Unable to create event %s\n",
-					probe_desc->event_desc[i]->name);
+					probe_desc->event_desc[i]->event_name);
 			}
 		}
 	}
@@ -2079,8 +2080,8 @@ static
 void lttng_create_tracepoint_event_notifier_if_missing(struct lttng_event_notifier_enabler *event_notifier_enabler)
 {
 	struct lttng_event_notifier_group *event_notifier_group = event_notifier_enabler->group;
-	struct lttng_probe_desc *probe_desc;
-	const struct lttng_event_desc *desc;
+	struct lttng_kernel_probe_desc *probe_desc;
+	const struct lttng_kernel_event_desc *desc;
 	int i;
 	struct list_head *probe_list;
 
@@ -2106,7 +2107,7 @@ void lttng_create_tracepoint_event_notifier_if_missing(struct lttng_event_notifi
 			 */
 			head = utils_borrow_hash_table_bucket(
 				event_notifier_group->event_notifiers_ht.table,
-				LTTNG_EVENT_NOTIFIER_HT_SIZE, desc->name);
+				LTTNG_EVENT_NOTIFIER_HT_SIZE, desc->event_name);
 			lttng_hlist_for_each_entry(event_notifier, head, hlist) {
 				if (event_notifier->desc == desc
 						&& event_notifier->user_token == event_notifier_enabler->base.user_token)
@@ -2125,7 +2126,7 @@ void lttng_create_tracepoint_event_notifier_if_missing(struct lttng_event_notifi
 				LTTNG_KERNEL_TRACEPOINT);
 			if (IS_ERR(event_notifier)) {
 				printk(KERN_INFO "Unable to create event_notifier %s\n",
-					probe_desc->event_desc[i]->name);
+					probe_desc->event_desc[i]->event_name);
 			}
 		}
 	}
@@ -2507,7 +2508,7 @@ void lttng_event_enabler_destroy(struct lttng_event_enabler *event_enabler)
 	lttng_enabler_destroy(lttng_event_enabler_as_enabler(event_enabler));
 
 	/* Destroy contexts */
-	lttng_destroy_context(event_enabler->ctx);
+	lttng_kernel_destroy_context(event_enabler->ctx);
 
 	list_del(&event_enabler->node);
 	kfree(event_enabler);
@@ -3001,7 +3002,7 @@ int print_tabs(struct lttng_session *session, size_t nesting)
 
 static
 int lttng_field_name_statedump(struct lttng_session *session,
-		const struct lttng_event_field *field,
+		const struct lttng_kernel_event_field *field,
 		size_t nesting)
 {
 	return lttng_metadata_printf(session, " _%s;\n", field->name);
@@ -3009,30 +3010,30 @@ int lttng_field_name_statedump(struct lttng_session *session,
 
 static
 int _lttng_integer_type_statedump(struct lttng_session *session,
-		const struct lttng_type *type,
+		const struct lttng_kernel_type_integer *type,
+		enum lttng_kernel_string_encoding parent_encoding,
 		size_t nesting)
 {
 	int ret;
 
-	WARN_ON_ONCE(type->type != lttng_kernel_type_integer);
 	ret = print_tabs(session, nesting);
 	if (ret)
 		return ret;
 	ret = lttng_metadata_printf(session,
 		"integer { size = %u; align = %u; signed = %u; encoding = %s; base = %u;%s }",
-		type->u.integer.size,
-		type->u.integer.alignment,
-		type->u.integer.signedness,
-		(type->u.integer.encoding == lttng_kernel_string_encoding_none)
+		type->size,
+		type->alignment,
+		type->signedness,
+		(parent_encoding == lttng_kernel_string_encoding_none)
 			? "none"
-			: (type->u.integer.encoding == lttng_kernel_string_encoding_UTF8)
+			: (parent_encoding == lttng_kernel_string_encoding_UTF8)
 				? "UTF8"
 				: "ASCII",
-		type->u.integer.base,
+		type->base,
 #if __BYTE_ORDER == __BIG_ENDIAN
-		type->u.integer.reverse_byte_order ? " byte_order = le;" : ""
+		type->reverse_byte_order ? " byte_order = le;" : ""
 #else
-		type->u.integer.reverse_byte_order ? " byte_order = be;" : ""
+		type->reverse_byte_order ? " byte_order = be;" : ""
 #endif
 	);
 	return ret;
@@ -3043,14 +3044,12 @@ int _lttng_integer_type_statedump(struct lttng_session *session,
  */
 static
 int _lttng_struct_type_statedump(struct lttng_session *session,
-		const struct lttng_type *type,
+		const struct lttng_kernel_type_struct *type,
 		size_t nesting)
 {
 	int ret;
 	uint32_t i, nr_fields;
 	unsigned int alignment;
-
-	WARN_ON_ONCE(type->type != lttng_kernel_type_struct_nestable);
 
 	ret = print_tabs(session, nesting);
 	if (ret)
@@ -3059,11 +3058,11 @@ int _lttng_struct_type_statedump(struct lttng_session *session,
 		"struct {\n");
 	if (ret)
 		return ret;
-	nr_fields = type->u.struct_nestable.nr_fields;
+	nr_fields = type->nr_fields;
 	for (i = 0; i < nr_fields; i++) {
-		const struct lttng_event_field *iter_field;
+		const struct lttng_kernel_event_field *iter_field;
 
-		iter_field = &type->u.struct_nestable.fields[i];
+		iter_field = type->fields[i];
 		ret = _lttng_field_statedump(session, iter_field, nesting + 1);
 		if (ret)
 			return ret;
@@ -3071,7 +3070,7 @@ int _lttng_struct_type_statedump(struct lttng_session *session,
 	ret = print_tabs(session, nesting);
 	if (ret)
 		return ret;
-	alignment = type->u.struct_nestable.alignment;
+	alignment = type->alignment;
 	if (alignment) {
 		ret = lttng_metadata_printf(session,
 			"} align(%u)",
@@ -3088,13 +3087,13 @@ int _lttng_struct_type_statedump(struct lttng_session *session,
  */
 static
 int _lttng_struct_field_statedump(struct lttng_session *session,
-		const struct lttng_event_field *field,
+		const struct lttng_kernel_event_field *field,
 		size_t nesting)
 {
 	int ret;
 
 	ret = _lttng_struct_type_statedump(session,
-			&field->type, nesting);
+			lttng_kernel_get_type_struct(field->type), nesting);
 	if (ret)
 		return ret;
 	return lttng_field_name_statedump(session, field, nesting);
@@ -3105,31 +3104,30 @@ int _lttng_struct_field_statedump(struct lttng_session *session,
  */
 static
 int _lttng_variant_type_statedump(struct lttng_session *session,
-		const struct lttng_type *type,
+		const struct lttng_kernel_type_variant *type,
 		size_t nesting)
 {
 	int ret;
 	uint32_t i, nr_choices;
 
-	WARN_ON_ONCE(type->type != lttng_kernel_type_variant_nestable);
 	/*
 	 * CTF 1.8 does not allow expressing nonzero variant alignment in a nestable way.
 	 */
-	if (type->u.variant_nestable.alignment != 0)
+	if (type->alignment != 0)
 		return -EINVAL;
 	ret = print_tabs(session, nesting);
 	if (ret)
 		return ret;
 	ret = lttng_metadata_printf(session,
 		"variant <_%s> {\n",
-		type->u.variant_nestable.tag_name);
+		type->tag_name);
 	if (ret)
 		return ret;
-	nr_choices = type->u.variant_nestable.nr_choices;
+	nr_choices = type->nr_choices;
 	for (i = 0; i < nr_choices; i++) {
-		const struct lttng_event_field *iter_field;
+		const struct lttng_kernel_event_field *iter_field;
 
-		iter_field = &type->u.variant_nestable.choices[i];
+		iter_field = type->choices[i];
 		ret = _lttng_field_statedump(session, iter_field, nesting + 1);
 		if (ret)
 			return ret;
@@ -3147,13 +3145,13 @@ int _lttng_variant_type_statedump(struct lttng_session *session,
  */
 static
 int _lttng_variant_field_statedump(struct lttng_session *session,
-		const struct lttng_event_field *field,
+		const struct lttng_kernel_event_field *field,
 		size_t nesting)
 {
 	int ret;
 
 	ret = _lttng_variant_type_statedump(session,
-			&field->type, nesting);
+			lttng_kernel_get_type_variant(field->type), nesting);
 	if (ret)
 		return ret;
 	return lttng_field_name_statedump(session, field, nesting);
@@ -3164,21 +3162,23 @@ int _lttng_variant_field_statedump(struct lttng_session *session,
  */
 static
 int _lttng_array_field_statedump(struct lttng_session *session,
-		const struct lttng_event_field *field,
+		const struct lttng_kernel_event_field *field,
 		size_t nesting)
 {
 	int ret;
-	const struct lttng_type *elem_type;
+	const struct lttng_kernel_type_array *array_type;
+	const struct lttng_kernel_type_common *elem_type;
 
-	WARN_ON_ONCE(field->type.type != lttng_kernel_type_array_nestable);
+	array_type = lttng_kernel_get_type_array(field->type);
+	WARN_ON_ONCE(!array_type);
 
-	if (field->type.u.array_nestable.alignment) {
+	if (array_type->alignment) {
 		ret = print_tabs(session, nesting);
 		if (ret)
 			return ret;
 		ret = lttng_metadata_printf(session,
 		"struct { } align(%u) _%s_padding;\n",
-				field->type.u.array_nestable.alignment * CHAR_BIT,
+				array_type->alignment * CHAR_BIT,
 				field->name);
 		if (ret)
 			return ret;
@@ -3187,12 +3187,13 @@ int _lttng_array_field_statedump(struct lttng_session *session,
 	 * Nested compound types: Only array of structures and variants are
 	 * currently supported.
 	 */
-	elem_type = field->type.u.array_nestable.elem_type;
+	elem_type = array_type->elem_type;
 	switch (elem_type->type) {
 	case lttng_kernel_type_integer:
-	case lttng_kernel_type_struct_nestable:
-	case lttng_kernel_type_variant_nestable:
-		ret = _lttng_type_statedump(session, elem_type, nesting);
+	case lttng_kernel_type_struct:
+	case lttng_kernel_type_variant:
+		ret = _lttng_type_statedump(session, elem_type,
+				array_type->encoding, nesting);
 		if (ret)
 			return ret;
 		break;
@@ -3203,7 +3204,7 @@ int _lttng_array_field_statedump(struct lttng_session *session,
 	ret = lttng_metadata_printf(session,
 		" _%s[%u];\n",
 		field->name,
-		field->type.u.array_nestable.length);
+		array_type->length);
 	return ret;
 }
 
@@ -3212,24 +3213,26 @@ int _lttng_array_field_statedump(struct lttng_session *session,
  */
 static
 int _lttng_sequence_field_statedump(struct lttng_session *session,
-		const struct lttng_event_field *field,
+		const struct lttng_kernel_event_field *field,
 		size_t nesting)
 {
 	int ret;
 	const char *length_name;
-	const struct lttng_type *elem_type;
+	const struct lttng_kernel_type_sequence *sequence_type;
+	const struct lttng_kernel_type_common *elem_type;
 
-	WARN_ON_ONCE(field->type.type != lttng_kernel_type_sequence_nestable);
+	sequence_type = lttng_kernel_get_type_sequence(field->type);
+	WARN_ON_ONCE(!sequence_type);
 
-	length_name = field->type.u.sequence_nestable.length_name;
+	length_name = sequence_type->length_name;
 
-	if (field->type.u.sequence_nestable.alignment) {
+	if (sequence_type->alignment) {
 		ret = print_tabs(session, nesting);
 		if (ret)
 			return ret;
 		ret = lttng_metadata_printf(session,
 		"struct { } align(%u) _%s_padding;\n",
-				field->type.u.sequence_nestable.alignment * CHAR_BIT,
+				sequence_type->alignment * CHAR_BIT,
 				field->name);
 		if (ret)
 			return ret;
@@ -3239,12 +3242,13 @@ int _lttng_sequence_field_statedump(struct lttng_session *session,
 	 * Nested compound types: Only array of structures and variants are
 	 * currently supported.
 	 */
-	elem_type = field->type.u.sequence_nestable.elem_type;
+	elem_type = sequence_type->elem_type;
 	switch (elem_type->type) {
 	case lttng_kernel_type_integer:
-	case lttng_kernel_type_struct_nestable:
-	case lttng_kernel_type_variant_nestable:
-		ret = _lttng_type_statedump(session, elem_type, nesting);
+	case lttng_kernel_type_struct:
+	case lttng_kernel_type_variant:
+		ret = _lttng_type_statedump(session, elem_type,
+				sequence_type->encoding, nesting);
 		if (ret)
 			return ret;
 		break;
@@ -3255,7 +3259,7 @@ int _lttng_sequence_field_statedump(struct lttng_session *session,
 	ret = lttng_metadata_printf(session,
 		" _%s[ _%s ];\n",
 		field->name,
-		field->type.u.sequence_nestable.length_name);
+		sequence_type->length_name);
 	return ret;
 }
 
@@ -3264,20 +3268,20 @@ int _lttng_sequence_field_statedump(struct lttng_session *session,
  */
 static
 int _lttng_enum_type_statedump(struct lttng_session *session,
-		const struct lttng_type *type,
+		const struct lttng_kernel_type_enum *type,
 		size_t nesting)
 {
 	const struct lttng_kernel_enum_desc *enum_desc;
-	const struct lttng_type *container_type;
+	const struct lttng_kernel_type_common *container_type;
 	int ret;
 	unsigned int i, nr_entries;
 
-	container_type = type->u.enum_nestable.container_type;
+	container_type = type->container_type;
 	if (container_type->type != lttng_kernel_type_integer) {
 		ret = -EINVAL;
 		goto end;
 	}
-	enum_desc = type->u.enum_nestable.desc;
+	enum_desc = type->desc;
 	nr_entries = enum_desc->nr_entries;
 
 	ret = print_tabs(session, nesting);
@@ -3286,7 +3290,8 @@ int _lttng_enum_type_statedump(struct lttng_session *session,
 	ret = lttng_metadata_printf(session, "enum : ");
 	if (ret)
 		goto end;
-	ret = _lttng_integer_type_statedump(session, container_type, 0);
+	ret = _lttng_integer_type_statedump(session, lttng_kernel_get_type_integer(container_type),
+			lttng_kernel_string_encoding_none, 0);
 	if (ret)
 		goto end;
 	ret = lttng_metadata_printf(session, " {\n");
@@ -3294,7 +3299,7 @@ int _lttng_enum_type_statedump(struct lttng_session *session,
 		goto end;
 	/* Dump all entries */
 	for (i = 0; i < nr_entries; i++) {
-		const struct lttng_kernel_enum_entry *entry = &enum_desc->entries[i];
+		const struct lttng_kernel_enum_entry *entry = enum_desc->entries[i];
 		int j, len;
 
 		ret = print_tabs(session, nesting + 1);
@@ -3380,12 +3385,15 @@ end:
  */
 static
 int _lttng_enum_field_statedump(struct lttng_session *session,
-		const struct lttng_event_field *field,
+		const struct lttng_kernel_event_field *field,
 		size_t nesting)
 {
 	int ret;
+	const struct lttng_kernel_type_enum *enum_type;
 
-	ret = _lttng_enum_type_statedump(session, &field->type, nesting);
+	enum_type = lttng_kernel_get_type_enum(field->type);
+	WARN_ON_ONCE(!enum_type);
+	ret = _lttng_enum_type_statedump(session, enum_type, nesting);
 	if (ret)
 		return ret;
 	return lttng_field_name_statedump(session, field, nesting);
@@ -3393,12 +3401,13 @@ int _lttng_enum_field_statedump(struct lttng_session *session,
 
 static
 int _lttng_integer_field_statedump(struct lttng_session *session,
-		const struct lttng_event_field *field,
+		const struct lttng_kernel_event_field *field,
 		size_t nesting)
 {
 	int ret;
 
-	ret = _lttng_integer_type_statedump(session, &field->type, nesting);
+	ret = _lttng_integer_type_statedump(session, lttng_kernel_get_type_integer(field->type),
+			lttng_kernel_string_encoding_none, nesting);
 	if (ret)
 		return ret;
 	return lttng_field_name_statedump(session, field, nesting);
@@ -3406,32 +3415,33 @@ int _lttng_integer_field_statedump(struct lttng_session *session,
 
 static
 int _lttng_string_type_statedump(struct lttng_session *session,
-		const struct lttng_type *type,
+		const struct lttng_kernel_type_string *type,
 		size_t nesting)
 {
 	int ret;
 
-	WARN_ON_ONCE(type->type != lttng_kernel_type_string);
 	/* Default encoding is UTF8 */
 	ret = print_tabs(session, nesting);
 	if (ret)
 		return ret;
 	ret = lttng_metadata_printf(session,
 		"string%s",
-		type->u.string.encoding == lttng_kernel_string_encoding_ASCII ?
+		type->encoding == lttng_kernel_string_encoding_ASCII ?
 			" { encoding = ASCII; }" : "");
 	return ret;
 }
 
 static
 int _lttng_string_field_statedump(struct lttng_session *session,
-		const struct lttng_event_field *field,
+		const struct lttng_kernel_event_field *field,
 		size_t nesting)
 {
+	const struct lttng_kernel_type_string *string_type;
 	int ret;
 
-	WARN_ON_ONCE(field->type.type != lttng_kernel_type_string);
-	ret = _lttng_string_type_statedump(session, &field->type, nesting);
+	string_type = lttng_kernel_get_type_string(field->type);
+	WARN_ON_ONCE(!string_type);
+	ret = _lttng_string_type_statedump(session, string_type, nesting);
 	if (ret)
 		return ret;
 	return lttng_field_name_statedump(session, field, nesting);
@@ -3442,31 +3452,42 @@ int _lttng_string_field_statedump(struct lttng_session *session,
  */
 static
 int _lttng_type_statedump(struct lttng_session *session,
-		const struct lttng_type *type,
+		const struct lttng_kernel_type_common *type,
+		enum lttng_kernel_string_encoding parent_encoding,
 		size_t nesting)
 {
 	int ret = 0;
 
 	switch (type->type) {
 	case lttng_kernel_type_integer:
-		ret = _lttng_integer_type_statedump(session, type, nesting);
+		ret = _lttng_integer_type_statedump(session,
+				lttng_kernel_get_type_integer(type),
+				parent_encoding, nesting);
 		break;
-	case lttng_kernel_type_enum_nestable:
-		ret = _lttng_enum_type_statedump(session, type, nesting);
+	case lttng_kernel_type_enum:
+		ret = _lttng_enum_type_statedump(session,
+				lttng_kernel_get_type_enum(type),
+				nesting);
 		break;
 	case lttng_kernel_type_string:
-		ret = _lttng_string_type_statedump(session, type, nesting);
+		ret = _lttng_string_type_statedump(session,
+				lttng_kernel_get_type_string(type),
+				nesting);
 		break;
-	case lttng_kernel_type_struct_nestable:
-		ret = _lttng_struct_type_statedump(session, type, nesting);
+	case lttng_kernel_type_struct:
+		ret = _lttng_struct_type_statedump(session,
+				lttng_kernel_get_type_struct(type),
+				nesting);
 		break;
-	case lttng_kernel_type_variant_nestable:
-		ret = _lttng_variant_type_statedump(session, type, nesting);
+	case lttng_kernel_type_variant:
+		ret = _lttng_variant_type_statedump(session,
+				lttng_kernel_get_type_variant(type),
+				nesting);
 		break;
 
 	/* Nested arrays and sequences are not supported yet. */
-	case lttng_kernel_type_array_nestable:
-	case lttng_kernel_type_sequence_nestable:
+	case lttng_kernel_type_array:
+	case lttng_kernel_type_sequence:
 	default:
 		WARN_ON_ONCE(1);
 		return -EINVAL;
@@ -3479,31 +3500,31 @@ int _lttng_type_statedump(struct lttng_session *session,
  */
 static
 int _lttng_field_statedump(struct lttng_session *session,
-		const struct lttng_event_field *field,
+		const struct lttng_kernel_event_field *field,
 		size_t nesting)
 {
 	int ret = 0;
 
-	switch (field->type.type) {
+	switch (field->type->type) {
 	case lttng_kernel_type_integer:
 		ret = _lttng_integer_field_statedump(session, field, nesting);
 		break;
-	case lttng_kernel_type_enum_nestable:
+	case lttng_kernel_type_enum:
 		ret = _lttng_enum_field_statedump(session, field, nesting);
 		break;
 	case lttng_kernel_type_string:
 		ret = _lttng_string_field_statedump(session, field, nesting);
 		break;
-	case lttng_kernel_type_struct_nestable:
+	case lttng_kernel_type_struct:
 		ret = _lttng_struct_field_statedump(session, field, nesting);
 		break;
-	case lttng_kernel_type_array_nestable:
+	case lttng_kernel_type_array:
 		ret = _lttng_array_field_statedump(session, field, nesting);
 		break;
-	case lttng_kernel_type_sequence_nestable:
+	case lttng_kernel_type_sequence:
 		ret = _lttng_sequence_field_statedump(session, field, nesting);
 		break;
-	case lttng_kernel_type_variant_nestable:
+	case lttng_kernel_type_variant:
 		ret = _lttng_variant_field_statedump(session, field, nesting);
 		break;
 
@@ -3516,7 +3537,7 @@ int _lttng_field_statedump(struct lttng_session *session,
 
 static
 int _lttng_context_metadata_statedump(struct lttng_session *session,
-				    struct lttng_ctx *ctx)
+				    struct lttng_kernel_ctx *ctx)
 {
 	int ret = 0;
 	int i;
@@ -3524,9 +3545,9 @@ int _lttng_context_metadata_statedump(struct lttng_session *session,
 	if (!ctx)
 		return 0;
 	for (i = 0; i < ctx->nr_fields; i++) {
-		const struct lttng_ctx_field *field = &ctx->fields[i];
+		const struct lttng_kernel_ctx_field *field = &ctx->fields[i];
 
-		ret = _lttng_field_statedump(session, &field->event_field, 2);
+		ret = _lttng_field_statedump(session, field->event_field, 2);
 		if (ret)
 			return ret;
 	}
@@ -3537,12 +3558,12 @@ static
 int _lttng_fields_metadata_statedump(struct lttng_session *session,
 				   struct lttng_event *event)
 {
-	const struct lttng_event_desc *desc = event->desc;
+	const struct lttng_kernel_event_desc *desc = event->desc;
 	int ret = 0;
 	int i;
 
 	for (i = 0; i < desc->nr_fields; i++) {
-		const struct lttng_event_field *field = &desc->fields[i];
+		const struct lttng_kernel_event_field *field = desc->fields[i];
 
 		ret = _lttng_field_statedump(session, field, 2);
 		if (ret)
@@ -3575,7 +3596,7 @@ int _lttng_event_metadata_statedump(struct lttng_session *session,
 		"	name = \"%s\";\n"
 		"	id = %u;\n"
 		"	stream_id = %u;\n",
-		event->desc->name,
+		event->desc->event_name,
 		event->id,
 		event->chan->id);
 	if (ret)

@@ -74,7 +74,7 @@ static inline notrace u64 lib_ring_buffer_clock_read(struct channel *chan)
 }
 
 static inline
-size_t ctx_get_aligned_size(size_t offset, struct lttng_ctx *ctx,
+size_t ctx_get_aligned_size(size_t offset, struct lttng_kernel_ctx *ctx,
 		size_t ctx_len)
 {
 	size_t orig_offset = offset;
@@ -87,7 +87,7 @@ size_t ctx_get_aligned_size(size_t offset, struct lttng_ctx *ctx,
 }
 
 static inline
-void ctx_get_struct_size(struct lttng_ctx *ctx, size_t *ctx_len,
+void ctx_get_struct_size(struct lttng_kernel_ctx *ctx, size_t *ctx_len,
 		struct lttng_channel *chan, struct lib_ring_buffer_ctx *bufctx)
 {
 	int i;
@@ -110,7 +110,7 @@ void ctx_get_struct_size(struct lttng_ctx *ctx, size_t *ctx_len,
 static inline
 void ctx_record(struct lib_ring_buffer_ctx *bufctx,
 		struct lttng_channel *chan,
-		struct lttng_ctx *ctx)
+		struct lttng_kernel_ctx *ctx)
 {
 	int i;
 

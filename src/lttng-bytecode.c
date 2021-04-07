@@ -11,6 +11,7 @@
 #include <linux/slab.h>
 
 #include <lttng/lttng-bytecode.h>
+#include <lttng/events-internal.h>
 
 static const char *opnames[] = {
 	[ BYTECODE_OP_UNKNOWN ] = "UNKNOWN",
@@ -167,14 +168,14 @@ const char *lttng_bytecode_print_op(enum bytecode_op op)
 }
 
 static
-int apply_field_reloc(const struct lttng_event_desc *event_desc,
+int apply_field_reloc(const struct lttng_kernel_event_desc *event_desc,
 		struct bytecode_runtime *runtime,
 		uint32_t runtime_len,
 		uint32_t reloc_offset,
 		const char *field_name,
 		enum bytecode_op bytecode_op)
 {
-	const struct lttng_event_field *fields, *field = NULL;
+	const struct lttng_kernel_event_field **fields, *field = NULL;
 	unsigned int nr_fields, i;
 	struct load_op *op;
 	uint32_t field_offset = 0;
@@ -189,26 +190,26 @@ int apply_field_reloc(const struct lttng_event_desc *event_desc,
 		return -EINVAL;
 	nr_fields = event_desc->nr_fields;
 	for (i = 0; i < nr_fields; i++) {
-		if (fields[i].nofilter)
+		if (fields[i]->nofilter)
 			continue;
-		if (!strcmp(fields[i].name, field_name)) {
-			field = &fields[i];
+		if (!strcmp(fields[i]->name, field_name)) {
+			field = fields[i];
 			break;
 		}
 		/* compute field offset */
-		switch (fields[i].type.type) {
+		switch (fields[i]->type->type) {
 		case lttng_kernel_type_integer:
-		case lttng_kernel_type_enum_nestable:
+		case lttng_kernel_type_enum:
 			field_offset += sizeof(int64_t);
 			break;
-		case lttng_kernel_type_array_nestable:
-			if (!lttng_is_bytewise_integer(fields[i].type.u.array_nestable.elem_type))
+		case lttng_kernel_type_array:
+			if (!lttng_kernel_type_is_bytewise_integer(lttng_kernel_get_type_array(fields[i]->type)->elem_type))
 				return -EINVAL;
 			field_offset += sizeof(unsigned long);
 			field_offset += sizeof(void *);
 			break;
-		case lttng_kernel_type_sequence_nestable:
-			if (!lttng_is_bytewise_integer(fields[i].type.u.sequence_nestable.elem_type))
+		case lttng_kernel_type_sequence:
+			if (!lttng_kernel_type_is_bytewise_integer(lttng_kernel_get_type_sequence(fields[i]->type)->elem_type))
 				return -EINVAL;
 			field_offset += sizeof(unsigned long);
 			field_offset += sizeof(void *);
@@ -216,8 +217,8 @@ int apply_field_reloc(const struct lttng_event_desc *event_desc,
 		case lttng_kernel_type_string:
 			field_offset += sizeof(void *);
 			break;
-		case lttng_kernel_type_struct_nestable:	/* Unsupported. */
-		case lttng_kernel_type_variant_nestable:	/* Unsupported. */
+		case lttng_kernel_type_struct:	/* Unsupported. */
+		case lttng_kernel_type_variant:	/* Unsupported. */
 		default:
 			return -EINVAL;
 		}
@@ -238,16 +239,17 @@ int apply_field_reloc(const struct lttng_event_desc *event_desc,
 		struct field_ref *field_ref;
 
 		field_ref = (struct field_ref *) op->data;
-		switch (field->type.type) {
+		switch (field->type->type) {
 		case lttng_kernel_type_integer:
-		case lttng_kernel_type_enum_nestable:
+		case lttng_kernel_type_enum:
 			op->op = BYTECODE_OP_LOAD_FIELD_REF_S64;
 			break;
-		case lttng_kernel_type_array_nestable:
+		case lttng_kernel_type_array:
 		{
-			const struct lttng_type *elem_type = field->type.u.array_nestable.elem_type;
+			const struct lttng_kernel_type_array *array_type = lttng_kernel_get_type_array(field->type);
+			const struct lttng_kernel_type_common *elem_type = array_type->elem_type;
 
-			if (!lttng_is_bytewise_integer(elem_type) || elem_type->u.integer.encoding == lttng_kernel_string_encoding_none)
+			if (!lttng_kernel_type_is_bytewise_integer(elem_type) || array_type->encoding == lttng_kernel_string_encoding_none)
 				return -EINVAL;
 			if (field->user)
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_USER_SEQUENCE;
@@ -255,11 +257,12 @@ int apply_field_reloc(const struct lttng_event_desc *event_desc,
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_SEQUENCE;
 			break;
 		}
-		case lttng_kernel_type_sequence_nestable:
+		case lttng_kernel_type_sequence:
 		{
-			const struct lttng_type *elem_type = field->type.u.sequence_nestable.elem_type;
+			const struct lttng_kernel_type_sequence *sequence_type = lttng_kernel_get_type_sequence(field->type);
+			const struct lttng_kernel_type_common *elem_type = sequence_type->elem_type;
 
-			if (!lttng_is_bytewise_integer(elem_type) || elem_type->u.integer.encoding == lttng_kernel_string_encoding_none)
+			if (!lttng_kernel_type_is_bytewise_integer(elem_type) || sequence_type->encoding == lttng_kernel_string_encoding_none)
 				return -EINVAL;
 			if (field->user)
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_USER_SEQUENCE;
@@ -273,8 +276,8 @@ int apply_field_reloc(const struct lttng_event_desc *event_desc,
 			else
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_STRING;
 			break;
-		case lttng_kernel_type_struct_nestable:	/* Unsupported. */
-		case lttng_kernel_type_variant_nestable:	/* Unsupported. */
+		case lttng_kernel_type_struct:	/* Unsupported. */
+		case lttng_kernel_type_variant:	/* Unsupported. */
 		default:
 			return -EINVAL;
 		}
@@ -296,13 +299,13 @@ int apply_context_reloc(struct bytecode_runtime *runtime,
 		enum bytecode_op bytecode_op)
 {
 	struct load_op *op;
-	struct lttng_ctx_field *ctx_field;
+	struct lttng_kernel_ctx_field *ctx_field;
 	int idx;
 
 	dbg_printk("Apply context reloc: %u %s\n", reloc_offset, context_name);
 
 	/* Get context index */
-	idx = lttng_get_context_index(lttng_static_ctx, context_name);
+	idx = lttng_kernel_get_context_index(lttng_static_ctx, context_name);
 	if (idx < 0)
 		return -ENOENT;
 
@@ -320,38 +323,40 @@ int apply_context_reloc(struct bytecode_runtime *runtime,
 		struct field_ref *field_ref;
 
 		field_ref = (struct field_ref *) op->data;
-		switch (ctx_field->event_field.type.type) {
+		switch (ctx_field->event_field->type->type) {
 		case lttng_kernel_type_integer:
-		case lttng_kernel_type_enum_nestable:
+		case lttng_kernel_type_enum:
 			op->op = BYTECODE_OP_GET_CONTEXT_REF_S64;
 			break;
 			/* Sequence and array supported as string */
 		case lttng_kernel_type_string:
-			BUG_ON(ctx_field->event_field.user);
+			BUG_ON(ctx_field->event_field->user);
 			op->op = BYTECODE_OP_GET_CONTEXT_REF_STRING;
 			break;
-		case lttng_kernel_type_array_nestable:
+		case lttng_kernel_type_array:
 		{
-			const struct lttng_type *elem_type = ctx_field->event_field.type.u.array_nestable.elem_type;
+			const struct lttng_kernel_type_array *array_type = lttng_kernel_get_type_array(ctx_field->event_field->type);
+			const struct lttng_kernel_type_common *elem_type = array_type->elem_type;
 
-			if (!lttng_is_bytewise_integer(elem_type) || elem_type->u.integer.encoding == lttng_kernel_string_encoding_none)
+			if (!lttng_kernel_type_is_bytewise_integer(elem_type) || array_type->encoding == lttng_kernel_string_encoding_none)
 				return -EINVAL;
-			BUG_ON(ctx_field->event_field.user);
+			BUG_ON(ctx_field->event_field->user);
 			op->op = BYTECODE_OP_GET_CONTEXT_REF_STRING;
 			break;
 		}
-		case lttng_kernel_type_sequence_nestable:
+		case lttng_kernel_type_sequence:
 		{
-			const struct lttng_type *elem_type = ctx_field->event_field.type.u.sequence_nestable.elem_type;
+			const struct lttng_kernel_type_sequence *sequence_type = lttng_kernel_get_type_sequence(ctx_field->event_field->type);
+			const struct lttng_kernel_type_common *elem_type = sequence_type->elem_type;
 
-			if (!lttng_is_bytewise_integer(elem_type) || elem_type->u.integer.encoding == lttng_kernel_string_encoding_none)
+			if (!lttng_kernel_type_is_bytewise_integer(elem_type) || sequence_type->encoding == lttng_kernel_string_encoding_none)
 				return -EINVAL;
-			BUG_ON(ctx_field->event_field.user);
+			BUG_ON(ctx_field->event_field->user);
 			op->op = BYTECODE_OP_GET_CONTEXT_REF_STRING;
 			break;
 		}
-		case lttng_kernel_type_struct_nestable:	/* Unsupported. */
-		case lttng_kernel_type_variant_nestable:	/* Unsupported. */
+		case lttng_kernel_type_struct:	/* Unsupported. */
+		case lttng_kernel_type_variant:	/* Unsupported. */
 		default:
 			return -EINVAL;
 		}
@@ -366,7 +371,7 @@ int apply_context_reloc(struct bytecode_runtime *runtime,
 }
 
 static
-int apply_reloc(const struct lttng_event_desc *event_desc,
+int apply_reloc(const struct lttng_kernel_event_desc *event_desc,
 		struct bytecode_runtime *runtime,
 		uint32_t runtime_len,
 		uint32_t reloc_offset,
@@ -420,8 +425,8 @@ int bytecode_is_linked(struct lttng_bytecode_node *bytecode,
  * bytecode runtime.
  */
 static
-int link_bytecode(const struct lttng_event_desc *event_desc,
-		struct lttng_ctx *ctx,
+int link_bytecode(const struct lttng_kernel_event_desc *event_desc,
+		struct lttng_kernel_ctx *ctx,
 		struct lttng_bytecode_node *bytecode,
 		struct list_head *bytecode_runtime_head,
 		struct list_head *insert_loc)
@@ -542,8 +547,8 @@ void lttng_bytecode_capture_sync_state(struct lttng_bytecode_runtime *runtime)
  * This function is called after we confirmed that name enabler and the
  * instance are matching names (or glob pattern matching).
  */
-void lttng_enabler_link_bytecode(const struct lttng_event_desc *event_desc,
-		struct lttng_ctx *ctx,
+void lttng_enabler_link_bytecode(const struct lttng_kernel_event_desc *event_desc,
+		struct lttng_kernel_ctx *ctx,
 		struct list_head *instance_bytecode_head,
 		struct list_head *enabler_bytecode_head)
 {

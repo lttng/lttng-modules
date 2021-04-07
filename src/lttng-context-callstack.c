@@ -56,6 +56,8 @@
 #include "lttng-context-callstack-legacy-impl.h"
 #endif
 
+#define NR_FIELDS	2
+
 static
 void field_data_free(struct field_data *fdata)
 {
@@ -88,85 +90,101 @@ error_alloc:
 }
 
 static
-void lttng_callstack_sequence_destroy(struct lttng_ctx_field *field)
+void lttng_callstack_sequence_destroy(struct lttng_kernel_ctx_field *field)
 {
 	struct field_data *fdata = field->priv;
 
 	field_data_free(fdata);
 }
 
-static const struct lttng_type sequence_elem_type =
-	__type_integer(unsigned long, 0, 0, -1, __BYTE_ORDER, 16, none);
+static const struct lttng_kernel_event_field *event_fields_kernel[NR_FIELDS] = {
+	lttng_kernel_static_event_field("_callstack_kernel_length",
+		lttng_kernel_static_type_integer_from_type(unsigned int, __BYTE_ORDER, 10),
+		false, false, false),
+	lttng_kernel_static_event_field("callstack_kernel",
+		lttng_kernel_static_type_sequence("_callstack_kernel_length",
+			lttng_kernel_static_type_integer_from_type(unsigned long, __BYTE_ORDER, 16),
+			0, none),
+		false, false, false),
+};
+
+static const struct lttng_kernel_event_field *event_fields_user[NR_FIELDS] = {
+	lttng_kernel_static_event_field("_callstack_user_length",
+		lttng_kernel_static_type_integer_from_type(unsigned int, __BYTE_ORDER, 10),
+		false, false, false),
+	lttng_kernel_static_event_field("callstack_user",
+		lttng_kernel_static_type_sequence("_callstack_user_length",
+			lttng_kernel_static_type_integer_from_type(unsigned long, __BYTE_ORDER, 16),
+			0, none),
+		false, false, false),
+};
+
+const struct lttng_kernel_event_field **lttng_cs_event_fields(enum lttng_cs_ctx_modes mode)
+{
+	switch (mode) {
+	case CALLSTACK_KERNEL:
+		return event_fields_kernel;
+	case CALLSTACK_USER:
+		return event_fields_user;
+	default:
+		return NULL;
+	}
+}
 
 static
-int __lttng_add_callstack_generic(struct lttng_ctx **ctx,
+int __lttng_add_callstack_generic(struct lttng_kernel_ctx **ctx,
 		enum lttng_cs_ctx_modes mode)
 {
-	const char *ctx_name = lttng_cs_ctx_mode_name(mode);
-	const char *ctx_length_name = lttng_cs_ctx_mode_length_name(mode);
-	struct lttng_ctx_field *length_field, *sequence_field;
-	ssize_t length_index, sequence_index;
-	struct lttng_event_field *field;
+	const struct lttng_kernel_event_field **event_fields;
+	struct lttng_kernel_ctx_field ctx_field;
 	struct field_data *fdata;
-	int ret;
+	int ret, i;
 
 	ret = init_type(mode);
 	if (ret)
 		return ret;
-	if (lttng_find_context(*ctx, ctx_name))
-		return -EEXIST;
-	length_index = lttng_append_context_index(ctx);
-	if (length_index < 0) {
-		ret = -ENOMEM;
-		goto error_length;
+	event_fields = lttng_cs_event_fields(mode);
+	if (!event_fields) {
+		return -EINVAL;
 	}
-	sequence_index = lttng_append_context_index(ctx);
-	if (sequence_index < 0) {
-		ret = -ENOMEM;
-		goto error_sequence;
+	for (i = 0; i < NR_FIELDS; i++) {
+		if (lttng_kernel_find_context(*ctx, event_fields[i]->name))
+			return -EEXIST;
 	}
-	length_field = lttng_get_context_field_from_index(*ctx, length_index);
-	WARN_ON_ONCE(!length_field);
-	sequence_field = lttng_get_context_field_from_index(*ctx, sequence_index);
-	WARN_ON_ONCE(!sequence_field);
 	fdata = field_data_create(mode);
 	if (!fdata) {
 		ret = -ENOMEM;
 		goto error_create;
 	}
+	memset(&ctx_field, 0, sizeof(ctx_field));
+	ctx_field.event_field = event_fields[0];
+	ctx_field.get_size_arg = lttng_callstack_length_get_size;
+	ctx_field.record = lttng_callstack_length_record;
+	ctx_field.priv = fdata;
+	ret = lttng_kernel_context_append(ctx, &ctx_field);
+	if (ret) {
+		ret = -ENOMEM;
+		goto error_append0;
+	}
 
-	field = &length_field->event_field;
-	field->name = ctx_length_name;
-	field->type.type = lttng_kernel_type_integer;
-	field->type.u.integer.size = sizeof(unsigned int) * CHAR_BIT;
-	field->type.u.integer.alignment = lttng_alignof(unsigned int) * CHAR_BIT;
-	field->type.u.integer.signedness = lttng_is_signed_type(unsigned int);
-	field->type.u.integer.reverse_byte_order = 0;
-	field->type.u.integer.base = 10;
-	field->type.u.integer.encoding = lttng_kernel_string_encoding_none;
-	length_field->get_size_arg = lttng_callstack_length_get_size;
-	length_field->record = lttng_callstack_length_record;
-	length_field->priv = fdata;
-
-	field = &sequence_field->event_field;
-	field->name = ctx_name;
-	field->type.type = lttng_kernel_type_sequence_nestable;
-	field->type.u.sequence_nestable.length_name = ctx_length_name;
-	field->type.u.sequence_nestable.elem_type = &sequence_elem_type;
-	field->type.u.sequence_nestable.alignment = 0;
-	sequence_field->get_size_arg = lttng_callstack_sequence_get_size;
-	sequence_field->record = lttng_callstack_sequence_record;
-	sequence_field->priv = fdata;
-	sequence_field->destroy = lttng_callstack_sequence_destroy;
-
-	wrapper_vmalloc_sync_mappings();
+	memset(&ctx_field, 0, sizeof(ctx_field));
+	ctx_field.event_field = event_fields[1];
+	ctx_field.get_size_arg = lttng_callstack_sequence_get_size;
+	ctx_field.record = lttng_callstack_sequence_record;
+	ctx_field.destroy = lttng_callstack_sequence_destroy;
+	ctx_field.priv = fdata;
+	ret = lttng_kernel_context_append(ctx, &ctx_field);
+	if (ret) {
+		ret = -ENOMEM;
+		goto error_append1;
+	}
 	return 0;
 
+error_append1:
+	lttng_kernel_context_remove_last(ctx);
+error_append0:
+	field_data_free(fdata);
 error_create:
-	lttng_remove_context_field_index(ctx, sequence_index);
-error_sequence:
-	lttng_remove_context_field_index(ctx, length_index);
-error_length:
 	return ret;
 }
 
@@ -184,7 +202,7 @@ error_length:
  *
  * Return 0 for success, or error code.
  */
-int lttng_add_callstack_to_ctx(struct lttng_ctx **ctx, int type)
+int lttng_add_callstack_to_ctx(struct lttng_kernel_ctx **ctx, int type)
 {
 	switch (type) {
 	case LTTNG_KERNEL_CONTEXT_CALLSTACK_KERNEL:

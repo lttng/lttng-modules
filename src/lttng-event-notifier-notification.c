@@ -11,6 +11,7 @@
 #include <lttng/events.h>
 #include <lttng/msgpack.h>
 #include <lttng/event-notifier-notification.h>
+#include <lttng/events-internal.h>
 #include <wrapper/barrier.h>
 
 /*
@@ -95,7 +96,7 @@ end:
 
 static
 int64_t capture_sequence_element_signed(uint8_t *ptr,
-		const struct lttng_integer_type *type)
+		const struct lttng_kernel_type_integer *type)
 {
 	int64_t value = 0;
 	unsigned int size = type->size;
@@ -144,7 +145,7 @@ int64_t capture_sequence_element_signed(uint8_t *ptr,
 
 static
 uint64_t capture_sequence_element_unsigned(uint8_t *ptr,
-		const struct lttng_integer_type *type)
+		const struct lttng_kernel_type_integer *type)
 {
 	uint64_t value = 0;
 	unsigned int size = type->size;
@@ -194,8 +195,8 @@ uint64_t capture_sequence_element_unsigned(uint8_t *ptr,
 int capture_sequence(struct lttng_msgpack_writer *writer,
 		struct lttng_interpreter_output *output)
 {
-	const struct lttng_integer_type *integer_type = NULL;
-	const struct lttng_type *nested_type;
+	const struct lttng_kernel_type_integer *integer_type = NULL;
+	const struct lttng_kernel_type_common *nested_type;
 	uint8_t *ptr;
 	bool signedness;
 	int ret, i;
@@ -210,11 +211,11 @@ int capture_sequence(struct lttng_msgpack_writer *writer,
 	nested_type = output->u.sequence.nested_type;
 	switch (nested_type->type) {
 	case lttng_kernel_type_integer:
-		integer_type = &nested_type->u.integer;
+		integer_type = lttng_kernel_get_type_integer(nested_type);
 		break;
-	case lttng_kernel_type_enum_nestable:
+	case lttng_kernel_type_enum:
 		/* Treat enumeration as an integer. */
-		integer_type = &nested_type->u.enum_nestable.container_type->u.integer;
+		integer_type = lttng_kernel_get_type_integer(lttng_kernel_get_type_enum(nested_type)->container_type);
 		break;
 	default:
 		/* Capture of array of non-integer are not supported. */

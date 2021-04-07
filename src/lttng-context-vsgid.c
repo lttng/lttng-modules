@@ -12,6 +12,7 @@
 #include <linux/module.h>
 #include <linux/sched.h>
 #include <lttng/events.h>
+#include <lttng/events-internal.h>
 #include <lttng/tracer.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
@@ -28,7 +29,7 @@ size_t vsgid_get_size(size_t offset)
 }
 
 static
-void vsgid_record(struct lttng_ctx_field *field,
+void vsgid_record(struct lttng_kernel_ctx_field *field,
 		 struct lib_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
@@ -40,37 +41,31 @@ void vsgid_record(struct lttng_ctx_field *field,
 }
 
 static
-void vsgid_get_value(struct lttng_ctx_field *field,
+void vsgid_get_value(struct lttng_kernel_ctx_field *field,
 		struct lttng_probe_ctx *lttng_probe_ctx,
 		union lttng_ctx_value *value)
 {
 	value->s64 = lttng_current_vsgid();
 }
 
-int lttng_add_vsgid_to_ctx(struct lttng_ctx **ctx)
-{
-	struct lttng_ctx_field *field;
+static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
+	lttng_kernel_static_event_field("vsgid",
+		lttng_kernel_static_type_integer_from_type(gid_t, __BYTE_ORDER, 10),
+		false, false, false),
+	vsgid_get_size,
+	NULL,
+	vsgid_record,
+	vsgid_get_value,
+	NULL, NULL);
 
-	field = lttng_append_context(ctx);
-	if (!field)
-		return -ENOMEM;
-	if (lttng_find_context(*ctx, "vsgid")) {
-		lttng_remove_context_field(ctx, field);
+int lttng_add_vsgid_to_ctx(struct lttng_kernel_ctx **ctx)
+{
+	int ret;
+
+	if (lttng_kernel_find_context(*ctx, ctx_field->event_field->name))
 		return -EEXIST;
-	}
-	field->event_field.name = "vsgid";
-	field->event_field.type.type = lttng_kernel_type_integer;
-	field->event_field.type.u.integer.size = sizeof(gid_t) * CHAR_BIT;
-	field->event_field.type.u.integer.alignment = lttng_alignof(gid_t) * CHAR_BIT;
-	field->event_field.type.u.integer.signedness = lttng_is_signed_type(gid_t);
-	field->event_field.type.u.integer.reverse_byte_order = 0;
-	field->event_field.type.u.integer.base = 10;
-	field->event_field.type.u.integer.encoding = lttng_kernel_string_encoding_none;
-	field->get_size = vsgid_get_size;
-	field->record = vsgid_record;
-	field->get_value = vsgid_get_value;
-	lttng_context_update(*ctx);
+	ret = lttng_kernel_context_append(ctx, ctx_field);
 	wrapper_vmalloc_sync_mappings();
-	return 0;
+	return ret;
 }
 EXPORT_SYMBOL_GPL(lttng_add_vsgid_to_ctx);

@@ -258,7 +258,7 @@ void lttng_abi_tracer_abi_version(struct lttng_kernel_tracer_abi_version *v)
 static
 long lttng_abi_add_context(struct file *file,
 	struct lttng_kernel_context *context_param,
-	struct lttng_ctx **ctx, struct lttng_session *session)
+	struct lttng_kernel_ctx **ctx, struct lttng_session *session)
 {
 
 	if (session->been_active)

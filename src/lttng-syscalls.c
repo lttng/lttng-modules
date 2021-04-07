@@ -294,8 +294,8 @@ typedef __kernel_old_time_t time_t;
 struct trace_syscall_entry {
 	void *event_func;
 	void *event_notifier_func;
-	const struct lttng_event_desc *desc;
-	const struct lttng_event_field *fields;
+	const struct lttng_kernel_event_desc *desc;
+	const struct lttng_kernel_event_field **fields;
 	unsigned int nrargs;
 };
 
@@ -1111,7 +1111,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 
 	/* Allocate events for each syscall matching enabler, insert into table */
 	for (i = 0; i < table_len; i++) {
-		const struct lttng_event_desc *desc = table[i].desc;
+		const struct lttng_kernel_event_desc *desc = table[i].desc;
 		struct lttng_kernel_event ev;
 		struct lttng_event *event;
 		struct hlist_head *head;
@@ -1129,7 +1129,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 		 */
 		head = utils_borrow_hash_table_bucket(
 			session->events_ht.table, LTTNG_EVENT_HT_SIZE,
-			desc->name);
+			desc->event_name);
 		lttng_hlist_for_each_entry(event, head, hlist) {
 			if (event->desc == desc
 				&& event->chan == event_enabler->chan)
@@ -1158,7 +1158,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 			ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_COMPAT;
 			break;
 		}
-		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN - 1);
+		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_SYM_NAME_LEN - 1);
 		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
 		event = _lttng_event_create(chan, &ev, filter,
@@ -1223,12 +1223,12 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, voi
 	}
 #endif
 	if (hlist_empty(&chan->sc_unknown)) {
-		const struct lttng_event_desc *desc =
+		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___syscall_entry_unknown;
 		struct lttng_event *event;
 
 		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
+		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_SYM_NAME_LEN);
 		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_ENTRY;
@@ -1243,12 +1243,12 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, voi
 	}
 
 	if (hlist_empty(&chan->sc_compat_unknown)) {
-		const struct lttng_event_desc *desc =
+		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___compat_syscall_entry_unknown;
 		struct lttng_event *event;
 
 		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
+		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_SYM_NAME_LEN);
 		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_ENTRY;
@@ -1263,12 +1263,12 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, voi
 	}
 
 	if (hlist_empty(&chan->compat_sc_exit_unknown)) {
-		const struct lttng_event_desc *desc =
+		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___compat_syscall_exit_unknown;
 		struct lttng_event *event;
 
 		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
+		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_SYM_NAME_LEN);
 		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_EXIT;
@@ -1283,12 +1283,12 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, voi
 	}
 
 	if (hlist_empty(&chan->sc_exit_unknown)) {
-		const struct lttng_event_desc *desc =
+		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___syscall_exit_unknown;
 		struct lttng_event *event;
 
 		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->name, LTTNG_KERNEL_SYM_NAME_LEN);
+		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_SYM_NAME_LEN);
 		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_EXIT;
@@ -1465,7 +1465,7 @@ int create_unknown_event_notifier(
 		enum sc_type type)
 {
 	struct lttng_event_notifier *notifier;
-	const struct lttng_event_desc *desc;
+	const struct lttng_kernel_event_desc *desc;
 	struct lttng_event_notifier_group *group = event_notifier_enabler->group;
 	struct lttng_kernel_event_notifier event_notifier_param;
 	uint64_t user_token = event_notifier_enabler->base.user_token;
@@ -1512,7 +1512,7 @@ int create_unknown_event_notifier(
 	 * Check if already created.
 	 */
 	head = utils_borrow_hash_table_bucket(group->event_notifiers_ht.table,
-		LTTNG_EVENT_NOTIFIER_HT_SIZE, desc->name);
+		LTTNG_EVENT_NOTIFIER_HT_SIZE, desc->event_name);
 	lttng_hlist_for_each_entry(notifier, head, hlist) {
 		if (notifier->desc == desc &&
 				notifier->user_token == base_enabler->user_token)
@@ -1522,7 +1522,7 @@ int create_unknown_event_notifier(
 		goto end;
 
 	memset(&event_notifier_param, 0, sizeof(event_notifier_param));
-	strncat(event_notifier_param.event.name, desc->name,
+	strncat(event_notifier_param.event.name, desc->event_name,
 		LTTNG_KERNEL_SYM_NAME_LEN - strlen(event_notifier_param.event.name) - 1);
 
 	event_notifier_param.event.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
@@ -1536,7 +1536,7 @@ int create_unknown_event_notifier(
 		event_notifier_param.event.instrumentation);
 	if (IS_ERR(notifier)) {
 		printk(KERN_INFO "Unable to create unknown notifier %s\n",
-			desc->name);
+			desc->event_name);
 		ret = -ENOMEM;
 		goto end;
 	}
@@ -1553,7 +1553,7 @@ static int create_matching_event_notifiers(
 		size_t table_len, enum sc_type type)
 {
 	struct lttng_event_notifier_group *group = event_notifier_enabler->group;
-	const struct lttng_event_desc *desc;
+	const struct lttng_kernel_event_desc *desc;
 	uint64_t user_token = event_notifier_enabler->base.user_token;
 	uint64_t error_counter_index = event_notifier_enabler->error_counter_index;
 	unsigned int i;
@@ -1580,7 +1580,7 @@ static int create_matching_event_notifiers(
 		 * Check if already created.
 		 */
 		head = utils_borrow_hash_table_bucket(group->event_notifiers_ht.table,
-			LTTNG_EVENT_NOTIFIER_HT_SIZE, desc->name);
+			LTTNG_EVENT_NOTIFIER_HT_SIZE, desc->event_name);
 		lttng_hlist_for_each_entry(event_notifier, head, hlist) {
 			if (event_notifier->desc == desc
 				&& event_notifier->user_token == event_notifier_enabler->base.user_token)
@@ -1608,7 +1608,7 @@ static int create_matching_event_notifiers(
 			event_notifier_param.event.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_COMPAT;
 			break;
 		}
-		strncat(event_notifier_param.event.name, desc->name,
+		strncat(event_notifier_param.event.name, desc->event_name,
 			LTTNG_KERNEL_SYM_NAME_LEN - strlen(event_notifier_param.event.name) - 1);
 		event_notifier_param.event.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
 		event_notifier_param.event.instrumentation = LTTNG_KERNEL_SYSCALL;
@@ -1618,7 +1618,7 @@ static int create_matching_event_notifiers(
 			filter, event_notifier_param.event.instrumentation);
 		if (IS_ERR(event_notifier)) {
 			printk(KERN_INFO "Unable to create event_notifier %s\n",
-				desc->name);
+				desc->event_name);
 			ret = -ENOMEM;
 			goto end;
 		}
@@ -1777,7 +1777,7 @@ int get_syscall_nr(const char *syscall_name)
 		entry = &sc_table[i];
 		if (!entry->desc)
 			continue;
-		it_name = entry->desc->name;
+		it_name = entry->desc->event_name;
 		it_name += strlen(SYSCALL_ENTRY_STR);
 		if (!strcmp(syscall_name, it_name)) {
 			syscall_nr = i;
@@ -1800,7 +1800,7 @@ int get_compat_syscall_nr(const char *syscall_name)
 		entry = &compat_sc_table[i];
 		if (!entry->desc)
 			continue;
-		it_name = entry->desc->name;
+		it_name = entry->desc->event_name;
 		it_name += strlen(COMPAT_SYSCALL_ENTRY_STR);
 		if (!strcmp(syscall_name, it_name)) {
 			syscall_nr = i;
@@ -1920,7 +1920,7 @@ int lttng_syscall_filter_enable_event_notifier(
 	WARN_ON_ONCE(notifier->instrumentation != LTTNG_KERNEL_SYSCALL);
 
 	ret = lttng_syscall_filter_enable(group->sc_filter,
-		notifier->desc->name, notifier->u.syscall.abi,
+		notifier->desc->event_name, notifier->u.syscall.abi,
 		notifier->u.syscall.entryexit);
 	if (ret) {
 		goto end;
@@ -1971,7 +1971,7 @@ int lttng_syscall_filter_enable_event(
 	WARN_ON_ONCE(event->instrumentation != LTTNG_KERNEL_SYSCALL);
 
 	return lttng_syscall_filter_enable(channel->sc_filter,
-		event->desc->name, event->u.syscall.abi,
+		event->desc->event_name, event->u.syscall.abi,
 		event->u.syscall.entryexit);
 }
 
@@ -2044,7 +2044,7 @@ int lttng_syscall_filter_disable_event_notifier(
 	WARN_ON_ONCE(notifier->instrumentation != LTTNG_KERNEL_SYSCALL);
 
 	ret = lttng_syscall_filter_disable(group->sc_filter,
-		notifier->desc->name, notifier->u.syscall.abi,
+		notifier->desc->event_name, notifier->u.syscall.abi,
 		notifier->u.syscall.entryexit);
 	WARN_ON_ONCE(ret != 0);
 
@@ -2057,7 +2057,7 @@ int lttng_syscall_filter_disable_event(
 		struct lttng_event *event)
 {
 	return lttng_syscall_filter_disable(channel->sc_filter,
-		event->desc->name, event->u.syscall.abi,
+		event->desc->event_name, event->u.syscall.abi,
 		event->u.syscall.entryexit);
 }
 
@@ -2140,10 +2140,10 @@ int syscall_list_show(struct seq_file *m, void *p)
 		return 0;
 	if (table == sc_table) {
 		index = entry - table;
-		name = &entry->desc->name[strlen(SYSCALL_ENTRY_STR)];
+		name = &entry->desc->event_name[strlen(SYSCALL_ENTRY_STR)];
 	} else {
 		index = (entry - table) + ARRAY_SIZE(sc_table);
-		name = &entry->desc->name[strlen(COMPAT_SYSCALL_ENTRY_STR)];
+		name = &entry->desc->event_name[strlen(COMPAT_SYSCALL_ENTRY_STR)];
 	}
 	seq_printf(m,	"syscall { index = %lu; name = %s; bitness = %u; };\n",
 		index, name, bitness);

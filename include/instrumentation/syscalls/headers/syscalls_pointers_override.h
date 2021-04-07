@@ -117,48 +117,32 @@ SC_LTTNG_TRACEPOINT_ENUM(lttng_clone_option_flags,
 )
 
 #define LTTNG_CLONE_FLAGS_EXIT_SIGNAL					\
-{									\
-	.name = "exit_signal",						\
-	.type = {							\
-		.type = lttng_kernel_type_enum_nestable,				\
-		.u = {							\
-			.enum_nestable = {				\
-				.desc = &__enum_lttng_clone_exit_signal_flags,		\
-				.container_type =  __LTTNG_COMPOUND_LITERAL(		\
-					struct lttng_type, __type_integer(unsigned long,	\
-						CLONE_EXIT_SIGNAL_FLAG_RESERVED_BITS,	\
-						1, -1, __BYTE_ORDER, 16, none)),	\
-			},						\
-		},							\
-	},								\
-}
+	lttng_kernel_static_event_field("exit_signal",			\
+		lttng_kernel_static_type_enum(&__enum_lttng_clone_exit_signal_flags, \
+			lttng_kernel_static_type_integer(CLONE_EXIT_SIGNAL_FLAG_RESERVED_BITS, \
+				1, 0, __BYTE_ORDER, 16)),		\
+		false, false, false)
 
 #define LTTNG_CLONE_FLAGS_OPTIONS					\
-{									\
-	.name = "options",						\
-	.type = {							\
-		.type = lttng_kernel_type_enum_nestable,				\
-		.u = {							\
-			.enum_nestable = {				\
-				.desc = &__enum_lttng_clone_option_flags,		\
-				.container_type =  __LTTNG_COMPOUND_LITERAL(		\
-					struct lttng_type, __type_integer(unsigned long,\
-						sizeof(unsigned long) * CHAR_BIT - CLONE_EXIT_SIGNAL_FLAG_RESERVED_BITS, \
-						1, -1, __BYTE_ORDER, 16, none)),	\
-			},						\
-		},							\
-	},								\
-}
+	lttng_kernel_static_event_field("options",			\
+		lttng_kernel_static_type_enum(&__enum_lttng_clone_option_flags, \
+			lttng_kernel_static_type_integer(		\
+				sizeof(unsigned long) * CHAR_BIT - CLONE_EXIT_SIGNAL_FLAG_RESERVED_BITS, \
+				1, 0, __BYTE_ORDER, 16)),		\
+		false, false, false)
 
 #if (__BYTE_ORDER == __LITTLE_ENDIAN)
 #define LTTNG_CLONE_FLAGS			\
+lttng_kernel_static_event_field_array(		\
 	[0] = LTTNG_CLONE_FLAGS_EXIT_SIGNAL,	\
-	[1] = LTTNG_CLONE_FLAGS_OPTIONS,
-
+	[1] = LTTNG_CLONE_FLAGS_OPTIONS,	\
+)
 #else
 #define LTTNG_CLONE_FLAGS			\
+lttng_kernel_static_event_field_array(		\
 	[0] = LTTNG_CLONE_FLAGS_OPTIONS,	\
-	[1] = LTTNG_CLONE_FLAGS_EXIT_SIGNAL,
+	[1] = LTTNG_CLONE_FLAGS_EXIT_SIGNAL,	\
+)
 #endif
 
 
@@ -174,15 +158,7 @@ SC_LTTNG_TRACEPOINT_EVENT(clone,
 		sc_in(
 			ctf_custom_field(
 				ctf_custom_type(
-					{
-						.type = lttng_kernel_type_struct_nestable,
-						.u.struct_nestable.nr_fields = 2,
-						.u.struct_nestable.fields =
-							__LTTNG_COMPOUND_LITERAL(struct lttng_event_field,
-								LTTNG_CLONE_FLAGS
-							),
-						.u.struct_nestable.alignment = lttng_alignof(unsigned long) * CHAR_BIT,
-					}
+					lttng_kernel_static_type_struct(2, LTTNG_CLONE_FLAGS, lttng_alignof(unsigned long) * CHAR_BIT)
 				),
 				flags,
 				ctf_custom_code(
@@ -315,7 +291,7 @@ end:	; /* Label at end of compound statement. */					\
 #define LTTNG_SYSCALL_SELECT_fds_field_LE(name, input)							\
 	ctf_custom_field(										\
 		ctf_custom_type(									\
-			__type_integer(uint8_t, 0, 0, 0, __BYTE_ORDER, 10, none)			\
+			lttng_kernel_static_type_integer_from_type(uint8_t, __BYTE_ORDER, 10)		\
 		),											\
 		_ ## name ## _length,									\
 		ctf_custom_code(									\
@@ -330,13 +306,11 @@ end:	; /* Label at end of compound statement. */					\
 	)												\
 	ctf_custom_field(										\
 		ctf_custom_type(									\
-			{										\
-				.type = lttng_kernel_type_sequence_nestable,					\
-				.u.sequence_nestable.length_name = "_" #name "_length",			\
-				.u.sequence_nestable.elem_type = __LTTNG_COMPOUND_LITERAL(struct lttng_type, \
-					__type_integer(uint8_t, 0, 0, 0, __BYTE_ORDER, 16, none)),	\
-				.u.sequence_nestable.alignment = 0,					\
-			}										\
+			lttng_kernel_static_type_sequence(						\
+				"_" #name "_length",							\
+				lttng_kernel_static_type_integer_from_type(uint8_t, __BYTE_ORDER, 16),	\
+				0,									\
+				none)									\
 		),											\
 		name,											\
 		ctf_custom_code(									\
@@ -363,7 +337,7 @@ end:	; /* Label at end of compound statement. */					\
 #define LTTNG_SYSCALL_SELECT_fds_field_BE(name, input)							\
 	ctf_custom_field(										\
 		ctf_custom_type(									\
-			__type_integer(uint8_t, 0, 0, 0, __BYTE_ORDER, 10, none)			\
+			lttng_kernel_static_type_integer_from_type(uint8_t, __BYTE_ORDER, 10)		\
 		),											\
 		_ ## name ## _length,									\
 		ctf_custom_code(									\
@@ -378,12 +352,10 @@ end:	; /* Label at end of compound statement. */					\
 	)												\
 	ctf_custom_field(										\
 		ctf_custom_type(									\
-			{										\
-				.type = lttng_kernel_type_sequence_nestable,					\
-				.u.sequence_nestable.elem_type = __LTTNG_COMPOUND_LITERAL(struct lttng_type, \
-					__type_integer(uint8_t, 0, 0, 0, __BYTE_ORDER, 16, none)),	\
-				.u.sequence_nestable.alignment = 0,					\
-			}										\
+			lttng_kernel_static_type_sequence("_" #name "_length",				\
+				lttng_kernel_static_type_integer_from_type(uint8_t, __BYTE_ORDER, 16),	\
+				0,									\
+				none)									\
 		),											\
 		name,											\
 		ctf_custom_code(									\
@@ -496,64 +468,41 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(pselect6,
 /*
  * Only extract the values specified by iBCS2 for now.
  */
-static struct lttng_event_field lttng_pollfd_flag_fields[] = {
-	[ilog2(POLLIN)] = {
-		.name = "POLLIN",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
-	},
-	[ilog2(POLLPRI)] = {
-		.name = "POLLPRI",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
-	},
-	[ilog2(POLLOUT)] = {
-		.name = "POLLOUT",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
-	},
-	[ilog2(POLLERR)] = {
-		.name = "POLLERR",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
-	},
-	[ilog2(POLLHUP)] = {
-		.name = "POLLHUP",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
-	},
-	[ilog2(POLLNVAL)] = {
-		.name = "POLLNVAL",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
-	},
-	[ilog2(LTTNG_POLL_NRFLAGS)] = {
-		.name = "padding",
-		.type = __type_integer(int, POLL_FLAGS_PADDING_SIZE, 1, 0,
-				__LITTLE_ENDIAN, 10, none),
-	},
+static const struct lttng_kernel_event_field *lttng_pollfd_flag_fields[] = {
+	[ilog2(POLLIN)] = lttng_kernel_static_event_field("POLLIN",
+				lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10),
+				false, false, false),
+	[ilog2(POLLPRI)] = lttng_kernel_static_event_field("POLLPRI",
+				lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10),
+				false, false, false),
+	[ilog2(POLLOUT)] = lttng_kernel_static_event_field("POLLOUT",
+				lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10),
+				false, false, false),
+	[ilog2(POLLERR)] = lttng_kernel_static_event_field("POLLERR",
+				lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10),
+				false, false, false),
+	[ilog2(POLLHUP)] = lttng_kernel_static_event_field("POLLHUP",
+				lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10),
+				false, false, false),
+	[ilog2(POLLNVAL)] = lttng_kernel_static_event_field("POLLNVAL",
+				lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10),
+				false, false, false),
+	[ilog2(LTTNG_POLL_NRFLAGS)] = lttng_kernel_static_event_field("padding",
+				lttng_kernel_static_type_integer(POLL_FLAGS_PADDING_SIZE, 1, 0, __LITTLE_ENDIAN, 10),
+				false, false, false),
 };
 
-static struct lttng_event_field lttng_pollfd_fields[] = {
-	[0] = {
-		.name = "fd",
-		.type = __type_integer(int, 0, 0, 0, __BYTE_ORDER, 10, none),
-	},
-	[1] = {
-		.name = "raw_events",
-		.type = __type_integer(short, 0, 0, 0, __BYTE_ORDER, 16, none),
-	},
-	[2] = {
-		.name = "events",
-		.type = {
-			.type = lttng_kernel_type_struct_nestable,
-			.u.struct_nestable.nr_fields = ARRAY_SIZE(lttng_pollfd_flag_fields),
-			.u.struct_nestable.fields = lttng_pollfd_flag_fields,
-			.u.struct_nestable.alignment = 0,
-		}
-	},
+static const struct lttng_kernel_event_field *lttng_pollfd_fields[] = {
+	[0] = lttng_kernel_static_event_field("fd", lttng_kernel_static_type_integer_from_type(int, __BYTE_ORDER, 10),
+				false, false, false),
+	[1] = lttng_kernel_static_event_field("raw_events", lttng_kernel_static_type_integer_from_type(uint16_t, __BYTE_ORDER, 16),
+				false, false, false),
+	[2] = lttng_kernel_static_event_field("events",
+		lttng_kernel_static_type_struct(ARRAY_SIZE(lttng_pollfd_flag_fields),
+			lttng_pollfd_flag_fields, 0),
+		false, false, false),
 };
 
-static struct lttng_type lttng_pollfd_elem = {
-	.type = lttng_kernel_type_struct_nestable,
-	.u.struct_nestable.nr_fields = ARRAY_SIZE(lttng_pollfd_fields),
-	.u.struct_nestable.fields = lttng_pollfd_fields,
-	.u.struct_nestable.alignment = 0,
-};
 #endif /* ONCE_LTTNG_TRACE_POLL_H */
 
 #define LTTNG_SYSCALL_POLL_locvar				\
@@ -621,11 +570,10 @@ end:											\
 	sc_in(											\
 		ctf_custom_field(								\
 			ctf_custom_type(							\
-				{								\
-					.type = lttng_kernel_type_sequence_nestable,			\
-					.u.sequence_nestable.length_name = "fds_length",	\
-					.u.sequence_nestable.elem_type = &lttng_pollfd_elem,	\
-				}								\
+				lttng_kernel_static_type_sequence("fds_length",			\
+					lttng_kernel_static_type_struct(ARRAY_SIZE(lttng_pollfd_fields), lttng_pollfd_fields, 0), \
+					0,							\
+					none)							\
 			),									\
 			fds,									\
 			ctf_custom_code(							\
@@ -644,11 +592,10 @@ end:											\
 	sc_out(											\
 		ctf_custom_field(								\
 			ctf_custom_type(							\
-				{								\
-					.type = lttng_kernel_type_sequence_nestable,			\
-					.u.sequence_nestable.length_name = "fds_length",	\
-					.u.sequence_nestable.elem_type = &lttng_pollfd_elem,	\
-				}								\
+				lttng_kernel_static_type_sequence("fds_length",			\
+					lttng_kernel_static_type_struct(ARRAY_SIZE(lttng_pollfd_fields), lttng_pollfd_fields, 0), \
+					0,							\
+					none)							\
 			),									\
 			fds,									\
 			ctf_custom_code(							\
@@ -763,74 +710,55 @@ SC_LTTNG_TRACEPOINT_ENUM(lttng_epoll_op,
 /*
  * Only extract the values specified by iBCS2 for now.
  */
-static struct lttng_event_field lttng_epoll_ctl_events_fields[] = {
+static const struct lttng_kernel_event_field *lttng_epoll_ctl_events_fields[] = {
 	/* 0x0001 */
-	[ilog2(POLLIN)] = {
-		.name = "EPOLLIN",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
-	},
+	[ilog2(POLLIN)] = lttng_kernel_static_event_field("EPOLLIN",
+			lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10),
+			false, false, false),
 	/* 0x0002 */
-	[ilog2(POLLPRI)] = {
-		.name = "EPOLLPRI",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
-	},
+	[ilog2(POLLPRI)] = lttng_kernel_static_event_field("EPOLLPRI",
+			lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10),
+			false, false, false),
 	/* 0x0004 */
-	[ilog2(POLLOUT)] = {
-		.name = "EPOLLOUT",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
-	},
+	[ilog2(POLLOUT)] = lttng_kernel_static_event_field("EPOLLOUT",
+			lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10),
+			false, false, false),
 	/* 0x0008 */
-	[ilog2(POLLERR)] = {
-		.name = "EPOLLERR",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
-	},
+	[ilog2(POLLERR)] = lttng_kernel_static_event_field("EPOLLERR",
+			lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10),
+			false, false, false),
 	/* 0x0010 */
-	[ilog2(POLLHUP)] = {
-		.name = "EPOLLHUP",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
-	},
-	[ilog2(LTTNG_EPOLL_NRFLAGS)] = {
-		.name = "padding",
-		.type = __type_integer(int, EPOLL_FLAGS_PADDING_SIZE, 1, 0,
-				__LITTLE_ENDIAN, 10, none),
-	},
-
+	[ilog2(POLLHUP)] = lttng_kernel_static_event_field("EPOLLHUP",
+			lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10),
+			false, false, false),
+	[ilog2(LTTNG_EPOLL_NRFLAGS)] = lttng_kernel_static_event_field("padding",
+			lttng_kernel_static_type_integer(EPOLL_FLAGS_PADDING_SIZE, 1, 0, __LITTLE_ENDIAN, 10),
+			false, false, false),
 };
 
-static struct lttng_event_field lttng_epoll_data_fields[] = {
-	[0] = {
-		.name = "u64",
-		.type = __type_integer(uint64_t, 0, 0, 0, __BYTE_ORDER, 16, none),
-	},
-	[1] = {
-		.name = "fd",
-		.type = __type_integer(int, 0, 0, 0, __BYTE_ORDER, 10, none),
-	},
+static const struct lttng_kernel_event_field *lttng_epoll_data_fields[] = {
+	[0] = lttng_kernel_static_event_field("u64",
+			lttng_kernel_static_type_integer_from_type(uint64_t, __BYTE_ORDER, 16),
+			false, false, false),
+	[1] = lttng_kernel_static_event_field("fd",
+			lttng_kernel_static_type_integer_from_type(int, __BYTE_ORDER, 10),
+			false, false, false),
 };
 
-static struct lttng_event_field epoll_ctl_fields[] = {
-	[0] = {
-		.name = "data_union",
-		.type = {
-			.type = lttng_kernel_type_struct_nestable,
-			.u.struct_nestable.nr_fields = ARRAY_SIZE(lttng_epoll_data_fields),
-			.u.struct_nestable.fields = lttng_epoll_data_fields,
-			.u.struct_nestable.alignment = 0,
-		}
-	},
-	[1] = {
-		.name = "raw_events",
-		.type = __type_integer(uint32_t, 0, 0, 0, __BYTE_ORDER, 16, none),
-	},
-	[2] = {
-		.name = "events",
-		.type = {
-			.type = lttng_kernel_type_struct_nestable,
-			.u.struct_nestable.nr_fields = ARRAY_SIZE(lttng_epoll_ctl_events_fields),
-			.u.struct_nestable.fields = lttng_epoll_ctl_events_fields,
-			.u.struct_nestable.alignment = 0,
-		}
-	},
+static const struct lttng_kernel_event_field *epoll_ctl_fields[] = {
+	[0] = lttng_kernel_static_event_field("data_union",
+		lttng_kernel_static_type_struct(ARRAY_SIZE(lttng_epoll_data_fields),
+				lttng_epoll_data_fields,
+				0),
+		false, false, false),
+	[1] = lttng_kernel_static_event_field("raw_events",
+		lttng_kernel_static_type_integer_from_type(uint32_t, __BYTE_ORDER, 16),
+		false, false, false),
+	[2] = lttng_kernel_static_event_field("events",
+		lttng_kernel_static_type_struct(ARRAY_SIZE(lttng_epoll_ctl_events_fields),
+				lttng_epoll_ctl_events_fields,
+				0),
+		false, false, false),
 };
 #endif /* ONCE_LTTNG_TRACE_EPOLL_CTL_H */
 
@@ -857,12 +785,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_ctl,
 		sc_in(
 			ctf_custom_field(
 				ctf_custom_type(
-					{
-						.type = lttng_kernel_type_struct_nestable,
-						.u.struct_nestable.nr_fields = ARRAY_SIZE(epoll_ctl_fields),
-						.u.struct_nestable.fields = epoll_ctl_fields,
-						.u.struct_nestable.alignment = 0,
-					}
+					lttng_kernel_static_type_struct(ARRAY_SIZE(epoll_ctl_fields), epoll_ctl_fields, 0)
 				),
 				event,
 				ctf_custom_code(
@@ -891,37 +814,16 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_ctl,
 #ifndef ONCE_LTTNG_TRACE_EPOLL_H
 #define ONCE_LTTNG_TRACE_EPOLL_H
 
-static struct lttng_event_field lttng_epoll_wait_fields[] = {
-	[0] = {
-		.name = "data_union",
-		.type = {
-			.type = lttng_kernel_type_struct_nestable,
-			.u.struct_nestable.nr_fields = ARRAY_SIZE(lttng_epoll_data_fields),
-			.u.struct_nestable.fields = lttng_epoll_data_fields,
-			.u.struct_nestable.alignment = 0,
-		}
-	},
-	[1] = {
-		.name = "raw_events",
-		.type = __type_integer(uint32_t, 0, 0, 0, __BYTE_ORDER, 16, none),
-	},
-	[2] = {
-		.name = "events",
-		.type = {
-			.type = lttng_kernel_type_struct_nestable,
-			.u.struct_nestable.nr_fields = ARRAY_SIZE(lttng_epoll_ctl_events_fields),
-			.u.struct_nestable.fields = lttng_epoll_ctl_events_fields,
-			.u.struct_nestable.alignment = 0,
-		}
-	},
-};
-
-static struct lttng_type lttng_epoll_wait_elem = {
-	.type = lttng_kernel_type_struct_nestable,
-	.u.struct_nestable.nr_fields = ARRAY_SIZE(lttng_epoll_wait_fields),
-	.u.struct_nestable.fields = lttng_epoll_wait_fields,
-	.u.struct_nestable.alignment = 0,
-};
+static const struct lttng_kernel_event_field *lttng_epoll_wait_fields[] = lttng_kernel_static_event_field_array(
+	[0] = lttng_kernel_static_event_field("data_union",
+			lttng_kernel_static_type_struct(ARRAY_SIZE(lttng_epoll_data_fields), lttng_epoll_data_fields, 0),
+			false, false, false),
+	[1] = lttng_kernel_static_event_field("raw_events", lttng_kernel_static_type_integer_from_type(uint32_t, __BYTE_ORDER, 16),
+			false, false, false),
+	[2] = lttng_kernel_static_event_field("events",
+			lttng_kernel_static_type_struct(ARRAY_SIZE(lttng_epoll_ctl_events_fields), lttng_epoll_ctl_events_fields, 0),
+			false, false, false),
+);
 
 #endif /* ONCE_LTTNG_TRACE_EPOLL_H */
 
@@ -960,7 +862,7 @@ static struct lttng_type lttng_epoll_wait_elem = {
 			tp_locvar->fds_length = ret;				\
 		}								\
 										\
-		tp_locvar->events = lttng_tp_mempool_alloc(				\
+		tp_locvar->events = lttng_tp_mempool_alloc(			\
 			maxalloc * sizeof(struct epoll_event));			\
 		if (!tp_locvar->events) {					\
 			tp_locvar->fds_length = 0;				\
@@ -979,13 +881,10 @@ static struct lttng_type lttng_epoll_wait_elem = {
 #define LTTNG_SYSCALL_EPOLL_WAIT_fds_field						\
 	ctf_custom_field(								\
 		ctf_custom_type(							\
-			{								\
-				.type = lttng_kernel_type_sequence_nestable,			\
-				.u.sequence_nestable.length_name =			\
-					"fds_length",					\
-				.u.sequence_nestable.elem_type =			\
-					&lttng_epoll_wait_elem,				\
-			}								\
+			lttng_kernel_static_type_sequence("fds_length",			\
+				lttng_kernel_static_type_struct(ARRAY_SIZE(lttng_epoll_wait_fields), lttng_epoll_wait_fields, 0), \
+				0,							\
+				none)							\
 		),									\
 		fds,									\
 		ctf_custom_code(							\

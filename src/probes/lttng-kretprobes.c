@@ -86,6 +86,9 @@ int lttng_kretprobes_handler_exit(struct kretprobe_instance *krpi,
 	return _lttng_kretprobes_handler(krpi, regs, EVENT_EXIT);
 }
 
+static const struct lttng_kernel_type_common *event_type =
+	lttng_kernel_static_type_integer_from_type(unsigned long, __BYTE_ORDER, 16);
+
 /*
  * Create event description
  */
@@ -93,14 +96,15 @@ static
 int lttng_create_kprobe_event(const char *name, struct lttng_event *event,
 			      enum lttng_kretprobe_type type)
 {
-	struct lttng_event_field *fields;
-	struct lttng_event_desc *desc;
-	int ret;
+	const struct lttng_kernel_event_field **fieldp_array;
+	struct lttng_kernel_event_field *field;
+	struct lttng_kernel_event_desc *desc;
 	char *alloc_name;
 	size_t name_len;
 	const char *suffix = NULL;
+	int ret;
 
-	desc = kzalloc(sizeof(*event->desc), GFP_KERNEL);
+	desc = kzalloc(sizeof(*desc), GFP_KERNEL);
 	if (!desc)
 		return -ENOMEM;
 	name_len = strlen(name);
@@ -120,39 +124,44 @@ int lttng_create_kprobe_event(const char *name, struct lttng_event *event,
 	}
 	strcpy(alloc_name, name);
 	strcat(alloc_name, suffix);
-	desc->name = alloc_name;
+	desc->event_name = alloc_name;
 	desc->nr_fields = 2;
-	desc->fields = fields =
-		kzalloc(2 * sizeof(struct lttng_event_field), GFP_KERNEL);
-	if (!desc->fields) {
+	fieldp_array = kzalloc(desc->nr_fields * sizeof(struct lttng_kernel_event_field *), GFP_KERNEL);
+	if (!fieldp_array) {
 		ret = -ENOMEM;
-		goto error_fields;
+		goto error_fieldp_array;
 	}
-	fields[0].name = "ip";
-	fields[0].type.type = lttng_kernel_type_integer;
-	fields[0].type.u.integer.size = sizeof(unsigned long) * CHAR_BIT;
-	fields[0].type.u.integer.alignment = lttng_alignof(unsigned long) * CHAR_BIT;
-	fields[0].type.u.integer.signedness = lttng_is_signed_type(unsigned long);
-	fields[0].type.u.integer.reverse_byte_order = 0;
-	fields[0].type.u.integer.base = 16;
-	fields[0].type.u.integer.encoding = lttng_kernel_string_encoding_none;
+	desc->fields = fieldp_array;
 
-	fields[1].name = "parent_ip";
-	fields[1].type.type = lttng_kernel_type_integer;
-	fields[1].type.u.integer.size = sizeof(unsigned long) * CHAR_BIT;
-	fields[1].type.u.integer.alignment = lttng_alignof(unsigned long) * CHAR_BIT;
-	fields[1].type.u.integer.signedness = lttng_is_signed_type(unsigned long);
-	fields[1].type.u.integer.reverse_byte_order = 0;
-	fields[1].type.u.integer.base = 16;
-	fields[1].type.u.integer.encoding = lttng_kernel_string_encoding_none;
+	field = kzalloc(sizeof(struct lttng_kernel_event_field), GFP_KERNEL);
+	if (!field) {
+		ret = -ENOMEM;
+		goto error_field0;
+	}
+	field->name = "ip";
+	field->type = event_type;
+	desc->fields[0] = field;
+
+	field = kzalloc(sizeof(struct lttng_kernel_event_field), GFP_KERNEL);
+	if (!field) {
+		ret = -ENOMEM;
+		goto error_field1;
+	}
+	field->name = "parent_ip";
+	field->type = event_type;
+	desc->fields[1] = field;
 
 	desc->owner = THIS_MODULE;
 	event->desc = desc;
 
 	return 0;
 
-error_fields:
-	kfree(desc->name);
+error_field1:
+	kfree(desc->fields[0]);
+error_field0:
+	kfree(fieldp_array);
+error_fieldp_array:
+	kfree(desc->event_name);
 error_str:
 	kfree(desc);
 	return ret;
@@ -233,12 +242,16 @@ register_error:
 name_error:
 	kfree(lttng_krp);
 krp_error:
+	kfree(event_exit->desc->fields[0]);
+	kfree(event_exit->desc->fields[1]);
 	kfree(event_exit->desc->fields);
-	kfree(event_exit->desc->name);
+	kfree(event_exit->desc->event_name);
 	kfree(event_exit->desc);
 event_exit_error:
+	kfree(event_entry->desc->fields[0]);
+	kfree(event_entry->desc->fields[1]);
 	kfree(event_entry->desc->fields);
-	kfree(event_entry->desc->name);
+	kfree(event_entry->desc->event_name);
 	kfree(event_entry->desc);
 error:
 	return ret;
@@ -270,8 +283,10 @@ void _lttng_kretprobes_release(struct kref *kref)
 
 void lttng_kretprobes_destroy_private(struct lttng_event *event)
 {
+	kfree(event->desc->fields[0]);
+	kfree(event->desc->fields[1]);
 	kfree(event->desc->fields);
-	kfree(event->desc->name);
+	kfree(event->desc->event_name);
 	kfree(event->desc);
 	kref_put(&event->u.kretprobe.lttng_krp->kref_alloc,
 		_lttng_kretprobes_release);

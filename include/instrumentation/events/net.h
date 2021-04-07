@@ -29,154 +29,6 @@ static inline unsigned char __has_network_hdr(struct sk_buff *skb)
 	return skb_network_header(skb) != skb->head;
 }
 
-static struct lttng_event_field emptyfields[] = {
-};
-
-/* Structures for transport headers. */
-
-static struct lttng_event_field tcpfields[] = {
-	[0] = {
-		.name = "source_port",
-		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[1] = {
-		.name = "dest_port",
-		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[2] = {
-		.name = "seq",
-		.type = __type_integer(uint32_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[3] = {
-		.name = "ack_seq",
-		.type = __type_integer(uint32_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[4] = {
-		.name = "data_offset",
-		.type = __type_integer(uint8_t, 4, 4, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[5] = {
-		.name = "reserved",
-		.type = __type_integer(uint8_t, 3, 1, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[6] = {
-		.name = "flags",
-		.type = __type_integer(uint8_t, 9, 1, 0,
-				__BIG_ENDIAN, 16, none),
-	},
-	[7] = {
-		.name = "window_size",
-		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[8] = {
-		.name = "checksum",
-		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 16, none),
-	},
-	[9] = {
-		.name = "urg_ptr",
-		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-};
-
-static struct lttng_event_field udpfields[] = {
-	[0] = {
-		.name = "source_port",
-		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[1] = {
-		.name = "dest_port",
-		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[2] = {
-		.name = "len",
-		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[3] = {
-		.name = "check",
-		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-};
-
-static struct lttng_event_field icmpfields[] = {
-	[0] = {
-		.name = "type",
-		.type = __type_integer(uint8_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[1] = {
-		.name = "code",
-		.type = __type_integer(uint8_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[2] = {
-		.name = "checksum",
-		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[3] = {
-		.name = "gateway",
-		.type = __type_integer(uint32_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-};
-
-
-static struct lttng_event_field transport_fields[] = {
-	[0] = {
-		.name = "unknown",
-		.type = {
-			.type = lttng_kernel_type_struct_nestable,
-			.u.struct_nestable.nr_fields = ARRAY_SIZE(emptyfields),
-			.u.struct_nestable.fields = emptyfields,
-			.u.struct_nestable.alignment = 0,
-		},
-		.nofilter = 1,
-	},
-	[1] = {
-		.name = "tcp",
-		.type = {
-			.type = lttng_kernel_type_struct_nestable,
-			.u.struct_nestable.nr_fields = ARRAY_SIZE(tcpfields),
-			.u.struct_nestable.fields = tcpfields,
-			.u.struct_nestable.alignment = 0,
-		},
-		.nofilter = 1,
-	},
-	[2] = {
-		.name = "udp",
-		.type = {
-			.type = lttng_kernel_type_struct_nestable,
-			.u.struct_nestable.nr_fields = ARRAY_SIZE(udpfields),
-			.u.struct_nestable.fields = udpfields,
-			.u.struct_nestable.alignment = 0,
-		},
-		.nofilter = 1,
-	},
-	[3] = {
-		.name = "icmp",
-		.type = {
-			.type = lttng_kernel_type_struct_nestable,
-			.u.struct_nestable.nr_fields = ARRAY_SIZE(icmpfields),
-			.u.struct_nestable.fields = icmpfields,
-			.u.struct_nestable.alignment = 0,
-		},
-		.nofilter = 1,
-	},
-};
-
 enum transport_header_types {
 	TH_NONE = 0,
 	TH_TCP = 1,
@@ -235,303 +87,6 @@ static inline enum transport_header_types __get_transport_header_type(struct sk_
 	return TH_NONE;
 }
 
-static struct lttng_kernel_enum_entry proto_transport_enum_entries[] = {
-	[0] = {
-		.start = { .value = 0, .signedness = 0, },
-		.end = { .value = IPPROTO_ICMP - 1, .signedness = 0, },
-		.string = "_unknown",
-	},
-	[1] = {
-		.start = { .value = IPPROTO_ICMP, .signedness = 0, },
-		.end = { .value = IPPROTO_ICMP, .signedness = 0, },
-		.string = "_icmp",
-	},
-	[2] = {
-		.start = { .value = IPPROTO_ICMP + 1, .signedness = 0, },
-		.end = { .value = IPPROTO_TCP - 1, .signedness = 0, },
-		.string = "_unknown",
-	},
-	[3] = {
-		.start = { .value = IPPROTO_TCP, .signedness = 0, },
-		.end = { .value = IPPROTO_TCP, .signedness = 0, },
-		.string = "_tcp",
-	},
-	[4] = {
-		.start = { .value = IPPROTO_TCP + 1, .signedness = 0, },
-		.end = { .value = IPPROTO_UDP - 1, .signedness = 0, },
-		.string = "_unknown",
-	},
-	[5] = {
-		.start = { .value = IPPROTO_UDP, .signedness = 0, },
-		.end = { .value = IPPROTO_UDP, .signedness = 0, },
-		.string = "_udp",
-	},
-	[6] = {
-		.start = { .value = IPPROTO_UDP + 1, .signedness = 0, },
-		.end = { .value = 255, .signedness = 0, },
-		.string = "_unknown",
-	},
-};
-
-static const struct lttng_kernel_enum_desc proto_transport_header_type = {
-	.name = "proto_transport_header_type",
-	.entries = proto_transport_enum_entries,
-	.nr_entries = ARRAY_SIZE(proto_transport_enum_entries),
-};
-
-static struct lttng_kernel_enum_entry transport_enum_entries[] = {
-	[0] = {
-		.start = { .value = TH_NONE, .signedness = 0, },
-		.end = { .value = TH_NONE, .signedness = 0, },
-		.string = "_unknown",
-	},
-	[1] = {
-		.start = { .value = TH_TCP, .signedness = 0, },
-		.end = { .value = TH_TCP, .signedness = 0, },
-		.string = "_tcp",
-	},
-	[2] = {
-		.start = { .value = TH_UDP, .signedness = 0, },
-		.end = { .value = TH_UDP, .signedness = 0, },
-		.string = "_udp",
-	},
-	[3] = {
-		.start = { .value = TH_ICMP, .signedness = 0, },
-		.end = { .value = TH_ICMP, .signedness = 0, },
-		.string = "_icmp",
-	},
-};
-
-static const struct lttng_kernel_enum_desc transport_header_type = {
-	.name = "transport_header_type",
-	.entries = transport_enum_entries,
-	.nr_entries = ARRAY_SIZE(transport_enum_entries),
-};
-
-/* Structures for network headers. */
-
-static struct lttng_event_field ipv4fields[] = {
-	[0] = {
-		.name = "version",
-		.type = __type_integer(uint8_t, 4, 4, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[1] = {
-		.name = "ihl",
-		.type = __type_integer(uint8_t, 4, 4, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[2] = {
-		.name = "tos",
-		.type = __type_integer(uint8_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[3] = {
-		.name = "tot_len",
-		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[4] = {
-		.name = "id",
-		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 16, none),
-	},
-	[5] = {
-		.name = "frag_off",
-		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[6] = {
-		.name = "ttl",
-		.type = __type_integer(uint8_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[7] = {
-		.name = "protocol",
-		.type = {
-			.type = lttng_kernel_type_enum_nestable,
-			.u.enum_nestable.desc =
-				&proto_transport_header_type,
-			.u.enum_nestable.container_type =
-				__LTTNG_COMPOUND_LITERAL(struct lttng_type,
-					__type_integer(uint8_t, 0, 0, -1,
-						__BIG_ENDIAN, 10, none)),
-		},
-	},
-	[8] = {
-		.name = "checksum",
-		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 16, none),
-	},
-	[9] = {
-		.name = "saddr",
-		.type = {
-			.type = lttng_kernel_type_array_nestable,
-			.u.array_nestable.elem_type =
-				__LTTNG_COMPOUND_LITERAL(struct lttng_type,
-					__type_integer(uint8_t, 0, 0, 0,
-						__BIG_ENDIAN, 10, none)),
-			.u.array_nestable.length = 4,
-			.u.array_nestable.alignment = lttng_alignof(uint8_t),
-		},
-	},
-	[10] = {
-		.name = "daddr",
-		.type = {
-			.type = lttng_kernel_type_array_nestable,
-			.u.array_nestable.elem_type =
-				__LTTNG_COMPOUND_LITERAL(struct lttng_type,
-					__type_integer(uint8_t, 0, 0, 0,
-						__BIG_ENDIAN, 10, none)),
-			.u.array_nestable.length = 4,
-			.u.array_nestable.alignment = lttng_alignof(uint8_t),
-		},
-	},
-	[11] = {
-		.name = "transport_header_type",
-		.type = {
-			.type = lttng_kernel_type_enum_nestable,
-			.u.enum_nestable.desc = &transport_header_type,
-			.u.enum_nestable.container_type =
-				__LTTNG_COMPOUND_LITERAL(struct lttng_type,
-					__type_integer(uint8_t, 0, 0, -1,
-						__BYTE_ORDER, 10, none)),
-		},
-	},
-	[12] = {
-		.name = "transport_header",
-		.type = {
-			.type = lttng_kernel_type_variant_nestable,
-			.u.variant_nestable.tag_name = "transport_header_type",
-			.u.variant_nestable.choices = transport_fields,
-			.u.variant_nestable.nr_choices = ARRAY_SIZE(transport_fields),
-			.u.variant_nestable.alignment = 0,
-		},
-	},
-};
-
-static struct lttng_event_field ipv6fields[] = {
-	[0] = {
-		.name = "version",
-		.type = __type_integer(uint8_t, 4, 4, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[1] = {
-		.name = "prio",
-		.type = __type_integer(uint8_t, 4, 4, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[2] = {
-		.name = "flow_lbl",
-		.type = {
-			.type = lttng_kernel_type_array_nestable,
-			.u.array_nestable.elem_type =
-				__LTTNG_COMPOUND_LITERAL(struct lttng_type,
-					__type_integer(uint8_t, 0, 0, 0,
-						__BIG_ENDIAN, 16, none)),
-			.u.array_nestable.length = 3,
-			.u.array_nestable.alignment = lttng_alignof(uint8_t),
-		},
-	},
-	[3] = {
-		.name = "payload_len",
-		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[4] = {
-		.name = "nexthdr",
-		.type = {
-			.type = lttng_kernel_type_enum_nestable,
-			.u.enum_nestable.desc =
-				&proto_transport_header_type,
-			.u.enum_nestable.container_type =
-				__LTTNG_COMPOUND_LITERAL(struct lttng_type,
-					__type_integer(uint8_t, 0, 0, -1,
-						__BIG_ENDIAN, 10, none)),
-		},
-	},
-	[5] = {
-		.name = "hop_limit",
-		.type = __type_integer(uint8_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
-	},
-	[6] = {
-		.name = "saddr",
-		.type = {
-			.type = lttng_kernel_type_array_nestable,
-			.u.array_nestable.elem_type =
-				__LTTNG_COMPOUND_LITERAL(struct lttng_type,
-					__type_integer(uint16_t, 0, 0, 0,
-						__BIG_ENDIAN, 16, none)),
-			.u.array_nestable.length = 8,
-			.u.array_nestable.alignment = lttng_alignof(uint16_t),
-		},
-	},
-	[7] = {
-		.name = "daddr",
-		.type = {
-			.type = lttng_kernel_type_array_nestable,
-			.u.array_nestable.elem_type =
-				__LTTNG_COMPOUND_LITERAL(struct lttng_type,
-					__type_integer(uint16_t, 0, 0, 0,
-						__BIG_ENDIAN, 16, none)),
-			.u.array_nestable.length = 8,
-			.u.array_nestable.alignment = lttng_alignof(uint16_t),
-		},
-	},
-	[8] = {
-		.name = "transport_header_type",
-		.type = {
-			.type = lttng_kernel_type_enum_nestable,
-			.u.enum_nestable.desc = &transport_header_type,
-			.u.enum_nestable.container_type =
-				__LTTNG_COMPOUND_LITERAL(struct lttng_type,
-					__type_integer(uint8_t, 0, 0, -1,
-						__BYTE_ORDER, 10, none)),
-		},
-	},
-	[9] = {
-		.name = "transport_header",
-		.type = {
-			.type = lttng_kernel_type_variant_nestable,
-			.u.variant_nestable.tag_name = "transport_header_type",
-			.u.variant_nestable.choices = transport_fields,
-			.u.variant_nestable.nr_choices = ARRAY_SIZE(transport_fields),
-			.u.variant_nestable.alignment = 0,
-		},
-	},
-};
-
-static struct lttng_event_field network_fields[] = {
-	[0] = {
-		.name = "unknown",
-		.type = {
-			.type = lttng_kernel_type_struct_nestable,
-			.u.struct_nestable.nr_fields = 0,
-			.u.struct_nestable.fields = emptyfields,
-			.u.struct_nestable.alignment = 0,
-		},
-	},
-	[1] = {
-		.name = "ipv4",
-		.type = {
-			.type = lttng_kernel_type_struct_nestable,
-			.u.struct_nestable.nr_fields = ARRAY_SIZE(ipv4fields),
-			.u.struct_nestable.fields = ipv4fields,
-			.u.struct_nestable.alignment = 0,
-		},
-	},
-	[2] = {
-		.name = "ipv6",
-		.type = {
-			.type = lttng_kernel_type_struct_nestable,
-			.u.struct_nestable.nr_fields = ARRAY_SIZE(ipv6fields),
-			.u.struct_nestable.fields = ipv6fields,
-			.u.struct_nestable.alignment = 0,
-		},
-	},
-};
-
 enum network_header_types {
 	NH_NONE,
 	NH_IPV4,
@@ -551,6 +106,217 @@ static inline unsigned char __get_network_header_type(struct sk_buff *skb)
 }
 
 #endif
+
+#ifdef LTTNG_CREATE_FIELD_METADATA
+
+static const struct lttng_kernel_event_field *emptyfields[] = {
+};
+
+/* Structures for transport headers. */
+
+static const struct lttng_kernel_event_field *tcpfields[] = {
+	[0] = lttng_kernel_static_event_field("source_port",
+		lttng_kernel_static_type_integer_from_type(uint16_t, __BIG_ENDIAN, 10),
+		false, false, false),
+	[1] = lttng_kernel_static_event_field("dest_port",
+		lttng_kernel_static_type_integer_from_type(uint16_t, __BIG_ENDIAN, 10),
+		false, false, false),
+	[2] = lttng_kernel_static_event_field("seq",
+		lttng_kernel_static_type_integer_from_type(uint32_t, __BIG_ENDIAN, 10),
+		false, false, false),
+	[3] = lttng_kernel_static_event_field("ack_seq",
+		lttng_kernel_static_type_integer_from_type(uint32_t, __BIG_ENDIAN, 10),
+		false, false, false),
+	[4] = lttng_kernel_static_event_field("data_offset",
+		lttng_kernel_static_type_integer(4, 4, 0, __BIG_ENDIAN, 10),
+		false, false, false),
+	[5] = lttng_kernel_static_event_field("reserved",
+		lttng_kernel_static_type_integer(3, 1, 0, __BIG_ENDIAN, 10),
+		false, false, false),
+	[6] = lttng_kernel_static_event_field("flags",
+		lttng_kernel_static_type_integer(9, 1, 0, __BIG_ENDIAN, 16),
+		false, false, false),
+	[7] = lttng_kernel_static_event_field("window_size",
+		lttng_kernel_static_type_integer_from_type(uint16_t, __BIG_ENDIAN, 10),
+		false, false, false),
+	[8] = lttng_kernel_static_event_field("checksum",
+		lttng_kernel_static_type_integer_from_type(uint16_t, __BIG_ENDIAN, 16),
+		false, false, false),
+	[9] = lttng_kernel_static_event_field("urg_ptr",
+		lttng_kernel_static_type_integer_from_type(uint16_t, __BIG_ENDIAN, 10),
+		false, false, false),
+};
+
+static const struct lttng_kernel_event_field *udpfields[] = {
+	[0] = lttng_kernel_static_event_field("source_port",
+		lttng_kernel_static_type_integer_from_type(uint16_t, __BIG_ENDIAN, 10),
+		false, false, false),
+	[1] = lttng_kernel_static_event_field("dest_port",
+		lttng_kernel_static_type_integer_from_type(uint16_t, __BIG_ENDIAN, 10),
+		false, false, false),
+	[2] = lttng_kernel_static_event_field("len",
+		lttng_kernel_static_type_integer_from_type(uint16_t, __BIG_ENDIAN, 10),
+		false, false, false),
+	[3] = lttng_kernel_static_event_field("check",
+		lttng_kernel_static_type_integer_from_type(uint16_t, __BIG_ENDIAN, 10),
+		false, false, false),
+};
+
+static const struct lttng_kernel_event_field *icmpfields[] = {
+	[0] = lttng_kernel_static_event_field("type",
+		lttng_kernel_static_type_integer_from_type(uint8_t, __BIG_ENDIAN, 10),
+		false, false, false),
+	[1] = lttng_kernel_static_event_field("code",
+		lttng_kernel_static_type_integer_from_type(uint8_t, __BIG_ENDIAN, 10),
+		false, false, false),
+	[2] = lttng_kernel_static_event_field("checksum",
+		lttng_kernel_static_type_integer_from_type(uint16_t, __BIG_ENDIAN, 10),
+		false, false, false),
+	[3] = lttng_kernel_static_event_field("gateway",
+		lttng_kernel_static_type_integer_from_type(uint32_t, __BIG_ENDIAN, 10),
+		false, false, false),
+};
+
+static const struct lttng_kernel_event_field *transport_fields[] = {
+	[0] = lttng_kernel_static_event_field("unknown",
+		lttng_kernel_static_type_struct(ARRAY_SIZE(emptyfields), emptyfields, 0),
+		false, false, true),
+	[1] = lttng_kernel_static_event_field("tcp",
+		lttng_kernel_static_type_struct(ARRAY_SIZE(tcpfields), tcpfields, 0),
+		false, false, true),
+	[2] = lttng_kernel_static_event_field("udp",
+		lttng_kernel_static_type_struct(ARRAY_SIZE(udpfields), udpfields, 0),
+		false, false, true),
+	[3] = lttng_kernel_static_event_field("icmp",
+		lttng_kernel_static_type_struct(ARRAY_SIZE(icmpfields), icmpfields, 0),
+		false, false, true),
+};
+
+#endif /* LTTNG_CREATE_FIELD_METADATA */
+
+LTTNG_TRACEPOINT_ENUM(proto_transport_header_type,
+	TP_ENUM_VALUES(
+		ctf_enum_range("_unknown", 0, IPPROTO_ICMP - 1)
+		ctf_enum_value("_icmp", IPPROTO_ICMP)
+		ctf_enum_range("_unknown", IPPROTO_ICMP + 1, IPPROTO_TCP - 1)
+		ctf_enum_value("_tcp", IPPROTO_TCP)
+		ctf_enum_range("_unknown", IPPROTO_TCP + 1, IPPROTO_UDP - 1)
+		ctf_enum_value("_udp", IPPROTO_UDP)
+		ctf_enum_range("_unknown", IPPROTO_UDP + 1, 255)
+	)
+)
+
+LTTNG_TRACEPOINT_ENUM(transport_header_type,
+	TP_ENUM_VALUES(
+		ctf_enum_value("_unknown", TH_NONE)
+		ctf_enum_value("_tcp", TH_TCP)
+		ctf_enum_value("_udp", TH_UDP)
+		ctf_enum_value("_icmp", TH_ICMP)
+	)
+)
+
+#ifdef LTTNG_CREATE_FIELD_METADATA
+
+/* Structures for network headers. */
+
+static const struct lttng_kernel_event_field *ipv4fields[] = {
+	[0] = lttng_kernel_static_event_field("version",
+		lttng_kernel_static_type_integer(4, 4, 0, __BIG_ENDIAN, 10),
+		false, false, false),
+	[1] = lttng_kernel_static_event_field("ihl",
+		lttng_kernel_static_type_integer(4, 4, 0, __BIG_ENDIAN, 10),
+		false, false, false),
+	[2] = lttng_kernel_static_event_field("tos",
+		lttng_kernel_static_type_integer_from_type(uint8_t, __BIG_ENDIAN, 10),
+		false, false, false),
+	[3] = lttng_kernel_static_event_field("tot_len",
+		lttng_kernel_static_type_integer_from_type(uint16_t, __BIG_ENDIAN, 10),
+		false, false, false),
+	[4] = lttng_kernel_static_event_field("id",
+		lttng_kernel_static_type_integer_from_type(uint16_t, __BIG_ENDIAN, 16),
+		false, false, false),
+	[5] = lttng_kernel_static_event_field("frag_off",
+		lttng_kernel_static_type_integer_from_type(uint16_t, __BIG_ENDIAN, 10),
+		false, false, false),
+	[6] = lttng_kernel_static_event_field("ttl",
+		lttng_kernel_static_type_integer_from_type(uint8_t, __BIG_ENDIAN, 10),
+		false, false, false),
+	[7] = lttng_kernel_static_event_field("protocol",
+		lttng_kernel_static_type_enum(&__enum_proto_transport_header_type,
+			lttng_kernel_static_type_integer_from_type(uint8_t, __BIG_ENDIAN, 10)),
+		false, false, false),
+	[8] = lttng_kernel_static_event_field("checksum",
+		lttng_kernel_static_type_integer_from_type(uint16_t, __BIG_ENDIAN, 16),
+		false, false, false),
+	[9] = lttng_kernel_static_event_field("saddr",
+		lttng_kernel_static_type_array(4,
+			lttng_kernel_static_type_integer_from_type(uint8_t, __BIG_ENDIAN, 10),
+			lttng_alignof(uint8_t), none),
+		false, false, false),
+	[10] = lttng_kernel_static_event_field("daddr",
+		lttng_kernel_static_type_array(4,
+			lttng_kernel_static_type_integer_from_type(uint8_t, __BIG_ENDIAN, 10),
+			lttng_alignof(uint8_t), none),
+		false, false, false),
+	[11] = lttng_kernel_static_event_field("transport_header_type",
+		lttng_kernel_static_type_enum(&__enum_transport_header_type,
+			lttng_kernel_static_type_integer_from_type(uint8_t, __BYTE_ORDER, 10)),
+		false, false, false),
+	[12] = lttng_kernel_static_event_field("transport_header",
+		lttng_kernel_static_type_variant(ARRAY_SIZE(transport_fields), transport_fields,
+			"transport_header_type", 0),
+		false, false, false),
+};
+
+static const struct lttng_kernel_event_field *ipv6fields[] = {
+	[0] = lttng_kernel_static_event_field("version",
+		lttng_kernel_static_type_integer(4, 4, 0, __BIG_ENDIAN, 10),
+		false, false, false),
+	[1] = lttng_kernel_static_event_field("prio",
+		lttng_kernel_static_type_integer(4, 4, 0, __BIG_ENDIAN, 10),
+		false, false, false),
+	[2] = lttng_kernel_static_event_field("flow_lbl",
+		lttng_kernel_static_type_array(3, lttng_kernel_static_type_integer_from_type(uint8_t, __BIG_ENDIAN, 16), lttng_alignof(uint8_t), none),
+		false, false, false),
+	[3] = lttng_kernel_static_event_field("payload_len",
+		lttng_kernel_static_type_integer_from_type(uint16_t, __BIG_ENDIAN, 10),
+		false, false, false),
+	[4] = lttng_kernel_static_event_field("nexthdr",
+		lttng_kernel_static_type_enum(&__enum_proto_transport_header_type,
+			lttng_kernel_static_type_integer_from_type(uint8_t, __BIG_ENDIAN, 10)),
+		false, false, false),
+	[5] = lttng_kernel_static_event_field("hop_limit",
+		lttng_kernel_static_type_integer_from_type(uint8_t, __BIG_ENDIAN, 10),
+		false, false, false),
+	[6] = lttng_kernel_static_event_field("saddr",
+		lttng_kernel_static_type_array(8, lttng_kernel_static_type_integer_from_type(uint16_t, __BIG_ENDIAN, 16), lttng_alignof(uint16_t), none),
+		false, false, false),
+	[7] = lttng_kernel_static_event_field("daddr",
+		lttng_kernel_static_type_array(8, lttng_kernel_static_type_integer_from_type(uint16_t, __BIG_ENDIAN, 16), lttng_alignof(uint16_t), none),
+		false, false, false),
+	[8] = lttng_kernel_static_event_field("transport_header_type",
+		lttng_kernel_static_type_enum(&__enum_transport_header_type,
+			lttng_kernel_static_type_integer_from_type(uint8_t, __BYTE_ORDER, 10)),
+		false, false, false),
+	[9] = lttng_kernel_static_event_field("transport_header",
+		lttng_kernel_static_type_variant(ARRAY_SIZE(transport_fields),
+			transport_fields, "transport_header_type", 0),
+		false, false, false),
+};
+
+static const struct lttng_kernel_event_field *network_fields[] = {
+	[0] = lttng_kernel_static_event_field("unknown",
+		lttng_kernel_static_type_struct(0, emptyfields, 0),
+		false, false, false),
+	[1] = lttng_kernel_static_event_field("ipv4",
+		lttng_kernel_static_type_struct(ARRAY_SIZE(ipv4fields), ipv4fields, 0),
+		false, false, false),
+	[2] = lttng_kernel_static_event_field("ipv6",
+		lttng_kernel_static_type_struct(ARRAY_SIZE(ipv6fields), ipv6fields, 0),
+		false, false, false),
+};
+
+#endif /* LTTNG_CREATE_FIELD_METADATA */
 
 LTTNG_TRACEPOINT_ENUM(net_network_header,
 	TP_ENUM_VALUES(
@@ -591,14 +357,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(net_dev_template,
 			network_header_type, __get_network_header_type(skb))
 		ctf_custom_field(
 			ctf_custom_type(
-				{
-					.type = lttng_kernel_type_variant_nestable,
-					.u.variant_nestable.tag_name = "network_header_type",
-					.u.variant_nestable.choices = network_fields,
-					.u.variant_nestable.nr_choices =
-						ARRAY_SIZE(network_fields),
-					.u.variant_nestable.alignment = 0,
-				}
+				lttng_kernel_static_type_variant(ARRAY_SIZE(network_fields),
+					network_fields, "network_header_type", 0)
 			),
 			network_header,
 			ctf_custom_code(

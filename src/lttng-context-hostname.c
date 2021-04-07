@@ -12,6 +12,7 @@
 #include <linux/sched.h>
 #include <linux/utsname.h>
 #include <lttng/events.h>
+#include <lttng/events-internal.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 #include <lttng/tracer.h>
@@ -28,7 +29,7 @@ size_t hostname_get_size(size_t offset)
 }
 
 static
-void hostname_record(struct lttng_ctx_field *field,
+void hostname_record(struct lttng_kernel_ctx_field *field,
 		 struct lib_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
@@ -53,7 +54,7 @@ void hostname_record(struct lttng_ctx_field *field,
 }
 
 static
-void hostname_get_value(struct lttng_ctx_field *field,
+void hostname_get_value(struct lttng_kernel_ctx_field *field,
 		struct lttng_probe_ctx *lttng_probe_ctx,
 		union lttng_ctx_value *value)
 {
@@ -75,32 +76,24 @@ void hostname_get_value(struct lttng_ctx_field *field,
 	value->str = hostname;
 }
 
-static const struct lttng_type hostname_array_elem_type =
-	__type_integer(char, 0, 0, -1, __BYTE_ORDER, 10, UTF8);
+static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
+	lttng_kernel_static_event_field("hostname",
+		lttng_kernel_static_type_array_text(LTTNG_HOSTNAME_CTX_LEN),
+		false, false, false),
+	hostname_get_size,
+	NULL,
+	hostname_record,
+	hostname_get_value,
+	NULL, NULL);
 
-int lttng_add_hostname_to_ctx(struct lttng_ctx **ctx)
+int lttng_add_hostname_to_ctx(struct lttng_kernel_ctx **ctx)
 {
-	struct lttng_ctx_field *field;
+	int ret;
 
-	field = lttng_append_context(ctx);
-	if (!field)
-		return -ENOMEM;
-	if (lttng_find_context(*ctx, "hostname")) {
-		lttng_remove_context_field(ctx, field);
+	if (lttng_kernel_find_context(*ctx, ctx_field->event_field->name))
 		return -EEXIST;
-	}
-	field->event_field.name = "hostname";
-	field->event_field.type.type = lttng_kernel_type_array_nestable;
-	field->event_field.type.u.array_nestable.elem_type =
-		&hostname_array_elem_type;
-	field->event_field.type.u.array_nestable.length = LTTNG_HOSTNAME_CTX_LEN;
-	field->event_field.type.u.array_nestable.alignment = 0;
-
-	field->get_size = hostname_get_size;
-	field->record = hostname_record;
-	field->get_value = hostname_get_value;
-	lttng_context_update(*ctx);
+	ret = lttng_kernel_context_append(ctx, ctx_field);
 	wrapper_vmalloc_sync_mappings();
-	return 0;
+	return ret;
 }
 EXPORT_SYMBOL_GPL(lttng_add_hostname_to_ctx);

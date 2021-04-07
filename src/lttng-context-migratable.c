@@ -27,7 +27,7 @@ size_t migratable_get_size(size_t offset)
 }
 
 static
-void migratable_record(struct lttng_ctx_field *field,
+void migratable_record(struct lttng_kernel_ctx_field *field,
 		struct lib_ring_buffer_ctx *ctx,
 		struct lttng_channel *chan)
 {
@@ -38,16 +38,16 @@ void migratable_record(struct lttng_ctx_field *field,
 }
 
 static
-void migratable_get_value(struct lttng_ctx_field *field,
+void migratable_get_value(struct lttng_kernel_ctx_field *field,
 		struct lttng_probe_ctx *lttng_probe_ctx,
 		union lttng_ctx_value *value)
 {
 	value->s64 = !current->migrate_disable;
 }
 
-int lttng_add_migratable_to_ctx(struct lttng_ctx **ctx)
+int lttng_add_migratable_to_ctx(struct lttng_kernel_ctx **ctx)
 {
-	struct lttng_ctx_field *field;
+	struct lttng_kernel_ctx_field *field;
 
 	field = lttng_append_context(ctx);
 	if (!field)

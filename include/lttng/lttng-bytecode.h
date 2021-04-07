@@ -96,7 +96,7 @@ struct bytecode_get_index_data {
 	 * interpreter needs to find it from the event fields and types to
 	 * support variants.
 	 */
-	const struct lttng_event_field *field;
+	const struct lttng_kernel_event_field *field;
 	struct {
 		size_t len;
 		enum object_type type;
@@ -108,7 +108,7 @@ struct bytecode_get_index_data {
 struct vstack_load {
 	enum load_type type;
 	enum object_type object_type;
-	const struct lttng_event_field *field;
+	const struct lttng_kernel_event_field *field;
 	bool rev_bo;	/* reverse byte order */
 };
 
@@ -185,7 +185,7 @@ struct load_ptr {
 		uint64_t u64;
 		double d;
 	} u;
-	const struct lttng_event_field *field;
+	const struct lttng_kernel_event_field *field;
 };
 
 struct estack_entry {
@@ -277,7 +277,7 @@ struct lttng_interpreter_output {
 			size_t nr_elem;
 
 			/* Inner type. */
-			const struct lttng_type *nested_type;
+			const struct lttng_kernel_type_common *nested_type;
 		} sequence;
 	} u;
 };
@@ -287,7 +287,7 @@ const char *lttng_bytecode_print_op(enum bytecode_op op);
 void lttng_bytecode_filter_sync_state(struct lttng_bytecode_runtime *runtime);
 void lttng_bytecode_capture_sync_state(struct lttng_bytecode_runtime *runtime);
 int lttng_bytecode_validate(struct bytecode_runtime *bytecode);
-int lttng_bytecode_specialize(const struct lttng_event_desc *event_desc,
+int lttng_bytecode_specialize(const struct lttng_kernel_event_desc *event_desc,
 		struct bytecode_runtime *bytecode);
 
 uint64_t lttng_bytecode_filter_interpret_false(void *filter_data,

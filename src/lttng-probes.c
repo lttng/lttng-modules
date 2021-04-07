@@ -39,25 +39,25 @@ EXPORT_PER_CPU_SYMBOL_GPL(lttng_dynamic_len_stack);
  * Called under sessions lock.
  */
 static
-int check_event_provider(struct lttng_probe_desc *desc)
+int check_event_provider(struct lttng_kernel_probe_desc *desc)
 {
 	int i;
 	size_t provider_name_len;
 
-	provider_name_len = strnlen(desc->provider,
+	provider_name_len = strnlen(desc->provider_name,
 				LTTNG_KERNEL_SYM_NAME_LEN - 1);
 	for (i = 0; i < desc->nr_events; i++) {
-		if (strncmp(desc->event_desc[i]->name,
-				desc->provider,
+		if (strncmp(desc->event_desc[i]->event_name,
+				desc->provider_name,
 				provider_name_len))
 			return 0;	/* provider mismatch */
 		/*
 		 * The event needs to contain at least provider name + _ +
 		 * one or more letter.
 		 */
-		if (strlen(desc->event_desc[i]->name) <= provider_name_len + 1)
+		if (strlen(desc->event_desc[i]->event_name) <= provider_name_len + 1)
 			return 0;	/* provider mismatch */
-		if (desc->event_desc[i]->name[provider_name_len] != '_')
+		if (desc->event_desc[i]->event_name[provider_name_len] != '_')
 			return 0;	/* provider mismatch */
 	}
 	return 1;
@@ -67,9 +67,9 @@ int check_event_provider(struct lttng_probe_desc *desc)
  * Called under sessions lock.
  */
 static
-void lttng_lazy_probe_register(struct lttng_probe_desc *desc)
+void lttng_lazy_probe_register(struct lttng_kernel_probe_desc *desc)
 {
-	struct lttng_probe_desc *iter;
+	struct lttng_kernel_probe_desc *iter;
 	struct list_head *probe_list;
 
 	/*
@@ -87,7 +87,7 @@ void lttng_lazy_probe_register(struct lttng_probe_desc *desc)
 	 */
 
 	/*
-	 * We sort the providers by struct lttng_probe_desc pointer
+	 * We sort the providers by struct lttng_kernel_probe_desc pointer
 	 * address.
 	 */
 	probe_list = &_probe_list;
@@ -103,7 +103,7 @@ void lttng_lazy_probe_register(struct lttng_probe_desc *desc)
 	list_add(&desc->head, probe_list);
 desc_added:
 	pr_debug("LTTng: just registered probe %s containing %u events\n",
-		desc->provider, desc->nr_events);
+		desc->provider_name, desc->nr_events);
 }
 
 /*
@@ -112,7 +112,7 @@ desc_added:
 static
 void fixup_lazy_probes(void)
 {
-	struct lttng_probe_desc *iter, *tmp;
+	struct lttng_kernel_probe_desc *iter, *tmp;
 	int ret;
 
 	lazy_nesting++;
@@ -140,20 +140,20 @@ struct list_head *lttng_get_probe_list_head(void)
 }
 
 static
-const struct lttng_probe_desc *find_provider(const char *provider)
+const struct lttng_kernel_probe_desc *find_provider(const char *provider)
 {
-	struct lttng_probe_desc *iter;
+	struct lttng_kernel_probe_desc *iter;
 	struct list_head *probe_list;
 
 	probe_list = lttng_get_probe_list_head();
 	list_for_each_entry(iter, probe_list, head) {
-		if (!strcmp(iter->provider, provider))
+		if (!strcmp(iter->provider_name, provider))
 			return iter;
 	}
 	return NULL;
 }
 
-int lttng_probe_register(struct lttng_probe_desc *desc)
+int lttng_probe_register(struct lttng_kernel_probe_desc *desc)
 {
 	int ret = 0;
 
@@ -162,14 +162,14 @@ int lttng_probe_register(struct lttng_probe_desc *desc)
 	/*
 	 * Check if the provider has already been registered.
 	 */
-	if (find_provider(desc->provider)) {
+	if (find_provider(desc->provider_name)) {
 		ret = -EEXIST;
 		goto end;
 	}
 	list_add(&desc->lazy_init_head, &lazy_probe_init);
 	desc->lazy = 1;
 	pr_debug("LTTng: adding probe %s containing %u events to lazy registration list\n",
-		desc->provider, desc->nr_events);
+		desc->provider_name, desc->nr_events);
 	/*
 	 * If there is at least one active session, we need to register
 	 * the probe immediately, since we cannot delay event
@@ -183,14 +183,14 @@ end:
 }
 EXPORT_SYMBOL_GPL(lttng_probe_register);
 
-void lttng_probe_unregister(struct lttng_probe_desc *desc)
+void lttng_probe_unregister(struct lttng_kernel_probe_desc *desc)
 {
 	lttng_lock_sessions();
 	if (!desc->lazy)
 		list_del(&desc->head);
 	else
 		list_del(&desc->lazy_init_head);
-	pr_debug("LTTng: just unregistered probe %s\n", desc->provider);
+	pr_debug("LTTng: just unregistered probe %s\n", desc->provider_name);
 	lttng_unlock_sessions();
 }
 EXPORT_SYMBOL_GPL(lttng_probe_unregister);
@@ -200,14 +200,14 @@ EXPORT_SYMBOL_GPL(lttng_probe_unregister);
  * Called with sessions lock held.
  */
 static
-const struct lttng_event_desc *find_event_desc(const char *name)
+const struct lttng_kernel_event_desc *find_event_desc(const char *name)
 {
-	struct lttng_probe_desc *probe_desc;
+	struct lttng_kernel_probe_desc *probe_desc;
 	int i;
 
 	list_for_each_entry(probe_desc, &_probe_list, head) {
 		for (i = 0; i < probe_desc->nr_events; i++) {
-			if (!strcmp(probe_desc->event_desc[i]->name, name))
+			if (!strcmp(probe_desc->event_desc[i]->event_name, name))
 				return probe_desc->event_desc[i];
 			}
 	}
@@ -217,9 +217,9 @@ const struct lttng_event_desc *find_event_desc(const char *name)
 /*
  * Called with sessions lock held.
  */
-const struct lttng_event_desc *lttng_event_desc_get(const char *name)
+const struct lttng_kernel_event_desc *lttng_event_desc_get(const char *name)
 {
-	const struct lttng_event_desc *event_desc;
+	const struct lttng_kernel_event_desc *event_desc;
 	int ret;
 
 	event_desc = find_event_desc(name);
@@ -234,7 +234,7 @@ EXPORT_SYMBOL_GPL(lttng_event_desc_get);
 /*
  * Called with sessions lock held.
  */
-void lttng_event_desc_put(const struct lttng_event_desc *event_desc)
+void lttng_event_desc_put(const struct lttng_kernel_event_desc *event_desc)
 {
 	module_put(event_desc->owner);
 }
@@ -243,7 +243,7 @@ EXPORT_SYMBOL_GPL(lttng_event_desc_put);
 static
 void *tp_list_start(struct seq_file *m, loff_t *pos)
 {
-	struct lttng_probe_desc *probe_desc;
+	struct lttng_kernel_probe_desc *probe_desc;
 	struct list_head *probe_list;
 	int iter = 0, i;
 
@@ -262,7 +262,7 @@ void *tp_list_start(struct seq_file *m, loff_t *pos)
 static
 void *tp_list_next(struct seq_file *m, void *p, loff_t *ppos)
 {
-	struct lttng_probe_desc *probe_desc;
+	struct lttng_kernel_probe_desc *probe_desc;
 	struct list_head *probe_list;
 	int iter = 0, i;
 
@@ -287,10 +287,10 @@ void tp_list_stop(struct seq_file *m, void *p)
 static
 int tp_list_show(struct seq_file *m, void *p)
 {
-	const struct lttng_event_desc *probe_desc = p;
+	const struct lttng_kernel_event_desc *probe_desc = p;
 
 	seq_printf(m,	"event { name = %s; };\n",
-		   probe_desc->name);
+		   probe_desc->event_name);
 	return 0;
 }
 

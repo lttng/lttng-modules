@@ -65,46 +65,52 @@ int lttng_kprobes_event_notifier_handler_pre(struct kprobe *p, struct pt_regs *r
 	return 0;
 }
 
+static const struct lttng_kernel_type_common *event_type =
+	lttng_kernel_static_type_integer_from_type(unsigned long, __BYTE_ORDER, 16);
+
 /*
  * Create event description
  */
 static
 int lttng_create_kprobe_event(const char *name, struct lttng_event *event)
 {
-	struct lttng_event_field *field;
-	struct lttng_event_desc *desc;
+	const struct lttng_kernel_event_field **fieldp_array;
+	struct lttng_kernel_event_field *field;
+	struct lttng_kernel_event_desc *desc;
 	int ret;
 
-	desc = kzalloc(sizeof(*event->desc), GFP_KERNEL);
+	desc = kzalloc(sizeof(*desc), GFP_KERNEL);
 	if (!desc)
 		return -ENOMEM;
-	desc->name = kstrdup(name, GFP_KERNEL);
-	if (!desc->name) {
+	desc->event_name = kstrdup(name, GFP_KERNEL);
+	if (!desc->event_name) {
 		ret = -ENOMEM;
 		goto error_str;
 	}
 	desc->nr_fields = 1;
-	desc->fields = field =
-		kzalloc(1 * sizeof(struct lttng_event_field), GFP_KERNEL);
+	fieldp_array = kzalloc(1 * sizeof(struct lttng_kernel_event_field *), GFP_KERNEL);
+	if (!fieldp_array) {
+		ret = -ENOMEM;
+		goto error_fieldp_array;
+	}
+	desc->fields = fieldp_array;
+	desc->fields[0] = field =
+		kzalloc(sizeof(struct lttng_kernel_event_field), GFP_KERNEL);
 	if (!field) {
 		ret = -ENOMEM;
 		goto error_field;
 	}
 	field->name = "ip";
-	field->type.type = lttng_kernel_type_integer;
-	field->type.u.integer.size = sizeof(unsigned long) * CHAR_BIT;
-	field->type.u.integer.alignment = lttng_alignof(unsigned long) * CHAR_BIT;
-	field->type.u.integer.signedness = lttng_is_signed_type(unsigned long);
-	field->type.u.integer.reverse_byte_order = 0;
-	field->type.u.integer.base = 16;
-	field->type.u.integer.encoding = lttng_kernel_string_encoding_none;
+	field->type = event_type;
 	desc->owner = THIS_MODULE;
 	event->desc = desc;
 
 	return 0;
 
 error_field:
-	kfree(desc->name);
+	kfree(fieldp_array);
+error_fieldp_array:
+	kfree(desc->event_name);
 error_str:
 	kfree(desc);
 	return ret;
@@ -116,14 +122,14 @@ error_str:
 static
 int lttng_create_kprobe_event_notifier(const char *name, struct lttng_event_notifier *event_notifier)
 {
-	struct lttng_event_desc *desc;
+	struct lttng_kernel_event_desc *desc;
 	int ret;
 
-	desc = kzalloc(sizeof(*event_notifier->desc), GFP_KERNEL);
+	desc = kzalloc(sizeof(*desc), GFP_KERNEL);
 	if (!desc)
 		return -ENOMEM;
-	desc->name = kstrdup(name, GFP_KERNEL);
-	if (!desc->name) {
+	desc->event_name = kstrdup(name, GFP_KERNEL);
+	if (!desc->event_name) {
 		ret = -ENOMEM;
 		goto error_str;
 	}
@@ -211,7 +217,7 @@ int lttng_kprobes_register_event(const char *name,
 
 register_error:
 	kfree(event->desc->fields);
-	kfree(event->desc->name);
+	kfree(event->desc->event_name);
 	kfree(event->desc);
 error:
 	return ret;
@@ -236,7 +242,7 @@ int lttng_kprobes_register_event_notifier(const char *symbol_name,
 	return 0;
 
 register_error:
-	kfree(event_notifier->desc->name);
+	kfree(event_notifier->desc->event_name);
 	kfree(event_notifier->desc);
 error:
 	return ret;
@@ -258,8 +264,9 @@ EXPORT_SYMBOL_GPL(lttng_kprobes_unregister_event_notifier);
 void lttng_kprobes_destroy_event_private(struct lttng_event *event)
 {
 	kfree(event->u.kprobe.symbol_name);
+	kfree(event->desc->fields[0]);
 	kfree(event->desc->fields);
-	kfree(event->desc->name);
+	kfree(event->desc->event_name);
 	kfree(event->desc);
 }
 EXPORT_SYMBOL_GPL(lttng_kprobes_destroy_event_private);
@@ -267,7 +274,7 @@ EXPORT_SYMBOL_GPL(lttng_kprobes_destroy_event_private);
 void lttng_kprobes_destroy_event_notifier_private(struct lttng_event_notifier *event_notifier)
 {
 	kfree(event_notifier->u.kprobe.symbol_name);
-	kfree(event_notifier->desc->name);
+	kfree(event_notifier->desc->event_name);
 	kfree(event_notifier->desc);
 }
 EXPORT_SYMBOL_GPL(lttng_kprobes_destroy_event_notifier_private);

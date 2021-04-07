@@ -38,11 +38,11 @@ struct lib_ring_buffer_config;
 enum lttng_kernel_type {
 	lttng_kernel_type_integer,
 	lttng_kernel_type_string,
-	lttng_kernel_type_enum_nestable,
-	lttng_kernel_type_array_nestable,
-	lttng_kernel_type_sequence_nestable,
-	lttng_kernel_type_struct_nestable,
-	lttng_kernel_type_variant_nestable,
+	lttng_kernel_type_enum,
+	lttng_kernel_type_array,
+	lttng_kernel_type_sequence,
+	lttng_kernel_type_struct,
+	lttng_kernel_type_variant,
 	NR_LTTNG_KERNEL_TYPES,
 };
 
@@ -71,80 +71,237 @@ struct lttng_kernel_enum_entry {
 	} options;
 };
 
-#define __type_integer(_type, _size, _alignment, _signedness,	\
-		_byte_order, _base, _encoding)	\
-	{							\
-	    .type = lttng_kernel_type_integer,				\
-	    .u.integer =					\
-		{						\
-		  .size = (_size) ? : sizeof(_type) * CHAR_BIT,	\
-		  .alignment = (_alignment) ? : lttng_alignof(_type) * CHAR_BIT, \
-		  .signedness = (_signedness) >= 0 ? (_signedness) : lttng_is_signed_type(_type), \
-		  .reverse_byte_order = _byte_order != __BYTE_ORDER, \
-		  .base = _base,				\
-		  .encoding = lttng_kernel_string_encoding_##_encoding,		\
-		},						\
-	}							\
+/*
+ * struct lttng_kernel_type_common is fixed-size. Its children inherits
+ * from it by embedding struct lttng_kernel_type_common as its first field.
+ */
+struct lttng_kernel_type_common {
+	enum lttng_kernel_type type;
+};
 
-struct lttng_integer_type {
+struct lttng_kernel_type_integer {
+	struct lttng_kernel_type_common parent;
 	unsigned int size;		/* in bits */
 	unsigned short alignment;	/* in bits */
 	unsigned int signedness:1,
 		reverse_byte_order:1;
 	unsigned int base;		/* 2, 8, 10, 16, for pretty print */
+};
+
+struct lttng_kernel_type_string {
+	struct lttng_kernel_type_common parent;
 	enum lttng_kernel_string_encoding encoding;
 };
 
-struct lttng_type {
-	enum lttng_kernel_type type;
-	union {
-		struct lttng_integer_type integer;
-		struct {
-			enum lttng_kernel_string_encoding encoding;
-		} string;
-		struct {
-			const struct lttng_kernel_enum_desc *desc;	/* Enumeration mapping */
-			const struct lttng_type *container_type;
-		} enum_nestable;
-		struct {
-			const struct lttng_type *elem_type;
-			unsigned int length;			/* Num. elems. */
-			unsigned int alignment;
-		} array_nestable;
-		struct {
-			const char *length_name;		/* Length field name. */
-			const struct lttng_type *elem_type;
-			unsigned int alignment;			/* Alignment before elements. */
-		} sequence_nestable;
-		struct {
-			unsigned int nr_fields;
-			const struct lttng_event_field *fields;	/* Array of fields. */
-			unsigned int alignment;
-		} struct_nestable;
-		struct {
-			const char *tag_name;
-			const struct lttng_event_field *choices; /* Array of fields. */
-			unsigned int nr_choices;
-			unsigned int alignment;
-		} variant_nestable;
-	} u;
+struct lttng_kernel_type_enum {
+	struct lttng_kernel_type_common parent;
+	const struct lttng_kernel_enum_desc *desc;	/* Enumeration mapping */
+	const struct lttng_kernel_type_common *container_type;
+};
+
+struct lttng_kernel_type_array {
+	struct lttng_kernel_type_common parent;
+	const struct lttng_kernel_type_common *elem_type;
+	unsigned int length;			/* Num. elems. */
+	unsigned int alignment;
+	enum lttng_kernel_string_encoding encoding;
+};
+
+struct lttng_kernel_type_sequence {
+	struct lttng_kernel_type_common parent;
+	const char *length_name;	/* Length field name. */
+	const struct lttng_kernel_type_common *elem_type;
+	unsigned int alignment;		/* Alignment before elements. */
+	enum lttng_kernel_string_encoding encoding;
+};
+
+struct lttng_kernel_type_struct {
+	struct lttng_kernel_type_common parent;
+	unsigned int nr_fields;
+	const struct lttng_kernel_event_field **fields;	/* Array of pointers to fields. */
+	unsigned int alignment;
+};
+
+struct lttng_kernel_type_variant {
+	struct lttng_kernel_type_common parent;
+	const char *tag_name;
+	const struct lttng_kernel_event_field **choices; /* Array of pointers to fields. */
+	unsigned int nr_choices;
+	unsigned int alignment;
 };
 
 struct lttng_kernel_enum_desc {
 	const char *name;
-	const struct lttng_kernel_enum_entry *entries;
+	const struct lttng_kernel_enum_entry **entries;
 	unsigned int nr_entries;
 };
 
 /* Event field description */
 
-struct lttng_event_field {
+struct lttng_kernel_event_field {
 	const char *name;
-	struct lttng_type type;
+	const struct lttng_kernel_type_common *type;
 	unsigned int nowrite:1,		/* do not write into trace */
 			user:1,		/* fetch from user-space */
 			nofilter:1;	/* do not consider for filter */
 };
+
+#define lttng_kernel_static_type_integer(_size, _alignment, _signedness, _byte_order, _base)		\
+	((const struct lttng_kernel_type_common *) __LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_type_integer, { \
+		.parent = {										\
+			.type = lttng_kernel_type_integer,							\
+		},											\
+		.size = (_size),									\
+		.alignment = (_alignment),								\
+		.signedness = (_signedness),								\
+		.reverse_byte_order = (_byte_order) != __BYTE_ORDER,					\
+		.base = (_base),									\
+	}))
+
+#define lttng_kernel_static_type_integer_from_type(_type, _byte_order, _base)				\
+	lttng_kernel_static_type_integer(sizeof(_type) * CHAR_BIT,					\
+			lttng_alignof(_type) * CHAR_BIT,						\
+			lttng_is_signed_type(_type),							\
+			_byte_order,									\
+			_base)
+
+#define lttng_kernel_static_type_enum(_desc, _container_type)						\
+	((const struct lttng_kernel_type_common *) __LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_type_enum, { \
+		.parent = {										\
+			.type = lttng_kernel_type_enum,							\
+		},											\
+		.desc = (_desc),									\
+		.container_type = (_container_type),							\
+	}))
+
+#define lttng_kernel_static_type_array(_length, _elem_type, _alignment, _encoding)			\
+	((const struct lttng_kernel_type_common *) __LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_type_array, { \
+		.parent = {										\
+			.type = lttng_kernel_type_array,						\
+		},											\
+		.length = (_length),									\
+		.alignment = (_alignment),								\
+		.encoding = lttng_kernel_string_encoding_##_encoding,					\
+		.elem_type = (_elem_type),								\
+	}))
+
+#define lttng_kernel_static_type_array_text(_length)							\
+	lttng_kernel_static_type_array(_length,								\
+		lttng_kernel_static_type_integer(sizeof(char) * CHAR_BIT,				\
+				lttng_alignof(char) * CHAR_BIT, lttng_is_signed_type(char),		\
+				__BYTE_ORDER, 10),							\
+		0, UTF8)
+
+#define lttng_kernel_static_type_sequence(_length_name, _elem_type, _alignment, _encoding)			\
+	((const struct lttng_kernel_type_common *) __LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_type_sequence, { \
+		.parent = {										\
+			.type = lttng_kernel_type_sequence,						\
+		},											\
+		.length_name = (_length_name),								\
+		.alignment = (_alignment),								\
+		.encoding = lttng_kernel_string_encoding_##_encoding,					\
+		.elem_type = (_elem_type),								\
+	}))
+
+#define lttng_kernel_static_type_string(_encoding)							\
+	((const struct lttng_kernel_type_common *) __LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_type_string, { \
+		.parent = {										\
+			.type = lttng_kernel_type_string,						\
+		},											\
+		.encoding = lttng_kernel_string_encoding_##_encoding,					\
+	}))
+
+#define lttng_kernel_static_type_struct(_nr_fields, _fields, _alignment)				\
+	((const struct lttng_kernel_type_common *) __LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_type_struct, { \
+		.parent = {										\
+			.type = lttng_kernel_type_struct,						\
+		},											\
+		.nr_fields = (_nr_fields),								\
+		.fields = _fields,									\
+		.alignment = (_alignment),								\
+	}))
+
+#define lttng_kernel_static_type_variant(_nr_choices, _choices, _tag_name, _alignment)			\
+	((const struct lttng_kernel_type_common *) __LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_type_variant, { \
+		.parent = {										\
+			.type = lttng_kernel_type_variant,						\
+		},											\
+		.tag_name = (_tag_name),								\
+		.choices = _choices,									\
+		.nr_choices = (_nr_choices),								\
+		.alignment = (_alignment),								\
+	}))
+
+#define lttng_kernel_static_event_field(_name, _type, _nowrite, _user, _nofilter)			\
+	__LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_event_field, {				\
+		.name = (_name),									\
+		.type = (_type),									\
+		.nowrite = (_nowrite),									\
+		.user = (_user),									\
+		.nofilter = (_nofilter),								\
+	})
+
+#define lttng_kernel_static_event_field_array(_fields...)						\
+	__LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_event_field *,				\
+		_fields											\
+	)
+
+#define lttng_kernel_static_ctx_field(_event_field, _get_size, _get_size_arg, _record, _get_value, _destroy, _priv) \
+	__LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_ctx_field, {					\
+		.event_field = (_event_field),								\
+		.get_size = (_get_size),								\
+		.get_size_arg = (_get_size_arg),							\
+		.record = (_record),									\
+		.get_value = (_get_value),								\
+		.destroy = (_destroy),									\
+		.priv = (_priv),									\
+	})
+
+#define lttng_kernel_static_enum_entry_value(_string, _value)						\
+	__LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_enum_entry, {				\
+		.start = {										\
+			.signedness = lttng_is_signed_type(__typeof__(_value)),				\
+			.value = lttng_is_signed_type(__typeof__(_value)) ?				\
+				(long long) (_value) : (_value),					\
+		},											\
+		.end = {										\
+			.signedness = lttng_is_signed_type(__typeof__(_value)),				\
+			.value = lttng_is_signed_type(__typeof__(_value)) ?				\
+				(long long) (_value) : (_value),					\
+		},											\
+		.string = (_string),									\
+	}),
+
+#define lttng_kernel_static_enum_entry_range(_string, _range_start, _range_end)				\
+	__LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_enum_entry, {				\
+		.start = {										\
+			.signedness = lttng_is_signed_type(__typeof__(_range_start)),			\
+			.value = lttng_is_signed_type(__typeof__(_range_start)) ?			\
+				(long long) (_range_start) : (_range_start),				\
+		},											\
+		.end = {										\
+			.signedness = lttng_is_signed_type(__typeof__(_range_end)),			\
+			.value = lttng_is_signed_type(__typeof__(_range_end)) ?				\
+				(long long) (_range_end) : (_range_end),				\
+		},											\
+		.string = (_string),									\
+	}),
+
+#define lttng_kernel_static_enum_entry_auto(_string)							\
+	__LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_enum_entry, {				\
+		.start = {										\
+			.signedness = -1,								\
+			.value = -1,									\
+		},											\
+		.end = {										\
+			.signedness = -1, 								\
+			.value = -1,									\
+		},											\
+		.string = (_string),									\
+		.options = {										\
+			.is_auto = 1,									\
+		}											\
+	}),
 
 union lttng_ctx_value {
 	int64_t s64;
@@ -154,7 +311,7 @@ union lttng_ctx_value {
 
 /*
  * We need to keep this perf counter field separately from struct
- * lttng_ctx_field because cpu hotplug needs fixed-location addresses.
+ * lttng_kernel_ctx_field because cpu hotplug needs fixed-location addresses.
  */
 struct lttng_perf_counter_field {
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
@@ -166,6 +323,8 @@ struct lttng_perf_counter_field {
 #endif
 	struct perf_event_attr *attr;
 	struct perf_event **e;	/* per-cpu array */
+	char *name;
+	struct lttng_kernel_event_field *event_field;
 };
 
 struct lttng_probe_ctx {
@@ -174,51 +333,43 @@ struct lttng_probe_ctx {
 	uint8_t interruptible;
 };
 
-struct lttng_ctx_field {
-	struct lttng_event_field event_field;
+struct lttng_kernel_ctx_field {
+	const struct lttng_kernel_event_field *event_field;
 	size_t (*get_size)(size_t offset);
-	size_t (*get_size_arg)(size_t offset, struct lttng_ctx_field *field,
+	size_t (*get_size_arg)(size_t offset, struct lttng_kernel_ctx_field *field,
 	                       struct lib_ring_buffer_ctx *ctx,
 	                       struct lttng_channel *chan);
-	void (*record)(struct lttng_ctx_field *field,
+	void (*record)(struct lttng_kernel_ctx_field *field,
 		       struct lib_ring_buffer_ctx *ctx,
 		       struct lttng_channel *chan);
-	void (*get_value)(struct lttng_ctx_field *field,
+	void (*get_value)(struct lttng_kernel_ctx_field *field,
 			 struct lttng_probe_ctx *lttng_probe_ctx,
 			 union lttng_ctx_value *value);
-	union {
-		struct lttng_perf_counter_field *perf_counter;
-	} u;
-	void (*destroy)(struct lttng_ctx_field *field);
-	/*
-	 * Private data to keep state between get_size and record.
-	 * User must perform its own synchronization to protect against
-	 * concurrent and reentrant contexts.
-	 */
+	void (*destroy)(struct lttng_kernel_ctx_field *field);
 	void *priv;
 };
 
-struct lttng_ctx {
-	struct lttng_ctx_field *fields;
+struct lttng_kernel_ctx {
+	struct lttng_kernel_ctx_field *fields;
 	unsigned int nr_fields;
 	unsigned int allocated_fields;
 	size_t largest_align;	/* in bytes */
 };
 
-struct lttng_event_desc {
-	const char *name;		/* lttng-modules name */
-	const char *kname;		/* Linux kernel name (tracepoints) */
-	void *probe_callback;
-	const struct lttng_event_ctx *ctx;	/* context */
-	const struct lttng_event_field *fields;	/* event payload */
+struct lttng_kernel_event_desc {
+	const char *event_name;		/* lttng-modules name */
+	const char *event_kname;	/* Linux kernel name (tracepoints) */
+	const struct lttng_kernel_probe_desc *probe_desc;
+	void (*probe_callback)(void);
+	const struct lttng_kernel_event_field **fields;	/* event payload */
 	unsigned int nr_fields;
 	struct module *owner;
 	void *event_notifier_callback;
 };
 
-struct lttng_probe_desc {
-	const char *provider;
-	const struct lttng_event_desc **event_desc;
+struct lttng_kernel_probe_desc {
+	const char *provider_name;
+	const struct lttng_kernel_event_desc **event_desc;
 	unsigned int nr_events;
 	struct list_head head;			/* chain registered probes */
 	struct list_head lazy_init_head;
@@ -274,7 +425,7 @@ struct lttng_bytecode_runtime {
 	} interpreter_funcs;
 	int link_failed;
 	struct list_head node;	/* list of bytecode runtime in event */
-	struct lttng_ctx *ctx;
+	struct lttng_kernel_ctx *ctx;
 };
 
 /*
@@ -324,9 +475,9 @@ struct lttng_event {
 	unsigned int id;
 	struct lttng_channel *chan;
 	int enabled;
-	const struct lttng_event_desc *desc;
+	const struct lttng_kernel_event_desc *desc;
 	void *filter;
-	struct lttng_ctx *ctx;
+	struct lttng_kernel_ctx *ctx;
 	enum lttng_kernel_instrumentation instrumentation;
 	union {
 		struct lttng_kprobe kprobe;
@@ -364,7 +515,7 @@ struct lttng_event_notifier {
 	uint64_t error_counter_index;
 	int enabled;
 	int registered;			/* has reg'd tracepoint probe */
-	const struct lttng_event_desc *desc;
+	const struct lttng_kernel_event_desc *desc;
 	void *filter;
 	struct list_head list;		/* event_notifier list in event_notifier group */
 
@@ -429,7 +580,7 @@ struct lttng_event_enabler {
 	 * Unused, but kept around to make it explicit that the tracer can do
 	 * it.
 	 */
-	struct lttng_ctx *ctx;
+	struct lttng_kernel_ctx *ctx;
 };
 
 struct lttng_event_notifier_enabler {
@@ -577,7 +728,7 @@ struct lttng_channel {
 	unsigned int id;
 	struct channel *chan;		/* Channel buffers */
 	int enabled;
-	struct lttng_ctx *ctx;
+	struct lttng_kernel_ctx *ctx;
 	/* Event ID management */
 	struct lttng_session *session;
 	struct file *file;		/* File associated to channel */
@@ -700,7 +851,6 @@ struct lttng_event_notifier_group {
 	struct list_head enablers_head; /* List of enablers */
 	struct list_head event_notifiers_head; /* List of event notifier */
 	struct lttng_event_notifier_ht event_notifiers_ht; /* Hash table of event notifiers */
-	struct lttng_ctx *ctx;		/* Contexts for filters. */
 	struct lttng_channel_ops *ops;
 	struct lttng_transport *transport;
 	struct channel *chan;		/* Ring buffer channel for event notifier group. */
@@ -814,20 +964,20 @@ void lttng_metadata_channel_destroy(struct lttng_channel *chan);
 struct lttng_event *lttng_event_create(struct lttng_channel *chan,
 				struct lttng_kernel_event *event_param,
 				void *filter,
-				const struct lttng_event_desc *event_desc,
+				const struct lttng_kernel_event_desc *event_desc,
 				enum lttng_kernel_instrumentation itype);
 struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 				struct lttng_kernel_event *event_param,
 				void *filter,
-				const struct lttng_event_desc *event_desc,
+				const struct lttng_kernel_event_desc *event_desc,
 				enum lttng_kernel_instrumentation itype);
 struct lttng_event *lttng_event_compat_old_create(struct lttng_channel *chan,
 		struct lttng_kernel_old_event *old_event_param,
 		void *filter,
-		const struct lttng_event_desc *internal_desc);
+		const struct lttng_kernel_event_desc *internal_desc);
 
 struct lttng_event_notifier *lttng_event_notifier_create(
-				const struct lttng_event_desc *event_notifier_desc,
+				const struct lttng_kernel_event_desc *event_notifier_desc,
 				uint64_t id,
 				uint64_t error_counter_idx,
 				struct lttng_event_notifier_group *event_notifier_group,
@@ -835,7 +985,7 @@ struct lttng_event_notifier *lttng_event_notifier_create(
 				void *filter,
 				enum lttng_kernel_instrumentation itype);
 struct lttng_event_notifier *_lttng_event_notifier_create(
-				const struct lttng_event_desc *event_notifier_desc,
+				const struct lttng_kernel_event_desc *event_notifier_desc,
 				uint64_t id,
 				uint64_t error_counter_idx,
 				struct lttng_event_notifier_group *event_notifier_group,
@@ -863,10 +1013,10 @@ int lttng_abi_compat_old_init(void);
 void lttng_abi_exit(void);
 void lttng_abi_compat_old_exit(void);
 
-int lttng_probe_register(struct lttng_probe_desc *desc);
-void lttng_probe_unregister(struct lttng_probe_desc *desc);
-const struct lttng_event_desc *lttng_event_desc_get(const char *name);
-void lttng_event_desc_put(const struct lttng_event_desc *desc);
+int lttng_probe_register(struct lttng_kernel_probe_desc *desc);
+void lttng_probe_unregister(struct lttng_kernel_probe_desc *desc);
+const struct lttng_kernel_event_desc *lttng_event_desc_get(const char *name);
+void lttng_event_desc_put(const struct lttng_kernel_event_desc *desc);
 int lttng_probes_init(void);
 void lttng_probes_exit(void);
 
@@ -891,7 +1041,7 @@ int lttng_session_list_tracker_ids(struct lttng_session *session,
 void lttng_clock_ref(void);
 void lttng_clock_unref(void);
 
-int lttng_desc_match_enabler(const struct lttng_event_desc *desc,
+int lttng_desc_match_enabler(const struct lttng_kernel_event_desc *desc,
 		struct lttng_enabler *enabler);
 
 #if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
@@ -988,8 +1138,8 @@ int lttng_event_notifier_enabler_attach_capture_bytecode(
 		struct lttng_event_notifier_enabler *event_notifier_enabler,
 		struct lttng_kernel_capture_bytecode __user *bytecode);
 
-void lttng_enabler_link_bytecode(const struct lttng_event_desc *event_desc,
-		struct lttng_ctx *ctx,
+void lttng_enabler_link_bytecode(const struct lttng_kernel_event_desc *event_desc,
+		struct lttng_kernel_ctx *ctx,
 		struct list_head *instance_bytecode_runtime_head,
 		struct list_head *enabler_bytecode_runtime_head);
 void lttng_free_event_filter_runtime(struct lttng_event *event);
@@ -997,62 +1147,59 @@ void lttng_free_event_notifier_filter_runtime(struct lttng_event_notifier *event
 
 int lttng_probes_init(void);
 
-extern struct lttng_ctx *lttng_static_ctx;
+extern struct lttng_kernel_ctx *lttng_static_ctx;
 
 int lttng_context_init(void);
 void lttng_context_exit(void);
-struct lttng_ctx_field *lttng_append_context(struct lttng_ctx **ctx);
-ssize_t lttng_append_context_index(struct lttng_ctx **ctx_p);
-struct lttng_ctx_field *lttng_get_context_field_from_index(struct lttng_ctx *ctx,
+int lttng_kernel_context_append(struct lttng_kernel_ctx **ctx_p,
+		const struct lttng_kernel_ctx_field *f);
+void lttng_kernel_context_remove_last(struct lttng_kernel_ctx **ctx_p);
+struct lttng_kernel_ctx_field *lttng_kernel_get_context_field_from_index(struct lttng_kernel_ctx *ctx,
 		size_t index);
-void lttng_context_update(struct lttng_ctx *ctx);
-int lttng_find_context(struct lttng_ctx *ctx, const char *name);
-int lttng_get_context_index(struct lttng_ctx *ctx, const char *name);
-void lttng_remove_context_field(struct lttng_ctx **ctx,
-				struct lttng_ctx_field *field);
-void lttng_remove_context_field_index(struct lttng_ctx **ctx_p, size_t index);
-void lttng_destroy_context(struct lttng_ctx *ctx);
-int lttng_add_pid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_cpu_id_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_procname_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_prio_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_nice_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_vpid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_tid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_vtid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_ppid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_vppid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_hostname_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_interruptible_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_need_reschedule_to_ctx(struct lttng_ctx **ctx);
+int lttng_kernel_find_context(struct lttng_kernel_ctx *ctx, const char *name);
+int lttng_kernel_get_context_index(struct lttng_kernel_ctx *ctx, const char *name);
+void lttng_kernel_destroy_context(struct lttng_kernel_ctx *ctx);
+int lttng_add_pid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_cpu_id_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_procname_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_prio_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_nice_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_vpid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_tid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_vtid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_ppid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_vppid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_hostname_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_interruptible_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_need_reschedule_to_ctx(struct lttng_kernel_ctx **ctx);
 #if defined(CONFIG_PREEMPT_RT_FULL) || defined(CONFIG_PREEMPT)
-int lttng_add_preemptible_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_preemptible_to_ctx(struct lttng_kernel_ctx **ctx);
 #else
 static inline
-int lttng_add_preemptible_to_ctx(struct lttng_ctx **ctx)
+int lttng_add_preemptible_to_ctx(struct lttng_kernel_ctx **ctx)
 {
 	return -ENOSYS;
 }
 #endif
 #ifdef CONFIG_PREEMPT_RT_FULL
-int lttng_add_migratable_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_migratable_to_ctx(struct lttng_kernel_ctx **ctx);
 #else
 static inline
-int lttng_add_migratable_to_ctx(struct lttng_ctx **ctx)
+int lttng_add_migratable_to_ctx(struct lttng_kernel_ctx **ctx)
 {
 	return -ENOSYS;
 }
 #endif
 
-int lttng_add_callstack_to_ctx(struct lttng_ctx **ctx, int type);
+int lttng_add_callstack_to_ctx(struct lttng_kernel_ctx **ctx, int type);
 
 #if defined(CONFIG_CGROUPS) && \
 	((LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,6,0)) || \
 	 LTTNG_UBUNTU_KERNEL_RANGE(4,4,0,0, 4,5,0,0))
-int lttng_add_cgroup_ns_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_cgroup_ns_to_ctx(struct lttng_kernel_ctx **ctx);
 #else
 static inline
-int lttng_add_cgroup_ns_to_ctx(struct lttng_ctx **ctx)
+int lttng_add_cgroup_ns_to_ctx(struct lttng_kernel_ctx **ctx)
 {
 	return -ENOSYS;
 }
@@ -1060,10 +1207,10 @@ int lttng_add_cgroup_ns_to_ctx(struct lttng_ctx **ctx)
 
 #if defined(CONFIG_IPC_NS) && \
 	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
-int lttng_add_ipc_ns_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_ipc_ns_to_ctx(struct lttng_kernel_ctx **ctx);
 #else
 static inline
-int lttng_add_ipc_ns_to_ctx(struct lttng_ctx **ctx)
+int lttng_add_ipc_ns_to_ctx(struct lttng_kernel_ctx **ctx)
 {
 	return -ENOSYS;
 }
@@ -1071,10 +1218,10 @@ int lttng_add_ipc_ns_to_ctx(struct lttng_ctx **ctx)
 
 #if !defined(LTTNG_MNT_NS_MISSING_HEADER) && \
 	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
-int lttng_add_mnt_ns_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_mnt_ns_to_ctx(struct lttng_kernel_ctx **ctx);
 #else
 static inline
-int lttng_add_mnt_ns_to_ctx(struct lttng_ctx **ctx)
+int lttng_add_mnt_ns_to_ctx(struct lttng_kernel_ctx **ctx)
 {
 	return -ENOSYS;
 }
@@ -1082,10 +1229,10 @@ int lttng_add_mnt_ns_to_ctx(struct lttng_ctx **ctx)
 
 #if defined(CONFIG_NET_NS) && \
 	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
-int lttng_add_net_ns_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_net_ns_to_ctx(struct lttng_kernel_ctx **ctx);
 #else
 static inline
-int lttng_add_net_ns_to_ctx(struct lttng_ctx **ctx)
+int lttng_add_net_ns_to_ctx(struct lttng_kernel_ctx **ctx)
 {
 	return -ENOSYS;
 }
@@ -1093,10 +1240,10 @@ int lttng_add_net_ns_to_ctx(struct lttng_ctx **ctx)
 
 #if defined(CONFIG_PID_NS) && \
 	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
-int lttng_add_pid_ns_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_pid_ns_to_ctx(struct lttng_kernel_ctx **ctx);
 #else
 static inline
-int lttng_add_pid_ns_to_ctx(struct lttng_ctx **ctx)
+int lttng_add_pid_ns_to_ctx(struct lttng_kernel_ctx **ctx)
 {
 	return -ENOSYS;
 }
@@ -1104,10 +1251,10 @@ int lttng_add_pid_ns_to_ctx(struct lttng_ctx **ctx)
 
 #if defined(CONFIG_USER_NS) && \
 	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
-int lttng_add_user_ns_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_user_ns_to_ctx(struct lttng_kernel_ctx **ctx);
 #else
 static inline
-int lttng_add_user_ns_to_ctx(struct lttng_ctx **ctx)
+int lttng_add_user_ns_to_ctx(struct lttng_kernel_ctx **ctx)
 {
 	return -ENOSYS;
 }
@@ -1115,10 +1262,10 @@ int lttng_add_user_ns_to_ctx(struct lttng_ctx **ctx)
 
 #if defined(CONFIG_UTS_NS) && \
 	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
-int lttng_add_uts_ns_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_uts_ns_to_ctx(struct lttng_kernel_ctx **ctx);
 #else
 static inline
-int lttng_add_uts_ns_to_ctx(struct lttng_ctx **ctx)
+int lttng_add_uts_ns_to_ctx(struct lttng_kernel_ctx **ctx)
 {
 	return -ENOSYS;
 }
@@ -1126,33 +1273,33 @@ int lttng_add_uts_ns_to_ctx(struct lttng_ctx **ctx)
 
 #if defined(CONFIG_TIME_NS) && \
 	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
-int lttng_add_time_ns_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_time_ns_to_ctx(struct lttng_kernel_ctx **ctx);
 #else
 static inline
-int lttng_add_time_ns_to_ctx(struct lttng_ctx **ctx)
+int lttng_add_time_ns_to_ctx(struct lttng_kernel_ctx **ctx)
 {
 	return -ENOSYS;
 }
 #endif
 
-int lttng_add_uid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_euid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_suid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_gid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_egid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_sgid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_vuid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_veuid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_vsuid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_vgid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_vegid_to_ctx(struct lttng_ctx **ctx);
-int lttng_add_vsgid_to_ctx(struct lttng_ctx **ctx);
+int lttng_add_uid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_euid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_suid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_gid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_egid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_sgid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_vuid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_veuid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_vsuid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_vgid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_vegid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_vsgid_to_ctx(struct lttng_kernel_ctx **ctx);
 
 #if defined(CONFIG_PERF_EVENTS)
 int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  uint64_t config,
 				  const char *name,
-				  struct lttng_ctx **ctx);
+				  struct lttng_kernel_ctx **ctx);
 int lttng_cpuhp_perf_counter_online(unsigned int cpu,
 		struct lttng_cpuhp_node *node);
 int lttng_cpuhp_perf_counter_dead(unsigned int cpu,
@@ -1162,7 +1309,7 @@ static inline
 int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  uint64_t config,
 				  const char *name,
-				  struct lttng_ctx **ctx)
+				  struct lttng_kernel_ctx **ctx)
 {
 	return -ENOSYS;
 }
@@ -1356,21 +1503,5 @@ extern const struct file_operations lttng_tracepoint_list_fops;
 extern const struct file_operations lttng_syscall_list_fops;
 
 #define TRACEPOINT_HAS_DATA_ARG
-
-static inline bool lttng_is_bytewise_integer(const struct lttng_type *type)
-{
-	if (type->type != lttng_kernel_type_integer)
-		return false;
-	switch (type->u.integer.size) {
-	case 8:		/* Fall-through. */
-	case 16:	/* Fall-through. */
-	case 32:	/* Fall-through. */
-	case 64:
-		break;
-	default:
-		return false;
-	}
-	return true;
-}
 
 #endif /* _LTTNG_EVENTS_H */
