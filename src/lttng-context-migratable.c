@@ -63,7 +63,7 @@ int lttng_add_migratable_to_ctx(struct lttng_ctx **ctx)
 	field->event_field.type.u.integer.signedness = lttng_is_signed_type(uint8_t);
 	field->event_field.type.u.integer.reverse_byte_order = 0;
 	field->event_field.type.u.integer.base = 10;
-	field->event_field.type.u.integer.encoding = lttng_encode_none;
+	field->event_field.type.u.integer.encoding = lttng_kernel_string_encoding_none;
 	field->get_size = migratable_get_size;
 	field->record = migratable_record;
 	field->get_value = migratable_get_value;

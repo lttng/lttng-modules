@@ -97,7 +97,7 @@ int lttng_add_prio_to_ctx(struct lttng_ctx **ctx)
 	field->event_field.type.u.integer.signedness = lttng_is_signed_type(int);
 	field->event_field.type.u.integer.reverse_byte_order = 0;
 	field->event_field.type.u.integer.base = 10;
-	field->event_field.type.u.integer.encoding = lttng_encode_none;
+	field->event_field.type.u.integer.encoding = lttng_kernel_string_encoding_none;
 	field->get_size = prio_get_size;
 	field->record = prio_record;
 	field->get_value = prio_get_value;

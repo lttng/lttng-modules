@@ -143,7 +143,7 @@ int __lttng_add_callstack_generic(struct lttng_ctx **ctx,
 	field->type.u.integer.signedness = lttng_is_signed_type(unsigned int);
 	field->type.u.integer.reverse_byte_order = 0;
 	field->type.u.integer.base = 10;
-	field->type.u.integer.encoding = lttng_encode_none;
+	field->type.u.integer.encoding = lttng_kernel_string_encoding_none;
 	length_field->get_size_arg = lttng_callstack_length_get_size;
 	length_field->record = lttng_callstack_length_record;
 	length_field->priv = fdata;

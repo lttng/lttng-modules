@@ -315,7 +315,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	field->event_field.type.u.integer.signedness = lttng_is_signed_type(uint64_t);
 	field->event_field.type.u.integer.reverse_byte_order = 0;
 	field->event_field.type.u.integer.base = 10;
-	field->event_field.type.u.integer.encoding = lttng_encode_none;
+	field->event_field.type.u.integer.encoding = lttng_kernel_string_encoding_none;
 	field->get_size = perf_counter_get_size;
 	field->record = perf_counter_record;
 	field->u.perf_counter = perf_field;

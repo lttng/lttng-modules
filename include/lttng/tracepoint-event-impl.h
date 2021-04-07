@@ -419,7 +419,7 @@ void __event_notifier_template_proto___##_name(void);
 		  .type = lttng_kernel_type_string,			\
 		  .u =						\
 			{					\
-			  .string = { .encoding = lttng_encode_UTF8 }, \
+			  .string = { .encoding = lttng_kernel_string_encoding_UTF8 }, \
 			},					\
 		},						\
 	  .nowrite = _nowrite,					\

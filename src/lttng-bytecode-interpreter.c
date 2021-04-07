@@ -321,7 +321,7 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			printk(KERN_WARNING "LTTng: bytecode: Array nesting only supports integer types.\n");
 			return -EINVAL;
 		}
-		if (field->type.u.array_nestable.elem_type->u.integer.encoding == lttng_encode_none) {
+		if (field->type.u.array_nestable.elem_type->u.integer.encoding == lttng_kernel_string_encoding_none) {
 			printk(KERN_WARNING "LTTng: bytecode: Only string arrays are supported for contexts.\n");
 			return -EINVAL;
 		}
@@ -334,7 +334,7 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			printk(KERN_WARNING "LTTng: bytecode: Sequence nesting only supports integer types.\n");
 			return -EINVAL;
 		}
-		if (field->type.u.sequence_nestable.elem_type->u.integer.encoding == lttng_encode_none) {
+		if (field->type.u.sequence_nestable.elem_type->u.integer.encoding == lttng_kernel_string_encoding_none) {
 			printk(KERN_WARNING "LTTng: bytecode: Only string sequences are supported for contexts.\n");
 			return -EINVAL;
 		}

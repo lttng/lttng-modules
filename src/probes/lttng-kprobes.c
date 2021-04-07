@@ -97,7 +97,7 @@ int lttng_create_kprobe_event(const char *name, struct lttng_event *event)
 	field->type.u.integer.signedness = lttng_is_signed_type(unsigned long);
 	field->type.u.integer.reverse_byte_order = 0;
 	field->type.u.integer.base = 16;
-	field->type.u.integer.encoding = lttng_encode_none;
+	field->type.u.integer.encoding = lttng_kernel_string_encoding_none;
 	desc->owner = THIS_MODULE;
 	event->desc = desc;
 

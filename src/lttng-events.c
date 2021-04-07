@@ -3022,9 +3022,9 @@ int _lttng_integer_type_statedump(struct lttng_session *session,
 		type->u.integer.size,
 		type->u.integer.alignment,
 		type->u.integer.signedness,
-		(type->u.integer.encoding == lttng_encode_none)
+		(type->u.integer.encoding == lttng_kernel_string_encoding_none)
 			? "none"
-			: (type->u.integer.encoding == lttng_encode_UTF8)
+			: (type->u.integer.encoding == lttng_kernel_string_encoding_UTF8)
 				? "UTF8"
 				: "ASCII",
 		type->u.integer.base,
@@ -3417,7 +3417,7 @@ int _lttng_string_type_statedump(struct lttng_session *session,
 		return ret;
 	ret = lttng_metadata_printf(session,
 		"string%s",
-		type->u.string.encoding == lttng_encode_ASCII ?
+		type->u.string.encoding == lttng_kernel_string_encoding_ASCII ?
 			" { encoding = ASCII; }" : "");
 	return ret;
 }

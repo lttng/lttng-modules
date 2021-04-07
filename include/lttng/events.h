@@ -46,11 +46,11 @@ enum lttng_kernel_type {
 	NR_LTTNG_KERNEL_TYPES,
 };
 
-enum lttng_string_encodings {
-	lttng_encode_none = 0,
-	lttng_encode_UTF8 = 1,
-	lttng_encode_ASCII = 2,
-	NR_STRING_ENCODINGS,
+enum lttng_kernel_string_encoding {
+	lttng_kernel_string_encoding_none = 0,
+	lttng_kernel_string_encoding_UTF8 = 1,
+	lttng_kernel_string_encoding_ASCII = 2,
+	NR_LTTNG_KERNEL_STRING_ENCODING,
 };
 
 enum channel_type {
@@ -82,7 +82,7 @@ struct lttng_enum_entry {
 		  .signedness = (_signedness) >= 0 ? (_signedness) : lttng_is_signed_type(_type), \
 		  .reverse_byte_order = _byte_order != __BYTE_ORDER, \
 		  .base = _base,				\
-		  .encoding = lttng_encode_##_encoding,		\
+		  .encoding = lttng_kernel_string_encoding_##_encoding,		\
 		},						\
 	}							\
 
@@ -92,7 +92,7 @@ struct lttng_integer_type {
 	unsigned int signedness:1,
 		reverse_byte_order:1;
 	unsigned int base;		/* 2, 8, 10, 16, for pretty print */
-	enum lttng_string_encodings encoding;
+	enum lttng_kernel_string_encoding encoding;
 };
 
 struct lttng_type {
@@ -100,7 +100,7 @@ struct lttng_type {
 	union {
 		struct lttng_integer_type integer;
 		struct {
-			enum lttng_string_encodings encoding;
+			enum lttng_kernel_string_encoding encoding;
 		} string;
 		struct {
 			const struct lttng_enum_desc *desc;	/* Enumeration mapping */

@@ -135,7 +135,7 @@ int lttng_create_kprobe_event(const char *name, struct lttng_event *event,
 	fields[0].type.u.integer.signedness = lttng_is_signed_type(unsigned long);
 	fields[0].type.u.integer.reverse_byte_order = 0;
 	fields[0].type.u.integer.base = 16;
-	fields[0].type.u.integer.encoding = lttng_encode_none;
+	fields[0].type.u.integer.encoding = lttng_kernel_string_encoding_none;
 
 	fields[1].name = "parent_ip";
 	fields[1].type.type = lttng_kernel_type_integer;
@@ -144,7 +144,7 @@ int lttng_create_kprobe_event(const char *name, struct lttng_event *event,
 	fields[1].type.u.integer.signedness = lttng_is_signed_type(unsigned long);
 	fields[1].type.u.integer.reverse_byte_order = 0;
 	fields[1].type.u.integer.base = 16;
-	fields[1].type.u.integer.encoding = lttng_encode_none;
+	fields[1].type.u.integer.encoding = lttng_kernel_string_encoding_none;
 
 	desc->owner = THIS_MODULE;
 	event->desc = desc;

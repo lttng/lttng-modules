@@ -350,7 +350,7 @@ static int specialize_load_object(const struct lttng_event_field *field,
 		if (is_context) {
 			load->object_type = OBJECT_TYPE_STRING;
 		} else {
-			if (field->type.u.array_nestable.elem_type->u.integer.encoding == lttng_encode_none) {
+			if (field->type.u.array_nestable.elem_type->u.integer.encoding == lttng_kernel_string_encoding_none) {
 				load->object_type = OBJECT_TYPE_ARRAY;
 				load->field = field;
 			} else {
@@ -366,7 +366,7 @@ static int specialize_load_object(const struct lttng_event_field *field,
 		if (is_context) {
 			load->object_type = OBJECT_TYPE_STRING;
 		} else {
-			if (field->type.u.sequence_nestable.elem_type->u.integer.encoding == lttng_encode_none) {
+			if (field->type.u.sequence_nestable.elem_type->u.integer.encoding == lttng_kernel_string_encoding_none) {
 				load->object_type = OBJECT_TYPE_SEQUENCE;
 				load->field = field;
 			} else {

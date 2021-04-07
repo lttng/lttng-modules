@@ -247,7 +247,7 @@ int apply_field_reloc(const struct lttng_event_desc *event_desc,
 		{
 			const struct lttng_type *elem_type = field->type.u.array_nestable.elem_type;
 
-			if (!lttng_is_bytewise_integer(elem_type) || elem_type->u.integer.encoding == lttng_encode_none)
+			if (!lttng_is_bytewise_integer(elem_type) || elem_type->u.integer.encoding == lttng_kernel_string_encoding_none)
 				return -EINVAL;
 			if (field->user)
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_USER_SEQUENCE;
@@ -259,7 +259,7 @@ int apply_field_reloc(const struct lttng_event_desc *event_desc,
 		{
 			const struct lttng_type *elem_type = field->type.u.sequence_nestable.elem_type;
 
-			if (!lttng_is_bytewise_integer(elem_type) || elem_type->u.integer.encoding == lttng_encode_none)
+			if (!lttng_is_bytewise_integer(elem_type) || elem_type->u.integer.encoding == lttng_kernel_string_encoding_none)
 				return -EINVAL;
 			if (field->user)
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_USER_SEQUENCE;
@@ -334,7 +334,7 @@ int apply_context_reloc(struct bytecode_runtime *runtime,
 		{
 			const struct lttng_type *elem_type = ctx_field->event_field.type.u.array_nestable.elem_type;
 
-			if (!lttng_is_bytewise_integer(elem_type) || elem_type->u.integer.encoding == lttng_encode_none)
+			if (!lttng_is_bytewise_integer(elem_type) || elem_type->u.integer.encoding == lttng_kernel_string_encoding_none)
 				return -EINVAL;
 			BUG_ON(ctx_field->event_field.user);
 			op->op = BYTECODE_OP_GET_CONTEXT_REF_STRING;
@@ -344,7 +344,7 @@ int apply_context_reloc(struct bytecode_runtime *runtime,
 		{
 			const struct lttng_type *elem_type = ctx_field->event_field.type.u.sequence_nestable.elem_type;
 
-			if (!lttng_is_bytewise_integer(elem_type) || elem_type->u.integer.encoding == lttng_encode_none)
+			if (!lttng_is_bytewise_integer(elem_type) || elem_type->u.integer.encoding == lttng_kernel_string_encoding_none)
 				return -EINVAL;
 			BUG_ON(ctx_field->event_field.user);
 			op->op = BYTECODE_OP_GET_CONTEXT_REF_STRING;
