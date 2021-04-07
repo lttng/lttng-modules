@@ -196,28 +196,28 @@ int apply_field_reloc(const struct lttng_event_desc *event_desc,
 			break;
 		}
 		/* compute field offset */
-		switch (fields[i].type.atype) {
-		case atype_integer:
-		case atype_enum_nestable:
+		switch (fields[i].type.type) {
+		case lttng_kernel_type_integer:
+		case lttng_kernel_type_enum_nestable:
 			field_offset += sizeof(int64_t);
 			break;
-		case atype_array_nestable:
+		case lttng_kernel_type_array_nestable:
 			if (!lttng_is_bytewise_integer(fields[i].type.u.array_nestable.elem_type))
 				return -EINVAL;
 			field_offset += sizeof(unsigned long);
 			field_offset += sizeof(void *);
 			break;
-		case atype_sequence_nestable:
+		case lttng_kernel_type_sequence_nestable:
 			if (!lttng_is_bytewise_integer(fields[i].type.u.sequence_nestable.elem_type))
 				return -EINVAL;
 			field_offset += sizeof(unsigned long);
 			field_offset += sizeof(void *);
 			break;
-		case atype_string:
+		case lttng_kernel_type_string:
 			field_offset += sizeof(void *);
 			break;
-		case atype_struct_nestable:	/* Unsupported. */
-		case atype_variant_nestable:	/* Unsupported. */
+		case lttng_kernel_type_struct_nestable:	/* Unsupported. */
+		case lttng_kernel_type_variant_nestable:	/* Unsupported. */
 		default:
 			return -EINVAL;
 		}
@@ -238,12 +238,12 @@ int apply_field_reloc(const struct lttng_event_desc *event_desc,
 		struct field_ref *field_ref;
 
 		field_ref = (struct field_ref *) op->data;
-		switch (field->type.atype) {
-		case atype_integer:
-		case atype_enum_nestable:
+		switch (field->type.type) {
+		case lttng_kernel_type_integer:
+		case lttng_kernel_type_enum_nestable:
 			op->op = BYTECODE_OP_LOAD_FIELD_REF_S64;
 			break;
-		case atype_array_nestable:
+		case lttng_kernel_type_array_nestable:
 		{
 			const struct lttng_type *elem_type = field->type.u.array_nestable.elem_type;
 
@@ -255,7 +255,7 @@ int apply_field_reloc(const struct lttng_event_desc *event_desc,
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_SEQUENCE;
 			break;
 		}
-		case atype_sequence_nestable:
+		case lttng_kernel_type_sequence_nestable:
 		{
 			const struct lttng_type *elem_type = field->type.u.sequence_nestable.elem_type;
 
@@ -267,14 +267,14 @@ int apply_field_reloc(const struct lttng_event_desc *event_desc,
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_SEQUENCE;
 			break;
 		}
-		case atype_string:
+		case lttng_kernel_type_string:
 			if (field->user)
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_USER_STRING;
 			else
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_STRING;
 			break;
-		case atype_struct_nestable:	/* Unsupported. */
-		case atype_variant_nestable:	/* Unsupported. */
+		case lttng_kernel_type_struct_nestable:	/* Unsupported. */
+		case lttng_kernel_type_variant_nestable:	/* Unsupported. */
 		default:
 			return -EINVAL;
 		}
@@ -320,17 +320,17 @@ int apply_context_reloc(struct bytecode_runtime *runtime,
 		struct field_ref *field_ref;
 
 		field_ref = (struct field_ref *) op->data;
-		switch (ctx_field->event_field.type.atype) {
-		case atype_integer:
-		case atype_enum_nestable:
+		switch (ctx_field->event_field.type.type) {
+		case lttng_kernel_type_integer:
+		case lttng_kernel_type_enum_nestable:
 			op->op = BYTECODE_OP_GET_CONTEXT_REF_S64;
 			break;
 			/* Sequence and array supported as string */
-		case atype_string:
+		case lttng_kernel_type_string:
 			BUG_ON(ctx_field->event_field.user);
 			op->op = BYTECODE_OP_GET_CONTEXT_REF_STRING;
 			break;
-		case atype_array_nestable:
+		case lttng_kernel_type_array_nestable:
 		{
 			const struct lttng_type *elem_type = ctx_field->event_field.type.u.array_nestable.elem_type;
 
@@ -340,7 +340,7 @@ int apply_context_reloc(struct bytecode_runtime *runtime,
 			op->op = BYTECODE_OP_GET_CONTEXT_REF_STRING;
 			break;
 		}
-		case atype_sequence_nestable:
+		case lttng_kernel_type_sequence_nestable:
 		{
 			const struct lttng_type *elem_type = ctx_field->event_field.type.u.sequence_nestable.elem_type;
 
@@ -350,8 +350,8 @@ int apply_context_reloc(struct bytecode_runtime *runtime,
 			op->op = BYTECODE_OP_GET_CONTEXT_REF_STRING;
 			break;
 		}
-		case atype_struct_nestable:	/* Unsupported. */
-		case atype_variant_nestable:	/* Unsupported. */
+		case lttng_kernel_type_struct_nestable:	/* Unsupported. */
+		case lttng_kernel_type_variant_nestable:	/* Unsupported. */
 		default:
 			return -EINVAL;
 		}

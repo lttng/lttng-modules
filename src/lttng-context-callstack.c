@@ -137,7 +137,7 @@ int __lttng_add_callstack_generic(struct lttng_ctx **ctx,
 
 	field = &length_field->event_field;
 	field->name = ctx_length_name;
-	field->type.atype = atype_integer;
+	field->type.type = lttng_kernel_type_integer;
 	field->type.u.integer.size = sizeof(unsigned int) * CHAR_BIT;
 	field->type.u.integer.alignment = lttng_alignof(unsigned int) * CHAR_BIT;
 	field->type.u.integer.signedness = lttng_is_signed_type(unsigned int);
@@ -150,7 +150,7 @@ int __lttng_add_callstack_generic(struct lttng_ctx **ctx,
 
 	field = &sequence_field->event_field;
 	field->name = ctx_name;
-	field->type.atype = atype_sequence_nestable;
+	field->type.type = lttng_kernel_type_sequence_nestable;
 	field->type.u.sequence_nestable.length_name = ctx_length_name;
 	field->type.u.sequence_nestable.elem_type = &sequence_elem_type;
 	field->type.u.sequence_nestable.alignment = 0;

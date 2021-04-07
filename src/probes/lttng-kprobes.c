@@ -91,7 +91,7 @@ int lttng_create_kprobe_event(const char *name, struct lttng_event *event)
 		goto error_field;
 	}
 	field->name = "ip";
-	field->type.atype = atype_integer;
+	field->type.type = lttng_kernel_type_integer;
 	field->type.u.integer.size = sizeof(unsigned long) * CHAR_BIT;
 	field->type.u.integer.alignment = lttng_alignof(unsigned long) * CHAR_BIT;
 	field->type.u.integer.signedness = lttng_is_signed_type(unsigned long);

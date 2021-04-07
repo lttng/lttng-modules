@@ -120,7 +120,7 @@ SC_LTTNG_TRACEPOINT_ENUM(lttng_clone_option_flags,
 {									\
 	.name = "exit_signal",						\
 	.type = {							\
-		.atype = atype_enum_nestable,				\
+		.type = lttng_kernel_type_enum_nestable,				\
 		.u = {							\
 			.enum_nestable = {				\
 				.desc = &__enum_lttng_clone_exit_signal_flags,		\
@@ -137,7 +137,7 @@ SC_LTTNG_TRACEPOINT_ENUM(lttng_clone_option_flags,
 {									\
 	.name = "options",						\
 	.type = {							\
-		.atype = atype_enum_nestable,				\
+		.type = lttng_kernel_type_enum_nestable,				\
 		.u = {							\
 			.enum_nestable = {				\
 				.desc = &__enum_lttng_clone_option_flags,		\
@@ -175,7 +175,7 @@ SC_LTTNG_TRACEPOINT_EVENT(clone,
 			ctf_custom_field(
 				ctf_custom_type(
 					{
-						.atype = atype_struct_nestable,
+						.type = lttng_kernel_type_struct_nestable,
 						.u.struct_nestable.nr_fields = 2,
 						.u.struct_nestable.fields =
 							__LTTNG_COMPOUND_LITERAL(struct lttng_event_field,
@@ -331,7 +331,7 @@ end:	; /* Label at end of compound statement. */					\
 	ctf_custom_field(										\
 		ctf_custom_type(									\
 			{										\
-				.atype = atype_sequence_nestable,					\
+				.type = lttng_kernel_type_sequence_nestable,					\
 				.u.sequence_nestable.length_name = "_" #name "_length",			\
 				.u.sequence_nestable.elem_type = __LTTNG_COMPOUND_LITERAL(struct lttng_type, \
 					__type_integer(uint8_t, 0, 0, 0, __BYTE_ORDER, 16, none)),	\
@@ -379,7 +379,7 @@ end:	; /* Label at end of compound statement. */					\
 	ctf_custom_field(										\
 		ctf_custom_type(									\
 			{										\
-				.atype = atype_sequence_nestable,					\
+				.type = lttng_kernel_type_sequence_nestable,					\
 				.u.sequence_nestable.elem_type = __LTTNG_COMPOUND_LITERAL(struct lttng_type, \
 					__type_integer(uint8_t, 0, 0, 0, __BYTE_ORDER, 16, none)),	\
 				.u.sequence_nestable.alignment = 0,					\
@@ -540,7 +540,7 @@ static struct lttng_event_field lttng_pollfd_fields[] = {
 	[2] = {
 		.name = "events",
 		.type = {
-			.atype = atype_struct_nestable,
+			.type = lttng_kernel_type_struct_nestable,
 			.u.struct_nestable.nr_fields = ARRAY_SIZE(lttng_pollfd_flag_fields),
 			.u.struct_nestable.fields = lttng_pollfd_flag_fields,
 			.u.struct_nestable.alignment = 0,
@@ -549,7 +549,7 @@ static struct lttng_event_field lttng_pollfd_fields[] = {
 };
 
 static struct lttng_type lttng_pollfd_elem = {
-	.atype = atype_struct_nestable,
+	.type = lttng_kernel_type_struct_nestable,
 	.u.struct_nestable.nr_fields = ARRAY_SIZE(lttng_pollfd_fields),
 	.u.struct_nestable.fields = lttng_pollfd_fields,
 	.u.struct_nestable.alignment = 0,
@@ -622,7 +622,7 @@ end:											\
 		ctf_custom_field(								\
 			ctf_custom_type(							\
 				{								\
-					.atype = atype_sequence_nestable,			\
+					.type = lttng_kernel_type_sequence_nestable,			\
 					.u.sequence_nestable.length_name = "fds_length",	\
 					.u.sequence_nestable.elem_type = &lttng_pollfd_elem,	\
 				}								\
@@ -645,7 +645,7 @@ end:											\
 		ctf_custom_field(								\
 			ctf_custom_type(							\
 				{								\
-					.atype = atype_sequence_nestable,			\
+					.type = lttng_kernel_type_sequence_nestable,			\
 					.u.sequence_nestable.length_name = "fds_length",	\
 					.u.sequence_nestable.elem_type = &lttng_pollfd_elem,	\
 				}								\
@@ -812,7 +812,7 @@ static struct lttng_event_field epoll_ctl_fields[] = {
 	[0] = {
 		.name = "data_union",
 		.type = {
-			.atype = atype_struct_nestable,
+			.type = lttng_kernel_type_struct_nestable,
 			.u.struct_nestable.nr_fields = ARRAY_SIZE(lttng_epoll_data_fields),
 			.u.struct_nestable.fields = lttng_epoll_data_fields,
 			.u.struct_nestable.alignment = 0,
@@ -825,7 +825,7 @@ static struct lttng_event_field epoll_ctl_fields[] = {
 	[2] = {
 		.name = "events",
 		.type = {
-			.atype = atype_struct_nestable,
+			.type = lttng_kernel_type_struct_nestable,
 			.u.struct_nestable.nr_fields = ARRAY_SIZE(lttng_epoll_ctl_events_fields),
 			.u.struct_nestable.fields = lttng_epoll_ctl_events_fields,
 			.u.struct_nestable.alignment = 0,
@@ -858,7 +858,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_ctl,
 			ctf_custom_field(
 				ctf_custom_type(
 					{
-						.atype = atype_struct_nestable,
+						.type = lttng_kernel_type_struct_nestable,
 						.u.struct_nestable.nr_fields = ARRAY_SIZE(epoll_ctl_fields),
 						.u.struct_nestable.fields = epoll_ctl_fields,
 						.u.struct_nestable.alignment = 0,
@@ -895,7 +895,7 @@ static struct lttng_event_field lttng_epoll_wait_fields[] = {
 	[0] = {
 		.name = "data_union",
 		.type = {
-			.atype = atype_struct_nestable,
+			.type = lttng_kernel_type_struct_nestable,
 			.u.struct_nestable.nr_fields = ARRAY_SIZE(lttng_epoll_data_fields),
 			.u.struct_nestable.fields = lttng_epoll_data_fields,
 			.u.struct_nestable.alignment = 0,
@@ -908,7 +908,7 @@ static struct lttng_event_field lttng_epoll_wait_fields[] = {
 	[2] = {
 		.name = "events",
 		.type = {
-			.atype = atype_struct_nestable,
+			.type = lttng_kernel_type_struct_nestable,
 			.u.struct_nestable.nr_fields = ARRAY_SIZE(lttng_epoll_ctl_events_fields),
 			.u.struct_nestable.fields = lttng_epoll_ctl_events_fields,
 			.u.struct_nestable.alignment = 0,
@@ -917,7 +917,7 @@ static struct lttng_event_field lttng_epoll_wait_fields[] = {
 };
 
 static struct lttng_type lttng_epoll_wait_elem = {
-	.atype = atype_struct_nestable,
+	.type = lttng_kernel_type_struct_nestable,
 	.u.struct_nestable.nr_fields = ARRAY_SIZE(lttng_epoll_wait_fields),
 	.u.struct_nestable.fields = lttng_epoll_wait_fields,
 	.u.struct_nestable.alignment = 0,
@@ -980,7 +980,7 @@ static struct lttng_type lttng_epoll_wait_elem = {
 	ctf_custom_field(								\
 		ctf_custom_type(							\
 			{								\
-				.atype = atype_sequence_nestable,			\
+				.type = lttng_kernel_type_sequence_nestable,			\
 				.u.sequence_nestable.length_name =			\
 					"fds_length",					\
 				.u.sequence_nestable.elem_type =			\

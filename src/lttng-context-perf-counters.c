@@ -309,7 +309,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 	field->destroy = lttng_destroy_perf_counter_field;
 
 	field->event_field.name = name_alloc;
-	field->event_field.type.atype = atype_integer;
+	field->event_field.type.type = lttng_kernel_type_integer;
 	field->event_field.type.u.integer.size = sizeof(uint64_t) * CHAR_BIT;
 	field->event_field.type.u.integer.alignment = lttng_alignof(uint64_t) * CHAR_BIT;
 	field->event_field.type.u.integer.signedness = lttng_is_signed_type(uint64_t);

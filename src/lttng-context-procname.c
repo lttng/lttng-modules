@@ -62,7 +62,7 @@ int lttng_add_procname_to_ctx(struct lttng_ctx **ctx)
 		return -EEXIST;
 	}
 	field->event_field.name = "procname";
-	field->event_field.type.atype = atype_array_nestable;
+	field->event_field.type.type = lttng_kernel_type_array_nestable;
 	field->event_field.type.u.array_nestable.elem_type = &procname_array_elem_type;
 	field->event_field.type.u.array_nestable.length = sizeof(current->comm);
 	field->event_field.type.u.array_nestable.alignment = 0;

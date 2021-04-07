@@ -322,15 +322,15 @@ static int specialize_load_object(const struct lttng_event_field *field,
 {
 	load->type = LOAD_OBJECT;
 
-	switch (field->type.atype) {
-	case atype_integer:
+	switch (field->type.type) {
+	case lttng_kernel_type_integer:
 		if (field->type.u.integer.signedness)
 			load->object_type = OBJECT_TYPE_S64;
 		else
 			load->object_type = OBJECT_TYPE_U64;
 		load->rev_bo = false;
 		break;
-	case atype_enum_nestable:
+	case lttng_kernel_type_enum_nestable:
 	{
 		const struct lttng_integer_type *itype =
 			&field->type.u.enum_nestable.container_type->u.integer;
@@ -342,7 +342,7 @@ static int specialize_load_object(const struct lttng_event_field *field,
 		load->rev_bo = false;
 		break;
 	}
-	case atype_array_nestable:
+	case lttng_kernel_type_array_nestable:
 		if (!lttng_is_bytewise_integer(field->type.u.array_nestable.elem_type)) {
 			printk(KERN_WARNING "LTTng: bytecode: Array nesting only supports integer types.\n");
 			return -EINVAL;
@@ -358,7 +358,7 @@ static int specialize_load_object(const struct lttng_event_field *field,
 			}
 		}
 		break;
-	case atype_sequence_nestable:
+	case lttng_kernel_type_sequence_nestable:
 		if (!lttng_is_bytewise_integer(field->type.u.sequence_nestable.elem_type)) {
 			printk(KERN_WARNING "LTTng: bytecode: Sequence nesting only supports integer types.\n");
 			return -EINVAL;
@@ -374,17 +374,17 @@ static int specialize_load_object(const struct lttng_event_field *field,
 			}
 		}
 		break;
-	case atype_string:
+	case lttng_kernel_type_string:
 		load->object_type = OBJECT_TYPE_STRING;
 		break;
-	case atype_struct_nestable:
+	case lttng_kernel_type_struct_nestable:
 		printk(KERN_WARNING "LTTng: bytecode: Structure type cannot be loaded.\n");
 		return -EINVAL;
-	case atype_variant_nestable:
+	case lttng_kernel_type_variant_nestable:
 		printk(KERN_WARNING "LTTng: bytecode: Variant type cannot be loaded.\n");
 		return -EINVAL;
 	default:
-		printk(KERN_WARNING "LTTng: bytecode: Unknown type: %d", (int) field->type.atype);
+		printk(KERN_WARNING "LTTng: bytecode: Unknown type: %d", (int) field->type.type);
 		return -EINVAL;
 	}
 	return 0;
@@ -454,17 +454,17 @@ static int specialize_payload_lookup(const struct lttng_event_desc *event_desc,
 			break;
 		}
 		/* compute field offset on stack */
-		switch (field->type.atype) {
-		case atype_integer:
-		case atype_enum_nestable:
+		switch (field->type.type) {
+		case lttng_kernel_type_integer:
+		case lttng_kernel_type_enum_nestable:
 			field_offset += sizeof(int64_t);
 			break;
-		case atype_array_nestable:
-		case atype_sequence_nestable:
+		case lttng_kernel_type_array_nestable:
+		case lttng_kernel_type_sequence_nestable:
 			field_offset += sizeof(unsigned long);
 			field_offset += sizeof(void *);
 			break;
-		case atype_string:
+		case lttng_kernel_type_string:
 			field_offset += sizeof(void *);
 			break;
 		default:

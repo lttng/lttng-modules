@@ -307,7 +307,7 @@ void __event_notifier_template_proto___##_name(void);
 	  .name = #_item,					\
 	  .type =						\
 		{						\
-		  .atype = atype_array_nestable,		\
+		  .type = lttng_kernel_type_array_nestable,		\
 		  .u =						\
 			{					\
 			  .array_nestable =			\
@@ -330,7 +330,7 @@ void __event_notifier_template_proto___##_name(void);
 	  .name = #_item,					\
 	  .type =						\
 		{						\
-		  .atype = atype_array_nestable,		\
+		  .type = lttng_kernel_type_array_nestable,		\
 		  .u =						\
 			{					\
 			  .array_nestable =			\
@@ -362,7 +362,7 @@ void __event_notifier_template_proto___##_name(void);
 	  .name = #_item,					\
 	  .type =						\
 		{						\
-		  .atype = atype_sequence_nestable,		\
+		  .type = lttng_kernel_type_sequence_nestable,		\
 		  .u =						\
 			{					\
 			  .sequence_nestable =			\
@@ -393,7 +393,7 @@ void __event_notifier_template_proto___##_name(void);
 	  .name = #_item,					\
 	  .type =						\
 		{						\
-		  .atype = atype_sequence_nestable,		\
+		  .type = lttng_kernel_type_sequence_nestable,		\
 		  .u =						\
 			{					\
 			  .sequence_nestable =			\
@@ -416,7 +416,7 @@ void __event_notifier_template_proto___##_name(void);
 	  .name = #_item,					\
 	  .type =						\
 		{						\
-		  .atype = atype_string,			\
+		  .type = lttng_kernel_type_string,			\
 		  .u =						\
 			{					\
 			  .string = { .encoding = lttng_encode_UTF8 }, \
@@ -432,7 +432,7 @@ void __event_notifier_template_proto___##_name(void);
 	{							\
 		.name = #_item,					\
 		.type = {					\
-			.atype = atype_enum_nestable,		\
+			.type = lttng_kernel_type_enum_nestable,		\
 			.u = {					\
 				.enum_nestable = {		\
 					.desc = &__enum_##_name, \

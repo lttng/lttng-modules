@@ -86,7 +86,7 @@ int lttng_add_net_ns_to_ctx(struct lttng_ctx **ctx)
 		return -EEXIST;
 	}
 	field->event_field.name = "net_ns";
-	field->event_field.type.atype = atype_integer;
+	field->event_field.type.type = lttng_kernel_type_integer;
 	field->event_field.type.u.integer.size = sizeof(unsigned int) * CHAR_BIT;
 	field->event_field.type.u.integer.alignment = lttng_alignof(unsigned int) * CHAR_BIT;
 	field->event_field.type.u.integer.signedness = lttng_is_signed_type(unsigned int);

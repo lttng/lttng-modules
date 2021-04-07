@@ -59,7 +59,7 @@ int lttng_add_vgid_to_ctx(struct lttng_ctx **ctx)
 		return -EEXIST;
 	}
 	field->event_field.name = "vgid";
-	field->event_field.type.atype = atype_integer;
+	field->event_field.type.type = lttng_kernel_type_integer;
 	field->event_field.type.u.integer.size = sizeof(gid_t) * CHAR_BIT;
 	field->event_field.type.u.integer.alignment = lttng_alignof(gid_t) * CHAR_BIT;
 	field->event_field.type.u.integer.signedness = lttng_is_signed_type(gid_t);

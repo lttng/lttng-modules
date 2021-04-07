@@ -138,7 +138,7 @@ static struct lttng_event_field transport_fields[] = {
 	[0] = {
 		.name = "unknown",
 		.type = {
-			.atype = atype_struct_nestable,
+			.type = lttng_kernel_type_struct_nestable,
 			.u.struct_nestable.nr_fields = ARRAY_SIZE(emptyfields),
 			.u.struct_nestable.fields = emptyfields,
 			.u.struct_nestable.alignment = 0,
@@ -148,7 +148,7 @@ static struct lttng_event_field transport_fields[] = {
 	[1] = {
 		.name = "tcp",
 		.type = {
-			.atype = atype_struct_nestable,
+			.type = lttng_kernel_type_struct_nestable,
 			.u.struct_nestable.nr_fields = ARRAY_SIZE(tcpfields),
 			.u.struct_nestable.fields = tcpfields,
 			.u.struct_nestable.alignment = 0,
@@ -158,7 +158,7 @@ static struct lttng_event_field transport_fields[] = {
 	[2] = {
 		.name = "udp",
 		.type = {
-			.atype = atype_struct_nestable,
+			.type = lttng_kernel_type_struct_nestable,
 			.u.struct_nestable.nr_fields = ARRAY_SIZE(udpfields),
 			.u.struct_nestable.fields = udpfields,
 			.u.struct_nestable.alignment = 0,
@@ -168,7 +168,7 @@ static struct lttng_event_field transport_fields[] = {
 	[3] = {
 		.name = "icmp",
 		.type = {
-			.atype = atype_struct_nestable,
+			.type = lttng_kernel_type_struct_nestable,
 			.u.struct_nestable.nr_fields = ARRAY_SIZE(icmpfields),
 			.u.struct_nestable.fields = icmpfields,
 			.u.struct_nestable.alignment = 0,
@@ -349,7 +349,7 @@ static struct lttng_event_field ipv4fields[] = {
 	[7] = {
 		.name = "protocol",
 		.type = {
-			.atype = atype_enum_nestable,
+			.type = lttng_kernel_type_enum_nestable,
 			.u.enum_nestable.desc =
 				&proto_transport_header_type,
 			.u.enum_nestable.container_type =
@@ -366,7 +366,7 @@ static struct lttng_event_field ipv4fields[] = {
 	[9] = {
 		.name = "saddr",
 		.type = {
-			.atype = atype_array_nestable,
+			.type = lttng_kernel_type_array_nestable,
 			.u.array_nestable.elem_type =
 				__LTTNG_COMPOUND_LITERAL(struct lttng_type,
 					__type_integer(uint8_t, 0, 0, 0,
@@ -378,7 +378,7 @@ static struct lttng_event_field ipv4fields[] = {
 	[10] = {
 		.name = "daddr",
 		.type = {
-			.atype = atype_array_nestable,
+			.type = lttng_kernel_type_array_nestable,
 			.u.array_nestable.elem_type =
 				__LTTNG_COMPOUND_LITERAL(struct lttng_type,
 					__type_integer(uint8_t, 0, 0, 0,
@@ -390,7 +390,7 @@ static struct lttng_event_field ipv4fields[] = {
 	[11] = {
 		.name = "transport_header_type",
 		.type = {
-			.atype = atype_enum_nestable,
+			.type = lttng_kernel_type_enum_nestable,
 			.u.enum_nestable.desc = &transport_header_type,
 			.u.enum_nestable.container_type =
 				__LTTNG_COMPOUND_LITERAL(struct lttng_type,
@@ -401,7 +401,7 @@ static struct lttng_event_field ipv4fields[] = {
 	[12] = {
 		.name = "transport_header",
 		.type = {
-			.atype = atype_variant_nestable,
+			.type = lttng_kernel_type_variant_nestable,
 			.u.variant_nestable.tag_name = "transport_header_type",
 			.u.variant_nestable.choices = transport_fields,
 			.u.variant_nestable.nr_choices = ARRAY_SIZE(transport_fields),
@@ -424,7 +424,7 @@ static struct lttng_event_field ipv6fields[] = {
 	[2] = {
 		.name = "flow_lbl",
 		.type = {
-			.atype = atype_array_nestable,
+			.type = lttng_kernel_type_array_nestable,
 			.u.array_nestable.elem_type =
 				__LTTNG_COMPOUND_LITERAL(struct lttng_type,
 					__type_integer(uint8_t, 0, 0, 0,
@@ -441,7 +441,7 @@ static struct lttng_event_field ipv6fields[] = {
 	[4] = {
 		.name = "nexthdr",
 		.type = {
-			.atype = atype_enum_nestable,
+			.type = lttng_kernel_type_enum_nestable,
 			.u.enum_nestable.desc =
 				&proto_transport_header_type,
 			.u.enum_nestable.container_type =
@@ -458,7 +458,7 @@ static struct lttng_event_field ipv6fields[] = {
 	[6] = {
 		.name = "saddr",
 		.type = {
-			.atype = atype_array_nestable,
+			.type = lttng_kernel_type_array_nestable,
 			.u.array_nestable.elem_type =
 				__LTTNG_COMPOUND_LITERAL(struct lttng_type,
 					__type_integer(uint16_t, 0, 0, 0,
@@ -470,7 +470,7 @@ static struct lttng_event_field ipv6fields[] = {
 	[7] = {
 		.name = "daddr",
 		.type = {
-			.atype = atype_array_nestable,
+			.type = lttng_kernel_type_array_nestable,
 			.u.array_nestable.elem_type =
 				__LTTNG_COMPOUND_LITERAL(struct lttng_type,
 					__type_integer(uint16_t, 0, 0, 0,
@@ -482,7 +482,7 @@ static struct lttng_event_field ipv6fields[] = {
 	[8] = {
 		.name = "transport_header_type",
 		.type = {
-			.atype = atype_enum_nestable,
+			.type = lttng_kernel_type_enum_nestable,
 			.u.enum_nestable.desc = &transport_header_type,
 			.u.enum_nestable.container_type =
 				__LTTNG_COMPOUND_LITERAL(struct lttng_type,
@@ -493,7 +493,7 @@ static struct lttng_event_field ipv6fields[] = {
 	[9] = {
 		.name = "transport_header",
 		.type = {
-			.atype = atype_variant_nestable,
+			.type = lttng_kernel_type_variant_nestable,
 			.u.variant_nestable.tag_name = "transport_header_type",
 			.u.variant_nestable.choices = transport_fields,
 			.u.variant_nestable.nr_choices = ARRAY_SIZE(transport_fields),
@@ -506,7 +506,7 @@ static struct lttng_event_field network_fields[] = {
 	[0] = {
 		.name = "unknown",
 		.type = {
-			.atype = atype_struct_nestable,
+			.type = lttng_kernel_type_struct_nestable,
 			.u.struct_nestable.nr_fields = 0,
 			.u.struct_nestable.fields = emptyfields,
 			.u.struct_nestable.alignment = 0,
@@ -515,7 +515,7 @@ static struct lttng_event_field network_fields[] = {
 	[1] = {
 		.name = "ipv4",
 		.type = {
-			.atype = atype_struct_nestable,
+			.type = lttng_kernel_type_struct_nestable,
 			.u.struct_nestable.nr_fields = ARRAY_SIZE(ipv4fields),
 			.u.struct_nestable.fields = ipv4fields,
 			.u.struct_nestable.alignment = 0,
@@ -524,7 +524,7 @@ static struct lttng_event_field network_fields[] = {
 	[2] = {
 		.name = "ipv6",
 		.type = {
-			.atype = atype_struct_nestable,
+			.type = lttng_kernel_type_struct_nestable,
 			.u.struct_nestable.nr_fields = ARRAY_SIZE(ipv6fields),
 			.u.struct_nestable.fields = ipv6fields,
 			.u.struct_nestable.alignment = 0,
@@ -592,7 +592,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(net_dev_template,
 		ctf_custom_field(
 			ctf_custom_type(
 				{
-					.atype = atype_variant_nestable,
+					.type = lttng_kernel_type_variant_nestable,
 					.u.variant_nestable.tag_name = "network_header_type",
 					.u.variant_nestable.choices = network_fields,
 					.u.variant_nestable.nr_choices =

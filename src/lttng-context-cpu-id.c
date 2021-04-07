@@ -57,7 +57,7 @@ int lttng_add_cpu_id_to_ctx(struct lttng_ctx **ctx)
 		return -EEXIST;
 	}
 	field->event_field.name = "cpu_id";
-	field->event_field.type.atype = atype_integer;
+	field->event_field.type.type = lttng_kernel_type_integer;
 	field->event_field.type.u.integer.size = sizeof(int) * CHAR_BIT;
 	field->event_field.type.u.integer.alignment = lttng_alignof(int) * CHAR_BIT;
 	field->event_field.type.u.integer.signedness = lttng_is_signed_type(int);

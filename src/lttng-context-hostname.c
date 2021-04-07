@@ -90,7 +90,7 @@ int lttng_add_hostname_to_ctx(struct lttng_ctx **ctx)
 		return -EEXIST;
 	}
 	field->event_field.name = "hostname";
-	field->event_field.type.atype = atype_array_nestable;
+	field->event_field.type.type = lttng_kernel_type_array_nestable;
 	field->event_field.type.u.array_nestable.elem_type =
 		&hostname_array_elem_type;
 	field->event_field.type.u.array_nestable.length = LTTNG_HOSTNAME_CTX_LEN;

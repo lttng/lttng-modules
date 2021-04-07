@@ -208,11 +208,11 @@ int capture_sequence(struct lttng_msgpack_writer *writer,
 
 	ptr = (uint8_t *) output->u.sequence.ptr;
 	nested_type = output->u.sequence.nested_type;
-	switch (nested_type->atype) {
-	case atype_integer:
+	switch (nested_type->type) {
+	case lttng_kernel_type_integer:
 		integer_type = &nested_type->u.integer;
 		break;
-	case atype_enum_nestable:
+	case lttng_kernel_type_enum_nestable:
 		/* Treat enumeration as an integer. */
 		integer_type = &nested_type->u.enum_nestable.container_type->u.integer;
 		break;

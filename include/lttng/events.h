@@ -35,15 +35,15 @@ struct lib_ring_buffer_config;
 
 /* Type description */
 
-enum abstract_types {
-	atype_integer,
-	atype_string,
-	atype_enum_nestable,
-	atype_array_nestable,
-	atype_sequence_nestable,
-	atype_struct_nestable,
-	atype_variant_nestable,
-	NR_ABSTRACT_TYPES,
+enum lttng_kernel_type {
+	lttng_kernel_type_integer,
+	lttng_kernel_type_string,
+	lttng_kernel_type_enum_nestable,
+	lttng_kernel_type_array_nestable,
+	lttng_kernel_type_sequence_nestable,
+	lttng_kernel_type_struct_nestable,
+	lttng_kernel_type_variant_nestable,
+	NR_LTTNG_KERNEL_TYPES,
 };
 
 enum lttng_string_encodings {
@@ -74,7 +74,7 @@ struct lttng_enum_entry {
 #define __type_integer(_type, _size, _alignment, _signedness,	\
 		_byte_order, _base, _encoding)	\
 	{							\
-	    .atype = atype_integer,				\
+	    .type = lttng_kernel_type_integer,				\
 	    .u.integer =					\
 		{						\
 		  .size = (_size) ? : sizeof(_type) * CHAR_BIT,	\
@@ -96,7 +96,7 @@ struct lttng_integer_type {
 };
 
 struct lttng_type {
-	enum abstract_types atype;
+	enum lttng_kernel_type type;
 	union {
 		struct lttng_integer_type integer;
 		struct {
@@ -1359,7 +1359,7 @@ extern const struct file_operations lttng_syscall_list_fops;
 
 static inline bool lttng_is_bytewise_integer(const struct lttng_type *type)
 {
-	if (type->atype != atype_integer)
+	if (type->type != lttng_kernel_type_integer)
 		return false;
 	switch (type->u.integer.size) {
 	case 8:		/* Fall-through. */

@@ -135,26 +135,26 @@ void lttng_context_update(struct lttng_ctx *ctx)
 		size_t field_align = 8;
 
 		type = &ctx->fields[i].event_field.type;
-		switch (type->atype) {
-		case atype_integer:
+		switch (type->type) {
+		case lttng_kernel_type_integer:
 			field_align = type->u.integer.alignment;
 			break;
-		case atype_array_nestable:
+		case lttng_kernel_type_array_nestable:
 		{
 			const struct lttng_type *nested_type;
 
 			nested_type = type->u.array_nestable.elem_type;
-			switch (nested_type->atype) {
-			case atype_integer:
+			switch (nested_type->type) {
+			case lttng_kernel_type_integer:
 				field_align = nested_type->u.integer.alignment;
 				break;
-			case atype_string:
+			case lttng_kernel_type_string:
 				break;
 
-			case atype_array_nestable:
-			case atype_sequence_nestable:
-			case atype_struct_nestable:
-			case atype_variant_nestable:
+			case lttng_kernel_type_array_nestable:
+			case lttng_kernel_type_sequence_nestable:
+			case lttng_kernel_type_struct_nestable:
+			case lttng_kernel_type_variant_nestable:
 			default:
 				WARN_ON_ONCE(1);
 				break;
@@ -163,23 +163,23 @@ void lttng_context_update(struct lttng_ctx *ctx)
 					type->u.array_nestable.alignment);
 			break;
 		}
-		case atype_sequence_nestable:
+		case lttng_kernel_type_sequence_nestable:
 		{
 			const struct lttng_type *nested_type;
 
 			nested_type = type->u.sequence_nestable.elem_type;
-			switch (nested_type->atype) {
-			case atype_integer:
+			switch (nested_type->type) {
+			case lttng_kernel_type_integer:
 				field_align = nested_type->u.integer.alignment;
 				break;
 
-			case atype_string:
+			case lttng_kernel_type_string:
 				break;
 
-			case atype_array_nestable:
-			case atype_sequence_nestable:
-			case atype_struct_nestable:
-			case atype_variant_nestable:
+			case lttng_kernel_type_array_nestable:
+			case lttng_kernel_type_sequence_nestable:
+			case lttng_kernel_type_struct_nestable:
+			case lttng_kernel_type_variant_nestable:
 			default:
 				WARN_ON_ONCE(1);
 				break;
@@ -188,14 +188,14 @@ void lttng_context_update(struct lttng_ctx *ctx)
 					type->u.sequence_nestable.alignment);
 			break;
 		}
-		case atype_string:
+		case lttng_kernel_type_string:
 			break;
 
-		case atype_struct_nestable:
-		case atype_variant_nestable:
+		case lttng_kernel_type_struct_nestable:
+		case lttng_kernel_type_variant_nestable:
 			break;
 
-		case atype_enum_nestable:
+		case lttng_kernel_type_enum_nestable:
 		default:
 			WARN_ON_ONCE(1);
 			break;

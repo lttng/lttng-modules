@@ -107,7 +107,7 @@ int lttng_create_uprobe_event(const char *name, struct lttng_event *event)
 		goto error_fields;
 	}
 	fields[0].name = "ip";
-	fields[0].type.atype = atype_integer;
+	fields[0].type.type = lttng_kernel_type_integer;
 	fields[0].type.u.integer.size = sizeof(unsigned long) * CHAR_BIT;
 	fields[0].type.u.integer.alignment = lttng_alignof(unsigned long) * CHAR_BIT;
 	fields[0].type.u.integer.signedness = lttng_is_signed_type(unsigned long);

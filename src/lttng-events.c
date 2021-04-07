@@ -3013,7 +3013,7 @@ int _lttng_integer_type_statedump(struct lttng_session *session,
 {
 	int ret;
 
-	WARN_ON_ONCE(type->atype != atype_integer);
+	WARN_ON_ONCE(type->type != lttng_kernel_type_integer);
 	ret = print_tabs(session, nesting);
 	if (ret)
 		return ret;
@@ -3049,7 +3049,7 @@ int _lttng_struct_type_statedump(struct lttng_session *session,
 	uint32_t i, nr_fields;
 	unsigned int alignment;
 
-	WARN_ON_ONCE(type->atype != atype_struct_nestable);
+	WARN_ON_ONCE(type->type != lttng_kernel_type_struct_nestable);
 
 	ret = print_tabs(session, nesting);
 	if (ret)
@@ -3110,7 +3110,7 @@ int _lttng_variant_type_statedump(struct lttng_session *session,
 	int ret;
 	uint32_t i, nr_choices;
 
-	WARN_ON_ONCE(type->atype != atype_variant_nestable);
+	WARN_ON_ONCE(type->type != lttng_kernel_type_variant_nestable);
 	/*
 	 * CTF 1.8 does not allow expressing nonzero variant alignment in a nestable way.
 	 */
@@ -3169,7 +3169,7 @@ int _lttng_array_field_statedump(struct lttng_session *session,
 	int ret;
 	const struct lttng_type *elem_type;
 
-	WARN_ON_ONCE(field->type.atype != atype_array_nestable);
+	WARN_ON_ONCE(field->type.type != lttng_kernel_type_array_nestable);
 
 	if (field->type.u.array_nestable.alignment) {
 		ret = print_tabs(session, nesting);
@@ -3187,10 +3187,10 @@ int _lttng_array_field_statedump(struct lttng_session *session,
 	 * currently supported.
 	 */
 	elem_type = field->type.u.array_nestable.elem_type;
-	switch (elem_type->atype) {
-	case atype_integer:
-	case atype_struct_nestable:
-	case atype_variant_nestable:
+	switch (elem_type->type) {
+	case lttng_kernel_type_integer:
+	case lttng_kernel_type_struct_nestable:
+	case lttng_kernel_type_variant_nestable:
 		ret = _lttng_type_statedump(session, elem_type, nesting);
 		if (ret)
 			return ret;
@@ -3218,7 +3218,7 @@ int _lttng_sequence_field_statedump(struct lttng_session *session,
 	const char *length_name;
 	const struct lttng_type *elem_type;
 
-	WARN_ON_ONCE(field->type.atype != atype_sequence_nestable);
+	WARN_ON_ONCE(field->type.type != lttng_kernel_type_sequence_nestable);
 
 	length_name = field->type.u.sequence_nestable.length_name;
 
@@ -3239,10 +3239,10 @@ int _lttng_sequence_field_statedump(struct lttng_session *session,
 	 * currently supported.
 	 */
 	elem_type = field->type.u.sequence_nestable.elem_type;
-	switch (elem_type->atype) {
-	case atype_integer:
-	case atype_struct_nestable:
-	case atype_variant_nestable:
+	switch (elem_type->type) {
+	case lttng_kernel_type_integer:
+	case lttng_kernel_type_struct_nestable:
+	case lttng_kernel_type_variant_nestable:
 		ret = _lttng_type_statedump(session, elem_type, nesting);
 		if (ret)
 			return ret;
@@ -3272,7 +3272,7 @@ int _lttng_enum_type_statedump(struct lttng_session *session,
 	unsigned int i, nr_entries;
 
 	container_type = type->u.enum_nestable.container_type;
-	if (container_type->atype != atype_integer) {
+	if (container_type->type != lttng_kernel_type_integer) {
 		ret = -EINVAL;
 		goto end;
 	}
@@ -3410,7 +3410,7 @@ int _lttng_string_type_statedump(struct lttng_session *session,
 {
 	int ret;
 
-	WARN_ON_ONCE(type->atype != atype_string);
+	WARN_ON_ONCE(type->type != lttng_kernel_type_string);
 	/* Default encoding is UTF8 */
 	ret = print_tabs(session, nesting);
 	if (ret)
@@ -3429,7 +3429,7 @@ int _lttng_string_field_statedump(struct lttng_session *session,
 {
 	int ret;
 
-	WARN_ON_ONCE(field->type.atype != atype_string);
+	WARN_ON_ONCE(field->type.type != lttng_kernel_type_string);
 	ret = _lttng_string_type_statedump(session, &field->type, nesting);
 	if (ret)
 		return ret;
@@ -3446,26 +3446,26 @@ int _lttng_type_statedump(struct lttng_session *session,
 {
 	int ret = 0;
 
-	switch (type->atype) {
-	case atype_integer:
+	switch (type->type) {
+	case lttng_kernel_type_integer:
 		ret = _lttng_integer_type_statedump(session, type, nesting);
 		break;
-	case atype_enum_nestable:
+	case lttng_kernel_type_enum_nestable:
 		ret = _lttng_enum_type_statedump(session, type, nesting);
 		break;
-	case atype_string:
+	case lttng_kernel_type_string:
 		ret = _lttng_string_type_statedump(session, type, nesting);
 		break;
-	case atype_struct_nestable:
+	case lttng_kernel_type_struct_nestable:
 		ret = _lttng_struct_type_statedump(session, type, nesting);
 		break;
-	case atype_variant_nestable:
+	case lttng_kernel_type_variant_nestable:
 		ret = _lttng_variant_type_statedump(session, type, nesting);
 		break;
 
 	/* Nested arrays and sequences are not supported yet. */
-	case atype_array_nestable:
-	case atype_sequence_nestable:
+	case lttng_kernel_type_array_nestable:
+	case lttng_kernel_type_sequence_nestable:
 	default:
 		WARN_ON_ONCE(1);
 		return -EINVAL;
@@ -3483,26 +3483,26 @@ int _lttng_field_statedump(struct lttng_session *session,
 {
 	int ret = 0;
 
-	switch (field->type.atype) {
-	case atype_integer:
+	switch (field->type.type) {
+	case lttng_kernel_type_integer:
 		ret = _lttng_integer_field_statedump(session, field, nesting);
 		break;
-	case atype_enum_nestable:
+	case lttng_kernel_type_enum_nestable:
 		ret = _lttng_enum_field_statedump(session, field, nesting);
 		break;
-	case atype_string:
+	case lttng_kernel_type_string:
 		ret = _lttng_string_field_statedump(session, field, nesting);
 		break;
-	case atype_struct_nestable:
+	case lttng_kernel_type_struct_nestable:
 		ret = _lttng_struct_field_statedump(session, field, nesting);
 		break;
-	case atype_array_nestable:
+	case lttng_kernel_type_array_nestable:
 		ret = _lttng_array_field_statedump(session, field, nesting);
 		break;
-	case atype_sequence_nestable:
+	case lttng_kernel_type_sequence_nestable:
 		ret = _lttng_sequence_field_statedump(session, field, nesting);
 		break;
-	case atype_variant_nestable:
+	case lttng_kernel_type_variant_nestable:
 		ret = _lttng_variant_field_statedump(session, field, nesting);
 		break;
 

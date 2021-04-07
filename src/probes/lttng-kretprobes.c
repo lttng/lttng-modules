@@ -129,7 +129,7 @@ int lttng_create_kprobe_event(const char *name, struct lttng_event *event,
 		goto error_fields;
 	}
 	fields[0].name = "ip";
-	fields[0].type.atype = atype_integer;
+	fields[0].type.type = lttng_kernel_type_integer;
 	fields[0].type.u.integer.size = sizeof(unsigned long) * CHAR_BIT;
 	fields[0].type.u.integer.alignment = lttng_alignof(unsigned long) * CHAR_BIT;
 	fields[0].type.u.integer.signedness = lttng_is_signed_type(unsigned long);
@@ -138,7 +138,7 @@ int lttng_create_kprobe_event(const char *name, struct lttng_event *event,
 	fields[0].type.u.integer.encoding = lttng_encode_none;
 
 	fields[1].name = "parent_ip";
-	fields[1].type.atype = atype_integer;
+	fields[1].type.type = lttng_kernel_type_integer;
 	fields[1].type.u.integer.size = sizeof(unsigned long) * CHAR_BIT;
 	fields[1].type.u.integer.alignment = lttng_alignof(unsigned long) * CHAR_BIT;
 	fields[1].type.u.integer.signedness = lttng_is_signed_type(unsigned long);

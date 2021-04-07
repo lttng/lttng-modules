@@ -91,7 +91,7 @@ SC_LTTNG_TRACEPOINT_ENUM(lttng_mmap_flags_options,
 {									\
 	.name = "type",							\
 	.type = {							\
-		.atype = atype_enum_nestable,				\
+		.type = lttng_kernel_type_enum_nestable,				\
 		.u = {							\
 			.enum_nestable = {				\
 				.desc = &__enum_lttng_mmap_flags_mapping_type,		\
@@ -107,7 +107,7 @@ SC_LTTNG_TRACEPOINT_ENUM(lttng_mmap_flags_options,
 {									\
 	.name = "options",						\
 	.type = {							\
-		.atype = atype_enum_nestable,				\
+		.type = lttng_kernel_type_enum_nestable,				\
 		.u = {							\
 			.enum_nestable = {				\
 				.desc = &__enum_lttng_mmap_flags_options,	    \
@@ -150,7 +150,7 @@ SC_LTTNG_TRACEPOINT_EVENT(mmap,
 			ctf_custom_field(
 				ctf_custom_type(
 					{
-						.atype = atype_struct_nestable,
+						.type = lttng_kernel_type_struct_nestable,
 						.u.struct_nestable.nr_fields = 2,
 						.u.struct_nestable.fields =
 							__LTTNG_COMPOUND_LITERAL(struct lttng_event_field,
