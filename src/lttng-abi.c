@@ -2042,6 +2042,10 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 		goto refcount_error;
 	}
 
+	ret = lttng_abi_validate_event_param(&event_notifier_param->event);
+	if (ret)
+		goto event_notifier_error;
+
 	switch (event_notifier_param->event.instrumentation) {
 	case LTTNG_KERNEL_TRACEPOINT:		/* Fall-through */
 	case LTTNG_KERNEL_SYSCALL:
