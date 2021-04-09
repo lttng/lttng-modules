@@ -1,5 +1,5 @@
-#ifndef _LTTNG_UST_MSGPACK_H
-#define _LTTNG_UST_MSGPACK_H
+#ifndef _LTTNG_KERNEL_MSGPACK_H
+#define _LTTNG_KERNEL_MSGPACK_H
 
 /*
  * msgpack.h
@@ -57,4 +57,4 @@ int lttng_msgpack_begin_array(
 		struct lttng_msgpack_writer *writer, size_t count);
 int lttng_msgpack_end_array(struct lttng_msgpack_writer *writer);
 
-#endif /* _LTTNG_UST_MSGPACK_H */
+#endif /* _LTTNG_KERNEL_MSGPACK_H */
