@@ -378,11 +378,6 @@ struct lttng_kernel_probe_desc {
 
 struct lttng_krp;				/* Kretprobe handling */
 
-enum lttng_event_type {
-	LTTNG_TYPE_EVENT = 0,
-	LTTNG_TYPE_ENABLER = 1,
-};
-
 enum lttng_bytecode_node_type {
 	LTTNG_BYTECODE_NODE_TYPE_FILTER,
 	LTTNG_BYTECODE_NODE_TYPE_CAPTURE,
@@ -471,7 +466,6 @@ enum lttng_syscall_abi {
  * kept small.
  */
 struct lttng_event {
-	enum lttng_event_type evtype;	/* First field. */
 	unsigned int id;
 	struct lttng_channel *chan;
 	int enabled;
@@ -510,7 +504,6 @@ struct lttng_kernel_notifier_ctx {
 
 // FIXME: Really similar to lttng_event above. Could those be merged ?
 struct lttng_event_notifier {
-	enum lttng_event_type evtype;	/* First field. */
 	uint64_t user_token;
 	uint64_t error_counter_index;
 	int enabled;
@@ -559,8 +552,6 @@ enum lttng_enabler_format_type {
  * backward reference.
  */
 struct lttng_enabler {
-	enum lttng_event_type evtype;	/* First field. */
-
 	enum lttng_enabler_format_type format_type;
 
 	/* head list of struct lttng_bytecode_node */

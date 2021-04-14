@@ -900,7 +900,6 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 	event->filter = filter;
 	event->id = chan->free_event_id++;
 	event->instrumentation = itype;
-	event->evtype = LTTNG_TYPE_EVENT;
 	INIT_LIST_HEAD(&event->filter_bytecode_runtime_head);
 	INIT_LIST_HEAD(&event->enablers_ref_head);
 
@@ -1144,7 +1143,6 @@ struct lttng_event_notifier *_lttng_event_notifier_create(
 	event_notifier->num_captures = 0;
 	event_notifier->filter = filter;
 	event_notifier->instrumentation = itype;
-	event_notifier->evtype = LTTNG_TYPE_EVENT;
 	event_notifier->send_notification = lttng_event_notifier_notification_send;
 	INIT_LIST_HEAD(&event_notifier->filter_bytecode_runtime_head);
 	INIT_LIST_HEAD(&event_notifier->capture_bytecode_runtime_head);
@@ -2397,7 +2395,6 @@ struct lttng_event_enabler *lttng_event_enabler_create(
 	event_enabler->chan = chan;
 	/* ctx left NULL */
 	event_enabler->base.enabled = 0;
-	event_enabler->base.evtype = LTTNG_TYPE_ENABLER;
 	mutex_lock(&sessions_mutex);
 	list_add(&event_enabler->node, &event_enabler->chan->session->enablers_head);
 	lttng_session_lazy_sync_event_enablers(event_enabler->chan->session);
@@ -2528,7 +2525,6 @@ struct lttng_event_notifier_enabler *lttng_event_notifier_enabler_create(
 
 	memcpy(&event_notifier_enabler->base.event_param, &event_notifier_param->event,
 		sizeof(event_notifier_enabler->base.event_param));
-	event_notifier_enabler->base.evtype = LTTNG_TYPE_ENABLER;
 
 	event_notifier_enabler->base.enabled = 0;
 	event_notifier_enabler->base.user_token = event_notifier_param->event.token;
