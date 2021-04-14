@@ -382,7 +382,7 @@ void notification_send(struct lttng_event_notifier_notification *notif,
 {
 	struct lttng_event_notifier_group *event_notifier_group = event_notifier->group;
 	struct lib_ring_buffer_ctx ctx;
-	struct lttng_kernel_event_notifier_notification kernel_notif;
+	struct lttng_kernel_abi_event_notifier_notification kernel_notif;
 	size_t capture_buffer_content_len, reserve_size;
 	int ret;
 

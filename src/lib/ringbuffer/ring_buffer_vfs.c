@@ -177,17 +177,17 @@ long lib_ring_buffer_ioctl(struct file *filp, unsigned int cmd,
 		return -EIO;
 
 	switch (cmd) {
-	case RING_BUFFER_SNAPSHOT:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_SNAPSHOT:
 		return lib_ring_buffer_snapshot(buf, &buf->cons_snapshot,
 					    &buf->prod_snapshot);
-	case RING_BUFFER_SNAPSHOT_SAMPLE_POSITIONS:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_SNAPSHOT_SAMPLE_POSITIONS:
 		return lib_ring_buffer_snapshot_sample_positions(buf,
 				&buf->cons_snapshot, &buf->prod_snapshot);
-	case RING_BUFFER_SNAPSHOT_GET_CONSUMED:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_SNAPSHOT_GET_CONSUMED:
 		return put_ulong(buf->cons_snapshot, arg);
-	case RING_BUFFER_SNAPSHOT_GET_PRODUCED:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_SNAPSHOT_GET_PRODUCED:
 		return put_ulong(buf->prod_snapshot, arg);
-	case RING_BUFFER_GET_SUBBUF:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_GET_SUBBUF:
 	{
 		unsigned long uconsume;
 		long ret;
@@ -202,11 +202,11 @@ long lib_ring_buffer_ioctl(struct file *filp, unsigned int cmd,
 		}
 		return ret;
 	}
-	case RING_BUFFER_PUT_SUBBUF:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_PUT_SUBBUF:
 		lib_ring_buffer_put_subbuf(buf);
 		return 0;
 
-	case RING_BUFFER_GET_NEXT_SUBBUF:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_GET_NEXT_SUBBUF:
 	{
 		long ret;
 
@@ -217,13 +217,13 @@ long lib_ring_buffer_ioctl(struct file *filp, unsigned int cmd,
 		}
 		return ret;
 	}
-	case RING_BUFFER_PUT_NEXT_SUBBUF:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_PUT_NEXT_SUBBUF:
 		lib_ring_buffer_put_next_subbuf(buf);
 		return 0;
-	case RING_BUFFER_GET_SUBBUF_SIZE:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_GET_SUBBUF_SIZE:
 		return put_ulong(lib_ring_buffer_get_read_data_size(config, buf),
 				 arg);
-	case RING_BUFFER_GET_PADDED_SUBBUF_SIZE:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_GET_PADDED_SUBBUF_SIZE:
 	{
 		unsigned long size;
 
@@ -231,9 +231,9 @@ long lib_ring_buffer_ioctl(struct file *filp, unsigned int cmd,
 		size = PAGE_ALIGN(size);
 		return put_ulong(size, arg);
 	}
-	case RING_BUFFER_GET_MAX_SUBBUF_SIZE:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_GET_MAX_SUBBUF_SIZE:
 		return put_ulong(chan->backend.subbuf_size, arg);
-	case RING_BUFFER_GET_MMAP_LEN:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_GET_MMAP_LEN:
 	{
 		unsigned long mmap_buf_len;
 
@@ -246,7 +246,7 @@ long lib_ring_buffer_ioctl(struct file *filp, unsigned int cmd,
 			return -EFBIG;
 		return put_ulong(mmap_buf_len, arg);
 	}
-	case RING_BUFFER_GET_MMAP_READ_OFFSET:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_GET_MMAP_READ_OFFSET:
 	{
 		unsigned long sb_bindex;
 
@@ -257,13 +257,13 @@ long lib_ring_buffer_ioctl(struct file *filp, unsigned int cmd,
 		return put_ulong(buf->backend.array[sb_bindex]->mmap_offset,
 				 arg);
 	}
-	case RING_BUFFER_FLUSH:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_FLUSH:
 		lib_ring_buffer_switch_remote(buf);
 		return 0;
-	case RING_BUFFER_FLUSH_EMPTY:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_FLUSH_EMPTY:
 		lib_ring_buffer_switch_remote_empty(buf);
 		return 0;
-	case RING_BUFFER_CLEAR:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_CLEAR:
 		lib_ring_buffer_clear(buf);
 		return 0;
 	default:
@@ -281,18 +281,18 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_ioctl);
  *
  *	This ioctl implements commands necessary for producer/consumer
  *	and flight recorder reader interaction :
- *	RING_BUFFER_GET_NEXT_SUBBUF
+ *	LTTNG_KERNEL_ABI_RING_BUFFER_GET_NEXT_SUBBUF
  *		Get the next sub-buffer that can be read. It never blocks.
- *	RING_BUFFER_PUT_NEXT_SUBBUF
+ *	LTTNG_KERNEL_ABI_RING_BUFFER_PUT_NEXT_SUBBUF
  *		Release the currently read sub-buffer.
- *	RING_BUFFER_GET_SUBBUF_SIZE
+ *	LTTNG_KERNEL_ABI_RING_BUFFER_GET_SUBBUF_SIZE
  *		returns the size of the current sub-buffer.
- *	RING_BUFFER_GET_MAX_SUBBUF_SIZE
+ *	LTTNG_KERNEL_ABI_RING_BUFFER_GET_MAX_SUBBUF_SIZE
  *		returns the maximum size for sub-buffers.
- *	RING_BUFFER_GET_NUM_SUBBUF
+ *	LTTNG_KERNEL_ABI_RING_BUFFER_GET_NUM_SUBBUF
  *		returns the number of reader-visible sub-buffers in the per cpu
  *              channel (for mmap).
- *      RING_BUFFER_GET_MMAP_READ_OFFSET
+ *      LTTNG_KERNEL_ABI_RING_BUFFER_GET_MMAP_READ_OFFSET
  *              returns the offset of the subbuffer belonging to the reader.
  *              Should only be used for mmap clients.
  */
@@ -315,17 +315,17 @@ long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
 		return -EIO;
 
 	switch (cmd) {
-	case RING_BUFFER_COMPAT_SNAPSHOT:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_SNAPSHOT:
 		return lib_ring_buffer_snapshot(buf, &buf->cons_snapshot,
 						&buf->prod_snapshot);
-	case RING_BUFFER_COMPAT_SNAPSHOT_SAMPLE_POSITIONS:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_SNAPSHOT_SAMPLE_POSITIONS:
 		return lib_ring_buffer_snapshot_sample_positions(buf,
 				&buf->cons_snapshot, &buf->prod_snapshot);
-	case RING_BUFFER_COMPAT_SNAPSHOT_GET_CONSUMED:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_SNAPSHOT_GET_CONSUMED:
 		return compat_put_ulong(buf->cons_snapshot, arg);
-	case RING_BUFFER_COMPAT_SNAPSHOT_GET_PRODUCED:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_SNAPSHOT_GET_PRODUCED:
 		return compat_put_ulong(buf->prod_snapshot, arg);
-	case RING_BUFFER_COMPAT_GET_SUBBUF:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_GET_SUBBUF:
 	{
 		__u32 uconsume;
 		unsigned long consume;
@@ -344,11 +344,11 @@ long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
 		}
 		return ret;
 	}
-	case RING_BUFFER_COMPAT_PUT_SUBBUF:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_PUT_SUBBUF:
 		lib_ring_buffer_put_subbuf(buf);
 		return 0;
 
-	case RING_BUFFER_COMPAT_GET_NEXT_SUBBUF:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_GET_NEXT_SUBBUF:
 	{
 		long ret;
 
@@ -359,10 +359,10 @@ long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
 		}
 		return ret;
 	}
-	case RING_BUFFER_COMPAT_PUT_NEXT_SUBBUF:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_PUT_NEXT_SUBBUF:
 		lib_ring_buffer_put_next_subbuf(buf);
 		return 0;
-	case RING_BUFFER_COMPAT_GET_SUBBUF_SIZE:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_GET_SUBBUF_SIZE:
 	{
 		unsigned long data_size;
 
@@ -371,7 +371,7 @@ long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
 			return -EFBIG;
 		return compat_put_ulong(data_size, arg);
 	}
-	case RING_BUFFER_COMPAT_GET_PADDED_SUBBUF_SIZE:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_GET_PADDED_SUBBUF_SIZE:
 	{
 		unsigned long size;
 
@@ -381,11 +381,11 @@ long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
 			return -EFBIG;
 		return compat_put_ulong(size, arg);
 	}
-	case RING_BUFFER_COMPAT_GET_MAX_SUBBUF_SIZE:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_GET_MAX_SUBBUF_SIZE:
 		if (chan->backend.subbuf_size > UINT_MAX)
 			return -EFBIG;
 		return compat_put_ulong(chan->backend.subbuf_size, arg);
-	case RING_BUFFER_COMPAT_GET_MMAP_LEN:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_GET_MMAP_LEN:
 	{
 		unsigned long mmap_buf_len;
 
@@ -398,7 +398,7 @@ long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
 			return -EFBIG;
 		return compat_put_ulong(mmap_buf_len, arg);
 	}
-	case RING_BUFFER_COMPAT_GET_MMAP_READ_OFFSET:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_GET_MMAP_READ_OFFSET:
 	{
 		unsigned long sb_bindex, read_offset;
 
@@ -411,13 +411,13 @@ long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
 			return -EINVAL;
 		return compat_put_ulong(read_offset, arg);
 	}
-	case RING_BUFFER_COMPAT_FLUSH:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_FLUSH:
 		lib_ring_buffer_switch_remote(buf);
 		return 0;
-	case RING_BUFFER_COMPAT_FLUSH_EMPTY:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_FLUSH_EMPTY:
 		lib_ring_buffer_switch_remote_empty(buf);
 		return 0;
-	case RING_BUFFER_COMPAT_CLEAR:
+	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_CLEAR:
 		lib_ring_buffer_clear(buf);
 		return 0;
 	default:

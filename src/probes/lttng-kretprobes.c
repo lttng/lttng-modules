@@ -299,7 +299,7 @@ int lttng_kretprobes_event_enable_state(struct lttng_event *event,
 	struct lttng_event *event_exit;
 	struct lttng_krp *lttng_krp;
 
-	if (event->instrumentation != LTTNG_KERNEL_KRETPROBE) {
+	if (event->instrumentation != LTTNG_KERNEL_ABI_KRETPROBE) {
 		return -EINVAL;
 	}
 	if (event->enabled == enable) {

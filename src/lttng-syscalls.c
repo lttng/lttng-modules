@@ -1112,7 +1112,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 	/* Allocate events for each syscall matching enabler, insert into table */
 	for (i = 0; i < table_len; i++) {
 		const struct lttng_kernel_event_desc *desc = table[i].desc;
-		struct lttng_kernel_event ev;
+		struct lttng_kernel_abi_event ev;
 		struct lttng_event *event;
 		struct hlist_head *head;
 		bool found = false;
@@ -1142,25 +1142,25 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 		memset(&ev, 0, sizeof(ev));
 		switch (type) {
 		case SC_TYPE_ENTRY:
-			ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_ENTRY;
-			ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_NATIVE;
+			ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
+			ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
 			break;
 		case SC_TYPE_EXIT:
-			ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_EXIT;
-			ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_NATIVE;
+			ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
+			ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
 			break;
 		case SC_TYPE_COMPAT_ENTRY:
-			ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_ENTRY;
-			ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_COMPAT;
+			ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
+			ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
 			break;
 		case SC_TYPE_COMPAT_EXIT:
-			ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_EXIT;
-			ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_COMPAT;
+			ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
+			ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
 			break;
 		}
-		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_SYM_NAME_LEN - 1);
-		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
-		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
+		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1);
+		ev.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
+		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 		event = _lttng_event_create(chan, &ev, filter,
 					    desc, ev.instrumentation);
 		WARN_ON_ONCE(!event);
@@ -1184,7 +1184,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, void *filter)
 {
 	struct lttng_channel *chan = event_enabler->chan;
-	struct lttng_kernel_event ev;
+	struct lttng_kernel_abi_event ev;
 	int ret;
 
 	wrapper_vmalloc_sync_mappings();
@@ -1228,11 +1228,11 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, voi
 		struct lttng_event *event;
 
 		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_SYM_NAME_LEN);
-		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
-		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
-		ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_ENTRY;
-		ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_NATIVE;
+		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
+		ev.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
+		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
+		ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
+		ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
 		event = _lttng_event_create(chan, &ev, filter, desc,
 					    ev.instrumentation);
 		WARN_ON_ONCE(!event);
@@ -1248,11 +1248,11 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, voi
 		struct lttng_event *event;
 
 		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_SYM_NAME_LEN);
-		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
-		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
-		ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_ENTRY;
-		ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_COMPAT;
+		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
+		ev.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
+		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
+		ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
+		ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
 		event = _lttng_event_create(chan, &ev, filter, desc,
 					    ev.instrumentation);
 		WARN_ON_ONCE(!event);
@@ -1268,11 +1268,11 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, voi
 		struct lttng_event *event;
 
 		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_SYM_NAME_LEN);
-		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
-		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
-		ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_EXIT;
-		ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_COMPAT;
+		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
+		ev.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
+		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
+		ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
+		ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
 		event = _lttng_event_create(chan, &ev, filter, desc,
 					    ev.instrumentation);
 		WARN_ON_ONCE(!event);
@@ -1288,11 +1288,11 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, voi
 		struct lttng_event *event;
 
 		memset(&ev, 0, sizeof(ev));
-		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_SYM_NAME_LEN);
-		ev.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
-		ev.instrumentation = LTTNG_KERNEL_SYSCALL;
-		ev.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_EXIT;
-		ev.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_NATIVE;
+		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
+		ev.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
+		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
+		ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
+		ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
 		event = _lttng_event_create(chan, &ev, filter, desc,
 					    ev.instrumentation);
 		WARN_ON_ONCE(!event);
@@ -1467,7 +1467,7 @@ int create_unknown_event_notifier(
 	struct lttng_event_notifier *notifier;
 	const struct lttng_kernel_event_desc *desc;
 	struct lttng_event_notifier_group *group = event_notifier_enabler->group;
-	struct lttng_kernel_event_notifier event_notifier_param;
+	struct lttng_kernel_abi_event_notifier event_notifier_param;
 	uint64_t user_token = event_notifier_enabler->base.user_token;
 	uint64_t error_counter_index = event_notifier_enabler->error_counter_index;
 	struct lttng_enabler *base_enabler = lttng_event_notifier_enabler_as_enabler(
@@ -1475,34 +1475,34 @@ int create_unknown_event_notifier(
 	struct hlist_head *unknown_dispatch_list;
 	int ret = 0;
 	bool found = false;
-	enum lttng_kernel_syscall_abi abi;
-	enum lttng_kernel_syscall_entryexit entryexit;
+	enum lttng_kernel_abi_syscall_abi abi;
+	enum lttng_kernel_abi_syscall_entryexit entryexit;
 	struct hlist_head *head;
 
 	switch (type) {
 	case SC_TYPE_ENTRY:
 		desc = &__event_desc___syscall_entry_unknown;
 		unknown_dispatch_list = &group->event_notifier_unknown_syscall_dispatch;
-		entryexit = LTTNG_KERNEL_SYSCALL_ENTRY;
-		abi = LTTNG_KERNEL_SYSCALL_ABI_NATIVE;
+		entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
+		abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
 		break;
 	case SC_TYPE_EXIT:
 		desc = &__event_desc___syscall_exit_unknown;
 		unknown_dispatch_list = &group->event_notifier_exit_unknown_syscall_dispatch;
-		entryexit = LTTNG_KERNEL_SYSCALL_EXIT;
-		abi = LTTNG_KERNEL_SYSCALL_ABI_NATIVE;
+		entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
+		abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
 		break;
 	case SC_TYPE_COMPAT_ENTRY:
 		desc = &__event_desc___compat_syscall_entry_unknown;
 		unknown_dispatch_list = &group->event_notifier_compat_unknown_syscall_dispatch;
-		entryexit = LTTNG_KERNEL_SYSCALL_ENTRY;
-		abi = LTTNG_KERNEL_SYSCALL_ABI_COMPAT;
+		entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
+		abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
 		break;
 	case SC_TYPE_COMPAT_EXIT:
 		desc = &__event_desc___compat_syscall_exit_unknown;
 		unknown_dispatch_list = &group->event_notifier_exit_compat_unknown_syscall_dispatch;
-		entryexit = LTTNG_KERNEL_SYSCALL_EXIT;
-		abi = LTTNG_KERNEL_SYSCALL_ABI_COMPAT;
+		entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
+		abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
 		break;
 	default:
 		BUG_ON(1);
@@ -1523,11 +1523,11 @@ int create_unknown_event_notifier(
 
 	memset(&event_notifier_param, 0, sizeof(event_notifier_param));
 	strncat(event_notifier_param.event.name, desc->event_name,
-		LTTNG_KERNEL_SYM_NAME_LEN - strlen(event_notifier_param.event.name) - 1);
+		LTTNG_KERNEL_ABI_SYM_NAME_LEN - strlen(event_notifier_param.event.name) - 1);
 
-	event_notifier_param.event.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
+	event_notifier_param.event.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
 
-	event_notifier_param.event.instrumentation = LTTNG_KERNEL_SYSCALL;
+	event_notifier_param.event.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 	event_notifier_param.event.u.syscall.abi = abi;
 	event_notifier_param.event.u.syscall.entryexit = entryexit;
 
@@ -1562,7 +1562,7 @@ static int create_matching_event_notifiers(
 	/* iterate over all syscall and create event_notifier that match */
 	for (i = 0; i < table_len; i++) {
 		struct lttng_event_notifier *event_notifier;
-		struct lttng_kernel_event_notifier event_notifier_param;
+		struct lttng_kernel_abi_event_notifier event_notifier_param;
 		struct hlist_head *head;
 		int found = 0;
 
@@ -1592,26 +1592,26 @@ static int create_matching_event_notifiers(
 		memset(&event_notifier_param, 0, sizeof(event_notifier_param));
 		switch (type) {
 		case SC_TYPE_ENTRY:
-			event_notifier_param.event.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_ENTRY;
-			event_notifier_param.event.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_NATIVE;
+			event_notifier_param.event.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
+			event_notifier_param.event.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
 			break;
 		case SC_TYPE_EXIT:
-			event_notifier_param.event.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_EXIT;
-			event_notifier_param.event.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_NATIVE;
+			event_notifier_param.event.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
+			event_notifier_param.event.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
 			break;
 		case SC_TYPE_COMPAT_ENTRY:
-			event_notifier_param.event.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_ENTRY;
-			event_notifier_param.event.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_COMPAT;
+			event_notifier_param.event.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
+			event_notifier_param.event.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
 			break;
 		case SC_TYPE_COMPAT_EXIT:
-			event_notifier_param.event.u.syscall.entryexit = LTTNG_KERNEL_SYSCALL_EXIT;
-			event_notifier_param.event.u.syscall.abi = LTTNG_KERNEL_SYSCALL_ABI_COMPAT;
+			event_notifier_param.event.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
+			event_notifier_param.event.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
 			break;
 		}
 		strncat(event_notifier_param.event.name, desc->event_name,
-			LTTNG_KERNEL_SYM_NAME_LEN - strlen(event_notifier_param.event.name) - 1);
-		event_notifier_param.event.name[LTTNG_KERNEL_SYM_NAME_LEN - 1] = '\0';
-		event_notifier_param.event.instrumentation = LTTNG_KERNEL_SYSCALL;
+			LTTNG_KERNEL_ABI_SYM_NAME_LEN - strlen(event_notifier_param.event.name) - 1);
+		event_notifier_param.event.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
+		event_notifier_param.event.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 
 		event_notifier = _lttng_event_notifier_create(desc, user_token,
 			error_counter_index, group, &event_notifier_param,
@@ -1638,10 +1638,10 @@ int lttng_syscals_create_matching_event_notifiers(
 	int ret;
 	struct lttng_enabler *base_enabler =
 			lttng_event_notifier_enabler_as_enabler(event_notifier_enabler);
-	enum lttng_kernel_syscall_entryexit entryexit =
+	enum lttng_kernel_abi_syscall_entryexit entryexit =
 			base_enabler->event_param.u.syscall.entryexit;
 
-	if (entryexit == LTTNG_KERNEL_SYSCALL_ENTRY || entryexit == LTTNG_KERNEL_SYSCALL_ENTRYEXIT) {
+	if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRY || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT) {
 		ret = create_matching_event_notifiers(event_notifier_enabler,
 			filter, sc_table, ARRAY_SIZE(sc_table), SC_TYPE_ENTRY);
 		if (ret)
@@ -1664,7 +1664,7 @@ int lttng_syscals_create_matching_event_notifiers(
 			goto end;
 	}
 
-	if (entryexit == LTTNG_KERNEL_SYSCALL_EXIT || entryexit == LTTNG_KERNEL_SYSCALL_ENTRYEXIT) {
+	if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_EXIT || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT) {
 		ret = create_matching_event_notifiers(event_notifier_enabler,
 			filter, sc_exit_table, ARRAY_SIZE(sc_exit_table),
 			SC_TYPE_EXIT);
@@ -1917,7 +1917,7 @@ int lttng_syscall_filter_enable_event_notifier(
 	struct hlist_head *dispatch_list;
 	int ret = 0;
 
-	WARN_ON_ONCE(notifier->instrumentation != LTTNG_KERNEL_SYSCALL);
+	WARN_ON_ONCE(notifier->instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
 
 	ret = lttng_syscall_filter_enable(group->sc_filter,
 		notifier->desc->event_name, notifier->u.syscall.abi,
@@ -1968,7 +1968,7 @@ int lttng_syscall_filter_enable_event(
 		struct lttng_channel *channel,
 		struct lttng_event *event)
 {
-	WARN_ON_ONCE(event->instrumentation != LTTNG_KERNEL_SYSCALL);
+	WARN_ON_ONCE(event->instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
 
 	return lttng_syscall_filter_enable(channel->sc_filter,
 		event->desc->event_name, event->u.syscall.abi,
@@ -2041,7 +2041,7 @@ int lttng_syscall_filter_disable_event_notifier(
 	struct lttng_event_notifier_group *group = notifier->group;
 	int ret;
 
-	WARN_ON_ONCE(notifier->instrumentation != LTTNG_KERNEL_SYSCALL);
+	WARN_ON_ONCE(notifier->instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
 
 	ret = lttng_syscall_filter_disable(group->sc_filter,
 		notifier->desc->event_name, notifier->u.syscall.abi,
@@ -2176,7 +2176,7 @@ const struct file_operations lttng_syscall_list_fops = {
  * A syscall is enabled if it is traced for either entry or exit.
  */
 long lttng_channel_syscall_mask(struct lttng_channel *channel,
-		struct lttng_kernel_syscall_mask __user *usyscall_mask)
+		struct lttng_kernel_abi_syscall_mask __user *usyscall_mask)
 {
 	uint32_t len, sc_tables_len, bitmask_len;
 	int ret = 0, bit;

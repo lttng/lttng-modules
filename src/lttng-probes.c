@@ -45,7 +45,7 @@ int check_event_provider(struct lttng_kernel_probe_desc *desc)
 	size_t provider_name_len;
 
 	provider_name_len = strnlen(desc->provider_name,
-				LTTNG_KERNEL_SYM_NAME_LEN - 1);
+				LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1);
 	for (i = 0; i < desc->nr_events; i++) {
 		if (strncmp(desc->event_desc[i]->event_name,
 				desc->provider_name,

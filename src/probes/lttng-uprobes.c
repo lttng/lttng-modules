@@ -194,7 +194,7 @@ error:
 
 static
 int lttng_uprobes_add_callsite(struct lttng_uprobe *uprobe,
-	struct lttng_kernel_event_callsite __user *callsite,
+	struct lttng_kernel_abi_event_callsite __user *callsite,
 	int (*handler)(struct uprobe_consumer *self, struct pt_regs *regs),
 	void *priv_data)
 {
@@ -245,7 +245,7 @@ end:
 }
 
 int lttng_uprobes_event_add_callsite(struct lttng_event *event,
-	struct lttng_kernel_event_callsite __user *callsite)
+	struct lttng_kernel_abi_event_callsite __user *callsite)
 {
 	return lttng_uprobes_add_callsite(&event->u.uprobe, callsite,
 		lttng_uprobes_event_handler_pre, event);
@@ -253,7 +253,7 @@ int lttng_uprobes_event_add_callsite(struct lttng_event *event,
 EXPORT_SYMBOL_GPL(lttng_uprobes_event_add_callsite);
 
 int lttng_uprobes_event_notifier_add_callsite(struct lttng_event_notifier *event_notifier,
-	struct lttng_kernel_event_callsite __user *callsite)
+	struct lttng_kernel_abi_event_callsite __user *callsite)
 {
 	return lttng_uprobes_add_callsite(&event_notifier->u.uprobe, callsite,
 		lttng_uprobes_event_notifier_handler_pre, event_notifier);

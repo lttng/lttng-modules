@@ -227,7 +227,7 @@ int apply_field_reloc(const struct lttng_kernel_event_desc *event_desc,
 		return -EINVAL;
 
 	/* Check if field offset is too large for 16-bit offset */
-	if (field_offset > LTTNG_KERNEL_FILTER_BYTECODE_MAX_LEN - 1)
+	if (field_offset > LTTNG_KERNEL_ABI_FILTER_BYTECODE_MAX_LEN - 1)
 		return -EINVAL;
 
 	/* set type */
@@ -310,7 +310,7 @@ int apply_context_reloc(struct bytecode_runtime *runtime,
 		return -ENOENT;
 
 	/* Check if idx is too large for 16-bit offset */
-	if (idx > LTTNG_KERNEL_FILTER_BYTECODE_MAX_LEN - 1)
+	if (idx > LTTNG_KERNEL_ABI_FILTER_BYTECODE_MAX_LEN - 1)
 		return -EINVAL;
 
 	/* Get context return type */

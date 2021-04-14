@@ -163,14 +163,14 @@ int _lttng_kprobes_register(const char *symbol_name,
 
 	if (symbol_name) {
 		lttng_kp->symbol_name =
-			kzalloc(LTTNG_KERNEL_SYM_NAME_LEN * sizeof(char),
+			kzalloc(LTTNG_KERNEL_ABI_SYM_NAME_LEN * sizeof(char),
 				GFP_KERNEL);
 		if (!lttng_kp->symbol_name) {
 			ret = -ENOMEM;
 			goto name_error;
 		}
 		memcpy(lttng_kp->symbol_name, symbol_name,
-		       LTTNG_KERNEL_SYM_NAME_LEN * sizeof(char));
+		       LTTNG_KERNEL_ABI_SYM_NAME_LEN * sizeof(char));
 		lttng_kp->kp.symbol_name = lttng_kp->symbol_name;
 	}
 
