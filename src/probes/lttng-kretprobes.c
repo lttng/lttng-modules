@@ -12,6 +12,7 @@
 #include <linux/slab.h>
 #include <linux/kref.h>
 #include <lttng/events.h>
+#include <lttng/events-internal.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 #include <wrapper/irqflags.h>
@@ -25,7 +26,7 @@ enum lttng_kretprobe_type {
 
 struct lttng_krp {
 	struct kretprobe krp;
-	struct lttng_event *event[2];	/* ENTRY and EXIT */
+	struct lttng_kernel_event_recorder *event[2];	/* ENTRY and EXIT */
 	struct kref kref_register;
 	struct kref kref_alloc;
 };
@@ -37,13 +38,13 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 {
 	struct lttng_krp *lttng_krp =
 		container_of(lttng_get_kretprobe(krpi), struct lttng_krp, krp);
-	struct lttng_event *event =
+	struct lttng_kernel_event_recorder *event_recorder =
 		lttng_krp->event[type];
 	struct lttng_probe_ctx lttng_probe_ctx = {
-		.event = event,
+		.event = event_recorder,
 		.interruptible = !lttng_regs_irqs_disabled(regs),
 	};
-	struct lttng_channel *chan = event->chan;
+	struct lttng_channel *chan = event_recorder->chan;
 	struct lib_ring_buffer_ctx ctx;
 	int ret;
 	struct {
@@ -55,7 +56,7 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 		return 0;
 	if (unlikely(!LTTNG_READ_ONCE(chan->enabled)))
 		return 0;
-	if (unlikely(!LTTNG_READ_ONCE(event->enabled)))
+	if (unlikely(!LTTNG_READ_ONCE(event_recorder->parent.enabled)))
 		return 0;
 
 	payload.ip = (unsigned long) lttng_get_kretprobe(krpi)->kp.addr;
@@ -63,7 +64,7 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 
 	lib_ring_buffer_ctx_init(&ctx, chan->chan, &lttng_probe_ctx, sizeof(payload),
 				 lttng_alignof(payload), -1);
-	ret = chan->ops->event_reserve(&ctx, event->id);
+	ret = chan->ops->event_reserve(&ctx, event_recorder->priv->id);
 	if (ret < 0)
 		return 0;
 	lib_ring_buffer_align_ctx(&ctx, lttng_alignof(payload));
@@ -93,7 +94,7 @@ static const struct lttng_kernel_type_common *event_type =
  * Create event description
  */
 static
-int lttng_create_kprobe_event(const char *name, struct lttng_event *event,
+int lttng_create_kprobe_event(const char *name, struct lttng_kernel_event_recorder *event_recorder,
 			      enum lttng_kretprobe_type type)
 {
 	const struct lttng_kernel_event_field **fieldp_array;
@@ -152,7 +153,7 @@ int lttng_create_kprobe_event(const char *name, struct lttng_event *event,
 	desc->fields[1] = field;
 
 	desc->owner = THIS_MODULE;
-	event->desc = desc;
+	event_recorder->priv->parent.desc = desc;
 
 	return 0;
 
@@ -171,8 +172,8 @@ int lttng_kretprobes_register(const char *name,
 			   const char *symbol_name,
 			   uint64_t offset,
 			   uint64_t addr,
-			   struct lttng_event *event_entry,
-			   struct lttng_event *event_exit)
+			   struct lttng_kernel_event_recorder *event_recorder_entry,
+			   struct lttng_kernel_event_recorder *event_recorder_exit)
 {
 	int ret;
 	struct lttng_krp *lttng_krp;
@@ -181,10 +182,10 @@ int lttng_kretprobes_register(const char *name,
 	if (symbol_name[0] == '\0')
 		symbol_name = NULL;
 
-	ret = lttng_create_kprobe_event(name, event_entry, EVENT_ENTRY);
+	ret = lttng_create_kprobe_event(name, event_recorder_entry, EVENT_ENTRY);
 	if (ret)
 		goto error;
-	ret = lttng_create_kprobe_event(name, event_exit, EVENT_EXIT);
+	ret = lttng_create_kprobe_event(name, event_recorder_exit, EVENT_EXIT);
 	if (ret)
 		goto event_exit_error;
 	lttng_krp = kzalloc(sizeof(*lttng_krp), GFP_KERNEL);
@@ -202,19 +203,19 @@ int lttng_kretprobes_register(const char *name,
 		}
 		lttng_krp->krp.kp.symbol_name =
 			alloc_symbol;
-		event_entry->u.kretprobe.symbol_name =
+		event_recorder_entry->priv->parent.u.kretprobe.symbol_name =
 			alloc_symbol;
-		event_exit->u.kretprobe.symbol_name =
+		event_recorder_exit->priv->parent.u.kretprobe.symbol_name =
 			alloc_symbol;
 	}
 	lttng_krp->krp.kp.offset = offset;
 	lttng_krp->krp.kp.addr = (void *) (unsigned long) addr;
 
 	/* Allow probe handler to find event structures */
-	lttng_krp->event[EVENT_ENTRY] = event_entry;
-	lttng_krp->event[EVENT_EXIT] = event_exit;
-	event_entry->u.kretprobe.lttng_krp = lttng_krp;
-	event_exit->u.kretprobe.lttng_krp = lttng_krp;
+	lttng_krp->event[EVENT_ENTRY] = event_recorder_entry;
+	lttng_krp->event[EVENT_EXIT] = event_recorder_exit;
+	event_recorder_entry->priv->parent.u.kretprobe.lttng_krp = lttng_krp;
+	event_recorder_exit->priv->parent.u.kretprobe.lttng_krp = lttng_krp;
 
 	/*
 	 * Both events must be unregistered before the kretprobe is
@@ -242,17 +243,17 @@ register_error:
 name_error:
 	kfree(lttng_krp);
 krp_error:
-	kfree(event_exit->desc->fields[0]);
-	kfree(event_exit->desc->fields[1]);
-	kfree(event_exit->desc->fields);
-	kfree(event_exit->desc->event_name);
-	kfree(event_exit->desc);
+	kfree(event_recorder_exit->priv->parent.desc->fields[0]);
+	kfree(event_recorder_exit->priv->parent.desc->fields[1]);
+	kfree(event_recorder_exit->priv->parent.desc->fields);
+	kfree(event_recorder_exit->priv->parent.desc->event_name);
+	kfree(event_recorder_exit->priv->parent.desc);
 event_exit_error:
-	kfree(event_entry->desc->fields[0]);
-	kfree(event_entry->desc->fields[1]);
-	kfree(event_entry->desc->fields);
-	kfree(event_entry->desc->event_name);
-	kfree(event_entry->desc);
+	kfree(event_recorder_entry->priv->parent.desc->fields[0]);
+	kfree(event_recorder_entry->priv->parent.desc->fields[1]);
+	kfree(event_recorder_entry->priv->parent.desc->fields);
+	kfree(event_recorder_entry->priv->parent.desc->event_name);
+	kfree(event_recorder_entry->priv->parent.desc);
 error:
 	return ret;
 }
@@ -266,9 +267,9 @@ void _lttng_kretprobes_unregister_release(struct kref *kref)
 	unregister_kretprobe(&lttng_krp->krp);
 }
 
-void lttng_kretprobes_unregister(struct lttng_event *event)
+void lttng_kretprobes_unregister(struct lttng_kernel_event_recorder *event_recorder)
 {
-	kref_put(&event->u.kretprobe.lttng_krp->kref_register,
+	kref_put(&event_recorder->priv->parent.u.kretprobe.lttng_krp->kref_register,
 		_lttng_kretprobes_unregister_release);
 }
 EXPORT_SYMBOL_GPL(lttng_kretprobes_unregister);
@@ -281,34 +282,34 @@ void _lttng_kretprobes_release(struct kref *kref)
 	kfree(lttng_krp->krp.kp.symbol_name);
 }
 
-void lttng_kretprobes_destroy_private(struct lttng_event *event)
+void lttng_kretprobes_destroy_private(struct lttng_kernel_event_recorder *event_recorder)
 {
-	kfree(event->desc->fields[0]);
-	kfree(event->desc->fields[1]);
-	kfree(event->desc->fields);
-	kfree(event->desc->event_name);
-	kfree(event->desc);
-	kref_put(&event->u.kretprobe.lttng_krp->kref_alloc,
+	kfree(event_recorder->priv->parent.desc->fields[0]);
+	kfree(event_recorder->priv->parent.desc->fields[1]);
+	kfree(event_recorder->priv->parent.desc->fields);
+	kfree(event_recorder->priv->parent.desc->event_name);
+	kfree(event_recorder->priv->parent.desc);
+	kref_put(&event_recorder->priv->parent.u.kretprobe.lttng_krp->kref_alloc,
 		_lttng_kretprobes_release);
 }
 EXPORT_SYMBOL_GPL(lttng_kretprobes_destroy_private);
 
-int lttng_kretprobes_event_enable_state(struct lttng_event *event,
+int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_recorder *event_recorder,
 		int enable)
 {
-	struct lttng_event *event_exit;
+	struct lttng_kernel_event_recorder *event_recorder_exit;
 	struct lttng_krp *lttng_krp;
 
-	if (event->instrumentation != LTTNG_KERNEL_ABI_KRETPROBE) {
+	if (event_recorder->priv->parent.instrumentation != LTTNG_KERNEL_ABI_KRETPROBE) {
 		return -EINVAL;
 	}
-	if (event->enabled == enable) {
+	if (event_recorder->parent.enabled == enable) {
 		return -EBUSY;
 	}
-	lttng_krp = event->u.kretprobe.lttng_krp;
-	event_exit = lttng_krp->event[EVENT_EXIT];
-	WRITE_ONCE(event->enabled, enable);
-	WRITE_ONCE(event_exit->enabled, enable);
+	lttng_krp = event_recorder->priv->parent.u.kretprobe.lttng_krp;
+	event_recorder_exit = lttng_krp->event[EVENT_EXIT];
+	WRITE_ONCE(event_recorder->parent.enabled, enable);
+	WRITE_ONCE(event_recorder_exit->parent.enabled, enable);
 	return 0;
 }
 EXPORT_SYMBOL_GPL(lttng_kretprobes_event_enable_state);

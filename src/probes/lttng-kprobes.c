@@ -11,6 +11,7 @@
 #include <linux/kprobes.h>
 #include <linux/slab.h>
 #include <lttng/events.h>
+#include <lttng/events-internal.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 #include <wrapper/irqflags.h>
@@ -20,13 +21,17 @@
 static
 int lttng_kprobes_event_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
-	struct lttng_event *event =
-		container_of(p, struct lttng_event, u.kprobe.kp);
+	struct lttng_kernel_event_common_private *event_priv =
+		container_of(p, struct lttng_kernel_event_common_private, u.kprobe.kp);
+	struct lttng_kernel_event_recorder_private *event_recorder_priv =
+		container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+	struct lttng_kernel_event_recorder *event_recorder =
+		event_recorder_priv->pub;
 	struct lttng_probe_ctx lttng_probe_ctx = {
-		.event = event,
+		.event = event_recorder,
 		.interruptible = !lttng_regs_irqs_disabled(regs),
 	};
-	struct lttng_channel *chan = event->chan;
+	struct lttng_channel *chan = event_recorder->chan;
 	struct lib_ring_buffer_ctx ctx;
 	int ret;
 	unsigned long data = (unsigned long) p->addr;
@@ -35,12 +40,12 @@ int lttng_kprobes_event_handler_pre(struct kprobe *p, struct pt_regs *regs)
 		return 0;
 	if (unlikely(!LTTNG_READ_ONCE(chan->enabled)))
 		return 0;
-	if (unlikely(!LTTNG_READ_ONCE(event->enabled)))
+	if (unlikely(!LTTNG_READ_ONCE(event_recorder->parent.enabled)))
 		return 0;
 
 	lib_ring_buffer_ctx_init(&ctx, chan->chan, &lttng_probe_ctx, sizeof(data),
 				 lttng_alignof(data), -1);
-	ret = chan->ops->event_reserve(&ctx, event->id);
+	ret = chan->ops->event_reserve(&ctx, event_recorder->priv->id);
 	if (ret < 0)
 		return 0;
 	lib_ring_buffer_align_ctx(&ctx, lttng_alignof(data));
@@ -52,15 +57,19 @@ int lttng_kprobes_event_handler_pre(struct kprobe *p, struct pt_regs *regs)
 static
 int lttng_kprobes_event_notifier_handler_pre(struct kprobe *p, struct pt_regs *regs)
 {
-	struct lttng_event_notifier *event_notifier =
-		container_of(p, struct lttng_event_notifier, u.kprobe.kp);
-	struct lttng_kernel_notifier_ctx notif_ctx;
+	struct lttng_kernel_event_common_private *event_priv =
+		container_of(p, struct lttng_kernel_event_common_private, u.kprobe.kp);
+	struct lttng_kernel_event_notifier_private *event_notifier_priv =
+		container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+	struct lttng_kernel_event_notifier *event_notifier =
+		event_notifier_priv->pub;
+	struct lttng_kernel_notification_ctx notif_ctx;
 
-	if (unlikely(!READ_ONCE(event_notifier->enabled)))
+	if (unlikely(!READ_ONCE(event_notifier->parent.enabled)))
 		return 0;
 
 	notif_ctx.eval_capture = LTTNG_READ_ONCE(event_notifier->eval_capture);
-	event_notifier->send_notification(event_notifier, NULL, NULL, &notif_ctx);
+	event_notifier->notification_send(event_notifier, NULL, NULL, &notif_ctx);
 
 	return 0;
 }
@@ -72,7 +81,7 @@ static const struct lttng_kernel_type_common *event_type =
  * Create event description
  */
 static
-int lttng_create_kprobe_event(const char *name, struct lttng_event *event)
+int lttng_create_kprobe_event(const char *name, struct lttng_kernel_event_recorder *event_recorder)
 {
 	const struct lttng_kernel_event_field **fieldp_array;
 	struct lttng_kernel_event_field *field;
@@ -103,7 +112,7 @@ int lttng_create_kprobe_event(const char *name, struct lttng_event *event)
 	field->name = "ip";
 	field->type = event_type;
 	desc->owner = THIS_MODULE;
-	event->desc = desc;
+	event_recorder->priv->parent.desc = desc;
 
 	return 0;
 
@@ -120,7 +129,7 @@ error_str:
  * Create event_notifier description
  */
 static
-int lttng_create_kprobe_event_notifier(const char *name, struct lttng_event_notifier *event_notifier)
+int lttng_create_kprobe_event_notifier(const char *name, struct lttng_kernel_event_notifier *event_notifier)
 {
 	struct lttng_kernel_event_desc *desc;
 	int ret;
@@ -136,7 +145,7 @@ int lttng_create_kprobe_event_notifier(const char *name, struct lttng_event_noti
 	desc->nr_fields = 0;
 
 	desc->owner = THIS_MODULE;
-	event_notifier->desc = desc;
+	event_notifier->priv->parent.desc = desc;
 
 	return 0;
 
@@ -200,25 +209,25 @@ int lttng_kprobes_register_event(const char *name,
 			   const char *symbol_name,
 			   uint64_t offset,
 			   uint64_t addr,
-			   struct lttng_event *event)
+			   struct lttng_kernel_event_recorder *event_recorder)
 {
 	int ret;
 
-	ret = lttng_create_kprobe_event(name, event);
+	ret = lttng_create_kprobe_event(name, event_recorder);
 	if (ret)
 		goto error;
 
 	ret = _lttng_kprobes_register(symbol_name, offset, addr,
-		&event->u.kprobe, lttng_kprobes_event_handler_pre);
+		&event_recorder->priv->parent.u.kprobe, lttng_kprobes_event_handler_pre);
 	if (ret)
 		goto register_error;
 
 	return 0;
 
 register_error:
-	kfree(event->desc->fields);
-	kfree(event->desc->event_name);
-	kfree(event->desc);
+	kfree(event_recorder->priv->parent.desc->fields);
+	kfree(event_recorder->priv->parent.desc->event_name);
+	kfree(event_recorder->priv->parent.desc);
 error:
 	return ret;
 }
@@ -227,7 +236,7 @@ EXPORT_SYMBOL_GPL(lttng_kprobes_register_event);
 int lttng_kprobes_register_event_notifier(const char *symbol_name,
 			   uint64_t offset,
 			   uint64_t addr,
-			   struct lttng_event_notifier *event_notifier)
+			   struct lttng_kernel_event_notifier *event_notifier)
 {
 	int ret;
 	ret = lttng_create_kprobe_event_notifier(symbol_name, event_notifier);
@@ -235,47 +244,47 @@ int lttng_kprobes_register_event_notifier(const char *symbol_name,
 		goto error;
 
 	ret = _lttng_kprobes_register(symbol_name, offset, addr,
-		&event_notifier->u.kprobe, lttng_kprobes_event_notifier_handler_pre);
+		&event_notifier->priv->parent.u.kprobe, lttng_kprobes_event_notifier_handler_pre);
 	if (ret)
 		goto register_error;
 
 	return 0;
 
 register_error:
-	kfree(event_notifier->desc->event_name);
-	kfree(event_notifier->desc);
+	kfree(event_notifier->priv->parent.desc->event_name);
+	kfree(event_notifier->priv->parent.desc);
 error:
 	return ret;
 }
 EXPORT_SYMBOL_GPL(lttng_kprobes_register_event_notifier);
 
-void lttng_kprobes_unregister_event(struct lttng_event *event)
+void lttng_kprobes_unregister_event(struct lttng_kernel_event_recorder *event_recorder)
 {
-	unregister_kprobe(&event->u.kprobe.kp);
+	unregister_kprobe(&event_recorder->priv->parent.u.kprobe.kp);
 }
 EXPORT_SYMBOL_GPL(lttng_kprobes_unregister_event);
 
-void lttng_kprobes_unregister_event_notifier(struct lttng_event_notifier *event_notifier)
+void lttng_kprobes_unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
 {
-	unregister_kprobe(&event_notifier->u.kprobe.kp);
+	unregister_kprobe(&event_notifier->priv->parent.u.kprobe.kp);
 }
 EXPORT_SYMBOL_GPL(lttng_kprobes_unregister_event_notifier);
 
-void lttng_kprobes_destroy_event_private(struct lttng_event *event)
+void lttng_kprobes_destroy_event_private(struct lttng_kernel_event_recorder *event_recorder)
 {
-	kfree(event->u.kprobe.symbol_name);
-	kfree(event->desc->fields[0]);
-	kfree(event->desc->fields);
-	kfree(event->desc->event_name);
-	kfree(event->desc);
+	kfree(event_recorder->priv->parent.u.kprobe.symbol_name);
+	kfree(event_recorder->priv->parent.desc->fields[0]);
+	kfree(event_recorder->priv->parent.desc->fields);
+	kfree(event_recorder->priv->parent.desc->event_name);
+	kfree(event_recorder->priv->parent.desc);
 }
 EXPORT_SYMBOL_GPL(lttng_kprobes_destroy_event_private);
 
-void lttng_kprobes_destroy_event_notifier_private(struct lttng_event_notifier *event_notifier)
+void lttng_kprobes_destroy_event_notifier_private(struct lttng_kernel_event_notifier *event_notifier)
 {
-	kfree(event_notifier->u.kprobe.symbol_name);
-	kfree(event_notifier->desc->event_name);
-	kfree(event_notifier->desc);
+	kfree(event_notifier->priv->parent.u.kprobe.symbol_name);
+	kfree(event_notifier->priv->parent.desc->event_name);
+	kfree(event_notifier->priv->parent.desc);
 }
 EXPORT_SYMBOL_GPL(lttng_kprobes_destroy_event_notifier_private);
 

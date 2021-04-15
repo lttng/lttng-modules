@@ -328,8 +328,8 @@ struct lttng_perf_counter_field {
 };
 
 struct lttng_probe_ctx {
-	struct lttng_event *event;
-	struct lttng_event_notifier *event_notifier; // Not sure if we will ever need it.
+	struct lttng_kernel_event_recorder *event;
+	struct lttng_kernel_event_notifier *event_notifier; // Not sure if we will ever need it.
 	uint8_t interruptible;
 };
 
@@ -433,8 +433,8 @@ struct lttng_enabler_ref {
 
 struct lttng_uprobe_handler {
 	union {
-		struct lttng_event *event;
-		struct lttng_event_notifier *event_notifier;
+		struct lttng_kernel_event_recorder *event;
+		struct lttng_kernel_event_notifier *event_notifier;
 	} u;
 	loff_t offset;
 	struct uprobe_consumer up_consumer;
@@ -461,85 +461,50 @@ enum lttng_syscall_abi {
 	LTTNG_SYSCALL_ABI_COMPAT,
 };
 
-/*
- * lttng_event structure is referred to by the tracing fast path. It must be
- * kept small.
- */
-struct lttng_event {
-	unsigned int id;
+struct lttng_kernel_event_common_private;
+
+enum lttng_kernel_event_type {
+	LTTNG_KERNEL_EVENT_TYPE_RECORDER = 0,
+	LTTNG_KERNEL_EVENT_TYPE_NOTIFIER = 1,
+};
+
+struct lttng_kernel_event_common {
+	struct lttng_kernel_event_common_private *priv;	/* Private event interface */
+
+	enum lttng_kernel_event_type type;
+	/* Get child with container_of(). */
+
+	int enabled;
+	int eval_filter;				/* Need to evaluate filters */
+	int (*run_filter)(struct lttng_kernel_event_common *event,
+		const char *stack_data,
+		void *filter_ctx);
+};
+
+struct lttng_kernel_event_recorder_private;
+
+struct lttng_kernel_event_recorder {
+	struct lttng_kernel_event_common parent;
+	struct lttng_kernel_event_recorder_private *priv;	/* Private event record interface */
+
 	struct lttng_channel *chan;
-	int enabled;
-	const struct lttng_kernel_event_desc *desc;
-	void *filter;
-	struct lttng_kernel_ctx *ctx;
-	enum lttng_kernel_abi_instrumentation instrumentation;
-	union {
-		struct lttng_kprobe kprobe;
-		struct {
-			struct lttng_krp *lttng_krp;
-			char *symbol_name;
-		} kretprobe;
-		struct lttng_uprobe uprobe;
-		struct {
-			enum lttng_syscall_entryexit entryexit;
-			enum lttng_syscall_abi abi;
-			struct hlist_node node;			/* chain registered syscall event */
-		} syscall;
-	} u;
-	struct list_head list;		/* Event list in session */
-	unsigned int metadata_dumped:1;
-
-	/* Backward references: list of lttng_enabler_ref (ref to enablers) */
-	struct list_head enablers_ref_head;
-	struct hlist_node hlist;	/* session ht of events */
-	int registered;			/* has reg'd tracepoint probe */
-	/* list of struct lttng_bytecode_runtime, sorted by seqnum */
-	struct list_head filter_bytecode_runtime_head;
-	int has_enablers_without_bytecode;
 };
 
-struct lttng_kernel_notifier_ctx {
-	int eval_capture;
+struct lttng_kernel_notification_ctx {
+	int eval_capture;					/* Capture evaluation available. */
 };
 
-// FIXME: Really similar to lttng_event above. Could those be merged ?
-struct lttng_event_notifier {
-	uint64_t user_token;
-	uint64_t error_counter_index;
-	int enabled;
-	int registered;			/* has reg'd tracepoint probe */
-	const struct lttng_kernel_event_desc *desc;
-	void *filter;
-	struct list_head list;		/* event_notifier list in event_notifier group */
+struct lttng_kernel_event_notifier_private;
 
-	enum lttng_kernel_abi_instrumentation instrumentation;
-	union {
-		struct lttng_kprobe kprobe;
-		struct lttng_uprobe uprobe;
-		struct {
-			enum lttng_syscall_entryexit entryexit;
-			enum lttng_syscall_abi abi;
-			struct hlist_node node;			/* chain registered syscall event_notifier */
-			unsigned int syscall_id;
-		} syscall;
+struct lttng_kernel_event_notifier {
+	struct lttng_kernel_event_common parent;
+	struct lttng_kernel_event_notifier_private *priv;	/* Private event notifier interface */
 
-	} u;
-
-	/* Backward references: list of lttng_enabler_ref (ref to enablers) */
-	struct list_head enablers_ref_head;
-	struct hlist_node hlist;	/* session ht of event_notifiers */
-	/* list of struct lttng_bytecode_runtime, sorted by seqnum */
-	struct list_head filter_bytecode_runtime_head;
-	size_t num_captures;
-	struct list_head capture_bytecode_runtime_head;
-	int has_enablers_without_bytecode;
-	int eval_capture;		/* Should evaluate capture */
-
-	void (*send_notification)(struct lttng_event_notifier *event_notifier,
-			struct lttng_probe_ctx *lttng_probe_ctx,
-			const char *interpreter_stack_data,
-			struct lttng_kernel_notifier_ctx *notif_ctx);
-	struct lttng_event_notifier_group *group; /* Weak ref */
+	int eval_capture;				/* Need to evaluate capture */
+	void (*notification_send)(struct lttng_kernel_event_notifier *event_notifier,
+		struct lttng_probe_ctx *probe_ctx,
+		const char *stack_data,
+		struct lttng_kernel_notification_ctx *notif_ctx);
 };
 
 enum lttng_enabler_format_type {
@@ -567,11 +532,6 @@ struct lttng_event_enabler {
 	struct lttng_enabler base;
 	struct list_head node;	/* per-session list of enablers */
 	struct lttng_channel *chan;
-	/*
-	 * Unused, but kept around to make it explicit that the tracer can do
-	 * it.
-	 */
-	struct lttng_kernel_ctx *ctx;
 };
 
 struct lttng_event_notifier_enabler {
@@ -848,8 +808,8 @@ struct lttng_event_notifier_group {
 	struct lib_ring_buffer *buf;	/* Ring buffer for event notifier group. */
 	wait_queue_head_t read_wait;
 	struct irq_work wakeup_pending;	/* Pending wakeup irq work. */
-	struct lttng_event_notifier *sc_unknown;	/* for unknown syscalls */
-	struct lttng_event_notifier *sc_compat_unknown;
+	struct lttng_kernel_event_notifier *sc_unknown;	/* for unknown syscalls */
+	struct lttng_kernel_event_notifier *sc_compat_unknown;
 
 	struct lttng_syscall_filter *sc_filter;
 
@@ -952,45 +912,40 @@ struct lttng_channel *lttng_global_channel_create(struct lttng_session *session,
 				       unsigned int read_timer_interval);
 
 void lttng_metadata_channel_destroy(struct lttng_channel *chan);
-struct lttng_event *lttng_event_create(struct lttng_channel *chan,
+struct lttng_kernel_event_recorder *lttng_kernel_event_recorder_create(struct lttng_channel *chan,
 				struct lttng_kernel_abi_event *event_param,
-				void *filter,
 				const struct lttng_kernel_event_desc *event_desc,
 				enum lttng_kernel_abi_instrumentation itype);
-struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
+struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct lttng_channel *chan,
 				struct lttng_kernel_abi_event *event_param,
-				void *filter,
 				const struct lttng_kernel_event_desc *event_desc,
 				enum lttng_kernel_abi_instrumentation itype);
-struct lttng_event *lttng_event_compat_old_create(struct lttng_channel *chan,
+struct lttng_kernel_event_recorder *lttng_event_compat_old_create(struct lttng_channel *chan,
 		struct lttng_kernel_abi_old_event *old_event_param,
-		void *filter,
 		const struct lttng_kernel_event_desc *internal_desc);
 
-struct lttng_event_notifier *lttng_event_notifier_create(
+struct lttng_kernel_event_notifier *lttng_event_notifier_create(
 				const struct lttng_kernel_event_desc *event_notifier_desc,
 				uint64_t id,
 				uint64_t error_counter_idx,
 				struct lttng_event_notifier_group *event_notifier_group,
 				struct lttng_kernel_abi_event_notifier *event_notifier_param,
-				void *filter,
 				enum lttng_kernel_abi_instrumentation itype);
-struct lttng_event_notifier *_lttng_event_notifier_create(
+struct lttng_kernel_event_notifier *_lttng_event_notifier_create(
 				const struct lttng_kernel_event_desc *event_notifier_desc,
 				uint64_t id,
 				uint64_t error_counter_idx,
 				struct lttng_event_notifier_group *event_notifier_group,
 				struct lttng_kernel_abi_event_notifier *event_notifier_param,
-				void *filter,
 				enum lttng_kernel_abi_instrumentation itype);
 
 int lttng_channel_enable(struct lttng_channel *channel);
 int lttng_channel_disable(struct lttng_channel *channel);
-int lttng_event_enable(struct lttng_event *event);
-int lttng_event_disable(struct lttng_event *event);
+int lttng_event_enable(struct lttng_kernel_event_recorder *event);
+int lttng_event_disable(struct lttng_kernel_event_recorder *event);
 
-int lttng_event_notifier_enable(struct lttng_event_notifier *event_notifier);
-int lttng_event_notifier_disable(struct lttng_event_notifier *event_notifier);
+int lttng_event_notifier_enable(struct lttng_kernel_event_notifier *event_notifier);
+int lttng_event_notifier_disable(struct lttng_kernel_event_notifier *event_notifier);
 
 void lttng_transport_register(struct lttng_transport *transport);
 void lttng_transport_unregister(struct lttng_transport *transport);
@@ -1036,30 +991,29 @@ int lttng_desc_match_enabler(const struct lttng_kernel_event_desc *desc,
 		struct lttng_enabler *enabler);
 
 #if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
-int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, void *filter);
+int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler);
 int lttng_syscalls_unregister_channel(struct lttng_channel *chan);
 int lttng_syscalls_destroy_event(struct lttng_channel *chan);
 int lttng_syscall_filter_enable_event(
 		struct lttng_channel *chan,
-		struct lttng_event *event);
+		struct lttng_kernel_event_recorder *event);
 int lttng_syscall_filter_disable_event(
 		struct lttng_channel *chan,
-		struct lttng_event *event);
+		struct lttng_kernel_event_recorder *event);
 
 long lttng_channel_syscall_mask(struct lttng_channel *channel,
 		struct lttng_kernel_abi_syscall_mask __user *usyscall_mask);
 
 int lttng_syscalls_register_event_notifier(
-		struct lttng_event_notifier_enabler *event_notifier_enabler,
-		void *filter);
-int lttng_syscals_create_matching_event_notifiers(
-		struct lttng_event_notifier_enabler *event_notifier_enabler, void *filter);
+		struct lttng_event_notifier_enabler *event_notifier_enabler);
+int lttng_syscalls_create_matching_event_notifiers(
+		struct lttng_event_notifier_enabler *event_notifier_enabler);
 int lttng_syscalls_unregister_event_notifier_group(struct lttng_event_notifier_group *group);
-int lttng_syscall_filter_enable_event_notifier(struct lttng_event_notifier *event_notifier);
-int lttng_syscall_filter_disable_event_notifier(struct lttng_event_notifier *event_notifier);
+int lttng_syscall_filter_enable_event_notifier(struct lttng_kernel_event_notifier *event_notifier);
+int lttng_syscall_filter_disable_event_notifier(struct lttng_kernel_event_notifier *event_notifier);
 #else
 static inline int lttng_syscalls_register_event(
-		struct lttng_event_enabler *event_enabler, void *filter)
+		struct lttng_event_enabler *event_enabler)
 {
 	return -ENOSYS;
 }
@@ -1075,13 +1029,13 @@ static inline int lttng_syscalls_destroy(struct lttng_channel *chan)
 }
 
 static inline int lttng_syscall_filter_enable_event(struct lttng_channel *chan,
-		struct lttng_event *event);
+		struct lttng_kernel_event_recorder *event);
 {
 	return -ENOSYS;
 }
 
 static inline int lttng_syscall_filter_disable_event(struct lttng_channel *chan,
-		struct lttng_event *event);
+		struct lttng_kernel_event_recorder *event);
 {
 	return -ENOSYS;
 }
@@ -1093,7 +1047,7 @@ static inline long lttng_channel_syscall_mask(struct lttng_channel *channel,
 }
 
 static inline int lttng_syscalls_register_event_notifier(
-		struct lttng_event_notifier_group *group, void *filter)
+		struct lttng_event_notifier_group *group)
 {
 	return -ENOSYS;
 }
@@ -1133,8 +1087,8 @@ void lttng_enabler_link_bytecode(const struct lttng_kernel_event_desc *event_des
 		struct lttng_kernel_ctx *ctx,
 		struct list_head *instance_bytecode_runtime_head,
 		struct list_head *enabler_bytecode_runtime_head);
-void lttng_free_event_filter_runtime(struct lttng_event *event);
-void lttng_free_event_notifier_filter_runtime(struct lttng_event_notifier *event_notifier);
+void lttng_free_event_filter_runtime(struct lttng_kernel_event_recorder *event);
+void lttng_free_event_notifier_filter_runtime(struct lttng_kernel_event_notifier *event_notifier);
 
 int lttng_probes_init(void);
 
@@ -1328,33 +1282,33 @@ int lttng_kprobes_register_event(const char *name,
 		const char *symbol_name,
 		uint64_t offset,
 		uint64_t addr,
-		struct lttng_event *event);
-void lttng_kprobes_unregister_event(struct lttng_event *event);
-void lttng_kprobes_destroy_event_private(struct lttng_event *event);
+		struct lttng_kernel_event_recorder *event);
+void lttng_kprobes_unregister_event(struct lttng_kernel_event_recorder *event);
+void lttng_kprobes_destroy_event_private(struct lttng_kernel_event_recorder *event);
 int lttng_kprobes_register_event_notifier(const char *symbol_name,
 		uint64_t offset,
 		uint64_t addr,
-		struct lttng_event_notifier *event_notifier);
-void lttng_kprobes_unregister_event_notifier(struct lttng_event_notifier *event_notifier);
-void lttng_kprobes_destroy_event_notifier_private(struct lttng_event_notifier *event_notifier);
+		struct lttng_kernel_event_notifier *event_notifier);
+void lttng_kprobes_unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier);
+void lttng_kprobes_destroy_event_notifier_private(struct lttng_kernel_event_notifier *event_notifier);
 #else
 static inline
 int lttng_kprobes_register_event(const char *name,
 		const char *symbol_name,
 		uint64_t offset,
 		uint64_t addr,
-		struct lttng_event *event)
+		struct lttng_kernel_event_recorder *event)
 {
 	return -ENOSYS;
 }
 
 static inline
-void lttng_kprobes_unregister_event(struct lttng_event *event)
+void lttng_kprobes_unregister_event(struct lttng_kernel_event_recorder *event)
 {
 }
 
 static inline
-void lttng_kprobes_destroy_event_private(struct lttng_event *event)
+void lttng_kprobes_destroy_event_private(struct lttng_kernel_event_recorder *event)
 {
 }
 
@@ -1362,87 +1316,87 @@ static inline
 int lttng_kprobes_register_event_notifier(const char *symbol_name,
 		uint64_t offset,
 		uint64_t addr,
-		struct lttng_event_notifier *event_notifier)
+		struct lttng_kernel_event_notifier *event_notifier)
 {
 	return -ENOSYS;
 }
 
 static inline
-void lttng_kprobes_unregister_event_notifier(struct lttng_event_notifier *event_notifier)
+void lttng_kprobes_unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
 {
 }
 
 static inline
-void lttng_kprobes_destroy_event_notifier_private(struct lttng_event_notifier *event_notifier)
+void lttng_kprobes_destroy_event_notifier_private(struct lttng_kernel_event_notifier *event_notifier)
 {
 }
 #endif
 
-int lttng_event_add_callsite(struct lttng_event *event,
+int lttng_event_add_callsite(struct lttng_kernel_event_recorder *event,
 	struct lttng_kernel_abi_event_callsite __user *callsite);
 
-int lttng_event_notifier_add_callsite(struct lttng_event_notifier *event_notifier,
+int lttng_event_notifier_add_callsite(struct lttng_kernel_event_notifier *event_notifier,
 	struct lttng_kernel_abi_event_callsite __user *callsite);
 
 #ifdef CONFIG_UPROBES
 int lttng_uprobes_register_event(const char *name,
-	int fd, struct lttng_event *event);
-int lttng_uprobes_event_add_callsite(struct lttng_event *event,
+	int fd, struct lttng_kernel_event_recorder *event);
+int lttng_uprobes_event_add_callsite(struct lttng_kernel_event_recorder *event,
 	struct lttng_kernel_abi_event_callsite __user *callsite);
-void lttng_uprobes_unregister_event(struct lttng_event *event);
-void lttng_uprobes_destroy_event_private(struct lttng_event *event);
+void lttng_uprobes_unregister_event(struct lttng_kernel_event_recorder *event);
+void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_recorder *event);
 int lttng_uprobes_register_event_notifier(const char *name,
-	int fd, struct lttng_event_notifier *event_notifier);
-int lttng_uprobes_event_notifier_add_callsite(struct lttng_event_notifier *event_notifier,
+	int fd, struct lttng_kernel_event_notifier *event_notifier);
+int lttng_uprobes_event_notifier_add_callsite(struct lttng_kernel_event_notifier *event_notifier,
 	struct lttng_kernel_abi_event_callsite __user *callsite);
-void lttng_uprobes_unregister_event_notifier(struct lttng_event_notifier *event_notifier);
-void lttng_uprobes_destroy_event_notifier_private(struct lttng_event_notifier *event_notifier);
+void lttng_uprobes_unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier);
+void lttng_uprobes_destroy_event_notifier_private(struct lttng_kernel_event_notifier *event_notifier);
 #else
 static inline
 int lttng_uprobes_register_event(const char *name,
-	int fd, struct lttng_event *event)
+	int fd, struct lttng_kernel_event_recorder *event)
 {
 	return -ENOSYS;
 }
 
 static inline
-int lttng_uprobes_event_add_callsite(struct lttng_event *event,
+int lttng_uprobes_event_add_callsite(struct lttng_kernel_event_recorder *event,
 	struct lttng_kernel_abi_event_callsite __user *callsite)
 {
 	return -ENOSYS;
 }
 
 static inline
-void lttng_uprobes_unregister_event(struct lttng_event *event)
+void lttng_uprobes_unregister_event(struct lttng_kernel_event_recorder *event)
 {
 }
 
 static inline
-void lttng_uprobes_destroy_event_private(struct lttng_event *event)
+void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_recorder *event)
 {
 }
 
 static inline
 int lttng_uprobes_register_event_notifier(const char *name,
-	int fd, struct lttng_event_notifier *event_notifier)
+	int fd, struct lttng_kernel_event_notifier *event_notifier)
 {
 	return -ENOSYS;
 }
 
 static inline
-int lttng_uprobes_event_notifier_add_callsite(struct lttng_event_notifier *event_notifier,
+int lttng_uprobes_event_notifier_add_callsite(struct lttng_kernel_event_notifier *event_notifier,
 	struct lttng_kernel_abi_event_callsite __user *callsite)
 {
 	return -ENOSYS;
 }
 
 static inline
-void lttng_uprobes_unregister_event_notifier(struct lttng_event_notifier *event_notifier)
+void lttng_uprobes_unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
 {
 }
 
 static inline
-void lttng_uprobes_destroy_event_notifier_private(struct lttng_event_notifier *event_notifier)
+void lttng_uprobes_destroy_event_notifier_private(struct lttng_kernel_event_notifier *event_notifier)
 {
 }
 #endif
@@ -1452,11 +1406,11 @@ int lttng_kretprobes_register(const char *name,
 		const char *symbol_name,
 		uint64_t offset,
 		uint64_t addr,
-		struct lttng_event *event_entry,
-		struct lttng_event *event_exit);
-void lttng_kretprobes_unregister(struct lttng_event *event);
-void lttng_kretprobes_destroy_private(struct lttng_event *event);
-int lttng_kretprobes_event_enable_state(struct lttng_event *event,
+		struct lttng_kernel_event_recorder *event_entry,
+		struct lttng_kernel_event_recorder *event_exit);
+void lttng_kretprobes_unregister(struct lttng_kernel_event_recorder *event);
+void lttng_kretprobes_destroy_private(struct lttng_kernel_event_recorder *event);
+int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_recorder *event,
 	int enable);
 #else
 static inline
@@ -1464,24 +1418,24 @@ int lttng_kretprobes_register(const char *name,
 		const char *symbol_name,
 		uint64_t offset,
 		uint64_t addr,
-		struct lttng_event *event_entry,
-		struct lttng_event *event_exit)
+		struct lttng_kernel_event_recorder *event_entry,
+		struct lttng_kernel_event_recorder *event_exit)
 {
 	return -ENOSYS;
 }
 
 static inline
-void lttng_kretprobes_unregister(struct lttng_event *event)
+void lttng_kretprobes_unregister(struct lttng_kernel_event_recorder *event)
 {
 }
 
 static inline
-void lttng_kretprobes_destroy_private(struct lttng_event *event)
+void lttng_kretprobes_destroy_private(struct lttng_kernel_event_recorder *event)
 {
 }
 
 static inline
-int lttng_kretprobes_event_enable_state(struct lttng_event *event,
+int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_recorder *event,
 	int enable)
 {
 	return -ENOSYS;

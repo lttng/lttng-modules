@@ -10,6 +10,60 @@
 
 #include <lttng/events.h>
 
+struct lttng_kernel_event_common_private {
+	struct lttng_kernel_event_common *pub;		/* Public event interface */
+
+	const struct lttng_kernel_event_desc *desc;
+	/* Backward references: list of lttng_enabler_ref (ref to enablers) */
+	struct list_head enablers_ref_head;
+	int registered;					/* has reg'd tracepoint probe */
+	uint64_t user_token;
+
+	int has_enablers_without_filter_bytecode;
+	/* list of struct lttng_kernel_bytecode_runtime, sorted by seqnum */
+	struct list_head filter_bytecode_runtime_head;
+	enum lttng_kernel_abi_instrumentation instrumentation;
+	/* Selected by instrumentation */
+	union {
+		struct lttng_kprobe kprobe;
+		struct lttng_uprobe uprobe;
+		struct {
+			struct lttng_krp *lttng_krp;
+			char *symbol_name;
+		} kretprobe;
+		struct {
+			enum lttng_syscall_entryexit entryexit;
+			enum lttng_syscall_abi abi;
+			struct hlist_node node;			/* chain registered syscall event_notifier */
+			unsigned int syscall_id;
+		} syscall;
+	} u;
+};
+
+struct lttng_kernel_event_recorder_private {
+	struct lttng_kernel_event_common_private parent;
+
+	struct lttng_kernel_event_recorder *pub;	/* Public event interface */
+	struct list_head node;				/* Event recorder list */
+	struct hlist_node hlist;			/* Hash table of event recorders */
+	struct lttng_kernel_ctx *ctx;
+	unsigned int id;
+	unsigned int metadata_dumped:1;
+};
+
+struct lttng_kernel_event_notifier_private {
+	struct lttng_kernel_event_common_private parent;
+
+	struct lttng_kernel_event_notifier *pub;	/* Public event notifier interface */
+	struct lttng_event_notifier_group *group;	/* weak ref */
+	size_t num_captures;				/* Needed to allocate the msgpack array. */
+	uint64_t error_counter_index;
+	struct list_head node;				/* Event notifier list */
+	struct hlist_node hlist;			/* Hash table of event notifiers */
+	struct list_head capture_bytecode_runtime_head;
+
+};
+
 static inline
 const struct lttng_kernel_type_integer *lttng_kernel_get_type_integer(const struct lttng_kernel_type_common *type)
 {

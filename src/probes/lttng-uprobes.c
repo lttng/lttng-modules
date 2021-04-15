@@ -16,6 +16,7 @@
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <lttng/events.h>
+#include <lttng/events-internal.h>
 #include <lttng/tracer.h>
 #include <wrapper/irqflags.h>
 #include <ringbuffer/frontend_types.h>
@@ -27,12 +28,12 @@ int lttng_uprobes_event_handler_pre(struct uprobe_consumer *uc, struct pt_regs *
 {
 	struct lttng_uprobe_handler *uprobe_handler =
 		container_of(uc, struct lttng_uprobe_handler, up_consumer);
-	struct lttng_event *event = uprobe_handler->u.event;
+	struct lttng_kernel_event_recorder *event_recorder = uprobe_handler->u.event;
 	struct lttng_probe_ctx lttng_probe_ctx = {
-		.event = event,
+		.event = event_recorder,
 		.interruptible = !lttng_regs_irqs_disabled(regs),
 	};
-	struct lttng_channel *chan = event->chan;
+	struct lttng_channel *chan = event_recorder->chan;
 	struct lib_ring_buffer_ctx ctx;
 	int ret;
 
@@ -44,13 +45,13 @@ int lttng_uprobes_event_handler_pre(struct uprobe_consumer *uc, struct pt_regs *
 		return 0;
 	if (unlikely(!LTTNG_READ_ONCE(chan->enabled)))
 		return 0;
-	if (unlikely(!LTTNG_READ_ONCE(event->enabled)))
+	if (unlikely(!LTTNG_READ_ONCE(event_recorder->parent.enabled)))
 		return 0;
 
 	lib_ring_buffer_ctx_init(&ctx, chan->chan, &lttng_probe_ctx,
 		sizeof(payload), lttng_alignof(payload), -1);
 
-	ret = chan->ops->event_reserve(&ctx, event->id);
+	ret = chan->ops->event_reserve(&ctx, event_recorder->priv->id);
 	if (ret < 0)
 		return 0;
 
@@ -68,14 +69,14 @@ int lttng_uprobes_event_notifier_handler_pre(struct uprobe_consumer *uc, struct 
 {
 	struct lttng_uprobe_handler *uprobe_handler =
 		container_of(uc, struct lttng_uprobe_handler, up_consumer);
-	struct lttng_event_notifier *event_notifier = uprobe_handler->u.event_notifier;
-	struct lttng_kernel_notifier_ctx notif_ctx;
+	struct lttng_kernel_event_notifier *event_notifier = uprobe_handler->u.event_notifier;
+	struct lttng_kernel_notification_ctx notif_ctx;
 
-	if (unlikely(!READ_ONCE(event_notifier->enabled)))
+	if (unlikely(!READ_ONCE(event_notifier->parent.enabled)))
 		return 0;
 
 	notif_ctx.eval_capture = LTTNG_READ_ONCE(event_notifier->eval_capture);
-	event_notifier->send_notification(event_notifier, NULL, NULL, &notif_ctx);
+	event_notifier->notification_send(event_notifier, NULL, NULL, &notif_ctx);
 	return 0;
 }
 
@@ -86,7 +87,7 @@ static const struct lttng_kernel_type_common *event_type =
  * Create event description.
  */
 static
-int lttng_create_uprobe_event(const char *name, struct lttng_event *event)
+int lttng_create_uprobe_event(const char *name, struct lttng_kernel_event_recorder *event_recorder)
 {
 	const struct lttng_kernel_event_field **fieldp_array;
 	struct lttng_kernel_event_field *field;
@@ -117,7 +118,7 @@ int lttng_create_uprobe_event(const char *name, struct lttng_event *event)
 	field->name = "ip";
 	field->type = event_type;
 	desc->owner = THIS_MODULE;
-	event->desc = desc;
+	event_recorder->priv->parent.desc = desc;
 
 	return 0;
 
@@ -134,7 +135,7 @@ error_str:
  * Create event_notifier description.
  */
 static
-int lttng_create_uprobe_event_notifier(const char *name, struct lttng_event_notifier *event_notifier)
+int lttng_create_uprobe_event_notifier(const char *name, struct lttng_kernel_event_notifier *event_notifier)
 {
 	struct lttng_kernel_event_desc *desc;
 	int ret;
@@ -151,7 +152,7 @@ int lttng_create_uprobe_event_notifier(const char *name, struct lttng_event_noti
 	desc->nr_fields = 0;
 
 	desc->owner = THIS_MODULE;
-	event_notifier->desc = desc;
+	event_notifier->priv->parent.desc = desc;
 
 	return 0;
 
@@ -244,18 +245,18 @@ end:
 	return ret;
 }
 
-int lttng_uprobes_event_add_callsite(struct lttng_event *event,
+int lttng_uprobes_event_add_callsite(struct lttng_kernel_event_recorder *event_recorder,
 	struct lttng_kernel_abi_event_callsite __user *callsite)
 {
-	return lttng_uprobes_add_callsite(&event->u.uprobe, callsite,
-		lttng_uprobes_event_handler_pre, event);
+	return lttng_uprobes_add_callsite(&event_recorder->priv->parent.u.uprobe, callsite,
+		lttng_uprobes_event_handler_pre, event_recorder);
 }
 EXPORT_SYMBOL_GPL(lttng_uprobes_event_add_callsite);
 
-int lttng_uprobes_event_notifier_add_callsite(struct lttng_event_notifier *event_notifier,
+int lttng_uprobes_event_notifier_add_callsite(struct lttng_kernel_event_notifier *event_notifier,
 	struct lttng_kernel_abi_event_callsite __user *callsite)
 {
-	return lttng_uprobes_add_callsite(&event_notifier->u.uprobe, callsite,
+	return lttng_uprobes_add_callsite(&event_notifier->priv->parent.u.uprobe, callsite,
 		lttng_uprobes_event_notifier_handler_pre, event_notifier);
 }
 EXPORT_SYMBOL_GPL(lttng_uprobes_event_notifier_add_callsite);
@@ -279,30 +280,30 @@ inode_error:
 	return ret;
 }
 
-int lttng_uprobes_register_event(const char *name, int fd, struct lttng_event *event)
+int lttng_uprobes_register_event(const char *name, int fd, struct lttng_kernel_event_recorder *event_recorder)
 {
 	int ret = 0;
 
-	ret = lttng_create_uprobe_event(name, event);
+	ret = lttng_create_uprobe_event(name, event_recorder);
 	if (ret)
 		goto error;
 
-	ret = lttng_uprobes_register(&event->u.uprobe, fd);
+	ret = lttng_uprobes_register(&event_recorder->priv->parent.u.uprobe, fd);
 	if (ret)
 		goto register_error;
 
 	return 0;
 
 register_error:
-	kfree(event->desc->event_name);
-	kfree(event->desc);
+	kfree(event_recorder->priv->parent.desc->event_name);
+	kfree(event_recorder->priv->parent.desc);
 error:
 	return ret;
 }
 EXPORT_SYMBOL_GPL(lttng_uprobes_register_event);
 
 int lttng_uprobes_register_event_notifier(const char *name, int fd,
-		struct lttng_event_notifier *event_notifier)
+		struct lttng_kernel_event_notifier *event_notifier)
 {
 	int ret = 0;
 
@@ -310,15 +311,15 @@ int lttng_uprobes_register_event_notifier(const char *name, int fd,
 	if (ret)
 		goto error;
 
-	ret = lttng_uprobes_register(&event_notifier->u.uprobe, fd);
+	ret = lttng_uprobes_register(&event_notifier->priv->parent.u.uprobe, fd);
 	if (ret)
 		goto register_error;
 
 	return 0;
 
 register_error:
-	kfree(event_notifier->desc->event_name);
-	kfree(event_notifier->desc);
+	kfree(event_notifier->priv->parent.desc->event_name);
+	kfree(event_notifier->priv->parent.desc);
 error:
 	return ret;
 }
@@ -341,33 +342,33 @@ void lttng_uprobes_unregister(struct inode *inode, struct list_head *head)
 
 }
 
-void lttng_uprobes_unregister_event(struct lttng_event *event)
+void lttng_uprobes_unregister_event(struct lttng_kernel_event_recorder *event_recorder)
 {
-	lttng_uprobes_unregister(event->u.uprobe.inode, &event->u.uprobe.head);
+	lttng_uprobes_unregister(event_recorder->priv->parent.u.uprobe.inode, &event_recorder->priv->parent.u.uprobe.head);
 }
 EXPORT_SYMBOL_GPL(lttng_uprobes_unregister_event);
 
-void lttng_uprobes_unregister_event_notifier(struct lttng_event_notifier *event_notifier)
+void lttng_uprobes_unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
 {
-	lttng_uprobes_unregister(event_notifier->u.uprobe.inode, &event_notifier->u.uprobe.head);
+	lttng_uprobes_unregister(event_notifier->priv->parent.u.uprobe.inode, &event_notifier->priv->parent.u.uprobe.head);
 }
 EXPORT_SYMBOL_GPL(lttng_uprobes_unregister_event_notifier);
 
-void lttng_uprobes_destroy_event_private(struct lttng_event *event)
+void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_recorder *event_recorder)
 {
-	iput(event->u.uprobe.inode);
-	kfree(event->desc->fields[0]);
-	kfree(event->desc->fields);
-	kfree(event->desc->event_name);
-	kfree(event->desc);
+	iput(event_recorder->priv->parent.u.uprobe.inode);
+	kfree(event_recorder->priv->parent.desc->fields[0]);
+	kfree(event_recorder->priv->parent.desc->fields);
+	kfree(event_recorder->priv->parent.desc->event_name);
+	kfree(event_recorder->priv->parent.desc);
 }
 EXPORT_SYMBOL_GPL(lttng_uprobes_destroy_event_private);
 
-void lttng_uprobes_destroy_event_notifier_private(struct lttng_event_notifier *event_notifier)
+void lttng_uprobes_destroy_event_notifier_private(struct lttng_kernel_event_notifier *event_notifier)
 {
-	iput(event_notifier->u.uprobe.inode);
-	kfree(event_notifier->desc->event_name);
-	kfree(event_notifier->desc);
+	iput(event_notifier->priv->parent.u.uprobe.inode);
+	kfree(event_notifier->priv->parent.desc->event_name);
+	kfree(event_notifier->priv->parent.desc);
 }
 EXPORT_SYMBOL_GPL(lttng_uprobes_destroy_event_notifier_private);
 

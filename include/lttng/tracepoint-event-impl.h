@@ -20,6 +20,7 @@
 #include <lttng/types.h>
 #include <lttng/probe-user.h>
 #include <lttng/events.h>
+#include <lttng/events-internal.h>	/* TODO: remove this include after refactoring is done. */
 #include <lttng/tracer-core.h>
 #include <lttng/tp-mempool.h>
 
@@ -1059,13 +1060,13 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 static void __event_probe__##_name(void *__data, _proto)		      \
 {									      \
 	struct probe_local_vars { _locvar };				      \
-	struct lttng_event *__event = __data;				      \
+	struct lttng_kernel_event_recorder *__event_recorder = __data;	      \
 	struct lttng_probe_ctx __lttng_probe_ctx = {			      \
-		.event = __event,				              \
+		.event = __event_recorder,			              \
 		.event_notifier = NULL,					      \
 		.interruptible = !irqs_disabled(),			      \
 	};								      \
-	struct lttng_channel *__chan = __event->chan;			      \
+	struct lttng_channel *__chan = __event_recorder->chan;		      \
 	struct lttng_session *__session = __chan->session;		      \
 	struct lib_ring_buffer_ctx __ctx;				      \
 	ssize_t __event_len;						      \
@@ -1087,7 +1088,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 		return;							      \
 	if (unlikely(!LTTNG_READ_ONCE(__chan->enabled)))		      \
 		return;							      \
-	if (unlikely(!LTTNG_READ_ONCE(__event->enabled)))		      \
+	if (unlikely(!LTTNG_READ_ONCE(__event_recorder->parent.enabled)))     \
 		return;							      \
 	__lf = lttng_rcu_dereference(__session->pid_tracker.p);		      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf, current->tgid)))    \
@@ -1114,13 +1115,13 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	__orig_dynamic_len_offset = this_cpu_ptr(&lttng_dynamic_len_stack)->offset; \
 	__dynamic_len_idx = __orig_dynamic_len_offset;			      \
 	_code_pre							      \
-	if (unlikely(!list_empty(&__event->filter_bytecode_runtime_head))) {	      \
+	if (unlikely(!list_empty(&__event_recorder->priv->parent.filter_bytecode_runtime_head))) { \
 		struct lttng_bytecode_runtime *bc_runtime;		      \
-		int __filter_record = __event->has_enablers_without_bytecode; \
+		int __filter_record = __event_recorder->priv->parent.has_enablers_without_filter_bytecode; \
 									      \
 		__event_prepare_interpreter_stack__##_name(__stackvar.__filter_stack_data, \
 				tp_locvar, _args);				      \
-		lttng_list_for_each_entry_rcu(bc_runtime, &__event->filter_bytecode_runtime_head, node) { \
+		lttng_list_for_each_entry_rcu(bc_runtime, &__event_recorder->priv->parent.filter_bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx,	      \
 					__stackvar.__filter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG)) { \
 				__filter_record = 1;			      \
@@ -1138,7 +1139,7 @@ static void __event_probe__##_name(void *__data, _proto)		      \
 	__event_align = __event_get_align__##_name(tp_locvar, _args);         \
 	lib_ring_buffer_ctx_init(&__ctx, __chan->chan, &__lttng_probe_ctx, __event_len,  \
 				 __event_align, -1);			      \
-	__ret = __chan->ops->event_reserve(&__ctx, __event->id);	      \
+	__ret = __chan->ops->event_reserve(&__ctx, __event_recorder->priv->id); \
 	if (__ret < 0)							      \
 		goto __post;						      \
 	_fields								      \
@@ -1155,13 +1156,13 @@ __post:									      \
 static void __event_probe__##_name(void *__data)			      \
 {									      \
 	struct probe_local_vars { _locvar };				      \
-	struct lttng_event *__event = __data;				      \
+	struct lttng_kernel_event_recorder *__event_recorder = __data;        \
 	struct lttng_probe_ctx __lttng_probe_ctx = {			      \
-		.event = __event,				              \
+		.event = __event_recorder,			              \
 		.event_notifier = NULL,					      \
 		.interruptible = !irqs_disabled(),			      \
 	};								      \
-	struct lttng_channel *__chan = __event->chan;			      \
+	struct lttng_channel *__chan = __event_recorder->chan;		      \
 	struct lttng_session *__session = __chan->session;		      \
 	struct lib_ring_buffer_ctx __ctx;				      \
 	ssize_t __event_len;						      \
@@ -1183,7 +1184,7 @@ static void __event_probe__##_name(void *__data)			      \
 		return;							      \
 	if (unlikely(!LTTNG_READ_ONCE(__chan->enabled)))		      \
 		return;							      \
-	if (unlikely(!LTTNG_READ_ONCE(__event->enabled)))		      \
+	if (unlikely(!LTTNG_READ_ONCE(__event_recorder->parent.enabled)))     \
 		return;							      \
 	__lf = lttng_rcu_dereference(__session->pid_tracker.p);		      \
 	if (__lf && likely(!lttng_id_tracker_lookup(__lf, current->tgid)))    \
@@ -1210,13 +1211,13 @@ static void __event_probe__##_name(void *__data)			      \
 	__orig_dynamic_len_offset = this_cpu_ptr(&lttng_dynamic_len_stack)->offset; \
 	__dynamic_len_idx = __orig_dynamic_len_offset;			      \
 	_code_pre							      \
-	if (unlikely(!list_empty(&__event->filter_bytecode_runtime_head))) {	      \
+	if (unlikely(!list_empty(&__event_recorder->priv->parent.filter_bytecode_runtime_head))) { \
 		struct lttng_bytecode_runtime *bc_runtime;		      \
-		int __filter_record = __event->has_enablers_without_bytecode; \
+		int __filter_record = __event_recorder->priv->parent.has_enablers_without_filter_bytecode; \
 									      \
 		__event_prepare_interpreter_stack__##_name(__stackvar.__filter_stack_data, \
 				tp_locvar);				      \
-		lttng_list_for_each_entry_rcu(bc_runtime, &__event->filter_bytecode_runtime_head, node) { \
+		lttng_list_for_each_entry_rcu(bc_runtime, &__event_recorder->priv->parent.filter_bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx,	\
 					__stackvar.__filter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG)) { \
 				__filter_record = 1;			      \
@@ -1234,7 +1235,7 @@ static void __event_probe__##_name(void *__data)			      \
 	__event_align = __event_get_align__##_name(tp_locvar);		      \
 	lib_ring_buffer_ctx_init(&__ctx, __chan->chan, &__lttng_probe_ctx, __event_len,  \
 				 __event_align, -1);			      \
-	__ret = __chan->ops->event_reserve(&__ctx, __event->id);	      \
+	__ret = __chan->ops->event_reserve(&__ctx, __event_recorder->priv->id);	      \
 	if (__ret < 0)							      \
 		goto __post;						      \
 	_fields								      \
@@ -1289,7 +1290,7 @@ __post:									      \
 static void __event_notifier_probe__##_name(void *__data, _proto)	      \
 {									      \
 	struct probe_local_vars { _locvar };				      \
-	struct lttng_event_notifier *__event_notifier = __data;		      \
+	struct lttng_kernel_event_notifier *__event_notifier = __data;		      \
 	struct lttng_probe_ctx __lttng_probe_ctx = {			      \
 		.event = NULL,						      \
 		.event_notifier = __event_notifier,			      \
@@ -1302,20 +1303,20 @@ static void __event_notifier_probe__##_name(void *__data, _proto)	      \
 	struct probe_local_vars __tp_locvar;				      \
 	struct probe_local_vars *tp_locvar __attribute__((unused)) =	      \
 			&__tp_locvar;					      \
-	struct lttng_kernel_notifier_ctx __notif_ctx;			      \
+	struct lttng_kernel_notification_ctx __notif_ctx;			      \
 	bool __interpreter_stack_prepared = false;			      \
 									      \
-	if (unlikely(!READ_ONCE(__event_notifier->enabled)))		      \
+	if (unlikely(!READ_ONCE(__event_notifier->parent.enabled)))	      \
 		return;							      \
 	_code_pre							      \
-	if (unlikely(!list_empty(&__event_notifier->filter_bytecode_runtime_head))) {	\
+	if (unlikely(!list_empty(&__event_notifier->priv->parent.filter_bytecode_runtime_head))) { \
 		struct lttng_bytecode_runtime *bc_runtime;		      \
-		int __filter_record = __event_notifier->has_enablers_without_bytecode;	\
+		int __filter_record = __event_notifier->priv->parent.has_enablers_without_filter_bytecode; \
 									      \
 		__event_prepare_interpreter_stack__##_name(__stackvar.__interpreter_stack_data, \
 				tp_locvar, _args);			      \
 		__interpreter_stack_prepared = true;			      \
-		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->filter_bytecode_runtime_head, node) { \
+		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->priv->parent.filter_bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx,   	\
 					__stackvar.__interpreter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG))	\
 				__filter_record = 1;			      \
@@ -1330,7 +1331,7 @@ static void __event_notifier_probe__##_name(void *__data, _proto)	      \
 				__stackvar.__interpreter_stack_data,	      \
 				tp_locvar, _args);			      \
 									      \
-	__event_notifier->send_notification(__event_notifier,		      \
+	__event_notifier->notification_send(__event_notifier,		      \
 			&__lttng_probe_ctx,				      \
 			__stackvar.__interpreter_stack_data,		      \
 			&__notif_ctx);					      \
@@ -1345,7 +1346,7 @@ __post:									      \
 static void __event_notifier_probe__##_name(void *__data)		      \
 {									      \
 	struct probe_local_vars { _locvar };				      \
-	struct lttng_event_notifier *__event_notifier = __data;		      \
+	struct lttng_kernel_event_notifier *__event_notifier = __data;	      \
 	struct lttng_probe_ctx __lttng_probe_ctx = {			      \
 		.event = NULL,						      \
 		.event_notifier = __event_notifier,			      \
@@ -1358,20 +1359,20 @@ static void __event_notifier_probe__##_name(void *__data)		      \
 	struct probe_local_vars __tp_locvar;				      \
 	struct probe_local_vars *tp_locvar __attribute__((unused)) =	      \
 			&__tp_locvar;					      \
-	struct lttng_kernel_notifier_ctx __notif_ctx;			      \
+	struct lttng_kernel_notification_ctx __notif_ctx;			      \
 	bool __interpreter_stack_prepared = false;			      \
 									      \
-	if (unlikely(!READ_ONCE(__event_notifier->enabled)))		      \
+	if (unlikely(!READ_ONCE(__event_notifier->parent.enabled)))	      \
 		return;							      \
 	_code_pre							      \
-	if (unlikely(!list_empty(&__event_notifier->filter_bytecode_runtime_head))) {	\
+	if (unlikely(!list_empty(&__event_notifier->priv->parent.filter_bytecode_runtime_head))) { \
 		struct lttng_bytecode_runtime *bc_runtime;		      \
-		int __filter_record = __event_notifier->has_enablers_without_bytecode;	\
+		int __filter_record = __event_notifier->priv->parent.has_enablers_without_filter_bytecode; \
 									      \
 		__event_prepare_interpreter_stack__##_name(__stackvar.__interpreter_stack_data, \
 				tp_locvar);				      \
 		__interpreter_stack_prepared = true;			      \
-		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->filter_bytecode_runtime_head, node) { \
+		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->priv->parent.filter_bytecode_runtime_head, node) { \
 			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx,	\
 					__stackvar.__interpreter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG))	\
 				__filter_record = 1;			      \
@@ -1386,7 +1387,7 @@ static void __event_notifier_probe__##_name(void *__data)		      \
 				__stackvar.__interpreter_stack_data,	      \
 				tp_locvar);				      \
 									      \
-	__event_notifier->send_notification(__event_notifier,		      \
+	__event_notifier->notification_send(__event_notifier,		      \
 			&__lttng_probe_ctx,				      \
 			__stackvar.__interpreter_stack_data,		      \
 			&__notif_ctx);					      \

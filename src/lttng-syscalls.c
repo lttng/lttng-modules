@@ -392,14 +392,18 @@ static void syscall_entry_event_unknown(struct hlist_head *unknown_action_list_h
 	struct pt_regs *regs, long id)
 {
 	unsigned long args[LTTNG_SYSCALL_NR_ARGS];
-	struct lttng_event *event;
+	struct lttng_kernel_event_common_private *event_priv;
 
 	lttng_syscall_get_arguments(current, regs, args);
-	lttng_hlist_for_each_entry_rcu(event, unknown_action_list_head, u.syscall.node) {
+	lttng_hlist_for_each_entry_rcu(event_priv, unknown_action_list_head, u.syscall.node) {
+		struct lttng_kernel_event_recorder_private *event_recorder_priv =
+			container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+		struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
+
 		if (unlikely(in_compat_syscall()))
-			__event_probe__compat_syscall_entry_unknown(event, id, args);
+			__event_probe__compat_syscall_entry_unknown(event_recorder, id, args);
 		else
-			__event_probe__syscall_entry_unknown(event, id, args);
+			__event_probe__syscall_entry_unknown(event_recorder, id, args);
 	}
 }
 
@@ -408,14 +412,18 @@ static void syscall_entry_event_notifier_unknown(
 		struct pt_regs *regs, long id)
 {
 	unsigned long args[LTTNG_SYSCALL_NR_ARGS];
-	struct lttng_event_notifier *notifier;
+	struct lttng_kernel_event_common_private *event_priv;
 
 	lttng_syscall_get_arguments(current, regs, args);
-	lttng_hlist_for_each_entry_rcu(notifier, unknown_dispatch_list_head, u.syscall.node) {
+	lttng_hlist_for_each_entry_rcu(event_priv, unknown_dispatch_list_head, u.syscall.node) {
+		struct lttng_kernel_event_notifier_private *event_notifier_priv =
+			container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+		struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
+
 		if (unlikely(in_compat_syscall()))
-			__event_notifier_probe__compat_syscall_entry_unknown(notifier, id, args);
+			__event_notifier_probe__compat_syscall_entry_unknown(event_notifier, id, args);
 		else
-			__event_notifier_probe__syscall_entry_unknown(notifier, id, args);
+			__event_notifier_probe__syscall_entry_unknown(event_notifier, id, args);
 	}
 }
 
@@ -424,14 +432,18 @@ static void syscall_exit_event_notifier_unknown(
 		struct pt_regs *regs, long id, long ret)
 {
 	unsigned long args[LTTNG_SYSCALL_NR_ARGS];
-	struct lttng_event_notifier *notifier;
+	struct lttng_kernel_event_common_private *event_priv;
 
 	lttng_syscall_get_arguments(current, regs, args);
-	lttng_hlist_for_each_entry_rcu(notifier, unknown_dispatch_list_head, u.syscall.node) {
+	lttng_hlist_for_each_entry_rcu(event_priv, unknown_dispatch_list_head, u.syscall.node) {
+		struct lttng_kernel_event_notifier_private *event_notifier_priv =
+			container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+		struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
+
 		if (unlikely(in_compat_syscall()))
-			__event_notifier_probe__compat_syscall_exit_unknown(notifier, id, ret, args);
+			__event_notifier_probe__compat_syscall_exit_unknown(event_notifier, id, ret, args);
 		else
-			__event_notifier_probe__syscall_exit_unknown(notifier, id, ret, args);
+			__event_notifier_probe__syscall_exit_unknown(event_notifier, id, ret, args);
 	}
 }
 
@@ -440,15 +452,20 @@ void syscall_entry_call_func(struct hlist_head *action_list,
 		void *func, unsigned int nrargs,
 		struct pt_regs *regs)
 {
-	struct lttng_event *event;
+	struct lttng_kernel_event_common_private *event_priv;
 
 	switch (nrargs) {
 	case 0:
 	{
 		void (*fptr)(void *__data) = func;
 
-		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
-			fptr(event);
+		lttng_hlist_for_each_entry_rcu(event_priv, action_list, u.syscall.node) {
+			struct lttng_kernel_event_recorder_private *event_recorder_priv =
+				container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+			struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
+
+			fptr(event_recorder);
+		}
 		break;
 	}
 	case 1:
@@ -457,8 +474,13 @@ void syscall_entry_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
-			fptr(event, args[0]);
+		lttng_hlist_for_each_entry_rcu(event_priv, action_list, u.syscall.node) {
+			struct lttng_kernel_event_recorder_private *event_recorder_priv =
+				container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+			struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
+
+			fptr(event_recorder, args[0]);
+		}
 		break;
 	}
 	case 2:
@@ -469,8 +491,13 @@ void syscall_entry_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
-			fptr(event, args[0], args[1]);
+		lttng_hlist_for_each_entry_rcu(event_priv, action_list, u.syscall.node) {
+			struct lttng_kernel_event_recorder_private *event_recorder_priv =
+				container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+			struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
+
+			fptr(event_recorder, args[0], args[1]);
+		}
 		break;
 	}
 	case 3:
@@ -482,8 +509,13 @@ void syscall_entry_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
-			fptr(event, args[0], args[1], args[2]);
+		lttng_hlist_for_each_entry_rcu(event_priv, action_list, u.syscall.node) {
+			struct lttng_kernel_event_recorder_private *event_recorder_priv =
+				container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+			struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
+
+			fptr(event_recorder, args[0], args[1], args[2]);
+		}
 		break;
 	}
 	case 4:
@@ -496,8 +528,13 @@ void syscall_entry_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
-			fptr(event, args[0], args[1], args[2], args[3]);
+		lttng_hlist_for_each_entry_rcu(event_priv, action_list, u.syscall.node) {
+			struct lttng_kernel_event_recorder_private *event_recorder_priv =
+				container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+			struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
+
+			fptr(event_recorder, args[0], args[1], args[2], args[3]);
+		}
 		break;
 	}
 	case 5:
@@ -511,8 +548,13 @@ void syscall_entry_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
-			fptr(event, args[0], args[1], args[2], args[3], args[4]);
+		lttng_hlist_for_each_entry_rcu(event_priv, action_list, u.syscall.node) {
+			struct lttng_kernel_event_recorder_private *event_recorder_priv =
+				container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+			struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
+
+			fptr(event_recorder, args[0], args[1], args[2], args[3], args[4]);
+		}
 		break;
 	}
 	case 6:
@@ -527,9 +569,14 @@ void syscall_entry_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
-			fptr(event, args[0], args[1], args[2],
+		lttng_hlist_for_each_entry_rcu(event_priv, action_list, u.syscall.node) {
+			struct lttng_kernel_event_recorder_private *event_recorder_priv =
+				container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+			struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
+
+			fptr(event_recorder, args[0], args[1], args[2],
 			     args[3], args[4], args[5]);
+		}
 		break;
 	}
 	default:
@@ -541,15 +588,20 @@ static __always_inline
 void syscall_entry_event_notifier_call_func(struct hlist_head *dispatch_list,
 		void *func, unsigned int nrargs, struct pt_regs *regs)
 {
-	struct lttng_event_notifier *notifier;
+	struct lttng_kernel_event_common_private *event_priv;
 
 	switch (nrargs) {
 	case 0:
 	{
 		void (*fptr)(void *__data) = func;
 
-		lttng_hlist_for_each_entry_rcu(notifier, dispatch_list, u.syscall.node)
-			fptr(notifier);
+		lttng_hlist_for_each_entry_rcu(event_priv, dispatch_list, u.syscall.node) {
+			struct lttng_kernel_event_notifier_private *event_notifier_priv =
+				container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+			struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
+
+			fptr(event_notifier);
+		}
 		break;
 	}
 	case 1:
@@ -558,8 +610,13 @@ void syscall_entry_event_notifier_call_func(struct hlist_head *dispatch_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(notifier, dispatch_list, u.syscall.node)
-			fptr(notifier, args[0]);
+		lttng_hlist_for_each_entry_rcu(event_priv, dispatch_list, u.syscall.node) {
+			struct lttng_kernel_event_notifier_private *event_notifier_priv =
+				container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+			struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
+
+			fptr(event_notifier, args[0]);
+		}
 		break;
 	}
 	case 2:
@@ -570,8 +627,13 @@ void syscall_entry_event_notifier_call_func(struct hlist_head *dispatch_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(notifier, dispatch_list, u.syscall.node)
-			fptr(notifier, args[0], args[1]);
+		lttng_hlist_for_each_entry_rcu(event_priv, dispatch_list, u.syscall.node) {
+			struct lttng_kernel_event_notifier_private *event_notifier_priv =
+				container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+			struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
+
+			fptr(event_notifier, args[0], args[1]);
+		}
 		break;
 	}
 	case 3:
@@ -583,8 +645,13 @@ void syscall_entry_event_notifier_call_func(struct hlist_head *dispatch_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(notifier, dispatch_list, u.syscall.node)
-			fptr(notifier, args[0], args[1], args[2]);
+		lttng_hlist_for_each_entry_rcu(event_priv, dispatch_list, u.syscall.node) {
+			struct lttng_kernel_event_notifier_private *event_notifier_priv =
+				container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+			struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
+
+			fptr(event_notifier, args[0], args[1], args[2]);
+		}
 		break;
 	}
 	case 4:
@@ -597,8 +664,13 @@ void syscall_entry_event_notifier_call_func(struct hlist_head *dispatch_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(notifier, dispatch_list, u.syscall.node)
-			fptr(notifier, args[0], args[1], args[2], args[3]);
+		lttng_hlist_for_each_entry_rcu(event_priv, dispatch_list, u.syscall.node) {
+			struct lttng_kernel_event_notifier_private *event_notifier_priv =
+				container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+			struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
+
+			fptr(event_notifier, args[0], args[1], args[2], args[3]);
+		}
 		break;
 	}
 	case 5:
@@ -612,8 +684,13 @@ void syscall_entry_event_notifier_call_func(struct hlist_head *dispatch_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(notifier, dispatch_list, u.syscall.node)
-			fptr(notifier, args[0], args[1], args[2], args[3], args[4]);
+		lttng_hlist_for_each_entry_rcu(event_priv, dispatch_list, u.syscall.node) {
+			struct lttng_kernel_event_notifier_private *event_notifier_priv =
+				container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+			struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
+
+			fptr(event_notifier, args[0], args[1], args[2], args[3], args[4]);
+		}
 		break;
 	}
 	case 6:
@@ -628,8 +705,13 @@ void syscall_entry_event_notifier_call_func(struct hlist_head *dispatch_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(notifier, dispatch_list, u.syscall.node)
-			fptr(notifier, args[0], args[1], args[2], args[3], args[4], args[5]);
+		lttng_hlist_for_each_entry_rcu(event_priv, dispatch_list, u.syscall.node) {
+			struct lttng_kernel_event_notifier_private *event_notifier_priv =
+				container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+			struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
+
+			fptr(event_notifier, args[0], args[1], args[2], args[3], args[4], args[5]);
+		}
 		break;
 	}
 	default:
@@ -752,15 +834,19 @@ static void syscall_exit_event_unknown(struct hlist_head *unknown_action_list_he
 	struct pt_regs *regs, long id, long ret)
 {
 	unsigned long args[LTTNG_SYSCALL_NR_ARGS];
-	struct lttng_event *event;
+	struct lttng_kernel_event_common_private *event_priv;
 
 	lttng_syscall_get_arguments(current, regs, args);
-	lttng_hlist_for_each_entry_rcu(event, unknown_action_list_head, u.syscall.node) {
+	lttng_hlist_for_each_entry_rcu(event_priv, unknown_action_list_head, u.syscall.node) {
+		struct lttng_kernel_event_recorder_private *event_recorder_priv =
+			container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+		struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
+
 		if (unlikely(in_compat_syscall()))
-			__event_probe__compat_syscall_exit_unknown(event, id, ret,
+			__event_probe__compat_syscall_exit_unknown(event_recorder, id, ret,
 				args);
 		else
-			__event_probe__syscall_exit_unknown(event, id, ret, args);
+			__event_probe__syscall_exit_unknown(event_recorder, id, ret, args);
 	}
 }
 
@@ -769,15 +855,20 @@ void syscall_exit_call_func(struct hlist_head *action_list,
 		void *func, unsigned int nrargs,
 		struct pt_regs *regs, long ret)
 {
-	struct lttng_event *event;
+	struct lttng_kernel_event_common_private *event_priv;
 
 	switch (nrargs) {
 	case 0:
 	{
 		void (*fptr)(void *__data, long ret) = func;
 
-		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
-			fptr(event, ret);
+		lttng_hlist_for_each_entry_rcu(event_priv, action_list, u.syscall.node) {
+			struct lttng_kernel_event_recorder_private *event_recorder_priv =
+				container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+			struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
+
+			fptr(event_recorder, ret);
+		}
 		break;
 	}
 	case 1:
@@ -788,8 +879,13 @@ void syscall_exit_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
-			fptr(event, ret, args[0]);
+		lttng_hlist_for_each_entry_rcu(event_priv, action_list, u.syscall.node) {
+			struct lttng_kernel_event_recorder_private *event_recorder_priv =
+				container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+			struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
+
+			fptr(event_recorder, ret, args[0]);
+		}
 		break;
 	}
 	case 2:
@@ -801,8 +897,13 @@ void syscall_exit_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
-			fptr(event, ret, args[0], args[1]);
+		lttng_hlist_for_each_entry_rcu(event_priv, action_list, u.syscall.node) {
+			struct lttng_kernel_event_recorder_private *event_recorder_priv =
+				container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+			struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
+
+			fptr(event_recorder, ret, args[0], args[1]);
+		}
 		break;
 	}
 	case 3:
@@ -815,8 +916,13 @@ void syscall_exit_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
-			fptr(event, ret, args[0], args[1], args[2]);
+		lttng_hlist_for_each_entry_rcu(event_priv, action_list, u.syscall.node) {
+			struct lttng_kernel_event_recorder_private *event_recorder_priv =
+				container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+			struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
+
+			fptr(event_recorder, ret, args[0], args[1], args[2]);
+		}
 		break;
 	}
 	case 4:
@@ -830,8 +936,13 @@ void syscall_exit_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
-			fptr(event, ret, args[0], args[1], args[2], args[3]);
+		lttng_hlist_for_each_entry_rcu(event_priv, action_list, u.syscall.node) {
+			struct lttng_kernel_event_recorder_private *event_recorder_priv =
+				container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+			struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
+
+			fptr(event_recorder, ret, args[0], args[1], args[2], args[3]);
+		}
 		break;
 	}
 	case 5:
@@ -846,8 +957,13 @@ void syscall_exit_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
-			fptr(event, ret, args[0], args[1], args[2], args[3], args[4]);
+		lttng_hlist_for_each_entry_rcu(event_priv, action_list, u.syscall.node) {
+			struct lttng_kernel_event_recorder_private *event_recorder_priv =
+				container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+			struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
+
+			fptr(event_recorder, ret, args[0], args[1], args[2], args[3], args[4]);
+		}
 		break;
 	}
 	case 6:
@@ -863,9 +979,14 @@ void syscall_exit_call_func(struct hlist_head *action_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(event, action_list, u.syscall.node)
-			fptr(event, ret, args[0], args[1], args[2],
+		lttng_hlist_for_each_entry_rcu(event_priv, action_list, u.syscall.node) {
+			struct lttng_kernel_event_recorder_private *event_recorder_priv =
+				container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+			struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
+
+			fptr(event_recorder, ret, args[0], args[1], args[2],
 			     args[3], args[4], args[5]);
+		}
 		break;
 	}
 	default:
@@ -933,15 +1054,20 @@ static __always_inline
 void syscall_exit_event_notifier_call_func(struct hlist_head *dispatch_list,
 		void *func, unsigned int nrargs, struct pt_regs *regs, long ret)
 {
-	struct lttng_event_notifier *notifier;
+	struct lttng_kernel_event_common_private *event_priv;
 
 	switch (nrargs) {
 	case 0:
 	{
 		void (*fptr)(void *__data, long ret) = func;
 
-		lttng_hlist_for_each_entry_rcu(notifier, dispatch_list, u.syscall.node)
-			fptr(notifier, ret);
+		lttng_hlist_for_each_entry_rcu(event_priv, dispatch_list, u.syscall.node) {
+			struct lttng_kernel_event_notifier_private *event_notifier_priv =
+				container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+			struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
+
+			fptr(event_notifier, ret);
+		}
 		break;
 	}
 	case 1:
@@ -950,8 +1076,13 @@ void syscall_exit_event_notifier_call_func(struct hlist_head *dispatch_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(notifier, dispatch_list, u.syscall.node)
-			fptr(notifier, ret, args[0]);
+		lttng_hlist_for_each_entry_rcu(event_priv, dispatch_list, u.syscall.node) {
+			struct lttng_kernel_event_notifier_private *event_notifier_priv =
+				container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+			struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
+
+			fptr(event_notifier, ret, args[0]);
+		}
 		break;
 	}
 	case 2:
@@ -963,8 +1094,13 @@ void syscall_exit_event_notifier_call_func(struct hlist_head *dispatch_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(notifier, dispatch_list, u.syscall.node)
-			fptr(notifier, ret, args[0], args[1]);
+		lttng_hlist_for_each_entry_rcu(event_priv, dispatch_list, u.syscall.node) {
+			struct lttng_kernel_event_notifier_private *event_notifier_priv =
+				container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+			struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
+
+			fptr(event_notifier, ret, args[0], args[1]);
+		}
 		break;
 	}
 	case 3:
@@ -977,8 +1113,13 @@ void syscall_exit_event_notifier_call_func(struct hlist_head *dispatch_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(notifier, dispatch_list, u.syscall.node)
-			fptr(notifier, ret, args[0], args[1], args[2]);
+		lttng_hlist_for_each_entry_rcu(event_priv, dispatch_list, u.syscall.node) {
+			struct lttng_kernel_event_notifier_private *event_notifier_priv =
+				container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+			struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
+
+			fptr(event_notifier, ret, args[0], args[1], args[2]);
+		}
 		break;
 	}
 	case 4:
@@ -992,8 +1133,13 @@ void syscall_exit_event_notifier_call_func(struct hlist_head *dispatch_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(notifier, dispatch_list, u.syscall.node)
-			fptr(notifier, ret, args[0], args[1], args[2], args[3]);
+		lttng_hlist_for_each_entry_rcu(event_priv, dispatch_list, u.syscall.node) {
+			struct lttng_kernel_event_notifier_private *event_notifier_priv =
+				container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+			struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
+
+			fptr(event_notifier, ret, args[0], args[1], args[2], args[3]);
+		}
 		break;
 	}
 	case 5:
@@ -1008,8 +1154,13 @@ void syscall_exit_event_notifier_call_func(struct hlist_head *dispatch_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(notifier, dispatch_list, u.syscall.node)
-			fptr(notifier, ret, args[0], args[1], args[2], args[3], args[4]);
+		lttng_hlist_for_each_entry_rcu(event_priv, dispatch_list, u.syscall.node) {
+			struct lttng_kernel_event_notifier_private *event_notifier_priv =
+				container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+			struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
+
+			fptr(event_notifier, ret, args[0], args[1], args[2], args[3], args[4]);
+		}
 		break;
 	}
 	case 6:
@@ -1025,8 +1176,13 @@ void syscall_exit_event_notifier_call_func(struct hlist_head *dispatch_list,
 		unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 
 		lttng_syscall_get_arguments(current, regs, args);
-		lttng_hlist_for_each_entry_rcu(notifier, dispatch_list, u.syscall.node)
-			fptr(notifier, ret, args[0], args[1], args[2], args[3], args[4], args[5]);
+		lttng_hlist_for_each_entry_rcu(event_priv, dispatch_list, u.syscall.node) {
+			struct lttng_kernel_event_notifier_private *event_notifier_priv =
+				container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+			struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
+
+			fptr(event_notifier, ret, args[0], args[1], args[2], args[3], args[4], args[5]);
+		}
 		break;
 	}
 	default:
@@ -1103,7 +1259,7 @@ void syscall_exit_event_notifier_probe(void *__data, struct pt_regs *regs,
 static
 int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *table, size_t table_len,
 	struct hlist_head *chan_table, struct lttng_event_enabler *event_enabler,
-	void *filter, enum sc_type type)
+	enum sc_type type)
 {
 	struct lttng_channel *chan = event_enabler->chan;
 	struct lttng_session *session = chan->session;
@@ -1113,7 +1269,8 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 	for (i = 0; i < table_len; i++) {
 		const struct lttng_kernel_event_desc *desc = table[i].desc;
 		struct lttng_kernel_abi_event ev;
-		struct lttng_event *event;
+		struct lttng_kernel_event_recorder_private *event_recorder_priv;
+		struct lttng_kernel_event_recorder *event_recorder;
 		struct hlist_head *head;
 		bool found = false;
 
@@ -1130,9 +1287,9 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 		head = utils_borrow_hash_table_bucket(
 			session->events_ht.table, LTTNG_EVENT_HT_SIZE,
 			desc->event_name);
-		lttng_hlist_for_each_entry(event, head, hlist) {
-			if (event->desc == desc
-				&& event->chan == event_enabler->chan)
+		lttng_hlist_for_each_entry(event_recorder_priv, head, hlist) {
+			if (event_recorder_priv->parent.desc == desc
+				&& event_recorder_priv->pub->chan == event_enabler->chan)
 				found = true;
 		}
 		if (found)
@@ -1161,19 +1318,18 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1);
 		ev.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
-		event = _lttng_event_create(chan, &ev, filter,
-					    desc, ev.instrumentation);
-		WARN_ON_ONCE(!event);
-		if (IS_ERR(event)) {
+		event_recorder = _lttng_kernel_event_recorder_create(chan, &ev, desc, ev.instrumentation);
+		WARN_ON_ONCE(!event_recorder);
+		if (IS_ERR(event_recorder)) {
 			/*
 			 * If something goes wrong in event registration
 			 * after the first one, we have no choice but to
 			 * leave the previous events in there, until
 			 * deleted by session teardown.
 			 */
-			return PTR_ERR(event);
+			return PTR_ERR(event_recorder);
 		}
-		hlist_add_head(&event->u.syscall.node, &chan_table[i]);
+		hlist_add_head(&event_recorder->priv->parent.u.syscall.node, &chan_table[i]);
 	}
 	return 0;
 }
@@ -1181,7 +1337,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 /*
  * Should be called with sessions lock held.
  */
-int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, void *filter)
+int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler)
 {
 	struct lttng_channel *chan = event_enabler->chan;
 	struct lttng_kernel_abi_event ev;
@@ -1191,14 +1347,14 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, voi
 
 	if (!chan->sc_table) {
 		/* create syscall table mapping syscall to events */
-		chan->sc_table = kzalloc(sizeof(struct lttng_event *)
+		chan->sc_table = kzalloc(sizeof(struct lttng_kernel_event_recorder *)
 					* ARRAY_SIZE(sc_table), GFP_KERNEL);
 		if (!chan->sc_table)
 			return -ENOMEM;
 	}
 	if (!chan->sc_exit_table) {
 		/* create syscall table mapping syscall to events */
-		chan->sc_exit_table = kzalloc(sizeof(struct lttng_event *)
+		chan->sc_exit_table = kzalloc(sizeof(struct lttng_kernel_event_recorder *)
 					* ARRAY_SIZE(sc_exit_table), GFP_KERNEL);
 		if (!chan->sc_exit_table)
 			return -ENOMEM;
@@ -1208,7 +1364,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, voi
 #ifdef CONFIG_COMPAT
 	if (!chan->compat_sc_table) {
 		/* create syscall table mapping compat syscall to events */
-		chan->compat_sc_table = kzalloc(sizeof(struct lttng_event *)
+		chan->compat_sc_table = kzalloc(sizeof(struct lttng_kernel_event_recorder *)
 					* ARRAY_SIZE(compat_sc_table), GFP_KERNEL);
 		if (!chan->compat_sc_table)
 			return -ENOMEM;
@@ -1216,7 +1372,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, voi
 
 	if (!chan->compat_sc_exit_table) {
 		/* create syscall table mapping compat syscall to events */
-		chan->compat_sc_exit_table = kzalloc(sizeof(struct lttng_event *)
+		chan->compat_sc_exit_table = kzalloc(sizeof(struct lttng_kernel_event_recorder *)
 					* ARRAY_SIZE(compat_sc_exit_table), GFP_KERNEL);
 		if (!chan->compat_sc_exit_table)
 			return -ENOMEM;
@@ -1225,7 +1381,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, voi
 	if (hlist_empty(&chan->sc_unknown)) {
 		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___syscall_entry_unknown;
-		struct lttng_event *event;
+		struct lttng_kernel_event_recorder *event_recorder;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
@@ -1233,19 +1389,19 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, voi
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
 		ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
-		event = _lttng_event_create(chan, &ev, filter, desc,
+		event_recorder = _lttng_kernel_event_recorder_create(chan, &ev, desc,
 					    ev.instrumentation);
-		WARN_ON_ONCE(!event);
-		if (IS_ERR(event)) {
-			return PTR_ERR(event);
+		WARN_ON_ONCE(!event_recorder);
+		if (IS_ERR(event_recorder)) {
+			return PTR_ERR(event_recorder);
 		}
-		hlist_add_head(&event->u.syscall.node, &chan->sc_unknown);
+		hlist_add_head(&event_recorder->priv->parent.u.syscall.node, &chan->sc_unknown);
 	}
 
 	if (hlist_empty(&chan->sc_compat_unknown)) {
 		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___compat_syscall_entry_unknown;
-		struct lttng_event *event;
+		struct lttng_kernel_event_recorder *event_recorder;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
@@ -1253,19 +1409,19 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, voi
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
 		ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
-		event = _lttng_event_create(chan, &ev, filter, desc,
+		event_recorder = _lttng_kernel_event_recorder_create(chan, &ev, desc,
 					    ev.instrumentation);
-		WARN_ON_ONCE(!event);
-		if (IS_ERR(event)) {
-			return PTR_ERR(event);
+		WARN_ON_ONCE(!event_recorder);
+		if (IS_ERR(event_recorder)) {
+			return PTR_ERR(event_recorder);
 		}
-		hlist_add_head(&event->u.syscall.node, &chan->sc_compat_unknown);
+		hlist_add_head(&event_recorder->priv->parent.u.syscall.node, &chan->sc_compat_unknown);
 	}
 
 	if (hlist_empty(&chan->compat_sc_exit_unknown)) {
 		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___compat_syscall_exit_unknown;
-		struct lttng_event *event;
+		struct lttng_kernel_event_recorder *event_recorder;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
@@ -1273,19 +1429,19 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, voi
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
 		ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
-		event = _lttng_event_create(chan, &ev, filter, desc,
+		event_recorder = _lttng_kernel_event_recorder_create(chan, &ev, desc,
 					    ev.instrumentation);
-		WARN_ON_ONCE(!event);
-		if (IS_ERR(event)) {
-			return PTR_ERR(event);
+		WARN_ON_ONCE(!event_recorder);
+		if (IS_ERR(event_recorder)) {
+			return PTR_ERR(event_recorder);
 		}
-		hlist_add_head(&event->u.syscall.node, &chan->compat_sc_exit_unknown);
+		hlist_add_head(&event_recorder->priv->parent.u.syscall.node, &chan->compat_sc_exit_unknown);
 	}
 
 	if (hlist_empty(&chan->sc_exit_unknown)) {
 		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___syscall_exit_unknown;
-		struct lttng_event *event;
+		struct lttng_kernel_event_recorder *event_recorder;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
@@ -1293,33 +1449,31 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, voi
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
 		ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
-		event = _lttng_event_create(chan, &ev, filter, desc,
+		event_recorder = _lttng_kernel_event_recorder_create(chan, &ev, desc,
 					    ev.instrumentation);
-		WARN_ON_ONCE(!event);
-		if (IS_ERR(event)) {
-			return PTR_ERR(event);
+		WARN_ON_ONCE(!event_recorder);
+		if (IS_ERR(event_recorder)) {
+			return PTR_ERR(event_recorder);
 		}
-		hlist_add_head(&event->u.syscall.node, &chan->sc_exit_unknown);
+		hlist_add_head(&event_recorder->priv->parent.u.syscall.node, &chan->sc_exit_unknown);
 	}
 
 	ret = lttng_create_syscall_event_if_missing(sc_table, ARRAY_SIZE(sc_table),
-			chan->sc_table, event_enabler, filter, SC_TYPE_ENTRY);
+			chan->sc_table, event_enabler, SC_TYPE_ENTRY);
 	if (ret)
 		return ret;
 	ret = lttng_create_syscall_event_if_missing(sc_exit_table, ARRAY_SIZE(sc_exit_table),
-			chan->sc_exit_table, event_enabler, filter, SC_TYPE_EXIT);
+			chan->sc_exit_table, event_enabler, SC_TYPE_EXIT);
 	if (ret)
 		return ret;
 
 #ifdef CONFIG_COMPAT
 	ret = lttng_create_syscall_event_if_missing(compat_sc_table, ARRAY_SIZE(compat_sc_table),
-			chan->compat_sc_table, event_enabler, filter,
-			SC_TYPE_COMPAT_ENTRY);
+			chan->compat_sc_table, event_enabler, SC_TYPE_COMPAT_ENTRY);
 	if (ret)
 		return ret;
 	ret = lttng_create_syscall_event_if_missing(compat_sc_exit_table, ARRAY_SIZE(compat_sc_exit_table),
-			chan->compat_sc_exit_table, event_enabler, filter,
-			SC_TYPE_COMPAT_EXIT);
+			chan->compat_sc_exit_table, event_enabler, SC_TYPE_COMPAT_EXIT);
 	if (ret)
 		return ret;
 #endif
@@ -1359,8 +1513,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler, voi
  * Should be called with sessions lock held.
  */
 int lttng_syscalls_register_event_notifier(
-		struct lttng_event_notifier_enabler *event_notifier_enabler,
-		void *filter)
+		struct lttng_event_notifier_enabler *event_notifier_enabler)
 {
 	struct lttng_event_notifier_group *group = event_notifier_enabler->group;
 	unsigned int i;
@@ -1464,7 +1617,8 @@ int create_unknown_event_notifier(
 		struct lttng_event_notifier_enabler *event_notifier_enabler,
 		enum sc_type type)
 {
-	struct lttng_event_notifier *notifier;
+	struct lttng_kernel_event_notifier_private *event_notifier_priv;
+	struct lttng_kernel_event_notifier *event_notifier;
 	const struct lttng_kernel_event_desc *desc;
 	struct lttng_event_notifier_group *group = event_notifier_enabler->group;
 	struct lttng_kernel_abi_event_notifier event_notifier_param;
@@ -1513,9 +1667,9 @@ int create_unknown_event_notifier(
 	 */
 	head = utils_borrow_hash_table_bucket(group->event_notifiers_ht.table,
 		LTTNG_EVENT_NOTIFIER_HT_SIZE, desc->event_name);
-	lttng_hlist_for_each_entry(notifier, head, hlist) {
-		if (notifier->desc == desc &&
-				notifier->user_token == base_enabler->user_token)
+	lttng_hlist_for_each_entry(event_notifier_priv, head, hlist) {
+		if (event_notifier_priv->parent.desc == desc &&
+				event_notifier_priv->parent.user_token == base_enabler->user_token)
 			found = true;
 	}
 	if (found)
@@ -1531,17 +1685,17 @@ int create_unknown_event_notifier(
 	event_notifier_param.event.u.syscall.abi = abi;
 	event_notifier_param.event.u.syscall.entryexit = entryexit;
 
-	notifier = _lttng_event_notifier_create(desc, user_token,
-		error_counter_index, group, &event_notifier_param, NULL,
+	event_notifier = _lttng_event_notifier_create(desc, user_token,
+		error_counter_index, group, &event_notifier_param,
 		event_notifier_param.event.instrumentation);
-	if (IS_ERR(notifier)) {
+	if (IS_ERR(event_notifier)) {
 		printk(KERN_INFO "Unable to create unknown notifier %s\n",
 			desc->event_name);
 		ret = -ENOMEM;
 		goto end;
 	}
 
-	hlist_add_head_rcu(&notifier->u.syscall.node, unknown_dispatch_list);
+	hlist_add_head_rcu(&event_notifier->priv->parent.u.syscall.node, unknown_dispatch_list);
 
 end:
 	return ret;
@@ -1549,7 +1703,7 @@ end:
 
 static int create_matching_event_notifiers(
 		struct lttng_event_notifier_enabler *event_notifier_enabler,
-		void *filter, const struct trace_syscall_entry *table,
+		const struct trace_syscall_entry *table,
 		size_t table_len, enum sc_type type)
 {
 	struct lttng_event_notifier_group *group = event_notifier_enabler->group;
@@ -1561,7 +1715,8 @@ static int create_matching_event_notifiers(
 
 	/* iterate over all syscall and create event_notifier that match */
 	for (i = 0; i < table_len; i++) {
-		struct lttng_event_notifier *event_notifier;
+		struct lttng_kernel_event_notifier_private *event_notifier_priv;
+		struct lttng_kernel_event_notifier *event_notifier;
 		struct lttng_kernel_abi_event_notifier event_notifier_param;
 		struct hlist_head *head;
 		int found = 0;
@@ -1581,9 +1736,9 @@ static int create_matching_event_notifiers(
 		 */
 		head = utils_borrow_hash_table_bucket(group->event_notifiers_ht.table,
 			LTTNG_EVENT_NOTIFIER_HT_SIZE, desc->event_name);
-		lttng_hlist_for_each_entry(event_notifier, head, hlist) {
-			if (event_notifier->desc == desc
-				&& event_notifier->user_token == event_notifier_enabler->base.user_token)
+		lttng_hlist_for_each_entry(event_notifier_priv, head, hlist) {
+			if (event_notifier_priv->parent.desc == desc
+				&& event_notifier_priv->parent.user_token == event_notifier_enabler->base.user_token)
 				found = 1;
 		}
 		if (found)
@@ -1615,7 +1770,7 @@ static int create_matching_event_notifiers(
 
 		event_notifier = _lttng_event_notifier_create(desc, user_token,
 			error_counter_index, group, &event_notifier_param,
-			filter, event_notifier_param.event.instrumentation);
+			event_notifier_param.event.instrumentation);
 		if (IS_ERR(event_notifier)) {
 			printk(KERN_INFO "Unable to create event_notifier %s\n",
 				desc->event_name);
@@ -1623,7 +1778,7 @@ static int create_matching_event_notifiers(
 			goto end;
 		}
 
-		event_notifier->u.syscall.syscall_id = i;
+		event_notifier->priv->parent.u.syscall.syscall_id = i;
 	}
 
 end:
@@ -1631,9 +1786,8 @@ end:
 
 }
 
-int lttng_syscals_create_matching_event_notifiers(
-		struct lttng_event_notifier_enabler *event_notifier_enabler,
-		void *filter)
+int lttng_syscalls_create_matching_event_notifiers(
+		struct lttng_event_notifier_enabler *event_notifier_enabler)
 {
 	int ret;
 	struct lttng_enabler *base_enabler =
@@ -1643,12 +1797,12 @@ int lttng_syscals_create_matching_event_notifiers(
 
 	if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRY || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT) {
 		ret = create_matching_event_notifiers(event_notifier_enabler,
-			filter, sc_table, ARRAY_SIZE(sc_table), SC_TYPE_ENTRY);
+			sc_table, ARRAY_SIZE(sc_table), SC_TYPE_ENTRY);
 		if (ret)
 			goto end;
 
 		ret = create_matching_event_notifiers(event_notifier_enabler,
-			filter, compat_sc_table, ARRAY_SIZE(compat_sc_table),
+			compat_sc_table, ARRAY_SIZE(compat_sc_table),
 			SC_TYPE_COMPAT_ENTRY);
 		if (ret)
 			goto end;
@@ -1666,7 +1820,7 @@ int lttng_syscals_create_matching_event_notifiers(
 
 	if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_EXIT || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT) {
 		ret = create_matching_event_notifiers(event_notifier_enabler,
-			filter, sc_exit_table, ARRAY_SIZE(sc_exit_table),
+			sc_exit_table, ARRAY_SIZE(sc_exit_table),
 			SC_TYPE_EXIT);
 		if (ret)
 			goto end;
@@ -1677,7 +1831,7 @@ int lttng_syscals_create_matching_event_notifiers(
 			goto end;
 
 		ret = create_matching_event_notifiers(event_notifier_enabler,
-			filter, compat_sc_exit_table, ARRAY_SIZE(compat_sc_exit_table),
+			compat_sc_exit_table, ARRAY_SIZE(compat_sc_exit_table),
 			SC_TYPE_COMPAT_EXIT);
 		if (ret)
 			goto end;
@@ -1910,25 +2064,26 @@ int lttng_syscall_filter_enable(
 }
 
 int lttng_syscall_filter_enable_event_notifier(
-		struct lttng_event_notifier *notifier)
+		struct lttng_kernel_event_notifier *event_notifier)
 {
-	struct lttng_event_notifier_group *group = notifier->group;
-	unsigned int syscall_id = notifier->u.syscall.syscall_id;
+	struct lttng_event_notifier_group *group = event_notifier->priv->group;
+	unsigned int syscall_id = event_notifier->priv->parent.u.syscall.syscall_id;
 	struct hlist_head *dispatch_list;
 	int ret = 0;
 
-	WARN_ON_ONCE(notifier->instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
+	WARN_ON_ONCE(event_notifier->priv->parent.instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
 
 	ret = lttng_syscall_filter_enable(group->sc_filter,
-		notifier->desc->event_name, notifier->u.syscall.abi,
-		notifier->u.syscall.entryexit);
+		event_notifier->priv->parent.desc->event_name,
+		event_notifier->priv->parent.u.syscall.abi,
+		event_notifier->priv->parent.u.syscall.entryexit);
 	if (ret) {
 		goto end;
 	}
 
-	switch (notifier->u.syscall.entryexit) {
+	switch (event_notifier->priv->parent.u.syscall.entryexit) {
 	case LTTNG_SYSCALL_ENTRY:
-		switch (notifier->u.syscall.abi) {
+		switch (event_notifier->priv->parent.u.syscall.abi) {
 		case LTTNG_SYSCALL_ABI_NATIVE:
 			dispatch_list = &group->event_notifier_syscall_dispatch[syscall_id];
 			break;
@@ -1941,7 +2096,7 @@ int lttng_syscall_filter_enable_event_notifier(
 		}
 		break;
 	case LTTNG_SYSCALL_EXIT:
-		switch (notifier->u.syscall.abi) {
+		switch (event_notifier->priv->parent.u.syscall.abi) {
 		case LTTNG_SYSCALL_ABI_NATIVE:
 			dispatch_list = &group->event_notifier_exit_syscall_dispatch[syscall_id];
 			break;
@@ -1958,7 +2113,7 @@ int lttng_syscall_filter_enable_event_notifier(
 		goto end;
 	}
 
-	hlist_add_head_rcu(&notifier->u.syscall.node, dispatch_list);
+	hlist_add_head_rcu(&event_notifier->priv->parent.u.syscall.node, dispatch_list);
 
 end:
 	return ret ;
@@ -1966,13 +2121,14 @@ end:
 
 int lttng_syscall_filter_enable_event(
 		struct lttng_channel *channel,
-		struct lttng_event *event)
+		struct lttng_kernel_event_recorder *event_recorder)
 {
-	WARN_ON_ONCE(event->instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
+	WARN_ON_ONCE(event_recorder->priv->parent.instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
 
 	return lttng_syscall_filter_enable(channel->sc_filter,
-		event->desc->event_name, event->u.syscall.abi,
-		event->u.syscall.entryexit);
+		event_recorder->priv->parent.desc->event_name,
+		event_recorder->priv->parent.u.syscall.abi,
+		event_recorder->priv->parent.u.syscall.entryexit);
 }
 
 static
@@ -2036,29 +2192,31 @@ int lttng_syscall_filter_disable(
 }
 
 int lttng_syscall_filter_disable_event_notifier(
-		struct lttng_event_notifier *notifier)
+		struct lttng_kernel_event_notifier *event_notifier)
 {
-	struct lttng_event_notifier_group *group = notifier->group;
+	struct lttng_event_notifier_group *group = event_notifier->priv->group;
 	int ret;
 
-	WARN_ON_ONCE(notifier->instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
+	WARN_ON_ONCE(event_notifier->priv->parent.instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
 
 	ret = lttng_syscall_filter_disable(group->sc_filter,
-		notifier->desc->event_name, notifier->u.syscall.abi,
-		notifier->u.syscall.entryexit);
+		event_notifier->priv->parent.desc->event_name,
+		event_notifier->priv->parent.u.syscall.abi,
+		event_notifier->priv->parent.u.syscall.entryexit);
 	WARN_ON_ONCE(ret != 0);
 
-	hlist_del_rcu(&notifier->u.syscall.node);
+	hlist_del_rcu(&event_notifier->priv->parent.u.syscall.node);
 	return 0;
 }
 
 int lttng_syscall_filter_disable_event(
 		struct lttng_channel *channel,
-		struct lttng_event *event)
+		struct lttng_kernel_event_recorder *event_recorder)
 {
 	return lttng_syscall_filter_disable(channel->sc_filter,
-		event->desc->event_name, event->u.syscall.abi,
-		event->u.syscall.entryexit);
+		event_recorder->priv->parent.desc->event_name,
+		event_recorder->priv->parent.u.syscall.abi,
+		event_recorder->priv->parent.u.syscall.entryexit);
 }
 
 static

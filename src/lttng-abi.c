@@ -1860,15 +1860,14 @@ int lttng_abi_create_event(struct file *channel_file,
 	case LTTNG_KERNEL_ABI_KRETPROBE:		/* Fall-through */
 	case LTTNG_KERNEL_ABI_UPROBE:
 	{
-		struct lttng_event *event;
+		struct lttng_kernel_event_recorder *event;
 
 		/*
 		 * We tolerate no failure path after event creation. It
 		 * will stay invariant for the rest of the session.
 		 */
-		event = lttng_event_create(channel, event_param,
-				NULL, NULL,
-				event_param->instrumentation);
+		event = lttng_kernel_event_recorder_create(channel, event_param,
+				NULL, event_param->instrumentation);
 		WARN_ON_ONCE(!event);
 		if (IS_ERR(event)) {
 			ret = PTR_ERR(event);
@@ -1901,7 +1900,7 @@ fd_error:
 static
 long lttng_event_notifier_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	struct lttng_event_notifier *event_notifier = file->private_data;
+	struct lttng_kernel_event_notifier *event_notifier = file->private_data;
 
 	switch (cmd) {
 	case LTTNG_KERNEL_ABI_ENABLE:
@@ -1948,10 +1947,10 @@ long lttng_event_notifier_enabler_ioctl(struct file *file, unsigned int cmd, uns
 static
 int lttng_event_notifier_event_release(struct inode *inode, struct file *file)
 {
-	struct lttng_event_notifier *event_notifier = file->private_data;
+	struct lttng_kernel_event_notifier *event_notifier = file->private_data;
 
 	if (event_notifier)
-		fput(event_notifier->group->file);
+		fput(event_notifier->priv->group->file);
 	return 0;
 }
 
@@ -2084,7 +2083,7 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 	case LTTNG_KERNEL_ABI_KRETPROBE:		/* Fall-through */
 	case LTTNG_KERNEL_ABI_UPROBE:
 	{
-		struct lttng_event_notifier *event_notifier;
+		struct lttng_kernel_event_notifier *event_notifier;
 
 		/*
 		 * We tolerate no failure path after event notifier creation.
@@ -2094,7 +2093,7 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 				event_notifier_param->event.token,
 				event_notifier_param->error_counter_index,
 				event_notifier_group,
-				event_notifier_param, NULL,
+				event_notifier_param,
 				event_notifier_param->event.instrumentation);
 		WARN_ON_ONCE(!event_notifier);
 		if (IS_ERR(event_notifier)) {
@@ -2583,7 +2582,7 @@ static const struct file_operations lttng_metadata_fops = {
 static
 long lttng_event_recorder_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	struct lttng_event *event = file->private_data;
+	struct lttng_kernel_event_recorder *event = file->private_data;
 
 	switch (cmd) {
 	case LTTNG_KERNEL_ABI_OLD_CONTEXT:
@@ -2663,7 +2662,7 @@ long lttng_event_recorder_enabler_ioctl(struct file *file, unsigned int cmd, uns
 static
 int lttng_event_recorder_event_release(struct inode *inode, struct file *file)
 {
-	struct lttng_event *event = file->private_data;
+	struct lttng_kernel_event_recorder *event = file->private_data;
 
 	if (event)
 		fput(event->chan->file);

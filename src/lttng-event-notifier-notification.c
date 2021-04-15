@@ -325,18 +325,18 @@ int notification_append_empty_capture(
 
 static
 int notification_init(struct lttng_event_notifier_notification *notif,
-		struct lttng_event_notifier *event_notifier)
+		struct lttng_kernel_event_notifier *event_notifier)
 {
 	struct lttng_msgpack_writer *writer = &notif->writer;
 	int ret = 0;
 
 	notif->has_captures = false;
 
-	if (event_notifier->num_captures > 0) {
+	if (event_notifier->priv->num_captures > 0) {
 		lttng_msgpack_writer_init(writer, notif->capture_buf,
 				CAPTURE_BUFFER_SIZE);
 
-		ret = lttng_msgpack_begin_array(writer, event_notifier->num_captures);
+		ret = lttng_msgpack_begin_array(writer, event_notifier->priv->num_captures);
 		if (ret) {
 			WARN_ON_ONCE(1);
 			goto end;
@@ -350,10 +350,10 @@ end:
 }
 
 static
-void record_error(struct lttng_event_notifier *event_notifier)
+void record_error(struct lttng_kernel_event_notifier *event_notifier)
 {
 
-	struct lttng_event_notifier_group *event_notifier_group = event_notifier->group;
+	struct lttng_event_notifier_group *event_notifier_group = event_notifier->priv->group;
 	struct lttng_counter *error_counter;
 	size_t dimension_index[1];
 	int ret;
@@ -368,7 +368,7 @@ void record_error(struct lttng_event_notifier *event_notifier)
 	if (!error_counter)
 		return;
 
-	dimension_index[0] = event_notifier->error_counter_index;
+	dimension_index[0] = event_notifier->priv->error_counter_index;
 
 	ret = error_counter->ops->counter_add(error_counter->counter,
 			dimension_index, 1);
@@ -378,16 +378,16 @@ void record_error(struct lttng_event_notifier *event_notifier)
 
 static
 void notification_send(struct lttng_event_notifier_notification *notif,
-		struct lttng_event_notifier *event_notifier)
+		struct lttng_kernel_event_notifier *event_notifier)
 {
-	struct lttng_event_notifier_group *event_notifier_group = event_notifier->group;
+	struct lttng_event_notifier_group *event_notifier_group = event_notifier->priv->group;
 	struct lib_ring_buffer_ctx ctx;
 	struct lttng_kernel_abi_event_notifier_notification kernel_notif;
 	size_t capture_buffer_content_len, reserve_size;
 	int ret;
 
 	reserve_size = sizeof(kernel_notif);
-	kernel_notif.token = event_notifier->user_token;
+	kernel_notif.token = event_notifier->priv->parent.user_token;
 
 	if (notif->has_captures) {
 		capture_buffer_content_len = notif->writer.write_pos - notif->writer.buffer;
@@ -425,15 +425,15 @@ void notification_send(struct lttng_event_notifier_notification *notif,
 	irq_work_queue(&event_notifier_group->wakeup_pending);
 }
 
-void lttng_event_notifier_notification_send(struct lttng_event_notifier *event_notifier,
-		struct lttng_probe_ctx *lttng_probe_ctx,
+void lttng_event_notifier_notification_send(struct lttng_kernel_event_notifier *event_notifier,
+		struct lttng_probe_ctx *probe_ctx,
 		const char *stack_data,
-		struct lttng_kernel_notifier_ctx *notif_ctx)
+		struct lttng_kernel_notification_ctx *notif_ctx)
 {
 	struct lttng_event_notifier_notification notif = { 0 };
 	int ret;
 
-	if (unlikely(!READ_ONCE(event_notifier->enabled)))
+	if (unlikely(!READ_ONCE(event_notifier->parent.enabled)))
 		return;
 
 	ret = notification_init(&notif, event_notifier);
@@ -452,11 +452,11 @@ void lttng_event_notifier_notification_send(struct lttng_event_notifier *event_n
 		 * fails, append an empty capture to the buffer.
 		 */
 		list_for_each_entry_rcu(capture_bc_runtime,
-				&event_notifier->capture_bytecode_runtime_head, node) {
+				&event_notifier->priv->capture_bytecode_runtime_head, node) {
 			struct lttng_interpreter_output output;
 
-			if (capture_bc_runtime->interpreter_funcs.capture(capture_bc_runtime,
-					lttng_probe_ctx, stack_data, &output) & LTTNG_INTERPRETER_RECORD_FLAG)
+			if (capture_bc_runtime->interpreter_funcs.capture(capture_bc_runtime, probe_ctx,
+					stack_data, &output) & LTTNG_INTERPRETER_RECORD_FLAG)
 				ret = notification_append_capture(&notif, &output);
 			else
 				ret = notification_append_empty_capture(&notif);
