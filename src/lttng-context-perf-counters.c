@@ -223,7 +223,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 				  const char *name,
 				  struct lttng_kernel_ctx **ctx)
 {
-	struct lttng_kernel_ctx_field ctx_field;
+	struct lttng_kernel_ctx_field ctx_field = { 0 };
 	struct lttng_kernel_event_field *event_field;
 	struct lttng_perf_counter_field *perf_field;
 	struct perf_event **events;
