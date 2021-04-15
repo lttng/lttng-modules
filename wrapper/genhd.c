@@ -9,7 +9,7 @@
  * Copyright (C) 2021 Michael Jeanson <mjeanson@efficios.com>
  */
 
-#include <lttng/kernel-version.h>
+#include <lttng-kernel-version.h>
 #include <linux/module.h>
 #include <wrapper/genhd.h>
 

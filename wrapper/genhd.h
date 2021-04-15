@@ -13,7 +13,7 @@
 #define _LTTNG_WRAPPER_GENHD_H
 
 #include <linux/genhd.h>
-#include <lttng/kernel-version.h>
+#include <lttng-kernel-version.h>
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
 #define LTTNG_DISK_PART_TYPE struct block_device
