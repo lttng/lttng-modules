@@ -88,7 +88,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(kmem_alloc_node, kmem_cache_alloc_node,
 )
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,12,0))
-LTTNG_TRACEPOINT_EVENT(kfree,
+LTTNG_TRACEPOINT_EVENT_MAP(kfree,
+
+	kmem_kfree,
 
 	TP_PROTO(unsigned long call_site, const void *ptr),
 
