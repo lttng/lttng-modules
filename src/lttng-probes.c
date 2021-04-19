@@ -41,24 +41,31 @@ EXPORT_PER_CPU_SYMBOL_GPL(lttng_dynamic_len_stack);
 static
 int check_event_provider(struct lttng_kernel_probe_desc *desc)
 {
-	int i;
+	int i, mismatch = 0;
 	size_t provider_name_len;
 
 	provider_name_len = strnlen(desc->provider_name,
 				LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1);
 	for (i = 0; i < desc->nr_events; i++) {
-		if (strncmp(desc->event_desc[i]->event_name,
-				desc->provider_name,
-				provider_name_len))
-			return 0;	/* provider mismatch */
 		/*
-		 * The event needs to contain at least provider name + _ +
+		 * The event name needs to start with provider name + _ +
 		 * one or more letter.
 		 */
-		if (strlen(desc->event_desc[i]->event_name) <= provider_name_len + 1)
-			return 0;	/* provider mismatch */
-		if (desc->event_desc[i]->event_name[provider_name_len] != '_')
-			return 0;	/* provider mismatch */
+		if (strncmp(desc->event_desc[i]->event_name, desc->provider_name, provider_name_len))
+			mismatch = 1;
+		else if (strlen(desc->event_desc[i]->event_name) <= provider_name_len + 1)
+			mismatch = 1;
+		else if (desc->event_desc[i]->event_name[provider_name_len] != '_')
+			mismatch = 1;
+
+		if (mismatch) {
+			printk(KERN_WARNING "LTTng: event provider mismatch: "
+				"The event name needs to start with provider "
+				"name + _ + one or more letter, "
+				"provider: %s, event name: %s\n",
+				desc->provider_name, desc->event_desc[i]->event_name);
+			return 0;
+		}
 	}
 	return 1;
 }
