@@ -793,6 +793,37 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	struct lttng_kernel_abi_channel chan_param;
 	struct lttng_kernel_abi_old_channel old_chan_param;
 
+	/*
+	 * Handle backward compatibility. OLD commands have wrong
+	 * directions, replace them by the correct direction.
+	 */
+	switch (cmd) {
+	case LTTNG_KERNEL_ABI_OLD_SESSION_TRACK_PID:
+		cmd = LTTNG_KERNEL_ABI_SESSION_TRACK_PID;
+		break;
+	case LTTNG_KERNEL_ABI_OLD_SESSION_UNTRACK_PID:
+		cmd = LTTNG_KERNEL_ABI_SESSION_UNTRACK_PID;
+		break;
+	case LTTNG_KERNEL_ABI_OLD_SESSION_TRACK_ID:
+		cmd = LTTNG_KERNEL_ABI_SESSION_TRACK_ID;
+		break;
+	case LTTNG_KERNEL_ABI_OLD_SESSION_UNTRACK_ID:
+		cmd = LTTNG_KERNEL_ABI_SESSION_UNTRACK_ID;
+		break;
+	case LTTNG_KERNEL_ABI_OLD_SESSION_LIST_TRACKER_IDS:
+		cmd = LTTNG_KERNEL_ABI_SESSION_LIST_TRACKER_IDS;
+		break;
+	case LTTNG_KERNEL_ABI_OLD_SESSION_SET_NAME:
+		cmd = LTTNG_KERNEL_ABI_SESSION_SET_NAME;
+		break;
+	case LTTNG_KERNEL_ABI_OLD_SESSION_SET_CREATION_TIME:
+		cmd = LTTNG_KERNEL_ABI_SESSION_SET_CREATION_TIME;
+		break;
+	default:
+		/* Nothing to do. */
+		break;
+	}
+
 	switch (cmd) {
 	case LTTNG_KERNEL_ABI_OLD_CHANNEL:
 	{
