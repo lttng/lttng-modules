@@ -28,55 +28,74 @@ int lttng_uprobes_event_handler_pre(struct uprobe_consumer *uc, struct pt_regs *
 {
 	struct lttng_uprobe_handler *uprobe_handler =
 		container_of(uc, struct lttng_uprobe_handler, up_consumer);
-	struct lttng_kernel_event_recorder *event_recorder = uprobe_handler->u.event;
+	struct lttng_kernel_event_common *event = uprobe_handler->event;
 	struct lttng_probe_ctx lttng_probe_ctx = {
-		.event = event_recorder,
+		.event = event,
 		.interruptible = !lttng_regs_irqs_disabled(regs),
 	};
-	struct lttng_channel *chan = event_recorder->chan;
-	struct lib_ring_buffer_ctx ctx;
-	int ret;
-
 	struct {
 		unsigned long ip;
 	} payload;
 
-	if (unlikely(!LTTNG_READ_ONCE(chan->session->active)))
-		return 0;
-	if (unlikely(!LTTNG_READ_ONCE(chan->enabled)))
-		return 0;
-	if (unlikely(!LTTNG_READ_ONCE(event_recorder->parent.enabled)))
-		return 0;
+	switch (event->type) {
+	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+	{
+		struct lttng_kernel_event_recorder *event_recorder =
+			container_of(event, struct lttng_kernel_event_recorder, parent);
+		struct lttng_channel *chan = event_recorder->chan;
 
-	lib_ring_buffer_ctx_init(&ctx, chan->chan, &lttng_probe_ctx,
-		sizeof(payload), lttng_alignof(payload), -1);
+		if (unlikely(!LTTNG_READ_ONCE(chan->session->active)))
+			return 0;
+		if (unlikely(!LTTNG_READ_ONCE(chan->enabled)))
+			return 0;
+		break;
+	}
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
+		break;
+	default:
+		WARN_ON_ONCE(1);
+	}
 
-	ret = chan->ops->event_reserve(&ctx, event_recorder->priv->id);
-	if (ret < 0)
-		return 0;
-
-	/* Event payload. */
-	payload.ip = (unsigned long)instruction_pointer(regs);
-
-	lib_ring_buffer_align_ctx(&ctx, lttng_alignof(payload));
-	chan->ops->event_write(&ctx, &payload, sizeof(payload));
-	chan->ops->event_commit(&ctx);
-	return 0;
-}
-
-static
-int lttng_uprobes_event_notifier_handler_pre(struct uprobe_consumer *uc, struct pt_regs *regs)
-{
-	struct lttng_uprobe_handler *uprobe_handler =
-		container_of(uc, struct lttng_uprobe_handler, up_consumer);
-	struct lttng_kernel_event_notifier *event_notifier = uprobe_handler->u.event_notifier;
-	struct lttng_kernel_notification_ctx notif_ctx;
-
-	if (unlikely(!READ_ONCE(event_notifier->parent.enabled)))
+	if (unlikely(!LTTNG_READ_ONCE(event->enabled)))
 		return 0;
 
-	notif_ctx.eval_capture = LTTNG_READ_ONCE(event_notifier->eval_capture);
-	event_notifier->notification_send(event_notifier, NULL, NULL, &notif_ctx);
+	switch (event->type) {
+	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+	{
+		struct lttng_kernel_event_recorder *event_recorder =
+			container_of(event, struct lttng_kernel_event_recorder, parent);
+		struct lttng_channel *chan = event_recorder->chan;
+		struct lib_ring_buffer_ctx ctx;
+		int ret;
+
+		lib_ring_buffer_ctx_init(&ctx, chan->chan, &lttng_probe_ctx,
+			sizeof(payload), lttng_alignof(payload), -1);
+
+		ret = chan->ops->event_reserve(&ctx, event_recorder->priv->id);
+		if (ret < 0)
+			return 0;
+
+		/* Event payload. */
+		payload.ip = (unsigned long)instruction_pointer(regs);
+
+		lib_ring_buffer_align_ctx(&ctx, lttng_alignof(payload));
+		chan->ops->event_write(&ctx, &payload, sizeof(payload));
+		chan->ops->event_commit(&ctx);
+		break;
+	}
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
+	{
+		struct lttng_kernel_event_notifier *event_notifier =
+			container_of(event, struct lttng_kernel_event_notifier, parent);
+		struct lttng_kernel_notification_ctx notif_ctx;
+
+		notif_ctx.eval_capture = LTTNG_READ_ONCE(event_notifier->eval_capture);
+		event_notifier->notification_send(event_notifier, NULL, NULL, &notif_ctx);
+		break;
+	}
+	default:
+		WARN_ON_ONCE(1);
+	}
 	return 0;
 }
 
@@ -217,7 +236,7 @@ int lttng_uprobes_add_callsite(struct lttng_uprobe *uprobe,
 	/* Ensure the memory we just allocated don't notify page faults. */
 	wrapper_vmalloc_sync_mappings();
 
-	uprobe_handler->u.event = priv_data;
+	uprobe_handler->event = priv_data;
 	uprobe_handler->up_consumer.handler = handler;
 
 	ret = copy_from_user(&uprobe_handler->offset, &callsite->u.uprobe.offset, sizeof(uint64_t));
@@ -245,21 +264,13 @@ end:
 	return ret;
 }
 
-int lttng_uprobes_event_add_callsite(struct lttng_kernel_event_recorder *event_recorder,
+int lttng_uprobes_event_add_callsite(struct lttng_kernel_event_common *event,
 	struct lttng_kernel_abi_event_callsite __user *callsite)
 {
-	return lttng_uprobes_add_callsite(&event_recorder->priv->parent.u.uprobe, callsite,
-		lttng_uprobes_event_handler_pre, event_recorder);
+	return lttng_uprobes_add_callsite(&event->priv->u.uprobe, callsite,
+		lttng_uprobes_event_handler_pre, event);
 }
 EXPORT_SYMBOL_GPL(lttng_uprobes_event_add_callsite);
-
-int lttng_uprobes_event_notifier_add_callsite(struct lttng_kernel_event_notifier *event_notifier,
-	struct lttng_kernel_abi_event_callsite __user *callsite)
-{
-	return lttng_uprobes_add_callsite(&event_notifier->priv->parent.u.uprobe, callsite,
-		lttng_uprobes_event_notifier_handler_pre, event_notifier);
-}
-EXPORT_SYMBOL_GPL(lttng_uprobes_event_notifier_add_callsite);
 
 static
 int lttng_uprobes_register(struct lttng_uprobe *uprobe, int fd)
@@ -339,7 +350,6 @@ void lttng_uprobes_unregister(struct inode *inode, struct list_head *head)
 		list_del(&iter->node);
 		kfree(iter);
 	}
-
 }
 
 void lttng_uprobes_unregister_event(struct lttng_kernel_event_recorder *event_recorder)

@@ -328,8 +328,7 @@ struct lttng_perf_counter_field {
 };
 
 struct lttng_probe_ctx {
-	struct lttng_kernel_event_recorder *event;
-	struct lttng_kernel_event_notifier *event_notifier; // Not sure if we will ever need it.
+	struct lttng_kernel_event_common *event;
 	uint8_t interruptible;
 };
 
@@ -364,7 +363,6 @@ struct lttng_kernel_event_desc {
 	const struct lttng_kernel_event_field **fields;	/* event payload */
 	unsigned int nr_fields;
 	struct module *owner;
-	void *event_notifier_callback;
 };
 
 struct lttng_kernel_probe_desc {
@@ -432,10 +430,7 @@ struct lttng_enabler_ref {
 };
 
 struct lttng_uprobe_handler {
-	union {
-		struct lttng_kernel_event_recorder *event;
-		struct lttng_kernel_event_notifier *event_notifier;
-	} u;
+	struct lttng_kernel_event_common *event;
 	loff_t offset;
 	struct uprobe_consumer up_consumer;
 	struct list_head node;
@@ -1331,23 +1326,18 @@ void lttng_kprobes_destroy_event_notifier_private(struct lttng_kernel_event_noti
 }
 #endif
 
-int lttng_event_add_callsite(struct lttng_kernel_event_recorder *event,
-	struct lttng_kernel_abi_event_callsite __user *callsite);
-
-int lttng_event_notifier_add_callsite(struct lttng_kernel_event_notifier *event_notifier,
+int lttng_event_add_callsite(struct lttng_kernel_event_common *event,
 	struct lttng_kernel_abi_event_callsite __user *callsite);
 
 #ifdef CONFIG_UPROBES
 int lttng_uprobes_register_event(const char *name,
 	int fd, struct lttng_kernel_event_recorder *event);
-int lttng_uprobes_event_add_callsite(struct lttng_kernel_event_recorder *event,
+int lttng_uprobes_event_add_callsite(struct lttng_kernel_event_common *event,
 	struct lttng_kernel_abi_event_callsite __user *callsite);
 void lttng_uprobes_unregister_event(struct lttng_kernel_event_recorder *event);
 void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_recorder *event);
 int lttng_uprobes_register_event_notifier(const char *name,
 	int fd, struct lttng_kernel_event_notifier *event_notifier);
-int lttng_uprobes_event_notifier_add_callsite(struct lttng_kernel_event_notifier *event_notifier,
-	struct lttng_kernel_abi_event_callsite __user *callsite);
 void lttng_uprobes_unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier);
 void lttng_uprobes_destroy_event_notifier_private(struct lttng_kernel_event_notifier *event_notifier);
 #else
@@ -1359,7 +1349,7 @@ int lttng_uprobes_register_event(const char *name,
 }
 
 static inline
-int lttng_uprobes_event_add_callsite(struct lttng_kernel_event_recorder *event,
+int lttng_uprobes_event_add_callsite(struct lttng_kernel_event_common *event,
 	struct lttng_kernel_abi_event_callsite __user *callsite)
 {
 	return -ENOSYS;
@@ -1378,13 +1368,6 @@ void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_recorder *eve
 static inline
 int lttng_uprobes_register_event_notifier(const char *name,
 	int fd, struct lttng_kernel_event_notifier *event_notifier)
-{
-	return -ENOSYS;
-}
-
-static inline
-int lttng_uprobes_event_notifier_add_callsite(struct lttng_kernel_event_notifier *event_notifier,
-	struct lttng_kernel_abi_event_callsite __user *callsite)
 {
 	return -ENOSYS;
 }
@@ -1409,7 +1392,7 @@ int lttng_kretprobes_register(const char *name,
 		struct lttng_kernel_event_recorder *event_exit);
 void lttng_kretprobes_unregister(struct lttng_kernel_event_recorder *event);
 void lttng_kretprobes_destroy_private(struct lttng_kernel_event_recorder *event);
-int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_recorder *event,
+int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_common *event,
 	int enable);
 #else
 static inline
@@ -1434,7 +1417,7 @@ void lttng_kretprobes_destroy_private(struct lttng_kernel_event_recorder *event)
 }
 
 static inline
-int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_recorder *event,
+int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_common *event,
 	int enable)
 {
 	return -ENOSYS;

@@ -629,7 +629,7 @@ int lttng_event_enable(struct lttng_kernel_event_recorder *event_recorder)
 		break;
 
 	case LTTNG_KERNEL_ABI_KRETPROBE:
-		ret = lttng_kretprobes_event_enable_state(event_recorder, 1);
+		ret = lttng_kretprobes_event_enable_state(&event_recorder->parent, 1);
 		break;
 
 	case LTTNG_KERNEL_ABI_FUNCTION:		/* Fall-through */
@@ -670,7 +670,7 @@ int lttng_event_disable(struct lttng_kernel_event_recorder *event_recorder)
 
 	case LTTNG_KERNEL_ABI_KRETPROBE:
 
-		ret = lttng_kretprobes_event_enable_state(event_recorder, 0);
+		ret = lttng_kretprobes_event_enable_state(&event_recorder->parent, 0);
 		break;
 
 	case LTTNG_KERNEL_ABI_FUNCTION:		/* Fall-through */
@@ -1497,7 +1497,7 @@ void register_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
 	switch (event_notifier->priv->parent.instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		ret = lttng_wrapper_tracepoint_probe_register(desc->event_kname,
-						  desc->event_notifier_callback,
+						  desc->probe_callback,
 						  event_notifier);
 		break;
 
@@ -1534,7 +1534,7 @@ int _lttng_event_notifier_unregister(
 	switch (event_notifier->priv->parent.instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		ret = lttng_wrapper_tracepoint_probe_unregister(event_notifier->priv->parent.desc->event_kname,
-						  event_notifier->priv->parent.desc->event_notifier_callback,
+						  event_notifier->priv->parent.desc->probe_callback,
 						  event_notifier);
 		break;
 
@@ -2518,13 +2518,13 @@ error:
 	return ret;
 }
 
-int lttng_event_add_callsite(struct lttng_kernel_event_recorder *event_recorder,
+int lttng_event_add_callsite(struct lttng_kernel_event_common *event,
 		struct lttng_kernel_abi_event_callsite __user *callsite)
 {
 
-	switch (event_recorder->priv->parent.instrumentation) {
+	switch (event->priv->instrumentation) {
 	case LTTNG_KERNEL_ABI_UPROBE:
-		return lttng_uprobes_event_add_callsite(event_recorder, callsite);
+		return lttng_uprobes_event_add_callsite(event, callsite);
 	default:
 		return -EINVAL;
 	}
@@ -2666,19 +2666,6 @@ end:
 	return ret;
 }
 
-int lttng_event_notifier_add_callsite(struct lttng_kernel_event_notifier *event_notifier,
-		struct lttng_kernel_abi_event_callsite __user *callsite)
-{
-
-	switch (event_notifier->priv->parent.instrumentation) {
-	case LTTNG_KERNEL_ABI_UPROBE:
-		return lttng_uprobes_event_notifier_add_callsite(event_notifier,
-				callsite);
-	default:
-		return -EINVAL;
-	}
-}
-
 static
 void lttng_event_notifier_enabler_destroy(
 		struct lttng_event_notifier_enabler *event_notifier_enabler)
@@ -2715,7 +2702,8 @@ void lttng_session_sync_event_enablers(struct lttng_session *session)
 		struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
 		struct lttng_enabler_ref *enabler_ref;
 		struct lttng_bytecode_runtime *runtime;
-		int enabled = 0, has_enablers_without_bytecode = 0;
+		int enabled = 0, has_enablers_without_filter_bytecode = 0;
+		int nr_filters = 0;
 
 		switch (event_recorder_priv->parent.instrumentation) {
 		case LTTNG_KERNEL_ABI_TRACEPOINT:	/* Fall-through */
@@ -2757,17 +2745,21 @@ void lttng_session_sync_event_enablers(struct lttng_session *session)
 				&event_recorder_priv->parent.enablers_ref_head, node) {
 			if (enabler_ref->ref->enabled
 					&& list_empty(&enabler_ref->ref->filter_bytecode_head)) {
-				has_enablers_without_bytecode = 1;
+				has_enablers_without_filter_bytecode = 1;
 				break;
 			}
 		}
 		event_recorder_priv->parent.has_enablers_without_filter_bytecode =
-			has_enablers_without_bytecode;
+			has_enablers_without_filter_bytecode;
 
 		/* Enable filters */
 		list_for_each_entry(runtime,
-				&event_recorder_priv->parent.filter_bytecode_runtime_head, node)
+				&event_recorder_priv->parent.filter_bytecode_runtime_head, node) {
 			lttng_bytecode_filter_sync_state(runtime);
+			nr_filters++;
+		}
+		WRITE_ONCE(event_recorder_priv->parent.pub->eval_filter,
+			!(has_enablers_without_filter_bytecode || !nr_filters));
 	}
 }
 
@@ -2804,7 +2796,8 @@ void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group 
 		struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
 		struct lttng_enabler_ref *enabler_ref;
 		struct lttng_bytecode_runtime *runtime;
-		int enabled = 0, has_enablers_without_bytecode = 0;
+		int enabled = 0, has_enablers_without_filter_bytecode = 0;
+		int nr_filters = 0, nr_captures = 0;
 
 		switch (event_notifier_priv->parent.instrumentation) {
 		case LTTNG_KERNEL_ABI_TRACEPOINT:	/* Fall-through */
@@ -2842,24 +2835,29 @@ void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group 
 				&event_notifier_priv->parent.enablers_ref_head, node) {
 			if (enabler_ref->ref->enabled
 					&& list_empty(&enabler_ref->ref->filter_bytecode_head)) {
-				has_enablers_without_bytecode = 1;
+				has_enablers_without_filter_bytecode = 1;
 				break;
 			}
 		}
 		event_notifier_priv->parent.has_enablers_without_filter_bytecode =
-			has_enablers_without_bytecode;
+			has_enablers_without_filter_bytecode;
 
 		/* Enable filters */
 		list_for_each_entry(runtime,
-				&event_notifier_priv->parent.filter_bytecode_runtime_head, node)
+				&event_notifier_priv->parent.filter_bytecode_runtime_head, node) {
 			lttng_bytecode_filter_sync_state(runtime);
+			nr_filters++;
+		}
+		WRITE_ONCE(event_notifier_priv->parent.pub->eval_filter,
+			!(has_enablers_without_filter_bytecode || !nr_filters));
 
 		/* Enable captures */
 		list_for_each_entry(runtime,
-				&event_notifier_priv->capture_bytecode_runtime_head, node)
+				&event_notifier_priv->capture_bytecode_runtime_head, node) {
 			lttng_bytecode_capture_sync_state(runtime);
-
-		WRITE_ONCE(event_notifier->eval_capture, !!event_notifier_priv->num_captures);
+			nr_captures++;
+		}
+		WRITE_ONCE(event_notifier->eval_capture, !!nr_captures);
 	}
 }
 

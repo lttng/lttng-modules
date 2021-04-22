@@ -1912,7 +1912,7 @@ long lttng_event_notifier_event_ioctl(struct file *file, unsigned int cmd, unsig
 	case LTTNG_KERNEL_ABI_CAPTURE:
 		return -EINVAL;
 	case LTTNG_KERNEL_ABI_ADD_CALLSITE:
-		return lttng_event_notifier_add_callsite(event_notifier,
+		return lttng_event_add_callsite(&event_notifier->parent,
 			(struct lttng_kernel_abi_event_callsite __user *) arg);
 	default:
 		return -ENOIOCTLCMD;
@@ -2582,7 +2582,7 @@ static const struct file_operations lttng_metadata_fops = {
 static
 long lttng_event_recorder_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	struct lttng_kernel_event_recorder *event = file->private_data;
+	struct lttng_kernel_event_recorder *event_recorder = file->private_data;
 
 	switch (cmd) {
 	case LTTNG_KERNEL_ABI_OLD_CONTEXT:
@@ -2597,14 +2597,14 @@ long lttng_event_recorder_event_ioctl(struct file *file, unsigned int cmd, unsig
 	}
 	case LTTNG_KERNEL_ABI_OLD_ENABLE:
 	case LTTNG_KERNEL_ABI_ENABLE:
-		return lttng_event_enable(event);
+		return lttng_event_enable(event_recorder);
 	case LTTNG_KERNEL_ABI_OLD_DISABLE:
 	case LTTNG_KERNEL_ABI_DISABLE:
-		return lttng_event_disable(event);
+		return lttng_event_disable(event_recorder);
 	case LTTNG_KERNEL_ABI_FILTER:
 		return -EINVAL;
 	case LTTNG_KERNEL_ABI_ADD_CALLSITE:
-		return lttng_event_add_callsite(event,
+		return lttng_event_add_callsite(&event_recorder->parent,
 			(struct lttng_kernel_abi_event_callsite __user *) arg);
 	default:
 		return -ENOIOCTLCMD;

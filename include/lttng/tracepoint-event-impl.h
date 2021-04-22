@@ -174,41 +174,6 @@ void __event_template_proto___##_name(void);
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
 /*
- * Stage 1.2 of the trace event_notifier.
- *
- * Create dummy trace prototypes for each event class, and for each used
- * template. This will allow checking whether the prototypes from the
- * class and the instance using the class actually match.
- */
-
-#include <lttng/events-reset.h>	/* Reset all macros within TRACE_EVENT */
-
-#undef TP_PROTO
-#define TP_PROTO(...)	__VA_ARGS__
-
-#undef TP_ARGS
-#define TP_ARGS(...)	__VA_ARGS__
-
-#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP
-#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(_template, _name, _map, _proto, _args) \
-void __event_notifier_template_proto___##_template(_proto);
-
-#undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
-#define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map) \
-void __event_notifier_template_proto___##_template(void);
-
-#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
-void __event_notifier_template_proto___##_name(_proto);
-
-#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
-void __event_notifier_template_proto___##_name(void);
-
-#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
-
-
-/*
  * Stage 1.2 of tracepoint event generation
  *
  * Unfolding the enums
@@ -374,28 +339,6 @@ static void __event_probe__##_name(void *__data, _proto);
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
 #define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
 static void __event_probe__##_name(void *__data);
-
-#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
-
-/*
- * Stage 3.1 of the trace event_notifiers.
- *
- * Create event_notifier probe callback prototypes.
- */
-
-/* Reset all macros within TRACEPOINT_EVENT */
-#include <lttng/events-reset.h>
-
-#undef TP_PROTO
-#define TP_PROTO(...)	__VA_ARGS__
-
-#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
-static void __event_notifier_probe__##_name(void *__data, _proto);
-
-#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
-static void __event_notifier_probe__##_name(void *__data);
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
@@ -1055,348 +998,160 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
  * 2*sizeof(unsigned long) for all supported architectures.
  * Perform UNION (||) of filter runtime list.
  */
+#undef _LTTNG_TRACEPOINT_EVENT_CLASS_CODE
+#define _LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _data_proto, _locvar_args, _locvar, _code_pre, _fields, _code_post) \
+static void __event_probe__##_name(_data_proto)						\
+{											\
+	struct probe_local_vars { _locvar };						\
+	struct lttng_kernel_event_common *__event = __data;				\
+	struct lttng_probe_ctx __lttng_probe_ctx = {					\
+		.event = __event,							\
+		.interruptible = !irqs_disabled(),					\
+	};										\
+	union {										\
+		size_t __dynamic_len_removed[ARRAY_SIZE(__event_fields___##_name)];	\
+		char __interpreter_stack_data[2 * sizeof(unsigned long) * ARRAY_SIZE(__event_fields___##_name)]; \
+	} __stackvar;									\
+	size_t __orig_dynamic_len_offset, __dynamic_len_idx __attribute__((unused));	\
+	struct probe_local_vars __tp_locvar;						\
+	struct probe_local_vars *tp_locvar __attribute__((unused)) =			\
+			&__tp_locvar;							\
+	bool __interpreter_stack_prepared = false;					\
+											\
+	switch (__event->type) {							\
+	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:						\
+	{										\
+		struct lttng_kernel_event_recorder *__event_recorder =			\
+			container_of(__event, struct lttng_kernel_event_recorder, parent); \
+		struct lttng_channel *__chan = __event_recorder->chan;			\
+		struct lttng_session *__session = __chan->session;			\
+		struct lttng_id_tracker_rcu *__lf;					\
+											\
+		if (!_TP_SESSION_CHECK(session, __session))				\
+			return;								\
+		if (unlikely(!LTTNG_READ_ONCE(__session->active)))			\
+			return;								\
+		if (unlikely(!LTTNG_READ_ONCE(__chan->enabled)))			\
+			return;								\
+		__lf = lttng_rcu_dereference(__session->pid_tracker.p);			\
+		if (__lf && likely(!lttng_id_tracker_lookup(__lf, current->tgid)))	\
+			return;								\
+		__lf = lttng_rcu_dereference(__session->vpid_tracker.p);		\
+		if (__lf && likely(!lttng_id_tracker_lookup(__lf, task_tgid_vnr(current)))) \
+			return;								\
+		__lf = lttng_rcu_dereference(__session->uid_tracker.p);			\
+		if (__lf && likely(!lttng_id_tracker_lookup(__lf,			\
+				lttng_current_uid())))					\
+			return;								\
+		__lf = lttng_rcu_dereference(__session->vuid_tracker.p);		\
+		if (__lf && likely(!lttng_id_tracker_lookup(__lf,			\
+				lttng_current_vuid())))					\
+			return;								\
+		__lf = lttng_rcu_dereference(__session->gid_tracker.p);			\
+		if (__lf && likely(!lttng_id_tracker_lookup(__lf,			\
+				lttng_current_gid())))					\
+			return;								\
+		__lf = lttng_rcu_dereference(__session->vgid_tracker.p);		\
+		if (__lf && likely(!lttng_id_tracker_lookup(__lf,			\
+				lttng_current_vgid())))					\
+			return;								\
+		break;									\
+	}										\
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:						\
+		break;									\
+	default:									\
+		WARN_ON_ONCE(1);							\
+	}										\
+	if (unlikely(!READ_ONCE(__event->enabled)))					\
+		return;									\
+	__orig_dynamic_len_offset = this_cpu_ptr(&lttng_dynamic_len_stack)->offset;	\
+	__dynamic_len_idx = __orig_dynamic_len_offset;					\
+	_code_pre									\
+	if (unlikely(READ_ONCE(__event->eval_filter))) {				\
+		struct lttng_bytecode_runtime *bc_runtime;				\
+		bool __filter_record = false;						\
+											\
+		__event_prepare_interpreter_stack__##_name(__stackvar.__interpreter_stack_data, \
+				_locvar_args);						\
+		__interpreter_stack_prepared = true;					\
+		lttng_list_for_each_entry_rcu(bc_runtime, &__event->priv->filter_bytecode_runtime_head, node) { \
+			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx, \
+					__stackvar.__interpreter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG)) { \
+				__filter_record = true;					\
+				break;							\
+			}								\
+		}									\
+		if (likely(!__filter_record))						\
+			goto __post;							\
+	}										\
+	switch (__event->type) {							\
+	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:						\
+	{										\
+		struct lttng_kernel_event_recorder *__event_recorder =			\
+			container_of(__event, struct lttng_kernel_event_recorder, parent); \
+		struct lttng_channel *__chan = __event_recorder->chan;			\
+		struct lib_ring_buffer_ctx __ctx;					\
+		ssize_t __event_len;							\
+		size_t __event_align;							\
+		int __ret;								\
+											\
+		__event_len = __event_get_size__##_name(_locvar_args);			\
+		if (unlikely(__event_len < 0)) {					\
+			lib_ring_buffer_lost_event_too_big(__chan->chan);		\
+			goto __post;							\
+		}									\
+		__event_align = __event_get_align__##_name(_locvar_args);		\
+		lib_ring_buffer_ctx_init(&__ctx, __chan->chan, &__lttng_probe_ctx, __event_len, \
+					 __event_align, -1);				\
+		__ret = __chan->ops->event_reserve(&__ctx, __event_recorder->priv->id);	\
+		if (__ret < 0)								\
+			goto __post;							\
+		_fields									\
+		__chan->ops->event_commit(&__ctx);					\
+		break;									\
+	}										\
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:						\
+	{										\
+		struct lttng_kernel_event_notifier *__event_notifier =			\
+			container_of(__event, struct lttng_kernel_event_notifier, parent); \
+		struct lttng_kernel_notification_ctx __notif_ctx;			\
+											\
+		__notif_ctx.eval_capture = LTTNG_READ_ONCE(__event_notifier->eval_capture); \
+		if (unlikely(!__interpreter_stack_prepared && __notif_ctx.eval_capture)) \
+			__event_prepare_interpreter_stack__##_name(			\
+					__stackvar.__interpreter_stack_data,		\
+					_locvar_args);					\
+											\
+		__event_notifier->notification_send(__event_notifier,			\
+				&__lttng_probe_ctx,					\
+				__stackvar.__interpreter_stack_data,			\
+				&__notif_ctx);						\
+		break;									\
+	}										\
+	default:									\
+		WARN_ON_ONCE(1);							\
+	}										\
+__post:											\
+	_code_post									\
+	barrier();	/* use before un-reserve. */					\
+	this_cpu_ptr(&lttng_dynamic_len_stack)->offset = __orig_dynamic_len_offset;	\
+	return;										\
+}
+
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
 #define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
-static void __event_probe__##_name(void *__data, _proto)		      \
-{									      \
-	struct probe_local_vars { _locvar };				      \
-	struct lttng_kernel_event_recorder *__event_recorder = __data;	      \
-	struct lttng_probe_ctx __lttng_probe_ctx = {			      \
-		.event = __event_recorder,			              \
-		.event_notifier = NULL,					      \
-		.interruptible = !irqs_disabled(),			      \
-	};								      \
-	struct lttng_channel *__chan = __event_recorder->chan;		      \
-	struct lttng_session *__session = __chan->session;		      \
-	struct lib_ring_buffer_ctx __ctx;				      \
-	ssize_t __event_len;						      \
-	size_t __event_align;						      \
-	size_t __orig_dynamic_len_offset, __dynamic_len_idx __attribute__((unused)); \
-	union {								      \
-		size_t __dynamic_len_removed[ARRAY_SIZE(__event_fields___##_name)];   \
-		char __filter_stack_data[2 * sizeof(unsigned long) * ARRAY_SIZE(__event_fields___##_name)]; \
-	} __stackvar;							      \
-	int __ret;							      \
-	struct probe_local_vars __tp_locvar;				      \
-	struct probe_local_vars *tp_locvar __attribute__((unused)) =	      \
-			&__tp_locvar;					      \
-	struct lttng_id_tracker_rcu *__lf;				      \
-									      \
-	if (!_TP_SESSION_CHECK(session, __session))			      \
-		return;							      \
-	if (unlikely(!LTTNG_READ_ONCE(__session->active)))		      \
-		return;							      \
-	if (unlikely(!LTTNG_READ_ONCE(__chan->enabled)))		      \
-		return;							      \
-	if (unlikely(!LTTNG_READ_ONCE(__event_recorder->parent.enabled)))     \
-		return;							      \
-	__lf = lttng_rcu_dereference(__session->pid_tracker.p);		      \
-	if (__lf && likely(!lttng_id_tracker_lookup(__lf, current->tgid)))    \
-		return;							      \
-	__lf = lttng_rcu_dereference(__session->vpid_tracker.p);	      \
-	if (__lf && likely(!lttng_id_tracker_lookup(__lf, task_tgid_vnr(current)))) \
-		return;							      \
-	__lf = lttng_rcu_dereference(__session->uid_tracker.p);		      \
-	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
-			lttng_current_uid())))				      \
-		return;							      \
-	__lf = lttng_rcu_dereference(__session->vuid_tracker.p);	      \
-	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
-			lttng_current_vuid())))				      \
-		return;							      \
-	__lf = lttng_rcu_dereference(__session->gid_tracker.p);		      \
-	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
-			lttng_current_gid())))				      \
-		return;							      \
-	__lf = lttng_rcu_dereference(__session->vgid_tracker.p);	      \
-	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
-			lttng_current_vgid())))				      \
-		return;							      \
-	__orig_dynamic_len_offset = this_cpu_ptr(&lttng_dynamic_len_stack)->offset; \
-	__dynamic_len_idx = __orig_dynamic_len_offset;			      \
-	_code_pre							      \
-	if (unlikely(!list_empty(&__event_recorder->priv->parent.filter_bytecode_runtime_head))) { \
-		struct lttng_bytecode_runtime *bc_runtime;		      \
-		int __filter_record = __event_recorder->priv->parent.has_enablers_without_filter_bytecode; \
-									      \
-		__event_prepare_interpreter_stack__##_name(__stackvar.__filter_stack_data, \
-				tp_locvar, _args);				      \
-		lttng_list_for_each_entry_rcu(bc_runtime, &__event_recorder->priv->parent.filter_bytecode_runtime_head, node) { \
-			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx,	      \
-					__stackvar.__filter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG)) { \
-				__filter_record = 1;			      \
-				break;					      \
-			}						      \
-		}							      \
-		if (likely(!__filter_record))				      \
-			goto __post;					      \
-	}								      \
-	__event_len = __event_get_size__##_name(tp_locvar, _args);	      \
-	if (unlikely(__event_len < 0)) {				      \
-		lib_ring_buffer_lost_event_too_big(__chan->chan);	      \
-		goto __post;						      \
-	}								      \
-	__event_align = __event_get_align__##_name(tp_locvar, _args);         \
-	lib_ring_buffer_ctx_init(&__ctx, __chan->chan, &__lttng_probe_ctx, __event_len,  \
-				 __event_align, -1);			      \
-	__ret = __chan->ops->event_reserve(&__ctx, __event_recorder->priv->id); \
-	if (__ret < 0)							      \
-		goto __post;						      \
-	_fields								      \
-	__chan->ops->event_commit(&__ctx);				      \
-__post:									      \
-	_code_post							      \
-	barrier();	/* use before un-reserve. */			      \
-	this_cpu_ptr(&lttng_dynamic_len_stack)->offset = __orig_dynamic_len_offset; \
-	return;								      \
-}
+	_LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, PARAMS(void *__data, _proto), PARAMS(tp_locvar, _args), \
+			PARAMS(_locvar), PARAMS(_code_pre), PARAMS(_fields), PARAMS(_code_post))
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
 #define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
-static void __event_probe__##_name(void *__data)			      \
-{									      \
-	struct probe_local_vars { _locvar };				      \
-	struct lttng_kernel_event_recorder *__event_recorder = __data;        \
-	struct lttng_probe_ctx __lttng_probe_ctx = {			      \
-		.event = __event_recorder,			              \
-		.event_notifier = NULL,					      \
-		.interruptible = !irqs_disabled(),			      \
-	};								      \
-	struct lttng_channel *__chan = __event_recorder->chan;		      \
-	struct lttng_session *__session = __chan->session;		      \
-	struct lib_ring_buffer_ctx __ctx;				      \
-	ssize_t __event_len;						      \
-	size_t __event_align;						      \
-	size_t __orig_dynamic_len_offset, __dynamic_len_idx __attribute__((unused)); \
-	union {								      \
-		size_t __dynamic_len_removed[ARRAY_SIZE(__event_fields___##_name)];   \
-		char __filter_stack_data[2 * sizeof(unsigned long) * ARRAY_SIZE(__event_fields___##_name)]; \
-	} __stackvar;							      \
-	int __ret;							      \
-	struct probe_local_vars __tp_locvar;				      \
-	struct probe_local_vars *tp_locvar __attribute__((unused)) =	      \
-			&__tp_locvar;					      \
-	struct lttng_id_tracker_rcu *__lf;				      \
-									      \
-	if (!_TP_SESSION_CHECK(session, __session))			      \
-		return;							      \
-	if (unlikely(!LTTNG_READ_ONCE(__session->active)))		      \
-		return;							      \
-	if (unlikely(!LTTNG_READ_ONCE(__chan->enabled)))		      \
-		return;							      \
-	if (unlikely(!LTTNG_READ_ONCE(__event_recorder->parent.enabled)))     \
-		return;							      \
-	__lf = lttng_rcu_dereference(__session->pid_tracker.p);		      \
-	if (__lf && likely(!lttng_id_tracker_lookup(__lf, current->tgid)))    \
-		return;							      \
-	__lf = lttng_rcu_dereference(__session->vpid_tracker.p);	      \
-	if (__lf && likely(!lttng_id_tracker_lookup(__lf, task_tgid_vnr(current)))) \
-		return;							      \
-	__lf = lttng_rcu_dereference(__session->uid_tracker.p);		      \
-	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
-			lttng_current_uid())))				      \
-		return;							      \
-	__lf = lttng_rcu_dereference(__session->vuid_tracker.p);	      \
-	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
-			lttng_current_vuid())))				      \
-		return;							      \
-	__lf = lttng_rcu_dereference(__session->gid_tracker.p);		      \
-	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
-			lttng_current_gid())))				      \
-		return;							      \
-	__lf = lttng_rcu_dereference(__session->vgid_tracker.p);	      \
-	if (__lf && likely(!lttng_id_tracker_lookup(__lf,		      \
-			lttng_current_vgid())))				      \
-		return;							      \
-	__orig_dynamic_len_offset = this_cpu_ptr(&lttng_dynamic_len_stack)->offset; \
-	__dynamic_len_idx = __orig_dynamic_len_offset;			      \
-	_code_pre							      \
-	if (unlikely(!list_empty(&__event_recorder->priv->parent.filter_bytecode_runtime_head))) { \
-		struct lttng_bytecode_runtime *bc_runtime;		      \
-		int __filter_record = __event_recorder->priv->parent.has_enablers_without_filter_bytecode; \
-									      \
-		__event_prepare_interpreter_stack__##_name(__stackvar.__filter_stack_data, \
-				tp_locvar);				      \
-		lttng_list_for_each_entry_rcu(bc_runtime, &__event_recorder->priv->parent.filter_bytecode_runtime_head, node) { \
-			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx,	\
-					__stackvar.__filter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG)) { \
-				__filter_record = 1;			      \
-				break;					      \
-			}						      \
-		}							      \
-		if (likely(!__filter_record))				      \
-			goto __post;					      \
-	}								      \
-	__event_len = __event_get_size__##_name(tp_locvar);		      \
-	if (unlikely(__event_len < 0)) {				      \
-		lib_ring_buffer_lost_event_too_big(__chan->chan);	      \
-		goto __post;						      \
-	}								      \
-	__event_align = __event_get_align__##_name(tp_locvar);		      \
-	lib_ring_buffer_ctx_init(&__ctx, __chan->chan, &__lttng_probe_ctx, __event_len,  \
-				 __event_align, -1);			      \
-	__ret = __chan->ops->event_reserve(&__ctx, __event_recorder->priv->id);	      \
-	if (__ret < 0)							      \
-		goto __post;						      \
-	_fields								      \
-	__chan->ops->event_commit(&__ctx);				      \
-__post:									      \
-	_code_post							      \
-	barrier();	/* use before un-reserve. */			      \
-	this_cpu_ptr(&lttng_dynamic_len_stack)->offset = __orig_dynamic_len_offset; \
-	return;								      \
-}
+	_LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, PARAMS(void *__data), PARAMS(tp_locvar), PARAMS(_locvar), \
+			PARAMS(_code_pre), PARAMS(_fields), PARAMS(_code_post))
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
 #undef __get_dynamic_len
 
-/*
- * Stage 6.1 of tracepoint generation: generate event notifier probes
- *
- * Create the probe function. This function evaluates the filter bytecode and
- * queue a notification to be sent to userspace.
- */
-
-#include <lttng/events-reset.h>	/* Reset all macros within LTTNG_TRACEPOINT_EVENT */
-
-#undef TP_PROTO
-#define TP_PROTO(...)	__VA_ARGS__
-
-#undef TP_ARGS
-#define TP_ARGS(...)	__VA_ARGS__
-
-#undef TP_FIELDS
-#define TP_FIELDS(...)	__VA_ARGS__
-
-#undef TP_locvar
-#define TP_locvar(...)	__VA_ARGS__
-
-#undef TP_code_pre
-#define TP_code_pre(...)	__VA_ARGS__
-
-#undef TP_code_post
-#define TP_code_post(...)	__VA_ARGS__
-
-/*
- * Using twice size for filter stack data to hold size and pointer for
- * each field (worse case). For integers, max size required is 64-bit.
- * Same for double-precision floats. Those fit within
- * 2*sizeof(unsigned long) for all supported architectures.
- * Perform UNION (||) of filter runtime list.
- */
-#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
-static void __event_notifier_probe__##_name(void *__data, _proto)	      \
-{									      \
-	struct probe_local_vars { _locvar };				      \
-	struct lttng_kernel_event_notifier *__event_notifier = __data;		      \
-	struct lttng_probe_ctx __lttng_probe_ctx = {			      \
-		.event = NULL,						      \
-		.event_notifier = __event_notifier,			      \
-		.interruptible = !irqs_disabled(),			      \
-	};								      \
-	union {								      \
-		size_t __dynamic_len_removed[ARRAY_SIZE(__event_fields___##_name)];   \
-		char __interpreter_stack_data[2 * sizeof(unsigned long) * ARRAY_SIZE(__event_fields___##_name)]; \
-	} __stackvar;							      \
-	struct probe_local_vars __tp_locvar;				      \
-	struct probe_local_vars *tp_locvar __attribute__((unused)) =	      \
-			&__tp_locvar;					      \
-	struct lttng_kernel_notification_ctx __notif_ctx;			      \
-	bool __interpreter_stack_prepared = false;			      \
-									      \
-	if (unlikely(!READ_ONCE(__event_notifier->parent.enabled)))	      \
-		return;							      \
-	_code_pre							      \
-	if (unlikely(!list_empty(&__event_notifier->priv->parent.filter_bytecode_runtime_head))) { \
-		struct lttng_bytecode_runtime *bc_runtime;		      \
-		int __filter_record = __event_notifier->priv->parent.has_enablers_without_filter_bytecode; \
-									      \
-		__event_prepare_interpreter_stack__##_name(__stackvar.__interpreter_stack_data, \
-				tp_locvar, _args);			      \
-		__interpreter_stack_prepared = true;			      \
-		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->priv->parent.filter_bytecode_runtime_head, node) { \
-			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx,   	\
-					__stackvar.__interpreter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG))	\
-				__filter_record = 1;			      \
-		}							      \
-		if (likely(!__filter_record))				      \
-			goto __post;					      \
-	}								      \
-									      \
-	__notif_ctx.eval_capture = LTTNG_READ_ONCE(__event_notifier->eval_capture); \
-	if (unlikely(!__interpreter_stack_prepared && __notif_ctx.eval_capture)) \
-		__event_prepare_interpreter_stack__##_name(		      \
-				__stackvar.__interpreter_stack_data,	      \
-				tp_locvar, _args);			      \
-									      \
-	__event_notifier->notification_send(__event_notifier,		      \
-			&__lttng_probe_ctx,				      \
-			__stackvar.__interpreter_stack_data,		      \
-			&__notif_ctx);					      \
-									      \
-__post:									      \
-	_code_post							      \
-	return;								      \
-}
-
-#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
-static void __event_notifier_probe__##_name(void *__data)		      \
-{									      \
-	struct probe_local_vars { _locvar };				      \
-	struct lttng_kernel_event_notifier *__event_notifier = __data;	      \
-	struct lttng_probe_ctx __lttng_probe_ctx = {			      \
-		.event = NULL,						      \
-		.event_notifier = __event_notifier,			      \
-		.interruptible = !irqs_disabled(),			      \
-	};								      \
-	union {								      \
-		size_t __dynamic_len_removed[ARRAY_SIZE(__event_fields___##_name)];   \
-		char __interpreter_stack_data[2 * sizeof(unsigned long) * ARRAY_SIZE(__event_fields___##_name)]; \
-	} __stackvar;							      \
-	struct probe_local_vars __tp_locvar;				      \
-	struct probe_local_vars *tp_locvar __attribute__((unused)) =	      \
-			&__tp_locvar;					      \
-	struct lttng_kernel_notification_ctx __notif_ctx;			      \
-	bool __interpreter_stack_prepared = false;			      \
-									      \
-	if (unlikely(!READ_ONCE(__event_notifier->parent.enabled)))	      \
-		return;							      \
-	_code_pre							      \
-	if (unlikely(!list_empty(&__event_notifier->priv->parent.filter_bytecode_runtime_head))) { \
-		struct lttng_bytecode_runtime *bc_runtime;		      \
-		int __filter_record = __event_notifier->priv->parent.has_enablers_without_filter_bytecode; \
-									      \
-		__event_prepare_interpreter_stack__##_name(__stackvar.__interpreter_stack_data, \
-				tp_locvar);				      \
-		__interpreter_stack_prepared = true;			      \
-		lttng_list_for_each_entry_rcu(bc_runtime, &__event_notifier->priv->parent.filter_bytecode_runtime_head, node) { \
-			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx,	\
-					__stackvar.__interpreter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG))	\
-				__filter_record = 1;			      \
-		}							      \
-		if (likely(!__filter_record))				      \
-			goto __post;					      \
-	}								      \
-									      \
-	__notif_ctx.eval_capture = LTTNG_READ_ONCE(__event_notifier->eval_capture); \
-	if (unlikely(!__interpreter_stack_prepared && __notif_ctx.eval_capture)) \
-		__event_prepare_interpreter_stack__##_name(		      \
-				__stackvar.__interpreter_stack_data,	      \
-				tp_locvar);				      \
-									      \
-	__event_notifier->notification_send(__event_notifier,		      \
-			&__lttng_probe_ctx,				      \
-			__stackvar.__interpreter_stack_data,		      \
-			&__notif_ctx);					      \
-__post:									      \
-	_code_post							      \
-	return;								      \
-}
-
-#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 /*
  * Stage 7 of the trace events.
  *
@@ -1411,20 +1166,15 @@ __post:									      \
 #define TP_PROBE_CB(_template)	&__event_probe__##_template
 #endif
 
-#ifndef TP_EVENT_NOTIFIER_PROBE_CB
-#define TP_EVENT_NOTIFIER_PROBE_CB(_template)	&__event_notifier_probe__##_template
-#endif
-
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map)	\
 static const struct lttng_kernel_event_desc __event_desc___##_map = {	\
 	.event_name = #_map,				     		\
 	.event_kname = #_name,				     		\
-	.probe_callback = (void *) TP_PROBE_CB(_template),		\
+	.probe_callback = (void (*)(void)) TP_PROBE_CB(_template),	\
 	.fields = __event_fields___##_template,		     		\
 	.nr_fields = ARRAY_SIZE(__event_fields___##_template),		\
 	.owner = THIS_MODULE,				     		\
-	.event_notifier_callback = (void *) TP_EVENT_NOTIFIER_PROBE_CB(_template),	\
 };
 
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP

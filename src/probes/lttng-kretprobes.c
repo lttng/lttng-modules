@@ -26,7 +26,7 @@ enum lttng_kretprobe_type {
 
 struct lttng_krp {
 	struct kretprobe krp;
-	struct lttng_kernel_event_recorder *event[2];	/* ENTRY and EXIT */
+	struct lttng_kernel_event_common *event[2];	/* ENTRY and EXIT */
 	struct kref kref_register;
 	struct kref kref_alloc;
 };
@@ -38,38 +38,63 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 {
 	struct lttng_krp *lttng_krp =
 		container_of(lttng_get_kretprobe(krpi), struct lttng_krp, krp);
-	struct lttng_kernel_event_recorder *event_recorder =
-		lttng_krp->event[type];
+	struct lttng_kernel_event_common *event = lttng_krp->event[type];
 	struct lttng_probe_ctx lttng_probe_ctx = {
-		.event = event_recorder,
+		.event = event,
 		.interruptible = !lttng_regs_irqs_disabled(regs),
 	};
-	struct lttng_channel *chan = event_recorder->chan;
-	struct lib_ring_buffer_ctx ctx;
-	int ret;
 	struct {
 		unsigned long ip;
 		unsigned long parent_ip;
 	} payload;
 
-	if (unlikely(!LTTNG_READ_ONCE(chan->session->active)))
-		return 0;
-	if (unlikely(!LTTNG_READ_ONCE(chan->enabled)))
-		return 0;
-	if (unlikely(!LTTNG_READ_ONCE(event_recorder->parent.enabled)))
+	switch (event->type) {
+	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+	{
+		struct lttng_kernel_event_recorder *event_recorder =
+			container_of(event, struct lttng_kernel_event_recorder, parent);
+		struct lttng_channel *chan = event_recorder->chan;
+
+		if (unlikely(!LTTNG_READ_ONCE(chan->session->active)))
+			return 0;
+		if (unlikely(!LTTNG_READ_ONCE(chan->enabled)))
+			return 0;
+		break;
+	}
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:	/* Fall-through. */
+	default:
+		WARN_ON_ONCE(1);
+	}
+
+	if (unlikely(!LTTNG_READ_ONCE(event->enabled)))
 		return 0;
 
-	payload.ip = (unsigned long) lttng_get_kretprobe(krpi)->kp.addr;
-	payload.parent_ip = (unsigned long) krpi->ret_addr;
+	switch (event->type) {
+	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+	{
+		struct lttng_kernel_event_recorder *event_recorder =
+			container_of(event, struct lttng_kernel_event_recorder, parent);
+		struct lttng_channel *chan = event_recorder->chan;
+		struct lib_ring_buffer_ctx ctx;
+		int ret;
 
-	lib_ring_buffer_ctx_init(&ctx, chan->chan, &lttng_probe_ctx, sizeof(payload),
-				 lttng_alignof(payload), -1);
-	ret = chan->ops->event_reserve(&ctx, event_recorder->priv->id);
-	if (ret < 0)
-		return 0;
-	lib_ring_buffer_align_ctx(&ctx, lttng_alignof(payload));
-	chan->ops->event_write(&ctx, &payload, sizeof(payload));
-	chan->ops->event_commit(&ctx);
+		payload.ip = (unsigned long) lttng_get_kretprobe(krpi)->kp.addr;
+		payload.parent_ip = (unsigned long) krpi->ret_addr;
+
+		lib_ring_buffer_ctx_init(&ctx, chan->chan, &lttng_probe_ctx, sizeof(payload),
+					 lttng_alignof(payload), -1);
+		ret = chan->ops->event_reserve(&ctx, event_recorder->priv->id);
+		if (ret < 0)
+			return 0;
+		lib_ring_buffer_align_ctx(&ctx, lttng_alignof(payload));
+		chan->ops->event_write(&ctx, &payload, sizeof(payload));
+		chan->ops->event_commit(&ctx);
+		break;
+	}
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:	/* Fall-through. */
+	default:
+		WARN_ON_ONCE(1);
+	}
 	return 0;
 }
 
@@ -212,8 +237,8 @@ int lttng_kretprobes_register(const char *name,
 	lttng_krp->krp.kp.addr = (void *) (unsigned long) addr;
 
 	/* Allow probe handler to find event structures */
-	lttng_krp->event[EVENT_ENTRY] = event_recorder_entry;
-	lttng_krp->event[EVENT_EXIT] = event_recorder_exit;
+	lttng_krp->event[EVENT_ENTRY] = &event_recorder_entry->parent;
+	lttng_krp->event[EVENT_EXIT] = &event_recorder_exit->parent;
 	event_recorder_entry->priv->parent.u.kretprobe.lttng_krp = lttng_krp;
 	event_recorder_exit->priv->parent.u.kretprobe.lttng_krp = lttng_krp;
 
@@ -294,22 +319,22 @@ void lttng_kretprobes_destroy_private(struct lttng_kernel_event_recorder *event_
 }
 EXPORT_SYMBOL_GPL(lttng_kretprobes_destroy_private);
 
-int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_recorder *event_recorder,
+int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_common *event,
 		int enable)
 {
-	struct lttng_kernel_event_recorder *event_recorder_exit;
+	struct lttng_kernel_event_common *event_exit;
 	struct lttng_krp *lttng_krp;
 
-	if (event_recorder->priv->parent.instrumentation != LTTNG_KERNEL_ABI_KRETPROBE) {
+	if (event->priv->instrumentation != LTTNG_KERNEL_ABI_KRETPROBE) {
 		return -EINVAL;
 	}
-	if (event_recorder->parent.enabled == enable) {
+	if (event->enabled == enable) {
 		return -EBUSY;
 	}
-	lttng_krp = event_recorder->priv->parent.u.kretprobe.lttng_krp;
-	event_recorder_exit = lttng_krp->event[EVENT_EXIT];
-	WRITE_ONCE(event_recorder->parent.enabled, enable);
-	WRITE_ONCE(event_recorder_exit->parent.enabled, enable);
+	lttng_krp = event->priv->u.kretprobe.lttng_krp;
+	event_exit = lttng_krp->event[EVENT_EXIT];
+	WRITE_ONCE(event->enabled, enable);
+	WRITE_ONCE(event_exit->enabled, enable);
 	return 0;
 }
 EXPORT_SYMBOL_GPL(lttng_kretprobes_event_enable_state);
