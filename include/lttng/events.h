@@ -936,11 +936,8 @@ struct lttng_kernel_event_notifier *_lttng_event_notifier_create(
 
 int lttng_channel_enable(struct lttng_channel *channel);
 int lttng_channel_disable(struct lttng_channel *channel);
-int lttng_event_enable(struct lttng_kernel_event_recorder *event);
-int lttng_event_disable(struct lttng_kernel_event_recorder *event);
-
-int lttng_event_notifier_enable(struct lttng_kernel_event_notifier *event_notifier);
-int lttng_event_notifier_disable(struct lttng_kernel_event_notifier *event_notifier);
+int lttng_event_enable(struct lttng_kernel_event_common *event);
+int lttng_event_disable(struct lttng_kernel_event_common *event);
 
 void lttng_transport_register(struct lttng_transport *transport);
 void lttng_transport_unregister(struct lttng_transport *transport);

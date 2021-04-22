@@ -603,16 +603,36 @@ end:
 	return ret;
 }
 
-int lttng_event_enable(struct lttng_kernel_event_recorder *event_recorder)
+int lttng_event_enable(struct lttng_kernel_event_common *event)
 {
-	struct lttng_kernel_event_common *event = &event_recorder->parent;
 	int ret = 0;
 
 	mutex_lock(&sessions_mutex);
-	if (event_recorder->chan->channel_type == METADATA_CHANNEL) {
-		ret = -EPERM;
-		goto end;
+	switch (event->type) {
+	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+	{
+		struct lttng_kernel_event_recorder *event_recorder =
+			container_of(event, struct lttng_kernel_event_recorder, parent);
+
+		if (event_recorder->chan->channel_type == METADATA_CHANNEL) {
+			ret = -EPERM;
+			goto end;
+		}
+		break;
 	}
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
+		switch (event->priv->instrumentation) {
+		case LTTNG_KERNEL_ABI_KRETPROBE:
+			ret = -EINVAL;
+			goto end;
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
+
 	if (event->enabled) {
 		ret = -EEXIST;
 		goto end;
@@ -629,7 +649,7 @@ int lttng_event_enable(struct lttng_kernel_event_recorder *event_recorder)
 		break;
 
 	case LTTNG_KERNEL_ABI_KRETPROBE:
-		ret = lttng_kretprobes_event_enable_state(&event_recorder->parent, 1);
+		ret = lttng_kretprobes_event_enable_state(event, 1);
 		break;
 
 	case LTTNG_KERNEL_ABI_FUNCTION:		/* Fall-through */
@@ -643,16 +663,36 @@ end:
 	return ret;
 }
 
-int lttng_event_disable(struct lttng_kernel_event_recorder *event_recorder)
+int lttng_event_disable(struct lttng_kernel_event_common *event)
 {
-	struct lttng_kernel_event_common *event = &event_recorder->parent;
 	int ret = 0;
 
 	mutex_lock(&sessions_mutex);
-	if (event_recorder->chan->channel_type == METADATA_CHANNEL) {
-		ret = -EPERM;
-		goto end;
+	switch (event->type) {
+	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+	{
+		struct lttng_kernel_event_recorder *event_recorder =
+			container_of(event, struct lttng_kernel_event_recorder, parent);
+
+		if (event_recorder->chan->channel_type == METADATA_CHANNEL) {
+			ret = -EPERM;
+			goto end;
+		}
+		break;
 	}
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
+		switch (event->priv->instrumentation) {
+		case LTTNG_KERNEL_ABI_KRETPROBE:
+			ret = -EINVAL;
+			goto end;
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
+
 	if (!event->enabled) {
 		ret = -EEXIST;
 		goto end;
@@ -669,77 +709,10 @@ int lttng_event_disable(struct lttng_kernel_event_recorder *event_recorder)
 		break;
 
 	case LTTNG_KERNEL_ABI_KRETPROBE:
-
-		ret = lttng_kretprobes_event_enable_state(&event_recorder->parent, 0);
+		ret = lttng_kretprobes_event_enable_state(event, 0);
 		break;
 
 	case LTTNG_KERNEL_ABI_FUNCTION:		/* Fall-through */
-	case LTTNG_KERNEL_ABI_NOOP:		/* Fall-through */
-	default:
-		WARN_ON_ONCE(1);
-		ret = -EINVAL;
-	}
-end:
-	mutex_unlock(&sessions_mutex);
-	return ret;
-}
-
-int lttng_event_notifier_enable(struct lttng_kernel_event_notifier *event_notifier)
-{
-	struct lttng_kernel_event_common *event = &event_notifier->parent;
-	int ret = 0;
-
-	mutex_lock(&sessions_mutex);
-	if (event->enabled) {
-		ret = -EEXIST;
-		goto end;
-	}
-	switch (event->priv->instrumentation) {
-	case LTTNG_KERNEL_ABI_TRACEPOINT:	/* Fall-through */
-	case LTTNG_KERNEL_ABI_SYSCALL:
-		ret = -EINVAL;
-		break;
-
-	case LTTNG_KERNEL_ABI_KPROBE:		/* Fall-through */
-	case LTTNG_KERNEL_ABI_UPROBE:
-		WRITE_ONCE(event->enabled, 1);
-		break;
-
-	case LTTNG_KERNEL_ABI_FUNCTION:		/* Fall-through */
-	case LTTNG_KERNEL_ABI_KRETPROBE:	/* Fall-through */
-	case LTTNG_KERNEL_ABI_NOOP:		/* Fall-through */
-	default:
-		WARN_ON_ONCE(1);
-		ret = -EINVAL;
-	}
-end:
-	mutex_unlock(&sessions_mutex);
-	return ret;
-}
-
-int lttng_event_notifier_disable(struct lttng_kernel_event_notifier *event_notifier)
-{
-	struct lttng_kernel_event_common *event = &event_notifier->parent;
-	int ret = 0;
-
-	mutex_lock(&sessions_mutex);
-	if (!event->enabled) {
-		ret = -EEXIST;
-		goto end;
-	}
-	switch (event->priv->instrumentation) {
-	case LTTNG_KERNEL_ABI_TRACEPOINT:	/* Fall-through */
-	case LTTNG_KERNEL_ABI_SYSCALL:
-		ret = -EINVAL;
-		break;
-
-	case LTTNG_KERNEL_ABI_KPROBE:		/* Fall-through */
-	case LTTNG_KERNEL_ABI_UPROBE:
-		WRITE_ONCE(event->enabled, 0);
-		break;
-
-	case LTTNG_KERNEL_ABI_FUNCTION:		/* Fall-through */
-	case LTTNG_KERNEL_ABI_KRETPROBE:	/* Fall-through */
 	case LTTNG_KERNEL_ABI_NOOP:		/* Fall-through */
 	default:
 		WARN_ON_ONCE(1);
