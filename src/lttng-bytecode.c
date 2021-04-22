@@ -624,23 +624,12 @@ void lttng_free_enabler_filter_bytecode(struct lttng_enabler *enabler)
 	}
 }
 
-void lttng_free_event_filter_runtime(struct lttng_kernel_event_recorder *event_recorder)
+void lttng_free_event_filter_runtime(struct lttng_kernel_event_common *event)
 {
 	struct bytecode_runtime *runtime, *tmp;
 
 	list_for_each_entry_safe(runtime, tmp,
-			&event_recorder->priv->parent.filter_bytecode_runtime_head, p.node) {
-		kfree(runtime->data);
-		kfree(runtime);
-	}
-}
-
-void lttng_free_event_notifier_filter_runtime(struct lttng_kernel_event_notifier *event_notifier)
-{
-	struct bytecode_runtime *runtime, *tmp;
-
-	list_for_each_entry_safe(runtime, tmp,
-			&event_notifier->priv->parent.filter_bytecode_runtime_head, p.node) {
+			&event->priv->filter_bytecode_runtime_head, p.node) {
 		kfree(runtime->data);
 		kfree(runtime);
 	}
