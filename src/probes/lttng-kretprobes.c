@@ -81,8 +81,8 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 		payload.ip = (unsigned long) lttng_get_kretprobe(krpi)->kp.addr;
 		payload.parent_ip = (unsigned long) krpi->ret_addr;
 
-		lib_ring_buffer_ctx_init(&ctx, chan->chan, &lttng_probe_ctx, sizeof(payload),
-					 lttng_alignof(payload), -1);
+		lib_ring_buffer_ctx_init(&ctx, chan->chan, sizeof(payload),
+					 lttng_alignof(payload), -1, &lttng_probe_ctx);
 		ret = chan->ops->event_reserve(&ctx, event_recorder->priv->id);
 		if (ret < 0)
 			return 0;

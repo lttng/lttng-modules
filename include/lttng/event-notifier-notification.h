@@ -11,8 +11,8 @@
 #include <lttng/events.h>
 
 void lttng_event_notifier_notification_send(struct lttng_kernel_event_notifier *event_notifier,
-		struct lttng_probe_ctx *probe_ctx,
 		const char *stack_data,
+		struct lttng_probe_ctx *probe_ctx,
 		struct lttng_kernel_notification_ctx *notif_ctx);
 
 #endif /* _LTTNG_EVENT_NOTIFIER_NOTIFICATION_H */

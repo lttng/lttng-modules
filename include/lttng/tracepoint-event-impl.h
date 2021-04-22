@@ -1101,8 +1101,8 @@ static void __event_probe__##_name(_data_proto)						\
 			goto __post;							\
 		}									\
 		__event_align = __event_get_align__##_name(_locvar_args);		\
-		lib_ring_buffer_ctx_init(&__ctx, __chan->chan, &__lttng_probe_ctx, __event_len, \
-					 __event_align, -1);				\
+		lib_ring_buffer_ctx_init(&__ctx, __chan->chan, __event_len,		\
+					 __event_align, -1, &__lttng_probe_ctx);	\
 		__ret = __chan->ops->event_reserve(&__ctx, __event_recorder->priv->id);	\
 		if (__ret < 0)								\
 			goto __post;							\
@@ -1123,8 +1123,8 @@ static void __event_probe__##_name(_data_proto)						\
 					_locvar_args);					\
 											\
 		__event_notifier->notification_send(__event_notifier,			\
-				&__lttng_probe_ctx,					\
 				__stackvar.__interpreter_stack_data,			\
+				&__lttng_probe_ctx,					\
 				&__notif_ctx);						\
 		break;									\
 	}										\

@@ -216,8 +216,8 @@ uint64_t lttng_bytecode_filter_interpret_false(void *filter_data,
 }
 
 uint64_t lttng_bytecode_capture_interpret_false(void *filter_data,
-		struct lttng_probe_ctx *lttng_probe_ctx,
 		const char *capture_stack_data,
+		struct lttng_probe_ctx *lttng_probe_ctx,
 		struct lttng_interpreter_output *output)
 {
 	return LTTNG_INTERPRETER_DISCARD;
@@ -760,8 +760,8 @@ void dbg_load_ref_user_str_printk(const struct estack_entry *user_str_reg)
  */
 static
 uint64_t bytecode_interpret(void *interpreter_data,
-		struct lttng_probe_ctx *lttng_probe_ctx,
 		const char *interpreter_stack_data,
+		struct lttng_probe_ctx *lttng_probe_ctx,
 		struct lttng_interpreter_output *output)
 {
 	struct bytecode_runtime *bytecode = interpreter_data;
@@ -1828,17 +1828,17 @@ uint64_t lttng_bytecode_filter_interpret(void *filter_data,
 		struct lttng_probe_ctx *lttng_probe_ctx,
 		const char *filter_stack_data)
 {
-	return bytecode_interpret(filter_data, lttng_probe_ctx,
-			filter_stack_data, NULL);
+	return bytecode_interpret(filter_data,
+			filter_stack_data, lttng_probe_ctx, NULL);
 }
 
 uint64_t lttng_bytecode_capture_interpret(void *capture_data,
-		struct lttng_probe_ctx *lttng_probe_ctx,
 		const char *capture_stack_data,
+		struct lttng_probe_ctx *lttng_probe_ctx,
 		struct lttng_interpreter_output *output)
 {
-	return bytecode_interpret(capture_data, lttng_probe_ctx,
-			capture_stack_data, output);
+	return bytecode_interpret(capture_data,
+			capture_stack_data, lttng_probe_ctx, output);
 }
 
 #undef START_OP

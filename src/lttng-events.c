@@ -2878,8 +2878,8 @@ int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 	reserve_len = min_t(size_t,
 			stream->transport->ops.packet_avail_size(chan),
 			len);
-	lib_ring_buffer_ctx_init(&ctx, chan, NULL, reserve_len,
-			sizeof(char), -1);
+	lib_ring_buffer_ctx_init(&ctx, chan, reserve_len,
+			sizeof(char), -1, NULL);
 	/*
 	 * If reservation failed, return an error to the caller.
 	 */

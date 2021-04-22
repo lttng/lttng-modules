@@ -204,9 +204,9 @@ struct lib_ring_buffer_ctx {
  */
 static inline
 void lib_ring_buffer_ctx_init(struct lib_ring_buffer_ctx *ctx,
-			      struct channel *chan, void *priv,
+			      struct channel *chan,
 			      size_t data_size, int largest_align,
-			      int cpu)
+			      int cpu, void *priv)
 {
 	ctx->chan = chan;
 	ctx->priv = priv;

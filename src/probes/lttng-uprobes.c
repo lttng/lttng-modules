@@ -68,8 +68,8 @@ int lttng_uprobes_event_handler_pre(struct uprobe_consumer *uc, struct pt_regs *
 		struct lib_ring_buffer_ctx ctx;
 		int ret;
 
-		lib_ring_buffer_ctx_init(&ctx, chan->chan, &lttng_probe_ctx,
-			sizeof(payload), lttng_alignof(payload), -1);
+		lib_ring_buffer_ctx_init(&ctx, chan->chan,
+			sizeof(payload), lttng_alignof(payload), -1, &lttng_probe_ctx);
 
 		ret = chan->ops->event_reserve(&ctx, event_recorder->priv->id);
 		if (ret < 0)

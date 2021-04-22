@@ -298,12 +298,12 @@ uint64_t lttng_bytecode_filter_interpret(void *filter_data,
 		const char *filter_stack_data);
 
 uint64_t lttng_bytecode_capture_interpret_false(void *capture_data,
-		struct lttng_probe_ctx *lttng_probe_ctx,
 		const char *capture_stack_data,
+		struct lttng_probe_ctx *lttng_probe_ctx,
 		struct lttng_interpreter_output *output);
 uint64_t lttng_bytecode_capture_interpret(void *capture_data,
-		struct lttng_probe_ctx *lttng_probe_ctx,
 		const char *capture_stack_data,
+		struct lttng_probe_ctx *lttng_probe_ctx,
 		struct lttng_interpreter_output *output);
 
 #endif /* _LTTNG_FILTER_H */

@@ -412,8 +412,8 @@ struct lttng_bytecode_runtime {
 				struct lttng_probe_ctx *lttng_probe_ctx,
 				const char *filter_stack_data);
 		uint64_t (*capture)(void *filter_data,
-				struct lttng_probe_ctx *lttng_probe_ctx,
 				const char *capture_stack_data,
+				struct lttng_probe_ctx *lttng_probe_ctx,
 				struct lttng_interpreter_output *output);
 	} interpreter_funcs;
 	int link_failed;
@@ -497,8 +497,8 @@ struct lttng_kernel_event_notifier {
 
 	int eval_capture;				/* Need to evaluate capture */
 	void (*notification_send)(struct lttng_kernel_event_notifier *event_notifier,
-		struct lttng_probe_ctx *probe_ctx,
 		const char *stack_data,
+		struct lttng_probe_ctx *probe_ctx,
 		struct lttng_kernel_notification_ctx *notif_ctx);
 };
 

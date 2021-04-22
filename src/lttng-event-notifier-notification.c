@@ -426,8 +426,8 @@ void notification_send(struct lttng_event_notifier_notification *notif,
 }
 
 void lttng_event_notifier_notification_send(struct lttng_kernel_event_notifier *event_notifier,
-		struct lttng_probe_ctx *probe_ctx,
 		const char *stack_data,
+		struct lttng_probe_ctx *probe_ctx,
 		struct lttng_kernel_notification_ctx *notif_ctx)
 {
 	struct lttng_event_notifier_notification notif = { 0 };
@@ -455,8 +455,8 @@ void lttng_event_notifier_notification_send(struct lttng_kernel_event_notifier *
 				&event_notifier->priv->capture_bytecode_runtime_head, node) {
 			struct lttng_interpreter_output output;
 
-			if (capture_bc_runtime->interpreter_funcs.capture(capture_bc_runtime, probe_ctx,
-					stack_data, &output) & LTTNG_INTERPRETER_RECORD_FLAG)
+			if (capture_bc_runtime->interpreter_funcs.capture(capture_bc_runtime,
+					stack_data, probe_ctx, &output) & LTTNG_INTERPRETER_RECORD_FLAG)
 				ret = notification_append_capture(&notif, &output);
 			else
 				ret = notification_append_empty_capture(&notif);
