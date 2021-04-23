@@ -20,7 +20,7 @@ struct lttng_kernel_event_common_private {
 	uint64_t user_token;
 
 	int has_enablers_without_filter_bytecode;
-	/* list of struct lttng_kernel_bytecode_runtime, sorted by seqnum */
+	/* list of struct lttng_bytecode_runtime, sorted by seqnum */
 	struct list_head filter_bytecode_runtime_head;
 	enum lttng_kernel_abi_instrumentation instrumentation;
 	/* Selected by instrumentation */
@@ -62,6 +62,20 @@ struct lttng_kernel_event_notifier_private {
 	struct hlist_node hlist;			/* Hash table of event notifiers */
 	struct list_head capture_bytecode_runtime_head;
 
+};
+
+enum lttng_kernel_bytecode_interpreter_ret {
+	LTTNG_KERNEL_BYTECODE_INTERPRETER_ERROR = -1,
+	LTTNG_KERNEL_BYTECODE_INTERPRETER_OK = 0,
+};
+
+enum lttng_kernel_bytecode_filter_result {
+	LTTNG_KERNEL_BYTECODE_FILTER_ACCEPT = 0,
+	LTTNG_KERNEL_BYTECODE_FILTER_REJECT = 1,
+};
+
+struct lttng_kernel_bytecode_filter_ctx {
+	enum lttng_kernel_bytecode_filter_result result;
 };
 
 static inline
@@ -137,5 +151,10 @@ static inline bool lttng_kernel_type_is_bytewise_integer(const struct lttng_kern
 	}
 	return true;
 }
+
+int lttng_kernel_interpret_event_filter(const struct lttng_kernel_event_common *event,
+		const char *interpreter_stack_data,
+		struct lttng_probe_ctx *probe_ctx,
+		void *event_filter_ctx);
 
 #endif /* _LTTNG_EVENTS_INTERNAL_H */

@@ -885,6 +885,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 	event_recorder->parent.priv = &event_recorder_priv->parent;
 	event_recorder->parent.type = LTTNG_KERNEL_EVENT_TYPE_RECORDER;
 
+	event_recorder->parent.run_filter = lttng_kernel_interpret_event_filter;
 	event_recorder->chan = chan;
 	event_recorder->priv->id = chan->free_event_id++;
 	event_recorder->priv->parent.instrumentation = itype;
@@ -960,6 +961,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 		event_recorder_return->parent.priv = &event_recorder_return_priv->parent;
 		event_recorder_return->parent.type = LTTNG_KERNEL_EVENT_TYPE_RECORDER;
 
+		event_recorder_return->parent.run_filter = lttng_kernel_interpret_event_filter;
 		event_recorder_return->chan = chan;
 		event_recorder_return->priv->id = chan->free_event_id++;
 		event_recorder_return->priv->parent.instrumentation = itype;
@@ -1161,6 +1163,7 @@ struct lttng_kernel_event_notifier *_lttng_event_notifier_create(
 	INIT_LIST_HEAD(&event_notifier->priv->parent.filter_bytecode_runtime_head);
 	INIT_LIST_HEAD(&event_notifier->priv->parent.enablers_ref_head);
 	INIT_LIST_HEAD(&event_notifier->priv->capture_bytecode_runtime_head);
+	event_notifier->parent.run_filter = lttng_kernel_interpret_event_filter;
 
 	switch (itype) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
@@ -2462,7 +2465,7 @@ int lttng_enabler_attach_filter_bytecode(struct lttng_enabler *enabler,
 	if (ret)
 		goto error_free;
 
-	bytecode_node->type = LTTNG_BYTECODE_NODE_TYPE_FILTER;
+	bytecode_node->type = LTTNG_KERNEL_BYTECODE_TYPE_FILTER;
 	bytecode_node->enabler = enabler;
 	/* Enforce length based on allocated size */
 	bytecode_node->bc.len = bytecode_len;
@@ -2621,7 +2624,7 @@ int lttng_event_notifier_enabler_attach_capture_bytecode(
 	if (ret)
 		goto error_free;
 
-	bytecode_node->type = LTTNG_BYTECODE_NODE_TYPE_CAPTURE;
+	bytecode_node->type = LTTNG_KERNEL_BYTECODE_TYPE_CAPTURE;
 	bytecode_node->enabler = enabler;
 
 	/* Enforce length based on allocated size */
@@ -2728,7 +2731,7 @@ void lttng_session_sync_event_enablers(struct lttng_session *session)
 		/* Enable filters */
 		list_for_each_entry(runtime,
 				&event_recorder_priv->parent.filter_bytecode_runtime_head, node) {
-			lttng_bytecode_filter_sync_state(runtime);
+			lttng_bytecode_sync_state(runtime);
 			nr_filters++;
 		}
 		WRITE_ONCE(event_recorder_priv->parent.pub->eval_filter,
@@ -2818,7 +2821,7 @@ void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group 
 		/* Enable filters */
 		list_for_each_entry(runtime,
 				&event_notifier_priv->parent.filter_bytecode_runtime_head, node) {
-			lttng_bytecode_filter_sync_state(runtime);
+			lttng_bytecode_sync_state(runtime);
 			nr_filters++;
 		}
 		WRITE_ONCE(event_notifier_priv->parent.pub->eval_filter,
@@ -2827,7 +2830,7 @@ void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group 
 		/* Enable captures */
 		list_for_each_entry(runtime,
 				&event_notifier_priv->capture_bytecode_runtime_head, node) {
-			lttng_bytecode_capture_sync_state(runtime);
+			lttng_bytecode_sync_state(runtime);
 			nr_captures++;
 		}
 		WRITE_ONCE(event_notifier->eval_capture, !!nr_captures);

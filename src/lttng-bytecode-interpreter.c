@@ -208,19 +208,13 @@ int stack_strcmp(struct estack *stack, int top, const char *cmp_type)
 	return diff;
 }
 
-uint64_t lttng_bytecode_filter_interpret_false(void *filter_data,
-		struct lttng_probe_ctx *lttng_probe_ctx,
-		const char *filter_stack_data)
+int lttng_bytecode_interpret_error(
+	struct lttng_bytecode_runtime *bytecode_runtime __attribute__((unused)),
+	const char *stack_data __attribute__((unused)),
+	struct lttng_probe_ctx *probe_ctx __attribute__((unused)),
+	void *ctx __attribute__((unused)))
 {
-	return LTTNG_INTERPRETER_DISCARD;
-}
-
-uint64_t lttng_bytecode_capture_interpret_false(void *filter_data,
-		const char *capture_stack_data,
-		struct lttng_probe_ctx *lttng_probe_ctx,
-		struct lttng_interpreter_output *output)
-{
-	return LTTNG_INTERPRETER_DISCARD;
+	return LTTNG_KERNEL_BYTECODE_INTERPRETER_ERROR;
 }
 
 #ifdef INTERPRETER_USE_SWITCH
@@ -717,7 +711,7 @@ again:
 		return -EINVAL;
 	}
 
-	return LTTNG_INTERPRETER_RECORD_FLAG;
+	return 0;
 }
 
 #ifdef DEBUG
@@ -754,17 +748,20 @@ void dbg_load_ref_user_str_printk(const struct estack_entry *user_str_reg)
 #endif
 
 /*
- * Return 0 (discard), or raise the 0x1 flag (log event).
- * Currently, other flags are kept for future extensions and have no
- * effect.
+ * Return LTTNG_KERNEL_BYTECODE_INTERPRETER_OK on success.
+ * Return LTTNG_KERNEL_BYTECODE_INTERPRETER_ERROR on error.
+ *
+ * For FILTER bytecode: expect a struct lttng_kernel_bytecode_filter_ctx *
+ * as @ctx argument.
+ * For CAPTURE bytecode: expect a struct lttng_interpreter_output *
+ * as @ctx argument.
  */
-static
-uint64_t bytecode_interpret(void *interpreter_data,
+int lttng_bytecode_interpret(struct lttng_bytecode_runtime *kernel_bytecode,
 		const char *interpreter_stack_data,
 		struct lttng_probe_ctx *lttng_probe_ctx,
-		struct lttng_interpreter_output *output)
+		void *caller_ctx)
 {
-	struct bytecode_runtime *bytecode = interpreter_data;
+	struct bytecode_runtime *bytecode = container_of(kernel_bytecode, struct bytecode_runtime, p);
 	void *pc, *next_pc, *start_pc;
 	int ret = -EINVAL;
 	uint64_t retval = 0;
@@ -928,8 +925,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			goto end;
 
 		OP(BYTECODE_OP_RETURN):
-		OP(BYTECODE_OP_RETURN_S64):
-			/* LTTNG_INTERPRETER_DISCARD or LTTNG_INTERPRETER_RECORD_FLAG */
+			/* LTTNG_KERNEL_BYTECODE_INTERPRETER_ERROR or LTTNG_KERNEL_BYTECODE_INTERPRETER_OK */
 			switch (estack_ax_t) {
 			case REG_S64:
 			case REG_U64:
@@ -938,7 +934,7 @@ uint64_t bytecode_interpret(void *interpreter_data,
 			case REG_DOUBLE:
 			case REG_STRING:
 			case REG_PTR:
-				if (!output) {
+				if (kernel_bytecode->type != LTTNG_KERNEL_BYTECODE_TYPE_CAPTURE) {
 					ret = -EINVAL;
 					goto end;
 				}
@@ -949,6 +945,12 @@ uint64_t bytecode_interpret(void *interpreter_data,
 				ret = -EINVAL;
 				goto end;
 			}
+			ret = 0;
+			goto end;
+
+		OP(BYTECODE_OP_RETURN_S64):
+			/* LTTNG_KERNEL_BYTECODE_INTERPRETER_ERROR or LTTNG_KERNEL_BYTECODE_INTERPRETER_OK */
+			retval = !!estack_ax_v;
 			ret = 0;
 			goto end;
 
@@ -1811,34 +1813,63 @@ uint64_t bytecode_interpret(void *interpreter_data,
 
 	END_OP
 end:
-	/* Return _DISCARD on error. */
+	/* No need to prepare output if an error occurred. */
 	if (ret)
-		return LTTNG_INTERPRETER_DISCARD;
+		return LTTNG_KERNEL_BYTECODE_INTERPRETER_ERROR;
 
-	if (output) {
-		return lttng_bytecode_interpret_format_output(
-				estack_ax(stack, top), output);
+	/* Prepare output. */
+	switch (kernel_bytecode->type) {
+	case LTTNG_KERNEL_BYTECODE_TYPE_FILTER:
+	{
+		struct lttng_kernel_bytecode_filter_ctx *filter_ctx =
+			(struct lttng_kernel_bytecode_filter_ctx *) caller_ctx;
+		if (retval)
+			filter_ctx->result = LTTNG_KERNEL_BYTECODE_FILTER_ACCEPT;
+		else
+			filter_ctx->result = LTTNG_KERNEL_BYTECODE_FILTER_REJECT;
+		break;
 	}
-
-	return retval;
+	case LTTNG_KERNEL_BYTECODE_TYPE_CAPTURE:
+		ret = lttng_bytecode_interpret_format_output(estack_ax(stack, top),
+				(struct lttng_interpreter_output *) caller_ctx);
+		break;
+	default:
+		ret = -EINVAL;
+		break;
+	}
+	if (ret)
+		return LTTNG_KERNEL_BYTECODE_INTERPRETER_ERROR;
+	else
+		return LTTNG_KERNEL_BYTECODE_INTERPRETER_OK;
 }
-LTTNG_STACK_FRAME_NON_STANDARD(bytecode_interpret);
+LTTNG_STACK_FRAME_NON_STANDARD(lttng_bytecode_interpret);
 
-uint64_t lttng_bytecode_filter_interpret(void *filter_data,
-		struct lttng_probe_ctx *lttng_probe_ctx,
-		const char *filter_stack_data)
+/*
+ * Return LTTNG_KERNEL_EVENT_FILTER_ACCEPT or LTTNG_KERNEL_EVENT_FILTER_REJECT.
+ */
+int lttng_kernel_interpret_event_filter(const struct lttng_kernel_event_common *event,
+		const char *interpreter_stack_data,
+		struct lttng_probe_ctx *probe_ctx,
+		void *event_filter_ctx __attribute__((unused)))
 {
-	return bytecode_interpret(filter_data,
-			filter_stack_data, lttng_probe_ctx, NULL);
-}
+	struct lttng_bytecode_runtime *filter_bc_runtime;
+	struct list_head *filter_bytecode_runtime_head = &event->priv->filter_bytecode_runtime_head;
+	struct lttng_kernel_bytecode_filter_ctx bytecode_filter_ctx;
+	bool filter_record = false;
 
-uint64_t lttng_bytecode_capture_interpret(void *capture_data,
-		const char *capture_stack_data,
-		struct lttng_probe_ctx *lttng_probe_ctx,
-		struct lttng_interpreter_output *output)
-{
-	return bytecode_interpret(capture_data,
-			capture_stack_data, lttng_probe_ctx, output);
+	list_for_each_entry_rcu(filter_bc_runtime, filter_bytecode_runtime_head, node) {
+		if (likely(filter_bc_runtime->interpreter_func(filter_bc_runtime,
+				interpreter_stack_data, probe_ctx, &bytecode_filter_ctx) == LTTNG_KERNEL_BYTECODE_INTERPRETER_OK)) {
+			if (unlikely(bytecode_filter_ctx.result == LTTNG_KERNEL_BYTECODE_FILTER_ACCEPT)) {
+				filter_record = true;
+				break;
+			}
+		}
+	}
+	if (filter_record)
+		return LTTNG_KERNEL_EVENT_FILTER_ACCEPT;
+	else
+		return LTTNG_KERNEL_EVENT_FILTER_REJECT;
 }
 
 #undef START_OP

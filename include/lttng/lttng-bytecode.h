@@ -284,26 +284,19 @@ struct lttng_interpreter_output {
 
 const char *lttng_bytecode_print_op(enum bytecode_op op);
 
-void lttng_bytecode_filter_sync_state(struct lttng_bytecode_runtime *runtime);
-void lttng_bytecode_capture_sync_state(struct lttng_bytecode_runtime *runtime);
+void lttng_bytecode_sync_state(struct lttng_bytecode_runtime *runtime);
 int lttng_bytecode_validate(struct bytecode_runtime *bytecode);
 int lttng_bytecode_specialize(const struct lttng_kernel_event_desc *event_desc,
 		struct bytecode_runtime *bytecode);
 
-uint64_t lttng_bytecode_filter_interpret_false(void *filter_data,
-		struct lttng_probe_ctx *lttng_probe_ctx,
-		const char *filter_stack_data);
-uint64_t lttng_bytecode_filter_interpret(void *filter_data,
-		struct lttng_probe_ctx *lttng_probe_ctx,
-		const char *filter_stack_data);
+int lttng_bytecode_interpret_error(struct lttng_bytecode_runtime *bytecode_runtime,
+		const char *stack_data,
+		struct lttng_probe_ctx *probe_ctx,
+		void *ctx);
 
-uint64_t lttng_bytecode_capture_interpret_false(void *capture_data,
-		const char *capture_stack_data,
+int lttng_bytecode_interpret(struct lttng_bytecode_runtime *kernel_bytecode,
+		const char *interpreter_stack_data,
 		struct lttng_probe_ctx *lttng_probe_ctx,
-		struct lttng_interpreter_output *output);
-uint64_t lttng_bytecode_capture_interpret(void *capture_data,
-		const char *capture_stack_data,
-		struct lttng_probe_ctx *lttng_probe_ctx,
-		struct lttng_interpreter_output *output);
+		void *caller_ctx);
 
 #endif /* _LTTNG_FILTER_H */

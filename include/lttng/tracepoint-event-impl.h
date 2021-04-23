@@ -1068,20 +1068,11 @@ static void __event_probe__##_name(_data_proto)						\
 	__dynamic_len_idx = __orig_dynamic_len_offset;					\
 	_code_pre									\
 	if (unlikely(READ_ONCE(__event->eval_filter))) {				\
-		struct lttng_bytecode_runtime *bc_runtime;				\
-		bool __filter_record = false;						\
-											\
 		__event_prepare_interpreter_stack__##_name(__stackvar.__interpreter_stack_data, \
 				_locvar_args);						\
 		__interpreter_stack_prepared = true;					\
-		lttng_list_for_each_entry_rcu(bc_runtime, &__event->priv->filter_bytecode_runtime_head, node) { \
-			if (unlikely(bc_runtime->interpreter_funcs.filter(bc_runtime, &__lttng_probe_ctx, \
-					__stackvar.__interpreter_stack_data) & LTTNG_INTERPRETER_RECORD_FLAG)) { \
-				__filter_record = true;					\
-				break;							\
-			}								\
-		}									\
-		if (likely(!__filter_record))						\
+		if (likely(__event->run_filter(__event,			      		\
+				__stackvar.__interpreter_stack_data, &__lttng_probe_ctx, NULL) != LTTNG_KERNEL_EVENT_FILTER_ACCEPT)) \
 			goto __post;							\
 	}										\
 	switch (__event->type) {							\

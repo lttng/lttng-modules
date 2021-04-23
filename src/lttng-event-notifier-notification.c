@@ -400,8 +400,8 @@ void notification_send(struct lttng_event_notifier_notification *notif,
 	reserve_size += capture_buffer_content_len;
 	kernel_notif.capture_buf_size = capture_buffer_content_len;
 
-	lib_ring_buffer_ctx_init(&ctx, event_notifier_group->chan, NULL, reserve_size,
-			lttng_alignof(kernel_notif), -1);
+	lib_ring_buffer_ctx_init(&ctx, event_notifier_group->chan, reserve_size,
+			lttng_alignof(kernel_notif), -1, NULL);
 	ret = event_notifier_group->ops->event_reserve(&ctx, 0);
 	if (ret < 0) {
 		record_error(event_notifier);
@@ -455,8 +455,8 @@ void lttng_event_notifier_notification_send(struct lttng_kernel_event_notifier *
 				&event_notifier->priv->capture_bytecode_runtime_head, node) {
 			struct lttng_interpreter_output output;
 
-			if (capture_bc_runtime->interpreter_funcs.capture(capture_bc_runtime,
-					stack_data, probe_ctx, &output) & LTTNG_INTERPRETER_RECORD_FLAG)
+			if (capture_bc_runtime->interpreter_func(capture_bc_runtime,
+					stack_data, probe_ctx, &output) == LTTNG_KERNEL_BYTECODE_INTERPRETER_OK)
 				ret = notification_append_capture(&notif, &output);
 			else
 				ret = notification_append_empty_capture(&notif);

@@ -450,6 +450,7 @@ int link_bytecode(const struct lttng_kernel_event_desc *event_desc,
 		ret = -ENOMEM;
 		goto alloc_error;
 	}
+	runtime->p.type = bytecode->type;
 	runtime->p.bc = bytecode;
 	runtime->p.ctx = ctx;
 	runtime->len = bytecode->bc.reloc_offset;
@@ -483,18 +484,7 @@ int link_bytecode(const struct lttng_kernel_event_desc *event_desc,
 	if (ret) {
 		goto link_error;
 	}
-
-	switch (bytecode->type) {
-	case LTTNG_BYTECODE_NODE_TYPE_FILTER:
-		runtime->p.interpreter_funcs.filter = lttng_bytecode_filter_interpret;
-		break;
-	case LTTNG_BYTECODE_NODE_TYPE_CAPTURE:
-		runtime->p.interpreter_funcs.capture = lttng_bytecode_capture_interpret_false;
-		break;
-	default:
-		WARN_ON(1);
-	}
-
+	runtime->p.interpreter_func = lttng_bytecode_interpret;
 	runtime->p.link_failed = 0;
 	list_add_rcu(&runtime->p.node, insert_loc);
 	dbg_printk("Linking successful.\n");
@@ -502,16 +492,7 @@ int link_bytecode(const struct lttng_kernel_event_desc *event_desc,
 
 link_error:
 
-	switch (bytecode->type) {
-	case LTTNG_BYTECODE_NODE_TYPE_FILTER:
-		runtime->p.interpreter_funcs.filter = lttng_bytecode_filter_interpret_false;
-		break;
-	case LTTNG_BYTECODE_NODE_TYPE_CAPTURE:
-		runtime->p.interpreter_funcs.capture = lttng_bytecode_capture_interpret_false;
-		break;
-	default:
-		WARN_ON(1);
-	}
+	runtime->p.interpreter_func = lttng_bytecode_interpret_error;
 	runtime->p.link_failed = 1;
 	list_add_rcu(&runtime->p.node, insert_loc);
 alloc_error:
@@ -519,24 +500,14 @@ alloc_error:
 	return ret;
 }
 
-void lttng_bytecode_filter_sync_state(struct lttng_bytecode_runtime *runtime)
+void lttng_bytecode_sync_state(struct lttng_bytecode_runtime *runtime)
 {
 	struct lttng_bytecode_node *bc = runtime->bc;
 
 	if (!bc->enabler->enabled || runtime->link_failed)
-		runtime->interpreter_funcs.filter = lttng_bytecode_filter_interpret_false;
+		runtime->interpreter_func = lttng_bytecode_interpret_error;
 	else
-		runtime->interpreter_funcs.filter = lttng_bytecode_filter_interpret;
-}
-
-void lttng_bytecode_capture_sync_state(struct lttng_bytecode_runtime *runtime)
-{
-	struct lttng_bytecode_node *bc = runtime->bc;
-
-	if (!bc->enabler->enabled || runtime->link_failed)
-		runtime->interpreter_funcs.capture = lttng_bytecode_capture_interpret_false;
-	else
-		runtime->interpreter_funcs.capture = lttng_bytecode_capture_interpret;
+		runtime->interpreter_func = lttng_bytecode_interpret;
 }
 
 /*

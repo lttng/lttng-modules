@@ -376,13 +376,13 @@ struct lttng_kernel_probe_desc {
 
 struct lttng_krp;				/* Kretprobe handling */
 
-enum lttng_bytecode_node_type {
-	LTTNG_BYTECODE_NODE_TYPE_FILTER,
-	LTTNG_BYTECODE_NODE_TYPE_CAPTURE,
+enum lttng_kernel_bytecode_type {
+	LTTNG_KERNEL_BYTECODE_TYPE_FILTER,
+	LTTNG_KERNEL_BYTECODE_TYPE_CAPTURE,
 };
 
 struct lttng_bytecode_node {
-	enum lttng_bytecode_node_type type;
+	enum lttng_kernel_bytecode_type type;
 	struct list_head node;
 	struct lttng_enabler *enabler;
 	struct {
@@ -393,29 +393,16 @@ struct lttng_bytecode_node {
 	} bc;
 };
 
-/*
- * Bytecode interpreter return value masks.
- */
-enum lttng_bytecode_interpreter_ret {
-	LTTNG_INTERPRETER_DISCARD = 0,
-	LTTNG_INTERPRETER_RECORD_FLAG = (1ULL << 0),
-	/* Other bits are kept for future use. */
-};
-
 struct lttng_interpreter_output;
 
 struct lttng_bytecode_runtime {
 	/* Associated bytecode */
+	enum lttng_kernel_bytecode_type type;
 	struct lttng_bytecode_node *bc;
-	union {
-		uint64_t (*filter)(void *filter_data,
+	int (*interpreter_func)(struct lttng_bytecode_runtime *kernel_bytecode,
+				const char *interpreter_stack_data,
 				struct lttng_probe_ctx *lttng_probe_ctx,
-				const char *filter_stack_data);
-		uint64_t (*capture)(void *filter_data,
-				const char *capture_stack_data,
-				struct lttng_probe_ctx *lttng_probe_ctx,
-				struct lttng_interpreter_output *output);
-	} interpreter_funcs;
+				void *caller_ctx);
 	int link_failed;
 	struct list_head node;	/* list of bytecode runtime in event */
 	struct lttng_kernel_ctx *ctx;
@@ -456,6 +443,14 @@ enum lttng_syscall_abi {
 	LTTNG_SYSCALL_ABI_COMPAT,
 };
 
+/*
+ * Result of the run_filter() callback.
+ */
+enum lttng_kernel_event_filter_result {
+	LTTNG_KERNEL_EVENT_FILTER_ACCEPT = 0,
+	LTTNG_KERNEL_EVENT_FILTER_REJECT = 1,
+};
+
 struct lttng_kernel_event_common_private;
 
 enum lttng_kernel_event_type {
@@ -471,8 +466,9 @@ struct lttng_kernel_event_common {
 
 	int enabled;
 	int eval_filter;				/* Need to evaluate filters */
-	int (*run_filter)(struct lttng_kernel_event_common *event,
+	int (*run_filter)(const struct lttng_kernel_event_common *event,
 		const char *stack_data,
+		struct lttng_probe_ctx *probe_ctx,
 		void *filter_ctx);
 };
 
