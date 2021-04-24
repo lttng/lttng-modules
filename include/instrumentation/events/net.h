@@ -264,7 +264,7 @@ static const struct lttng_kernel_event_field *ipv4fields[] = {
 		false, false, false),
 	[12] = lttng_kernel_static_event_field("transport_header",
 		lttng_kernel_static_type_variant(ARRAY_SIZE(transport_fields), transport_fields,
-			"transport_header_type", 0),
+			NULL, 0),	/* Previous field as tag. */
 		false, false, false),
 };
 
@@ -300,7 +300,7 @@ static const struct lttng_kernel_event_field *ipv6fields[] = {
 		false, false, false),
 	[9] = lttng_kernel_static_event_field("transport_header",
 		lttng_kernel_static_type_variant(ARRAY_SIZE(transport_fields),
-			transport_fields, "transport_header_type", 0),
+			transport_fields, NULL, 0),	/* Previous field as tag. */
 		false, false, false),
 };
 
@@ -358,7 +358,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(net_dev_template,
 		ctf_custom_field(
 			ctf_custom_type(
 				lttng_kernel_static_type_variant(ARRAY_SIZE(network_fields),
-					network_fields, "network_header_type", 0)
+					network_fields, NULL, 0)	/* Previous field as tag. */
 			),
 			network_header,
 			ctf_custom_code(

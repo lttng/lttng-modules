@@ -306,8 +306,7 @@ end:	; /* Label at end of compound statement. */					\
 	)												\
 	ctf_custom_field(										\
 		ctf_custom_type(									\
-			lttng_kernel_static_type_sequence(						\
-				"_" #name "_length",							\
+			lttng_kernel_static_type_sequence(NULL,						\
 				lttng_kernel_static_type_integer_from_type(uint8_t, __BYTE_ORDER, 16),	\
 				0,									\
 				none)									\
@@ -352,7 +351,7 @@ end:	; /* Label at end of compound statement. */					\
 	)												\
 	ctf_custom_field(										\
 		ctf_custom_type(									\
-			lttng_kernel_static_type_sequence("_" #name "_length",				\
+			lttng_kernel_static_type_sequence(NULL,						\
 				lttng_kernel_static_type_integer_from_type(uint8_t, __BYTE_ORDER, 16),	\
 				0,									\
 				none)									\
