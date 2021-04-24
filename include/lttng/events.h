@@ -109,7 +109,7 @@ struct lttng_kernel_type_array {
 
 struct lttng_kernel_type_sequence {
 	struct lttng_kernel_type_common parent;
-	const char *length_name;	/* Length field name. */
+	const char *length_name;	/* Length field name. If NULL, use previous field. */
 	const struct lttng_kernel_type_common *elem_type;
 	unsigned int alignment;		/* Alignment before elements. */
 	enum lttng_kernel_string_encoding encoding;
@@ -124,7 +124,7 @@ struct lttng_kernel_type_struct {
 
 struct lttng_kernel_type_variant {
 	struct lttng_kernel_type_common parent;
-	const char *tag_name;
+	const char *tag_name;		/* Tag field name. If NULL, use previous field. */
 	const struct lttng_kernel_event_field **choices; /* Array of pointers to fields. */
 	unsigned int nr_choices;
 	unsigned int alignment;

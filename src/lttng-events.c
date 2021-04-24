@@ -89,7 +89,7 @@ int _lttng_type_statedump(struct lttng_session *session,
 static
 int _lttng_field_statedump(struct lttng_session *session,
 		const struct lttng_kernel_event_field *field,
-		size_t nesting);
+		size_t nesting, const char **prev_field_name_p);
 
 void synchronize_trace(void)
 {
@@ -3052,6 +3052,7 @@ int _lttng_struct_type_statedump(struct lttng_session *session,
 		const struct lttng_kernel_type_struct *type,
 		size_t nesting)
 {
+	const char *prev_field_name = NULL;
 	int ret;
 	uint32_t i, nr_fields;
 	unsigned int alignment;
@@ -3068,7 +3069,7 @@ int _lttng_struct_type_statedump(struct lttng_session *session,
 		const struct lttng_kernel_event_field *iter_field;
 
 		iter_field = type->fields[i];
-		ret = _lttng_field_statedump(session, iter_field, nesting + 1);
+		ret = _lttng_field_statedump(session, iter_field, nesting + 1, &prev_field_name);
 		if (ret)
 			return ret;
 	}
@@ -3110,11 +3111,18 @@ int _lttng_struct_field_statedump(struct lttng_session *session,
 static
 int _lttng_variant_type_statedump(struct lttng_session *session,
 		const struct lttng_kernel_type_variant *type,
-		size_t nesting)
+		size_t nesting,
+		const char *prev_field_name)
 {
+	const char *tag_name;
 	int ret;
 	uint32_t i, nr_choices;
 
+	tag_name = type->tag_name;
+	if (!tag_name)
+		tag_name = prev_field_name;
+	if (!tag_name)
+		return -EINVAL;
 	/*
 	 * CTF 1.8 does not allow expressing nonzero variant alignment in a nestable way.
 	 */
@@ -3125,7 +3133,7 @@ int _lttng_variant_type_statedump(struct lttng_session *session,
 		return ret;
 	ret = lttng_metadata_printf(session,
 		"variant <_%s> {\n",
-		type->tag_name);
+		tag_name);
 	if (ret)
 		return ret;
 	nr_choices = type->nr_choices;
@@ -3133,7 +3141,7 @@ int _lttng_variant_type_statedump(struct lttng_session *session,
 		const struct lttng_kernel_event_field *iter_field;
 
 		iter_field = type->choices[i];
-		ret = _lttng_field_statedump(session, iter_field, nesting + 1);
+		ret = _lttng_field_statedump(session, iter_field, nesting + 1, NULL);
 		if (ret)
 			return ret;
 	}
@@ -3151,12 +3159,14 @@ int _lttng_variant_type_statedump(struct lttng_session *session,
 static
 int _lttng_variant_field_statedump(struct lttng_session *session,
 		const struct lttng_kernel_event_field *field,
-		size_t nesting)
+		size_t nesting,
+		const char *prev_field_name)
 {
 	int ret;
 
 	ret = _lttng_variant_type_statedump(session,
-			lttng_kernel_get_type_variant(field->type), nesting);
+			lttng_kernel_get_type_variant(field->type), nesting,
+			prev_field_name);
 	if (ret)
 		return ret;
 	return lttng_field_name_statedump(session, field, nesting);
@@ -3219,7 +3229,8 @@ int _lttng_array_field_statedump(struct lttng_session *session,
 static
 int _lttng_sequence_field_statedump(struct lttng_session *session,
 		const struct lttng_kernel_event_field *field,
-		size_t nesting)
+		size_t nesting,
+		const char *prev_field_name)
 {
 	int ret;
 	const char *length_name;
@@ -3230,6 +3241,10 @@ int _lttng_sequence_field_statedump(struct lttng_session *session,
 	WARN_ON_ONCE(!sequence_type);
 
 	length_name = sequence_type->length_name;
+	if (!length_name)
+		length_name = prev_field_name;
+	if (!length_name)
+		return -EINVAL;
 
 	if (sequence_type->alignment) {
 		ret = print_tabs(session, nesting);
@@ -3264,7 +3279,7 @@ int _lttng_sequence_field_statedump(struct lttng_session *session,
 	ret = lttng_metadata_printf(session,
 		" _%s[ _%s ];\n",
 		field->name,
-		sequence_type->length_name);
+		length_name);
 	return ret;
 }
 
@@ -3487,7 +3502,7 @@ int _lttng_type_statedump(struct lttng_session *session,
 	case lttng_kernel_type_variant:
 		ret = _lttng_variant_type_statedump(session,
 				lttng_kernel_get_type_variant(type),
-				nesting);
+				nesting, NULL);
 		break;
 
 	/* Nested arrays and sequences are not supported yet. */
@@ -3506,10 +3521,14 @@ int _lttng_type_statedump(struct lttng_session *session,
 static
 int _lttng_field_statedump(struct lttng_session *session,
 		const struct lttng_kernel_event_field *field,
-		size_t nesting)
+		size_t nesting,
+		const char **prev_field_name_p)
 {
+	const char *prev_field_name = NULL;
 	int ret = 0;
 
+	if (prev_field_name_p)
+		prev_field_name = *prev_field_name_p;
 	switch (field->type->type) {
 	case lttng_kernel_type_integer:
 		ret = _lttng_integer_field_statedump(session, field, nesting);
@@ -3527,16 +3546,18 @@ int _lttng_field_statedump(struct lttng_session *session,
 		ret = _lttng_array_field_statedump(session, field, nesting);
 		break;
 	case lttng_kernel_type_sequence:
-		ret = _lttng_sequence_field_statedump(session, field, nesting);
+		ret = _lttng_sequence_field_statedump(session, field, nesting, prev_field_name);
 		break;
 	case lttng_kernel_type_variant:
-		ret = _lttng_variant_field_statedump(session, field, nesting);
+		ret = _lttng_variant_field_statedump(session, field, nesting, prev_field_name);
 		break;
 
 	default:
 		WARN_ON_ONCE(1);
 		return -EINVAL;
 	}
+	if (prev_field_name_p)
+		*prev_field_name_p = field->name;
 	return ret;
 }
 
@@ -3544,6 +3565,7 @@ static
 int _lttng_context_metadata_statedump(struct lttng_session *session,
 				    struct lttng_kernel_ctx *ctx)
 {
+	const char *prev_field_name = NULL;
 	int ret = 0;
 	int i;
 
@@ -3552,7 +3574,7 @@ int _lttng_context_metadata_statedump(struct lttng_session *session,
 	for (i = 0; i < ctx->nr_fields; i++) {
 		const struct lttng_kernel_ctx_field *field = &ctx->fields[i];
 
-		ret = _lttng_field_statedump(session, field->event_field, 2);
+		ret = _lttng_field_statedump(session, field->event_field, 2, &prev_field_name);
 		if (ret)
 			return ret;
 	}
@@ -3563,6 +3585,7 @@ static
 int _lttng_fields_metadata_statedump(struct lttng_session *session,
 				   struct lttng_kernel_event_recorder *event_recorder)
 {
+	const char *prev_field_name = NULL;
 	const struct lttng_kernel_event_desc *desc = event_recorder->priv->parent.desc;
 	int ret = 0;
 	int i;
@@ -3570,7 +3593,7 @@ int _lttng_fields_metadata_statedump(struct lttng_session *session,
 	for (i = 0; i < desc->nr_fields; i++) {
 		const struct lttng_kernel_event_field *field = desc->fields[i];
 
-		ret = _lttng_field_statedump(session, field, 2);
+		ret = _lttng_field_statedump(session, field, 2, &prev_field_name);
 		if (ret)
 			return ret;
 	}

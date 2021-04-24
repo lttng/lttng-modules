@@ -252,7 +252,7 @@ void __event_template_proto___##_name(void);
 		lttng_kernel_static_type_integer_from_type(_length_type, __BYTE_ORDER, 10), \
 		_nowrite, 0, 1),				\
 	lttng_kernel_static_event_field(#_item,			\
-		lttng_kernel_static_type_sequence("_" #_item "_length", \
+		lttng_kernel_static_type_sequence(NULL,	/* Use previous field. */ \
 			lttng_kernel_static_type_integer_from_type(_type, _byte_order, _elem_type_base), \
 			0,					\
 			_encoding),				\
@@ -266,7 +266,7 @@ void __event_template_proto___##_name(void);
 		lttng_kernel_static_type_integer_from_type(_length_type, __BYTE_ORDER, 10), \
 		_nowrite, 0, 1),				\
 	lttng_kernel_static_event_field(#_item,			\
-		lttng_kernel_static_type_sequence("_" #_item "_length", \
+		lttng_kernel_static_type_sequence(NULL,	/* Use previous field. */ \
 			lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10), \
 			lttng_alignof(_type),			\
 			none),					\
