@@ -1,3 +1,291 @@
+2021-04-23 (National Take a Chance (on me ?) Day) LTTng modules 2.13.0-rc1
+	* Set the 2.13 release codename and description
+	* Fix: LTTng-modules ABI ioctl wrong direction
+	* Refactoring: bytecode interpreter
+	* Move probe_ctx argument to align with lttng-ust
+	* Combine event notifier and recorder enable/disable functions
+	* Refactoring: combine probe callbacks
+	* Combine event recorder and notifier destroy
+	* Refactoring: event structures
+	* lttng-probes: Warn of event's and provider's name for mismatch
+	* fix: mm, tracing: kfree event name mismatching with provider kmem (v5.12)
+	* fix: refactor contexts for type description structures
+	* fix: remove 'src/' from modules install path
+	* fix: Adjust ranges for Ubuntu 5.4.0-67 kernel
+	* fix: block: add a disk_uevent helper (v5.12)
+	* Fix: perf counters: uninitialized field
+	* Cleanup: implement dedicated file operations for events and enablers
+	* Namespace LTTng modules ABI with lttng_kernel_abi_ prefix
+	* Refactoring: type description structures
+	* Prefix lttng_enum_desc with lttng_kernel_
+	* Prefix lttng_enum_value and lttng_enum_entry with lttng_kernel_
+	* Introduce internal event header
+	* Cleanup: namespace string encoding
+	* Cleanup: Rename abstract types to lttng_kernel_type
+	* Cleanup: event_notifier -> notify in comments
+	* Fix: event notifier: add missing parameters validation
+	* msgpack: use KERNEL namespace for header protection
+	* Cleanup: lttng_abi_create_event{,_notifier}: use switch/case rather than if
+	* Add entryexit field to kretprobes ABI
+	* Add missing fallthrough comments
+	* No-op instrumentation is unsupported, cleanup fallthrough comments
+	* kretprobes: rename "return" to "exit"
+	* compiler warning cleanup: is_signed_type: compare -1 to 1
+	* Fix: bytecode linker: validate event and field array/sequence encoding
+	* Fix: racy notifier captures update vs traversal
+	* Fix: kretprobe: null ptr deref on session destroy
+	* Fix: bytecode linker: iteration on wrong list head
+	* counters: add coalesce_hits to ABI
+	* fix: mm, tracing: record slab name for kmem_cache_free() (v5.12)
+	* Fix: filter interpreter early-exits on uninitialized value
+	* Fix: memory leaks on event notifier destroy
+	* Fix: memory leaks on event destroy
+	* fix: Adjust ranges for Ubuntu 5.8.0-44 kernel
+	* Fix: do not use bdi_unknown_name symbol
+	* fix: memcg: fix a crash in wb_workfn when a device disappears (5.6)
+	* Fix: writeback: out-of-bound reads
+	* fix: Add one digit to RHEL major release version
+	* fix: Add one digit to SLES minor release version
+	* fix: RT_PATCH_VERSION is close to overflow
+	* fix: cast LTTNG_KERNEL_VERSION/LTTNG_LINUX_VERSION_CODE to uint64_t
+	* fix: double defined LTTNG_KERNEL_VERSION
+	* fix: UTS_UBUNTU_RELEASE_ABI is close to overflow
+	* fix: sublevel version overflow in LINUX_VERSION_CODE
+	* Namespace kernel version macros
+	* aarch64: blacklist gcc prior to 5.1
+	* fix: missing include for 'task_struct' in fdtable.h
+	* Fix: counter-api: always inline counter add function
+	* fix: genirq: Restrict export of irq_to_desc() (v5.11)
+	* fix: block: merge struct block_device and struct hd_struct (v5.11)
+	* fix: kprobes: Remove kretprobe hash (v5.11)
+	* fix: file: Rename fcheck lookup_fd_rcu (v5.11)
+	* fix: block: remove the request_queue argument to the block_bio_remap tracepoint (v5.11)
+	* fix: block: remove the request_queue argument to the block_split tracepoint (v5.11)
+	* fix: block: simplify and extend the block_bio_merge tracepoint class (v5.11)
+	* fix: block: remove the request_queue to argument request based tracepoints (v5.11)
+	* fix: remove floating-point arguments in msgpack
+	* abi: use 0, 1 for counter enumerations
+	* Cleanup: use tabs in abi.h
+	* Bump LTTNG_MODULES_ABI_MINOR_VERSION to 6
+	* Fix: handle default switch case with -EINVAL in lttng-syscalls
+	* fix: use wrapper for hlist_for_each_entry_rcu
+	* fix: asm/barrier.h was introduced in v3.4
+	* Fix: handle default switch case with -EINVAL in __lttng_counter_add
+	* Introduce lttng smp_store_release smp_load_acquire wrappers
+	* fix: include byteorder.h for 'cpu_to_*'
+	* Fix: notifier: use store-release/load-acquire for error counter
+	* Fix: event-notifier: Groups may not have an error counter
+	* Bump LTTNG_KERNEL_EVENT_NOTIFIER_PADDING to 32 bytes
+	* Fix: remove dead code in msgpack.c
+	* Fix: counter: cast UINT*_MAX to 64-bit signed type before negative
+	* Fix: include limits.h wrapper from libcounter
+	* Fix: include kernel.h in wrapper/limits.h
+	* Introduce limits wrapper
+	* Introduce lazy system call event creation
+	* Implement event notifier error counter
+	* Implement lib counter
+	* capture: Replace FIXME by explanation of the limit
+	* Implement capturing payload on event notifier
+	* Fix: comment related to filter bytecode list
+	* Fix: use vmalloc for filter bytecode allocation
+	* Implement enum and sequence capture serialization functions
+	* bytecode: Add `OBJECT_TYPE_{UN,}SIGNED_ENUM` type
+	* Generalize `lttng_enabler_link_bytecode()` bytecode list
+	* Cleanup: rename `_lttng_filter_link_bytecode()` -> `link_bytecode()`
+	* Add `interpreter_funcs` to `lttng_bytecode_runtime`
+	* bytecode: rename `lttng_filter_sync_state()` -> `lttng_bytecode_filter_sync_state()`
+	* Rename filter bytecode types and files
+	* bytecode: generalize `struct lttng_filter_bytecode_node`
+	* Add msgpack implementation for serializing captures
+	* bytecode: allow interpreter to return any type
+	* bytecode: propagate `rev_bo` of element
+	* bytecode: set register type to `REG_PTR` even if not used
+	* Add `lttng_bytecode_interpret_format_output()` for top of stack extraction
+	* bytecode: add `REG_U64` interpreter register type
+	* Fix: filter validator: refuse string and star glob input to bitwise operation
+	* Fix: bytecode: Validate register type for instructions expecting unknown type
+	* Cleanup: Rename filter functions/fields to mention "filter"
+	* Implement event notifiers for syscalls
+	* Fix: syscalls: address of statically allocated element never null
+	* Rename LTTNG_SYSCALL_MATCH_ -> LTTNG_KERNEL_SYSCALL_MATCH_
+	* Allow LTTNG_KERNEL_SYSCALL_{ENTRY, EXIT}
+	* syscalls: extract `lttng_syscall_filter_enable()` for reuse
+	* Cleanup: syscall: remove unused `syscall_name` field
+	* fix: adjust version range for trace_find_free_extent()
+	* Improve the release script
+	* Add release maintainer script
+	* fix: include order for older kernels
+	* fix: tracepoint: Optimize using static_call() (v5.10)
+	* fix: KVM: x86/mmu: Return unique RET_PF_* values if the fault was fixed (v5.10)
+	* fix: kvm: x86/mmu: Add TDP MMU PF handler (v5.10)
+	* fix: KVM: x86: Add intr/vectoring info and error code to kvm_exit tracepoint (v5.10)
+	* fix: ext4: fast commit recovery path (v5.10)
+	* fix: btrfs: make ordered extent tracepoint take btrfs_inode (v5.10)
+	* fix: btrfs: tracepoints: output proper root owner for trace_find_free_extent() (v5.10)
+	* fix: objtool: Rename frame.h -> objtool.h (v5.10)
+	* Revert "Implement event notifiers for syscalls"
+	* Fix: ressource leak in id tracker
+	* Implement event notifiers for syscalls
+	* lttng-syscalls.c: extract function calling actual probe
+	* Namespace syscall code relating to events
+	* Implement event notifiers for uprobes
+	* Namespace uprobe functions relating to events
+	* doc: event notifier on kretprobe is not supported
+	* Implement event notifiers for kprobes
+	* Namespace kprobe functions relating to events
+	* Implement event notifiers for tracepoints
+	* Implement event notifier probes
+	* Fix: event notifier: adapt read iterator state to poll expectations
+	* Fix: event-notifier: do not flush packet if it only contains subbuf header
+	* Implement lttng_event_notifier_group_notif_fops read, poll, open, release ABI
+	* Implement event notifier send notification
+	* Add event notifier and event notifier enabler
+	* Implement event notifier group create
+	* Add token to `struct lttng_kernel_event`
+	* lttng-events: move lttng_transport_find earlier in source file
+	* lib ring buffer: move subbuffer_consume_record into LTTNG_RING_BUFFER_COUNT_EVENTS ifdef
+	* lib ring buffer iterator: introduce lib_ring_buffer_put_current_record
+	* Introduce event notifier lib ring buffer client
+	* lttng_abi_create_stream_fd: expect fd name as parameter
+	* LTTng ring buffer clients: expect void pointer as private data to create channel
+	* lib ring buffer: use irq_work for wakeup by writer
+	* Rename `lttng_event_{get,put}()` to `lttng_event_desc_{get,put}()`
+	* Cleanup: extract function to borrow hashlist bucket
+	* Decouple `struct lttng_event` from filter code
+	* Rename `lttng_create_*_if_missing()` in anticipation of event notifiers
+	* Extract event enabler fields to specialized struct
+	* Docs: explain why unused `lttng_enabler::ctx` is kept around
+	* Rename `enum lttng_enabler_type` to `_format_type`
+	* Test: add signed value and enum for testings of event notifier capture
+	* Cleanup: remove usage of enum in ABI structures
+	* Fix: type mismatch in clone instrumentation
+	* syscalls: Make clone()'s `flags` field a 2 enum struct.
+	* fix: strncpy equals destination size warning
+	* Set version to 2.13-pre
+	* Cleanup: lttng-syscalls: silence warning about uninitialized bitmap variable
+	* Add 'kernel_read' wrapper for kernels < v4.14
+	* fix: Use 'kernel_read' to read from procfs
+	* fix: don't allow userspace copy to read kernel memory
+	* fix: Add a 1MB limit to lttng_strlen_user_inatomic
+	* fix: Adjust ranges for Ubuntu 4.15.0-119 kernel
+	* fix: Adjust ranges for Ubuntu HWE 5.0 kernels
+	* Fix: system call filter table
+	* fix: version ranges for ext4_discard_preallocations and writeback_queue_io
+	* fix: writeback: Fix sync livelock due to b_dirty_time processing (v5.9)
+	* fix: writeback: Drop I_DIRTY_TIME_EXPIRE (v5.9)
+	* fix: removal of [smp_]read_barrier_depends (v5.9)
+	* fix: ext4: indicate via a block bitmap read is prefetched… (v5.9)
+	* fix: ext4: limit the length of per-inode prealloc list (v5.9)
+	* fix: KVM: x86/mmu: Make kvm_mmu_page definition and accessor internal-only (v5.9)
+	* fix: Move mmutrace.h into the mmu/ sub-directory (v5.9)
+	* Namespace all logging statements
+	* Kconfig: fix dependency issue when building in-tree without CONFIG_FTRACE
+	* Fix: mmap enum flags build failures
+	* syscalls: Make mmap()'s fields `prot` and `flags` enums
+	* x86: add error code enum to pagefault tracepoints
+	* Fix: TAINT_UNSAFE_SMP renamed to TAINT_CPU_OUT_OF_SPEC in v3.15
+	* module_load: change `taints` field to `ctf_enum`
+	* Fix: Lock metadata cache on session destroy
+	* Fix: metadata stream leak, missing list removal and locking
+	* Fix: coherent state not changed atomically with metadata written
+	* fix: include module.h for EXPORT_SYMBOL_GPL
+	* fix: __lttng_vmalloc_node_range const caller introduced in v3.6
+	* fix: version range for overflow_callback
+	* fix: global_dirty_limit was introduced in v3.1
+	* fix: wrapper_uprobe_unregister is a void function
+	* fix: prior to v4.0, __vmalloc_node_range had no vm_flags param
+	* fix: vmalloc on v5.8 without KALLSYMS
+	* Detect missing symbols used with kallsyms_lookup at compile time
+	* Add time namespace context
+	* Use exported symbol bdevname() instead of disk_name()
+	* Add git-review config
+	* fix: mm: remove vmalloc_sync_(un)mappings() (v5.8)
+	* Update design document
+	* Add lttng-modules design document
+	* Fix: callstack: initialize nested sequence length field name
+	* Fix: callstack: NULL pointer dereference: length field also need fdata
+	* Fix: callstack context memory corruption
+	* fix: mm/writeback: discard NR_UNSTABLE_NFS, use NR_WRITEBACK (v5.8)
+	* fix: block: remove the error argument to the block_bio_complete (v5.8)
+	* fix: pipe_buf_operations rework (v5.8)
+	* Fix: syscalls: Ignore fcntl cmd specific to 32-bit in 64-bit only config
+	* Fix: Implement RING_BUFFER_GET_NEXT_SUBBUF_METADATA_CHECK
+	* fix: vmalloc_sync_mappings was backported to v5.5.12
+	* Update: Additional kernel ranges for vmalloc_sync_mappings
+	* Update: Use vmalloc_sync_mappings for stable kernels
+	* Fix: Use vmalloc_sync_mappings on kernel 5.6 as well
+	* Cleanup: remove unsupported `ctf_float()` macros
+	* Cleanup: have interpreter functions return _DISCARD instead of 0
+	* Cleanup: bytecode: typo: "s16" -> "u16"
+	* Cleanup: Rename patches.i to patches.h
+	* Cleanup: Move all source files to src/
+	* Cleanup: Move patches.i to include/generated/
+	* Cleanup: Move lttng-modules instrumentation headers
+	* Cleanup: Remove toplevel directory from include search path
+	* Cleanup: Move blacklist/ headers to include/blacklist/
+	* Cleanup: Move wrapper/ headers to include/wrapper/
+	* Cleanup: Move instrumentation/ headers to include/instrumentation/
+	* Cleanup: Remove deprecated TODO file
+	* fix: add missing guid_t type to wrapper
+	* Fix: missing wrapper rename to wrapper_vmalloc_sync_mappings
+	* Cleanup: Move headers from toplevel to include/lttng/
+	* Cleanup: Move headers from probes/ to include/lttng/
+	* Cleanup: Move headers from lib/ to include/lttng/
+	* Cleanup: Move lib/ringbuffer/ headers to include/ringbuffer/
+	* Fix: wrapper random documentation
+	* Update for kernel 5.7: use vmalloc_sync_mappings on kernels >= 5.7
+	* Unbreak LTTng for kernel 5.7
+	* Move lttng wrappers into own module
+	* Introduce lttng_guid_gen wrapper for kernels >= 5.7.0
+	* instrumentation: update x86 kvm instrumentation for kernel >= 5.7.0
+	* instrumentation: update mm_vmscan for kernel >= 5.7.0
+	* filter: bytecode already in the list should go before
+	* tracepoint: Refactor representation of nested types
+	* wrapper/compiler.h: Implement __LTTNG_COMPOUND_LITERAL
+	* Update to SPDX v3.0 identifiers
+	* fix: uaccess wrapper for CentOS >= 4.18.0-147
+	* fix: ext4 instrumentation for CentOS >= 4.18.0-147
+	* fix: signal instrumentation for CentOS >= 4.18.0-147
+	* fix: kvm instrumentation for CentOS >= 4.18.0-147
+	* fix: rcu instrumentation for CentOS >= 4.18.0-80
+	* Fix: update kvm instrumentation for Ubuntu 5.3.0-45
+	* Fix: update kvm instrumentation for Ubuntu 5.3.0-43
+	* Fix: fcntl enum: only emit F_GETOWNER_UIDS for kernels >= 3.6
+	* syscalls: Make the cmd field of fcntl an enum
+	* syscalls: Make the flags and mode fields of open[at] enumerations
+	* Fix: update kvm instrumentation for Ubuntu 4.15.0-92
+	* Record event as soon as one filter evaluates to TRUE
+	* Add UDP and ICMP packet header information to the tracepoint
+	* statedump: introduce file_table_address
+	* Remove kernel version from syscall headers name
+	* Add script to automate the syscall extraction process
+	* Update lttng-syscalls-extractor for v5.6.0
+	* Add a Makefile for the lttng-syscalls-extractor module
+	* Cleanup: Syscall headers scripts shellcheck warnings
+	* Remove lttng-ftrace integration
+	* Remove dependency on kallsyms for splice_to_pipe (kernel 4.2+)
+	* Remove dependency on kallsyms for irq_to_desc (kernel 3.4+)
+	* Remove work-around for signed tracepoint module tainting (kernel 3.15+)
+	* Change integer base to hex for fields representing addresses
+	* Fix: rcu: Fix data-race due to atomic_t copy-by-value (5.5.6, 5.4.22)
+	* fix: y2038: hide timeval/timespec/itimerval/itimerspec types (v5.6)
+	* fix: use timespec64 on kernels that have it
+	* fix: move lttng_close_on_exec to proper wrapper
+	* fix: 'struct timex' removed upstream (v5.6)
+	* Fix: statedump: consistently check task_cred_xxx() return value for NULL
+	* Fix: statedump: check task_active_pid_ns return value for NULL
+	* Fix: lttng-events.c: variable may be used uninitialized
+	* Cleanup: remove trailing white spaces across project
+	* sched: Make the sched_switch task state an enum
+	* block: Make the rwbs field as a bit field enum
+	* fix: workqueue: add worker function to workqueue_execute_end tracepoint (v5.6)
+	* fix: media: v4l2: abstract timeval handling in v4l2_buffer (v5.6)
+	* fix: rcu: Remove kfree_rcu() special casing and lazy-callback (v5.6)
+	* fix: rcu: Fix data-race due to atomic_t copy-by-value (v5.6)
+	* fix: btrfs: make btrfs_ordered_extent naming consistent (v5.6)
+	* fix: KVM: x86: Use gpa_t for cr2/gpa to fix TDP support on 32-bit (v5.6)
+	* fix: proc: decouple proc from VFS with "struct proc_ops" (v5.6)
+
 2020-02-05 (National Weatherperson's Day) LTTng modules 2.12.0-rc1
 	* Fix: lttng-syscalls.c: marking wrong syscall probe as unregistered
 	* Version 2.12.0-pre
