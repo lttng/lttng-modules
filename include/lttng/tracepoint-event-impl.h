@@ -1094,7 +1094,7 @@ static void __event_probe__##_name(_data_proto)						\
 		__event_align = __event_get_align__##_name(_locvar_args);		\
 		lib_ring_buffer_ctx_init(&__ctx, __event_recorder, __event_len,		\
 					 __event_align, &__lttng_probe_ctx);		\
-		__ret = __chan->ops->event_reserve(&__ctx, __event_recorder->priv->id);	\
+		__ret = __chan->ops->event_reserve(&__ctx);				\
 		if (__ret < 0)								\
 			goto __post;							\
 		_fields									\

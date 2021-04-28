@@ -2886,7 +2886,7 @@ int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 	/*
 	 * If reservation failed, return an error to the caller.
 	 */
-	ret = stream->transport->ops.event_reserve(&ctx, 0);
+	ret = stream->transport->ops.event_reserve(&ctx);
 	if (ret != 0) {
 		printk(KERN_WARNING "LTTng: Metadata event reservation failed\n");
 		stream->coherent = false;
