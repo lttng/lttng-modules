@@ -18,7 +18,7 @@
 #include <lttng/endian.h>
 
 static
-size_t procname_get_size(size_t offset)
+size_t procname_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -33,7 +33,7 @@ size_t procname_get_size(size_t offset)
  * could lead to crash in IRQ context and deadlock of the lockdep tracer.
  */
 static
-void procname_record(struct lttng_kernel_ctx_field *field,
+void procname_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 		 struct lib_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
@@ -41,11 +41,11 @@ void procname_record(struct lttng_kernel_ctx_field *field,
 }
 
 static
-void procname_get_value(struct lttng_kernel_ctx_field *field,
+void procname_get_value(void *priv,
 		struct lttng_probe_ctx *lttng_probe_ctx,
-		union lttng_ctx_value *value)
+		struct lttng_ctx_value *value)
 {
-	value->str = current->comm;
+	value->u.str = current->comm;
 }
 
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
@@ -53,7 +53,6 @@ static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_
 		lttng_kernel_static_type_array_text(sizeof(current->comm)),
 		false, false, false),
 	procname_get_size,
-	NULL,
 	procname_record,
 	procname_get_value,
 	NULL, NULL);

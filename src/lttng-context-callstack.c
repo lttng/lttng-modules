@@ -90,9 +90,9 @@ error_alloc:
 }
 
 static
-void lttng_callstack_sequence_destroy(struct lttng_kernel_ctx_field *field)
+void lttng_callstack_sequence_destroy(void *priv)
 {
-	struct field_data *fdata = field->priv;
+	struct field_data *fdata = priv;
 
 	field_data_free(fdata);
 }
@@ -158,7 +158,7 @@ int __lttng_add_callstack_generic(struct lttng_kernel_ctx **ctx,
 	}
 	memset(&ctx_field, 0, sizeof(ctx_field));
 	ctx_field.event_field = event_fields[0];
-	ctx_field.get_size_arg = lttng_callstack_length_get_size;
+	ctx_field.get_size = lttng_callstack_length_get_size;
 	ctx_field.record = lttng_callstack_length_record;
 	ctx_field.priv = fdata;
 	ret = lttng_kernel_context_append(ctx, &ctx_field);
@@ -169,7 +169,7 @@ int __lttng_add_callstack_generic(struct lttng_kernel_ctx **ctx,
 
 	memset(&ctx_field, 0, sizeof(ctx_field));
 	ctx_field.event_field = event_fields[1];
-	ctx_field.get_size_arg = lttng_callstack_sequence_get_size;
+	ctx_field.get_size = lttng_callstack_sequence_get_size;
 	ctx_field.record = lttng_callstack_sequence_record;
 	ctx_field.destroy = lttng_callstack_sequence_destroy;
 	ctx_field.priv = fdata;

@@ -19,7 +19,7 @@
 #include <wrapper/user_namespace.h>
 
 static
-size_t vgid_get_size(size_t offset)
+size_t vgid_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -29,7 +29,7 @@ size_t vgid_get_size(size_t offset)
 }
 
 static
-void vgid_record(struct lttng_kernel_ctx_field *field,
+void vgid_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 		 struct lib_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
@@ -41,11 +41,11 @@ void vgid_record(struct lttng_kernel_ctx_field *field,
 }
 
 static
-void vgid_get_value(struct lttng_kernel_ctx_field *field,
+void vgid_get_value(void *priv,
 		struct lttng_probe_ctx *lttng_probe_ctx,
-		union lttng_ctx_value *value)
+		struct lttng_ctx_value *value)
 {
-	value->s64 = lttng_current_vgid();
+	value->u.s64 = lttng_current_vgid();
 }
 
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
@@ -53,7 +53,6 @@ static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_
 		lttng_kernel_static_type_integer_from_type(gid_t, __BYTE_ORDER, 10),
 		false, false, false),
 	vgid_get_size,
-	NULL,
 	vgid_record,
 	vgid_get_value,
 	NULL, NULL);

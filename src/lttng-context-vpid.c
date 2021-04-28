@@ -17,7 +17,7 @@
 #include <lttng/tracer.h>
 
 static
-size_t vpid_get_size(size_t offset)
+size_t vpid_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -27,7 +27,7 @@ size_t vpid_get_size(size_t offset)
 }
 
 static
-void vpid_record(struct lttng_kernel_ctx_field *field,
+void vpid_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 		 struct lib_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
@@ -45,9 +45,9 @@ void vpid_record(struct lttng_kernel_ctx_field *field,
 }
 
 static
-void vpid_get_value(struct lttng_kernel_ctx_field *field,
+void vpid_get_value(void *priv,
 		struct lttng_probe_ctx *lttng_probe_ctx,
-		union lttng_ctx_value *value)
+		struct lttng_ctx_value *value)
 {
 	pid_t vpid;
 
@@ -58,7 +58,7 @@ void vpid_get_value(struct lttng_kernel_ctx_field *field,
 		vpid = 0;
 	else
 		vpid = task_tgid_vnr(current);
-	value->s64 = vpid;
+	value->u.s64 = vpid;
 }
 
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
@@ -66,7 +66,6 @@ static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_
 		lttng_kernel_static_type_integer_from_type(pid_t, __BYTE_ORDER, 10),
 		false, false, false),
 	vpid_get_size,
-	NULL,
 	vpid_record,
 	vpid_get_value,
 	NULL, NULL);

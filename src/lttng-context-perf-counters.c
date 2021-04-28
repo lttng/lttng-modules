@@ -20,7 +20,7 @@
 #include <lttng/tracer.h>
 
 static
-size_t perf_counter_get_size(size_t offset)
+size_t perf_counter_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -30,11 +30,11 @@ size_t perf_counter_get_size(size_t offset)
 }
 
 static
-void perf_counter_record(struct lttng_kernel_ctx_field *field,
+void perf_counter_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 			 struct lib_ring_buffer_ctx *ctx,
 			 struct lttng_channel *chan)
 {
-	struct lttng_perf_counter_field *perf_field = field->priv;
+	struct lttng_perf_counter_field *perf_field = (struct lttng_perf_counter_field *) priv;
 	struct perf_event *event;
 	uint64_t value;
 
@@ -77,9 +77,9 @@ void overflow_callback(struct perf_event *event, int nmi,
 #endif
 
 static
-void lttng_destroy_perf_counter_ctx_field(struct lttng_kernel_ctx_field *field)
+void lttng_destroy_perf_counter_ctx_field(void *priv)
 {
-	struct lttng_perf_counter_field *perf_field = field->priv;
+	struct lttng_perf_counter_field *perf_field = priv;
 	struct perf_event **events = perf_field->e;
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))

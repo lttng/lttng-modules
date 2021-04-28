@@ -17,7 +17,7 @@
 #include <lttng/tracer.h>
 
 static
-size_t migratable_get_size(size_t offset)
+size_t migratable_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -27,7 +27,7 @@ size_t migratable_get_size(size_t offset)
 }
 
 static
-void migratable_record(struct lttng_kernel_ctx_field *field,
+void migratable_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 		struct lib_ring_buffer_ctx *ctx,
 		struct lttng_channel *chan)
 {
@@ -38,11 +38,11 @@ void migratable_record(struct lttng_kernel_ctx_field *field,
 }
 
 static
-void migratable_get_value(struct lttng_kernel_ctx_field *field,
+void migratable_get_value(void *priv,
 		struct lttng_probe_ctx *lttng_probe_ctx,
-		union lttng_ctx_value *value)
+		struct lttng_ctx_value *value)
 {
-	value->s64 = !current->migrate_disable;
+	value->u.s64 = !current->migrate_disable;
 }
 
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
@@ -50,7 +50,6 @@ static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_
 		lttng_kernel_static_type_integer_from_type(uint8_t, __BYTE_ORDER, 10),
 		false, false, false),
 	migratable_get_size,
-	NULL,
 	migratable_record,
 	migratable_get_value,
 	NULL, NULL);
