@@ -402,7 +402,7 @@ void notification_send(struct lttng_event_notifier_notification *notif,
 
 	lib_ring_buffer_ctx_init(&ctx, event_notifier_group->chan, reserve_size,
 			lttng_alignof(kernel_notif), NULL);
-	ret = event_notifier_group->ops->event_reserve(&ctx, 0);
+	ret = event_notifier_group->ops->event_reserve(&ctx);
 	if (ret < 0) {
 		record_error(event_notifier);
 		return;

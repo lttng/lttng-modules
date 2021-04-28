@@ -300,7 +300,7 @@ void lttng_buffer_read_close(struct lib_ring_buffer *buf)
 }
 
 static
-int lttng_event_reserve(struct lib_ring_buffer_ctx *ctx, uint32_t event_id)
+int lttng_event_reserve(struct lib_ring_buffer_ctx *ctx)
 {
 	struct channel *chan = ctx->client_priv;
 	int ret;

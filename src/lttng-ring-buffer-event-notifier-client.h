@@ -301,7 +301,7 @@ void lttng_write_event_notifier_header(const struct lib_ring_buffer_config *conf
 }
 
 static
-int lttng_event_reserve(struct lib_ring_buffer_ctx *ctx, uint32_t event_id)
+int lttng_event_reserve(struct lib_ring_buffer_ctx *ctx)
 {
 	struct channel *chan = ctx->client_priv;
 	int ret;

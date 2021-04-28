@@ -83,7 +83,7 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 
 		lib_ring_buffer_ctx_init(&ctx, event_recorder, sizeof(payload),
 					 lttng_alignof(payload), &lttng_probe_ctx);
-		ret = chan->ops->event_reserve(&ctx, event_recorder->priv->id);
+		ret = chan->ops->event_reserve(&ctx);
 		if (ret < 0)
 			return 0;
 		lib_ring_buffer_align_ctx(&ctx, lttng_alignof(payload));

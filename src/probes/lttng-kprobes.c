@@ -65,7 +65,7 @@ int lttng_kprobes_event_handler_pre(struct kprobe *p, struct pt_regs *regs)
 
 		lib_ring_buffer_ctx_init(&ctx, event_recorder, sizeof(data),
 					 lttng_alignof(data), &lttng_probe_ctx);
-		ret = chan->ops->event_reserve(&ctx, event_recorder->priv->id);
+		ret = chan->ops->event_reserve(&ctx);
 		if (ret < 0)
 			return 0;
 		lib_ring_buffer_align_ctx(&ctx, lttng_alignof(data));
