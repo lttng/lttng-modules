@@ -33,7 +33,7 @@ void cpu_id_record(struct lttng_kernel_ctx_field *field,
 {
 	int cpu;
 
-	cpu = ctx->cpu;
+	cpu = ctx->priv.reserve_cpu;
 	lib_ring_buffer_align_ctx(ctx, lttng_alignof(cpu));
 	chan->ops->event_write(ctx, &cpu, sizeof(cpu));
 }

@@ -75,13 +75,13 @@ int lib_ring_buffer_try_reserve(const struct lib_ring_buffer_config *config,
 				unsigned long *o_begin, unsigned long *o_end,
 				unsigned long *o_old, size_t *before_hdr_pad)
 {
-	struct channel *chan = ctx->chan;
-	struct lib_ring_buffer *buf = ctx->buf;
+	struct channel *chan = ctx->priv.chan;
+	struct lib_ring_buffer *buf = ctx->priv.buf;
 	*o_begin = v_read(config, &buf->offset);
 	*o_old = *o_begin;
 
-	ctx->tsc = lib_ring_buffer_clock_read(chan);
-	if ((int64_t) ctx->tsc == -EIO)
+	ctx->priv.tsc = lib_ring_buffer_clock_read(chan);
+	if ((int64_t) ctx->priv.tsc == -EIO)
 		return 1;
 
 	/*
@@ -91,18 +91,18 @@ int lib_ring_buffer_try_reserve(const struct lib_ring_buffer_config *config,
 	 */
 	prefetch(&buf->commit_hot[subbuf_index(*o_begin, chan)]);
 
-	if (last_tsc_overflow(config, buf, ctx->tsc))
-		ctx->rflags |= RING_BUFFER_RFLAG_FULL_TSC;
+	if (last_tsc_overflow(config, buf, ctx->priv.tsc))
+		ctx->priv.rflags |= RING_BUFFER_RFLAG_FULL_TSC;
 
 	if (unlikely(subbuf_offset(*o_begin, chan) == 0))
 		return 1;
 
-	ctx->slot_size = record_header_size(config, chan, *o_begin,
+	ctx->priv.slot_size = record_header_size(config, chan, *o_begin,
 					    before_hdr_pad, ctx, client_ctx);
-	ctx->slot_size +=
-		lib_ring_buffer_align(*o_begin + ctx->slot_size,
+	ctx->priv.slot_size +=
+		lib_ring_buffer_align(*o_begin + ctx->priv.slot_size,
 				      ctx->largest_align) + ctx->data_size;
-	if (unlikely((subbuf_offset(*o_begin, chan) + ctx->slot_size)
+	if (unlikely((subbuf_offset(*o_begin, chan) + ctx->priv.slot_size)
 		     > chan->backend.subbuf_size))
 		return 1;
 
@@ -110,7 +110,7 @@ int lib_ring_buffer_try_reserve(const struct lib_ring_buffer_config *config,
 	 * Record fits in the current buffer and we are not on a switch
 	 * boundary. It's safe to write.
 	 */
-	*o_end = *o_begin + ctx->slot_size;
+	*o_end = *o_begin + ctx->priv.slot_size;
 
 	if (unlikely((subbuf_offset(*o_end, chan)) == 0))
 		/*
@@ -143,7 +143,7 @@ int lib_ring_buffer_reserve(const struct lib_ring_buffer_config *config,
 			    struct lib_ring_buffer_ctx *ctx,
 			    void *client_ctx)
 {
-	struct channel *chan = ctx->chan;
+	struct channel *chan = ctx->priv.chan;
 	struct lib_ring_buffer *buf;
 	unsigned long o_begin, o_end, o_old;
 	size_t before_hdr_pad = 0;
@@ -152,12 +152,12 @@ int lib_ring_buffer_reserve(const struct lib_ring_buffer_config *config,
 		return -EAGAIN;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
-		buf = per_cpu_ptr(chan->backend.buf, ctx->cpu);
+		buf = per_cpu_ptr(chan->backend.buf, ctx->priv.reserve_cpu);
 	else
 		buf = chan->backend.buf;
 	if (unlikely(atomic_read(&buf->record_disabled)))
 		return -EAGAIN;
-	ctx->buf = buf;
+	ctx->priv.buf = buf;
 
 	/*
 	 * Perform retryable operations.
@@ -166,7 +166,7 @@ int lib_ring_buffer_reserve(const struct lib_ring_buffer_config *config,
 						 &o_end, &o_old, &before_hdr_pad)))
 		goto slow_path;
 
-	if (unlikely(v_cmpxchg(config, &ctx->buf->offset, o_old, o_end)
+	if (unlikely(v_cmpxchg(config, &ctx->priv.buf->offset, o_old, o_end)
 		     != o_old))
 		goto slow_path;
 
@@ -176,21 +176,21 @@ int lib_ring_buffer_reserve(const struct lib_ring_buffer_config *config,
 	 * record headers, never the opposite (missing a full TSC record header
 	 * when it would be needed).
 	 */
-	save_last_tsc(config, ctx->buf, ctx->tsc);
+	save_last_tsc(config, ctx->priv.buf, ctx->priv.tsc);
 
 	/*
 	 * Push the reader if necessary
 	 */
-	lib_ring_buffer_reserve_push_reader(ctx->buf, chan, o_end - 1);
+	lib_ring_buffer_reserve_push_reader(ctx->priv.buf, chan, o_end - 1);
 
 	/*
 	 * Clear noref flag for this subbuffer.
 	 */
-	lib_ring_buffer_clear_noref(config, &ctx->buf->backend,
+	lib_ring_buffer_clear_noref(config, &ctx->priv.buf->backend,
 				subbuf_index(o_end - 1, chan));
 
-	ctx->pre_offset = o_begin;
-	ctx->buf_offset = o_begin + before_hdr_pad;
+	ctx->priv.pre_offset = o_begin;
+	ctx->priv.buf_offset = o_begin + before_hdr_pad;
 	return 0;
 slow_path:
 	return lib_ring_buffer_reserve_slow(ctx, client_ctx);
@@ -231,9 +231,9 @@ static inline
 void lib_ring_buffer_commit(const struct lib_ring_buffer_config *config,
 			    const struct lib_ring_buffer_ctx *ctx)
 {
-	struct channel *chan = ctx->chan;
-	struct lib_ring_buffer *buf = ctx->buf;
-	unsigned long offset_end = ctx->buf_offset;
+	struct channel *chan = ctx->priv.chan;
+	struct lib_ring_buffer *buf = ctx->priv.buf;
+	unsigned long offset_end = ctx->priv.buf_offset;
 	unsigned long endidx = subbuf_index(offset_end - 1, chan);
 	unsigned long commit_count;
 	struct commit_counters_hot *cc_hot = &buf->commit_hot[endidx];
@@ -257,7 +257,7 @@ void lib_ring_buffer_commit(const struct lib_ring_buffer_config *config,
 	} else
 		smp_wmb();
 
-	v_add(config, ctx->slot_size, &cc_hot->cc);
+	v_add(config, ctx->priv.slot_size, &cc_hot->cc);
 
 	/*
 	 * commit count read can race with concurrent OOO commit count updates.
@@ -280,7 +280,7 @@ void lib_ring_buffer_commit(const struct lib_ring_buffer_config *config,
 	commit_count = v_read(config, &cc_hot->cc);
 
 	lib_ring_buffer_check_deliver(config, buf, chan, offset_end - 1,
-				      commit_count, endidx, ctx->tsc);
+				      commit_count, endidx, ctx->priv.tsc);
 	/*
 	 * Update used size at each commit. It's needed only for extracting
 	 * ring_buffer buffers from vmcore, after crash.
@@ -303,8 +303,8 @@ static inline
 int lib_ring_buffer_try_discard_reserve(const struct lib_ring_buffer_config *config,
 					const struct lib_ring_buffer_ctx *ctx)
 {
-	struct lib_ring_buffer *buf = ctx->buf;
-	unsigned long end_offset = ctx->pre_offset + ctx->slot_size;
+	struct lib_ring_buffer *buf = ctx->priv.buf;
+	unsigned long end_offset = ctx->priv.pre_offset + ctx->priv.slot_size;
 
 	/*
 	 * We need to ensure that if the cmpxchg succeeds and discards the
@@ -320,7 +320,7 @@ int lib_ring_buffer_try_discard_reserve(const struct lib_ring_buffer_config *con
 	 */
 	save_last_tsc(config, buf, 0ULL);
 
-	if (likely(v_cmpxchg(config, &buf->offset, end_offset, ctx->pre_offset)
+	if (likely(v_cmpxchg(config, &buf->offset, end_offset, ctx->priv.pre_offset)
 		   != end_offset))
 		return -EPERM;
 	else

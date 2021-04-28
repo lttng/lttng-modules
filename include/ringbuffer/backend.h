@@ -75,10 +75,10 @@ void lib_ring_buffer_write(const struct lib_ring_buffer_config *config,
 			   struct lib_ring_buffer_ctx *ctx,
 			   const void *src, size_t len)
 {
-	struct lib_ring_buffer_backend *bufb = &ctx->buf->backend;
-	struct channel_backend *chanb = &ctx->chan->backend;
+	struct lib_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
+	struct channel_backend *chanb = &ctx->priv.chan->backend;
 	size_t index, pagecpy;
-	size_t offset = ctx->buf_offset;
+	size_t offset = ctx->priv.buf_offset;
 	struct lib_ring_buffer_backend_pages *backend_pages;
 
 	if (unlikely(!len))
@@ -95,7 +95,7 @@ void lib_ring_buffer_write(const struct lib_ring_buffer_config *config,
 					src, len);
 	else
 		_lib_ring_buffer_write(bufb, offset, src, len, 0);
-	ctx->buf_offset += len;
+	ctx->priv.buf_offset += len;
 }
 
 /**
@@ -116,10 +116,10 @@ void lib_ring_buffer_memset(const struct lib_ring_buffer_config *config,
 			    struct lib_ring_buffer_ctx *ctx, int c, size_t len)
 {
 
-	struct lib_ring_buffer_backend *bufb = &ctx->buf->backend;
-	struct channel_backend *chanb = &ctx->chan->backend;
+	struct lib_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
+	struct channel_backend *chanb = &ctx->priv.chan->backend;
 	size_t index, pagecpy;
-	size_t offset = ctx->buf_offset;
+	size_t offset = ctx->priv.buf_offset;
 	struct lib_ring_buffer_backend_pages *backend_pages;
 
 	if (unlikely(!len))
@@ -135,7 +135,7 @@ void lib_ring_buffer_memset(const struct lib_ring_buffer_config *config,
 					  c, len);
 	else
 		_lib_ring_buffer_memset(bufb, offset, c, len, 0);
-	ctx->buf_offset += len;
+	ctx->priv.buf_offset += len;
 }
 
 /*
@@ -213,10 +213,10 @@ void lib_ring_buffer_strcpy(const struct lib_ring_buffer_config *config,
 			   struct lib_ring_buffer_ctx *ctx,
 			   const char *src, size_t len, int pad)
 {
-	struct lib_ring_buffer_backend *bufb = &ctx->buf->backend;
-	struct channel_backend *chanb = &ctx->chan->backend;
+	struct lib_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
+	struct channel_backend *chanb = &ctx->priv.chan->backend;
 	size_t index, pagecpy;
-	size_t offset = ctx->buf_offset;
+	size_t offset = ctx->priv.buf_offset;
 	struct lib_ring_buffer_backend_pages *backend_pages;
 
 	if (unlikely(!len))
@@ -250,7 +250,7 @@ void lib_ring_buffer_strcpy(const struct lib_ring_buffer_config *config,
 	} else {
 		_lib_ring_buffer_strcpy(bufb, offset, src, len, 0, pad);
 	}
-	ctx->buf_offset += len;
+	ctx->priv.buf_offset += len;
 }
 
 /**
@@ -271,10 +271,10 @@ void lib_ring_buffer_copy_from_user_inatomic(const struct lib_ring_buffer_config
 				    struct lib_ring_buffer_ctx *ctx,
 				    const void __user *src, size_t len)
 {
-	struct lib_ring_buffer_backend *bufb = &ctx->buf->backend;
-	struct channel_backend *chanb = &ctx->chan->backend;
+	struct lib_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
+	struct channel_backend *chanb = &ctx->priv.chan->backend;
 	size_t index, pagecpy;
-	size_t offset = ctx->buf_offset;
+	size_t offset = ctx->priv.buf_offset;
 	struct lib_ring_buffer_backend_pages *backend_pages;
 	unsigned long ret;
 
@@ -302,7 +302,7 @@ void lib_ring_buffer_copy_from_user_inatomic(const struct lib_ring_buffer_config
 		_lib_ring_buffer_copy_from_user_inatomic(bufb, offset, src, len, 0);
 	}
 	pagefault_enable();
-	ctx->buf_offset += len;
+	ctx->priv.buf_offset += len;
 
 	return;
 
@@ -338,10 +338,10 @@ void lib_ring_buffer_strcpy_from_user_inatomic(const struct lib_ring_buffer_conf
 		struct lib_ring_buffer_ctx *ctx,
 		const void __user *src, size_t len, int pad)
 {
-	struct lib_ring_buffer_backend *bufb = &ctx->buf->backend;
-	struct channel_backend *chanb = &ctx->chan->backend;
+	struct lib_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
+	struct channel_backend *chanb = &ctx->priv.chan->backend;
 	size_t index, pagecpy;
-	size_t offset = ctx->buf_offset;
+	size_t offset = ctx->priv.buf_offset;
 	struct lib_ring_buffer_backend_pages *backend_pages;
 
 	if (unlikely(!len))
@@ -382,7 +382,7 @@ void lib_ring_buffer_strcpy_from_user_inatomic(const struct lib_ring_buffer_conf
 					len, 0, pad);
 	}
 	pagefault_enable();
-	ctx->buf_offset += len;
+	ctx->priv.buf_offset += len;
 
 	return;
 

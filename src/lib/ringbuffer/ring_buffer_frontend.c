@@ -2011,14 +2011,14 @@ retry:
 	offsets->switch_old_end = 0;
 	offsets->pre_header_padding = 0;
 
-	ctx->tsc = config->cb.ring_buffer_clock_read(chan);
-	if ((int64_t) ctx->tsc == -EIO)
+	ctx->priv.tsc = config->cb.ring_buffer_clock_read(chan);
+	if ((int64_t) ctx->priv.tsc == -EIO)
 		return -EIO;
 
-	if (last_tsc_overflow(config, buf, ctx->tsc))
-		ctx->rflags |= RING_BUFFER_RFLAG_FULL_TSC;
+	if (last_tsc_overflow(config, buf, ctx->priv.tsc))
+		ctx->priv.rflags |= RING_BUFFER_RFLAG_FULL_TSC;
 
-	if (unlikely(subbuf_offset(offsets->begin, ctx->chan) == 0)) {
+	if (unlikely(subbuf_offset(offsets->begin, ctx->priv.chan) == 0)) {
 		offsets->switch_new_start = 1;		/* For offsets->begin */
 	} else {
 		offsets->size = config->cb.record_header_size(config, chan,
@@ -2175,13 +2175,13 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_lost_event_too_big);
 int lib_ring_buffer_reserve_slow(struct lib_ring_buffer_ctx *ctx,
 		void *client_ctx)
 {
-	struct channel *chan = ctx->chan;
+	struct channel *chan = ctx->priv.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	struct lib_ring_buffer *buf;
 	struct switch_offsets offsets;
 	int ret;
 
-	ctx->buf = buf = get_current_buf(chan, ctx->cpu);
+	ctx->priv.buf = buf = get_current_buf(chan, ctx->priv.reserve_cpu);
 	offsets.size = 0;
 
 	do {
@@ -2199,7 +2199,7 @@ int lib_ring_buffer_reserve_slow(struct lib_ring_buffer_ctx *ctx,
 	 * records, never the opposite (missing a full TSC record when it would
 	 * be needed).
 	 */
-	save_last_tsc(config, buf, ctx->tsc);
+	save_last_tsc(config, buf, ctx->priv.tsc);
 
 	/*
 	 * Push the reader if necessary
@@ -2218,21 +2218,21 @@ int lib_ring_buffer_reserve_slow(struct lib_ring_buffer_ctx *ctx,
 	if (unlikely(offsets.switch_old_end)) {
 		lib_ring_buffer_clear_noref(config, &buf->backend,
 					    subbuf_index(offsets.old - 1, chan));
-		lib_ring_buffer_switch_old_end(buf, chan, &offsets, ctx->tsc);
+		lib_ring_buffer_switch_old_end(buf, chan, &offsets, ctx->priv.tsc);
 	}
 
 	/*
 	 * Populate new subbuffer.
 	 */
 	if (unlikely(offsets.switch_new_start))
-		lib_ring_buffer_switch_new_start(buf, chan, &offsets, ctx->tsc);
+		lib_ring_buffer_switch_new_start(buf, chan, &offsets, ctx->priv.tsc);
 
 	if (unlikely(offsets.switch_new_end))
-		lib_ring_buffer_switch_new_end(buf, chan, &offsets, ctx->tsc);
+		lib_ring_buffer_switch_new_end(buf, chan, &offsets, ctx->priv.tsc);
 
-	ctx->slot_size = offsets.size;
-	ctx->pre_offset = offsets.begin;
-	ctx->buf_offset = offsets.begin + offsets.pre_header_padding;
+	ctx->priv.slot_size = offsets.size;
+	ctx->priv.pre_offset = offsets.begin;
+	ctx->priv.buf_offset = offsets.begin + offsets.pre_header_padding;
 	return 0;
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_reserve_slow);

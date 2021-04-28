@@ -20,6 +20,7 @@ struct lib_ring_buffer;
 struct channel;
 struct lib_ring_buffer_config;
 struct lib_ring_buffer_ctx;
+struct lttng_kernel_ring_buffer_ctx_private;
 
 /*
  * Ring buffer client callbacks. Only used by slow path, never on fast path.
@@ -157,6 +158,40 @@ struct lib_ring_buffer_config {
 };
 
 /*
+ * ring buffer private context
+ *
+ * Private context passed to lib_ring_buffer_reserve(), lib_ring_buffer_commit(),
+ * lib_ring_buffer_try_discard_reserve(), lib_ring_buffer_align_ctx() and
+ * lib_ring_buffer_write().
+ *
+ * Get struct lttng_kernel_ring_buffer_ctx parent with container_of().
+ */
+
+struct lttng_kernel_ring_buffer_ctx_private {
+	/* input received by lib_ring_buffer_reserve(). */
+	struct channel *chan;			/* ring buffer channel */
+
+	/* output from lib_ring_buffer_reserve() */
+	int reserve_cpu;			/* processor id updated by the reserve */
+	size_t slot_size;			/* size of the reserved slot */
+	unsigned long buf_offset;		/* offset following the record header */
+	unsigned long pre_offset;		/*
+						 * Initial offset position _before_
+						 * the record is written. Positioned
+						 * prior to record header alignment
+						 * padding.
+						 */
+	u64 tsc;				/* time-stamp counter value */
+	unsigned int rflags;			/* reservation flags */
+
+	struct lib_ring_buffer *buf;		/*
+						 * buffer corresponding to processor id
+						 * for this channel
+						 */
+	struct lib_ring_buffer_backend_pages *backend_pages;
+};
+
+/*
  * ring buffer context
  *
  * Context passed to lib_ring_buffer_reserve(), lib_ring_buffer_commit(),
@@ -164,57 +199,37 @@ struct lib_ring_buffer_config {
  * lib_ring_buffer_write().
  */
 struct lib_ring_buffer_ctx {
+	/* Private ring buffer context, set by reserve callback. */
+	struct lttng_kernel_ring_buffer_ctx_private priv;
+
 	/* input received by lib_ring_buffer_reserve(), saved here. */
-	struct channel *chan;		/* channel */
-	void *priv;			/* client private data */
+	void *client_priv;		/* Ring buffer client private data */
+
 	size_t data_size;		/* size of payload */
 	int largest_align;		/*
 					 * alignment of the largest element
 					 * in the payload
 					 */
-	int cpu;			/* processor id */
-
-	/* output from lib_ring_buffer_reserve() */
-	struct lib_ring_buffer *buf;	/*
-					 * buffer corresponding to processor id
-					 * for this channel
-					 */
-	size_t slot_size;		/* size of the reserved slot */
-	unsigned long buf_offset;	/* offset following the record header */
-	unsigned long pre_offset;	/*
-					 * Initial offset position _before_
-					 * the record is written. Positioned
-					 * prior to record header alignment
-					 * padding.
-					 */
-	u64 tsc;			/* time-stamp counter value */
-	unsigned int rflags;		/* reservation flags */
-	/* Cache backend pages pointer chasing. */
-	struct lib_ring_buffer_backend_pages *backend_pages;
+	struct lttng_probe_ctx *probe_ctx;	/* Probe context */
 };
 
 /**
  * lib_ring_buffer_ctx_init - initialize ring buffer context
  * @ctx: ring buffer context to initialize
- * @chan: channel
- * @priv: client private data
+ * @client_priv: client private data
  * @data_size: size of record data payload. It must be greater than 0.
  * @largest_align: largest alignment within data payload types
- * @cpu: processor id
  */
 static inline
 void lib_ring_buffer_ctx_init(struct lib_ring_buffer_ctx *ctx,
-			      struct channel *chan,
+			      void *client_priv,
 			      size_t data_size, int largest_align,
-			      int cpu, void *priv)
+			      struct lttng_probe_ctx *probe_ctx)
 {
-	ctx->chan = chan;
-	ctx->priv = priv;
+	ctx->client_priv = client_priv;
 	ctx->data_size = data_size;
 	ctx->largest_align = largest_align;
-	ctx->cpu = cpu;
-	ctx->rflags = 0;
-	ctx->backend_pages = NULL;
+	ctx->probe_ctx = probe_ctx;
 }
 
 /*
@@ -282,7 +297,7 @@ static inline
 void lib_ring_buffer_align_ctx(struct lib_ring_buffer_ctx *ctx,
 			   size_t alignment)
 {
-	ctx->buf_offset += lib_ring_buffer_align(ctx->buf_offset,
+	ctx->priv.buf_offset += lib_ring_buffer_align(ctx->priv.buf_offset,
 						 alignment);
 }
 

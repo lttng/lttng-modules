@@ -36,7 +36,7 @@ void interruptible_record(struct lttng_kernel_ctx_field *field,
 		struct lib_ring_buffer_ctx *ctx,
 		struct lttng_channel *chan)
 {
-	struct lttng_probe_ctx *lttng_probe_ctx = ctx->priv;
+	struct lttng_probe_ctx *lttng_probe_ctx = ctx->probe_ctx;
 	int8_t interruptible = lttng_probe_ctx->interruptible;
 
 	lib_ring_buffer_align_ctx(ctx, lttng_alignof(interruptible));
