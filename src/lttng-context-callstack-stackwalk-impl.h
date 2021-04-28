@@ -109,7 +109,7 @@ struct lttng_stack_trace *stack_trace_context(struct lttng_kernel_ctx_field *fie
 	 * Do not gather the userspace callstack context when the event was
 	 * triggered by the userspace callstack context saving mechanism.
 	 */
-	cs_user_nesting = per_cpu(callstack_user_nesting, ctx->cpu);
+	cs_user_nesting = per_cpu(callstack_user_nesting, ctx->priv.reserve_cpu);
 
 	if (fdata->mode == CALLSTACK_USER && cs_user_nesting >= 1)
 		return NULL;
@@ -121,8 +121,8 @@ struct lttng_stack_trace *stack_trace_context(struct lttng_kernel_ctx_field *fie
 	 * max nesting is checked in lib_ring_buffer_get_cpu().
 	 * Check it again as a safety net.
 	 */
-	cs = per_cpu_ptr(fdata->cs_percpu, ctx->cpu);
-	buffer_nesting = per_cpu(lib_ring_buffer_nesting, ctx->cpu) - 1;
+	cs = per_cpu_ptr(fdata->cs_percpu, ctx->priv.reserve_cpu);
+	buffer_nesting = per_cpu(lib_ring_buffer_nesting, ctx->priv.reserve_cpu) - 1;
 	if (buffer_nesting >= RING_BUFFER_MAX_NESTING)
 		return NULL;
 
@@ -171,11 +171,11 @@ size_t lttng_callstack_sequence_get_size(size_t offset, struct lttng_kernel_ctx_
 						MAX_ENTRIES, 0);
 		break;
 	case CALLSTACK_USER:
-		++per_cpu(callstack_user_nesting, ctx->cpu);
+		++per_cpu(callstack_user_nesting, ctx->priv.reserve_cpu);
 		/* do the real work and reserve space */
 		trace->nr_entries = save_func_user(trace->entries,
 						MAX_ENTRIES);
-		per_cpu(callstack_user_nesting, ctx->cpu)--;
+		per_cpu(callstack_user_nesting, ctx->priv.reserve_cpu)--;
 		break;
 	default:
 		WARN_ON_ONCE(1);

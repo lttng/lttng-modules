@@ -302,13 +302,17 @@ void lttng_buffer_read_close(struct lib_ring_buffer *buf)
 static
 int lttng_event_reserve(struct lib_ring_buffer_ctx *ctx, uint32_t event_id)
 {
+	struct channel *chan = ctx->client_priv;
 	int ret;
+
+	memset(&ctx->priv, 0, sizeof(ctx->priv));
+	ctx->priv.chan = chan;
 
 	ret = lib_ring_buffer_reserve(&client_config, ctx, NULL);
 	if (ret)
 		return ret;
 	lib_ring_buffer_backend_get_pages(&client_config, ctx,
-			&ctx->backend_pages);
+			&ctx->priv.backend_pages);
 	return 0;
 
 }

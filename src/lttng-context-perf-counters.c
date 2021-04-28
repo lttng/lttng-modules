@@ -38,7 +38,7 @@ void perf_counter_record(struct lttng_kernel_ctx_field *field,
 	struct perf_event *event;
 	uint64_t value;
 
-	event = perf_field->e[ctx->cpu];
+	event = perf_field->e[ctx->priv.reserve_cpu];
 	if (likely(event)) {
 		if (unlikely(event->state == PERF_EVENT_STATE_ERROR)) {
 			value = 0;
