@@ -246,11 +246,10 @@ struct lttng_kernel_event_field {
 		_fields											\
 	)
 
-#define lttng_kernel_static_ctx_field(_event_field, _get_size, _get_size_arg, _record, _get_value, _destroy, _priv) \
+#define lttng_kernel_static_ctx_field(_event_field, _get_size, _record, _get_value, _destroy, _priv)	\
 	__LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_ctx_field, {					\
 		.event_field = (_event_field),								\
 		.get_size = (_get_size),								\
-		.get_size_arg = (_get_size_arg),							\
 		.record = (_record),									\
 		.get_value = (_get_value),								\
 		.destroy = (_destroy),									\
@@ -303,10 +302,12 @@ struct lttng_kernel_event_field {
 		}											\
 	}),
 
-union lttng_ctx_value {
-	int64_t s64;
-	const char *str;
-	double d;
+struct lttng_ctx_value {
+	union {
+		int64_t s64;
+		const char *str;
+		double d;
+	} u;
 };
 
 /*
@@ -334,17 +335,14 @@ struct lttng_probe_ctx {
 
 struct lttng_kernel_ctx_field {
 	const struct lttng_kernel_event_field *event_field;
-	size_t (*get_size)(size_t offset);
-	size_t (*get_size_arg)(size_t offset, struct lttng_kernel_ctx_field *field,
-	                       struct lib_ring_buffer_ctx *ctx,
-	                       struct lttng_channel *chan);
-	void (*record)(struct lttng_kernel_ctx_field *field,
-		       struct lib_ring_buffer_ctx *ctx,
-		       struct lttng_channel *chan);
-	void (*get_value)(struct lttng_kernel_ctx_field *field,
-			 struct lttng_probe_ctx *lttng_probe_ctx,
-			 union lttng_ctx_value *value);
-	void (*destroy)(struct lttng_kernel_ctx_field *field);
+	size_t (*get_size)(void *priv, struct lttng_probe_ctx *probe_ctx,
+			size_t offset);
+	void (*record)(void *priv, struct lttng_probe_ctx *probe_ctx,
+			struct lib_ring_buffer_ctx *ctx,
+			struct lttng_channel *chan);
+	void (*get_value)(void *priv, struct lttng_probe_ctx *probe_ctx,
+			struct lttng_ctx_value *value);
+	void (*destroy)(void *priv);
 	void *priv;
 };
 

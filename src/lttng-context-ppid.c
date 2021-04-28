@@ -18,7 +18,7 @@
 #include <lttng/tracer.h>
 
 static
-size_t ppid_get_size(size_t offset)
+size_t ppid_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -28,7 +28,7 @@ size_t ppid_get_size(size_t offset)
 }
 
 static
-void ppid_record(struct lttng_kernel_ctx_field *field,
+void ppid_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 		 struct lib_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
@@ -49,9 +49,9 @@ void ppid_record(struct lttng_kernel_ctx_field *field,
 }
 
 static
-void ppid_get_value(struct lttng_kernel_ctx_field *field,
+void ppid_get_value(void *priv,
 		struct lttng_probe_ctx *lttng_probe_ctx,
-		union lttng_ctx_value *value)
+		struct lttng_ctx_value *value)
 {
 	pid_t ppid;
 
@@ -65,7 +65,7 @@ void ppid_get_value(struct lttng_kernel_ctx_field *field,
 	rcu_read_lock();
 	ppid = task_tgid_nr(current->real_parent);
 	rcu_read_unlock();
-	value->s64 = ppid;
+	value->u.s64 = ppid;
 }
 
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
@@ -73,7 +73,6 @@ static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_
 		lttng_kernel_static_type_integer_from_type(pid_t, __BYTE_ORDER, 10),
 		false, false, false),
 	ppid_get_size,
-	NULL,
 	ppid_record,
 	ppid_get_value,
 	NULL, NULL);

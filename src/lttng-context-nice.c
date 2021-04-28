@@ -17,7 +17,7 @@
 #include <lttng/tracer.h>
 
 static
-size_t nice_get_size(size_t offset)
+size_t nice_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -27,7 +27,7 @@ size_t nice_get_size(size_t offset)
 }
 
 static
-void nice_record(struct lttng_kernel_ctx_field *field,
+void nice_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 		struct lib_ring_buffer_ctx *ctx,
 		struct lttng_channel *chan)
 {
@@ -39,11 +39,11 @@ void nice_record(struct lttng_kernel_ctx_field *field,
 }
 
 static
-void nice_get_value(struct lttng_kernel_ctx_field *field,
+void nice_get_value(void *priv,
 		struct lttng_probe_ctx *lttng_probe_ctx,
-		union lttng_ctx_value *value)
+		struct lttng_ctx_value *value)
 {
-	value->s64 = task_nice(current);
+	value->u.s64 = task_nice(current);
 }
 
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
@@ -51,7 +51,6 @@ static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_
 		lttng_kernel_static_type_integer_from_type(int, __BYTE_ORDER, 10),
 		false, false, false),
 	nice_get_size,
-	NULL,
 	nice_record,
 	nice_get_value,
 	NULL, NULL);

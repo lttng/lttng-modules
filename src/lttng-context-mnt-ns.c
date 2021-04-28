@@ -26,7 +26,7 @@
 #include <../fs/mount.h>
 
 static
-size_t mnt_ns_get_size(size_t offset)
+size_t mnt_ns_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -36,7 +36,7 @@ size_t mnt_ns_get_size(size_t offset)
 }
 
 static
-void mnt_ns_record(struct lttng_kernel_ctx_field *field,
+void mnt_ns_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 		 struct lib_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
@@ -57,9 +57,9 @@ void mnt_ns_record(struct lttng_kernel_ctx_field *field,
 }
 
 static
-void mnt_ns_get_value(struct lttng_kernel_ctx_field *field,
+void mnt_ns_get_value(void *priv,
 		struct lttng_probe_ctx *lttng_probe_ctx,
-		union lttng_ctx_value *value)
+		struct lttng_ctx_value *value)
 {
 	unsigned int mnt_ns_inum = 0;
 
@@ -73,7 +73,7 @@ void mnt_ns_get_value(struct lttng_kernel_ctx_field *field,
 	if (current->nsproxy)
 		mnt_ns_inum = current->nsproxy->mnt_ns->lttng_ns_inum;
 
-	value->s64 = mnt_ns_inum;
+	value->u.s64 = mnt_ns_inum;
 }
 
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
@@ -81,7 +81,6 @@ static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_
 		lttng_kernel_static_type_integer_from_type(unsigned int, __BYTE_ORDER, 10),
 		false, false, false),
 	mnt_ns_get_size,
-	NULL,
 	mnt_ns_record,
 	mnt_ns_get_value,
 	NULL, NULL);

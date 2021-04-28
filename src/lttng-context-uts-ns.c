@@ -24,7 +24,7 @@
 	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 
 static
-size_t uts_ns_get_size(size_t offset)
+size_t uts_ns_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -34,7 +34,7 @@ size_t uts_ns_get_size(size_t offset)
 }
 
 static
-void uts_ns_record(struct lttng_kernel_ctx_field *field,
+void uts_ns_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 		 struct lib_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
@@ -55,9 +55,9 @@ void uts_ns_record(struct lttng_kernel_ctx_field *field,
 }
 
 static
-void uts_ns_get_value(struct lttng_kernel_ctx_field *field,
+void uts_ns_get_value(void *priv,
 		struct lttng_probe_ctx *lttng_probe_ctx,
-		union lttng_ctx_value *value)
+		struct lttng_ctx_value *value)
 {
 	unsigned int uts_ns_inum = 0;
 
@@ -71,7 +71,7 @@ void uts_ns_get_value(struct lttng_kernel_ctx_field *field,
 	if (current->nsproxy)
 		uts_ns_inum = current->nsproxy->uts_ns->lttng_ns_inum;
 
-	value->s64 = uts_ns_inum;
+	value->u.s64 = uts_ns_inum;
 }
 
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
@@ -79,7 +79,6 @@ static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_
 		lttng_kernel_static_type_integer_from_type(unsigned int, __BYTE_ORDER, 10),
 		false, false, false),
 	uts_ns_get_size,
-	NULL,
 	uts_ns_record,
 	uts_ns_get_value,
 	NULL, NULL);

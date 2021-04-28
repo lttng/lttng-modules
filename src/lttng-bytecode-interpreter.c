@@ -273,7 +273,7 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 
 	struct lttng_kernel_ctx_field *ctx_field;
 	const struct lttng_kernel_event_field *field;
-	union lttng_ctx_value v;
+	struct lttng_ctx_value v;
 
 	ctx_field = &lttng_static_ctx->fields[idx];
 	field = ctx_field->event_field;
@@ -283,14 +283,14 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 
 	switch (field->type->type) {
 	case lttng_kernel_type_integer:
-		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
+		ctx_field->get_value(ctx_field->priv, lttng_probe_ctx, &v);
 		if (lttng_kernel_get_type_integer(field->type)->signedness) {
 			ptr->object_type = OBJECT_TYPE_S64;
-			ptr->u.s64 = v.s64;
+			ptr->u.s64 = v.u.s64;
 			ptr->ptr = &ptr->u.s64;
 		} else {
 			ptr->object_type = OBJECT_TYPE_U64;
-			ptr->u.u64 = v.s64;	/* Cast. */
+			ptr->u.u64 = v.u.s64;	/* Cast. */
 			ptr->ptr = &ptr->u.u64;
 		}
 		break;
@@ -299,14 +299,14 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		const struct lttng_kernel_type_enum *enum_type = lttng_kernel_get_type_enum(field->type);
 		const struct lttng_kernel_type_integer *integer_type = lttng_kernel_get_type_integer(enum_type->container_type);
 
-		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
+		ctx_field->get_value(ctx_field->priv, lttng_probe_ctx, &v);
 		if (integer_type->signedness) {
 			ptr->object_type = OBJECT_TYPE_SIGNED_ENUM;
-			ptr->u.s64 = v.s64;
+			ptr->u.s64 = v.u.s64;
 			ptr->ptr = &ptr->u.s64;
 		} else {
 			ptr->object_type = OBJECT_TYPE_UNSIGNED_ENUM;
-			ptr->u.u64 = v.s64;	/* Cast. */
+			ptr->u.u64 = v.u.s64;	/* Cast. */
 			ptr->ptr = &ptr->u.u64;
 		}
 		break;
@@ -324,8 +324,8 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			return -EINVAL;
 		}
 		ptr->object_type = OBJECT_TYPE_STRING;
-		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
-		ptr->ptr = v.str;
+		ctx_field->get_value(ctx_field->priv, lttng_probe_ctx, &v);
+		ptr->ptr = v.u.str;
 		break;
 	}
 	case lttng_kernel_type_sequence:
@@ -341,14 +341,14 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			return -EINVAL;
 		}
 		ptr->object_type = OBJECT_TYPE_STRING;
-		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
-		ptr->ptr = v.str;
+		ctx_field->get_value(ctx_field->priv, lttng_probe_ctx, &v);
+		ptr->ptr = v.u.str;
 		break;
 	}
 	case lttng_kernel_type_string:
 		ptr->object_type = OBJECT_TYPE_STRING;
-		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
-		ptr->ptr = v.str;
+		ctx_field->get_value(ctx_field->priv, lttng_probe_ctx, &v);
+		ptr->ptr = v.u.str;
 		break;
 	case lttng_kernel_type_struct:
 		printk(KERN_WARNING "LTTng: bytecode: Structure type cannot be loaded.\n");
@@ -1488,14 +1488,14 @@ int lttng_bytecode_interpret(struct lttng_bytecode_runtime *kernel_bytecode,
 			struct load_op *insn = (struct load_op *) pc;
 			struct field_ref *ref = (struct field_ref *) insn->data;
 			struct lttng_kernel_ctx_field *ctx_field;
-			union lttng_ctx_value v;
+			struct lttng_ctx_value v;
 
 			dbg_printk("get context ref offset %u type string\n",
 				ref->offset);
 			ctx_field = &lttng_static_ctx->fields[ref->offset];
-			ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
+			ctx_field->get_value(ctx_field->priv, lttng_probe_ctx, &v);
 			estack_push(stack, top, ax, bx, ax_t, bx_t);
-			estack_ax(stack, top)->u.s.str = v.str;
+			estack_ax(stack, top)->u.s.str = v.u.str;
 			if (unlikely(!estack_ax(stack, top)->u.s.str)) {
 				dbg_printk("Bytecode warning: loading a NULL string.\n");
 				ret = -EINVAL;
@@ -1516,14 +1516,14 @@ int lttng_bytecode_interpret(struct lttng_bytecode_runtime *kernel_bytecode,
 			struct load_op *insn = (struct load_op *) pc;
 			struct field_ref *ref = (struct field_ref *) insn->data;
 			struct lttng_kernel_ctx_field *ctx_field;
-			union lttng_ctx_value v;
+			struct lttng_ctx_value v;
 
 			dbg_printk("get context ref offset %u type s64\n",
 				ref->offset);
 			ctx_field = &lttng_static_ctx->fields[ref->offset];
-			ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
+			ctx_field->get_value(ctx_field->priv, lttng_probe_ctx, &v);
 			estack_push(stack, top, ax, bx, ax_t, bx_t);
-			estack_ax_v = v.s64;
+			estack_ax_v = v.u.s64;
 			estack_ax_t = REG_S64;
 			dbg_printk("ref get context s64 %lld\n",
 				(long long) estack_ax_v);

@@ -20,7 +20,7 @@
 #define LTTNG_HOSTNAME_CTX_LEN	(__NEW_UTS_LEN + 1)
 
 static
-size_t hostname_get_size(size_t offset)
+size_t hostname_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -29,7 +29,7 @@ size_t hostname_get_size(size_t offset)
 }
 
 static
-void hostname_record(struct lttng_kernel_ctx_field *field,
+void hostname_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 		 struct lib_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
@@ -54,9 +54,9 @@ void hostname_record(struct lttng_kernel_ctx_field *field,
 }
 
 static
-void hostname_get_value(struct lttng_kernel_ctx_field *field,
+void hostname_get_value(void *priv,
 		struct lttng_probe_ctx *lttng_probe_ctx,
-		union lttng_ctx_value *value)
+		struct lttng_ctx_value *value)
 {
 	struct nsproxy *nsproxy;
 	struct uts_namespace *ns;
@@ -73,7 +73,7 @@ void hostname_get_value(struct lttng_kernel_ctx_field *field,
 	} else {
 		hostname = "";
 	}
-	value->str = hostname;
+	value->u.str = hostname;
 }
 
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
@@ -81,7 +81,6 @@ static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_
 		lttng_kernel_static_type_array_text(LTTNG_HOSTNAME_CTX_LEN),
 		false, false, false),
 	hostname_get_size,
-	NULL,
 	hostname_record,
 	hostname_get_value,
 	NULL, NULL);

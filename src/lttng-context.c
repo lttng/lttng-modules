@@ -201,7 +201,7 @@ void lttng_kernel_destroy_context(struct lttng_kernel_ctx *ctx)
 		return;
 	for (i = 0; i < ctx->nr_fields; i++) {
 		if (ctx->fields[i].destroy)
-			ctx->fields[i].destroy(&ctx->fields[i]);
+			ctx->fields[i].destroy(ctx->fields[i].priv);
 	}
 	lttng_kvfree(ctx->fields);
 	kfree(ctx);

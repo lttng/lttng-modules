@@ -97,19 +97,21 @@ void lttng_cs_set_init(struct lttng_cs __percpu *cs_set)
 /* Keep track of nesting inside userspace callstack context code */
 DEFINE_PER_CPU(int, callstack_user_nesting);
 
+/*
+ * Note: these callbacks expect to be invoked with preemption disabled across
+ * get_size and record due to its use of a per-cpu stack.
+ */
 static
-struct lttng_stack_trace *stack_trace_context(struct lttng_kernel_ctx_field *field,
-					struct lib_ring_buffer_ctx *ctx)
+struct lttng_stack_trace *stack_trace_context(struct field_data *fdata, int cpu)
 {
 	int buffer_nesting, cs_user_nesting;
 	struct lttng_cs *cs;
-	struct field_data *fdata = field->priv;
 
 	/*
 	 * Do not gather the userspace callstack context when the event was
 	 * triggered by the userspace callstack context saving mechanism.
 	 */
-	cs_user_nesting = per_cpu(callstack_user_nesting, ctx->priv.reserve_cpu);
+	cs_user_nesting = per_cpu(callstack_user_nesting, cpu);
 
 	if (fdata->mode == CALLSTACK_USER && cs_user_nesting >= 1)
 		return NULL;
@@ -121,8 +123,8 @@ struct lttng_stack_trace *stack_trace_context(struct lttng_kernel_ctx_field *fie
 	 * max nesting is checked in lib_ring_buffer_get_cpu().
 	 * Check it again as a safety net.
 	 */
-	cs = per_cpu_ptr(fdata->cs_percpu, ctx->priv.reserve_cpu);
-	buffer_nesting = per_cpu(lib_ring_buffer_nesting, ctx->priv.reserve_cpu) - 1;
+	cs = per_cpu_ptr(fdata->cs_percpu, cpu);
+	buffer_nesting = per_cpu(lib_ring_buffer_nesting, cpu) - 1;
 	if (buffer_nesting >= RING_BUFFER_MAX_NESTING)
 		return NULL;
 
@@ -130,9 +132,7 @@ struct lttng_stack_trace *stack_trace_context(struct lttng_kernel_ctx_field *fie
 }
 
 static
-size_t lttng_callstack_length_get_size(size_t offset, struct lttng_kernel_ctx_field *field,
-				struct lib_ring_buffer_ctx *ctx,
-				struct lttng_channel *chan)
+size_t lttng_callstack_length_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t orig_offset = offset;
 
@@ -146,16 +146,15 @@ size_t lttng_callstack_length_get_size(size_t offset, struct lttng_kernel_ctx_fi
  * resulting callstack is saved to be accessed in the record step.
  */
 static
-size_t lttng_callstack_sequence_get_size(size_t offset, struct lttng_kernel_ctx_field *field,
-					struct lib_ring_buffer_ctx *ctx,
-					struct lttng_channel *chan)
+size_t lttng_callstack_sequence_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
 {
 	struct lttng_stack_trace *trace;
-	struct field_data *fdata = field->priv;
+	struct field_data *fdata = (struct field_data *) priv;
 	size_t orig_offset = offset;
+	int cpu = smp_processor_id();
 
 	/* do not write data if no space is available */
-	trace = stack_trace_context(field, ctx);
+	trace = stack_trace_context(fdata, cpu);
 	if (unlikely(!trace)) {
 		offset += lib_ring_buffer_align(offset, lttng_alignof(unsigned long));
 		return offset - orig_offset;
@@ -171,11 +170,11 @@ size_t lttng_callstack_sequence_get_size(size_t offset, struct lttng_kernel_ctx_
 						MAX_ENTRIES, 0);
 		break;
 	case CALLSTACK_USER:
-		++per_cpu(callstack_user_nesting, ctx->priv.reserve_cpu);
+		++per_cpu(callstack_user_nesting, cpu);
 		/* do the real work and reserve space */
 		trace->nr_entries = save_func_user(trace->entries,
 						MAX_ENTRIES);
-		per_cpu(callstack_user_nesting, ctx->priv.reserve_cpu)--;
+		per_cpu(callstack_user_nesting, cpu)--;
 		break;
 	default:
 		WARN_ON_ONCE(1);
@@ -194,11 +193,13 @@ size_t lttng_callstack_sequence_get_size(size_t offset, struct lttng_kernel_ctx_
 }
 
 static
-void lttng_callstack_length_record(struct lttng_kernel_ctx_field *field,
+void lttng_callstack_length_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 			struct lib_ring_buffer_ctx *ctx,
 			struct lttng_channel *chan)
 {
-	struct lttng_stack_trace *trace = stack_trace_context(field, ctx);
+	int cpu = ctx->priv.reserve_cpu;
+	struct field_data *fdata = (struct field_data *) priv;
+	struct lttng_stack_trace *trace = stack_trace_context(fdata, cpu);
 	unsigned int nr_seq_entries;
 
 	lib_ring_buffer_align_ctx(ctx, lttng_alignof(unsigned int));
@@ -213,11 +214,13 @@ void lttng_callstack_length_record(struct lttng_kernel_ctx_field *field,
 }
 
 static
-void lttng_callstack_sequence_record(struct lttng_kernel_ctx_field *field,
+void lttng_callstack_sequence_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 			struct lib_ring_buffer_ctx *ctx,
 			struct lttng_channel *chan)
 {
-	struct lttng_stack_trace *trace = stack_trace_context(field, ctx);
+	int cpu = ctx->priv.reserve_cpu;
+	struct field_data *fdata = (struct field_data *) priv;
+	struct lttng_stack_trace *trace = stack_trace_context(fdata, cpu);
 	unsigned int nr_seq_entries;
 
 	lib_ring_buffer_align_ctx(ctx, lttng_alignof(unsigned long));
