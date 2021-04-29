@@ -25,7 +25,7 @@
 #define LTTNG_PREEMPT_DISABLE_NESTING	2
 
 static
-size_t preemptible_get_size(size_t offset)
+size_t preemptible_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -35,7 +35,7 @@ size_t preemptible_get_size(size_t offset)
 }
 
 static
-void preemptible_record(struct lttng_kernel_ctx_field *field,
+void preemptible_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 		struct lib_ring_buffer_ctx *ctx,
 		struct lttng_channel *chan)
 {
@@ -50,17 +50,17 @@ void preemptible_record(struct lttng_kernel_ctx_field *field,
 }
 
 static
-void preemptible_get_value(struct lttng_kernel_ctx_field *field,
+void preemptible_get_value(void *priv,
 		struct lttng_probe_ctx *lttng_probe_ctx,
-		union lttng_ctx_value *value)
+		struct lttng_ctx_value *value)
 {
 	int pc = preempt_count();
 
 	WARN_ON_ONCE(pc < LTTNG_PREEMPT_DISABLE_NESTING);
 	if (pc == LTTNG_PREEMPT_DISABLE_NESTING)
-		value->s64 = 1;
+		value->u.s64 = 1;
 	else
-		value->s64 = 0;
+		value->u.s64 = 0;
 }
 
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
@@ -68,7 +68,6 @@ static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_
 		lttng_kernel_static_type_integer_from_type(uint8_t, __BYTE_ORDER, 10),
 		false, false, false),
 	preemptible_get_size,
-	NULL,
 	preemptible_record,
 	preemptible_get_value,
 	NULL, NULL);
