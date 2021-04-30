@@ -28,9 +28,12 @@ modules_install:
 clean:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD)/src clean
 
-# The following target is used for development and debugging. It's not part of
-# the build system.
+# The following targets are used for development and debugging. They are not
+# part of the build system.
 %.i: %.c
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m CONFIG_LTTNG_CLOCK_PLUGIN_TEST=m $@
+
+%.o: %.c
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m CONFIG_LTTNG_CLOCK_PLUGIN_TEST=m $@
 
 endif # KERNELRELEASE
