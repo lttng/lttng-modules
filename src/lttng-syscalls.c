@@ -32,6 +32,8 @@
 #include <lttng/events-internal.h>
 #include <lttng/utils.h>
 
+#include "lttng-syscalls.h"
+
 #ifndef CONFIG_COMPAT
 # ifndef is_compat_task
 #  define is_compat_task()	(0)
@@ -292,13 +294,6 @@ typedef __kernel_old_time_t time_t;
 #undef LTTNG_PACKAGE_BUILD
 #undef CREATE_TRACE_POINTS
 
-struct trace_syscall_entry {
-	void *event_func;
-	const struct lttng_kernel_event_desc *desc;
-	const struct lttng_kernel_event_field **fields;
-	unsigned int nrargs;
-};
-
 #define CREATE_SYSCALL_TABLE
 
 #define SC_ENTER
@@ -316,9 +311,15 @@ struct trace_syscall_entry {
 	},
 
 /* Event syscall enter tracing table */
-static const struct trace_syscall_entry sc_table[] = {
+static const struct trace_syscall_entry _sc_table[] = {
 #include <instrumentation/syscalls/headers/syscalls_integers.h>
 #include <instrumentation/syscalls/headers/syscalls_pointers.h>
+};
+
+
+const struct trace_syscall_table sc_table = {
+	.table = _sc_table,
+	.len = ARRAY_SIZE(_sc_table),
 };
 
 #undef TRACE_SYSCALL_TABLE
@@ -331,9 +332,14 @@ static const struct trace_syscall_entry sc_table[] = {
 	},
 
 /* Event compat syscall enter table */
-const struct trace_syscall_entry compat_sc_table[] = {
+const struct trace_syscall_entry _compat_sc_table[] = {
 #include <instrumentation/syscalls/headers/compat_syscalls_integers.h>
 #include <instrumentation/syscalls/headers/compat_syscalls_pointers.h>
+};
+
+const struct trace_syscall_table compat_sc_table = {
+	.table = _compat_sc_table,
+	.len = ARRAY_SIZE(_compat_sc_table),
 };
 
 #undef SC_ENTER
@@ -353,10 +359,16 @@ const struct trace_syscall_entry compat_sc_table[] = {
 	},
 
 /* Event syscall exit table */
-static const struct trace_syscall_entry sc_exit_table[] = {
+static const struct trace_syscall_entry _sc_exit_table[] = {
 #include <instrumentation/syscalls/headers/syscalls_integers.h>
 #include <instrumentation/syscalls/headers/syscalls_pointers.h>
 };
+
+const struct trace_syscall_table sc_exit_table = {
+	.table = _sc_exit_table,
+	.len = ARRAY_SIZE(_sc_exit_table),
+};
+
 
 #undef TRACE_SYSCALL_TABLE
 #define TRACE_SYSCALL_TABLE(_template, _name, _nr, _nrargs)	\
@@ -368,9 +380,14 @@ static const struct trace_syscall_entry sc_exit_table[] = {
 	},
 
 /* Event compat syscall exit table */
-const struct trace_syscall_entry compat_sc_exit_table[] = {
+const struct trace_syscall_entry _compat_sc_exit_table[] = {
 #include <instrumentation/syscalls/headers/compat_syscalls_integers.h>
 #include <instrumentation/syscalls/headers/compat_syscalls_pointers.h>
+};
+
+const struct trace_syscall_table compat_sc_exit_table = {
+	.table = _compat_sc_exit_table,
+	.len = ARRAY_SIZE(_compat_sc_exit_table),
 };
 
 #undef SC_EXIT
@@ -516,8 +533,8 @@ void syscall_entry_event_probe(void *__data, struct pt_regs *regs, long id)
 			/* System call filtered out. */
 			return;
 		}
-		table = compat_sc_table;
-		table_len = ARRAY_SIZE(compat_sc_table);
+		table = compat_sc_table.table;
+		table_len = compat_sc_table.len;
 		unknown_action_list = &chan->sc_compat_unknown;
 	} else {
 		struct lttng_syscall_filter *filter = chan->sc_filter;
@@ -527,8 +544,8 @@ void syscall_entry_event_probe(void *__data, struct pt_regs *regs, long id)
 			/* System call filtered out. */
 			return;
 		}
-		table = sc_table;
-		table_len = ARRAY_SIZE(sc_table);
+		table = sc_table.table;
+		table_len = sc_table.len;
 		unknown_action_list = &chan->sc_unknown;
 	}
 	if (unlikely(id < 0 || id >= table_len)) {
@@ -570,8 +587,8 @@ void syscall_entry_event_notifier_probe(void *__data, struct pt_regs *regs,
 			/* System call filtered out. */
 			return;
 		}
-		table = compat_sc_table;
-		table_len = ARRAY_SIZE(compat_sc_table);
+		table = compat_sc_table.table;
+		table_len = compat_sc_table.len;
 		unknown_dispatch_list = &group->event_notifier_compat_unknown_syscall_dispatch;
 	} else {
 		struct lttng_syscall_filter *filter = group->sc_filter;
@@ -582,8 +599,8 @@ void syscall_entry_event_notifier_probe(void *__data, struct pt_regs *regs,
 			/* System call filtered out. */
 			return;
 		}
-		table = sc_table;
-		table_len = ARRAY_SIZE(sc_table);
+		table = sc_table.table;
+		table_len = sc_table.len;
 		unknown_dispatch_list = &group->event_notifier_unknown_syscall_dispatch;
 	}
 	/* Check if the syscall id is out of bound. */
@@ -755,8 +772,8 @@ void syscall_exit_event_probe(void *__data, struct pt_regs *regs, long ret)
 			/* System call filtered out. */
 			return;
 		}
-		table = compat_sc_exit_table;
-		table_len = ARRAY_SIZE(compat_sc_exit_table);
+		table = compat_sc_exit_table.table;
+		table_len = compat_sc_exit_table.len;
 		unknown_action_list = &chan->compat_sc_exit_unknown;
 	} else {
 		struct lttng_syscall_filter *filter = chan->sc_filter;
@@ -766,8 +783,8 @@ void syscall_exit_event_probe(void *__data, struct pt_regs *regs, long ret)
 			/* System call filtered out. */
 			return;
 		}
-		table = sc_exit_table;
-		table_len = ARRAY_SIZE(sc_exit_table);
+		table = sc_exit_table.table;
+		table_len = sc_exit_table.len;
 		unknown_action_list = &chan->sc_exit_unknown;
 	}
 	if (unlikely(id < 0 || id >= table_len)) {
@@ -814,8 +831,8 @@ void syscall_exit_event_notifier_probe(void *__data, struct pt_regs *regs,
 			/* System call filtered out. */
 			return;
 		}
-		table = compat_sc_exit_table;
-		table_len = ARRAY_SIZE(compat_sc_exit_table);
+		table = compat_sc_exit_table.table;
+		table_len = compat_sc_exit_table.len;
 		unknown_dispatch_list = &group->event_notifier_exit_compat_unknown_syscall_dispatch;
 	} else {
 		struct lttng_syscall_filter *filter = group->sc_filter;
@@ -826,8 +843,8 @@ void syscall_exit_event_notifier_probe(void *__data, struct pt_regs *regs,
 			/* System call filtered out. */
 			return;
 		}
-		table = sc_exit_table;
-		table_len = ARRAY_SIZE(sc_exit_table);
+		table = sc_exit_table.table;
+		table_len = sc_exit_table.len;
 		unknown_dispatch_list = &group->event_notifier_exit_unknown_syscall_dispatch;
 	}
 	/* Check if the syscall id is out of bound. */
@@ -951,14 +968,14 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler)
 	if (!chan->sc_table) {
 		/* create syscall table mapping syscall to events */
 		chan->sc_table = kzalloc(sizeof(struct lttng_kernel_event_recorder *)
-					* ARRAY_SIZE(sc_table), GFP_KERNEL);
+					* sc_table.len, GFP_KERNEL);
 		if (!chan->sc_table)
 			return -ENOMEM;
 	}
 	if (!chan->sc_exit_table) {
 		/* create syscall table mapping syscall to events */
 		chan->sc_exit_table = kzalloc(sizeof(struct lttng_kernel_event_recorder *)
-					* ARRAY_SIZE(sc_exit_table), GFP_KERNEL);
+					* sc_exit_table.len, GFP_KERNEL);
 		if (!chan->sc_exit_table)
 			return -ENOMEM;
 	}
@@ -968,7 +985,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler)
 	if (!chan->compat_sc_table) {
 		/* create syscall table mapping compat syscall to events */
 		chan->compat_sc_table = kzalloc(sizeof(struct lttng_kernel_event_recorder *)
-					* ARRAY_SIZE(compat_sc_table), GFP_KERNEL);
+					* compat_sc_table.len, GFP_KERNEL);
 		if (!chan->compat_sc_table)
 			return -ENOMEM;
 	}
@@ -976,7 +993,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler)
 	if (!chan->compat_sc_exit_table) {
 		/* create syscall table mapping compat syscall to events */
 		chan->compat_sc_exit_table = kzalloc(sizeof(struct lttng_kernel_event_recorder *)
-					* ARRAY_SIZE(compat_sc_exit_table), GFP_KERNEL);
+					* compat_sc_exit_table.len, GFP_KERNEL);
 		if (!chan->compat_sc_exit_table)
 			return -ENOMEM;
 	}
@@ -1061,21 +1078,21 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler)
 		hlist_add_head(&event_recorder->priv->parent.u.syscall.node, &chan->sc_exit_unknown);
 	}
 
-	ret = lttng_create_syscall_event_if_missing(sc_table, ARRAY_SIZE(sc_table),
+	ret = lttng_create_syscall_event_if_missing(sc_table.table, sc_table.len,
 			chan->sc_table, event_enabler, SC_TYPE_ENTRY);
 	if (ret)
 		return ret;
-	ret = lttng_create_syscall_event_if_missing(sc_exit_table, ARRAY_SIZE(sc_exit_table),
+	ret = lttng_create_syscall_event_if_missing(sc_exit_table.table, sc_exit_table.len,
 			chan->sc_exit_table, event_enabler, SC_TYPE_EXIT);
 	if (ret)
 		return ret;
 
 #ifdef CONFIG_COMPAT
-	ret = lttng_create_syscall_event_if_missing(compat_sc_table, ARRAY_SIZE(compat_sc_table),
+	ret = lttng_create_syscall_event_if_missing(compat_sc_table.table, compat_sc_table.len,
 			chan->compat_sc_table, event_enabler, SC_TYPE_COMPAT_ENTRY);
 	if (ret)
 		return ret;
-	ret = lttng_create_syscall_event_if_missing(compat_sc_exit_table, ARRAY_SIZE(compat_sc_exit_table),
+	ret = lttng_create_syscall_event_if_missing(compat_sc_exit_table.table, compat_sc_exit_table.len,
 			chan->compat_sc_exit_table, event_enabler, SC_TYPE_COMPAT_EXIT);
 	if (ret)
 		return ret;
@@ -1126,13 +1143,13 @@ int lttng_syscalls_register_event_notifier(
 
 	if (!group->event_notifier_syscall_dispatch) {
 		group->event_notifier_syscall_dispatch =
-				kzalloc(sizeof(struct hlist_head) * ARRAY_SIZE(sc_table),
+				kzalloc(sizeof(struct hlist_head) * sc_table.len,
 					GFP_KERNEL);
 		if (!group->event_notifier_syscall_dispatch)
 			return -ENOMEM;
 
 		/* Initialize all list_head */
-		for (i = 0; i < ARRAY_SIZE(sc_table); i++)
+		for (i = 0; i < sc_table.len; i++)
 			INIT_HLIST_HEAD(&group->event_notifier_syscall_dispatch[i]);
 
 		/* Init the unknown syscall notifier list. */
@@ -1141,13 +1158,13 @@ int lttng_syscalls_register_event_notifier(
 
 	if (!group->event_notifier_exit_syscall_dispatch) {
 		group->event_notifier_exit_syscall_dispatch =
-				kzalloc(sizeof(struct hlist_head) * ARRAY_SIZE(sc_table),
+				kzalloc(sizeof(struct hlist_head) * sc_table.len,
 					GFP_KERNEL);
 		if (!group->event_notifier_exit_syscall_dispatch)
 			return -ENOMEM;
 
 		/* Initialize all list_head */
-		for (i = 0; i < ARRAY_SIZE(sc_table); i++)
+		for (i = 0; i < sc_table.len; i++)
 			INIT_HLIST_HEAD(&group->event_notifier_exit_syscall_dispatch[i]);
 
 		/* Init the unknown exit syscall notifier list. */
@@ -1157,13 +1174,13 @@ int lttng_syscalls_register_event_notifier(
 #ifdef CONFIG_COMPAT
 	if (!group->event_notifier_compat_syscall_dispatch) {
 		group->event_notifier_compat_syscall_dispatch =
-				kzalloc(sizeof(struct hlist_head) * ARRAY_SIZE(compat_sc_table),
+				kzalloc(sizeof(struct hlist_head) * compat_sc_table.len,
 					GFP_KERNEL);
 		if (!group->event_notifier_syscall_dispatch)
 			return -ENOMEM;
 
 		/* Initialize all list_head */
-		for (i = 0; i < ARRAY_SIZE(compat_sc_table); i++)
+		for (i = 0; i < compat_sc_table.len; i++)
 			INIT_HLIST_HEAD(&group->event_notifier_compat_syscall_dispatch[i]);
 
 		/* Init the unknown syscall notifier list. */
@@ -1172,13 +1189,13 @@ int lttng_syscalls_register_event_notifier(
 
 	if (!group->event_notifier_exit_compat_syscall_dispatch) {
 		group->event_notifier_exit_compat_syscall_dispatch =
-				kzalloc(sizeof(struct hlist_head) * ARRAY_SIZE(compat_sc_exit_table),
+				kzalloc(sizeof(struct hlist_head) * compat_sc_exit_table.len,
 					GFP_KERNEL);
 		if (!group->event_notifier_exit_syscall_dispatch)
 			return -ENOMEM;
 
 		/* Initialize all list_head */
-		for (i = 0; i < ARRAY_SIZE(compat_sc_exit_table); i++)
+		for (i = 0; i < compat_sc_exit_table.len; i++)
 			INIT_HLIST_HEAD(&group->event_notifier_exit_compat_syscall_dispatch[i]);
 
 		/* Init the unknown exit syscall notifier list. */
@@ -1400,12 +1417,12 @@ int lttng_syscalls_create_matching_event_notifiers(
 
 	if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRY || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT) {
 		ret = create_matching_event_notifiers(event_notifier_enabler,
-			sc_table, ARRAY_SIZE(sc_table), SC_TYPE_ENTRY);
+			sc_table.table, sc_table.len, SC_TYPE_ENTRY);
 		if (ret)
 			goto end;
 
 		ret = create_matching_event_notifiers(event_notifier_enabler,
-			compat_sc_table, ARRAY_SIZE(compat_sc_table),
+			compat_sc_table.table, compat_sc_table.len,
 			SC_TYPE_COMPAT_ENTRY);
 		if (ret)
 			goto end;
@@ -1423,7 +1440,7 @@ int lttng_syscalls_create_matching_event_notifiers(
 
 	if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_EXIT || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT) {
 		ret = create_matching_event_notifiers(event_notifier_enabler,
-			sc_exit_table, ARRAY_SIZE(sc_exit_table),
+			sc_exit_table.table, sc_exit_table.len,
 			SC_TYPE_EXIT);
 		if (ret)
 			goto end;
@@ -1434,7 +1451,7 @@ int lttng_syscalls_create_matching_event_notifiers(
 			goto end;
 
 		ret = create_matching_event_notifiers(event_notifier_enabler,
-			compat_sc_exit_table, ARRAY_SIZE(compat_sc_exit_table),
+			compat_sc_exit_table.table, compat_sc_exit_table.len,
 			SC_TYPE_COMPAT_EXIT);
 		if (ret)
 			goto end;
@@ -1527,11 +1544,11 @@ int get_syscall_nr(const char *syscall_name)
 	int syscall_nr = -1;
 	int i;
 
-	for (i = 0; i < ARRAY_SIZE(sc_table); i++) {
+	for (i = 0; i < sc_table.len; i++) {
 		const struct trace_syscall_entry *entry;
 		const char *it_name;
 
-		entry = &sc_table[i];
+		entry = &sc_table.table[i];
 		if (!entry->desc)
 			continue;
 		it_name = entry->desc->event_name;
@@ -1550,11 +1567,11 @@ int get_compat_syscall_nr(const char *syscall_name)
 	int syscall_nr = -1;
 	int i;
 
-	for (i = 0; i < ARRAY_SIZE(compat_sc_table); i++) {
+	for (i = 0; i < compat_sc_table.len; i++) {
 		const struct trace_syscall_entry *entry;
 		const char *it_name;
 
-		entry = &compat_sc_table[i];
+		entry = &compat_sc_table.table[i];
 		if (!entry->desc)
 			continue;
 		it_name = entry->desc->event_name;
@@ -1570,7 +1587,7 @@ int get_compat_syscall_nr(const char *syscall_name)
 static
 uint32_t get_sc_tables_len(void)
 {
-	return ARRAY_SIZE(sc_table) + ARRAY_SIZE(compat_sc_table);
+	return sc_table.len + compat_sc_table.len;
 }
 
 static
@@ -1828,14 +1845,14 @@ const struct trace_syscall_entry *syscall_list_get_entry(loff_t *pos)
 	const struct trace_syscall_entry *entry;
 	int iter = 0;
 
-	for (entry = sc_table;
-			entry < sc_table + ARRAY_SIZE(sc_table);
+	for (entry = sc_table.table;
+			entry < sc_table.table + sc_table.len;
 			 entry++) {
 		if (iter++ >= *pos)
 			return entry;
 	}
-	for (entry = compat_sc_table;
-			entry < compat_sc_table + ARRAY_SIZE(compat_sc_table);
+	for (entry = compat_sc_table.table;
+			entry < compat_sc_table.table + compat_sc_table.len;
 			 entry++) {
 		if (iter++ >= *pos)
 			return entry;
@@ -1867,21 +1884,21 @@ int get_sc_table(const struct trace_syscall_entry *entry,
 		const struct trace_syscall_entry **table,
 		unsigned int *bitness)
 {
-	if (entry >= sc_table && entry < sc_table + ARRAY_SIZE(sc_table)) {
+	if (entry >= sc_table.table && entry < sc_table.table + sc_table.len) {
 		if (bitness)
 			*bitness = BITS_PER_LONG;
 		if (table)
-			*table = sc_table;
+			*table = sc_table.table;
 		return 0;
 	}
-	if (!(entry >= compat_sc_table
-			&& entry < compat_sc_table + ARRAY_SIZE(compat_sc_table))) {
+	if (!(entry >= compat_sc_table.table
+			&& entry < compat_sc_table.table + compat_sc_table.len)) {
 		return -EINVAL;
 	}
 	if (bitness)
 		*bitness = 32;
 	if (table)
-		*table = compat_sc_table;
+		*table = compat_sc_table.table;
 	return 0;
 }
 
@@ -1899,11 +1916,11 @@ int syscall_list_show(struct seq_file *m, void *p)
 		return ret;
 	if (!entry->desc)
 		return 0;
-	if (table == sc_table) {
+	if (table == sc_table.table) {
 		index = entry - table;
 		name = &entry->desc->event_name[strlen(SYSCALL_ENTRY_STR)];
 	} else {
-		index = (entry - table) + ARRAY_SIZE(sc_table);
+		index = (entry - table) + sc_table.len;
 		name = &entry->desc->event_name[strlen(COMPAT_SYSCALL_ENTRY_STR)];
 	}
 	seq_printf(m,	"syscall { index = %lu; name = %s; bitness = %u; };\n",
@@ -1958,7 +1975,7 @@ long lttng_channel_syscall_mask(struct lttng_channel *channel,
 		return -ENOMEM;
 	filter = channel->sc_filter;
 
-	for (bit = 0; bit < ARRAY_SIZE(sc_table); bit++) {
+	for (bit = 0; bit < sc_table.len; bit++) {
 		char state;
 
 		if (channel->sc_table) {
@@ -1979,9 +1996,9 @@ long lttng_channel_syscall_mask(struct lttng_channel *channel,
 		if (channel->compat_sc_table) {
 			if (!(READ_ONCE(channel->syscall_all_entry)
 					|| READ_ONCE(channel->syscall_all_exit)) && filter)
-				state = test_bit(bit - ARRAY_SIZE(sc_table),
+				state = test_bit(bit - sc_table.len,
 						filter->sc_compat_entry)
-					|| test_bit(bit - ARRAY_SIZE(sc_table),
+					|| test_bit(bit - sc_table.len,
 						filter->sc_compat_exit);
 			else
 				state = 1;
