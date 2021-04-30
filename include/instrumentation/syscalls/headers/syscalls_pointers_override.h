@@ -810,7 +810,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_ctl,
 		sc_in(
 			ctf_custom_field(
 				ctf_custom_type(
-					lttng_kernel_static_type_struct(ARRAY_SIZE(epoll_ctl_fields), epoll_ctl_fields, 0)
+					(const struct lttng_kernel_type_common *) &epoll_ctl_fields_struct
 				),
 				event,
 				ctf_custom_code(
@@ -914,7 +914,7 @@ LTTNG_TRACEPOINT_TYPE(PARAMS(const struct lttng_kernel_type_struct lttng_epoll_w
 	ctf_custom_field(								\
 		ctf_custom_type(							\
 			lttng_kernel_static_type_sequence("fds_length",			\
-				lttng_kernel_static_type_struct(ARRAY_SIZE(lttng_epoll_wait_fields), lttng_epoll_wait_fields, 0), \
+				(const struct lttng_kernel_type_common *) &lttng_epoll_wait_fields_struct, \
 				0,							\
 				none)							\
 		),									\
