@@ -865,7 +865,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 	enum sc_type type)
 {
 	struct lttng_channel *chan = event_enabler->chan;
-	struct lttng_session *session = chan->session;
+	struct lttng_kernel_session *session = chan->session;
 	unsigned int i;
 
 	/* Allocate events for each syscall matching enabler, insert into table */
@@ -888,7 +888,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 		 * Check if already created.
 		 */
 		head = utils_borrow_hash_table_bucket(
-			session->events_ht.table, LTTNG_EVENT_HT_SIZE,
+			session->priv->events_ht.table, LTTNG_EVENT_HT_SIZE,
 			desc->event_name);
 		lttng_hlist_for_each_entry(event_recorder_priv, head, hlist) {
 			if (event_recorder_priv->parent.desc == desc

@@ -91,7 +91,7 @@ static int validate_zeroed_padding(char *p, size_t len)
 static
 int lttng_abi_create_session(void)
 {
-	struct lttng_session *session;
+	struct lttng_kernel_session *session;
 	struct file *session_file;
 	int session_fd, ret;
 
@@ -110,7 +110,7 @@ int lttng_abi_create_session(void)
 		ret = PTR_ERR(session_file);
 		goto file_error;
 	}
-	session->file = session_file;
+	session->priv->file = session_file;
 	fd_install(session_fd, session_file);
 	return session_fd;
 
@@ -259,10 +259,10 @@ void lttng_abi_tracer_abi_version(struct lttng_kernel_abi_tracer_abi_version *v)
 static
 long lttng_abi_add_context(struct file *file,
 	struct lttng_kernel_abi_context *context_param,
-	struct lttng_kernel_ctx **ctx, struct lttng_session *session)
+	struct lttng_kernel_ctx **ctx, struct lttng_kernel_session *session)
 {
 
-	if (session->been_active)
+	if (session->priv->been_active)
 		return -EPERM;
 
 	switch (context_param->ctx) {
@@ -488,7 +488,7 @@ int lttng_abi_create_channel(struct file *session_file,
 			     struct lttng_kernel_abi_channel *chan_param,
 			     enum channel_type channel_type)
 {
-	struct lttng_session *session = session_file->private_data;
+	struct lttng_kernel_session *session = session_file->private_data;
 	const struct file_operations *fops = NULL;
 	const char *transport_name;
 	struct lttng_channel *chan;
@@ -576,7 +576,7 @@ fd_error:
 }
 
 static
-int lttng_abi_session_set_name(struct lttng_session *session,
+int lttng_abi_session_set_name(struct lttng_kernel_session *session,
 		struct lttng_kernel_abi_session_name *name)
 {
 	size_t len;
@@ -588,12 +588,12 @@ int lttng_abi_session_set_name(struct lttng_session *session,
 		return -EINVAL;
 	}
 
-	strcpy(session->name, name->name);
+	strcpy(session->priv->name, name->name);
 	return 0;
 }
 
 static
-int lttng_abi_session_set_creation_time(struct lttng_session *session,
+int lttng_abi_session_set_creation_time(struct lttng_kernel_session *session,
 		struct lttng_kernel_abi_session_creation_time *time)
 {
 	size_t len;
@@ -605,7 +605,7 @@ int lttng_abi_session_set_creation_time(struct lttng_session *session,
 		return -EINVAL;
 	}
 
-	strcpy(session->creation_time, time->iso8601);
+	strcpy(session->priv->creation_time, time->iso8601);
 	return 0;
 }
 
@@ -789,7 +789,7 @@ enum tracker_type get_tracker_type(struct lttng_kernel_abi_tracker_args *tracker
 static
 long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	struct lttng_session *session = file->private_data;
+	struct lttng_kernel_session *session = file->private_data;
 	struct lttng_kernel_abi_channel chan_param;
 	struct lttng_kernel_abi_old_channel old_chan_param;
 
@@ -974,7 +974,7 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 static
 int lttng_session_release(struct inode *inode, struct file *file)
 {
-	struct lttng_session *session = file->private_data;
+	struct lttng_kernel_session *session = file->private_data;
 
 	if (session)
 		lttng_session_destroy(session);
@@ -1654,7 +1654,7 @@ static
 int lttng_abi_open_metadata_stream(struct file *channel_file)
 {
 	struct lttng_channel *channel = channel_file->private_data;
-	struct lttng_session *session = channel->session;
+	struct lttng_kernel_session *session = channel->session;
 	struct lib_ring_buffer *buf;
 	int ret;
 	struct lttng_metadata_stream *metadata_stream;
@@ -1670,7 +1670,7 @@ int lttng_abi_open_metadata_stream(struct file *channel_file)
 		ret = -ENOMEM;
 		goto nomem;
 	}
-	metadata_stream->metadata_cache = session->metadata_cache;
+	metadata_stream->metadata_cache = session->priv->metadata_cache;
 	init_waitqueue_head(&metadata_stream->read_wait);
 	metadata_stream->priv = buf;
 	stream_priv = metadata_stream;
@@ -1688,7 +1688,7 @@ int lttng_abi_open_metadata_stream(struct file *channel_file)
 		goto notransport;
 	}
 
-	if (!lttng_kref_get(&session->metadata_cache->refcount)) {
+	if (!lttng_kref_get(&session->priv->metadata_cache->refcount)) {
 		ret = -EOVERFLOW;
 		goto kref_error;
 	}
@@ -1699,14 +1699,14 @@ int lttng_abi_open_metadata_stream(struct file *channel_file)
 	if (ret < 0)
 		goto fd_error;
 
-	mutex_lock(&session->metadata_cache->lock);
+	mutex_lock(&session->priv->metadata_cache->lock);
 	list_add(&metadata_stream->list,
-		&session->metadata_cache->metadata_stream);
-	mutex_unlock(&session->metadata_cache->lock);
+		&session->priv->metadata_cache->metadata_stream);
+	mutex_unlock(&session->priv->metadata_cache->lock);
 	return ret;
 
 fd_error:
-	kref_put(&session->metadata_cache->refcount, metadata_cache_destroy);
+	kref_put(&session->priv->metadata_cache->refcount, metadata_cache_destroy);
 kref_error:
 	module_put(metadata_stream->transport->owner);
 notransport:
@@ -2559,7 +2559,7 @@ int lttng_channel_release(struct inode *inode, struct file *file)
 	struct lttng_channel *channel = file->private_data;
 
 	if (channel)
-		fput(channel->session->file);
+		fput(channel->session->priv->file);
 	return 0;
 }
 
@@ -2569,7 +2569,7 @@ int lttng_metadata_channel_release(struct inode *inode, struct file *file)
 	struct lttng_channel *channel = file->private_data;
 
 	if (channel) {
-		fput(channel->session->file);
+		fput(channel->session->priv->file);
 		lttng_metadata_channel_destroy(channel);
 	}
 

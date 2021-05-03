@@ -63,8 +63,8 @@ static struct kmem_cache *event_recorder_private_cache;
 static struct kmem_cache *event_notifier_cache;
 static struct kmem_cache *event_notifier_private_cache;
 
-static void lttng_session_lazy_sync_event_enablers(struct lttng_session *session);
-static void lttng_session_sync_event_enablers(struct lttng_session *session);
+static void lttng_session_lazy_sync_event_enablers(struct lttng_kernel_session *session);
+static void lttng_session_sync_event_enablers(struct lttng_kernel_session *session);
 static void lttng_event_enabler_destroy(struct lttng_event_enabler *event_enabler);
 static void lttng_event_notifier_enabler_destroy(struct lttng_event_notifier_enabler *event_notifier_enabler);
 static void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group *event_notifier_group);
@@ -74,20 +74,20 @@ static void _lttng_channel_destroy(struct lttng_channel *chan);
 static int _lttng_event_unregister(struct lttng_kernel_event_recorder *event);
 static int _lttng_event_notifier_unregister(struct lttng_kernel_event_notifier *event_notifier);
 static
-int _lttng_event_metadata_statedump(struct lttng_session *session,
+int _lttng_event_metadata_statedump(struct lttng_kernel_session *session,
 				  struct lttng_channel *chan,
 				  struct lttng_kernel_event_recorder *event);
 static
-int _lttng_session_metadata_statedump(struct lttng_session *session);
+int _lttng_session_metadata_statedump(struct lttng_kernel_session *session);
 static
 void _lttng_metadata_channel_hangup(struct lttng_metadata_stream *stream);
 static
-int _lttng_type_statedump(struct lttng_session *session,
+int _lttng_type_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_type_common *type,
 		enum lttng_kernel_string_encoding parent_encoding,
 		size_t nesting);
 static
-int _lttng_field_statedump(struct lttng_session *session,
+int _lttng_field_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_event_field *field,
 		size_t nesting, const char **prev_field_name_p);
 
@@ -136,47 +136,55 @@ static struct lttng_transport *lttng_transport_find(const char *name)
  */
 int lttng_session_active(void)
 {
-	struct lttng_session *iter;
+	struct lttng_kernel_session_private *iter;
 
 	list_for_each_entry(iter, &sessions, list) {
-		if (iter->active)
+		if (iter->pub->active)
 			return 1;
 	}
 	return 0;
 }
 
-struct lttng_session *lttng_session_create(void)
+struct lttng_kernel_session *lttng_session_create(void)
 {
-	struct lttng_session *session;
+	struct lttng_kernel_session *session;
+	struct lttng_kernel_session_private *session_priv;
 	struct lttng_metadata_cache *metadata_cache;
 	int i;
 
 	mutex_lock(&sessions_mutex);
-	session = lttng_kvzalloc(sizeof(struct lttng_session), GFP_KERNEL);
+	session = lttng_kvzalloc(sizeof(*session), GFP_KERNEL);
 	if (!session)
 		goto err;
-	INIT_LIST_HEAD(&session->chan);
-	INIT_LIST_HEAD(&session->events);
-	lttng_guid_gen(&session->uuid);
+	session_priv = lttng_kvzalloc(sizeof(*session_priv), GFP_KERNEL);
+	if (!session_priv)
+		goto err_free_session;
+	session->priv = session_priv;
+	session_priv->pub = session;
+
+	INIT_LIST_HEAD(&session_priv->chan);
+	INIT_LIST_HEAD(&session_priv->events);
+	lttng_guid_gen(&session_priv->uuid);
 
 	metadata_cache = kzalloc(sizeof(struct lttng_metadata_cache),
 			GFP_KERNEL);
 	if (!metadata_cache)
-		goto err_free_session;
+		goto err_free_session_private;
 	metadata_cache->data = vzalloc(METADATA_CACHE_DEFAULT_SIZE);
 	if (!metadata_cache->data)
 		goto err_free_cache;
 	metadata_cache->cache_alloc = METADATA_CACHE_DEFAULT_SIZE;
 	kref_init(&metadata_cache->refcount);
 	mutex_init(&metadata_cache->lock);
-	session->metadata_cache = metadata_cache;
+	session_priv->metadata_cache = metadata_cache;
 	INIT_LIST_HEAD(&metadata_cache->metadata_stream);
-	memcpy(&metadata_cache->uuid, &session->uuid,
+	memcpy(&metadata_cache->uuid, &session_priv->uuid,
 		sizeof(metadata_cache->uuid));
-	INIT_LIST_HEAD(&session->enablers_head);
+	INIT_LIST_HEAD(&session_priv->enablers_head);
 	for (i = 0; i < LTTNG_EVENT_HT_SIZE; i++)
-		INIT_HLIST_HEAD(&session->events_ht.table[i]);
-	list_add(&session->list, &sessions);
+		INIT_HLIST_HEAD(&session_priv->events_ht.table[i]);
+	list_add(&session_priv->list, &sessions);
+
 	session->pid_tracker.session = session;
 	session->pid_tracker.tracker_type = TRACKER_PID;
 	session->vpid_tracker.session = session;
@@ -190,10 +198,13 @@ struct lttng_session *lttng_session_create(void)
 	session->vgid_tracker.session = session;
 	session->vgid_tracker.tracker_type = TRACKER_VGID;
 	mutex_unlock(&sessions_mutex);
+
 	return session;
 
 err_free_cache:
 	kfree(metadata_cache);
+err_free_session_private:
+	lttng_kvfree(session_priv);
 err_free_session:
 	lttng_kvfree(session);
 err:
@@ -329,7 +340,7 @@ void metadata_cache_destroy(struct kref *kref)
 	kfree(cache);
 }
 
-void lttng_session_destroy(struct lttng_session *session)
+void lttng_session_destroy(struct lttng_kernel_session *session)
 {
 	struct lttng_channel *chan, *tmpchan;
 	struct lttng_kernel_event_recorder_private *event_recorder_priv, *tmpevent_recorder_priv;
@@ -339,41 +350,42 @@ void lttng_session_destroy(struct lttng_session *session)
 
 	mutex_lock(&sessions_mutex);
 	WRITE_ONCE(session->active, 0);
-	list_for_each_entry(chan, &session->chan, list) {
+	list_for_each_entry(chan, &session->priv->chan, list) {
 		ret = lttng_syscalls_unregister_channel(chan);
 		WARN_ON(ret);
 	}
-	list_for_each_entry(event_recorder_priv, &session->events, node) {
+	list_for_each_entry(event_recorder_priv, &session->priv->events, node) {
 		ret = _lttng_event_unregister(event_recorder_priv->pub);
 		WARN_ON(ret);
 	}
 	synchronize_trace();	/* Wait for in-flight events to complete */
-	list_for_each_entry(chan, &session->chan, list) {
+	list_for_each_entry(chan, &session->priv->chan, list) {
 		ret = lttng_syscalls_destroy_event(chan);
 		WARN_ON(ret);
 	}
 	list_for_each_entry_safe(event_enabler, tmp_event_enabler,
-			&session->enablers_head, node)
+			&session->priv->enablers_head, node)
 		lttng_event_enabler_destroy(event_enabler);
-	list_for_each_entry_safe(event_recorder_priv, tmpevent_recorder_priv, &session->events, node)
+	list_for_each_entry_safe(event_recorder_priv, tmpevent_recorder_priv, &session->priv->events, node)
 		_lttng_event_destroy(&event_recorder_priv->pub->parent);
-	list_for_each_entry_safe(chan, tmpchan, &session->chan, list) {
+	list_for_each_entry_safe(chan, tmpchan, &session->priv->chan, list) {
 		BUG_ON(chan->channel_type == METADATA_CHANNEL);
 		_lttng_channel_destroy(chan);
 	}
-	mutex_lock(&session->metadata_cache->lock);
-	list_for_each_entry(metadata_stream, &session->metadata_cache->metadata_stream, list)
+	mutex_lock(&session->priv->metadata_cache->lock);
+	list_for_each_entry(metadata_stream, &session->priv->metadata_cache->metadata_stream, list)
 		_lttng_metadata_channel_hangup(metadata_stream);
-	mutex_unlock(&session->metadata_cache->lock);
+	mutex_unlock(&session->priv->metadata_cache->lock);
 	lttng_id_tracker_destroy(&session->pid_tracker, false);
 	lttng_id_tracker_destroy(&session->vpid_tracker, false);
 	lttng_id_tracker_destroy(&session->uid_tracker, false);
 	lttng_id_tracker_destroy(&session->vuid_tracker, false);
 	lttng_id_tracker_destroy(&session->gid_tracker, false);
 	lttng_id_tracker_destroy(&session->vgid_tracker, false);
-	kref_put(&session->metadata_cache->refcount, metadata_cache_destroy);
-	list_del(&session->list);
+	kref_put(&session->priv->metadata_cache->refcount, metadata_cache_destroy);
+	list_del(&session->priv->list);
 	mutex_unlock(&sessions_mutex);
+	lttng_kvfree(session->priv);
 	lttng_kvfree(session);
 }
 
@@ -430,7 +442,7 @@ void lttng_event_notifier_group_destroy(
 	lttng_kvfree(event_notifier_group);
 }
 
-int lttng_session_statedump(struct lttng_session *session)
+int lttng_session_statedump(struct lttng_kernel_session *session)
 {
 	int ret;
 
@@ -440,7 +452,7 @@ int lttng_session_statedump(struct lttng_session *session)
 	return ret;
 }
 
-int lttng_session_enable(struct lttng_session *session)
+int lttng_session_enable(struct lttng_kernel_session *session)
 {
 	int ret = 0;
 	struct lttng_channel *chan;
@@ -452,7 +464,7 @@ int lttng_session_enable(struct lttng_session *session)
 	}
 
 	/* Set transient enabler state to "enabled" */
-	session->tstate = 1;
+	session->priv->tstate = 1;
 
 	/* We need to sync enablers with session before activation. */
 	lttng_session_sync_event_enablers(session);
@@ -461,7 +473,7 @@ int lttng_session_enable(struct lttng_session *session)
 	 * Snapshot the number of events per channel to know the type of header
 	 * we need to use.
 	 */
-	list_for_each_entry(chan, &session->chan, list) {
+	list_for_each_entry(chan, &session->priv->chan, list) {
 		if (chan->header_type)
 			continue;		/* don't change it if session stop/restart */
 		if (chan->free_event_id < 31)
@@ -471,13 +483,13 @@ int lttng_session_enable(struct lttng_session *session)
 	}
 
 	/* Clear each stream's quiescent state. */
-	list_for_each_entry(chan, &session->chan, list) {
+	list_for_each_entry(chan, &session->priv->chan, list) {
 		if (chan->channel_type != METADATA_CHANNEL)
 			lib_ring_buffer_clear_quiescent_channel(chan->chan);
 	}
 
 	WRITE_ONCE(session->active, 1);
-	WRITE_ONCE(session->been_active, 1);
+	WRITE_ONCE(session->priv->been_active, 1);
 	ret = _lttng_session_metadata_statedump(session);
 	if (ret) {
 		WRITE_ONCE(session->active, 0);
@@ -491,7 +503,7 @@ end:
 	return ret;
 }
 
-int lttng_session_disable(struct lttng_session *session)
+int lttng_session_disable(struct lttng_kernel_session *session)
 {
 	int ret = 0;
 	struct lttng_channel *chan;
@@ -504,11 +516,11 @@ int lttng_session_disable(struct lttng_session *session)
 	WRITE_ONCE(session->active, 0);
 
 	/* Set transient enabler state to "disabled" */
-	session->tstate = 0;
+	session->priv->tstate = 0;
 	lttng_session_sync_event_enablers(session);
 
 	/* Set each stream's quiescent state. */
-	list_for_each_entry(chan, &session->chan, list) {
+	list_for_each_entry(chan, &session->priv->chan, list) {
 		if (chan->channel_type != METADATA_CHANNEL)
 			lib_ring_buffer_set_quiescent_channel(chan->chan);
 	}
@@ -517,12 +529,12 @@ end:
 	return ret;
 }
 
-int lttng_session_metadata_regenerate(struct lttng_session *session)
+int lttng_session_metadata_regenerate(struct lttng_kernel_session *session)
 {
 	int ret = 0;
 	struct lttng_channel *chan;
 	struct lttng_kernel_event_recorder_private *event_recorder_priv;
-	struct lttng_metadata_cache *cache = session->metadata_cache;
+	struct lttng_metadata_cache *cache = session->priv->metadata_cache;
 	struct lttng_metadata_stream *stream;
 
 	mutex_lock(&sessions_mutex);
@@ -535,18 +547,18 @@ int lttng_session_metadata_regenerate(struct lttng_session *session)
 	memset(cache->data, 0, cache->cache_alloc);
 	cache->metadata_written = 0;
 	cache->version++;
-	list_for_each_entry(stream, &session->metadata_cache->metadata_stream, list) {
+	list_for_each_entry(stream, &session->priv->metadata_cache->metadata_stream, list) {
 		stream->metadata_out = 0;
 		stream->metadata_in = 0;
 	}
 	mutex_unlock(&cache->lock);
 
-	session->metadata_dumped = 0;
-	list_for_each_entry(chan, &session->chan, list) {
+	session->priv->metadata_dumped = 0;
+	list_for_each_entry(chan, &session->priv->chan, list) {
 		chan->metadata_dumped = 0;
 	}
 
-	list_for_each_entry(event_recorder_priv, &session->events, node) {
+	list_for_each_entry(event_recorder_priv, &session->priv->events, node) {
 		event_recorder_priv->metadata_dumped = 0;
 	}
 
@@ -723,7 +735,7 @@ end:
 	return ret;
 }
 
-struct lttng_channel *lttng_channel_create(struct lttng_session *session,
+struct lttng_channel *lttng_channel_create(struct lttng_kernel_session *session,
 				       const char *transport_name,
 				       void *buf_addr,
 				       size_t subbuf_size, size_t num_subbuf,
@@ -735,7 +747,7 @@ struct lttng_channel *lttng_channel_create(struct lttng_session *session,
 	struct lttng_transport *transport = NULL;
 
 	mutex_lock(&sessions_mutex);
-	if (session->been_active && channel_type != METADATA_CHANNEL)
+	if (session->priv->been_active && channel_type != METADATA_CHANNEL)
 		goto active;	/* Refuse to add channel to active session */
 	transport = lttng_transport_find(transport_name);
 	if (!transport) {
@@ -751,7 +763,7 @@ struct lttng_channel *lttng_channel_create(struct lttng_session *session,
 	if (!chan)
 		goto nomem;
 	chan->session = session;
-	chan->id = session->free_chan_id++;
+	chan->id = session->priv->free_chan_id++;
 	chan->ops = &transport->ops;
 	/*
 	 * Note: the channel creation op already writes into the packet
@@ -767,7 +779,7 @@ struct lttng_channel *lttng_channel_create(struct lttng_session *session,
 	chan->enabled = 1;
 	chan->transport = transport;
 	chan->channel_type = channel_type;
-	list_add(&chan->list, &session->chan);
+	list_add(&chan->list, &session->priv->chan);
 	mutex_unlock(&sessions_mutex);
 	return chan;
 
@@ -825,7 +837,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 				const struct lttng_kernel_event_desc *event_desc,
 				enum lttng_kernel_abi_instrumentation itype)
 {
-	struct lttng_session *session = chan->session;
+	struct lttng_kernel_session *session = chan->session;
 	struct lttng_kernel_event_recorder *event_recorder;
 	struct lttng_kernel_event_recorder_private *event_recorder_priv;
 	const char *event_name;
@@ -857,7 +869,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 		goto type_error;
 	}
 
-	head = utils_borrow_hash_table_bucket(session->events_ht.table,
+	head = utils_borrow_hash_table_bucket(session->priv->events_ht.table,
 		LTTNG_EVENT_HT_SIZE, event_name);
 	lttng_hlist_for_each_entry(event_recorder_priv, head, hlist) {
 		WARN_ON_ONCE(!event_recorder_priv->parent.desc);
@@ -999,7 +1011,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 			module_put(event_recorder->priv->parent.desc->owner);
 			goto statedump_error;
 		}
-		list_add(&event_recorder_return->priv->node, &chan->session->events);
+		list_add(&event_recorder_return->priv->node, &chan->session->priv->events);
 		break;
 	}
 
@@ -1075,7 +1087,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 		goto statedump_error;
 	}
 	hlist_add_head(&event_recorder->priv->hlist, head);
-	list_add(&event_recorder->priv->node, &chan->session->events);
+	list_add(&event_recorder->priv->node, &chan->session->priv->events);
 	return event_recorder;
 
 statedump_error:
@@ -1632,7 +1644,7 @@ void _lttng_event_destroy(struct lttng_kernel_event_common *event)
 	}
 }
 
-struct lttng_id_tracker *get_tracker(struct lttng_session *session,
+struct lttng_id_tracker *get_tracker(struct lttng_kernel_session *session,
 		enum tracker_type tracker_type)
 {
 	switch (tracker_type) {
@@ -1654,7 +1666,7 @@ struct lttng_id_tracker *get_tracker(struct lttng_session *session,
 	}
 }
 
-int lttng_session_track_id(struct lttng_session *session,
+int lttng_session_track_id(struct lttng_kernel_session *session,
 		enum tracker_type tracker_type, int id)
 {
 	struct lttng_id_tracker *tracker;
@@ -1677,7 +1689,7 @@ int lttng_session_track_id(struct lttng_session *session,
 	return ret;
 }
 
-int lttng_session_untrack_id(struct lttng_session *session,
+int lttng_session_untrack_id(struct lttng_kernel_session *session,
 		enum tracker_type tracker_type, int id)
 {
 	struct lttng_id_tracker *tracker;
@@ -1828,7 +1840,7 @@ int lttng_tracker_ids_list_release(struct inode *inode, struct file *file)
 	WARN_ON_ONCE(!id_tracker);
 	ret = seq_release(inode, file);
 	if (!ret)
-		fput(id_tracker->session->file);
+		fput(id_tracker->session->priv->file);
 	return ret;
 }
 
@@ -1840,7 +1852,7 @@ const struct file_operations lttng_tracker_ids_list_fops = {
 	.release = lttng_tracker_ids_list_release,
 };
 
-int lttng_session_list_tracker_ids(struct lttng_session *session,
+int lttng_session_list_tracker_ids(struct lttng_kernel_session *session,
 		enum tracker_type tracker_type)
 {
 	struct file *tracker_ids_list_file;
@@ -1860,7 +1872,7 @@ int lttng_session_list_tracker_ids(struct lttng_session *session,
 		ret = PTR_ERR(tracker_ids_list_file);
 		goto file_error;
 	}
-	if (!atomic_long_add_unless(&session->file->f_count, 1, LONG_MAX)) {
+	if (!atomic_long_add_unless(&session->priv->file->f_count, 1, LONG_MAX)) {
 		ret = -EOVERFLOW;
 		goto refcount_error;
 	}
@@ -1876,7 +1888,7 @@ int lttng_session_list_tracker_ids(struct lttng_session *session,
 	return file_fd;
 
 open_error:
-	atomic_long_dec(&session->file->f_count);
+	atomic_long_dec(&session->priv->file->f_count);
 refcount_error:
 	fput(tracker_ids_list_file);
 file_error:
@@ -2046,7 +2058,7 @@ struct lttng_enabler_ref *lttng_enabler_ref(
 static
 void lttng_create_tracepoint_event_if_missing(struct lttng_event_enabler *event_enabler)
 {
-	struct lttng_session *session = event_enabler->chan->session;
+	struct lttng_kernel_session *session = event_enabler->chan->session;
 	struct lttng_kernel_probe_desc *probe_desc;
 	const struct lttng_kernel_event_desc *desc;
 	int i;
@@ -2074,7 +2086,7 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_enabler *event_
 			 * Check if already created.
 			 */
 			head = utils_borrow_hash_table_bucket(
-				session->events_ht.table, LTTNG_EVENT_HT_SIZE,
+				session->priv->events_ht.table, LTTNG_EVENT_HT_SIZE,
 				desc->event_name);
 			lttng_hlist_for_each_entry(event_recorder_private, head, hlist) {
 				if (event_recorder_private->parent.desc == desc
@@ -2207,7 +2219,7 @@ static
 int lttng_event_enabler_ref_events(struct lttng_event_enabler *event_enabler)
 {
 	struct lttng_channel *chan = event_enabler->chan;
-	struct lttng_session *session = event_enabler->chan->session;
+	struct lttng_kernel_session *session = event_enabler->chan->session;
 	struct lttng_enabler *base_enabler = lttng_event_enabler_as_enabler(event_enabler);
 	struct lttng_kernel_event_recorder_private *event_recorder_priv;
 
@@ -2229,7 +2241,7 @@ int lttng_event_enabler_ref_events(struct lttng_event_enabler *event_enabler)
 	lttng_create_event_if_missing(event_enabler);
 
 	/* For each event matching event_enabler in session event list. */
-	list_for_each_entry(event_recorder_priv, &session->events, node) {
+	list_for_each_entry(event_recorder_priv, &session->priv->events, node) {
 		struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
 		struct lttng_enabler_ref *enabler_ref;
 
@@ -2363,10 +2375,10 @@ int lttng_event_notifier_enabler_ref_event_notifiers(
  */
 int lttng_fix_pending_events(void)
 {
-	struct lttng_session *session;
+	struct lttng_kernel_session_private *session_priv;
 
-	list_for_each_entry(session, &sessions, list)
-		lttng_session_lazy_sync_event_enablers(session);
+	list_for_each_entry(session_priv, &sessions, list)
+		lttng_session_lazy_sync_event_enablers(session_priv->pub);
 	return 0;
 }
 
@@ -2421,7 +2433,7 @@ struct lttng_event_enabler *lttng_event_enabler_create(
 	/* ctx left NULL */
 	event_enabler->base.enabled = 0;
 	mutex_lock(&sessions_mutex);
-	list_add(&event_enabler->node, &event_enabler->chan->session->enablers_head);
+	list_add(&event_enabler->node, &event_enabler->chan->session->priv->enablers_head);
 	lttng_session_lazy_sync_event_enablers(event_enabler->chan->session);
 	mutex_unlock(&sessions_mutex);
 	return event_enabler;
@@ -2662,19 +2674,19 @@ void lttng_event_notifier_enabler_destroy(
  * Should be called with sessions mutex held.
  */
 static
-void lttng_session_sync_event_enablers(struct lttng_session *session)
+void lttng_session_sync_event_enablers(struct lttng_kernel_session *session)
 {
 	struct lttng_event_enabler *event_enabler;
 	struct lttng_kernel_event_recorder_private *event_recorder_priv;
 
-	list_for_each_entry(event_enabler, &session->enablers_head, node)
+	list_for_each_entry(event_enabler, &session->priv->enablers_head, node)
 		lttng_event_enabler_ref_events(event_enabler);
 	/*
 	 * For each event, if at least one of its enablers is enabled,
 	 * and its channel and session transient states are enabled, we
 	 * enable the event, else we disable it.
 	 */
-	list_for_each_entry(event_recorder_priv, &session->events, node) {
+	list_for_each_entry(event_recorder_priv, &session->priv->events, node) {
 		struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
 		struct lttng_enabler_ref *enabler_ref;
 		struct lttng_kernel_bytecode_runtime *runtime;
@@ -2703,7 +2715,7 @@ void lttng_session_sync_event_enablers(struct lttng_session *session)
 		 * intesection of session and channel transient enable
 		 * states.
 		 */
-		enabled = enabled && session->tstate && event_recorder->chan->tstate;
+		enabled = enabled && session->priv->tstate && event_recorder->chan->tstate;
 
 		WRITE_ONCE(event_recorder->parent.enabled, enabled);
 		/*
@@ -2747,7 +2759,7 @@ void lttng_session_sync_event_enablers(struct lttng_session *session)
  * Should be called with sessions mutex held.
  */
 static
-void lttng_session_lazy_sync_event_enablers(struct lttng_session *session)
+void lttng_session_lazy_sync_event_enablers(struct lttng_kernel_session *session)
 {
 	/* We can skip if session is not active */
 	if (!session->active)
@@ -2911,22 +2923,22 @@ end:
 }
 
 static
-void lttng_metadata_begin(struct lttng_session *session)
+void lttng_metadata_begin(struct lttng_kernel_session *session)
 {
-	if (atomic_inc_return(&session->metadata_cache->producing) == 1)
-		mutex_lock(&session->metadata_cache->lock);
+	if (atomic_inc_return(&session->priv->metadata_cache->producing) == 1)
+		mutex_lock(&session->priv->metadata_cache->lock);
 }
 
 static
-void lttng_metadata_end(struct lttng_session *session)
+void lttng_metadata_end(struct lttng_kernel_session *session)
 {
-	WARN_ON_ONCE(!atomic_read(&session->metadata_cache->producing));
-	if (atomic_dec_return(&session->metadata_cache->producing) == 0) {
+	WARN_ON_ONCE(!atomic_read(&session->priv->metadata_cache->producing));
+	if (atomic_dec_return(&session->priv->metadata_cache->producing) == 0) {
 		struct lttng_metadata_stream *stream;
 
-		list_for_each_entry(stream, &session->metadata_cache->metadata_stream, list)
+		list_for_each_entry(stream, &session->priv->metadata_cache->metadata_stream, list)
 			wake_up_interruptible(&stream->read_wait);
-		mutex_unlock(&session->metadata_cache->lock);
+		mutex_unlock(&session->priv->metadata_cache->lock);
 	}
 }
 
@@ -2938,7 +2950,7 @@ void lttng_metadata_end(struct lttng_session *session)
  * The content of the printf is printed as a single atomic metadata
  * transaction.
  */
-int lttng_metadata_printf(struct lttng_session *session,
+int lttng_metadata_printf(struct lttng_kernel_session *session,
 			  const char *fmt, ...)
 {
 	char *str;
@@ -2954,32 +2966,32 @@ int lttng_metadata_printf(struct lttng_session *session,
 		return -ENOMEM;
 
 	len = strlen(str);
-	WARN_ON_ONCE(!atomic_read(&session->metadata_cache->producing));
-	if (session->metadata_cache->metadata_written + len >
-			session->metadata_cache->cache_alloc) {
+	WARN_ON_ONCE(!atomic_read(&session->priv->metadata_cache->producing));
+	if (session->priv->metadata_cache->metadata_written + len >
+			session->priv->metadata_cache->cache_alloc) {
 		char *tmp_cache_realloc;
 		unsigned int tmp_cache_alloc_size;
 
 		tmp_cache_alloc_size = max_t(unsigned int,
-				session->metadata_cache->cache_alloc + len,
-				session->metadata_cache->cache_alloc << 1);
+				session->priv->metadata_cache->cache_alloc + len,
+				session->priv->metadata_cache->cache_alloc << 1);
 		tmp_cache_realloc = vzalloc(tmp_cache_alloc_size);
 		if (!tmp_cache_realloc)
 			goto err;
-		if (session->metadata_cache->data) {
+		if (session->priv->metadata_cache->data) {
 			memcpy(tmp_cache_realloc,
-				session->metadata_cache->data,
-				session->metadata_cache->cache_alloc);
-			vfree(session->metadata_cache->data);
+				session->priv->metadata_cache->data,
+				session->priv->metadata_cache->cache_alloc);
+			vfree(session->priv->metadata_cache->data);
 		}
 
-		session->metadata_cache->cache_alloc = tmp_cache_alloc_size;
-		session->metadata_cache->data = tmp_cache_realloc;
+		session->priv->metadata_cache->cache_alloc = tmp_cache_alloc_size;
+		session->priv->metadata_cache->data = tmp_cache_realloc;
 	}
-	memcpy(session->metadata_cache->data +
-			session->metadata_cache->metadata_written,
+	memcpy(session->priv->metadata_cache->data +
+			session->priv->metadata_cache->metadata_written,
 			str, len);
-	session->metadata_cache->metadata_written += len;
+	session->priv->metadata_cache->metadata_written += len;
 	kfree(str);
 
 	return 0;
@@ -2990,7 +3002,7 @@ err:
 }
 
 static
-int print_tabs(struct lttng_session *session, size_t nesting)
+int print_tabs(struct lttng_kernel_session *session, size_t nesting)
 {
 	size_t i;
 
@@ -3006,7 +3018,7 @@ int print_tabs(struct lttng_session *session, size_t nesting)
 }
 
 static
-int lttng_field_name_statedump(struct lttng_session *session,
+int lttng_field_name_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_event_field *field,
 		size_t nesting)
 {
@@ -3014,7 +3026,7 @@ int lttng_field_name_statedump(struct lttng_session *session,
 }
 
 static
-int _lttng_integer_type_statedump(struct lttng_session *session,
+int _lttng_integer_type_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_type_integer *type,
 		enum lttng_kernel_string_encoding parent_encoding,
 		size_t nesting)
@@ -3048,7 +3060,7 @@ int _lttng_integer_type_statedump(struct lttng_session *session,
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_struct_type_statedump(struct lttng_session *session,
+int _lttng_struct_type_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_type_struct *type,
 		size_t nesting)
 {
@@ -3092,7 +3104,7 @@ int _lttng_struct_type_statedump(struct lttng_session *session,
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_struct_field_statedump(struct lttng_session *session,
+int _lttng_struct_field_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_event_field *field,
 		size_t nesting)
 {
@@ -3109,7 +3121,7 @@ int _lttng_struct_field_statedump(struct lttng_session *session,
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_variant_type_statedump(struct lttng_session *session,
+int _lttng_variant_type_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_type_variant *type,
 		size_t nesting,
 		const char *prev_field_name)
@@ -3157,7 +3169,7 @@ int _lttng_variant_type_statedump(struct lttng_session *session,
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_variant_field_statedump(struct lttng_session *session,
+int _lttng_variant_field_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_event_field *field,
 		size_t nesting,
 		const char *prev_field_name)
@@ -3176,7 +3188,7 @@ int _lttng_variant_field_statedump(struct lttng_session *session,
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_array_field_statedump(struct lttng_session *session,
+int _lttng_array_field_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_event_field *field,
 		size_t nesting)
 {
@@ -3227,7 +3239,7 @@ int _lttng_array_field_statedump(struct lttng_session *session,
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_sequence_field_statedump(struct lttng_session *session,
+int _lttng_sequence_field_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_event_field *field,
 		size_t nesting,
 		const char *prev_field_name)
@@ -3287,7 +3299,7 @@ int _lttng_sequence_field_statedump(struct lttng_session *session,
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_enum_type_statedump(struct lttng_session *session,
+int _lttng_enum_type_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_type_enum *type,
 		size_t nesting)
 {
@@ -3404,7 +3416,7 @@ end:
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_enum_field_statedump(struct lttng_session *session,
+int _lttng_enum_field_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_event_field *field,
 		size_t nesting)
 {
@@ -3420,7 +3432,7 @@ int _lttng_enum_field_statedump(struct lttng_session *session,
 }
 
 static
-int _lttng_integer_field_statedump(struct lttng_session *session,
+int _lttng_integer_field_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_event_field *field,
 		size_t nesting)
 {
@@ -3434,7 +3446,7 @@ int _lttng_integer_field_statedump(struct lttng_session *session,
 }
 
 static
-int _lttng_string_type_statedump(struct lttng_session *session,
+int _lttng_string_type_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_type_string *type,
 		size_t nesting)
 {
@@ -3452,7 +3464,7 @@ int _lttng_string_type_statedump(struct lttng_session *session,
 }
 
 static
-int _lttng_string_field_statedump(struct lttng_session *session,
+int _lttng_string_field_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_event_field *field,
 		size_t nesting)
 {
@@ -3471,7 +3483,7 @@ int _lttng_string_field_statedump(struct lttng_session *session,
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_type_statedump(struct lttng_session *session,
+int _lttng_type_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_type_common *type,
 		enum lttng_kernel_string_encoding parent_encoding,
 		size_t nesting)
@@ -3519,7 +3531,7 @@ int _lttng_type_statedump(struct lttng_session *session,
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_field_statedump(struct lttng_session *session,
+int _lttng_field_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_event_field *field,
 		size_t nesting,
 		const char **prev_field_name_p)
@@ -3562,7 +3574,7 @@ int _lttng_field_statedump(struct lttng_session *session,
 }
 
 static
-int _lttng_context_metadata_statedump(struct lttng_session *session,
+int _lttng_context_metadata_statedump(struct lttng_kernel_session *session,
 				    struct lttng_kernel_ctx *ctx)
 {
 	const char *prev_field_name = NULL;
@@ -3582,7 +3594,7 @@ int _lttng_context_metadata_statedump(struct lttng_session *session,
 }
 
 static
-int _lttng_fields_metadata_statedump(struct lttng_session *session,
+int _lttng_fields_metadata_statedump(struct lttng_kernel_session *session,
 				   struct lttng_kernel_event_recorder *event_recorder)
 {
 	const char *prev_field_name = NULL;
@@ -3606,7 +3618,7 @@ int _lttng_fields_metadata_statedump(struct lttng_session *session,
  * transaction.
  */
 static
-int _lttng_event_metadata_statedump(struct lttng_session *session,
+int _lttng_event_metadata_statedump(struct lttng_kernel_session *session,
 				  struct lttng_channel *chan,
 				  struct lttng_kernel_event_recorder *event_recorder)
 {
@@ -3663,7 +3675,7 @@ end:
  * transaction.
  */
 static
-int _lttng_channel_metadata_statedump(struct lttng_session *session,
+int _lttng_channel_metadata_statedump(struct lttng_kernel_session *session,
 				    struct lttng_channel *chan)
 {
 	int ret = 0;
@@ -3717,7 +3729,7 @@ end:
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_stream_packet_context_declare(struct lttng_session *session)
+int _lttng_stream_packet_context_declare(struct lttng_kernel_session *session)
 {
 	return lttng_metadata_printf(session,
 		"struct packet_context {\n"
@@ -3744,7 +3756,7 @@ int _lttng_stream_packet_context_declare(struct lttng_session *session)
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_event_header_declare(struct lttng_session *session)
+int _lttng_event_header_declare(struct lttng_kernel_session *session)
 {
 	return lttng_metadata_printf(session,
 	"struct event_header_compact {\n"
@@ -3827,7 +3839,7 @@ int64_t measure_clock_offset(void)
 }
 
 static
-int print_escaped_ctf_string(struct lttng_session *session, const char *string)
+int print_escaped_ctf_string(struct lttng_kernel_session *session, const char *string)
 {
 	int ret = 0;
 	size_t i;
@@ -3862,7 +3874,7 @@ error:
 }
 
 static
-int print_metadata_escaped_field(struct lttng_session *session, const char *field,
+int print_metadata_escaped_field(struct lttng_kernel_session *session, const char *field,
 		const char *field_value)
 {
 	int ret;
@@ -3886,9 +3898,9 @@ error:
  * Must be called with sessions_mutex held.
  */
 static
-int _lttng_session_metadata_statedump(struct lttng_session *session)
+int _lttng_session_metadata_statedump(struct lttng_kernel_session *session)
 {
-	unsigned char *uuid_c = session->uuid.b;
+	unsigned char *uuid_c = session->priv->uuid.b;
 	unsigned char uuid_s[37], clock_uuid_s[BOOT_ID_LEN];
 	const char *product_uuid;
 	struct lttng_channel *chan;
@@ -3900,7 +3912,7 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 
 	lttng_metadata_begin(session);
 
-	if (session->metadata_dumped)
+	if (session->priv->metadata_dumped)
 		goto skip_session;
 
 	snprintf(uuid_s, sizeof(uuid_s),
@@ -3972,11 +3984,11 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 	if (ret)
 		goto end;
 
-	ret = print_metadata_escaped_field(session, "trace_name", session->name);
+	ret = print_metadata_escaped_field(session, "trace_name", session->priv->name);
 	if (ret)
 		goto end;
 	ret = print_metadata_escaped_field(session, "trace_creation_datetime",
-			session->creation_time);
+			session->priv->creation_time);
 	if (ret)
 		goto end;
 
@@ -4059,19 +4071,19 @@ int _lttng_session_metadata_statedump(struct lttng_session *session)
 		goto end;
 
 skip_session:
-	list_for_each_entry(chan, &session->chan, list) {
+	list_for_each_entry(chan, &session->priv->chan, list) {
 		ret = _lttng_channel_metadata_statedump(session, chan);
 		if (ret)
 			goto end;
 	}
 
-	list_for_each_entry(event_recorder_priv, &session->events, node) {
+	list_for_each_entry(event_recorder_priv, &session->priv->events, node) {
 		ret = _lttng_event_metadata_statedump(session, event_recorder_priv->pub->chan,
 				event_recorder_priv->pub);
 		if (ret)
 			goto end;
 	}
-	session->metadata_dumped = 1;
+	session->priv->metadata_dumped = 1;
 end:
 	lttng_metadata_end(session);
 	return ret;
@@ -4374,13 +4386,13 @@ module_init(lttng_events_init);
 
 static void __exit lttng_events_exit(void)
 {
-	struct lttng_session *session, *tmpsession;
+	struct lttng_kernel_session_private *session_priv, *tmpsession_priv;
 
 	lttng_exit_cpu_hotplug();
 	lttng_logger_exit();
 	lttng_abi_exit();
-	list_for_each_entry_safe(session, tmpsession, &sessions, list)
-		lttng_session_destroy(session);
+	list_for_each_entry_safe(session_priv, tmpsession_priv, &sessions, list)
+		lttng_session_destroy(session_priv->pub);
 	kmem_cache_destroy(event_recorder_cache);
 	kmem_cache_destroy(event_recorder_private_cache);
 	kmem_cache_destroy(event_notifier_cache);

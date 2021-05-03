@@ -26,7 +26,7 @@
 #define lttng_is_signed_type(type)	(((type) -1) < (type) 1)
 
 struct lttng_channel;
-struct lttng_session;
+struct lttng_kernel_session;
 struct lttng_metadata_cache;
 struct lttng_kernel_ring_buffer_ctx;
 struct perf_event;
@@ -410,7 +410,7 @@ struct lttng_channel {
 	int enabled;
 	struct lttng_kernel_ctx *ctx;
 	/* Event ID management */
-	struct lttng_session *session;
+	struct lttng_kernel_session *session;
 	struct file *file;		/* File associated to channel */
 	unsigned int free_event_id;	/* Next event ID to allocate */
 	struct list_head list;		/* Channel list */
@@ -467,7 +467,7 @@ struct lttng_id_tracker_rcu {
 };
 
 struct lttng_id_tracker {
-	struct lttng_session *session;
+	struct lttng_kernel_session *session;
 	enum tracker_type tracker_type;
 	struct lttng_id_tracker_rcu *p;	/* RCU dereferenced. */
 };
@@ -477,30 +477,19 @@ struct lttng_id_hash_node {
 	int id;
 };
 
-struct lttng_session {
+struct lttng_kernel_session_private;
+
+struct lttng_kernel_session {
+	struct lttng_kernel_session_private *priv;	/* Private session interface */
+
 	int active;			/* Is trace session active ? */
-	int been_active;		/* Has trace session been active ? */
-	struct file *file;		/* File associated to session */
-	struct list_head chan;		/* Channel list head */
-	struct list_head events;	/* Event list head */
-	struct list_head list;		/* Session list */
-	unsigned int free_chan_id;	/* Next chan ID to allocate */
-	uuid_le uuid;			/* Trace session unique ID */
-	struct lttng_metadata_cache *metadata_cache;
+
 	struct lttng_id_tracker pid_tracker;
 	struct lttng_id_tracker vpid_tracker;
 	struct lttng_id_tracker uid_tracker;
 	struct lttng_id_tracker vuid_tracker;
 	struct lttng_id_tracker gid_tracker;
 	struct lttng_id_tracker vgid_tracker;
-	unsigned int metadata_dumped:1,
-		tstate:1;		/* Transient enable state */
-	/* List of event enablers */
-	struct list_head enablers_head;
-	/* Hash table of events */
-	struct lttng_event_ht events_ht;
-	char name[LTTNG_KERNEL_ABI_SESSION_NAME_LEN];
-	char creation_time[LTTNG_KERNEL_ABI_SESSION_CREATION_TIME_ISO8601_LEN];
 };
 
 int lttng_kernel_probe_register(struct lttng_kernel_probe_desc *desc);

@@ -56,104 +56,104 @@
 #include <instrumentation/events/lttng-statedump.h>
 
 LTTNG_DEFINE_TRACE(lttng_statedump_block_device,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		dev_t dev, const char *diskname),
 	TP_ARGS(session, dev, diskname));
 
 LTTNG_DEFINE_TRACE(lttng_statedump_end,
-	TP_PROTO(struct lttng_session *session),
+	TP_PROTO(struct lttng_kernel_session *session),
 	TP_ARGS(session));
 
 LTTNG_DEFINE_TRACE(lttng_statedump_interrupt,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		unsigned int irq, const char *chip_name,
 		struct irqaction *action),
 	TP_ARGS(session, irq, chip_name, action));
 
 LTTNG_DEFINE_TRACE(lttng_statedump_file_descriptor,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct files_struct *files,
 		int fd, const char *filename,
 		unsigned int flags, fmode_t fmode),
 	TP_ARGS(session, files, fd, filename, flags, fmode));
 
 LTTNG_DEFINE_TRACE(lttng_statedump_start,
-	TP_PROTO(struct lttng_session *session),
+	TP_PROTO(struct lttng_kernel_session *session),
 	TP_ARGS(session));
 
 LTTNG_DEFINE_TRACE(lttng_statedump_process_state,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		int type, int mode, int submode, int status,
 		struct files_struct *files),
 	TP_ARGS(session, p, type, mode, submode, status, files));
 
 LTTNG_DEFINE_TRACE(lttng_statedump_process_pid_ns,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		struct pid_namespace *pid_ns),
 	TP_ARGS(session, p, pid_ns));
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,6,0))
 LTTNG_DEFINE_TRACE(lttng_statedump_process_cgroup_ns,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		struct cgroup_namespace *cgroup_ns),
 	TP_ARGS(session, p, cgroup_ns));
 #endif
 
 LTTNG_DEFINE_TRACE(lttng_statedump_process_ipc_ns,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		struct ipc_namespace *ipc_ns),
 	TP_ARGS(session, p, ipc_ns));
 
 #ifndef LTTNG_MNT_NS_MISSING_HEADER
 LTTNG_DEFINE_TRACE(lttng_statedump_process_mnt_ns,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		struct mnt_namespace *mnt_ns),
 	TP_ARGS(session, p, mnt_ns));
 #endif
 
 LTTNG_DEFINE_TRACE(lttng_statedump_process_net_ns,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		struct net *net_ns),
 	TP_ARGS(session, p, net_ns));
 
 LTTNG_DEFINE_TRACE(lttng_statedump_process_user_ns,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		struct user_namespace *user_ns),
 	TP_ARGS(session, p, user_ns));
 
 LTTNG_DEFINE_TRACE(lttng_statedump_process_uts_ns,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		struct uts_namespace *uts_ns),
 	TP_ARGS(session, p, uts_ns));
 
 LTTNG_DEFINE_TRACE(lttng_statedump_process_time_ns,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		struct time_namespace *time_ns),
 	TP_ARGS(session, p, time_ns));
 
 LTTNG_DEFINE_TRACE(lttng_statedump_network_interface,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct net_device *dev, struct in_ifaddr *ifa),
 	TP_ARGS(session, dev, ifa));
 
 #ifdef LTTNG_HAVE_STATEDUMP_CPU_TOPOLOGY
 LTTNG_DEFINE_TRACE(lttng_statedump_cpu_topology,
-	TP_PROTO(struct lttng_session *session, struct cpuinfo_x86 *c),
+	TP_PROTO(struct lttng_kernel_session *session, struct cpuinfo_x86 *c),
 	TP_ARGS(session, c));
 #endif
 
 struct lttng_fd_ctx {
 	char *page;
-	struct lttng_session *session;
+	struct lttng_kernel_session *session;
 	struct files_struct *files;
 };
 
@@ -250,7 +250,7 @@ dev_t lttng_get_part_devt(struct hd_struct *part)
 #endif
 
 static
-int lttng_enumerate_block_devices(struct lttng_session *session)
+int lttng_enumerate_block_devices(struct lttng_kernel_session *session)
 {
 	struct class *ptr_block_class;
 	struct device_type *ptr_disk_type;
@@ -313,7 +313,7 @@ end:
 #ifdef CONFIG_INET
 
 static
-void lttng_enumerate_device(struct lttng_session *session,
+void lttng_enumerate_device(struct lttng_kernel_session *session,
 		struct net_device *dev)
 {
 	struct in_device *in_dev;
@@ -336,7 +336,7 @@ void lttng_enumerate_device(struct lttng_session *session,
 }
 
 static
-int lttng_enumerate_network_ip_interface(struct lttng_session *session)
+int lttng_enumerate_network_ip_interface(struct lttng_kernel_session *session)
 {
 	struct net_device *dev;
 
@@ -349,7 +349,7 @@ int lttng_enumerate_network_ip_interface(struct lttng_session *session)
 }
 #else /* CONFIG_INET */
 static inline
-int lttng_enumerate_network_ip_interface(struct lttng_session *session)
+int lttng_enumerate_network_ip_interface(struct lttng_kernel_session *session)
 {
 	return 0;
 }
@@ -399,7 +399,7 @@ end:
 
 /* Called with task lock held. */
 static
-void lttng_enumerate_files(struct lttng_session *session,
+void lttng_enumerate_files(struct lttng_kernel_session *session,
 		struct files_struct *files,
 		char *tmp)
 {
@@ -410,7 +410,7 @@ void lttng_enumerate_files(struct lttng_session *session,
 
 #ifdef LTTNG_HAVE_STATEDUMP_CPU_TOPOLOGY
 static
-int lttng_enumerate_cpu_topology(struct lttng_session *session)
+int lttng_enumerate_cpu_topology(struct lttng_kernel_session *session)
 {
 	int cpu;
 	const cpumask_t *cpumask = cpu_possible_mask;
@@ -424,7 +424,7 @@ int lttng_enumerate_cpu_topology(struct lttng_session *session)
 }
 #else
 static
-int lttng_enumerate_cpu_topology(struct lttng_session *session)
+int lttng_enumerate_cpu_topology(struct lttng_kernel_session *session)
 {
 	return 0;
 }
@@ -437,7 +437,7 @@ int lttng_enumerate_cpu_topology(struct lttng_session *session)
  * iteration, but it is not exported to modules.
  */
 static
-void lttng_enumerate_task_vm_maps(struct lttng_session *session,
+void lttng_enumerate_task_vm_maps(struct lttng_kernel_session *session,
 		struct task_struct *p)
 {
 	struct mm_struct *mm;
@@ -466,7 +466,7 @@ void lttng_enumerate_task_vm_maps(struct lttng_session *session,
 }
 
 static
-int lttng_enumerate_vm_maps(struct lttng_session *session)
+int lttng_enumerate_vm_maps(struct lttng_kernel_session *session)
 {
 	struct task_struct *p;
 
@@ -481,7 +481,7 @@ int lttng_enumerate_vm_maps(struct lttng_session *session)
 #ifdef CONFIG_LTTNG_HAS_LIST_IRQ
 
 static
-int lttng_list_interrupts(struct lttng_session *session)
+int lttng_list_interrupts(struct lttng_kernel_session *session)
 {
 	unsigned int irq;
 	unsigned long flags = 0;
@@ -508,7 +508,7 @@ int lttng_list_interrupts(struct lttng_session *session)
 }
 #else
 static inline
-int lttng_list_interrupts(struct lttng_session *session)
+int lttng_list_interrupts(struct lttng_kernel_session *session)
 {
 	return 0;
 }
@@ -522,7 +522,7 @@ int lttng_list_interrupts(struct lttng_session *session)
  * Called with task lock held.
  */
 static
-void lttng_statedump_process_ns(struct lttng_session *session,
+void lttng_statedump_process_ns(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		enum lttng_thread_type type,
 		enum lttng_execution_mode mode,
@@ -600,7 +600,7 @@ void lttng_statedump_process_ns(struct lttng_session *session,
 }
 
 static
-int lttng_enumerate_process_states(struct lttng_session *session)
+int lttng_enumerate_process_states(struct lttng_kernel_session *session)
 {
 	struct task_struct *g, *p;
 	char *tmp;
@@ -693,7 +693,7 @@ void lttng_statedump_work_func(struct work_struct *work)
 }
 
 static
-int do_lttng_statedump(struct lttng_session *session)
+int do_lttng_statedump(struct lttng_kernel_session *session)
 {
 	int cpu, ret;
 
@@ -754,7 +754,7 @@ int do_lttng_statedump(struct lttng_session *session)
 /*
  * Called with session mutex held.
  */
-int lttng_statedump_start(struct lttng_session *session)
+int lttng_statedump_start(struct lttng_kernel_session *session)
 {
 	return do_lttng_statedump(session);
 }

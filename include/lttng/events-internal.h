@@ -389,6 +389,27 @@ struct lttng_counter_transport {
 	struct lttng_counter_ops ops;
 };
 
+struct lttng_kernel_session_private {
+	struct lttng_kernel_session *pub;	/* Public session interface */
+
+	int been_active;			/* Has trace session been active ? */
+	struct file *file;			/* File associated to session */
+	struct list_head chan;			/* Channel list head */
+	struct list_head events;		/* Event list head */
+	struct list_head list;			/* Session list */
+	unsigned int free_chan_id;		/* Next chan ID to allocate */
+	uuid_le uuid;				/* Trace session unique ID */
+	struct lttng_metadata_cache *metadata_cache;
+	unsigned int metadata_dumped:1,
+		tstate:1;			/* Transient enable state */
+	/* List of event enablers */
+	struct list_head enablers_head;
+	/* Hash table of events */
+	struct lttng_event_ht events_ht;
+	char name[LTTNG_KERNEL_ABI_SESSION_NAME_LEN];
+	char creation_time[LTTNG_KERNEL_ABI_SESSION_CREATION_TIME_ISO8601_LEN];
+};
+
 extern struct lttng_kernel_ctx *lttng_static_ctx;
 
 static inline
@@ -943,12 +964,12 @@ int lttng_fix_pending_event_notifiers(void);
 int lttng_session_active(void);
 bool lttng_event_notifier_active(void);
 
-struct lttng_session *lttng_session_create(void);
-int lttng_session_enable(struct lttng_session *session);
-int lttng_session_disable(struct lttng_session *session);
-void lttng_session_destroy(struct lttng_session *session);
-int lttng_session_metadata_regenerate(struct lttng_session *session);
-int lttng_session_statedump(struct lttng_session *session);
+struct lttng_kernel_session *lttng_session_create(void);
+int lttng_session_enable(struct lttng_kernel_session *session);
+int lttng_session_disable(struct lttng_kernel_session *session);
+void lttng_session_destroy(struct lttng_kernel_session *session);
+int lttng_session_metadata_regenerate(struct lttng_kernel_session *session);
+int lttng_session_statedump(struct lttng_kernel_session *session);
 void metadata_cache_destroy(struct kref *kref);
 
 struct lttng_counter *lttng_kernel_counter_create(
@@ -969,14 +990,14 @@ int lttng_event_notifier_group_create_error_counter(
 void lttng_event_notifier_group_destroy(
 		struct lttng_event_notifier_group *event_notifier_group);
 
-struct lttng_channel *lttng_channel_create(struct lttng_session *session,
+struct lttng_channel *lttng_channel_create(struct lttng_kernel_session *session,
 				       const char *transport_name,
 				       void *buf_addr,
 				       size_t subbuf_size, size_t num_subbuf,
 				       unsigned int switch_timer_interval,
 				       unsigned int read_timer_interval,
 				       enum channel_type channel_type);
-struct lttng_channel *lttng_global_channel_create(struct lttng_session *session,
+struct lttng_channel *lttng_global_channel_create(struct lttng_kernel_session *session,
 				       int overwrite, void *buf_addr,
 				       size_t subbuf_size, size_t num_subbuf,
 				       unsigned int switch_timer_interval,
@@ -1041,12 +1062,12 @@ void lttng_id_tracker_destroy(struct lttng_id_tracker *lf, bool rcu);
 int lttng_id_tracker_add(struct lttng_id_tracker *lf, int id);
 int lttng_id_tracker_del(struct lttng_id_tracker *lf, int id);
 
-int lttng_session_track_id(struct lttng_session *session,
+int lttng_session_track_id(struct lttng_kernel_session *session,
 		enum tracker_type tracker_type, int id);
-int lttng_session_untrack_id(struct lttng_session *session,
+int lttng_session_untrack_id(struct lttng_kernel_session *session,
 		enum tracker_type tracker_type, int id);
 
-int lttng_session_list_tracker_ids(struct lttng_session *session,
+int lttng_session_list_tracker_ids(struct lttng_kernel_session *session,
 		enum tracker_type tracker_type);
 
 void lttng_clock_ref(void);
@@ -1059,7 +1080,7 @@ int lttng_probes_init(void);
 int lttng_logger_init(void);
 void lttng_logger_exit(void);
 
-extern int lttng_statedump_start(struct lttng_session *session);
+extern int lttng_statedump_start(struct lttng_kernel_session *session);
 
 int lttng_calibrate(struct lttng_kernel_abi_calibrate *calibrate);
 

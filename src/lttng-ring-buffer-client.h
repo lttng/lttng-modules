@@ -354,10 +354,10 @@ static void client_buffer_begin(struct lib_ring_buffer *buf, u64 tsc,
 			lib_ring_buffer_offset_address(&buf->backend,
 				subbuf_idx * chan->backend.subbuf_size);
 	struct lttng_channel *lttng_chan = channel_get_private(chan);
-	struct lttng_session *session = lttng_chan->session;
+	struct lttng_kernel_session *session = lttng_chan->session;
 
 	header->magic = CTF_MAGIC_NUMBER;
-	memcpy(header->uuid, session->uuid.b, sizeof(session->uuid));
+	memcpy(header->uuid, session->priv->uuid.b, sizeof(session->priv->uuid));
 	header->stream_id = lttng_chan->id;
 	header->stream_instance_id = buf->backend.cpu;
 	header->ctx.timestamp_begin = tsc;
