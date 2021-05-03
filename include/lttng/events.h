@@ -642,18 +642,6 @@ struct lttng_event_notifier_group {
 	size_t error_counter_len;
 };
 
-struct lttng_metadata_cache {
-	char *data;			/* Metadata cache */
-	unsigned int cache_alloc;	/* Metadata allocated size (bytes) */
-	unsigned int metadata_written;	/* Number of bytes written in metadata cache */
-	atomic_t producing;		/* Metadata being produced (incomplete) */
-	struct kref refcount;		/* Metadata cache usage */
-	struct list_head metadata_stream;	/* Metadata stream list */
-	uuid_le uuid;			/* Trace session unique ID (copy) */
-	struct mutex lock;		/* Produce/consume lock */
-	uint64_t version;		/* Current version of the metadata */
-};
-
 int lttng_probe_register(struct lttng_kernel_probe_desc *desc);
 void lttng_probe_unregister(struct lttng_kernel_probe_desc *desc);
 
