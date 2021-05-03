@@ -974,6 +974,4 @@ int lttng_calibrate(struct lttng_kernel_abi_calibrate *calibrate);
 extern const struct file_operations lttng_tracepoint_list_fops;
 extern const struct file_operations lttng_syscall_list_fops;
 
-#define TRACEPOINT_HAS_DATA_ARG
-
 #endif /* _LTTNG_EVENTS_H */
