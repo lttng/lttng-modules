@@ -415,6 +415,24 @@ struct lttng_id_hash_node {
 	int id;
 };
 
+enum tracker_type {
+	TRACKER_PID,
+	TRACKER_VPID,
+	TRACKER_UID,
+	TRACKER_VUID,
+	TRACKER_GID,
+	TRACKER_VGID,
+
+	TRACKER_UNKNOWN,
+};
+
+struct lttng_kernel_id_tracker_private {
+	struct lttng_kernel_id_tracker *pub;	/* Public interface */
+
+	struct lttng_kernel_session *session;
+	enum tracker_type tracker_type;
+};
+
 extern struct lttng_kernel_ctx *lttng_static_ctx;
 
 static inline
@@ -1062,10 +1080,14 @@ int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 		struct channel *chan, bool *coherent);
 
 int lttng_id_tracker_get_node_id(const struct lttng_id_hash_node *node);
-int lttng_id_tracker_empty_set(struct lttng_id_tracker *lf);
-void lttng_id_tracker_destroy(struct lttng_id_tracker *lf, bool rcu);
-int lttng_id_tracker_add(struct lttng_id_tracker *lf, int id);
-int lttng_id_tracker_del(struct lttng_id_tracker *lf, int id);
+int lttng_id_tracker_empty_set(struct lttng_kernel_id_tracker *lf);
+int lttng_id_tracker_init(struct lttng_kernel_id_tracker *lf,
+		struct lttng_kernel_session *session,
+		enum tracker_type type);
+void lttng_id_tracker_fini(struct lttng_kernel_id_tracker *lf);
+void lttng_id_tracker_destroy(struct lttng_kernel_id_tracker *lf, bool rcu);
+int lttng_id_tracker_add(struct lttng_kernel_id_tracker *lf, int id);
+int lttng_id_tracker_del(struct lttng_kernel_id_tracker *lf, int id);
 
 int lttng_session_track_id(struct lttng_kernel_session *session,
 		enum tracker_type tracker_type, int id);

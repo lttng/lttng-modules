@@ -1023,8 +1023,8 @@ static void __event_probe__##_name(_data_proto)						\
 		struct lttng_kernel_event_recorder *__event_recorder =			\
 			container_of(__event, struct lttng_kernel_event_recorder, parent); \
 		struct lttng_channel *__chan = __event_recorder->chan;			\
-		struct lttng_kernel_session *__session = __chan->session;			\
-		struct lttng_id_tracker_rcu *__lf;					\
+		struct lttng_kernel_session *__session = __chan->session;		\
+		struct lttng_kernel_id_tracker_rcu *__lf;				\
 											\
 		if (!_TP_SESSION_CHECK(session, __session))				\
 			return;								\

@@ -41,7 +41,7 @@ int lttng_id_tracker_get_node_id(const struct lttng_id_hash_node *node)
  * protected by preemption off at the tracepoint call site.
  * Return true if found, false if not found.
  */
-bool lttng_id_tracker_lookup(struct lttng_id_tracker_rcu *p, int id)
+bool lttng_id_tracker_lookup(struct lttng_kernel_id_tracker_rcu *p, int id)
 {
 	struct hlist_head *head;
 	struct lttng_id_hash_node *e;
@@ -56,11 +56,11 @@ bool lttng_id_tracker_lookup(struct lttng_id_tracker_rcu *p, int id)
 }
 EXPORT_SYMBOL_GPL(lttng_id_tracker_lookup);
 
-static struct lttng_id_tracker_rcu *lttng_id_tracker_rcu_create(void)
+static struct lttng_kernel_id_tracker_rcu *lttng_id_tracker_rcu_create(void)
 {
-	struct lttng_id_tracker_rcu *tracker;
+	struct lttng_kernel_id_tracker_rcu *tracker;
 
-	tracker = kzalloc(sizeof(struct lttng_id_tracker_rcu), GFP_KERNEL);
+	tracker = kzalloc(sizeof(struct lttng_kernel_id_tracker_rcu), GFP_KERNEL);
 	if (!tracker)
 		return NULL;
 	return tracker;
@@ -69,11 +69,11 @@ static struct lttng_id_tracker_rcu *lttng_id_tracker_rcu_create(void)
 /*
  * Tracker add and del operations support concurrent RCU lookups.
  */
-int lttng_id_tracker_add(struct lttng_id_tracker *lf, int id)
+int lttng_id_tracker_add(struct lttng_kernel_id_tracker *lf, int id)
 {
 	struct hlist_head *head;
 	struct lttng_id_hash_node *e;
-	struct lttng_id_tracker_rcu *p = lf->p;
+	struct lttng_kernel_id_tracker_rcu *p = lf->p;
 	uint32_t hash = hash_32(id, 32);
 	bool allocated = false;
 	int ret;
@@ -137,11 +137,11 @@ void id_tracker_del_node(struct lttng_id_hash_node *e)
 	kfree(e);
 }
 
-int lttng_id_tracker_del(struct lttng_id_tracker *lf, int id)
+int lttng_id_tracker_del(struct lttng_kernel_id_tracker *lf, int id)
 {
 	struct hlist_head *head;
 	struct lttng_id_hash_node *e;
-	struct lttng_id_tracker_rcu *p = lf->p;
+	struct lttng_kernel_id_tracker_rcu *p = lf->p;
 	uint32_t hash = hash_32(id, 32);
 
 	if (!p)
@@ -160,7 +160,7 @@ int lttng_id_tracker_del(struct lttng_id_tracker *lf, int id)
 	return -ENOENT;	/* Not found */
 }
 
-static void lttng_id_tracker_rcu_destroy(struct lttng_id_tracker_rcu *p)
+static void lttng_id_tracker_rcu_destroy(struct lttng_kernel_id_tracker_rcu *p)
 {
 	int i;
 
@@ -177,9 +177,9 @@ static void lttng_id_tracker_rcu_destroy(struct lttng_id_tracker_rcu *p)
 	kfree(p);
 }
 
-int lttng_id_tracker_empty_set(struct lttng_id_tracker *lf)
+int lttng_id_tracker_empty_set(struct lttng_kernel_id_tracker *lf)
 {
-	struct lttng_id_tracker_rcu *p, *oldp;
+	struct lttng_kernel_id_tracker_rcu *p, *oldp;
 
 	p = lttng_id_tracker_rcu_create();
 	if (!p)
@@ -191,14 +191,34 @@ int lttng_id_tracker_empty_set(struct lttng_id_tracker *lf)
 	return 0;
 }
 
-void lttng_id_tracker_destroy(struct lttng_id_tracker *lf, bool rcu)
+int lttng_id_tracker_init(struct lttng_kernel_id_tracker *lf,
+		struct lttng_kernel_session *session,
+		enum tracker_type type)
 {
-	struct lttng_id_tracker_rcu *p = lf->p;
+	lf->priv = kzalloc(sizeof(*lf->priv), GFP_KERNEL);
+	if (!lf->priv)
+		return -ENOMEM;
+	lf->priv->session = session;
+	lf->priv->tracker_type = type;
+	return 0;
+}
 
-	if (!lf->p)
+void lttng_id_tracker_destroy(struct lttng_kernel_id_tracker *lf, bool rcu)
+{
+	struct lttng_kernel_id_tracker_rcu *p = lf->p;
+
+	if (!p)
 		return;
 	rcu_assign_pointer(lf->p, NULL);
 	if (rcu)
 		synchronize_trace();
 	lttng_id_tracker_rcu_destroy(p);
+}
+
+void lttng_id_tracker_fini(struct lttng_kernel_id_tracker *lf)
+{
+	if (!lf)
+		return;
+	lttng_id_tracker_destroy(lf, false);
+	kfree(lf->priv);
 }

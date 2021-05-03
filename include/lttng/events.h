@@ -445,31 +445,20 @@ struct lttng_dynamic_len_stack {
 DECLARE_PER_CPU(struct lttng_dynamic_len_stack, lttng_dynamic_len_stack);
 
 /*
- * struct lttng_id_tracker declared in header due to deferencing of *v
+ * struct lttng_kernel_id_tracker declared in header due to deferencing of *v
  * in RCU_INITIALIZER(v).
  */
 #define LTTNG_ID_HASH_BITS	6
 #define LTTNG_ID_TABLE_SIZE	(1 << LTTNG_ID_HASH_BITS)
 
-enum tracker_type {
-	TRACKER_PID,
-	TRACKER_VPID,
-	TRACKER_UID,
-	TRACKER_VUID,
-	TRACKER_GID,
-	TRACKER_VGID,
-
-	TRACKER_UNKNOWN,
-};
-
-struct lttng_id_tracker_rcu {
+struct lttng_kernel_id_tracker_rcu {
 	struct hlist_head id_hash[LTTNG_ID_TABLE_SIZE];
 };
 
-struct lttng_id_tracker {
-	struct lttng_kernel_session *session;
-	enum tracker_type tracker_type;
-	struct lttng_id_tracker_rcu *p;	/* RCU dereferenced. */
+struct lttng_kernel_id_tracker {
+	struct lttng_kernel_id_tracker_private *priv;	/* Private API */
+
+	struct lttng_kernel_id_tracker_rcu *p;	/* RCU dereferenced. */
 };
 
 struct lttng_kernel_session_private;
@@ -479,17 +468,17 @@ struct lttng_kernel_session {
 
 	int active;			/* Is trace session active ? */
 
-	struct lttng_id_tracker pid_tracker;
-	struct lttng_id_tracker vpid_tracker;
-	struct lttng_id_tracker uid_tracker;
-	struct lttng_id_tracker vuid_tracker;
-	struct lttng_id_tracker gid_tracker;
-	struct lttng_id_tracker vgid_tracker;
+	struct lttng_kernel_id_tracker pid_tracker;
+	struct lttng_kernel_id_tracker vpid_tracker;
+	struct lttng_kernel_id_tracker uid_tracker;
+	struct lttng_kernel_id_tracker vuid_tracker;
+	struct lttng_kernel_id_tracker gid_tracker;
+	struct lttng_kernel_id_tracker vgid_tracker;
 };
 
 int lttng_kernel_probe_register(struct lttng_kernel_probe_desc *desc);
 void lttng_kernel_probe_unregister(struct lttng_kernel_probe_desc *desc);
 
-bool lttng_id_tracker_lookup(struct lttng_id_tracker_rcu *p, int id);
+bool lttng_id_tracker_lookup(struct lttng_kernel_id_tracker_rcu *p, int id);
 
 #endif /* _LTTNG_EVENTS_H */
