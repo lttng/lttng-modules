@@ -210,7 +210,7 @@ struct lib_ring_buffer_ctx {
 					 * alignment of the largest element
 					 * in the payload
 					 */
-	struct lttng_probe_ctx *probe_ctx;	/* Probe context */
+	struct lttng_kernel_probe_ctx *probe_ctx;	/* Probe context */
 };
 
 /**
@@ -224,7 +224,7 @@ static inline
 void lib_ring_buffer_ctx_init(struct lib_ring_buffer_ctx *ctx,
 			      void *client_priv,
 			      size_t data_size, int largest_align,
-			      struct lttng_probe_ctx *probe_ctx)
+			      struct lttng_kernel_probe_ctx *probe_ctx)
 {
 	ctx->client_priv = client_priv;
 	ctx->data_size = data_size;

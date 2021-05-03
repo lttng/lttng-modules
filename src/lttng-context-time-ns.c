@@ -24,7 +24,7 @@
 #if defined(CONFIG_TIME_NS)
 
 static
-size_t time_ns_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
+size_t time_ns_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -34,7 +34,7 @@ size_t time_ns_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t of
 }
 
 static
-void time_ns_record(void *priv, struct lttng_probe_ctx *probe_ctx,
+void time_ns_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 		 struct lib_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
@@ -56,7 +56,7 @@ void time_ns_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 
 static
 void time_ns_get_value(void *priv,
-		struct lttng_probe_ctx *lttng_probe_ctx,
+		struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 		struct lttng_ctx_value *value)
 {
 	unsigned int time_ns_inum = 0;

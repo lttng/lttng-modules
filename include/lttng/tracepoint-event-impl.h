@@ -1004,7 +1004,7 @@ static void __event_probe__##_name(_data_proto)						\
 {											\
 	struct probe_local_vars { _locvar };						\
 	struct lttng_kernel_event_common *__event = __data;				\
-	struct lttng_probe_ctx __lttng_probe_ctx = {					\
+	struct lttng_kernel_probe_ctx __lttng_probe_ctx = {				\
 		.event = __event,							\
 		.interruptible = !irqs_disabled(),					\
 	};										\

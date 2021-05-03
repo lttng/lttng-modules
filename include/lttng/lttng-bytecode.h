@@ -291,12 +291,12 @@ int lttng_bytecode_specialize(const struct lttng_kernel_event_desc *event_desc,
 
 int lttng_bytecode_interpret_error(struct lttng_kernel_bytecode_runtime *bytecode_runtime,
 		const char *stack_data,
-		struct lttng_probe_ctx *probe_ctx,
+		struct lttng_kernel_probe_ctx *probe_ctx,
 		void *ctx);
 
 int lttng_bytecode_interpret(struct lttng_kernel_bytecode_runtime *kernel_bytecode,
 		const char *interpreter_stack_data,
-		struct lttng_probe_ctx *lttng_probe_ctx,
+		struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 		void *caller_ctx);
 
 #endif /* _LTTNG_FILTER_H */

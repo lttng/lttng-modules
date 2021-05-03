@@ -211,7 +211,7 @@ int stack_strcmp(struct estack *stack, int top, const char *cmp_type)
 int lttng_bytecode_interpret_error(
 	struct lttng_kernel_bytecode_runtime *bytecode_runtime __attribute__((unused)),
 	const char *stack_data __attribute__((unused)),
-	struct lttng_probe_ctx *probe_ctx __attribute__((unused)),
+	struct lttng_kernel_probe_ctx *probe_ctx __attribute__((unused)),
 	void *ctx __attribute__((unused)))
 {
 	return LTTNG_KERNEL_BYTECODE_INTERPRETER_ERROR;
@@ -266,7 +266,7 @@ LABEL_##name
 #define IS_INTEGER_REGISTER(reg_type) \
 		(reg_type == REG_S64 || reg_type == REG_U64)
 
-static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
+static int context_get_index(struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 		struct load_ptr *ptr,
 		uint32_t idx)
 {
@@ -363,7 +363,7 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 	return 0;
 }
 
-static int dynamic_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
+static int dynamic_get_index(struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 		struct bytecode_runtime *runtime,
 		uint64_t index, struct estack_entry *stack_top)
 {
@@ -758,7 +758,7 @@ void dbg_load_ref_user_str_printk(const struct estack_entry *user_str_reg)
  */
 int lttng_bytecode_interpret(struct lttng_kernel_bytecode_runtime *kernel_bytecode,
 		const char *interpreter_stack_data,
-		struct lttng_probe_ctx *lttng_probe_ctx,
+		struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 		void *caller_ctx)
 {
 	struct bytecode_runtime *bytecode = container_of(kernel_bytecode, struct bytecode_runtime, p);
@@ -1849,7 +1849,7 @@ LTTNG_STACK_FRAME_NON_STANDARD(lttng_bytecode_interpret);
  */
 int lttng_kernel_interpret_event_filter(const struct lttng_kernel_event_common *event,
 		const char *interpreter_stack_data,
-		struct lttng_probe_ctx *probe_ctx,
+		struct lttng_kernel_probe_ctx *probe_ctx,
 		void *event_filter_ctx __attribute__((unused)))
 {
 	struct lttng_kernel_bytecode_runtime *filter_bc_runtime;
