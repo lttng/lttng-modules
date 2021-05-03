@@ -15,6 +15,7 @@
 #include <linux/nsproxy.h>
 #include <net/net_namespace.h>
 #include <lttng/events.h>
+#include <lttng/events-internal.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 #include <wrapper/namespace.h>

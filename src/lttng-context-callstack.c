@@ -46,6 +46,7 @@
 #include <ringbuffer/backend.h>
 #include <ringbuffer/frontend.h>
 #include <lttng/events.h>
+#include <lttng/events-internal.h>
 #include <lttng/tracer.h>
 #include <lttng/endian.h>
 #include "wrapper/vmalloc.h"
