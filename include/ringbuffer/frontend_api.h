@@ -70,7 +70,7 @@ void lib_ring_buffer_put_cpu(const struct lib_ring_buffer_config *config)
  */
 static inline
 int lib_ring_buffer_try_reserve(const struct lib_ring_buffer_config *config,
-				struct lib_ring_buffer_ctx *ctx,
+				struct lttng_kernel_ring_buffer_ctx *ctx,
 				void *client_ctx,
 				unsigned long *o_begin, unsigned long *o_end,
 				unsigned long *o_old, size_t *before_hdr_pad)
@@ -140,7 +140,7 @@ int lib_ring_buffer_try_reserve(const struct lib_ring_buffer_config *config,
 
 static inline
 int lib_ring_buffer_reserve(const struct lib_ring_buffer_config *config,
-			    struct lib_ring_buffer_ctx *ctx,
+			    struct lttng_kernel_ring_buffer_ctx *ctx,
 			    void *client_ctx)
 {
 	struct channel *chan = ctx->priv.chan;
@@ -229,7 +229,7 @@ void lib_ring_buffer_switch(const struct lib_ring_buffer_config *config,
  */
 static inline
 void lib_ring_buffer_commit(const struct lib_ring_buffer_config *config,
-			    const struct lib_ring_buffer_ctx *ctx)
+			    const struct lttng_kernel_ring_buffer_ctx *ctx)
 {
 	struct channel *chan = ctx->priv.chan;
 	struct lib_ring_buffer *buf = ctx->priv.buf;
@@ -301,7 +301,7 @@ void lib_ring_buffer_commit(const struct lib_ring_buffer_config *config,
  */
 static inline
 int lib_ring_buffer_try_discard_reserve(const struct lib_ring_buffer_config *config,
-					const struct lib_ring_buffer_ctx *ctx)
+					const struct lttng_kernel_ring_buffer_ctx *ctx)
 {
 	struct lib_ring_buffer *buf = ctx->priv.buf;
 	unsigned long end_offset = ctx->priv.pre_offset + ctx->priv.slot_size;

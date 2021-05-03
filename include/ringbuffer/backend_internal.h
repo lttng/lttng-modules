@@ -192,7 +192,7 @@ int subbuffer_id_check_index(const struct lib_ring_buffer_config *config,
 
 static inline
 void lib_ring_buffer_backend_get_pages(const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer_ctx *ctx,
+			struct lttng_kernel_ring_buffer_ctx *ctx,
 			struct lib_ring_buffer_backend_pages **backend_pages)
 {
 	struct lib_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
@@ -216,7 +216,7 @@ void lib_ring_buffer_backend_get_pages(const struct lib_ring_buffer_config *conf
 static inline
 struct lib_ring_buffer_backend_pages *
 	lib_ring_buffer_get_backend_pages_from_ctx(const struct lib_ring_buffer_config *config,
-		struct lib_ring_buffer_ctx *ctx)
+		struct lttng_kernel_ring_buffer_ctx *ctx)
 {
 	return ctx->priv.backend_pages;
 }

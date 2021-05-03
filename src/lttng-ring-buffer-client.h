@@ -89,7 +89,7 @@ size_t ctx_get_aligned_size(size_t offset, struct lttng_kernel_ctx *ctx,
 
 static inline
 void ctx_get_struct_size(struct lttng_kernel_ctx *ctx, size_t *ctx_len,
-		struct lttng_channel *chan, struct lib_ring_buffer_ctx *bufctx)
+		struct lttng_channel *chan, struct lttng_kernel_ring_buffer_ctx *bufctx)
 {
 	int i;
 	size_t offset = 0;
@@ -106,7 +106,7 @@ void ctx_get_struct_size(struct lttng_kernel_ctx *ctx, size_t *ctx_len,
 }
 
 static inline
-void ctx_record(struct lib_ring_buffer_ctx *bufctx,
+void ctx_record(struct lttng_kernel_ring_buffer_ctx *bufctx,
 		struct lttng_channel *chan,
 		struct lttng_kernel_ctx *ctx)
 {
@@ -137,7 +137,7 @@ static __inline__
 size_t record_header_size(const struct lib_ring_buffer_config *config,
 				 struct channel *chan, size_t offset,
 				 size_t *pre_header_padding,
-				 struct lib_ring_buffer_ctx *ctx,
+				 struct lttng_kernel_ring_buffer_ctx *ctx,
 				 struct lttng_client_ctx *client_ctx)
 {
 	struct lttng_channel *lttng_chan = channel_get_private(chan);
@@ -189,7 +189,7 @@ size_t record_header_size(const struct lib_ring_buffer_config *config,
 
 static
 void lttng_write_event_header_slow(const struct lib_ring_buffer_config *config,
-				 struct lib_ring_buffer_ctx *ctx,
+				 struct lttng_kernel_ring_buffer_ctx *ctx,
 				 uint32_t event_id);
 
 /*
@@ -203,7 +203,7 @@ void lttng_write_event_header_slow(const struct lib_ring_buffer_config *config,
  */
 static __inline__
 void lttng_write_event_header(const struct lib_ring_buffer_config *config,
-			    struct lib_ring_buffer_ctx *ctx,
+			    struct lttng_kernel_ring_buffer_ctx *ctx,
 			    uint32_t event_id)
 {
 	struct lttng_channel *lttng_chan = channel_get_private(ctx->priv.chan);
@@ -252,7 +252,7 @@ slow_path:
 
 static
 void lttng_write_event_header_slow(const struct lib_ring_buffer_config *config,
-				 struct lib_ring_buffer_ctx *ctx,
+				 struct lttng_kernel_ring_buffer_ctx *ctx,
 				 uint32_t event_id)
 {
 	struct lttng_channel *lttng_chan = channel_get_private(ctx->priv.chan);
@@ -326,7 +326,7 @@ static
 size_t client_record_header_size(const struct lib_ring_buffer_config *config,
 				 struct channel *chan, size_t offset,
 				 size_t *pre_header_padding,
-				 struct lib_ring_buffer_ctx *ctx,
+				 struct lttng_kernel_ring_buffer_ctx *ctx,
 				 void *client_ctx)
 {
 	return record_header_size(config, chan, offset,
@@ -603,7 +603,7 @@ void lttng_buffer_read_close(struct lib_ring_buffer *buf)
 }
 
 static
-int lttng_event_reserve(struct lib_ring_buffer_ctx *ctx)
+int lttng_event_reserve(struct lttng_kernel_ring_buffer_ctx *ctx)
 {
 	struct lttng_kernel_event_recorder *event_recorder = ctx->client_priv;
 	struct lttng_channel *lttng_chan = event_recorder->chan;
@@ -648,42 +648,42 @@ put:
 }
 
 static
-void lttng_event_commit(struct lib_ring_buffer_ctx *ctx)
+void lttng_event_commit(struct lttng_kernel_ring_buffer_ctx *ctx)
 {
 	lib_ring_buffer_commit(&client_config, ctx);
 	lib_ring_buffer_put_cpu(&client_config);
 }
 
 static
-void lttng_event_write(struct lib_ring_buffer_ctx *ctx, const void *src,
+void lttng_event_write(struct lttng_kernel_ring_buffer_ctx *ctx, const void *src,
 		     size_t len)
 {
 	lib_ring_buffer_write(&client_config, ctx, src, len);
 }
 
 static
-void lttng_event_write_from_user(struct lib_ring_buffer_ctx *ctx,
+void lttng_event_write_from_user(struct lttng_kernel_ring_buffer_ctx *ctx,
 			       const void __user *src, size_t len)
 {
 	lib_ring_buffer_copy_from_user_inatomic(&client_config, ctx, src, len);
 }
 
 static
-void lttng_event_memset(struct lib_ring_buffer_ctx *ctx,
+void lttng_event_memset(struct lttng_kernel_ring_buffer_ctx *ctx,
 		int c, size_t len)
 {
 	lib_ring_buffer_memset(&client_config, ctx, c, len);
 }
 
 static
-void lttng_event_strcpy(struct lib_ring_buffer_ctx *ctx, const char *src,
+void lttng_event_strcpy(struct lttng_kernel_ring_buffer_ctx *ctx, const char *src,
 		size_t len)
 {
 	lib_ring_buffer_strcpy(&client_config, ctx, src, len, '#');
 }
 
 static
-void lttng_event_strcpy_from_user(struct lib_ring_buffer_ctx *ctx,
+void lttng_event_strcpy_from_user(struct lttng_kernel_ring_buffer_ctx *ctx,
 		const char __user *src, size_t len)
 {
 	lib_ring_buffer_strcpy_from_user_inatomic(&client_config, ctx, src,

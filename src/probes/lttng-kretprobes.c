@@ -75,7 +75,7 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 		struct lttng_kernel_event_recorder *event_recorder =
 			container_of(event, struct lttng_kernel_event_recorder, parent);
 		struct lttng_channel *chan = event_recorder->chan;
-		struct lib_ring_buffer_ctx ctx;
+		struct lttng_kernel_ring_buffer_ctx ctx;
 		int ret;
 
 		payload.ip = (unsigned long) lttng_get_kretprobe(krpi)->kp.addr;

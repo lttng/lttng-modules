@@ -216,7 +216,7 @@ struct lttng_kernel_ctx_field {
 	size_t (*get_size)(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 			size_t offset);
 	void (*record)(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
-			struct lib_ring_buffer_ctx *ctx,
+			struct lttng_kernel_ring_buffer_ctx *ctx,
 			struct lttng_channel *chan);
 	void (*get_value)(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 			struct lttng_ctx_value *value);

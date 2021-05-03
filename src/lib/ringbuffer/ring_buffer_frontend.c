@@ -1997,7 +1997,7 @@ static
 int lib_ring_buffer_try_reserve_slow(struct lib_ring_buffer *buf,
 				     struct channel *chan,
 				     struct switch_offsets *offsets,
-				     struct lib_ring_buffer_ctx *ctx,
+				     struct lttng_kernel_ring_buffer_ctx *ctx,
 				     void *client_ctx)
 {
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
@@ -2172,7 +2172,7 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_lost_event_too_big);
  * -EIO for other errors, else returns 0.
  * It will take care of sub-buffer switching.
  */
-int lib_ring_buffer_reserve_slow(struct lib_ring_buffer_ctx *ctx,
+int lib_ring_buffer_reserve_slow(struct lttng_kernel_ring_buffer_ctx *ctx,
 		void *client_ctx)
 {
 	struct channel *chan = ctx->priv.chan;
