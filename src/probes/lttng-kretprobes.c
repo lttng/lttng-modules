@@ -39,7 +39,7 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 	struct lttng_krp *lttng_krp =
 		container_of(lttng_get_kretprobe(krpi), struct lttng_krp, krp);
 	struct lttng_kernel_event_common *event = lttng_krp->event[type];
-	struct lttng_probe_ctx lttng_probe_ctx = {
+	struct lttng_kernel_probe_ctx lttng_probe_ctx = {
 		.event = event,
 		.interruptible = !lttng_regs_irqs_disabled(regs),
 	};

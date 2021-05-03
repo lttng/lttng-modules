@@ -26,7 +26,7 @@
 #include <../fs/mount.h>
 
 static
-size_t mnt_ns_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
+size_t mnt_ns_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -36,7 +36,7 @@ size_t mnt_ns_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t off
 }
 
 static
-void mnt_ns_record(void *priv, struct lttng_probe_ctx *probe_ctx,
+void mnt_ns_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 		 struct lib_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
@@ -58,7 +58,7 @@ void mnt_ns_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 
 static
 void mnt_ns_get_value(void *priv,
-		struct lttng_probe_ctx *lttng_probe_ctx,
+		struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 		struct lttng_ctx_value *value)
 {
 	unsigned int mnt_ns_inum = 0;

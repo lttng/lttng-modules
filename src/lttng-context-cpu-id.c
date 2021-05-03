@@ -17,7 +17,7 @@
 #include <lttng/tracer.h>
 
 static
-size_t cpu_id_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
+size_t cpu_id_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -27,7 +27,7 @@ size_t cpu_id_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t off
 }
 
 static
-void cpu_id_record(void *priv, struct lttng_probe_ctx *probe_ctx,
+void cpu_id_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 		struct lib_ring_buffer_ctx *ctx,
 		struct lttng_channel *chan)
 {
@@ -40,7 +40,7 @@ void cpu_id_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 
 static
 void cpu_id_get_value(void *priv,
-		struct lttng_probe_ctx *lttng_probe_ctx,
+		struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 		struct lttng_ctx_value *value)
 {
 	value->u.s64 = smp_processor_id();

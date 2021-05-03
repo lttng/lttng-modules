@@ -132,7 +132,7 @@ struct lttng_stack_trace *stack_trace_context(struct field_data *fdata, int cpu)
 }
 
 static
-size_t lttng_callstack_length_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
+size_t lttng_callstack_length_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t orig_offset = offset;
 
@@ -146,7 +146,7 @@ size_t lttng_callstack_length_get_size(void *priv, struct lttng_probe_ctx *probe
  * resulting callstack is saved to be accessed in the record step.
  */
 static
-size_t lttng_callstack_sequence_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
+size_t lttng_callstack_sequence_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, size_t offset)
 {
 	struct lttng_stack_trace *trace;
 	struct field_data *fdata = (struct field_data *) priv;
@@ -193,7 +193,7 @@ size_t lttng_callstack_sequence_get_size(void *priv, struct lttng_probe_ctx *pro
 }
 
 static
-void lttng_callstack_length_record(void *priv, struct lttng_probe_ctx *probe_ctx,
+void lttng_callstack_length_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 			struct lib_ring_buffer_ctx *ctx,
 			struct lttng_channel *chan)
 {
@@ -214,7 +214,7 @@ void lttng_callstack_length_record(void *priv, struct lttng_probe_ctx *probe_ctx
 }
 
 static
-void lttng_callstack_sequence_record(void *priv, struct lttng_probe_ctx *probe_ctx,
+void lttng_callstack_sequence_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 			struct lib_ring_buffer_ctx *ctx,
 			struct lttng_channel *chan)
 {

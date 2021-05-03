@@ -19,7 +19,7 @@
 #include <wrapper/user_namespace.h>
 
 static
-size_t vsuid_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
+size_t vsuid_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -29,7 +29,7 @@ size_t vsuid_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offs
 }
 
 static
-void vsuid_record(void *priv, struct lttng_probe_ctx *probe_ctx,
+void vsuid_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 		 struct lib_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
@@ -42,7 +42,7 @@ void vsuid_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 
 static
 void vsuid_get_value(void *priv,
-		struct lttng_probe_ctx *lttng_probe_ctx,
+		struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 		struct lttng_ctx_value *value)
 {
 	value->u.s64 = lttng_current_vsuid();

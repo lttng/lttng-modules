@@ -24,7 +24,7 @@ int lttng_kprobes_event_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	struct lttng_kernel_event_common_private *event_priv =
 		container_of(p, struct lttng_kernel_event_common_private, u.kprobe.kp);
 	struct lttng_kernel_event_common *event = event_priv->pub;
-	struct lttng_probe_ctx lttng_probe_ctx = {
+	struct lttng_kernel_probe_ctx lttng_probe_ctx = {
 		.event = event,
 		.interruptible = !lttng_regs_irqs_disabled(regs),
 	};

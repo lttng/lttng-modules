@@ -17,7 +17,7 @@
 #include <lttng/tracer.h>
 
 static
-size_t tid_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
+size_t tid_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -27,7 +27,7 @@ size_t tid_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset
 }
 
 static
-void tid_record(void *priv, struct lttng_probe_ctx *probe_ctx,
+void tid_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 		 struct lib_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
@@ -40,7 +40,7 @@ void tid_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 
 static
 void tid_get_value(void *priv,
-		struct lttng_probe_ctx *lttng_probe_ctx,
+		struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 		struct lttng_ctx_value *value)
 {
 	pid_t tid;

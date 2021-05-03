@@ -44,7 +44,7 @@ int __canary__task_prio(const struct task_struct *p)
 }
 
 static
-size_t prio_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
+size_t prio_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -54,7 +54,7 @@ size_t prio_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offse
 }
 
 static
-void prio_record(void *priv, struct lttng_probe_ctx *probe_ctx,
+void prio_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 		struct lib_ring_buffer_ctx *ctx,
 		struct lttng_channel *chan)
 {
@@ -67,7 +67,7 @@ void prio_record(void *priv, struct lttng_probe_ctx *probe_ctx,
 
 static
 void prio_get_value(void *priv,
-		struct lttng_probe_ctx *lttng_probe_ctx,
+		struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 		struct lttng_ctx_value *value)
 {
 	value->u.s64 = wrapper_task_prio_sym(current);

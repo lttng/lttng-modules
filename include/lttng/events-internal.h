@@ -139,12 +139,12 @@ struct lttng_perf_counter_field {
 
 struct lttng_kernel_ctx_field {
 	const struct lttng_kernel_event_field *event_field;
-	size_t (*get_size)(void *priv, struct lttng_probe_ctx *probe_ctx,
+	size_t (*get_size)(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 			size_t offset);
-	void (*record)(void *priv, struct lttng_probe_ctx *probe_ctx,
+	void (*record)(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 			struct lib_ring_buffer_ctx *ctx,
 			struct lttng_channel *chan);
-	void (*get_value)(void *priv, struct lttng_probe_ctx *probe_ctx,
+	void (*get_value)(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 			struct lttng_ctx_value *value);
 	void (*destroy)(void *priv);
 	void *priv;
@@ -235,7 +235,7 @@ static inline bool lttng_kernel_type_is_bytewise_integer(const struct lttng_kern
 
 int lttng_kernel_interpret_event_filter(const struct lttng_kernel_event_common *event,
 		const char *interpreter_stack_data,
-		struct lttng_probe_ctx *probe_ctx,
+		struct lttng_kernel_probe_ctx *probe_ctx,
 		void *event_filter_ctx);
 
 static inline

@@ -29,7 +29,7 @@ int lttng_uprobes_event_handler_pre(struct uprobe_consumer *uc, struct pt_regs *
 	struct lttng_uprobe_handler *uprobe_handler =
 		container_of(uc, struct lttng_uprobe_handler, up_consumer);
 	struct lttng_kernel_event_common *event = uprobe_handler->event;
-	struct lttng_probe_ctx lttng_probe_ctx = {
+	struct lttng_kernel_probe_ctx lttng_probe_ctx = {
 		.event = event,
 		.interruptible = !lttng_regs_irqs_disabled(regs),
 	};

@@ -21,7 +21,7 @@
 #include <lttng/tracer.h>
 
 static
-size_t perf_counter_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size_t offset)
+size_t perf_counter_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, size_t offset)
 {
 	size_t size = 0;
 
@@ -31,7 +31,7 @@ size_t perf_counter_get_size(void *priv, struct lttng_probe_ctx *probe_ctx, size
 }
 
 static
-void perf_counter_record(void *priv, struct lttng_probe_ctx *probe_ctx,
+void perf_counter_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 			 struct lib_ring_buffer_ctx *ctx,
 			 struct lttng_channel *chan)
 {

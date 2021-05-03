@@ -292,7 +292,7 @@ struct lttng_kernel_event_field {
 		}											\
 	}),
 
-struct lttng_probe_ctx {
+struct lttng_kernel_probe_ctx {
 	struct lttng_kernel_event_common *event;
 	uint8_t interruptible;
 };
@@ -343,7 +343,7 @@ struct lttng_kernel_bytecode_runtime {
 	struct lttng_kernel_bytecode_node *bc;
 	int (*interpreter_func)(struct lttng_kernel_bytecode_runtime *kernel_bytecode,
 				const char *interpreter_stack_data,
-				struct lttng_probe_ctx *lttng_probe_ctx,
+				struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 				void *caller_ctx);
 	int link_failed;
 	struct list_head node;	/* list of bytecode runtime in event */
@@ -410,7 +410,7 @@ struct lttng_kernel_event_common {
 	int eval_filter;				/* Need to evaluate filters */
 	int (*run_filter)(const struct lttng_kernel_event_common *event,
 		const char *stack_data,
-		struct lttng_probe_ctx *probe_ctx,
+		struct lttng_kernel_probe_ctx *probe_ctx,
 		void *filter_ctx);
 };
 
@@ -436,7 +436,7 @@ struct lttng_kernel_event_notifier {
 	int eval_capture;				/* Need to evaluate capture */
 	void (*notification_send)(struct lttng_kernel_event_notifier *event_notifier,
 		const char *stack_data,
-		struct lttng_probe_ctx *probe_ctx,
+		struct lttng_kernel_probe_ctx *probe_ctx,
 		struct lttng_kernel_notification_ctx *notif_ctx);
 };
 
