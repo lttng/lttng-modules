@@ -231,6 +231,18 @@ struct lttng_kernel_ctx {
 	size_t largest_align;	/* in bytes */
 };
 
+struct lttng_metadata_cache {
+	char *data;			/* Metadata cache */
+	unsigned int cache_alloc;	/* Metadata allocated size (bytes) */
+	unsigned int metadata_written;	/* Number of bytes written in metadata cache */
+	atomic_t producing;		/* Metadata being produced (incomplete) */
+	struct kref refcount;		/* Metadata cache usage */
+	struct list_head metadata_stream;	/* Metadata stream list */
+	uuid_le uuid;			/* Trace session unique ID (copy) */
+	struct mutex lock;		/* Produce/consume lock */
+	uint64_t version;		/* Current version of the metadata */
+};
+
 extern struct lttng_kernel_ctx *lttng_static_ctx;
 
 static inline
