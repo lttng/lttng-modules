@@ -10,6 +10,19 @@
 
 #include <lttng/events.h>
 
+enum lttng_enabler_format_type {
+	LTTNG_ENABLER_FORMAT_STAR_GLOB,
+	LTTNG_ENABLER_FORMAT_NAME,
+};
+
+/*
+ * Objects in a linked-list of enablers, owned by an event.
+ */
+struct lttng_enabler_ref {
+	struct list_head node;			/* enabler ref list */
+	struct lttng_enabler *ref;		/* backward ref */
+};
+
 struct lttng_kernel_event_common_private {
 	struct lttng_kernel_event_common *pub;		/* Public event interface */
 
@@ -462,7 +475,123 @@ int lttng_cpuhp_perf_counter_dead(unsigned int cpu,
 }
 #endif
 
+struct lttng_event_enabler *lttng_event_enabler_create(
+		enum lttng_enabler_format_type format_type,
+		struct lttng_kernel_abi_event *event_param,
+		struct lttng_channel *chan);
 
+int lttng_event_enabler_enable(struct lttng_event_enabler *event_enabler);
+int lttng_event_enabler_disable(struct lttng_event_enabler *event_enabler);
+struct lttng_event_notifier_enabler *lttng_event_notifier_enabler_create(
+		struct lttng_event_notifier_group *event_notifier_group,
+		enum lttng_enabler_format_type format_type,
+		struct lttng_kernel_abi_event_notifier *event_notifier_param);
+
+int lttng_event_notifier_enabler_enable(
+		struct lttng_event_notifier_enabler *event_notifier_enabler);
+int lttng_event_notifier_enabler_disable(
+		struct lttng_event_notifier_enabler *event_notifier_enabler);
+
+int lttng_event_enabler_attach_filter_bytecode(struct lttng_event_enabler *event_enabler,
+		struct lttng_kernel_abi_filter_bytecode __user *bytecode);
+int lttng_event_notifier_enabler_attach_filter_bytecode(
+		struct lttng_event_notifier_enabler *event_notifier_enabler,
+		struct lttng_kernel_abi_filter_bytecode __user *bytecode);
+int lttng_event_notifier_enabler_attach_capture_bytecode(
+		struct lttng_event_notifier_enabler *event_notifier_enabler,
+		struct lttng_kernel_abi_capture_bytecode __user *bytecode);
+
+int lttng_desc_match_enabler(const struct lttng_kernel_event_desc *desc,
+		struct lttng_enabler *enabler);
+
+void lttng_enabler_link_bytecode(const struct lttng_kernel_event_desc *event_desc,
+		struct lttng_kernel_ctx *ctx,
+		struct list_head *instance_bytecode_runtime_head,
+		struct list_head *enabler_bytecode_runtime_head);
+
+#if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
+int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler);
+int lttng_syscalls_unregister_channel(struct lttng_channel *chan);
+int lttng_syscalls_destroy_event(struct lttng_channel *chan);
+int lttng_syscall_filter_enable_event(
+		struct lttng_channel *chan,
+		struct lttng_kernel_event_recorder *event);
+int lttng_syscall_filter_disable_event(
+		struct lttng_channel *chan,
+		struct lttng_kernel_event_recorder *event);
+
+long lttng_channel_syscall_mask(struct lttng_channel *channel,
+		struct lttng_kernel_abi_syscall_mask __user *usyscall_mask);
+
+int lttng_syscalls_register_event_notifier(
+		struct lttng_event_notifier_enabler *event_notifier_enabler);
+int lttng_syscalls_create_matching_event_notifiers(
+		struct lttng_event_notifier_enabler *event_notifier_enabler);
+int lttng_syscalls_unregister_event_notifier_group(struct lttng_event_notifier_group *group);
+int lttng_syscall_filter_enable_event_notifier(struct lttng_kernel_event_notifier *event_notifier);
+int lttng_syscall_filter_disable_event_notifier(struct lttng_kernel_event_notifier *event_notifier);
+#else
+static inline int lttng_syscalls_register_event(
+		struct lttng_event_enabler *event_enabler)
+{
+	return -ENOSYS;
+}
+
+static inline int lttng_syscalls_unregister_channel(struct lttng_channel *chan)
+{
+	return 0;
+}
+
+static inline int lttng_syscalls_destroy(struct lttng_channel *chan)
+{
+	return 0;
+}
+
+static inline int lttng_syscall_filter_enable_event(struct lttng_channel *chan,
+		struct lttng_kernel_event_recorder *event);
+{
+	return -ENOSYS;
+}
+
+static inline int lttng_syscall_filter_disable_event(struct lttng_channel *chan,
+		struct lttng_kernel_event_recorder *event);
+{
+	return -ENOSYS;
+}
+
+static inline long lttng_channel_syscall_mask(struct lttng_channel *channel,
+		struct lttng_kernel_syscall_mask __user *usyscall_mask)
+{
+	return -ENOSYS;
+}
+
+static inline int lttng_syscalls_register_event_notifier(
+		struct lttng_event_notifier_group *group)
+{
+	return -ENOSYS;
+}
+
+static inline int lttng_syscalls_unregister_event_notifier_group(
+		struct lttng_event_notifier_group *group)
+{
+	return 0;
+}
+
+static inline int lttng_syscall_filter_enable_event_notifier(
+		struct lttng_event_notifier_group *group,
+		const char *name)
+{
+	return -ENOSYS;
+}
+
+static inline int lttng_syscall_filter_disable_event_notifier(
+		struct lttng_event_notifier_group *group,
+		const char *name)
+{
+	return -ENOSYS;
+}
+
+#endif
 
 #define lttng_kernel_static_ctx_field(_event_field, _get_size, _record, _get_value, _destroy, _priv)	\
 	__LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_ctx_field, {					\
