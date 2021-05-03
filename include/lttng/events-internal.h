@@ -410,6 +410,11 @@ struct lttng_kernel_session_private {
 	char creation_time[LTTNG_KERNEL_ABI_SESSION_CREATION_TIME_ISO8601_LEN];
 };
 
+struct lttng_id_hash_node {
+	struct hlist_node hlist;
+	int id;
+};
+
 extern struct lttng_kernel_ctx *lttng_static_ctx;
 
 static inline
