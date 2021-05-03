@@ -78,6 +78,39 @@ struct lttng_kernel_bytecode_filter_ctx {
 	enum lttng_kernel_bytecode_filter_result result;
 };
 
+/*
+ * Enabler field, within whatever object is enabling an event. Target of
+ * backward reference.
+ */
+struct lttng_enabler {
+	enum lttng_enabler_format_type format_type;
+
+	/* head list of struct lttng_bytecode_node */
+	struct list_head filter_bytecode_head;
+
+	struct lttng_kernel_abi_event event_param;
+	unsigned int enabled:1;
+
+	uint64_t user_token;		/* User-provided token. */
+};
+
+struct lttng_event_enabler {
+	struct lttng_enabler base;
+	struct list_head node;	/* per-session list of enablers */
+	struct lttng_channel *chan;
+};
+
+struct lttng_event_notifier_enabler {
+	struct lttng_enabler base;
+	uint64_t error_counter_index;
+	struct list_head node;	/* List of event_notifier enablers */
+	struct lttng_event_notifier_group *group;
+
+	/* head list of struct lttng_bytecode_node */
+	struct list_head capture_bytecode_head;
+	uint64_t num_captures;
+};
+
 static inline
 const struct lttng_kernel_type_integer *lttng_kernel_get_type_integer(const struct lttng_kernel_type_common *type)
 {
@@ -156,5 +189,19 @@ int lttng_kernel_interpret_event_filter(const struct lttng_kernel_event_common *
 		const char *interpreter_stack_data,
 		struct lttng_probe_ctx *probe_ctx,
 		void *event_filter_ctx);
+
+static inline
+struct lttng_enabler *lttng_event_enabler_as_enabler(
+		struct lttng_event_enabler *event_enabler)
+{
+	return &event_enabler->base;
+}
+
+static inline
+struct lttng_enabler *lttng_event_notifier_enabler_as_enabler(
+		struct lttng_event_notifier_enabler *event_notifier_enabler)
+{
+	return &event_notifier_enabler->base;
+}
 
 #endif /* _LTTNG_EVENTS_INTERNAL_H */

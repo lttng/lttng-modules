@@ -501,54 +501,6 @@ enum lttng_enabler_format_type {
 	LTTNG_ENABLER_FORMAT_NAME,
 };
 
-/*
- * Enabler field, within whatever object is enabling an event. Target of
- * backward reference.
- */
-struct lttng_enabler {
-	enum lttng_enabler_format_type format_type;
-
-	/* head list of struct lttng_bytecode_node */
-	struct list_head filter_bytecode_head;
-
-	struct lttng_kernel_abi_event event_param;
-	unsigned int enabled:1;
-
-	uint64_t user_token;		/* User-provided token. */
-};
-
-struct lttng_event_enabler {
-	struct lttng_enabler base;
-	struct list_head node;	/* per-session list of enablers */
-	struct lttng_channel *chan;
-};
-
-struct lttng_event_notifier_enabler {
-	struct lttng_enabler base;
-	uint64_t error_counter_index;
-	struct list_head node;	/* List of event_notifier enablers */
-	struct lttng_event_notifier_group *group;
-
-	/* head list of struct lttng_bytecode_node */
-	struct list_head capture_bytecode_head;
-	uint64_t num_captures;
-};
-
-
-static inline
-struct lttng_enabler *lttng_event_enabler_as_enabler(
-		struct lttng_event_enabler *event_enabler)
-{
-	return &event_enabler->base;
-}
-
-static inline
-struct lttng_enabler *lttng_event_notifier_enabler_as_enabler(
-		struct lttng_event_notifier_enabler *event_notifier_enabler)
-{
-	return &event_notifier_enabler->base;
-}
-
 struct lttng_channel_ops {
 	struct channel *(*channel_create)(const char *name,
 				void *priv,
