@@ -323,7 +323,7 @@ enum lttng_kernel_bytecode_type {
 	LTTNG_KERNEL_BYTECODE_TYPE_CAPTURE,
 };
 
-struct lttng_bytecode_node {
+struct lttng_kernel_bytecode_node {
 	enum lttng_kernel_bytecode_type type;
 	struct list_head node;
 	struct lttng_enabler *enabler;
@@ -340,7 +340,7 @@ struct lttng_interpreter_output;
 struct lttng_bytecode_runtime {
 	/* Associated bytecode */
 	enum lttng_kernel_bytecode_type type;
-	struct lttng_bytecode_node *bc;
+	struct lttng_kernel_bytecode_node *bc;
 	int (*interpreter_func)(struct lttng_bytecode_runtime *kernel_bytecode,
 				const char *interpreter_stack_data,
 				struct lttng_probe_ctx *lttng_probe_ctx,
