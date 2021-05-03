@@ -1632,7 +1632,7 @@ int lttng_abi_open_stream(struct file *channel_file)
 	int ret;
 	void *stream_priv;
 
-	buf = channel->ops->buffer_read_open(channel->chan);
+	buf = channel->ops->priv->buffer_read_open(channel->chan);
 	if (!buf)
 		return -ENOENT;
 
@@ -1646,7 +1646,7 @@ int lttng_abi_open_stream(struct file *channel_file)
 	return ret;
 
 fd_error:
-	channel->ops->buffer_read_close(buf);
+	channel->ops->priv->buffer_read_close(buf);
 	return ret;
 }
 
@@ -1660,7 +1660,7 @@ int lttng_abi_open_metadata_stream(struct file *channel_file)
 	struct lttng_metadata_stream *metadata_stream;
 	void *stream_priv;
 
-	buf = channel->ops->buffer_read_open(channel->chan);
+	buf = channel->ops->priv->buffer_read_open(channel->chan);
 	if (!buf)
 		return -ENOENT;
 
@@ -1712,7 +1712,7 @@ kref_error:
 notransport:
 	kfree(metadata_stream);
 nomem:
-	channel->ops->buffer_read_close(buf);
+	channel->ops->priv->buffer_read_close(buf);
 	return ret;
 }
 
@@ -1725,7 +1725,7 @@ int lttng_abi_open_event_notifier_group_stream(struct file *notif_file)
 	int ret;
 	void *stream_priv;
 
-	buf = event_notifier_group->ops->buffer_read_open(chan);
+	buf = event_notifier_group->ops->priv->buffer_read_open(chan);
 	if (!buf)
 		return -ENOENT;
 
@@ -1747,7 +1747,7 @@ int lttng_abi_open_event_notifier_group_stream(struct file *notif_file)
 fd_error:
 	atomic_long_dec(&notif_file->f_count);
 refcount_error:
-	event_notifier_group->ops->buffer_read_close(buf);
+	event_notifier_group->ops->priv->buffer_read_close(buf);
 	return ret;
 }
 
@@ -2538,14 +2538,14 @@ unsigned int lttng_channel_poll(struct file *file, poll_table *wait)
 
 	if (file->f_mode & FMODE_READ) {
 		poll_wait_set_exclusive(wait);
-		poll_wait(file, channel->ops->get_hp_wait_queue(channel->chan),
+		poll_wait(file, channel->ops->priv->get_hp_wait_queue(channel->chan),
 			  wait);
 
-		if (channel->ops->is_disabled(channel->chan))
+		if (channel->ops->priv->is_disabled(channel->chan))
 			return POLLERR;
-		if (channel->ops->is_finalized(channel->chan))
+		if (channel->ops->priv->is_finalized(channel->chan))
 			return POLLHUP;
-		if (channel->ops->buffer_has_read_closed_stream(channel->chan))
+		if (channel->ops->priv->buffer_has_read_closed_stream(channel->chan))
 			return POLLIN | POLLRDNORM;
 		return 0;
 	}
@@ -2744,7 +2744,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	struct lib_ring_buffer *buf = filp->private_data;
 	struct channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
-	const struct lttng_channel_ops *ops = chan->backend.priv_ops;
+	const struct lttng_kernel_channel_buffer_ops *ops = chan->backend.priv_ops;
 	int ret;
 
 	if (atomic_read(&chan->record_disabled))
@@ -2755,7 +2755,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	{
 		uint64_t ts;
 
-		ret = ops->timestamp_begin(config, buf, &ts);
+		ret = ops->priv->timestamp_begin(config, buf, &ts);
 		if (ret < 0)
 			goto error;
 		return put_u64(ts, arg);
@@ -2764,7 +2764,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	{
 		uint64_t ts;
 
-		ret = ops->timestamp_end(config, buf, &ts);
+		ret = ops->priv->timestamp_end(config, buf, &ts);
 		if (ret < 0)
 			goto error;
 		return put_u64(ts, arg);
@@ -2773,7 +2773,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	{
 		uint64_t ed;
 
-		ret = ops->events_discarded(config, buf, &ed);
+		ret = ops->priv->events_discarded(config, buf, &ed);
 		if (ret < 0)
 			goto error;
 		return put_u64(ed, arg);
@@ -2782,7 +2782,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	{
 		uint64_t cs;
 
-		ret = ops->content_size(config, buf, &cs);
+		ret = ops->priv->content_size(config, buf, &cs);
 		if (ret < 0)
 			goto error;
 		return put_u64(cs, arg);
@@ -2791,7 +2791,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	{
 		uint64_t ps;
 
-		ret = ops->packet_size(config, buf, &ps);
+		ret = ops->priv->packet_size(config, buf, &ps);
 		if (ret < 0)
 			goto error;
 		return put_u64(ps, arg);
@@ -2800,7 +2800,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	{
 		uint64_t si;
 
-		ret = ops->stream_id(config, buf, &si);
+		ret = ops->priv->stream_id(config, buf, &si);
 		if (ret < 0)
 			goto error;
 		return put_u64(si, arg);
@@ -2809,7 +2809,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	{
 		uint64_t ts;
 
-		ret = ops->current_timestamp(config, buf, &ts);
+		ret = ops->priv->current_timestamp(config, buf, &ts);
 		if (ret < 0)
 			goto error;
 		return put_u64(ts, arg);
@@ -2818,7 +2818,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	{
 		uint64_t seq;
 
-		ret = ops->sequence_number(config, buf, &seq);
+		ret = ops->priv->sequence_number(config, buf, &seq);
 		if (ret < 0)
 			goto error;
 		return put_u64(seq, arg);
@@ -2827,7 +2827,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 	{
 		uint64_t id;
 
-		ret = ops->instance_id(config, buf, &id);
+		ret = ops->priv->instance_id(config, buf, &id);
 		if (ret < 0)
 			goto error;
 		return put_u64(id, arg);
@@ -2848,7 +2848,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	struct lib_ring_buffer *buf = filp->private_data;
 	struct channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
-	const struct lttng_channel_ops *ops = chan->backend.priv_ops;
+	const struct lttng_kernel_channel_buffer_ops *ops = chan->backend.priv_ops;
 	int ret;
 
 	if (atomic_read(&chan->record_disabled))
@@ -2859,7 +2859,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		uint64_t ts;
 
-		ret = ops->timestamp_begin(config, buf, &ts);
+		ret = ops->priv->timestamp_begin(config, buf, &ts);
 		if (ret < 0)
 			goto error;
 		return put_u64(ts, arg);
@@ -2868,7 +2868,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		uint64_t ts;
 
-		ret = ops->timestamp_end(config, buf, &ts);
+		ret = ops->priv->timestamp_end(config, buf, &ts);
 		if (ret < 0)
 			goto error;
 		return put_u64(ts, arg);
@@ -2877,7 +2877,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		uint64_t ed;
 
-		ret = ops->events_discarded(config, buf, &ed);
+		ret = ops->priv->events_discarded(config, buf, &ed);
 		if (ret < 0)
 			goto error;
 		return put_u64(ed, arg);
@@ -2886,7 +2886,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		uint64_t cs;
 
-		ret = ops->content_size(config, buf, &cs);
+		ret = ops->priv->content_size(config, buf, &cs);
 		if (ret < 0)
 			goto error;
 		return put_u64(cs, arg);
@@ -2895,7 +2895,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		uint64_t ps;
 
-		ret = ops->packet_size(config, buf, &ps);
+		ret = ops->priv->packet_size(config, buf, &ps);
 		if (ret < 0)
 			goto error;
 		return put_u64(ps, arg);
@@ -2904,7 +2904,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		uint64_t si;
 
-		ret = ops->stream_id(config, buf, &si);
+		ret = ops->priv->stream_id(config, buf, &si);
 		if (ret < 0)
 			goto error;
 		return put_u64(si, arg);
@@ -2913,7 +2913,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		uint64_t ts;
 
-		ret = ops->current_timestamp(config, buf, &ts);
+		ret = ops->priv->current_timestamp(config, buf, &ts);
 		if (ret < 0)
 			goto error;
 		return put_u64(ts, arg);
@@ -2922,7 +2922,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		uint64_t seq;
 
-		ret = ops->sequence_number(config, buf, &seq);
+		ret = ops->priv->sequence_number(config, buf, &seq);
 		if (ret < 0)
 			goto error;
 		return put_u64(seq, arg);
@@ -2931,7 +2931,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		uint64_t id;
 
-		ret = ops->instance_id(config, buf, &id);
+		ret = ops->priv->instance_id(config, buf, &id);
 		if (ret < 0)
 			goto error;
 		return put_u64(id, arg);
