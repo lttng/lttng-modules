@@ -27,11 +27,7 @@
 
 struct lttng_channel;
 struct lttng_kernel_session;
-struct lttng_metadata_cache;
 struct lttng_kernel_ring_buffer_ctx;
-struct perf_event;
-struct perf_event_attr;
-struct lib_ring_buffer_config;
 
 /* Type description */
 

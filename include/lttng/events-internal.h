@@ -11,6 +11,10 @@
 #include <lttng/events.h>
 
 struct lttng_syscall_filter;
+struct lttng_metadata_cache;
+struct perf_event;
+struct perf_event_attr;
+struct lib_ring_buffer_config;
 
 enum lttng_enabler_format_type {
 	LTTNG_ENABLER_FORMAT_STAR_GLOB,
