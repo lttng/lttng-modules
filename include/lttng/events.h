@@ -435,19 +435,6 @@ struct lttng_channel {
 		tstate:1;		/* Transient enable state */
 };
 
-struct lttng_metadata_stream {
-	void *priv;			/* Ring buffer private data */
-	struct lttng_metadata_cache *metadata_cache;
-	unsigned int metadata_in;	/* Bytes read from the cache */
-	unsigned int metadata_out;	/* Bytes consumed from stream */
-	int finalized;			/* Has channel been finalized */
-	wait_queue_head_t read_wait;	/* Reader buffer-level wait queue */
-	struct list_head list;		/* Stream list */
-	struct lttng_transport *transport;
-	uint64_t version;		/* Current version of the metadata cache */
-	bool coherent;			/* Stream in a coherent state */
-};
-
 #define LTTNG_DYNAMIC_LEN_STACK_SIZE	128
 
 struct lttng_dynamic_len_stack {
