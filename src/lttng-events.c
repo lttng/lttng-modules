@@ -185,22 +185,30 @@ struct lttng_kernel_session *lttng_session_create(void)
 		INIT_HLIST_HEAD(&session_priv->events_ht.table[i]);
 	list_add(&session_priv->list, &sessions);
 
-	session->pid_tracker.session = session;
-	session->pid_tracker.tracker_type = TRACKER_PID;
-	session->vpid_tracker.session = session;
-	session->vpid_tracker.tracker_type = TRACKER_VPID;
-	session->uid_tracker.session = session;
-	session->uid_tracker.tracker_type = TRACKER_UID;
-	session->vuid_tracker.session = session;
-	session->vuid_tracker.tracker_type = TRACKER_VUID;
-	session->gid_tracker.session = session;
-	session->gid_tracker.tracker_type = TRACKER_GID;
-	session->vgid_tracker.session = session;
-	session->vgid_tracker.tracker_type = TRACKER_VGID;
+	if (lttng_id_tracker_init(&session->pid_tracker, session, TRACKER_PID))
+		goto tracker_alloc_error;
+	if (lttng_id_tracker_init(&session->vpid_tracker, session, TRACKER_VPID))
+		goto tracker_alloc_error;
+	if (lttng_id_tracker_init(&session->uid_tracker, session, TRACKER_UID))
+		goto tracker_alloc_error;
+	if (lttng_id_tracker_init(&session->vuid_tracker, session, TRACKER_VUID))
+		goto tracker_alloc_error;
+	if (lttng_id_tracker_init(&session->gid_tracker, session, TRACKER_GID))
+		goto tracker_alloc_error;
+	if (lttng_id_tracker_init(&session->vgid_tracker, session, TRACKER_VGID))
+		goto tracker_alloc_error;
+
 	mutex_unlock(&sessions_mutex);
 
 	return session;
 
+tracker_alloc_error:
+	lttng_id_tracker_fini(&session->pid_tracker);
+	lttng_id_tracker_fini(&session->vpid_tracker);
+	lttng_id_tracker_fini(&session->uid_tracker);
+	lttng_id_tracker_fini(&session->vuid_tracker);
+	lttng_id_tracker_fini(&session->gid_tracker);
+	lttng_id_tracker_fini(&session->vgid_tracker);
 err_free_cache:
 	kfree(metadata_cache);
 err_free_session_private:
@@ -376,12 +384,12 @@ void lttng_session_destroy(struct lttng_kernel_session *session)
 	list_for_each_entry(metadata_stream, &session->priv->metadata_cache->metadata_stream, list)
 		_lttng_metadata_channel_hangup(metadata_stream);
 	mutex_unlock(&session->priv->metadata_cache->lock);
-	lttng_id_tracker_destroy(&session->pid_tracker, false);
-	lttng_id_tracker_destroy(&session->vpid_tracker, false);
-	lttng_id_tracker_destroy(&session->uid_tracker, false);
-	lttng_id_tracker_destroy(&session->vuid_tracker, false);
-	lttng_id_tracker_destroy(&session->gid_tracker, false);
-	lttng_id_tracker_destroy(&session->vgid_tracker, false);
+	lttng_id_tracker_fini(&session->pid_tracker);
+	lttng_id_tracker_fini(&session->vpid_tracker);
+	lttng_id_tracker_fini(&session->uid_tracker);
+	lttng_id_tracker_fini(&session->vuid_tracker);
+	lttng_id_tracker_fini(&session->gid_tracker);
+	lttng_id_tracker_fini(&session->vgid_tracker);
 	kref_put(&session->priv->metadata_cache->refcount, metadata_cache_destroy);
 	list_del(&session->priv->list);
 	mutex_unlock(&sessions_mutex);
@@ -1644,7 +1652,7 @@ void _lttng_event_destroy(struct lttng_kernel_event_common *event)
 	}
 }
 
-struct lttng_id_tracker *get_tracker(struct lttng_kernel_session *session,
+struct lttng_kernel_id_tracker *get_tracker(struct lttng_kernel_session *session,
 		enum tracker_type tracker_type)
 {
 	switch (tracker_type) {
@@ -1669,7 +1677,7 @@ struct lttng_id_tracker *get_tracker(struct lttng_kernel_session *session,
 int lttng_session_track_id(struct lttng_kernel_session *session,
 		enum tracker_type tracker_type, int id)
 {
-	struct lttng_id_tracker *tracker;
+	struct lttng_kernel_id_tracker *tracker;
 	int ret;
 
 	tracker = get_tracker(session, tracker_type);
@@ -1692,7 +1700,7 @@ int lttng_session_track_id(struct lttng_kernel_session *session,
 int lttng_session_untrack_id(struct lttng_kernel_session *session,
 		enum tracker_type tracker_type, int id)
 {
-	struct lttng_id_tracker *tracker;
+	struct lttng_kernel_id_tracker *tracker;
 	int ret;
 
 	tracker = get_tracker(session, tracker_type);
@@ -1714,8 +1722,8 @@ int lttng_session_untrack_id(struct lttng_kernel_session *session,
 static
 void *id_list_start(struct seq_file *m, loff_t *pos)
 {
-	struct lttng_id_tracker *id_tracker = m->private;
-	struct lttng_id_tracker_rcu *id_tracker_p = id_tracker->p;
+	struct lttng_kernel_id_tracker *id_tracker = m->private;
+	struct lttng_kernel_id_tracker_rcu *id_tracker_p = id_tracker->p;
 	struct lttng_id_hash_node *e;
 	int iter = 0, i;
 
@@ -1744,8 +1752,8 @@ void *id_list_start(struct seq_file *m, loff_t *pos)
 static
 void *id_list_next(struct seq_file *m, void *p, loff_t *ppos)
 {
-	struct lttng_id_tracker *id_tracker = m->private;
-	struct lttng_id_tracker_rcu *id_tracker_p = id_tracker->p;
+	struct lttng_kernel_id_tracker *id_tracker = m->private;
+	struct lttng_kernel_id_tracker_rcu *id_tracker_p = id_tracker->p;
 	struct lttng_id_hash_node *e;
 	int iter = 0, i;
 
@@ -1779,8 +1787,8 @@ void id_list_stop(struct seq_file *m, void *p)
 static
 int id_list_show(struct seq_file *m, void *p)
 {
-	struct lttng_id_tracker *id_tracker = m->private;
-	struct lttng_id_tracker_rcu *id_tracker_p = id_tracker->p;
+	struct lttng_kernel_id_tracker *id_tracker = m->private;
+	struct lttng_kernel_id_tracker_rcu *id_tracker_p = id_tracker->p;
 	int id;
 
 	if (p == id_tracker_p) {
@@ -1791,7 +1799,7 @@ int id_list_show(struct seq_file *m, void *p)
 
 		id = lttng_id_tracker_get_node_id(e);
 	}
-	switch (id_tracker->tracker_type) {
+	switch (id_tracker->priv->tracker_type) {
 	case TRACKER_PID:
 		seq_printf(m,	"process { pid = %d; };\n", id);
 		break;
@@ -1834,13 +1842,13 @@ static
 int lttng_tracker_ids_list_release(struct inode *inode, struct file *file)
 {
 	struct seq_file *m = file->private_data;
-	struct lttng_id_tracker *id_tracker = m->private;
+	struct lttng_kernel_id_tracker *id_tracker = m->private;
 	int ret;
 
 	WARN_ON_ONCE(!id_tracker);
 	ret = seq_release(inode, file);
 	if (!ret)
-		fput(id_tracker->session->priv->file);
+		fput(id_tracker->priv->session->priv->file);
 	return ret;
 }
 
