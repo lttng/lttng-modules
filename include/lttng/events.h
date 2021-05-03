@@ -316,35 +316,6 @@ struct lttng_kernel_probe_desc {
 	int lazy;				/* lazy registration */
 };
 
-struct lttng_krp;				/* Kretprobe handling */
-
-struct lttng_uprobe_handler {
-	struct lttng_kernel_event_common *event;
-	loff_t offset;
-	struct uprobe_consumer up_consumer;
-	struct list_head node;
-};
-
-struct lttng_kprobe {
-	struct kprobe kp;
-	char *symbol_name;
-};
-
-struct lttng_uprobe {
-	struct inode *inode;
-	struct list_head head;
-};
-
-enum lttng_syscall_entryexit {
-	LTTNG_SYSCALL_ENTRY,
-	LTTNG_SYSCALL_EXIT,
-};
-
-enum lttng_syscall_abi {
-	LTTNG_SYSCALL_ABI_NATIVE,
-	LTTNG_SYSCALL_ABI_COMPAT,
-};
-
 /*
  * Result of the run_filter() callback.
  */
