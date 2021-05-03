@@ -111,6 +111,54 @@ struct lttng_event_notifier_enabler {
 	uint64_t num_captures;
 };
 
+struct lttng_ctx_value {
+	union {
+		int64_t s64;
+		const char *str;
+		double d;
+	} u;
+};
+
+/*
+ * We need to keep this perf counter field separately from struct
+ * lttng_kernel_ctx_field because cpu hotplug needs fixed-location addresses.
+ */
+struct lttng_perf_counter_field {
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
+	struct lttng_cpuhp_node cpuhp_prepare;
+	struct lttng_cpuhp_node cpuhp_online;
+#else
+	struct notifier_block nb;
+	int hp_enable;
+#endif
+	struct perf_event_attr *attr;
+	struct perf_event **e;	/* per-cpu array */
+	char *name;
+	struct lttng_kernel_event_field *event_field;
+};
+
+struct lttng_kernel_ctx_field {
+	const struct lttng_kernel_event_field *event_field;
+	size_t (*get_size)(void *priv, struct lttng_probe_ctx *probe_ctx,
+			size_t offset);
+	void (*record)(void *priv, struct lttng_probe_ctx *probe_ctx,
+			struct lib_ring_buffer_ctx *ctx,
+			struct lttng_channel *chan);
+	void (*get_value)(void *priv, struct lttng_probe_ctx *probe_ctx,
+			struct lttng_ctx_value *value);
+	void (*destroy)(void *priv);
+	void *priv;
+};
+
+struct lttng_kernel_ctx {
+	struct lttng_kernel_ctx_field *fields;
+	unsigned int nr_fields;
+	unsigned int allocated_fields;
+	size_t largest_align;	/* in bytes */
+};
+
+extern struct lttng_kernel_ctx *lttng_static_ctx;
+
 static inline
 const struct lttng_kernel_type_integer *lttng_kernel_get_type_integer(const struct lttng_kernel_type_common *type)
 {
@@ -203,5 +251,195 @@ struct lttng_enabler *lttng_event_notifier_enabler_as_enabler(
 {
 	return &event_notifier_enabler->base;
 }
+
+int lttng_context_init(void);
+void lttng_context_exit(void);
+int lttng_kernel_context_append(struct lttng_kernel_ctx **ctx_p,
+		const struct lttng_kernel_ctx_field *f);
+void lttng_kernel_context_remove_last(struct lttng_kernel_ctx **ctx_p);
+struct lttng_kernel_ctx_field *lttng_kernel_get_context_field_from_index(struct lttng_kernel_ctx *ctx,
+		size_t index);
+int lttng_kernel_find_context(struct lttng_kernel_ctx *ctx, const char *name);
+int lttng_kernel_get_context_index(struct lttng_kernel_ctx *ctx, const char *name);
+void lttng_kernel_destroy_context(struct lttng_kernel_ctx *ctx);
+int lttng_add_pid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_cpu_id_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_procname_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_prio_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_nice_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_vpid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_tid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_vtid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_ppid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_vppid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_hostname_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_interruptible_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_need_reschedule_to_ctx(struct lttng_kernel_ctx **ctx);
+#if defined(CONFIG_PREEMPT_RT_FULL) || defined(CONFIG_PREEMPT)
+int lttng_add_preemptible_to_ctx(struct lttng_kernel_ctx **ctx);
+#else
+static inline
+int lttng_add_preemptible_to_ctx(struct lttng_kernel_ctx **ctx)
+{
+	return -ENOSYS;
+}
+#endif
+#ifdef CONFIG_PREEMPT_RT_FULL
+int lttng_add_migratable_to_ctx(struct lttng_kernel_ctx **ctx);
+#else
+static inline
+int lttng_add_migratable_to_ctx(struct lttng_kernel_ctx **ctx)
+{
+	return -ENOSYS;
+}
+#endif
+
+int lttng_add_callstack_to_ctx(struct lttng_kernel_ctx **ctx, int type);
+
+#if defined(CONFIG_CGROUPS) && \
+	((LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,6,0)) || \
+	 LTTNG_UBUNTU_KERNEL_RANGE(4,4,0,0, 4,5,0,0))
+int lttng_add_cgroup_ns_to_ctx(struct lttng_kernel_ctx **ctx);
+#else
+static inline
+int lttng_add_cgroup_ns_to_ctx(struct lttng_kernel_ctx **ctx)
+{
+	return -ENOSYS;
+}
+#endif
+
+#if defined(CONFIG_IPC_NS) && \
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
+int lttng_add_ipc_ns_to_ctx(struct lttng_kernel_ctx **ctx);
+#else
+static inline
+int lttng_add_ipc_ns_to_ctx(struct lttng_kernel_ctx **ctx)
+{
+	return -ENOSYS;
+}
+#endif
+
+#if !defined(LTTNG_MNT_NS_MISSING_HEADER) && \
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
+int lttng_add_mnt_ns_to_ctx(struct lttng_kernel_ctx **ctx);
+#else
+static inline
+int lttng_add_mnt_ns_to_ctx(struct lttng_kernel_ctx **ctx)
+{
+	return -ENOSYS;
+}
+#endif
+
+#if defined(CONFIG_NET_NS) && \
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
+int lttng_add_net_ns_to_ctx(struct lttng_kernel_ctx **ctx);
+#else
+static inline
+int lttng_add_net_ns_to_ctx(struct lttng_kernel_ctx **ctx)
+{
+	return -ENOSYS;
+}
+#endif
+
+#if defined(CONFIG_PID_NS) && \
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
+int lttng_add_pid_ns_to_ctx(struct lttng_kernel_ctx **ctx);
+#else
+static inline
+int lttng_add_pid_ns_to_ctx(struct lttng_kernel_ctx **ctx)
+{
+	return -ENOSYS;
+}
+#endif
+
+#if defined(CONFIG_USER_NS) && \
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
+int lttng_add_user_ns_to_ctx(struct lttng_kernel_ctx **ctx);
+#else
+static inline
+int lttng_add_user_ns_to_ctx(struct lttng_kernel_ctx **ctx)
+{
+	return -ENOSYS;
+}
+#endif
+
+#if defined(CONFIG_UTS_NS) && \
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
+int lttng_add_uts_ns_to_ctx(struct lttng_kernel_ctx **ctx);
+#else
+static inline
+int lttng_add_uts_ns_to_ctx(struct lttng_kernel_ctx **ctx)
+{
+	return -ENOSYS;
+}
+#endif
+
+#if defined(CONFIG_TIME_NS) && \
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
+int lttng_add_time_ns_to_ctx(struct lttng_kernel_ctx **ctx);
+#else
+static inline
+int lttng_add_time_ns_to_ctx(struct lttng_kernel_ctx **ctx)
+{
+	return -ENOSYS;
+}
+#endif
+
+int lttng_add_uid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_euid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_suid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_gid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_egid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_sgid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_vuid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_veuid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_vsuid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_vgid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_vegid_to_ctx(struct lttng_kernel_ctx **ctx);
+int lttng_add_vsgid_to_ctx(struct lttng_kernel_ctx **ctx);
+
+#if defined(CONFIG_PERF_EVENTS)
+int lttng_add_perf_counter_to_ctx(uint32_t type,
+				  uint64_t config,
+				  const char *name,
+				  struct lttng_kernel_ctx **ctx);
+int lttng_cpuhp_perf_counter_online(unsigned int cpu,
+		struct lttng_cpuhp_node *node);
+int lttng_cpuhp_perf_counter_dead(unsigned int cpu,
+		struct lttng_cpuhp_node *node);
+#else
+static inline
+int lttng_add_perf_counter_to_ctx(uint32_t type,
+				  uint64_t config,
+				  const char *name,
+				  struct lttng_kernel_ctx **ctx)
+{
+	return -ENOSYS;
+}
+static inline
+int lttng_cpuhp_perf_counter_online(unsigned int cpu,
+		struct lttng_cpuhp_node *node)
+{
+	return 0;
+}
+static inline
+int lttng_cpuhp_perf_counter_dead(unsigned int cpu,
+		struct lttng_cpuhp_node *node)
+{
+	return 0;
+}
+#endif
+
+
+
+#define lttng_kernel_static_ctx_field(_event_field, _get_size, _record, _get_value, _destroy, _priv)	\
+	__LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_ctx_field, {					\
+		.event_field = (_event_field),								\
+		.get_size = (_get_size),								\
+		.record = (_record),									\
+		.get_value = (_get_value),								\
+		.destroy = (_destroy),									\
+		.priv = (_priv),									\
+	})
 
 #endif /* _LTTNG_EVENTS_INTERNAL_H */
