@@ -2677,7 +2677,7 @@ void lttng_session_sync_event_enablers(struct lttng_session *session)
 	list_for_each_entry(event_recorder_priv, &session->events, node) {
 		struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
 		struct lttng_enabler_ref *enabler_ref;
-		struct lttng_bytecode_runtime *runtime;
+		struct lttng_kernel_bytecode_runtime *runtime;
 		int enabled = 0, has_enablers_without_filter_bytecode = 0;
 		int nr_filters = 0;
 
@@ -2771,7 +2771,7 @@ void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group 
 	list_for_each_entry(event_notifier_priv, &event_notifier_group->event_notifiers_head, node) {
 		struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
 		struct lttng_enabler_ref *enabler_ref;
-		struct lttng_bytecode_runtime *runtime;
+		struct lttng_kernel_bytecode_runtime *runtime;
 		int enabled = 0, has_enablers_without_filter_bytecode = 0;
 		int nr_filters = 0, nr_captures = 0;
 

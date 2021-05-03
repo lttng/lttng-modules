@@ -411,7 +411,7 @@ static
 int bytecode_is_linked(struct lttng_kernel_bytecode_node *bytecode,
 		struct list_head *bytecode_runtime_head)
 {
-	struct lttng_bytecode_runtime *bc_runtime;
+	struct lttng_kernel_bytecode_runtime *bc_runtime;
 
 	list_for_each_entry(bc_runtime, bytecode_runtime_head, node) {
 		if (bc_runtime->bc == bytecode)
@@ -500,7 +500,7 @@ alloc_error:
 	return ret;
 }
 
-void lttng_bytecode_sync_state(struct lttng_bytecode_runtime *runtime)
+void lttng_bytecode_sync_state(struct lttng_kernel_bytecode_runtime *runtime)
 {
 	struct lttng_kernel_bytecode_node *bc = runtime->bc;
 
@@ -524,7 +524,7 @@ void lttng_enabler_link_bytecode(const struct lttng_kernel_event_desc *event_des
 		struct list_head *enabler_bytecode_head)
 {
 	struct lttng_kernel_bytecode_node *enabler_bc;
-	struct lttng_bytecode_runtime *runtime;
+	struct lttng_kernel_bytecode_runtime *runtime;
 
 	WARN_ON_ONCE(!event_desc);
 

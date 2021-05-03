@@ -34,9 +34,9 @@ do {								\
 } while (0)
 #endif
 
-/* Linked bytecode. Child of struct lttng_bytecode_runtime. */
+/* Linked bytecode. Child of struct lttng_kernel_bytecode_runtime. */
 struct bytecode_runtime {
-	struct lttng_bytecode_runtime p;
+	struct lttng_kernel_bytecode_runtime p;
 	size_t data_len;
 	size_t data_alloc_len;
 	char *data;
@@ -284,17 +284,17 @@ struct lttng_interpreter_output {
 
 const char *lttng_bytecode_print_op(enum bytecode_op op);
 
-void lttng_bytecode_sync_state(struct lttng_bytecode_runtime *runtime);
+void lttng_bytecode_sync_state(struct lttng_kernel_bytecode_runtime *runtime);
 int lttng_bytecode_validate(struct bytecode_runtime *bytecode);
 int lttng_bytecode_specialize(const struct lttng_kernel_event_desc *event_desc,
 		struct bytecode_runtime *bytecode);
 
-int lttng_bytecode_interpret_error(struct lttng_bytecode_runtime *bytecode_runtime,
+int lttng_bytecode_interpret_error(struct lttng_kernel_bytecode_runtime *bytecode_runtime,
 		const char *stack_data,
 		struct lttng_probe_ctx *probe_ctx,
 		void *ctx);
 
-int lttng_bytecode_interpret(struct lttng_bytecode_runtime *kernel_bytecode,
+int lttng_bytecode_interpret(struct lttng_kernel_bytecode_runtime *kernel_bytecode,
 		const char *interpreter_stack_data,
 		struct lttng_probe_ctx *lttng_probe_ctx,
 		void *caller_ctx);
