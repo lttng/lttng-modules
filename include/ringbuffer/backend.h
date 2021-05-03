@@ -72,7 +72,7 @@ lib_ring_buffer_read_offset_address(struct lib_ring_buffer_backend *bufb,
  */
 static inline __attribute__((always_inline))
 void lib_ring_buffer_write(const struct lib_ring_buffer_config *config,
-			   struct lib_ring_buffer_ctx *ctx,
+			   struct lttng_kernel_ring_buffer_ctx *ctx,
 			   const void *src, size_t len)
 {
 	struct lib_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
@@ -113,7 +113,7 @@ void lib_ring_buffer_write(const struct lib_ring_buffer_config *config,
  */
 static inline
 void lib_ring_buffer_memset(const struct lib_ring_buffer_config *config,
-			    struct lib_ring_buffer_ctx *ctx, int c, size_t len)
+			    struct lttng_kernel_ring_buffer_ctx *ctx, int c, size_t len)
 {
 
 	struct lib_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
@@ -210,7 +210,7 @@ size_t lib_ring_buffer_do_strcpy_from_user_inatomic(const struct lib_ring_buffer
  */
 static inline
 void lib_ring_buffer_strcpy(const struct lib_ring_buffer_config *config,
-			   struct lib_ring_buffer_ctx *ctx,
+			   struct lttng_kernel_ring_buffer_ctx *ctx,
 			   const char *src, size_t len, int pad)
 {
 	struct lib_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
@@ -268,7 +268,7 @@ void lib_ring_buffer_strcpy(const struct lib_ring_buffer_config *config,
  */
 static inline __attribute__((always_inline))
 void lib_ring_buffer_copy_from_user_inatomic(const struct lib_ring_buffer_config *config,
-				    struct lib_ring_buffer_ctx *ctx,
+				    struct lttng_kernel_ring_buffer_ctx *ctx,
 				    const void __user *src, size_t len)
 {
 	struct lib_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
@@ -335,7 +335,7 @@ fill_buffer:
  */
 static inline
 void lib_ring_buffer_strcpy_from_user_inatomic(const struct lib_ring_buffer_config *config,
-		struct lib_ring_buffer_ctx *ctx,
+		struct lttng_kernel_ring_buffer_ctx *ctx,
 		const void __user *src, size_t len, int pad)
 {
 	struct lib_ring_buffer_backend *bufb = &ctx->priv.buf->backend;

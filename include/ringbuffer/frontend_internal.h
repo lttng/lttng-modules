@@ -134,7 +134,7 @@ int last_tsc_overflow(const struct lib_ring_buffer_config *config,
 #endif
 
 extern
-int lib_ring_buffer_reserve_slow(struct lib_ring_buffer_ctx *ctx,
+int lib_ring_buffer_reserve_slow(struct lttng_kernel_ring_buffer_ctx *ctx,
 		void *client_ctx);
 
 extern

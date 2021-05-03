@@ -35,7 +35,7 @@ size_t uts_ns_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, siz
 
 static
 void uts_ns_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
-		 struct lib_ring_buffer_ctx *ctx,
+		 struct lttng_kernel_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
 	unsigned int uts_ns_inum = 0;

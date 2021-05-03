@@ -1080,7 +1080,7 @@ static void __event_probe__##_name(_data_proto)						\
 		struct lttng_kernel_event_recorder *__event_recorder =			\
 			container_of(__event, struct lttng_kernel_event_recorder, parent); \
 		struct lttng_channel *__chan = __event_recorder->chan;			\
-		struct lib_ring_buffer_ctx __ctx;					\
+		struct lttng_kernel_ring_buffer_ctx __ctx;				\
 		ssize_t __event_len;							\
 		size_t __event_align;							\
 		int __ret;								\

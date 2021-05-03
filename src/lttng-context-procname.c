@@ -34,7 +34,7 @@ size_t procname_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, s
  */
 static
 void procname_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
-		 struct lib_ring_buffer_ctx *ctx,
+		 struct lttng_kernel_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
 	chan->ops->event_write(ctx, current->comm, sizeof(current->comm));

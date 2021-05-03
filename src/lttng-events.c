@@ -2852,7 +2852,7 @@ void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group 
 int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 		struct channel *chan, bool *coherent)
 {
-	struct lib_ring_buffer_ctx ctx;
+	struct lttng_kernel_ring_buffer_ctx ctx;
 	int ret = 0;
 	size_t len, reserve_len;
 

@@ -60,7 +60,7 @@ int lttng_kprobes_event_handler_pre(struct kprobe *p, struct pt_regs *regs)
 		struct lttng_kernel_event_recorder *event_recorder =
 			container_of(event, struct lttng_kernel_event_recorder, parent);
 		struct lttng_channel *chan = event_recorder->chan;
-		struct lib_ring_buffer_ctx ctx;
+		struct lttng_kernel_ring_buffer_ctx ctx;
 		int ret;
 
 		lib_ring_buffer_ctx_init(&ctx, event_recorder, sizeof(data),

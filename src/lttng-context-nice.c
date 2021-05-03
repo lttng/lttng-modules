@@ -28,7 +28,7 @@ size_t nice_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, size_
 
 static
 void nice_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
-		struct lib_ring_buffer_ctx *ctx,
+		struct lttng_kernel_ring_buffer_ctx *ctx,
 		struct lttng_channel *chan)
 {
 	int nice;

@@ -28,7 +28,7 @@
 struct lttng_channel;
 struct lttng_session;
 struct lttng_metadata_cache;
-struct lib_ring_buffer_ctx;
+struct lttng_kernel_ring_buffer_ctx;
 struct perf_event;
 struct perf_event_attr;
 struct lib_ring_buffer_config;
@@ -374,17 +374,17 @@ struct lttng_kernel_event_notifier {
 struct lttng_kernel_channel_buffer_ops {
 	struct lttng_kernel_channel_buffer_ops_private *priv;	/* Private channel buffer ops interface. */
 
-	int (*event_reserve)(struct lib_ring_buffer_ctx *ctx);
-	void (*event_commit)(struct lib_ring_buffer_ctx *ctx);
-	void (*event_write)(struct lib_ring_buffer_ctx *ctx, const void *src,
+	int (*event_reserve)(struct lttng_kernel_ring_buffer_ctx *ctx);
+	void (*event_commit)(struct lttng_kernel_ring_buffer_ctx *ctx);
+	void (*event_write)(struct lttng_kernel_ring_buffer_ctx *ctx, const void *src,
 			    size_t len);
-	void (*event_write_from_user)(struct lib_ring_buffer_ctx *ctx,
+	void (*event_write_from_user)(struct lttng_kernel_ring_buffer_ctx *ctx,
 				      const void *src, size_t len);
-	void (*event_memset)(struct lib_ring_buffer_ctx *ctx,
+	void (*event_memset)(struct lttng_kernel_ring_buffer_ctx *ctx,
 			     int c, size_t len);
-	void (*event_strcpy)(struct lib_ring_buffer_ctx *ctx, const char *src,
+	void (*event_strcpy)(struct lttng_kernel_ring_buffer_ctx *ctx, const char *src,
 			     size_t len);
-	void (*event_strcpy_from_user)(struct lib_ring_buffer_ctx *ctx,
+	void (*event_strcpy_from_user)(struct lttng_kernel_ring_buffer_ctx *ctx,
 				       const char __user *src, size_t len);
 };
 

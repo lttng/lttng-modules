@@ -19,7 +19,7 @@
 struct lib_ring_buffer;
 struct channel;
 struct lib_ring_buffer_config;
-struct lib_ring_buffer_ctx;
+struct lttng_kernel_ring_buffer_ctx;
 struct lttng_kernel_ring_buffer_ctx_private;
 
 /*
@@ -36,7 +36,7 @@ struct lib_ring_buffer_client_cb {
 	size_t (*record_header_size) (const struct lib_ring_buffer_config *config,
 				      struct channel *chan, size_t offset,
 				      size_t *pre_header_padding,
-				      struct lib_ring_buffer_ctx *ctx,
+				      struct lttng_kernel_ring_buffer_ctx *ctx,
 				      void *client_ctx);
 
 	/* Slow path only, at subbuffer switch */
@@ -198,7 +198,7 @@ struct lttng_kernel_ring_buffer_ctx_private {
  * lib_ring_buffer_try_discard_reserve(), lib_ring_buffer_align_ctx() and
  * lib_ring_buffer_write().
  */
-struct lib_ring_buffer_ctx {
+struct lttng_kernel_ring_buffer_ctx {
 	/* Private ring buffer context, set by reserve callback. */
 	struct lttng_kernel_ring_buffer_ctx_private priv;
 
@@ -221,7 +221,7 @@ struct lib_ring_buffer_ctx {
  * @largest_align: largest alignment within data payload types
  */
 static inline
-void lib_ring_buffer_ctx_init(struct lib_ring_buffer_ctx *ctx,
+void lib_ring_buffer_ctx_init(struct lttng_kernel_ring_buffer_ctx *ctx,
 			      void *client_priv,
 			      size_t data_size, int largest_align,
 			      struct lttng_kernel_probe_ctx *probe_ctx)
@@ -294,7 +294,7 @@ unsigned int lib_ring_buffer_align(size_t align_drift, size_t size_of_type)
  * @ctx: ring buffer context.
  */
 static inline
-void lib_ring_buffer_align_ctx(struct lib_ring_buffer_ctx *ctx,
+void lib_ring_buffer_align_ctx(struct lttng_kernel_ring_buffer_ctx *ctx,
 			   size_t alignment)
 {
 	ctx->priv.buf_offset += lib_ring_buffer_align(ctx->priv.buf_offset,

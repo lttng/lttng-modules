@@ -35,7 +35,7 @@ size_t pid_ns_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, siz
 
 static
 void pid_ns_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
-		 struct lib_ring_buffer_ctx *ctx,
+		 struct lttng_kernel_ring_buffer_ctx *ctx,
 		 struct lttng_channel *chan)
 {
 	struct pid_namespace *ns;

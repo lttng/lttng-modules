@@ -189,7 +189,7 @@ size_t lttng_callstack_sequence_get_size(void *priv, struct lttng_kernel_probe_c
 
 static
 void lttng_callstack_length_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
-			struct lib_ring_buffer_ctx *ctx,
+			struct lttng_kernel_ring_buffer_ctx *ctx,
 			struct lttng_channel *chan)
 {
 	int cpu = ctx->priv.reserve_cpu;
@@ -209,7 +209,7 @@ void lttng_callstack_length_record(void *priv, struct lttng_kernel_probe_ctx *pr
 }
 static
 void lttng_callstack_sequence_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
-			struct lib_ring_buffer_ctx *ctx,
+			struct lttng_kernel_ring_buffer_ctx *ctx,
 			struct lttng_channel *chan)
 {
 	int cpu = ctx->priv.reserve_cpu;
