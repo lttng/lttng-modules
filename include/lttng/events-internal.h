@@ -344,6 +344,13 @@ struct lttng_counter {
 	struct lttng_counter_ops *ops;
 };
 
+#define LTTNG_EVENT_NOTIFIER_HT_BITS		12
+#define LTTNG_EVENT_NOTIFIER_HT_SIZE		(1U << LTTNG_EVENT_NOTIFIER_HT_BITS)
+
+struct lttng_event_notifier_ht {
+	struct hlist_head table[LTTNG_EVENT_NOTIFIER_HT_SIZE];
+};
+
 struct lttng_event_notifier_group {
 	struct file *file;		/* File associated to event notifier group */
 	struct file *notif_file;	/* File used to expose notifications to userspace. */
@@ -393,6 +400,13 @@ struct lttng_counter_transport {
 	struct module *owner;
 	struct list_head node;
 	struct lttng_counter_ops ops;
+};
+
+#define LTTNG_EVENT_HT_BITS		12
+#define LTTNG_EVENT_HT_SIZE		(1U << LTTNG_EVENT_HT_BITS)
+
+struct lttng_event_ht {
+	struct hlist_head table[LTTNG_EVENT_HT_SIZE];
 };
 
 struct lttng_kernel_session_private {
