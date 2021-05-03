@@ -2449,7 +2449,7 @@ static
 int lttng_enabler_attach_filter_bytecode(struct lttng_enabler *enabler,
 		struct lttng_kernel_abi_filter_bytecode __user *bytecode)
 {
-	struct lttng_bytecode_node *bytecode_node;
+	struct lttng_kernel_bytecode_node *bytecode_node;
 	uint32_t bytecode_len;
 	int ret;
 
@@ -2509,7 +2509,7 @@ int lttng_event_add_callsite(struct lttng_kernel_event_common *event,
 static
 void lttng_enabler_destroy(struct lttng_enabler *enabler)
 {
-	struct lttng_bytecode_node *filter_node, *tmp_filter_node;
+	struct lttng_kernel_bytecode_node *filter_node, *tmp_filter_node;
 
 	/* Destroy filter bytecode */
 	list_for_each_entry_safe(filter_node, tmp_filter_node,
@@ -2604,7 +2604,7 @@ int lttng_event_notifier_enabler_attach_capture_bytecode(
 		struct lttng_event_notifier_enabler *event_notifier_enabler,
 		struct lttng_kernel_abi_capture_bytecode __user *bytecode)
 {
-	struct lttng_bytecode_node *bytecode_node;
+	struct lttng_kernel_bytecode_node *bytecode_node;
 	struct lttng_enabler *enabler =
 			lttng_event_notifier_enabler_as_enabler(event_notifier_enabler);
 	uint32_t bytecode_len;

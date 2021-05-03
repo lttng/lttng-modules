@@ -85,7 +85,7 @@ struct lttng_kernel_bytecode_filter_ctx {
 struct lttng_enabler {
 	enum lttng_enabler_format_type format_type;
 
-	/* head list of struct lttng_bytecode_node */
+	/* head list of struct lttng_kernel_bytecode_node */
 	struct list_head filter_bytecode_head;
 
 	struct lttng_kernel_abi_event event_param;
@@ -106,7 +106,7 @@ struct lttng_event_notifier_enabler {
 	struct list_head node;	/* List of event_notifier enablers */
 	struct lttng_event_notifier_group *group;
 
-	/* head list of struct lttng_bytecode_node */
+	/* head list of struct lttng_kernel_bytecode_node */
 	struct list_head capture_bytecode_head;
 	uint64_t num_captures;
 };

@@ -408,7 +408,7 @@ int apply_reloc(const struct lttng_kernel_event_desc *event_desc,
 }
 
 static
-int bytecode_is_linked(struct lttng_bytecode_node *bytecode,
+int bytecode_is_linked(struct lttng_kernel_bytecode_node *bytecode,
 		struct list_head *bytecode_runtime_head)
 {
 	struct lttng_bytecode_runtime *bc_runtime;
@@ -427,7 +427,7 @@ int bytecode_is_linked(struct lttng_bytecode_node *bytecode,
 static
 int link_bytecode(const struct lttng_kernel_event_desc *event_desc,
 		struct lttng_kernel_ctx *ctx,
-		struct lttng_bytecode_node *bytecode,
+		struct lttng_kernel_bytecode_node *bytecode,
 		struct list_head *bytecode_runtime_head,
 		struct list_head *insert_loc)
 {
@@ -502,7 +502,7 @@ alloc_error:
 
 void lttng_bytecode_sync_state(struct lttng_bytecode_runtime *runtime)
 {
-	struct lttng_bytecode_node *bc = runtime->bc;
+	struct lttng_kernel_bytecode_node *bc = runtime->bc;
 
 	if (!bc->enabler->enabled || runtime->link_failed)
 		runtime->interpreter_func = lttng_bytecode_interpret_error;
@@ -523,7 +523,7 @@ void lttng_enabler_link_bytecode(const struct lttng_kernel_event_desc *event_des
 		struct list_head *instance_bytecode_head,
 		struct list_head *enabler_bytecode_head)
 {
-	struct lttng_bytecode_node *enabler_bc;
+	struct lttng_kernel_bytecode_node *enabler_bc;
 	struct lttng_bytecode_runtime *runtime;
 
 	WARN_ON_ONCE(!event_desc);
@@ -579,7 +579,7 @@ void lttng_enabler_link_bytecode(const struct lttng_kernel_event_desc *event_des
  * We own the filter_bytecode if we return success.
  */
 int lttng_filter_enabler_attach_bytecode(struct lttng_enabler *enabler,
-		struct lttng_bytecode_node *filter_bytecode)
+		struct lttng_kernel_bytecode_node *filter_bytecode)
 {
 	list_add(&filter_bytecode->node, &enabler->filter_bytecode_head);
 	return 0;
@@ -587,7 +587,7 @@ int lttng_filter_enabler_attach_bytecode(struct lttng_enabler *enabler,
 
 void lttng_free_enabler_filter_bytecode(struct lttng_enabler *enabler)
 {
-	struct lttng_bytecode_node *filter_bytecode, *tmp;
+	struct lttng_kernel_bytecode_node *filter_bytecode, *tmp;
 
 	list_for_each_entry_safe(filter_bytecode, tmp,
 			&enabler->filter_bytecode_head, node) {
