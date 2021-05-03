@@ -20,7 +20,7 @@ struct lttng_kernel_event_common_private {
 	uint64_t user_token;
 
 	int has_enablers_without_filter_bytecode;
-	/* list of struct lttng_bytecode_runtime, sorted by seqnum */
+	/* list of struct lttng_kernel_bytecode_runtime, sorted by seqnum */
 	struct list_head filter_bytecode_runtime_head;
 	enum lttng_kernel_abi_instrumentation instrumentation;
 	/* Selected by instrumentation */

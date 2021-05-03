@@ -209,7 +209,7 @@ int stack_strcmp(struct estack *stack, int top, const char *cmp_type)
 }
 
 int lttng_bytecode_interpret_error(
-	struct lttng_bytecode_runtime *bytecode_runtime __attribute__((unused)),
+	struct lttng_kernel_bytecode_runtime *bytecode_runtime __attribute__((unused)),
 	const char *stack_data __attribute__((unused)),
 	struct lttng_probe_ctx *probe_ctx __attribute__((unused)),
 	void *ctx __attribute__((unused)))
@@ -756,7 +756,7 @@ void dbg_load_ref_user_str_printk(const struct estack_entry *user_str_reg)
  * For CAPTURE bytecode: expect a struct lttng_interpreter_output *
  * as @ctx argument.
  */
-int lttng_bytecode_interpret(struct lttng_bytecode_runtime *kernel_bytecode,
+int lttng_bytecode_interpret(struct lttng_kernel_bytecode_runtime *kernel_bytecode,
 		const char *interpreter_stack_data,
 		struct lttng_probe_ctx *lttng_probe_ctx,
 		void *caller_ctx)
@@ -1852,7 +1852,7 @@ int lttng_kernel_interpret_event_filter(const struct lttng_kernel_event_common *
 		struct lttng_probe_ctx *probe_ctx,
 		void *event_filter_ctx __attribute__((unused)))
 {
-	struct lttng_bytecode_runtime *filter_bc_runtime;
+	struct lttng_kernel_bytecode_runtime *filter_bc_runtime;
 	struct list_head *filter_bytecode_runtime_head = &event->priv->filter_bytecode_runtime_head;
 	struct lttng_kernel_bytecode_filter_ctx bytecode_filter_ctx;
 	bool filter_record = false;

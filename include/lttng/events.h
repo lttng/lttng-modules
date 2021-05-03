@@ -337,11 +337,11 @@ struct lttng_kernel_bytecode_node {
 
 struct lttng_interpreter_output;
 
-struct lttng_bytecode_runtime {
+struct lttng_kernel_bytecode_runtime {
 	/* Associated bytecode */
 	enum lttng_kernel_bytecode_type type;
 	struct lttng_kernel_bytecode_node *bc;
-	int (*interpreter_func)(struct lttng_bytecode_runtime *kernel_bytecode,
+	int (*interpreter_func)(struct lttng_kernel_bytecode_runtime *kernel_bytecode,
 				const char *interpreter_stack_data,
 				struct lttng_probe_ctx *lttng_probe_ctx,
 				void *caller_ctx);

@@ -443,7 +443,7 @@ void lttng_event_notifier_notification_send(struct lttng_kernel_event_notifier *
 	}
 
 	if (unlikely(notif_ctx->eval_capture)) {
-		struct lttng_bytecode_runtime *capture_bc_runtime;
+		struct lttng_kernel_bytecode_runtime *capture_bc_runtime;
 
 		/*
 		 * Iterate over all the capture bytecodes. If the interpreter
