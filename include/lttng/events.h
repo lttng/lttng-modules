@@ -384,20 +384,6 @@ struct lttng_kernel_channel_buffer_ops {
 				       const char __user *src, size_t len);
 };
 
-#define LTTNG_EVENT_HT_BITS		12
-#define LTTNG_EVENT_HT_SIZE		(1U << LTTNG_EVENT_HT_BITS)
-
-struct lttng_event_ht {
-	struct hlist_head table[LTTNG_EVENT_HT_SIZE];
-};
-
-#define LTTNG_EVENT_NOTIFIER_HT_BITS		12
-#define LTTNG_EVENT_NOTIFIER_HT_SIZE		(1U << LTTNG_EVENT_NOTIFIER_HT_BITS)
-
-struct lttng_event_notifier_ht {
-	struct hlist_head table[LTTNG_EVENT_NOTIFIER_HT_SIZE];
-};
-
 struct lttng_channel {
 	unsigned int id;
 	struct channel *chan;		/* Channel buffers */
