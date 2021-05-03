@@ -20,7 +20,6 @@
 #include <lttng/types.h>
 #include <lttng/probe-user.h>
 #include <lttng/events.h>
-#include <lttng/events-internal.h>	/* TODO: remove this include after refactoring is done. */
 #include <lttng/tracer-core.h>
 #include <lttng/tp-mempool.h>
 
