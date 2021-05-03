@@ -29,19 +29,19 @@
 #endif
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_start,
-	TP_PROTO(struct lttng_session *session),
+	TP_PROTO(struct lttng_kernel_session *session),
 	TP_ARGS(session),
 	TP_FIELDS()
 )
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_end,
-	TP_PROTO(struct lttng_session *session),
+	TP_PROTO(struct lttng_kernel_session *session),
 	TP_ARGS(session),
 	TP_FIELDS()
 )
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_state,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		int type, int mode, int submode, int status,
 		struct files_struct *files),
@@ -70,7 +70,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_state,
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,6,0))
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_cgroup_ns,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		struct cgroup_namespace *cgroup_ns),
 	TP_ARGS(session, p, cgroup_ns),
@@ -82,7 +82,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_cgroup_ns,
 #endif
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_ipc_ns,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		struct ipc_namespace *ipc_ns),
 	TP_ARGS(session, p, ipc_ns),
@@ -96,7 +96,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_ipc_ns,
 
 #if !defined(LTTNG_MNT_NS_MISSING_HEADER)
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_mnt_ns,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		struct mnt_namespace *mnt_ns),
 	TP_ARGS(session, p, mnt_ns),
@@ -110,7 +110,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_mnt_ns,
 #endif
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_net_ns,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		struct net *net_ns),
 	TP_ARGS(session, p, net_ns),
@@ -123,7 +123,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_net_ns,
 )
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_pid_ns,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		struct pid_namespace *pid_ns),
 	TP_ARGS(session, p, pid_ns),
@@ -152,7 +152,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_pid_ns,
 )
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_user_ns,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		struct user_namespace *user_ns),
 	TP_ARGS(session, p, user_ns),
@@ -170,7 +170,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_user_ns,
 )
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_uts_ns,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		struct uts_namespace *uts_ns),
 	TP_ARGS(session, p, uts_ns),
@@ -184,7 +184,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_uts_ns,
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_time_ns,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
 		struct time_namespace *time_ns),
 	TP_ARGS(session, p, time_ns),
@@ -196,7 +196,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_time_ns,
 #endif
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_file_descriptor,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct files_struct *files,
 		int fd, const char *filename,
 		unsigned int flags, fmode_t fmode),
@@ -211,7 +211,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_file_descriptor,
 )
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_vm_map,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p, struct vm_area_struct *map,
 		unsigned long inode),
 	TP_ARGS(session, p, map, inode),
@@ -226,7 +226,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_vm_map,
 )
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_network_interface,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		struct net_device *dev, struct in_ifaddr *ifa),
 	TP_ARGS(session, dev, ifa),
 	TP_FIELDS(
@@ -237,7 +237,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_network_interface,
 )
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_block_device,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		dev_t dev, const char *diskname),
 	TP_ARGS(session, dev, diskname),
 	TP_FIELDS(
@@ -248,7 +248,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_block_device,
 
 /* Called with desc->lock held */
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_interrupt,
-	TP_PROTO(struct lttng_session *session,
+	TP_PROTO(struct lttng_kernel_session *session,
 		unsigned int irq, const char *chip_name,
 		struct irqaction *action),
 	TP_ARGS(session, irq, chip_name, action),
@@ -265,7 +265,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_interrupt,
 #define LTTNG_HAVE_STATEDUMP_CPU_TOPOLOGY
 
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_cpu_topology,
-	TP_PROTO(struct lttng_session *session, struct cpuinfo_x86 *c),
+	TP_PROTO(struct lttng_kernel_session *session, struct cpuinfo_x86 *c),
 	TP_ARGS(session, c),
 	TP_FIELDS(
 		ctf_string(architecture, "x86")

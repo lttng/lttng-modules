@@ -247,7 +247,7 @@ struct channel *_channel_create(const char *name,
 	struct channel *chan;
 
 	chan = channel_create(&client_config, name,
-			      lttng_chan->session->metadata_cache, buf_addr,
+			      lttng_chan->session->priv->metadata_cache, buf_addr,
 			      subbuf_size, num_subbuf, switch_timer_interval,
 			      read_timer_interval);
 	if (chan) {

@@ -21,7 +21,7 @@
 
 #include <ringbuffer/config.h>
 
-struct lttng_session;
+struct lttng_kernel_session;
 struct lttng_channel;
 struct lttng_event;
 
