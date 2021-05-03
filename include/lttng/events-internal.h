@@ -243,6 +243,58 @@ struct lttng_metadata_cache {
 	uint64_t version;		/* Current version of the metadata */
 };
 
+struct lttng_kernel_channel_buffer_ops_private {
+	struct lttng_kernel_channel_buffer_ops *pub;	/* Public channel buffer ops interface */
+
+	struct channel *(*channel_create)(const char *name,
+				void *priv,
+				void *buf_addr,
+				size_t subbuf_size, size_t num_subbuf,
+				unsigned int switch_timer_interval,
+				unsigned int read_timer_interval);
+	void (*channel_destroy)(struct channel *chan);
+	struct lib_ring_buffer *(*buffer_read_open)(struct channel *chan);
+	int (*buffer_has_read_closed_stream)(struct channel *chan);
+	void (*buffer_read_close)(struct lib_ring_buffer *buf);
+	/*
+	 * packet_avail_size returns the available size in the current
+	 * packet. Note that the size returned is only a hint, since it
+	 * may change due to concurrent writes.
+	 */
+	size_t (*packet_avail_size)(struct channel *chan);
+	wait_queue_head_t *(*get_writer_buf_wait_queue)(struct channel *chan, int cpu);
+	wait_queue_head_t *(*get_hp_wait_queue)(struct channel *chan);
+	int (*is_finalized)(struct channel *chan);
+	int (*is_disabled)(struct channel *chan);
+	int (*timestamp_begin) (const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *timestamp_begin);
+	int (*timestamp_end) (const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *timestamp_end);
+	int (*events_discarded) (const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *events_discarded);
+	int (*content_size) (const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *content_size);
+	int (*packet_size) (const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *packet_size);
+	int (*stream_id) (const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *stream_id);
+	int (*current_timestamp) (const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *ts);
+	int (*sequence_number) (const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *seq);
+	int (*instance_id) (const struct lib_ring_buffer_config *config,
+			struct lib_ring_buffer *bufb,
+			uint64_t *id);
+};
+
 extern struct lttng_kernel_ctx *lttng_static_ctx;
 
 static inline

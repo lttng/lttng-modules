@@ -371,17 +371,9 @@ struct lttng_kernel_event_notifier {
 		struct lttng_kernel_notification_ctx *notif_ctx);
 };
 
-struct lttng_channel_ops {
-	struct channel *(*channel_create)(const char *name,
-				void *priv,
-				void *buf_addr,
-				size_t subbuf_size, size_t num_subbuf,
-				unsigned int switch_timer_interval,
-				unsigned int read_timer_interval);
-	void (*channel_destroy)(struct channel *chan);
-	struct lib_ring_buffer *(*buffer_read_open)(struct channel *chan);
-	int (*buffer_has_read_closed_stream)(struct channel *chan);
-	void (*buffer_read_close)(struct lib_ring_buffer *buf);
+struct lttng_kernel_channel_buffer_ops {
+	struct lttng_kernel_channel_buffer_ops_private *priv;	/* Private channel buffer ops interface. */
+
 	int (*event_reserve)(struct lib_ring_buffer_ctx *ctx);
 	void (*event_commit)(struct lib_ring_buffer_ctx *ctx);
 	void (*event_write)(struct lib_ring_buffer_ctx *ctx, const void *src,
@@ -394,43 +386,6 @@ struct lttng_channel_ops {
 			     size_t len);
 	void (*event_strcpy_from_user)(struct lib_ring_buffer_ctx *ctx,
 				       const char __user *src, size_t len);
-	/*
-	 * packet_avail_size returns the available size in the current
-	 * packet. Note that the size returned is only a hint, since it
-	 * may change due to concurrent writes.
-	 */
-	size_t (*packet_avail_size)(struct channel *chan);
-	wait_queue_head_t *(*get_writer_buf_wait_queue)(struct channel *chan, int cpu);
-	wait_queue_head_t *(*get_hp_wait_queue)(struct channel *chan);
-	int (*is_finalized)(struct channel *chan);
-	int (*is_disabled)(struct channel *chan);
-	int (*timestamp_begin) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
-			uint64_t *timestamp_begin);
-	int (*timestamp_end) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
-			uint64_t *timestamp_end);
-	int (*events_discarded) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
-			uint64_t *events_discarded);
-	int (*content_size) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
-			uint64_t *content_size);
-	int (*packet_size) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
-			uint64_t *packet_size);
-	int (*stream_id) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
-			uint64_t *stream_id);
-	int (*current_timestamp) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
-			uint64_t *ts);
-	int (*sequence_number) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
-			uint64_t *seq);
-	int (*instance_id) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
-			uint64_t *id);
 };
 
 struct lttng_counter_ops {
@@ -459,7 +414,7 @@ struct lttng_transport {
 	char *name;
 	struct module *owner;
 	struct list_head node;
-	struct lttng_channel_ops ops;
+	struct lttng_kernel_channel_buffer_ops ops;
 };
 
 struct lttng_counter_transport {
@@ -495,7 +450,7 @@ struct lttng_channel {
 	struct file *file;		/* File associated to channel */
 	unsigned int free_event_id;	/* Next event ID to allocate */
 	struct list_head list;		/* Channel list */
-	struct lttng_channel_ops *ops;
+	struct lttng_kernel_channel_buffer_ops *ops;
 	struct lttng_transport *transport;
 	struct hlist_head *sc_table;	/* for syscall tracing */
 	struct hlist_head *compat_sc_table;
@@ -612,7 +567,7 @@ struct lttng_event_notifier_group {
 	struct list_head enablers_head; /* List of enablers */
 	struct list_head event_notifiers_head; /* List of event notifier */
 	struct lttng_event_notifier_ht event_notifiers_ht; /* Hash table of event notifiers */
-	struct lttng_channel_ops *ops;
+	struct lttng_kernel_channel_buffer_ops *ops;
 	struct lttng_transport *transport;
 	struct channel *chan;		/* Ring buffer channel for event notifier group. */
 	struct lib_ring_buffer *buf;	/* Ring buffer for event notifier group. */

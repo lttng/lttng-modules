@@ -291,7 +291,7 @@ struct lttng_event_notifier_group *lttng_event_notifier_group_create(void)
 	 * notifications.
 	 */
 	event_notifier_group->ops = &transport->ops;
-	event_notifier_group->chan = transport->ops.channel_create(
+	event_notifier_group->chan = transport->ops.priv->channel_create(
 			transport_name, event_notifier_group, NULL,
 			subbuf_size, num_subbuf, switch_timer_interval,
 			read_timer_interval);
@@ -422,7 +422,7 @@ void lttng_event_notifier_group_destroy(
 		event_notifier_group->error_counter = NULL;
 	}
 
-	event_notifier_group->ops->channel_destroy(event_notifier_group->chan);
+	event_notifier_group->ops->priv->channel_destroy(event_notifier_group->chan);
 	module_put(event_notifier_group->transport->owner);
 	list_del(&event_notifier_group->node);
 
@@ -758,7 +758,7 @@ struct lttng_channel *lttng_channel_create(struct lttng_session *session,
 	 * headers. Therefore the "chan" information used as input
 	 * should be already accessible.
 	 */
-	chan->chan = transport->ops.channel_create(transport_name,
+	chan->chan = transport->ops.priv->channel_create(transport_name,
 			chan, buf_addr, subbuf_size, num_subbuf,
 			switch_timer_interval, read_timer_interval);
 	if (!chan->chan)
@@ -790,7 +790,7 @@ active:
 static
 void _lttng_channel_destroy(struct lttng_channel *chan)
 {
-	chan->ops->channel_destroy(chan->chan);
+	chan->ops->priv->channel_destroy(chan->chan);
 	module_put(chan->transport->owner);
 	list_del(&chan->list);
 	lttng_kernel_destroy_context(chan->ctx);
@@ -2879,7 +2879,7 @@ int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 	if (!len)
 		goto end;
 	reserve_len = min_t(size_t,
-			stream->transport->ops.packet_avail_size(chan),
+			stream->transport->ops.priv->packet_avail_size(chan),
 			len);
 	lib_ring_buffer_ctx_init(&ctx, chan, reserve_len,
 			sizeof(char), NULL);
