@@ -295,6 +295,87 @@ struct lttng_kernel_channel_buffer_ops_private {
 			uint64_t *id);
 };
 
+struct lttng_counter_ops {
+	struct lib_counter *(*counter_create)(size_t nr_dimensions,
+			const size_t *max_nr_elem,	/* for each dimension */
+			int64_t global_sum_step);
+	void (*counter_destroy)(struct lib_counter *counter);
+	int (*counter_add)(struct lib_counter *counter, const size_t *dimension_indexes,
+			int64_t v);
+	/*
+	 * counter_read reads a specific cpu's counter if @cpu >= 0, or
+	 * the global aggregation counter if @cpu == -1.
+	 */
+	int (*counter_read)(struct lib_counter *counter, const size_t *dimension_indexes, int cpu,
+			 int64_t *value, bool *overflow, bool *underflow);
+	/*
+	 * counter_aggregate returns the total sum of all per-cpu counters and
+	 * the global aggregation counter.
+	 */
+	int (*counter_aggregate)(struct lib_counter *counter, const size_t *dimension_indexes,
+			int64_t *value, bool *overflow, bool *underflow);
+	int (*counter_clear)(struct lib_counter *counter, const size_t *dimension_indexes);
+};
+
+struct lttng_counter {
+	struct file *file;		/* File associated to counter. */
+	struct file *owner;
+	struct lttng_counter_transport *transport;
+	struct lib_counter *counter;
+	struct lttng_counter_ops *ops;
+};
+
+struct lttng_event_notifier_group {
+	struct file *file;		/* File associated to event notifier group */
+	struct file *notif_file;	/* File used to expose notifications to userspace. */
+	struct list_head node;		/* event notifier group list */
+	struct list_head enablers_head; /* List of enablers */
+	struct list_head event_notifiers_head; /* List of event notifier */
+	struct lttng_event_notifier_ht event_notifiers_ht; /* Hash table of event notifiers */
+	struct lttng_kernel_channel_buffer_ops *ops;
+	struct lttng_transport *transport;
+	struct channel *chan;		/* Ring buffer channel for event notifier group. */
+	struct lib_ring_buffer *buf;	/* Ring buffer for event notifier group. */
+	wait_queue_head_t read_wait;
+	struct irq_work wakeup_pending;	/* Pending wakeup irq work. */
+	struct lttng_kernel_event_notifier *sc_unknown;	/* for unknown syscalls */
+	struct lttng_kernel_event_notifier *sc_compat_unknown;
+
+	struct lttng_syscall_filter *sc_filter;
+
+	struct hlist_head *event_notifier_syscall_dispatch;
+	struct hlist_head *event_notifier_compat_syscall_dispatch;
+	struct hlist_head *event_notifier_exit_syscall_dispatch;
+	struct hlist_head *event_notifier_exit_compat_syscall_dispatch;
+
+	struct hlist_head event_notifier_unknown_syscall_dispatch;
+	struct hlist_head event_notifier_compat_unknown_syscall_dispatch;
+	struct hlist_head event_notifier_exit_unknown_syscall_dispatch;
+	struct hlist_head event_notifier_exit_compat_unknown_syscall_dispatch;
+
+	int syscall_all_entry;
+	int syscall_all_exit;
+
+	unsigned int sys_enter_registered:1, sys_exit_registered:1;
+
+	struct lttng_counter *error_counter;
+	size_t error_counter_len;
+};
+
+struct lttng_transport {
+	char *name;
+	struct module *owner;
+	struct list_head node;
+	struct lttng_kernel_channel_buffer_ops ops;
+};
+
+struct lttng_counter_transport {
+	char *name;
+	struct module *owner;
+	struct list_head node;
+	struct lttng_counter_ops ops;
+};
+
 extern struct lttng_kernel_ctx *lttng_static_ctx;
 
 static inline
