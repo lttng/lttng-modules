@@ -642,8 +642,8 @@ struct lttng_event_notifier_group {
 	size_t error_counter_len;
 };
 
-int lttng_probe_register(struct lttng_kernel_probe_desc *desc);
-void lttng_probe_unregister(struct lttng_kernel_probe_desc *desc);
+int lttng_kernel_probe_register(struct lttng_kernel_probe_desc *desc);
+void lttng_kernel_probe_unregister(struct lttng_kernel_probe_desc *desc);
 
 bool lttng_id_tracker_lookup(struct lttng_id_tracker_rcu *p, int id);
 
