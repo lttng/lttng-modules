@@ -11,6 +11,7 @@
 #include <linux/types.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
 #include <lttng/events.h>
+#include <lttng/events-internal.h>
 #include <lttng/tracer.h>
 
 static struct lttng_transport lttng_relay_transport;

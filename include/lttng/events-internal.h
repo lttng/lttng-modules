@@ -775,6 +775,139 @@ int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_common *event,
 }
 #endif
 
+void lttng_lock_sessions(void);
+void lttng_unlock_sessions(void);
+
+struct list_head *lttng_get_probe_list_head(void);
+
+int lttng_fix_pending_events(void);
+int lttng_fix_pending_event_notifiers(void);
+int lttng_session_active(void);
+bool lttng_event_notifier_active(void);
+
+struct lttng_session *lttng_session_create(void);
+int lttng_session_enable(struct lttng_session *session);
+int lttng_session_disable(struct lttng_session *session);
+void lttng_session_destroy(struct lttng_session *session);
+int lttng_session_metadata_regenerate(struct lttng_session *session);
+int lttng_session_statedump(struct lttng_session *session);
+void metadata_cache_destroy(struct kref *kref);
+
+struct lttng_counter *lttng_kernel_counter_create(
+		const char *counter_transport_name, size_t number_dimensions,
+		const size_t *dimensions_sizes);
+int lttng_kernel_counter_read(struct lttng_counter *counter,
+		const size_t *dimension_indexes, int32_t cpu,
+		int64_t *val, bool *overflow, bool *underflow);
+int lttng_kernel_counter_aggregate(struct lttng_counter *counter,
+		const size_t *dimension_indexes, int64_t *val,
+		bool *overflow, bool *underflow);
+int lttng_kernel_counter_clear(struct lttng_counter *counter,
+		const size_t *dimension_indexes);
+struct lttng_event_notifier_group *lttng_event_notifier_group_create(void);
+int lttng_event_notifier_group_create_error_counter(
+		struct file *event_notifier_group_file,
+		const struct lttng_kernel_abi_counter_conf *error_counter_conf);
+void lttng_event_notifier_group_destroy(
+		struct lttng_event_notifier_group *event_notifier_group);
+
+struct lttng_channel *lttng_channel_create(struct lttng_session *session,
+				       const char *transport_name,
+				       void *buf_addr,
+				       size_t subbuf_size, size_t num_subbuf,
+				       unsigned int switch_timer_interval,
+				       unsigned int read_timer_interval,
+				       enum channel_type channel_type);
+struct lttng_channel *lttng_global_channel_create(struct lttng_session *session,
+				       int overwrite, void *buf_addr,
+				       size_t subbuf_size, size_t num_subbuf,
+				       unsigned int switch_timer_interval,
+				       unsigned int read_timer_interval);
+
+void lttng_metadata_channel_destroy(struct lttng_channel *chan);
+struct lttng_kernel_event_recorder *lttng_kernel_event_recorder_create(struct lttng_channel *chan,
+				struct lttng_kernel_abi_event *event_param,
+				const struct lttng_kernel_event_desc *event_desc,
+				enum lttng_kernel_abi_instrumentation itype);
+struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct lttng_channel *chan,
+				struct lttng_kernel_abi_event *event_param,
+				const struct lttng_kernel_event_desc *event_desc,
+				enum lttng_kernel_abi_instrumentation itype);
+struct lttng_kernel_event_recorder *lttng_event_compat_old_create(struct lttng_channel *chan,
+		struct lttng_kernel_abi_old_event *old_event_param,
+		const struct lttng_kernel_event_desc *internal_desc);
+
+struct lttng_kernel_event_notifier *lttng_event_notifier_create(
+				const struct lttng_kernel_event_desc *event_notifier_desc,
+				uint64_t id,
+				uint64_t error_counter_idx,
+				struct lttng_event_notifier_group *event_notifier_group,
+				struct lttng_kernel_abi_event_notifier *event_notifier_param,
+				enum lttng_kernel_abi_instrumentation itype);
+struct lttng_kernel_event_notifier *_lttng_event_notifier_create(
+				const struct lttng_kernel_event_desc *event_notifier_desc,
+				uint64_t id,
+				uint64_t error_counter_idx,
+				struct lttng_event_notifier_group *event_notifier_group,
+				struct lttng_kernel_abi_event_notifier *event_notifier_param,
+				enum lttng_kernel_abi_instrumentation itype);
+
+int lttng_channel_enable(struct lttng_channel *channel);
+int lttng_channel_disable(struct lttng_channel *channel);
+int lttng_event_enable(struct lttng_kernel_event_common *event);
+int lttng_event_disable(struct lttng_kernel_event_common *event);
+
+void lttng_transport_register(struct lttng_transport *transport);
+void lttng_transport_unregister(struct lttng_transport *transport);
+
+void lttng_counter_transport_register(struct lttng_counter_transport *transport);
+void lttng_counter_transport_unregister(struct lttng_counter_transport *transport);
+
+void synchronize_trace(void);
+int lttng_abi_init(void);
+int lttng_abi_compat_old_init(void);
+void lttng_abi_exit(void);
+void lttng_abi_compat_old_exit(void);
+
+const struct lttng_kernel_event_desc *lttng_event_desc_get(const char *name);
+void lttng_event_desc_put(const struct lttng_kernel_event_desc *desc);
+int lttng_probes_init(void);
+void lttng_probes_exit(void);
+
+int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
+		struct channel *chan, bool *coherent);
+
+int lttng_id_tracker_get_node_id(const struct lttng_id_hash_node *node);
+int lttng_id_tracker_empty_set(struct lttng_id_tracker *lf);
+void lttng_id_tracker_destroy(struct lttng_id_tracker *lf, bool rcu);
+int lttng_id_tracker_add(struct lttng_id_tracker *lf, int id);
+int lttng_id_tracker_del(struct lttng_id_tracker *lf, int id);
+
+int lttng_session_track_id(struct lttng_session *session,
+		enum tracker_type tracker_type, int id);
+int lttng_session_untrack_id(struct lttng_session *session,
+		enum tracker_type tracker_type, int id);
+
+int lttng_session_list_tracker_ids(struct lttng_session *session,
+		enum tracker_type tracker_type);
+
+void lttng_clock_ref(void);
+void lttng_clock_unref(void);
+
+void lttng_free_event_filter_runtime(struct lttng_kernel_event_common *event);
+
+int lttng_probes_init(void);
+
+int lttng_logger_init(void);
+void lttng_logger_exit(void);
+
+extern int lttng_statedump_start(struct lttng_session *session);
+
+int lttng_calibrate(struct lttng_kernel_abi_calibrate *calibrate);
+
+extern const struct file_operations lttng_tracepoint_list_fops;
+extern const struct file_operations lttng_syscall_list_fops;
+
 #define lttng_kernel_static_ctx_field(_event_field, _get_size, _record, _get_value, _destroy, _priv)	\
 	__LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_ctx_field, {					\
 		.event_field = (_event_field),								\

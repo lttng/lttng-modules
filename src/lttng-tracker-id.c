@@ -19,6 +19,7 @@
 #include <wrapper/rcu.h>
 #include <wrapper/list.h>
 #include <lttng/events.h>
+#include <lttng/events-internal.h>
 
 /*
  * Hash table is allocated and freed when there are no possible
