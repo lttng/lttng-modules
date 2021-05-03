@@ -29,6 +29,7 @@
 #include <wrapper/rcu.h>
 #include <wrapper/syscall.h>
 #include <lttng/events.h>
+#include <lttng/events-internal.h>
 #include <lttng/utils.h>
 
 #ifndef CONFIG_COMPAT
