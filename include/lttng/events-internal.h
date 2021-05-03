@@ -593,6 +593,159 @@ static inline int lttng_syscall_filter_disable_event_notifier(
 
 #endif
 
+#ifdef CONFIG_KPROBES
+int lttng_kprobes_register_event(const char *name,
+		const char *symbol_name,
+		uint64_t offset,
+		uint64_t addr,
+		struct lttng_kernel_event_recorder *event);
+void lttng_kprobes_unregister_event(struct lttng_kernel_event_recorder *event);
+void lttng_kprobes_destroy_event_private(struct lttng_kernel_event_recorder *event);
+int lttng_kprobes_register_event_notifier(const char *symbol_name,
+		uint64_t offset,
+		uint64_t addr,
+		struct lttng_kernel_event_notifier *event_notifier);
+void lttng_kprobes_unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier);
+void lttng_kprobes_destroy_event_notifier_private(struct lttng_kernel_event_notifier *event_notifier);
+#else
+static inline
+int lttng_kprobes_register_event(const char *name,
+		const char *symbol_name,
+		uint64_t offset,
+		uint64_t addr,
+		struct lttng_kernel_event_recorder *event)
+{
+	return -ENOSYS;
+}
+
+static inline
+void lttng_kprobes_unregister_event(struct lttng_kernel_event_recorder *event)
+{
+}
+
+static inline
+void lttng_kprobes_destroy_event_private(struct lttng_kernel_event_recorder *event)
+{
+}
+
+static inline
+int lttng_kprobes_register_event_notifier(const char *symbol_name,
+		uint64_t offset,
+		uint64_t addr,
+		struct lttng_kernel_event_notifier *event_notifier)
+{
+	return -ENOSYS;
+}
+
+static inline
+void lttng_kprobes_unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
+{
+}
+
+static inline
+void lttng_kprobes_destroy_event_notifier_private(struct lttng_kernel_event_notifier *event_notifier)
+{
+}
+#endif
+
+int lttng_event_add_callsite(struct lttng_kernel_event_common *event,
+	struct lttng_kernel_abi_event_callsite __user *callsite);
+
+#ifdef CONFIG_UPROBES
+int lttng_uprobes_register_event(const char *name,
+	int fd, struct lttng_kernel_event_recorder *event);
+int lttng_uprobes_event_add_callsite(struct lttng_kernel_event_common *event,
+	struct lttng_kernel_abi_event_callsite __user *callsite);
+void lttng_uprobes_unregister_event(struct lttng_kernel_event_recorder *event);
+void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_recorder *event);
+int lttng_uprobes_register_event_notifier(const char *name,
+	int fd, struct lttng_kernel_event_notifier *event_notifier);
+void lttng_uprobes_unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier);
+void lttng_uprobes_destroy_event_notifier_private(struct lttng_kernel_event_notifier *event_notifier);
+#else
+static inline
+int lttng_uprobes_register_event(const char *name,
+	int fd, struct lttng_kernel_event_recorder *event)
+{
+	return -ENOSYS;
+}
+
+static inline
+int lttng_uprobes_event_add_callsite(struct lttng_kernel_event_common *event,
+	struct lttng_kernel_abi_event_callsite __user *callsite)
+{
+	return -ENOSYS;
+}
+
+static inline
+void lttng_uprobes_unregister_event(struct lttng_kernel_event_recorder *event)
+{
+}
+
+static inline
+void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_recorder *event)
+{
+}
+
+static inline
+int lttng_uprobes_register_event_notifier(const char *name,
+	int fd, struct lttng_kernel_event_notifier *event_notifier)
+{
+	return -ENOSYS;
+}
+
+static inline
+void lttng_uprobes_unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
+{
+}
+
+static inline
+void lttng_uprobes_destroy_event_notifier_private(struct lttng_kernel_event_notifier *event_notifier)
+{
+}
+#endif
+
+#ifdef CONFIG_KRETPROBES
+int lttng_kretprobes_register(const char *name,
+		const char *symbol_name,
+		uint64_t offset,
+		uint64_t addr,
+		struct lttng_kernel_event_recorder *event_entry,
+		struct lttng_kernel_event_recorder *event_exit);
+void lttng_kretprobes_unregister(struct lttng_kernel_event_recorder *event);
+void lttng_kretprobes_destroy_private(struct lttng_kernel_event_recorder *event);
+int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_common *event,
+	int enable);
+#else
+static inline
+int lttng_kretprobes_register(const char *name,
+		const char *symbol_name,
+		uint64_t offset,
+		uint64_t addr,
+		struct lttng_kernel_event_recorder *event_entry,
+		struct lttng_kernel_event_recorder *event_exit)
+{
+	return -ENOSYS;
+}
+
+static inline
+void lttng_kretprobes_unregister(struct lttng_kernel_event_recorder *event)
+{
+}
+
+static inline
+void lttng_kretprobes_destroy_private(struct lttng_kernel_event_recorder *event)
+{
+}
+
+static inline
+int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_common *event,
+	int enable)
+{
+	return -ENOSYS;
+}
+#endif
+
 #define lttng_kernel_static_ctx_field(_event_field, _get_size, _record, _get_value, _destroy, _priv)	\
 	__LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_ctx_field, {					\
 		.event_field = (_event_field),								\
