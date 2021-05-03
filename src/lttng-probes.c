@@ -161,7 +161,7 @@ const struct lttng_kernel_probe_desc *find_provider(const char *provider)
 	return NULL;
 }
 
-int lttng_probe_register(struct lttng_kernel_probe_desc *desc)
+int lttng_kernel_probe_register(struct lttng_kernel_probe_desc *desc)
 {
 	int ret = 0;
 
@@ -189,9 +189,9 @@ end:
 	lttng_unlock_sessions();
 	return ret;
 }
-EXPORT_SYMBOL_GPL(lttng_probe_register);
+EXPORT_SYMBOL_GPL(lttng_kernel_probe_register);
 
-void lttng_probe_unregister(struct lttng_kernel_probe_desc *desc)
+void lttng_kernel_probe_unregister(struct lttng_kernel_probe_desc *desc)
 {
 	lttng_lock_sessions();
 	if (!desc->lazy)
@@ -201,7 +201,7 @@ void lttng_probe_unregister(struct lttng_kernel_probe_desc *desc)
 	pr_debug("LTTng: just unregistered probe %s\n", desc->provider_name);
 	lttng_unlock_sessions();
 }
-EXPORT_SYMBOL_GPL(lttng_probe_unregister);
+EXPORT_SYMBOL_GPL(lttng_kernel_probe_unregister);
 
 /*
  * TODO: this is O(nr_probes * nb_events), could be faster.

@@ -1240,12 +1240,12 @@ static __used struct lttng_kernel_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM
 static int TP_ID(__lttng_events_init__, TRACE_SYSTEM)(void)
 {
 	wrapper_vmalloc_sync_mappings();
-	return lttng_probe_register(&TP_ID(__probe_desc___, TRACE_SYSTEM));
+	return lttng_kernel_probe_register(&TP_ID(__probe_desc___, TRACE_SYSTEM));
 }
 
 static void TP_ID(__lttng_events_exit__, TRACE_SYSTEM)(void)
 {
-	lttng_probe_unregister(&TP_ID(__probe_desc___, TRACE_SYSTEM));
+	lttng_kernel_probe_unregister(&TP_ID(__probe_desc___, TRACE_SYSTEM));
 }
 
 #ifndef TP_MODULE_NOAUTOLOAD
