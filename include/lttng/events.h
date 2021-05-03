@@ -388,8 +388,6 @@ struct lttng_kernel_channel_buffer_ops {
 				       const char __user *src, size_t len);
 };
 
-struct lttng_syscall_filter;
-
 #define LTTNG_EVENT_HT_BITS		12
 #define LTTNG_EVENT_HT_SIZE		(1U << LTTNG_EVENT_HT_BITS)
 

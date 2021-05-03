@@ -10,6 +10,8 @@
 
 #include <lttng/events.h>
 
+struct lttng_syscall_filter;
+
 enum lttng_enabler_format_type {
 	LTTNG_ENABLER_FORMAT_STAR_GLOB,
 	LTTNG_ENABLER_FORMAT_NAME,
