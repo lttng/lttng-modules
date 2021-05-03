@@ -13,6 +13,7 @@
 #include <linux/seq_file.h>
 
 #include <lttng/events.h>
+#include <lttng/events-internal.h>
 
 /*
  * probe list is protected by sessions lock.

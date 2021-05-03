@@ -10,6 +10,8 @@
 
 #include <linux/module.h>
 #include <lttng/tracer.h>
+#include <lttng/events.h>
+#include <lttng/events-internal.h>
 #include <counter/counter.h>
 #include <counter/counter-api.h>
 

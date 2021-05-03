@@ -13,6 +13,7 @@
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
 #include <lttng/abi.h>
 #include <lttng/events.h>
+#include <lttng/events-internal.h>
 #include <lttng/tracer.h>
 #include <wrapper/limits.h>
 
