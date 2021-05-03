@@ -13,6 +13,7 @@
 #include <linux/kernel.h>
 
 #include <lttng/events.h>
+#include <lttng/events-internal.h>
 #include <lttng/bytecode.h>
 
 /* Interpreter stack length, in number of entries */
