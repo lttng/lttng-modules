@@ -472,11 +472,6 @@ struct lttng_id_tracker {
 	struct lttng_id_tracker_rcu *p;	/* RCU dereferenced. */
 };
 
-struct lttng_id_hash_node {
-	struct hlist_node hlist;
-	int id;
-};
-
 struct lttng_kernel_session_private;
 
 struct lttng_kernel_session {
