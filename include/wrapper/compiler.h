@@ -69,4 +69,16 @@
 
 #define __LTTNG_COMPOUND_LITERAL(type, ...)	(type[]) { __VA_ARGS__ }
 
+/*
+ * The static_assert macro was defined by the kernel in v5.1.
+ * If the macro is not defined, we define it.
+ * (kernel source: include/linux/build_bug.h)
+ */
+#ifndef static_assert
+
+# define static_assert(expr, ...)  __static_assert(expr, ##__VA_ARGS__, #expr)
+# define __static_assert(expr, msg, ...) _Static_assert(expr, msg)
+
+#endif
+
 #endif /* _LTTNG_WRAPPER_COMPILER_H */
