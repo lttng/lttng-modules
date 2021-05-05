@@ -1,5 +1,8 @@
 /* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only) */
 
+#include <linux/in.h>
+#include <linux/in6.h>
+
 #ifdef CONFIG_X86_64
 #include "x86-64-syscalls_pointers.h"
 #endif
