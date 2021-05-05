@@ -457,6 +457,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(pselect6,
 )
 #endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM) */
 
+#ifdef LTTNG_CREATE_FIELD_METADATA
 #ifndef ONCE_LTTNG_TRACE_POLL_H
 #define ONCE_LTTNG_TRACE_POLL_H
 
@@ -464,6 +465,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(pselect6,
 #define POLL_FLAGS_PADDING_SIZE (sizeof(uint8_t) * BITS_PER_BYTE) - \
 	ilog2(LTTNG_POLL_NRFLAGS - 1)
 
+#ifndef LTTNG_TRACEPOINT_TYPE_EXTERN
 /*
  * Only extract the values specified by iBCS2 for now.
  */
@@ -491,18 +493,30 @@ static const struct lttng_kernel_event_field *lttng_pollfd_flag_fields[] = {
 				false, false, false),
 };
 
+static_assert(((ARRAY_SIZE(lttng_pollfd_flag_fields) - 1) + POLL_FLAGS_PADDING_SIZE) == sizeof(uint8_t) * BITS_PER_BYTE);
+
+#endif /* LTTNG_TRACEPOINT_TYPE_EXTERN */
+
+LTTNG_TRACEPOINT_TYPE(PARAMS(const struct lttng_kernel_type_struct lttng_pollfd_flag_fields_struct),
+	PARAMS(lttng_kernel_static_type_struct_init( ARRAY_SIZE(lttng_pollfd_flag_fields), lttng_pollfd_flag_fields, 0)))
+
+#ifndef LTTNG_TRACEPOINT_TYPE_EXTERN
 static const struct lttng_kernel_event_field *lttng_pollfd_fields[] = {
 	[0] = lttng_kernel_static_event_field("fd", lttng_kernel_static_type_integer_from_type(int, __BYTE_ORDER, 10),
 				false, false, false),
 	[1] = lttng_kernel_static_event_field("raw_events", lttng_kernel_static_type_integer_from_type(uint16_t, __BYTE_ORDER, 16),
 				false, false, false),
 	[2] = lttng_kernel_static_event_field("events",
-		lttng_kernel_static_type_struct(ARRAY_SIZE(lttng_pollfd_flag_fields),
-			lttng_pollfd_flag_fields, 0),
+		(const struct lttng_kernel_type_common *) &lttng_pollfd_flag_fields_struct,
 		false, false, false),
 };
+#endif /* LTTNG_TRACEPOINT_TYPE_EXTERN */
+
+LTTNG_TRACEPOINT_TYPE(PARAMS(const struct lttng_kernel_type_struct lttng_pollfd_fields_struct),
+	PARAMS(lttng_kernel_static_type_struct_init(ARRAY_SIZE(lttng_pollfd_fields), lttng_pollfd_fields, 0)))
 
 #endif /* ONCE_LTTNG_TRACE_POLL_H */
+#endif /* LTTNG_CREATE_FIELD_METADATA */
 
 #define LTTNG_SYSCALL_POLL_locvar				\
 	unsigned int fds_length, fds_max_len, alloc_fds;	\
@@ -510,9 +524,6 @@ static const struct lttng_kernel_event_field *lttng_pollfd_fields[] = {
 	uint8_t overflow;
 
 #define LTTNG_SYSCALL_POLL_code_pre				\
-	BUILD_BUG_ON(((ARRAY_SIZE(lttng_pollfd_flag_fields) - 1) +			\
-			POLL_FLAGS_PADDING_SIZE) !=					\
-				sizeof(uint8_t) * BITS_PER_BYTE);			\
 	tp_locvar->fds = NULL;								\
 	tp_locvar->overflow = 0;							\
 											\
@@ -570,7 +581,7 @@ end:											\
 		ctf_custom_field(								\
 			ctf_custom_type(							\
 				lttng_kernel_static_type_sequence("fds_length",			\
-					lttng_kernel_static_type_struct(ARRAY_SIZE(lttng_pollfd_fields), lttng_pollfd_fields, 0), \
+					(const struct lttng_kernel_type_common *) &lttng_pollfd_fields_struct, \
 					0,							\
 					none)							\
 			),									\
@@ -592,7 +603,7 @@ end:											\
 		ctf_custom_field(								\
 			ctf_custom_type(							\
 				lttng_kernel_static_type_sequence("fds_length",			\
-					lttng_kernel_static_type_struct(ARRAY_SIZE(lttng_pollfd_fields), lttng_pollfd_fields, 0), \
+					(const struct lttng_kernel_type_common *) &lttng_pollfd_fields_struct, \
 					0,							\
 					none)							\
 			),									\
@@ -699,6 +710,8 @@ SC_LTTNG_TRACEPOINT_ENUM(lttng_epoll_op,
 	)
 )
 
+#ifdef LTTNG_CREATE_FIELD_METADATA
+
 #ifndef ONCE_LTTNG_TRACE_EPOLL_CTL_H
 #define ONCE_LTTNG_TRACE_EPOLL_CTL_H
 
@@ -706,6 +719,7 @@ SC_LTTNG_TRACEPOINT_ENUM(lttng_epoll_op,
 #define EPOLL_FLAGS_PADDING_SIZE (sizeof(uint8_t) * BITS_PER_BYTE) - \
 	ilog2(LTTNG_EPOLL_NRFLAGS - 1)
 
+#ifndef LTTNG_TRACEPOINT_TYPE_EXTERN
 /*
  * Only extract the values specified by iBCS2 for now.
  */
@@ -734,7 +748,12 @@ static const struct lttng_kernel_event_field *lttng_epoll_ctl_events_fields[] = 
 			lttng_kernel_static_type_integer(EPOLL_FLAGS_PADDING_SIZE, 1, 0, __LITTLE_ENDIAN, 10),
 			false, false, false),
 };
+#endif /* LTTNG_TRACEPOINT_TYPE_EXTERN */
 
+LTTNG_TRACEPOINT_TYPE(PARAMS(const struct lttng_kernel_type_struct lttng_epoll_ctl_events_fields_struct),
+	PARAMS(lttng_kernel_static_type_struct_init(ARRAY_SIZE(lttng_epoll_ctl_events_fields), lttng_epoll_ctl_events_fields, 0)))
+
+#ifndef LTTNG_TRACEPOINT_TYPE_EXTERN
 static const struct lttng_kernel_event_field *lttng_epoll_data_fields[] = {
 	[0] = lttng_kernel_static_event_field("u64",
 			lttng_kernel_static_type_integer_from_type(uint64_t, __BYTE_ORDER, 16),
@@ -743,23 +762,30 @@ static const struct lttng_kernel_event_field *lttng_epoll_data_fields[] = {
 			lttng_kernel_static_type_integer_from_type(int, __BYTE_ORDER, 10),
 			false, false, false),
 };
+#endif /* LTTNG_TRACEPOINT_TYPE_EXTERN */
 
+LTTNG_TRACEPOINT_TYPE(PARAMS(const struct lttng_kernel_type_struct lttng_epoll_data_fields_struct),
+	PARAMS(lttng_kernel_static_type_struct_init(ARRAY_SIZE(lttng_epoll_data_fields), lttng_epoll_data_fields, 0)))
+
+#ifndef LTTNG_TRACEPOINT_TYPE_EXTERN
 static const struct lttng_kernel_event_field *epoll_ctl_fields[] = {
 	[0] = lttng_kernel_static_event_field("data_union",
-		lttng_kernel_static_type_struct(ARRAY_SIZE(lttng_epoll_data_fields),
-				lttng_epoll_data_fields,
-				0),
+		(const struct lttng_kernel_type_common *) &lttng_epoll_data_fields_struct,
 		false, false, false),
 	[1] = lttng_kernel_static_event_field("raw_events",
 		lttng_kernel_static_type_integer_from_type(uint32_t, __BYTE_ORDER, 16),
 		false, false, false),
 	[2] = lttng_kernel_static_event_field("events",
-		lttng_kernel_static_type_struct(ARRAY_SIZE(lttng_epoll_ctl_events_fields),
-				lttng_epoll_ctl_events_fields,
-				0),
+		(const struct lttng_kernel_type_common *) &lttng_epoll_ctl_events_fields_struct,
 		false, false, false),
 };
+#endif /* LTTNG_TRACEPOINT_TYPE_EXTERN */
+
+LTTNG_TRACEPOINT_TYPE(PARAMS(const struct lttng_kernel_type_struct epoll_ctl_fields_struct),
+	PARAMS(lttng_kernel_static_type_struct_init(ARRAY_SIZE(epoll_ctl_fields), epoll_ctl_fields, 0)))
+
 #endif /* ONCE_LTTNG_TRACE_EPOLL_CTL_H */
+#endif /* LTTNG_CREATE_FIELD_METADATA */
 
 #if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM)
 #define OVERRIDE_32_epoll_ctl
@@ -810,21 +836,31 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_ctl,
 )
 #endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM) */
 
+#ifdef LTTNG_CREATE_FIELD_METADATA
 #ifndef ONCE_LTTNG_TRACE_EPOLL_H
 #define ONCE_LTTNG_TRACE_EPOLL_H
 
+#ifndef LTTNG_TRACEPOINT_TYPE_EXTERN
 static const struct lttng_kernel_event_field *lttng_epoll_wait_fields[] = lttng_kernel_static_event_field_array(
 	[0] = lttng_kernel_static_event_field("data_union",
-			lttng_kernel_static_type_struct(ARRAY_SIZE(lttng_epoll_data_fields), lttng_epoll_data_fields, 0),
+			(const struct lttng_kernel_type_common *) &lttng_epoll_data_fields_struct,
 			false, false, false),
 	[1] = lttng_kernel_static_event_field("raw_events", lttng_kernel_static_type_integer_from_type(uint32_t, __BYTE_ORDER, 16),
 			false, false, false),
 	[2] = lttng_kernel_static_event_field("events",
-			lttng_kernel_static_type_struct(ARRAY_SIZE(lttng_epoll_ctl_events_fields), lttng_epoll_ctl_events_fields, 0),
+			(const struct lttng_kernel_type_common *) &lttng_epoll_ctl_events_fields_struct,
 			false, false, false),
 );
 
+static_assert(((ARRAY_SIZE(lttng_epoll_ctl_events_fields) - 1) + EPOLL_FLAGS_PADDING_SIZE) == sizeof(uint8_t) * BITS_PER_BYTE);
+
+#endif /* LTTNG_TRACEPOINT_TYPE_EXTERN */
+
+LTTNG_TRACEPOINT_TYPE(PARAMS(const struct lttng_kernel_type_struct lttng_epoll_wait_fields_struct),
+	PARAMS(lttng_kernel_static_type_struct_init(ARRAY_SIZE(lttng_epoll_wait_fields), lttng_epoll_wait_fields, 0)))
+
 #endif /* ONCE_LTTNG_TRACE_EPOLL_H */
+#endif /* LTTNG_CREATE_FIELD_METADATA */
 
 #define LTTNG_SYSCALL_EPOLL_WAIT_locvar		\
 	sc_out(					\
@@ -834,9 +870,6 @@ static const struct lttng_kernel_event_field *lttng_epoll_wait_fields[] = lttng_
 	)
 
 #define LTTNG_SYSCALL_EPOLL_WAIT_code_pre					\
-	BUILD_BUG_ON(((ARRAY_SIZE(lttng_epoll_ctl_events_fields) - 1) +		\
-			EPOLL_FLAGS_PADDING_SIZE) !=				\
-				sizeof(uint8_t) * BITS_PER_BYTE);		\
 	sc_out({								\
 		int err;							\
 		unsigned long maxalloc;						\

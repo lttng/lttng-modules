@@ -90,6 +90,7 @@ lttng-wrapper-objs := wrapper/page_alloc.o \
 
 ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
   lttng-tracer-objs += lttng-syscalls.o
+  lttng-tracer-objs += lttng-syscalls-enum.o
 endif # CONFIG_HAVE_SYSCALL_TRACEPOINTS
 
 ifneq ($(CONFIG_PERF_EVENTS),)
