@@ -142,6 +142,10 @@ struct lttng_kernel_event_field {
 			nofilter:1;	/* do not consider for filter */
 };
 
+#ifndef PARAMS
+#define PARAMS(args...)	args
+#endif
+
 #define lttng_kernel_static_type_integer(_size, _alignment, _signedness, _byte_order, _base)		\
 	((const struct lttng_kernel_type_common *) __LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_type_integer, { \
 		.parent = {										\
@@ -207,15 +211,20 @@ struct lttng_kernel_event_field {
 		.encoding = lttng_kernel_string_encoding_##_encoding,					\
 	}))
 
-#define lttng_kernel_static_type_struct(_nr_fields, _fields, _alignment)				\
-	((const struct lttng_kernel_type_common *) __LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_type_struct, { \
+#define lttng_kernel_static_type_struct_init(_nr_fields, _fields, _alignment)				\
+	{												\
 		.parent = {										\
 			.type = lttng_kernel_type_struct,						\
 		},											\
 		.nr_fields = (_nr_fields),								\
 		.fields = _fields,									\
 		.alignment = (_alignment),								\
-	}))
+	}
+
+#define lttng_kernel_static_type_struct(_nr_fields, _fields, _alignment)				\
+	((const struct lttng_kernel_type_common *) __LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_type_struct, \
+		lttng_kernel_static_type_struct_init(_nr_fields, PARAMS(_fields), _alignment)			\
+	))
 
 #define lttng_kernel_static_type_variant(_nr_choices, _choices, _tag_name, _alignment)			\
 	((const struct lttng_kernel_type_common *) __LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_type_variant, { \

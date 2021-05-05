@@ -198,11 +198,13 @@ void __event_template_proto___##_name(void);
 #define TP_ENUM_VALUES(...)						\
 	__VA_ARGS__
 
-#undef LTTNG_TRACEPOINT_ENUM
-#define LTTNG_TRACEPOINT_ENUM(_name, _values)				\
+#ifndef LTTNG_TRACEPOINT_TYPE_EXTERN
+# undef LTTNG_TRACEPOINT_ENUM
+# define LTTNG_TRACEPOINT_ENUM(_name, _values)				\
 	static const struct lttng_kernel_enum_entry *__enum_values__##_name[] = { \
 		_values							\
 	};
+#endif
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
@@ -307,17 +309,36 @@ void __event_template_proto___##_name(void);
 #define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
 	LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, PARAMS(_fields), _code_post)
 
-#undef LTTNG_TRACEPOINT_ENUM
-#define LTTNG_TRACEPOINT_ENUM(_name, _values)						\
-	static const struct lttng_kernel_enum_desc __enum_##_name = {			\
-		.name = #_name,								\
-		.entries = __enum_values__##_name,					\
-		.nr_entries = ARRAY_SIZE(__enum_values__##_name),			\
-	};
+#ifdef LTTNG_TRACEPOINT_TYPE_EXTERN
+# undef LTTNG_TRACEPOINT_TYPE
+# define LTTNG_TRACEPOINT_TYPE(_prototype, _init)	\
+	extern _prototype;
+#elif defined (LTTNG_TRACEPOINT_TYPE_DEFINE_EXPORT)
+# define LTTNG_TRACEPOINT_TYPE_VISIBILITY __attribute__((visibility("hidden")))
+#else
+# define LTTNG_TRACEPOINT_TYPE_VISIBILITY static
+#endif
+
+#ifdef LTTNG_TRACEPOINT_TYPE_VISIBILITY
+# undef LTTNG_TRACEPOINT_TYPE
+# define LTTNG_TRACEPOINT_TYPE(_prototype, _init)	\
+	LTTNG_TRACEPOINT_TYPE_VISIBILITY _prototype = _init;
+#endif
+
+# undef LTTNG_TRACEPOINT_ENUM
+# define LTTNG_TRACEPOINT_ENUM(_name, _values)						\
+	LTTNG_TRACEPOINT_TYPE(PARAMS(const struct lttng_kernel_enum_desc __enum_##_name), \
+	PARAMS({									\
+                .name = #_name,                                                         \
+                .entries = __enum_values__##_name,                                      \
+                .nr_entries = ARRAY_SIZE(__enum_values__##_name),                       \
+        }))
 
 #define LTTNG_CREATE_FIELD_METADATA
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 #undef LTTNG_CREATE_FIELD_METADATA
+
+#undef LTTNG_TRACEPOINT_TYPE_VISIBILITY
 
 /*
  * Stage 3 of the trace events.
