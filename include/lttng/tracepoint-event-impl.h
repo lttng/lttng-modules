@@ -1164,7 +1164,21 @@ __post:											\
 #undef __get_dynamic_len
 
 /*
- * Stage 7 of the trace events.
+ * Stage 7.0 of tracepoint event generation.
+ *
+ * Declare toplevel descriptor for the whole probe.
+ */
+
+#define TP_ID1(_token, _system)	_token##_system
+#define TP_ID(_token, _system)	TP_ID1(_token, _system)
+
+static __used struct lttng_kernel_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM);
+
+#undef TP_ID1
+#undef TP_ID
+
+/*
+ * Stage 7.1 of the trace events.
  *
  * Create event descriptions.
  */
@@ -1182,6 +1196,7 @@ __post:											\
 static const struct lttng_kernel_event_desc __event_desc___##_map = {	\
 	.event_name = #_map,				     		\
 	.event_kname = #_name,				     		\
+	.probe_desc = &TP_ID(__probe_desc___, TRACE_SYSTEM),		\
 	.probe_callback = (void (*)(void)) TP_PROBE_CB(_template),	\
 	.fields = __event_fields___##_template,		     		\
 	.nr_fields = ARRAY_SIZE(__event_fields___##_template),		\
@@ -1192,7 +1207,13 @@ static const struct lttng_kernel_event_desc __event_desc___##_map = {	\
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(_template, _name, _map, _proto, _args) \
 	LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map)
 
+#define TP_ID1(_token, _system)	_token##_system
+#define TP_ID(_token, _system)	TP_ID1(_token, _system)
+
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+
+#undef TP_ID1
+#undef TP_ID
 
 /*
  * Stage 8 of the trace events.
