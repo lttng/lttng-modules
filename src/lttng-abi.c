@@ -999,7 +999,7 @@ ssize_t lttng_event_notifier_group_notif_read(struct file *filp, char __user *us
 		size_t count, loff_t *ppos)
 {
 	struct lttng_event_notifier_group *event_notifier_group = filp->private_data;
-	struct channel *chan = event_notifier_group->chan;
+	struct lttng_kernel_ring_buffer_channel *chan = event_notifier_group->chan;
 	struct lib_ring_buffer *buf = event_notifier_group->buf;
 	ssize_t read_count = 0, len;
 	size_t read_offset;
@@ -1105,7 +1105,7 @@ unsigned int lttng_event_notifier_group_notif_poll(struct file *filp,
 {
 	unsigned int mask = 0;
 	struct lttng_event_notifier_group *event_notifier_group = filp->private_data;
-	struct channel *chan = event_notifier_group->chan;
+	struct lttng_kernel_ring_buffer_channel *chan = event_notifier_group->chan;
 	struct lib_ring_buffer *buf = event_notifier_group->buf;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	int finalized, disabled;
@@ -1315,7 +1315,7 @@ long lttng_metadata_ring_buffer_ioctl(struct file *filp,
 	{
 		struct lttng_metadata_stream *stream = filp->private_data;
 		struct lib_ring_buffer *buf = stream->priv;
-		struct channel *chan = buf->backend.chan;
+		struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 
 		ret = lttng_metadata_output_channel(stream, chan, NULL);
 		if (ret > 0) {
@@ -1337,7 +1337,7 @@ long lttng_metadata_ring_buffer_ioctl(struct file *filp,
 	{
 		struct lttng_metadata_stream *stream = filp->private_data;
 		struct lib_ring_buffer *buf = stream->priv;
-		struct channel *chan = buf->backend.chan;
+		struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 
 		/*
 		 * Before doing the actual ring buffer flush, write up to one
@@ -1364,7 +1364,7 @@ long lttng_metadata_ring_buffer_ioctl(struct file *filp,
 	{
 		struct lttng_metadata_stream *stream = filp->private_data;
 		struct lib_ring_buffer *buf = stream->priv;
-		struct channel *chan = buf->backend.chan;
+		struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 
 		ret = lttng_metadata_output_channel(stream, chan, &coherent);
 		if (ret > 0) {
@@ -1424,7 +1424,7 @@ long lttng_metadata_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		struct lttng_metadata_stream *stream = filp->private_data;
 		struct lib_ring_buffer *buf = stream->priv;
-		struct channel *chan = buf->backend.chan;
+		struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 
 		ret = lttng_metadata_output_channel(stream, chan, NULL);
 		if (ret > 0) {
@@ -1446,7 +1446,7 @@ long lttng_metadata_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		struct lttng_metadata_stream *stream = filp->private_data;
 		struct lib_ring_buffer *buf = stream->priv;
-		struct channel *chan = buf->backend.chan;
+		struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 
 		/*
 		 * Before doing the actual ring buffer flush, write up to one
@@ -1473,7 +1473,7 @@ long lttng_metadata_ring_buffer_compat_ioctl(struct file *filp,
 	{
 		struct lttng_metadata_stream *stream = filp->private_data;
 		struct lib_ring_buffer *buf = stream->priv;
-		struct channel *chan = buf->backend.chan;
+		struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 
 		ret = lttng_metadata_output_channel(stream, chan, &coherent);
 		if (ret > 0) {
@@ -1720,7 +1720,7 @@ static
 int lttng_abi_open_event_notifier_group_stream(struct file *notif_file)
 {
 	struct lttng_event_notifier_group *event_notifier_group = notif_file->private_data;
-	struct channel *chan = event_notifier_group->chan;
+	struct lttng_kernel_ring_buffer_channel *chan = event_notifier_group->chan;
 	struct lib_ring_buffer *buf;
 	int ret;
 	void *stream_priv;
@@ -2742,7 +2742,7 @@ static long lttng_stream_ring_buffer_ioctl(struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
 	struct lib_ring_buffer *buf = filp->private_data;
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	const struct lttng_kernel_channel_buffer_ops *ops = chan->backend.priv_ops;
 	int ret;
@@ -2846,7 +2846,7 @@ static long lttng_stream_ring_buffer_compat_ioctl(struct file *filp,
 		unsigned int cmd, unsigned long arg)
 {
 	struct lib_ring_buffer *buf = filp->private_data;
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	const struct lttng_kernel_channel_buffer_ops *ops = chan->backend.priv_ops;
 	int ret;

@@ -27,7 +27,7 @@ static int lib_ring_buffer_fault_compat(struct vm_area_struct *vma, struct vm_fa
 #endif
 {
 	struct lib_ring_buffer *buf = vma->vm_private_data;
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	pgoff_t pgoff = vmf->pgoff;
 	unsigned long *pfnp;
@@ -96,7 +96,7 @@ static int lib_ring_buffer_mmap_buf(struct lib_ring_buffer *buf,
 				    struct vm_area_struct *vma)
 {
 	unsigned long length = vma->vm_end - vma->vm_start;
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	unsigned long mmap_buf_len;
 

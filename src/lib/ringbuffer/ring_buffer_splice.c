@@ -99,7 +99,7 @@ static int subbuf_splice_actor(struct file *in,
 			       unsigned int flags,
 			       struct lib_ring_buffer *buf)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	unsigned int poff, subbuf_pages, nr_pages;
 	struct page *pages[PIPE_DEF_BUFFERS];
@@ -184,7 +184,7 @@ ssize_t lib_ring_buffer_splice_read(struct file *in, loff_t *ppos,
 				    unsigned int flags,
 				    struct lib_ring_buffer *buf)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	ssize_t spliced;
 	int ret;

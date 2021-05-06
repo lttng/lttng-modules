@@ -17,7 +17,7 @@
 #include <lttng/tracer-core.h>
 
 struct lib_ring_buffer;
-struct channel;
+struct lttng_kernel_ring_buffer_channel;
 struct lib_ring_buffer_config;
 struct lttng_kernel_ring_buffer_ctx;
 struct lttng_kernel_ring_buffer_ctx_private;
@@ -32,9 +32,9 @@ struct lib_ring_buffer_client_cb {
 	/* Mandatory callbacks */
 
 	/* A static inline version is also required for fast path */
-	u64 (*ring_buffer_clock_read) (struct channel *chan);
+	u64 (*ring_buffer_clock_read) (struct lttng_kernel_ring_buffer_channel *chan);
 	size_t (*record_header_size) (const struct lib_ring_buffer_config *config,
-				      struct channel *chan, size_t offset,
+				      struct lttng_kernel_ring_buffer_channel *chan, size_t offset,
 				      size_t *pre_header_padding,
 				      struct lttng_kernel_ring_buffer_ctx *ctx,
 				      void *client_ctx);
@@ -63,7 +63,7 @@ struct lib_ring_buffer_client_cb {
 	 * iterator.
 	 */
 	void (*record_get) (const struct lib_ring_buffer_config *config,
-			    struct channel *chan, struct lib_ring_buffer *buf,
+			    struct lttng_kernel_ring_buffer_channel *chan, struct lib_ring_buffer *buf,
 			    size_t offset, size_t *header_len,
 			    size_t *payload_len, u64 *timestamp);
 };
@@ -169,7 +169,7 @@ struct lib_ring_buffer_config {
 
 struct lttng_kernel_ring_buffer_ctx_private {
 	/* input received by lib_ring_buffer_reserve(). */
-	struct channel *chan;			/* ring buffer channel */
+	struct lttng_kernel_ring_buffer_channel *chan;			/* ring buffer channel */
 
 	/* output from lib_ring_buffer_reserve() */
 	int reserve_cpu;			/* processor id updated by the reserve */

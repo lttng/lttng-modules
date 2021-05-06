@@ -20,7 +20,7 @@
  * currently no data available, or -ENODATA if no data is available and buffer
  * is finalized.
  */
-extern ssize_t lib_ring_buffer_get_next_record(struct channel *chan,
+extern ssize_t lib_ring_buffer_get_next_record(struct lttng_kernel_ring_buffer_channel *chan,
 					       struct lib_ring_buffer *buf);
 
 /*
@@ -39,7 +39,7 @@ extern void lib_ring_buffer_put_current_record(struct lib_ring_buffer *buf);
  * finalized.
  * Returns the current buffer in ret_buf.
  */
-extern ssize_t channel_get_next_record(struct channel *chan,
+extern ssize_t channel_get_next_record(struct lttng_kernel_ring_buffer_channel *chan,
 				       struct lib_ring_buffer **ret_buf);
 
 /**
@@ -58,8 +58,8 @@ static inline size_t read_current_record(struct lib_ring_buffer *buf, void *dest
 
 extern int lib_ring_buffer_iterator_open(struct lib_ring_buffer *buf);
 extern void lib_ring_buffer_iterator_release(struct lib_ring_buffer *buf);
-extern int channel_iterator_open(struct channel *chan);
-extern void channel_iterator_release(struct channel *chan);
+extern int channel_iterator_open(struct lttng_kernel_ring_buffer_channel *chan);
+extern void channel_iterator_release(struct lttng_kernel_ring_buffer_channel *chan);
 
 extern const struct file_operations channel_payload_file_operations;
 extern const struct file_operations lib_ring_buffer_payload_file_operations;
@@ -67,10 +67,10 @@ extern const struct file_operations lib_ring_buffer_payload_file_operations;
 /*
  * Used internally.
  */
-int channel_iterator_init(struct channel *chan);
-void channel_iterator_unregister_notifiers(struct channel *chan);
-void channel_iterator_free(struct channel *chan);
-void channel_iterator_reset(struct channel *chan);
+int channel_iterator_init(struct lttng_kernel_ring_buffer_channel *chan);
+void channel_iterator_unregister_notifiers(struct lttng_kernel_ring_buffer_channel *chan);
+void channel_iterator_free(struct lttng_kernel_ring_buffer_channel *chan);
+void channel_iterator_reset(struct lttng_kernel_ring_buffer_channel *chan);
 void lib_ring_buffer_iterator_reset(struct lib_ring_buffer *buf);
 
 #endif /* _LIB_RING_BUFFER_ITERATOR_H */

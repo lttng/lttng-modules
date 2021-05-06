@@ -35,7 +35,7 @@
  * Returns the size of the event read, -EAGAIN if buffer is empty, -ENODATA if
  * buffer is empty and finalized. The buffer must already be opened for reading.
  */
-ssize_t lib_ring_buffer_get_next_record(struct channel *chan,
+ssize_t lib_ring_buffer_get_next_record(struct lttng_kernel_ring_buffer_channel *chan,
 					struct lib_ring_buffer *buf)
 {
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
@@ -134,7 +134,7 @@ static int buf_is_higher(void *a, void *b)
 
 static
 void lib_ring_buffer_get_empty_buf_records(const struct lib_ring_buffer_config *config,
-					   struct channel *chan)
+					   struct lttng_kernel_ring_buffer_channel *chan)
 {
 	struct lttng_ptr_heap *heap = &chan->iter.heap;
 	struct lib_ring_buffer *buf, *tmp;
@@ -178,7 +178,7 @@ void lib_ring_buffer_get_empty_buf_records(const struct lib_ring_buffer_config *
 
 static
 void lib_ring_buffer_wait_for_qs(const struct lib_ring_buffer_config *config,
-				 struct channel *chan)
+				 struct lttng_kernel_ring_buffer_channel *chan)
 {
 	u64 timestamp_qs;
 	unsigned long wait_msecs;
@@ -238,7 +238,7 @@ void lib_ring_buffer_wait_for_qs(const struct lib_ring_buffer_config *config,
  * opened for reading.
  */
 
-ssize_t channel_get_next_record(struct channel *chan,
+ssize_t channel_get_next_record(struct lttng_kernel_ring_buffer_channel *chan,
 				struct lib_ring_buffer **ret_buf)
 {
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
@@ -337,7 +337,7 @@ ssize_t channel_get_next_record(struct channel *chan,
 EXPORT_SYMBOL_GPL(channel_get_next_record);
 
 static
-void lib_ring_buffer_iterator_init(struct channel *chan, struct lib_ring_buffer *buf)
+void lib_ring_buffer_iterator_init(struct lttng_kernel_ring_buffer_channel *chan, struct lib_ring_buffer *buf)
 {
 	if (buf->iter.allocated)
 		return;
@@ -358,7 +358,7 @@ void lib_ring_buffer_iterator_init(struct channel *chan, struct lib_ring_buffer 
 int lttng_cpuhp_rb_iter_online(unsigned int cpu,
 		struct lttng_cpuhp_node *node)
 {
-	struct channel *chan = container_of(node, struct channel,
+	struct lttng_kernel_ring_buffer_channel *chan = container_of(node, struct lttng_kernel_ring_buffer_channel,
 					    cpuhp_iter_online);
 	struct lib_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
@@ -379,7 +379,7 @@ int channel_iterator_cpu_hotplug(struct notifier_block *nb,
 					   void *hcpu)
 {
 	unsigned int cpu = (unsigned long)hcpu;
-	struct channel *chan = container_of(nb, struct channel,
+	struct lttng_kernel_ring_buffer_channel *chan = container_of(nb, struct lttng_kernel_ring_buffer_channel,
 					    hp_iter_notifier);
 	struct lib_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
@@ -404,7 +404,7 @@ int channel_iterator_cpu_hotplug(struct notifier_block *nb,
 
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
-int channel_iterator_init(struct channel *chan)
+int channel_iterator_init(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	struct lib_ring_buffer *buf;
@@ -462,7 +462,7 @@ int channel_iterator_init(struct channel *chan)
 	return 0;
 }
 
-void channel_iterator_unregister_notifiers(struct channel *chan)
+void channel_iterator_unregister_notifiers(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
@@ -482,7 +482,7 @@ void channel_iterator_unregister_notifiers(struct channel *chan)
 	}
 }
 
-void channel_iterator_free(struct channel *chan)
+void channel_iterator_free(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
@@ -492,7 +492,7 @@ void channel_iterator_free(struct channel *chan)
 
 int lib_ring_buffer_iterator_open(struct lib_ring_buffer *buf)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	CHAN_WARN_ON(chan, config->output != RING_BUFFER_ITERATOR);
 	return lib_ring_buffer_open_read(buf);
@@ -510,7 +510,7 @@ void lib_ring_buffer_iterator_release(struct lib_ring_buffer *buf)
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_iterator_release);
 
-int channel_iterator_open(struct channel *chan)
+int channel_iterator_open(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	struct lib_ring_buffer *buf;
@@ -543,7 +543,7 @@ error:
 }
 EXPORT_SYMBOL_GPL(channel_iterator_open);
 
-void channel_iterator_release(struct channel *chan)
+void channel_iterator_release(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	struct lib_ring_buffer *buf;
@@ -569,7 +569,7 @@ EXPORT_SYMBOL_GPL(channel_iterator_release);
 
 void lib_ring_buffer_iterator_reset(struct lib_ring_buffer *buf)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 
 	if (buf->iter.state != ITER_GET_SUBBUF)
 		lib_ring_buffer_put_next_subbuf(buf);
@@ -586,7 +586,7 @@ void lib_ring_buffer_iterator_reset(struct lib_ring_buffer *buf)
 	/* Don't reset allocated and read_open */
 }
 
-void channel_iterator_reset(struct channel *chan)
+void channel_iterator_reset(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	struct lib_ring_buffer *buf;
@@ -615,7 +615,7 @@ ssize_t channel_ring_buffer_file_read(struct file *filp,
 				      char __user *user_buf,
 				      size_t count,
 				      loff_t *ppos,
-				      struct channel *chan,
+				      struct lttng_kernel_ring_buffer_channel *chan,
 				      struct lib_ring_buffer *buf,
 				      int fusionmerge)
 {
@@ -744,7 +744,7 @@ ssize_t lib_ring_buffer_file_read(struct file *filp,
 {
 	struct inode *inode = filp->lttng_f_dentry->d_inode;
 	struct lib_ring_buffer *buf = inode->i_private;
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 
 	return channel_ring_buffer_file_read(filp, user_buf, count, ppos,
 					     chan, buf, 0);
@@ -768,7 +768,7 @@ ssize_t channel_file_read(struct file *filp,
 			  loff_t *ppos)
 {
 	struct inode *inode = filp->lttng_f_dentry->d_inode;
-	struct channel *chan = inode->i_private;
+	struct lttng_kernel_ring_buffer_channel *chan = inode->i_private;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
@@ -815,7 +815,7 @@ int lib_ring_buffer_file_release(struct inode *inode, struct file *file)
 static
 int channel_file_open(struct inode *inode, struct file *file)
 {
-	struct channel *chan = inode->i_private;
+	struct lttng_kernel_ring_buffer_channel *chan = inode->i_private;
 	int ret;
 
 	ret = channel_iterator_open(chan);
@@ -836,7 +836,7 @@ release_iter:
 static
 int channel_file_release(struct inode *inode, struct file *file)
 {
-	struct channel *chan = inode->i_private;
+	struct lttng_kernel_ring_buffer_channel *chan = inode->i_private;
 
 	channel_iterator_release(chan);
 	return 0;

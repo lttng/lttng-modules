@@ -37,14 +37,14 @@ struct metadata_record_header {
 static const struct lib_ring_buffer_config client_config;
 
 static inline
-u64 lib_ring_buffer_clock_read(struct channel *chan)
+u64 lib_ring_buffer_clock_read(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	return 0;
 }
 
 static inline
 size_t record_header_size(const struct lib_ring_buffer_config *config,
-				 struct channel *chan, size_t offset,
+				 struct lttng_kernel_ring_buffer_channel *chan, size_t offset,
 				 size_t *pre_header_padding,
 				 struct lttng_kernel_ring_buffer_ctx *ctx,
 				 void *client_ctx)
@@ -54,14 +54,14 @@ size_t record_header_size(const struct lib_ring_buffer_config *config,
 
 #include <ringbuffer/api.h>
 
-static u64 client_ring_buffer_clock_read(struct channel *chan)
+static u64 client_ring_buffer_clock_read(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	return 0;
 }
 
 static
 size_t client_record_header_size(const struct lib_ring_buffer_config *config,
-				 struct channel *chan, size_t offset,
+				 struct lttng_kernel_ring_buffer_channel *chan, size_t offset,
 				 size_t *pre_header_padding,
 				 struct lttng_kernel_ring_buffer_ctx *ctx,
 				 void *client_ctx)
@@ -84,7 +84,7 @@ static size_t client_packet_header_size(void)
 static void client_buffer_begin(struct lib_ring_buffer *buf, u64 tsc,
 				unsigned int subbuf_idx)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	struct metadata_packet_header *header =
 		(struct metadata_packet_header *)
 			lib_ring_buffer_offset_address(&buf->backend,
@@ -112,7 +112,7 @@ static void client_buffer_begin(struct lib_ring_buffer *buf, u64 tsc,
 static void client_buffer_end(struct lib_ring_buffer *buf, u64 tsc,
 			      unsigned int subbuf_idx, unsigned long data_size)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	struct metadata_packet_header *header =
 		(struct metadata_packet_header *)
 			lib_ring_buffer_offset_address(&buf->backend,
@@ -231,20 +231,20 @@ void release_priv_ops(void *priv_ops)
 }
 
 static
-void lttng_channel_destroy(struct channel *chan)
+void lttng_channel_destroy(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	channel_destroy(chan);
 }
 
 static
-struct channel *_channel_create(const char *name,
+struct lttng_kernel_ring_buffer_channel *_channel_create(const char *name,
 				void *priv, void *buf_addr,
 				size_t subbuf_size, size_t num_subbuf,
 				unsigned int switch_timer_interval,
 				unsigned int read_timer_interval)
 {
 	struct lttng_kernel_channel_buffer *lttng_chan = priv;
-	struct channel *chan;
+	struct lttng_kernel_ring_buffer_channel *chan;
 
 	chan = channel_create(&client_config, name,
 			      lttng_chan->parent.session->priv->metadata_cache, buf_addr,
@@ -270,7 +270,7 @@ error:
 }
 
 static
-struct lib_ring_buffer *lttng_buffer_read_open(struct channel *chan)
+struct lib_ring_buffer *lttng_buffer_read_open(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	struct lib_ring_buffer *buf;
 
@@ -281,7 +281,7 @@ struct lib_ring_buffer *lttng_buffer_read_open(struct channel *chan)
 }
 
 static
-int lttng_buffer_has_read_closed_stream(struct channel *chan)
+int lttng_buffer_has_read_closed_stream(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	struct lib_ring_buffer *buf;
 	int cpu;
@@ -303,7 +303,7 @@ void lttng_buffer_read_close(struct lib_ring_buffer *buf)
 static
 int lttng_event_reserve(struct lttng_kernel_ring_buffer_ctx *ctx)
 {
-	struct channel *chan = ctx->client_priv;
+	struct lttng_kernel_ring_buffer_channel *chan = ctx->client_priv;
 	int ret;
 
 	memset(&ctx->priv, 0, sizeof(ctx->priv));
@@ -353,7 +353,7 @@ void lttng_event_strcpy(struct lttng_kernel_ring_buffer_ctx *ctx, const char *sr
 }
 
 static
-size_t lttng_packet_avail_size(struct channel *chan)
+size_t lttng_packet_avail_size(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	unsigned long o_begin;
 	struct lib_ring_buffer *buf;
@@ -369,7 +369,7 @@ size_t lttng_packet_avail_size(struct channel *chan)
 }
 
 static
-wait_queue_head_t *lttng_get_writer_buf_wait_queue(struct channel *chan, int cpu)
+wait_queue_head_t *lttng_get_writer_buf_wait_queue(struct lttng_kernel_ring_buffer_channel *chan, int cpu)
 {
 	struct lib_ring_buffer *buf = channel_get_ring_buffer(&client_config,
 					chan, cpu);
@@ -377,19 +377,19 @@ wait_queue_head_t *lttng_get_writer_buf_wait_queue(struct channel *chan, int cpu
 }
 
 static
-wait_queue_head_t *lttng_get_hp_wait_queue(struct channel *chan)
+wait_queue_head_t *lttng_get_hp_wait_queue(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	return &chan->hp_wait;
 }
 
 static
-int lttng_is_finalized(struct channel *chan)
+int lttng_is_finalized(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	return lib_ring_buffer_channel_is_finalized(chan);
 }
 
 static
-int lttng_is_disabled(struct channel *chan)
+int lttng_is_disabled(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	return lib_ring_buffer_channel_is_disabled(chan);
 }

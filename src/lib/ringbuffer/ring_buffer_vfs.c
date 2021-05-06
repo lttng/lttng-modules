@@ -101,7 +101,7 @@ unsigned int lib_ring_buffer_poll(struct file *filp, poll_table *wait,
 		struct lib_ring_buffer *buf)
 {
 	unsigned int mask = 0;
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	int finalized, disabled;
 
@@ -170,7 +170,7 @@ unsigned int vfs_lib_ring_buffer_poll(struct file *filp, poll_table *wait)
 long lib_ring_buffer_ioctl(struct file *filp, unsigned int cmd,
 		unsigned long arg, struct lib_ring_buffer *buf)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	if (lib_ring_buffer_channel_is_disabled(chan))
@@ -308,7 +308,7 @@ long vfs_lib_ring_buffer_ioctl(struct file *filp, unsigned int cmd, unsigned lon
 long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
 		unsigned long arg, struct lib_ring_buffer *buf)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	if (lib_ring_buffer_channel_is_disabled(chan))
