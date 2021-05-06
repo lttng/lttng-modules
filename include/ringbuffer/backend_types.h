@@ -46,7 +46,7 @@ struct lib_ring_buffer_backend_counts {
 /*
  * Forward declaration of frontend-specific channel and ring_buffer.
  */
-struct channel;
+struct lttng_kernel_ring_buffer_channel;
 struct lib_ring_buffer;
 
 struct lib_ring_buffer_backend {
@@ -63,7 +63,7 @@ struct lib_ring_buffer_backend {
 	struct lib_ring_buffer_backend_pages **array;
 	unsigned int num_pages_per_subbuf;
 
-	struct channel *chan;		/* Associated channel */
+	struct lttng_kernel_ring_buffer_channel *chan;		/* Associated channel */
 	int cpu;			/* This buffer's cpu. -1 if global. */
 	union v_atomic records_read;	/* Number of records read */
 	unsigned int allocated:1;	/* is buffer allocated ? */

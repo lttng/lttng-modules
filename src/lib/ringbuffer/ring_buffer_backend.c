@@ -184,7 +184,7 @@ int lib_ring_buffer_backend_create(struct lib_ring_buffer_backend *bufb,
 {
 	const struct lib_ring_buffer_config *config = &chanb->config;
 
-	bufb->chan = container_of(chanb, struct channel, backend);
+	bufb->chan = container_of(chanb, struct lttng_kernel_ring_buffer_channel, backend);
 	bufb->cpu = cpu;
 
 	return lib_ring_buffer_backend_allocate(config, bufb, chanb->buf_size,
@@ -248,7 +248,7 @@ void lib_ring_buffer_backend_reset(struct lib_ring_buffer_backend *bufb)
  */
 void channel_backend_reset(struct channel_backend *chanb)
 {
-	struct channel *chan = container_of(chanb, struct channel, backend);
+	struct lttng_kernel_ring_buffer_channel *chan = container_of(chanb, struct lttng_kernel_ring_buffer_channel, backend);
 	const struct lib_ring_buffer_config *config = &chanb->config;
 
 	/*
@@ -366,7 +366,7 @@ int channel_backend_init(struct channel_backend *chanb,
 			 const struct lib_ring_buffer_config *config,
 			 void *priv, size_t subbuf_size, size_t num_subbuf)
 {
-	struct channel *chan = container_of(chanb, struct channel, backend);
+	struct lttng_kernel_ring_buffer_channel *chan = container_of(chanb, struct lttng_kernel_ring_buffer_channel, backend);
 	unsigned int i;
 	int ret;
 

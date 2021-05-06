@@ -2880,7 +2880,7 @@ void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group 
  * was written and a negative value on error.
  */
 int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
-		struct channel *chan, bool *coherent)
+		struct lttng_kernel_ring_buffer_channel *chan, bool *coherent)
 {
 	struct lttng_kernel_ring_buffer_ctx ctx;
 	int ret = 0;

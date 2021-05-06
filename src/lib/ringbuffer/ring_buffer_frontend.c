@@ -79,7 +79,7 @@ DEFINE_PER_CPU(unsigned int, lib_ring_buffer_nesting);
 EXPORT_PER_CPU_SYMBOL(lib_ring_buffer_nesting);
 
 static
-void lib_ring_buffer_print_errors(struct channel *chan,
+void lib_ring_buffer_print_errors(struct lttng_kernel_ring_buffer_channel *chan,
 				  struct lib_ring_buffer *buf, int cpu);
 static
 void _lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf,
@@ -88,7 +88,7 @@ void _lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf,
 static
 int lib_ring_buffer_poll_deliver(const struct lib_ring_buffer_config *config,
 				 struct lib_ring_buffer *buf,
-			         struct channel *chan)
+			         struct lttng_kernel_ring_buffer_channel *chan)
 {
 	unsigned long consumed_old, consumed_idx, commit_count, write_offset;
 
@@ -131,7 +131,7 @@ int lib_ring_buffer_poll_deliver(const struct lib_ring_buffer_config *config,
  */
 void lib_ring_buffer_free(struct lib_ring_buffer *buf)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 
 	irq_work_sync(&buf->wakeup_pending);
 
@@ -154,7 +154,7 @@ void lib_ring_buffer_free(struct lib_ring_buffer *buf)
  */
 void lib_ring_buffer_reset(struct lib_ring_buffer *buf)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	unsigned int i;
 
@@ -193,7 +193,7 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_reset);
  * be using the iterator concurrently with reset. The previous current iterator
  * record is reset.
  */
-void channel_reset(struct channel *chan)
+void channel_reset(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	/*
 	 * Reset iterators first. Will put the subbuffer if held for reading.
@@ -217,7 +217,7 @@ static void lib_ring_buffer_pending_wakeup_buf(struct irq_work *entry)
 
 static void lib_ring_buffer_pending_wakeup_chan(struct irq_work *entry)
 {
-	struct channel *chan = container_of(entry, struct channel, wakeup_pending);
+	struct lttng_kernel_ring_buffer_channel *chan = container_of(entry, struct lttng_kernel_ring_buffer_channel, wakeup_pending);
 	wake_up_interruptible(&chan->read_wait);
 }
 
@@ -228,7 +228,7 @@ int lib_ring_buffer_create(struct lib_ring_buffer *buf,
 			   struct channel_backend *chanb, int cpu)
 {
 	const struct lib_ring_buffer_config *config = &chanb->config;
-	struct channel *chan = container_of(chanb, struct channel, backend);
+	struct lttng_kernel_ring_buffer_channel *chan = container_of(chanb, struct lttng_kernel_ring_buffer_channel, backend);
 	void *priv = chanb->priv;
 	size_t subbuf_header_size;
 	u64 tsc;
@@ -334,7 +334,7 @@ free_chanbuf:
 static void switch_buffer_timer(LTTNG_TIMER_FUNC_ARG_TYPE t)
 {
 	struct lib_ring_buffer *buf = lttng_from_timer(buf, t, switch_timer);
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	/*
@@ -356,7 +356,7 @@ static void switch_buffer_timer(LTTNG_TIMER_FUNC_ARG_TYPE t)
  */
 static void lib_ring_buffer_start_switch_timer(struct lib_ring_buffer *buf)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	unsigned int flags = 0;
 
@@ -382,7 +382,7 @@ static void lib_ring_buffer_start_switch_timer(struct lib_ring_buffer *buf)
  */
 static void lib_ring_buffer_stop_switch_timer(struct lib_ring_buffer *buf)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 
 	if (!chan->switch_timer_interval || !buf->switch_timer_enabled)
 		return;
@@ -397,7 +397,7 @@ static void lib_ring_buffer_stop_switch_timer(struct lib_ring_buffer *buf)
 static void read_buffer_timer(LTTNG_TIMER_FUNC_ARG_TYPE t)
 {
 	struct lib_ring_buffer *buf = lttng_from_timer(buf, t, read_timer);
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	CHAN_WARN_ON(chan, !buf->backend.allocated);
@@ -421,7 +421,7 @@ static void read_buffer_timer(LTTNG_TIMER_FUNC_ARG_TYPE t)
  */
 static void lib_ring_buffer_start_read_timer(struct lib_ring_buffer *buf)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	unsigned int flags = 0;
 
@@ -449,7 +449,7 @@ static void lib_ring_buffer_start_read_timer(struct lib_ring_buffer *buf)
  */
 static void lib_ring_buffer_stop_read_timer(struct lib_ring_buffer *buf)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	if (config->wakeup != RING_BUFFER_WAKEUP_BY_TIMER
@@ -489,7 +489,7 @@ EXPORT_SYMBOL_GPL(lttng_rb_set_hp_online);
 int lttng_cpuhp_rb_frontend_dead(unsigned int cpu,
 		struct lttng_cpuhp_node *node)
 {
-	struct channel *chan = container_of(node, struct channel,
+	struct lttng_kernel_ring_buffer_channel *chan = container_of(node, struct lttng_kernel_ring_buffer_channel,
 					    cpuhp_prepare);
 	struct lib_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
@@ -510,7 +510,7 @@ EXPORT_SYMBOL_GPL(lttng_cpuhp_rb_frontend_dead);
 int lttng_cpuhp_rb_frontend_online(unsigned int cpu,
 		struct lttng_cpuhp_node *node)
 {
-	struct channel *chan = container_of(node, struct channel,
+	struct lttng_kernel_ring_buffer_channel *chan = container_of(node, struct lttng_kernel_ring_buffer_channel,
 					    cpuhp_online);
 	struct lib_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
@@ -527,7 +527,7 @@ EXPORT_SYMBOL_GPL(lttng_cpuhp_rb_frontend_online);
 int lttng_cpuhp_rb_frontend_offline(unsigned int cpu,
 		struct lttng_cpuhp_node *node)
 {
-	struct channel *chan = container_of(node, struct channel,
+	struct lttng_kernel_ring_buffer_channel *chan = container_of(node, struct lttng_kernel_ring_buffer_channel,
 					    cpuhp_online);
 	struct lib_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
@@ -558,7 +558,7 @@ int lib_ring_buffer_cpu_hp_callback(struct notifier_block *nb,
 					      void *hcpu)
 {
 	unsigned int cpu = (unsigned long)hcpu;
-	struct channel *chan = container_of(nb, struct channel,
+	struct lttng_kernel_ring_buffer_channel *chan = container_of(nb, struct lttng_kernel_ring_buffer_channel,
 					    cpu_hp_notifier);
 	struct lib_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
@@ -617,7 +617,7 @@ static int notrace ring_buffer_tick_nohz_callback(struct notifier_block *nb,
 						  unsigned long val,
 						  void *data)
 {
-	struct channel *chan = container_of(nb, struct channel,
+	struct lttng_kernel_ring_buffer_channel *chan = container_of(nb, struct lttng_kernel_ring_buffer_channel,
 					    tick_nohz_notifier);
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	struct lib_ring_buffer *buf;
@@ -689,7 +689,7 @@ void notrace lib_ring_buffer_tick_nohz_restart(void)
 /*
  * Holds CPU hotplug.
  */
-static void channel_unregister_notifiers(struct channel *chan)
+static void channel_unregister_notifiers(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
@@ -766,7 +766,7 @@ static void lib_ring_buffer_clear_quiescent(struct lib_ring_buffer *buf)
 	buf->quiescent = false;
 }
 
-void lib_ring_buffer_set_quiescent_channel(struct channel *chan)
+void lib_ring_buffer_set_quiescent_channel(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	int cpu;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
@@ -788,7 +788,7 @@ void lib_ring_buffer_set_quiescent_channel(struct channel *chan)
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_set_quiescent_channel);
 
-void lib_ring_buffer_clear_quiescent_channel(struct channel *chan)
+void lib_ring_buffer_clear_quiescent_channel(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	int cpu;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
@@ -810,7 +810,7 @@ void lib_ring_buffer_clear_quiescent_channel(struct channel *chan)
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_clear_quiescent_channel);
 
-static void channel_free(struct channel *chan)
+static void channel_free(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	if (chan->backend.release_priv_ops) {
 		chan->backend.release_priv_ops(chan->backend.priv_ops);
@@ -838,20 +838,20 @@ static void channel_free(struct channel *chan)
  * Holds cpu hotplug.
  * Returns NULL on failure.
  */
-struct channel *channel_create(const struct lib_ring_buffer_config *config,
+struct lttng_kernel_ring_buffer_channel *channel_create(const struct lib_ring_buffer_config *config,
 		   const char *name, void *priv, void *buf_addr,
 		   size_t subbuf_size,
 		   size_t num_subbuf, unsigned int switch_timer_interval,
 		   unsigned int read_timer_interval)
 {
 	int ret;
-	struct channel *chan;
+	struct lttng_kernel_ring_buffer_channel *chan;
 
 	if (lib_ring_buffer_check_config(config, switch_timer_interval,
 					 read_timer_interval))
 		return NULL;
 
-	chan = kzalloc(sizeof(struct channel), GFP_KERNEL);
+	chan = kzalloc(sizeof(struct lttng_kernel_ring_buffer_channel), GFP_KERNEL);
 	if (!chan)
 		return NULL;
 
@@ -959,7 +959,7 @@ EXPORT_SYMBOL_GPL(channel_create);
 static
 void channel_release(struct kref *kref)
 {
-	struct channel *chan = container_of(kref, struct channel, ref);
+	struct lttng_kernel_ring_buffer_channel *chan = container_of(kref, struct lttng_kernel_ring_buffer_channel, ref);
 	channel_free(chan);
 }
 
@@ -974,7 +974,7 @@ void channel_release(struct kref *kref)
  * They should release their handle at that point.  Returns the private
  * data pointer.
  */
-void *channel_destroy(struct channel *chan)
+void *channel_destroy(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	int cpu;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
@@ -1027,7 +1027,7 @@ EXPORT_SYMBOL_GPL(channel_destroy);
 
 struct lib_ring_buffer *channel_get_ring_buffer(
 					const struct lib_ring_buffer_config *config,
-					struct channel *chan, int cpu)
+					struct lttng_kernel_ring_buffer_channel *chan, int cpu)
 {
 	if (config->alloc == RING_BUFFER_ALLOC_GLOBAL)
 		return chan->backend.buf;
@@ -1038,7 +1038,7 @@ EXPORT_SYMBOL_GPL(channel_get_ring_buffer);
 
 int lib_ring_buffer_open_read(struct lib_ring_buffer *buf)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 
 	if (!atomic_long_add_unless(&buf->active_readers, 1, 1))
 		return -EBUSY;
@@ -1053,7 +1053,7 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_open_read);
 
 void lib_ring_buffer_release_read(struct lib_ring_buffer *buf)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 
 	CHAN_WARN_ON(chan, atomic_long_read(&buf->active_readers) != 1);
 	lttng_smp_mb__before_atomic();
@@ -1087,7 +1087,7 @@ static void remote_mb(void *info)
 int lib_ring_buffer_snapshot(struct lib_ring_buffer *buf,
 			     unsigned long *consumed, unsigned long *produced)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	unsigned long consumed_cur, write_offset;
 	int finalized;
@@ -1150,7 +1150,7 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_snapshot);
 int lib_ring_buffer_snapshot_sample_positions(struct lib_ring_buffer *buf,
 		unsigned long *consumed, unsigned long *produced)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
 	smp_rmb();
@@ -1178,7 +1178,7 @@ void lib_ring_buffer_move_consumer(struct lib_ring_buffer *buf,
 				   unsigned long consumed_new)
 {
 	struct lib_ring_buffer_backend *bufb = &buf->backend;
-	struct channel *chan = bufb->chan;
+	struct lttng_kernel_ring_buffer_channel *chan = bufb->chan;
 	unsigned long consumed;
 
 	CHAN_WARN_ON(chan, atomic_long_read(&buf->active_readers) != 1);
@@ -1200,7 +1200,7 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_move_consumer);
 #if ARCH_IMPLEMENTS_FLUSH_DCACHE_PAGE
 static void lib_ring_buffer_flush_read_subbuf_dcache(
 		const struct lib_ring_buffer_config *config,
-		struct channel *chan,
+		struct lttng_kernel_ring_buffer_channel *chan,
 		struct lib_ring_buffer *buf)
 {
 	struct lib_ring_buffer_backend_pages *pages;
@@ -1232,7 +1232,7 @@ static void lib_ring_buffer_flush_read_subbuf_dcache(
 #else
 static void lib_ring_buffer_flush_read_subbuf_dcache(
 		const struct lib_ring_buffer_config *config,
-		struct channel *chan,
+		struct lttng_kernel_ring_buffer_channel *chan,
 		struct lib_ring_buffer *buf)
 {
 }
@@ -1250,7 +1250,7 @@ static void lib_ring_buffer_flush_read_subbuf_dcache(
 int lib_ring_buffer_get_subbuf(struct lib_ring_buffer *buf,
 			       unsigned long consumed)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	unsigned long consumed_cur, consumed_idx, commit_count, write_offset;
 	int ret;
@@ -1405,7 +1405,7 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_get_subbuf);
 void lib_ring_buffer_put_subbuf(struct lib_ring_buffer *buf)
 {
 	struct lib_ring_buffer_backend *bufb = &buf->backend;
-	struct channel *chan = bufb->chan;
+	struct lttng_kernel_ring_buffer_channel *chan = bufb->chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	unsigned long read_sb_bindex, consumed_idx, consumed;
 
@@ -1461,7 +1461,7 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_put_subbuf);
  */
 static
 void lib_ring_buffer_print_subbuffer_errors(struct lib_ring_buffer *buf,
-					    struct channel *chan,
+					    struct lttng_kernel_ring_buffer_channel *chan,
 					    unsigned long cons_offset,
 					    int cpu)
 {
@@ -1488,7 +1488,7 @@ void lib_ring_buffer_print_subbuffer_errors(struct lib_ring_buffer *buf,
 
 static
 void lib_ring_buffer_print_buffer_errors(struct lib_ring_buffer *buf,
-					 struct channel *chan,
+					 struct lttng_kernel_ring_buffer_channel *chan,
 					 void *priv, int cpu)
 {
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
@@ -1519,7 +1519,7 @@ void lib_ring_buffer_print_buffer_errors(struct lib_ring_buffer *buf,
 
 #ifdef LTTNG_RING_BUFFER_COUNT_EVENTS
 static
-void lib_ring_buffer_print_records_count(struct channel *chan,
+void lib_ring_buffer_print_records_count(struct lttng_kernel_ring_buffer_channel *chan,
 					 struct lib_ring_buffer *buf,
 					 int cpu)
 {
@@ -1541,7 +1541,7 @@ void lib_ring_buffer_print_records_count(struct channel *chan,
 }
 #else
 static
-void lib_ring_buffer_print_records_count(struct channel *chan,
+void lib_ring_buffer_print_records_count(struct lttng_kernel_ring_buffer_channel *chan,
 					 struct lib_ring_buffer *buf,
 					 int cpu)
 {
@@ -1549,7 +1549,7 @@ void lib_ring_buffer_print_records_count(struct channel *chan,
 #endif
 
 static
-void lib_ring_buffer_print_errors(struct channel *chan,
+void lib_ring_buffer_print_errors(struct lttng_kernel_ring_buffer_channel *chan,
 				  struct lib_ring_buffer *buf, int cpu)
 {
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
@@ -1579,7 +1579,7 @@ void lib_ring_buffer_print_errors(struct channel *chan,
  */
 static
 void lib_ring_buffer_switch_old_start(struct lib_ring_buffer *buf,
-				      struct channel *chan,
+				      struct lttng_kernel_ring_buffer_channel *chan,
 				      struct switch_offsets *offsets,
 				      u64 tsc)
 {
@@ -1624,7 +1624,7 @@ void lib_ring_buffer_switch_old_start(struct lib_ring_buffer *buf,
  */
 static
 void lib_ring_buffer_switch_old_end(struct lib_ring_buffer *buf,
-				    struct channel *chan,
+				    struct lttng_kernel_ring_buffer_channel *chan,
 				    struct switch_offsets *offsets,
 				    u64 tsc)
 {
@@ -1681,7 +1681,7 @@ void lib_ring_buffer_switch_old_end(struct lib_ring_buffer *buf,
  */
 static
 void lib_ring_buffer_switch_new_start(struct lib_ring_buffer *buf,
-				      struct channel *chan,
+				      struct lttng_kernel_ring_buffer_channel *chan,
 				      struct switch_offsets *offsets,
 				      u64 tsc)
 {
@@ -1726,7 +1726,7 @@ void lib_ring_buffer_switch_new_start(struct lib_ring_buffer *buf,
  */
 static
 void lib_ring_buffer_switch_new_end(struct lib_ring_buffer *buf,
-					    struct channel *chan,
+					    struct lttng_kernel_ring_buffer_channel *chan,
 					    struct switch_offsets *offsets,
 					    u64 tsc)
 {
@@ -1757,7 +1757,7 @@ void lib_ring_buffer_switch_new_end(struct lib_ring_buffer *buf,
 static
 int lib_ring_buffer_try_switch_slow(enum switch_mode mode,
 				    struct lib_ring_buffer *buf,
-				    struct channel *chan,
+				    struct lttng_kernel_ring_buffer_channel *chan,
 				    struct switch_offsets *offsets,
 				    u64 *tsc)
 {
@@ -1864,7 +1864,7 @@ int lib_ring_buffer_try_switch_slow(enum switch_mode mode,
  */
 void lib_ring_buffer_switch_slow(struct lib_ring_buffer *buf, enum switch_mode mode)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	struct switch_offsets offsets;
 	unsigned long oldidx;
@@ -1929,7 +1929,7 @@ static void remote_switch(void *info)
 static void _lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf,
 		enum switch_mode mode)
 {
-	struct channel *chan = buf->backend.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	int ret;
 	struct switch_param param;
@@ -1979,7 +1979,7 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_switch_remote_empty);
 void lib_ring_buffer_clear(struct lib_ring_buffer *buf)
 {
 	struct lib_ring_buffer_backend *bufb = &buf->backend;
-	struct channel *chan = bufb->chan;
+	struct lttng_kernel_ring_buffer_channel *chan = bufb->chan;
 
 	lib_ring_buffer_switch_remote(buf);
 	lib_ring_buffer_clear_reader(buf, chan);
@@ -1995,7 +1995,7 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_clear);
  */
 static
 int lib_ring_buffer_try_reserve_slow(struct lib_ring_buffer *buf,
-				     struct channel *chan,
+				     struct lttng_kernel_ring_buffer_channel *chan,
 				     struct switch_offsets *offsets,
 				     struct lttng_kernel_ring_buffer_ctx *ctx,
 				     void *client_ctx)
@@ -2145,7 +2145,7 @@ retry:
 	return 0;
 }
 
-static struct lib_ring_buffer *get_current_buf(struct channel *chan, int cpu)
+static struct lib_ring_buffer *get_current_buf(struct lttng_kernel_ring_buffer_channel *chan, int cpu)
 {
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 
@@ -2155,7 +2155,7 @@ static struct lib_ring_buffer *get_current_buf(struct channel *chan, int cpu)
 		return chan->backend.buf;
 }
 
-void lib_ring_buffer_lost_event_too_big(struct channel *chan)
+void lib_ring_buffer_lost_event_too_big(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	struct lib_ring_buffer *buf = get_current_buf(chan, smp_processor_id());
@@ -2175,7 +2175,7 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_lost_event_too_big);
 int lib_ring_buffer_reserve_slow(struct lttng_kernel_ring_buffer_ctx *ctx,
 		void *client_ctx)
 {
-	struct channel *chan = ctx->priv.chan;
+	struct lttng_kernel_ring_buffer_channel *chan = ctx->priv.chan;
 	const struct lib_ring_buffer_config *config = &chan->backend.config;
 	struct lib_ring_buffer *buf;
 	struct switch_offsets offsets;
@@ -2276,7 +2276,7 @@ void deliver_count_events(const struct lib_ring_buffer_config *config,
 
 void lib_ring_buffer_check_deliver_slow(const struct lib_ring_buffer_config *config,
 				   struct lib_ring_buffer *buf,
-			           struct channel *chan,
+			           struct lttng_kernel_ring_buffer_channel *chan,
 			           unsigned long offset,
 				   unsigned long commit_count,
 			           unsigned long idx,

@@ -149,7 +149,7 @@ struct lttng_kernel_channel_buffer_private {
 
 	enum channel_type channel_type;
 	struct lttng_kernel_ctx *ctx;
-	struct channel *rb_chan;		/* Ring buffer channel */
+	struct lttng_kernel_ring_buffer_channel *rb_chan;		/* Ring buffer channel */
 	unsigned int metadata_dumped:1;
 	struct list_head node;			/* Channel list in session */
 	struct lttng_transport *transport;
@@ -308,26 +308,26 @@ struct lttng_metadata_stream {
 struct lttng_kernel_channel_buffer_ops_private {
 	struct lttng_kernel_channel_buffer_ops *pub;	/* Public channel buffer ops interface */
 
-	struct channel *(*channel_create)(const char *name,
+	struct lttng_kernel_ring_buffer_channel *(*channel_create)(const char *name,
 				void *priv,
 				void *buf_addr,
 				size_t subbuf_size, size_t num_subbuf,
 				unsigned int switch_timer_interval,
 				unsigned int read_timer_interval);
-	void (*channel_destroy)(struct channel *chan);
-	struct lib_ring_buffer *(*buffer_read_open)(struct channel *chan);
-	int (*buffer_has_read_closed_stream)(struct channel *chan);
+	void (*channel_destroy)(struct lttng_kernel_ring_buffer_channel *chan);
+	struct lib_ring_buffer *(*buffer_read_open)(struct lttng_kernel_ring_buffer_channel *chan);
+	int (*buffer_has_read_closed_stream)(struct lttng_kernel_ring_buffer_channel *chan);
 	void (*buffer_read_close)(struct lib_ring_buffer *buf);
 	/*
 	 * packet_avail_size returns the available size in the current
 	 * packet. Note that the size returned is only a hint, since it
 	 * may change due to concurrent writes.
 	 */
-	size_t (*packet_avail_size)(struct channel *chan);
-	wait_queue_head_t *(*get_writer_buf_wait_queue)(struct channel *chan, int cpu);
-	wait_queue_head_t *(*get_hp_wait_queue)(struct channel *chan);
-	int (*is_finalized)(struct channel *chan);
-	int (*is_disabled)(struct channel *chan);
+	size_t (*packet_avail_size)(struct lttng_kernel_ring_buffer_channel *chan);
+	wait_queue_head_t *(*get_writer_buf_wait_queue)(struct lttng_kernel_ring_buffer_channel *chan, int cpu);
+	wait_queue_head_t *(*get_hp_wait_queue)(struct lttng_kernel_ring_buffer_channel *chan);
+	int (*is_finalized)(struct lttng_kernel_ring_buffer_channel *chan);
+	int (*is_disabled)(struct lttng_kernel_ring_buffer_channel *chan);
 	int (*timestamp_begin) (const struct lib_ring_buffer_config *config,
 			struct lib_ring_buffer *bufb,
 			uint64_t *timestamp_begin);
@@ -403,7 +403,7 @@ struct lttng_event_notifier_group {
 	struct lttng_event_notifier_ht event_notifiers_ht; /* Hash table of event notifiers */
 	struct lttng_kernel_channel_buffer_ops *ops;
 	struct lttng_transport *transport;
-	struct channel *chan;		/* Ring buffer channel for event notifier group. */
+	struct lttng_kernel_ring_buffer_channel *chan;		/* Ring buffer channel for event notifier group. */
 	struct lib_ring_buffer *buf;	/* Ring buffer for event notifier group. */
 	wait_queue_head_t read_wait;
 	struct irq_work wakeup_pending;	/* Pending wakeup irq work. */
@@ -1140,7 +1140,7 @@ int lttng_probes_init(void);
 void lttng_probes_exit(void);
 
 int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
-		struct channel *chan, bool *coherent);
+		struct lttng_kernel_ring_buffer_channel *chan, bool *coherent);
 
 int lttng_id_tracker_get_node_id(const struct lttng_id_hash_node *node);
 int lttng_id_tracker_empty_set(struct lttng_kernel_id_tracker *lf);

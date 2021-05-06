@@ -41,7 +41,7 @@ struct channel_iter {
 };
 
 /* channel: collection of per-cpu ring buffers. */
-struct channel {
+struct lttng_kernel_ring_buffer_channel {
 	atomic_t record_disabled;
 	unsigned long commit_count_mask;	/*
 						 * Commit count mask, removing
@@ -164,12 +164,12 @@ struct lib_ring_buffer {
 };
 
 static inline
-void *channel_get_private(struct channel *chan)
+void *channel_get_private(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	return chan->backend.priv;
 }
 
-void lib_ring_buffer_lost_event_too_big(struct channel *chan);
+void lib_ring_buffer_lost_event_too_big(struct lttng_kernel_ring_buffer_channel *chan);
 
 /*
  * Issue warnings and disable channels upon internal error.
@@ -178,14 +178,14 @@ void lib_ring_buffer_lost_event_too_big(struct channel *chan);
  */
 #define CHAN_WARN_ON(c, cond)						\
 	({								\
-		struct channel *__chan;					\
+		struct lttng_kernel_ring_buffer_channel *__chan;	\
 		int _____ret = unlikely(cond);				\
 		if (_____ret) {						\
 			if (__same_type(*(c), struct channel_backend))	\
 				__chan = container_of((void *) (c),	\
-							struct channel, \
+							struct lttng_kernel_ring_buffer_channel, \
 							backend);	\
-			else if (__same_type(*(c), struct channel))	\
+			else if (__same_type(*(c), struct lttng_kernel_ring_buffer_channel)) \
 				__chan = (void *) (c);			\
 			else						\
 				BUG_ON(1);				\
