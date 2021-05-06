@@ -22,7 +22,5 @@
 #include <ringbuffer/config.h>
 
 struct lttng_kernel_session;
-struct lttng_channel;
-struct lttng_event;
 
 #endif /* LTTNG_TRACER_CORE_H */

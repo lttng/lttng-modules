@@ -491,7 +491,7 @@ int lttng_abi_create_channel(struct file *session_file,
 	struct lttng_kernel_session *session = session_file->private_data;
 	const struct file_operations *fops = NULL;
 	const char *transport_name;
-	struct lttng_channel *chan;
+	struct lttng_kernel_channel_buffer *chan;
 	struct file *chan_file;
 	int chan_fd;
 	int ret = 0;
@@ -559,7 +559,7 @@ int lttng_abi_create_channel(struct file *session_file,
 		ret = -EINVAL;
 		goto chan_error;
 	}
-	chan->file = chan_file;
+	chan->priv->parent.file = chan_file;
 	chan_file->private_data = chan;
 	fd_install(chan_fd, chan_file);
 
@@ -1627,12 +1627,12 @@ fd_error:
 static
 int lttng_abi_open_stream(struct file *channel_file)
 {
-	struct lttng_channel *channel = channel_file->private_data;
+	struct lttng_kernel_channel_buffer *channel = channel_file->private_data;
 	struct lib_ring_buffer *buf;
 	int ret;
 	void *stream_priv;
 
-	buf = channel->ops->priv->buffer_read_open(channel->chan);
+	buf = channel->ops->priv->buffer_read_open(channel->priv->rb_chan);
 	if (!buf)
 		return -ENOENT;
 
@@ -1653,14 +1653,14 @@ fd_error:
 static
 int lttng_abi_open_metadata_stream(struct file *channel_file)
 {
-	struct lttng_channel *channel = channel_file->private_data;
-	struct lttng_kernel_session *session = channel->session;
+	struct lttng_kernel_channel_buffer *channel = channel_file->private_data;
+	struct lttng_kernel_session *session = channel->parent.session;
 	struct lib_ring_buffer *buf;
 	int ret;
 	struct lttng_metadata_stream *metadata_stream;
 	void *stream_priv;
 
-	buf = channel->ops->priv->buffer_read_open(channel->chan);
+	buf = channel->ops->priv->buffer_read_open(channel->priv->rb_chan);
 	if (!buf)
 		return -ENOENT;
 
@@ -1674,7 +1674,7 @@ int lttng_abi_open_metadata_stream(struct file *channel_file)
 	init_waitqueue_head(&metadata_stream->read_wait);
 	metadata_stream->priv = buf;
 	stream_priv = metadata_stream;
-	metadata_stream->transport = channel->transport;
+	metadata_stream->transport = channel->priv->transport;
 	/* Initial state is an empty metadata, considered as incoherent. */
 	metadata_stream->coherent = false;
 
@@ -1808,7 +1808,7 @@ int lttng_abi_create_event(struct file *channel_file,
 			   struct lttng_kernel_abi_event *event_param)
 {
 	const struct file_operations *fops;
-	struct lttng_channel *channel = channel_file->private_data;
+	struct lttng_kernel_channel_buffer *channel = channel_file->private_data;
 	int event_fd, ret;
 	struct file *event_file;
 	void *priv;
@@ -2342,7 +2342,7 @@ static const struct file_operations lttng_event_notifier_group_fops = {
 static
 long lttng_channel_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	struct lttng_channel *channel = file->private_data;
+	struct lttng_kernel_channel_buffer *channel = file->private_data;
 
 	switch (cmd) {
 	case LTTNG_KERNEL_ABI_OLD_STREAM:
@@ -2465,7 +2465,7 @@ old_event_end:
 
 		ret = lttng_abi_add_context(file,
 				ucontext_param,
-				&channel->ctx, channel->session);
+				&channel->priv->ctx, channel->parent.session);
 
 old_ctx_error_free_old_param:
 		kfree(old_ucontext_param);
@@ -2484,7 +2484,7 @@ old_ctx_end:
 			return -EFAULT;
 		return lttng_abi_add_context(file,
 				&ucontext_param,
-				&channel->ctx, channel->session);
+				&channel->priv->ctx, channel->parent.session);
 	}
 	case LTTNG_KERNEL_ABI_OLD_ENABLE:
 	case LTTNG_KERNEL_ABI_ENABLE:
@@ -2533,19 +2533,19 @@ long lttng_metadata_ioctl(struct file *file, unsigned int cmd, unsigned long arg
  */
 unsigned int lttng_channel_poll(struct file *file, poll_table *wait)
 {
-	struct lttng_channel *channel = file->private_data;
+	struct lttng_kernel_channel_buffer *channel = file->private_data;
 	unsigned int mask = 0;
 
 	if (file->f_mode & FMODE_READ) {
 		poll_wait_set_exclusive(wait);
-		poll_wait(file, channel->ops->priv->get_hp_wait_queue(channel->chan),
+		poll_wait(file, channel->ops->priv->get_hp_wait_queue(channel->priv->rb_chan),
 			  wait);
 
-		if (channel->ops->priv->is_disabled(channel->chan))
+		if (channel->ops->priv->is_disabled(channel->priv->rb_chan))
 			return POLLERR;
-		if (channel->ops->priv->is_finalized(channel->chan))
+		if (channel->ops->priv->is_finalized(channel->priv->rb_chan))
 			return POLLHUP;
-		if (channel->ops->priv->buffer_has_read_closed_stream(channel->chan))
+		if (channel->ops->priv->buffer_has_read_closed_stream(channel->priv->rb_chan))
 			return POLLIN | POLLRDNORM;
 		return 0;
 	}
@@ -2556,20 +2556,20 @@ unsigned int lttng_channel_poll(struct file *file, poll_table *wait)
 static
 int lttng_channel_release(struct inode *inode, struct file *file)
 {
-	struct lttng_channel *channel = file->private_data;
+	struct lttng_kernel_channel_buffer *channel = file->private_data;
 
 	if (channel)
-		fput(channel->session->priv->file);
+		fput(channel->parent.session->priv->file);
 	return 0;
 }
 
 static
 int lttng_metadata_channel_release(struct inode *inode, struct file *file)
 {
-	struct lttng_channel *channel = file->private_data;
+	struct lttng_kernel_channel_buffer *channel = file->private_data;
 
 	if (channel) {
-		fput(channel->session->priv->file);
+		fput(channel->parent.session->priv->file);
 		lttng_metadata_channel_destroy(channel);
 	}
 
@@ -2696,7 +2696,7 @@ int lttng_event_recorder_event_release(struct inode *inode, struct file *file)
 	struct lttng_kernel_event_recorder *event = file->private_data;
 
 	if (event)
-		fput(event->chan->file);
+		fput(event->chan->priv->parent.file);
 	return 0;
 }
 
@@ -2706,7 +2706,7 @@ int lttng_event_recorder_enabler_release(struct inode *inode, struct file *file)
 	struct lttng_event_enabler *event_enabler = file->private_data;
 
 	if (event_enabler)
-		fput(event_enabler->chan->file);
+		fput(event_enabler->chan->priv->parent.file);
 	return 0;
 }
 

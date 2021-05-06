@@ -25,7 +25,7 @@
 
 #define lttng_is_signed_type(type)	(((type) -1) < (type) 1)
 
-struct lttng_channel;
+struct lttng_kernel_channel_buffer;
 struct lttng_kernel_session;
 struct lttng_kernel_ring_buffer_ctx;
 
@@ -47,11 +47,6 @@ enum lttng_kernel_string_encoding {
 	lttng_kernel_string_encoding_UTF8 = 1,
 	lttng_kernel_string_encoding_ASCII = 2,
 	NR_LTTNG_KERNEL_STRING_ENCODING,
-};
-
-enum channel_type {
-	PER_CPU_CHANNEL,
-	METADATA_CHANNEL,
 };
 
 struct lttng_kernel_enum_value {
@@ -362,7 +357,7 @@ struct lttng_kernel_event_recorder {
 	struct lttng_kernel_event_common parent;
 	struct lttng_kernel_event_recorder_private *priv;	/* Private event record interface */
 
-	struct lttng_channel *chan;
+	struct lttng_kernel_channel_buffer *chan;
 };
 
 struct lttng_kernel_notification_ctx {
@@ -397,37 +392,32 @@ struct lttng_kernel_channel_buffer_ops {
 			     size_t len);
 	void (*event_strcpy_from_user)(struct lttng_kernel_ring_buffer_ctx *ctx,
 				       const char __user *src, size_t len);
+	void (*lost_event_too_big)(struct lttng_kernel_channel_buffer *lttng_channel);
 };
 
-struct lttng_channel {
-	unsigned int id;
-	struct channel *chan;		/* Channel buffers */
+enum lttng_kernel_channel_type {
+	LTTNG_KERNEL_CHANNEL_TYPE_BUFFER = 0,
+};
+
+struct lttng_kernel_channel_common_private;
+
+/* Use container_of() to get child. */
+struct lttng_kernel_channel_common {
+	struct lttng_kernel_channel_common_private *priv;	/* Private channel interface. */
+
+	enum lttng_kernel_channel_type type;
+
 	int enabled;
-	struct lttng_kernel_ctx *ctx;
-	/* Event ID management */
 	struct lttng_kernel_session *session;
-	struct file *file;		/* File associated to channel */
-	unsigned int free_event_id;	/* Next event ID to allocate */
-	struct list_head list;		/* Channel list */
+};
+
+struct lttng_kernel_channel_buffer_private;
+
+struct lttng_kernel_channel_buffer {
+	struct lttng_kernel_channel_common parent;
+	struct lttng_kernel_channel_buffer_private *priv;
+
 	struct lttng_kernel_channel_buffer_ops *ops;
-	struct lttng_transport *transport;
-	struct hlist_head *sc_table;	/* for syscall tracing */
-	struct hlist_head *compat_sc_table;
-	struct hlist_head *sc_exit_table;	/* for syscall exit tracing */
-	struct hlist_head *compat_sc_exit_table;
-	struct hlist_head sc_unknown;	/* for unknown syscalls */
-	struct hlist_head sc_compat_unknown;
-	struct hlist_head sc_exit_unknown;
-	struct hlist_head compat_sc_exit_unknown;
-	struct lttng_syscall_filter *sc_filter;
-	int header_type;		/* 0: unset, 1: compact, 2: large */
-	enum channel_type channel_type;
-	int syscall_all_entry;
-	int syscall_all_exit;
-	unsigned int metadata_dumped:1,
-		sys_enter_registered:1,
-		sys_exit_registered:1,
-		tstate:1;		/* Transient enable state */
 };
 
 #define LTTNG_DYNAMIC_LEN_STACK_SIZE	128

@@ -33,7 +33,7 @@ size_t perf_counter_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ct
 static
 void perf_counter_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 			 struct lttng_kernel_ring_buffer_ctx *ctx,
-			 struct lttng_channel *chan)
+			 struct lttng_kernel_channel_buffer *chan)
 {
 	struct lttng_perf_counter_field *perf_field = (struct lttng_perf_counter_field *) priv;
 	struct perf_event *event;

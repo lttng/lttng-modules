@@ -243,11 +243,11 @@ struct channel *_channel_create(const char *name,
 				unsigned int switch_timer_interval,
 				unsigned int read_timer_interval)
 {
-	struct lttng_channel *lttng_chan = priv;
+	struct lttng_kernel_channel_buffer *lttng_chan = priv;
 	struct channel *chan;
 
 	chan = channel_create(&client_config, name,
-			      lttng_chan->session->priv->metadata_cache, buf_addr,
+			      lttng_chan->parent.session->priv->metadata_cache, buf_addr,
 			      subbuf_size, num_subbuf, switch_timer_interval,
 			      read_timer_interval);
 	if (chan) {

@@ -31,7 +31,7 @@ size_t vsgid_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, size
 static
 void vsgid_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 		 struct lttng_kernel_ring_buffer_ctx *ctx,
-		 struct lttng_channel *chan)
+		 struct lttng_kernel_channel_buffer *chan)
 {
 	gid_t vsgid;
 
