@@ -454,11 +454,11 @@ static int specialize_payload_lookup(const struct lttng_kernel_event_desc *event
 	struct bytecode_get_index_data gid;
 	ssize_t data_offset;
 
-	nr_fields = event_desc->nr_fields;
+	nr_fields = event_desc->tp_class->nr_fields;
 	offset = ((struct get_symbol *) insn->data)->offset;
 	name = runtime->p.bc->bc.data + runtime->p.bc->bc.reloc_offset + offset;
 	for (i = 0; i < nr_fields; i++) {
-		field = event_desc->fields[i];
+		field = event_desc->tp_class->fields[i];
 		if (field->nofilter) {
 			continue;
 		}

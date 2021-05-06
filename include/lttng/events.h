@@ -130,6 +130,7 @@ struct lttng_kernel_enum_desc {
 	const char *name;
 	const struct lttng_kernel_enum_entry **entries;
 	unsigned int nr_entries;
+	const struct lttng_kernel_probe_desc *probe_desc;
 };
 
 /* Event field description */
@@ -302,13 +303,18 @@ struct lttng_kernel_probe_ctx {
 	uint8_t interruptible;
 };
 
+struct lttng_kernel_tracepoint_class {
+	void (*probe_callback)(void);
+	const struct lttng_kernel_event_field **fields;	/* event payload */
+	unsigned int nr_fields;
+	const struct lttng_kernel_probe_desc *probe_desc;
+};
+
 struct lttng_kernel_event_desc {
 	const char *event_name;		/* lttng-modules name */
 	const char *event_kname;	/* Linux kernel name (tracepoints) */
 	const struct lttng_kernel_probe_desc *probe_desc;
-	void (*probe_callback)(void);
-	const struct lttng_kernel_event_field **fields;	/* event payload */
-	unsigned int nr_fields;
+	const struct lttng_kernel_tracepoint_class *tp_class;
 	struct module *owner;
 };
 

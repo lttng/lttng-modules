@@ -1404,7 +1404,7 @@ void register_event(struct lttng_kernel_event_recorder *event_recorder)
 	switch (event_recorder->priv->parent.instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		ret = lttng_wrapper_tracepoint_probe_register(desc->event_kname,
-						  desc->probe_callback,
+						  desc->tp_class->probe_callback,
 						  event_recorder);
 		break;
 
@@ -1443,7 +1443,7 @@ int _lttng_event_unregister(struct lttng_kernel_event_recorder *event_recorder)
 	switch (event_priv->instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		ret = lttng_wrapper_tracepoint_probe_unregister(event_priv->desc->event_kname,
-						  event_priv->desc->probe_callback,
+						  event_priv->desc->tp_class->probe_callback,
 						  event_recorder);
 		break;
 
@@ -1493,7 +1493,7 @@ void register_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
 	switch (event_notifier->priv->parent.instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		ret = lttng_wrapper_tracepoint_probe_register(desc->event_kname,
-						  desc->probe_callback,
+						  desc->tp_class->probe_callback,
 						  event_notifier);
 		break;
 
@@ -1530,7 +1530,7 @@ int _lttng_event_notifier_unregister(
 	switch (event_notifier->priv->parent.instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		ret = lttng_wrapper_tracepoint_probe_unregister(event_notifier->priv->parent.desc->event_kname,
-						  event_notifier->priv->parent.desc->probe_callback,
+						  event_notifier->priv->parent.desc->tp_class->probe_callback,
 						  event_notifier);
 		break;
 
@@ -3610,8 +3610,8 @@ int _lttng_fields_metadata_statedump(struct lttng_kernel_session *session,
 	int ret = 0;
 	int i;
 
-	for (i = 0; i < desc->nr_fields; i++) {
-		const struct lttng_kernel_event_field *field = desc->fields[i];
+	for (i = 0; i < desc->tp_class->nr_fields; i++) {
+		const struct lttng_kernel_event_field *field = desc->tp_class->fields[i];
 
 		ret = _lttng_field_statedump(session, field, 2, &prev_field_name);
 		if (ret)
