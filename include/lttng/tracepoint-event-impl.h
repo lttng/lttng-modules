@@ -201,7 +201,7 @@ void __event_template_proto___##_name(void);
 #ifndef LTTNG_TRACEPOINT_TYPE_EXTERN
 # undef LTTNG_TRACEPOINT_ENUM
 # define LTTNG_TRACEPOINT_ENUM(_name, _values)				\
-	static const struct lttng_kernel_enum_entry *__enum_values__##_name[] = { \
+	static const struct lttng_kernel_enum_entry * const __enum_values__##_name[] = { \
 		_values							\
 	};
 #endif
@@ -341,7 +341,7 @@ static __used struct lttng_kernel_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
 #define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
-	static const struct lttng_kernel_event_field *__event_fields___##_name[] = { \
+	static const struct lttng_kernel_event_field * const __event_fields___##_name[] = { \
 		_fields							     \
 	};								     \
 	static const struct lttng_kernel_tracepoint_class lttng_kernel__event_class___##_name = { \
@@ -1245,7 +1245,7 @@ static const struct lttng_kernel_event_desc __event_desc___##_map = {	\
 #define TP_ID1(_token, _system)	_token##_system
 #define TP_ID(_token, _system)	TP_ID1(_token, _system)
 
-static const struct lttng_kernel_event_desc *TP_ID(__event_desc___, TRACE_SYSTEM)[] = {
+static const struct lttng_kernel_event_desc * const TP_ID(__event_desc___, TRACE_SYSTEM)[] = {
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 };
 
