@@ -13,4 +13,4 @@ config LTTNG
 
 	  If unsure, say N.
 
-source "lttng/tests/Kconfig"
+source "lttng/src/tests/Kconfig"
