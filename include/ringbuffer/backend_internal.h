@@ -22,36 +22,36 @@
 
 /* Ring buffer and channel backend create/free */
 
-int lib_ring_buffer_backend_create(struct lib_ring_buffer_backend *bufb,
+int lib_ring_buffer_backend_create(struct lttng_kernel_ring_buffer_backend *bufb,
 				   struct channel_backend *chan, int cpu);
 void channel_backend_unregister_notifiers(struct channel_backend *chanb);
-void lib_ring_buffer_backend_free(struct lib_ring_buffer_backend *bufb);
+void lib_ring_buffer_backend_free(struct lttng_kernel_ring_buffer_backend *bufb);
 int channel_backend_init(struct channel_backend *chanb,
 			 const char *name,
-			 const struct lib_ring_buffer_config *config,
+			 const struct lttng_kernel_ring_buffer_config *config,
 			 void *priv, size_t subbuf_size,
 			 size_t num_subbuf);
 void channel_backend_free(struct channel_backend *chanb);
 
-void lib_ring_buffer_backend_reset(struct lib_ring_buffer_backend *bufb);
+void lib_ring_buffer_backend_reset(struct lttng_kernel_ring_buffer_backend *bufb);
 void channel_backend_reset(struct channel_backend *chanb);
 
 int lib_ring_buffer_backend_init(void);
 void lib_ring_buffer_backend_exit(void);
 
-extern void _lib_ring_buffer_write(struct lib_ring_buffer_backend *bufb,
+extern void _lib_ring_buffer_write(struct lttng_kernel_ring_buffer_backend *bufb,
 				   size_t offset, const void *src, size_t len,
 				   size_t pagecpy);
-extern void _lib_ring_buffer_memset(struct lib_ring_buffer_backend *bufb,
+extern void _lib_ring_buffer_memset(struct lttng_kernel_ring_buffer_backend *bufb,
 				    size_t offset, int c, size_t len,
 				    size_t pagecpy);
-extern void _lib_ring_buffer_strcpy(struct lib_ring_buffer_backend *bufb,
+extern void _lib_ring_buffer_strcpy(struct lttng_kernel_ring_buffer_backend *bufb,
 				   size_t offset, const char *src, size_t len,
 				   size_t pagecpy, int pad);
-extern void _lib_ring_buffer_copy_from_user_inatomic(struct lib_ring_buffer_backend *bufb,
+extern void _lib_ring_buffer_copy_from_user_inatomic(struct lttng_kernel_ring_buffer_backend *bufb,
 					    size_t offset, const void *src,
 					    size_t len, size_t pagecpy);
-extern void _lib_ring_buffer_strcpy_from_user_inatomic(struct lib_ring_buffer_backend *bufb,
+extern void _lib_ring_buffer_strcpy_from_user_inatomic(struct lttng_kernel_ring_buffer_backend *bufb,
 		size_t offset, const char __user *src, size_t len,
 		size_t pagecpy, int pad);
 
@@ -93,7 +93,7 @@ extern void _lib_ring_buffer_strcpy_from_user_inatomic(struct lib_ring_buffer_ba
  * mode).
  */
 static inline
-unsigned long subbuffer_id(const struct lib_ring_buffer_config *config,
+unsigned long subbuffer_id(const struct lttng_kernel_ring_buffer_config *config,
 			   unsigned long offset, unsigned long noref,
 			   unsigned long index)
 {
@@ -110,14 +110,14 @@ unsigned long subbuffer_id(const struct lib_ring_buffer_config *config,
  * bits are identical, else 0.
  */
 static inline
-int subbuffer_id_compare_offset(const struct lib_ring_buffer_config *config,
+int subbuffer_id_compare_offset(const struct lttng_kernel_ring_buffer_config *config,
 				unsigned long id, unsigned long offset)
 {
 	return (id & SB_ID_OFFSET_MASK) == (offset << SB_ID_OFFSET_SHIFT);
 }
 
 static inline
-unsigned long subbuffer_id_get_index(const struct lib_ring_buffer_config *config,
+unsigned long subbuffer_id_get_index(const struct lttng_kernel_ring_buffer_config *config,
 				     unsigned long id)
 {
 	if (config->mode == RING_BUFFER_OVERWRITE)
@@ -127,7 +127,7 @@ unsigned long subbuffer_id_get_index(const struct lib_ring_buffer_config *config
 }
 
 static inline
-unsigned long subbuffer_id_is_noref(const struct lib_ring_buffer_config *config,
+unsigned long subbuffer_id_is_noref(const struct lttng_kernel_ring_buffer_config *config,
 				    unsigned long id)
 {
 	if (config->mode == RING_BUFFER_OVERWRITE)
@@ -141,7 +141,7 @@ unsigned long subbuffer_id_is_noref(const struct lib_ring_buffer_config *config,
  * needed.
  */
 static inline
-void subbuffer_id_set_noref(const struct lib_ring_buffer_config *config,
+void subbuffer_id_set_noref(const struct lttng_kernel_ring_buffer_config *config,
 			    unsigned long *id)
 {
 	if (config->mode == RING_BUFFER_OVERWRITE)
@@ -149,7 +149,7 @@ void subbuffer_id_set_noref(const struct lib_ring_buffer_config *config,
 }
 
 static inline
-void subbuffer_id_set_noref_offset(const struct lib_ring_buffer_config *config,
+void subbuffer_id_set_noref_offset(const struct lttng_kernel_ring_buffer_config *config,
 				   unsigned long *id, unsigned long offset)
 {
 	unsigned long tmp;
@@ -166,7 +166,7 @@ void subbuffer_id_set_noref_offset(const struct lib_ring_buffer_config *config,
 
 /* No volatile access, since already used locally */
 static inline
-void subbuffer_id_clear_noref(const struct lib_ring_buffer_config *config,
+void subbuffer_id_clear_noref(const struct lttng_kernel_ring_buffer_config *config,
 			      unsigned long *id)
 {
 	if (config->mode == RING_BUFFER_OVERWRITE)
@@ -181,7 +181,7 @@ void subbuffer_id_clear_noref(const struct lib_ring_buffer_config *config,
  * -EPERM on failure.
  */
 static inline
-int subbuffer_id_check_index(const struct lib_ring_buffer_config *config,
+int subbuffer_id_check_index(const struct lttng_kernel_ring_buffer_config *config,
 			     unsigned long num_subbuf)
 {
 	if (config->mode == RING_BUFFER_OVERWRITE)
@@ -191,15 +191,15 @@ int subbuffer_id_check_index(const struct lib_ring_buffer_config *config,
 }
 
 static inline
-void lib_ring_buffer_backend_get_pages(const struct lib_ring_buffer_config *config,
+void lib_ring_buffer_backend_get_pages(const struct lttng_kernel_ring_buffer_config *config,
 			struct lttng_kernel_ring_buffer_ctx *ctx,
-			struct lib_ring_buffer_backend_pages **backend_pages)
+			struct lttng_kernel_ring_buffer_backend_pages **backend_pages)
 {
-	struct lib_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
+	struct lttng_kernel_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
 	struct channel_backend *chanb = &ctx->priv.chan->backend;
 	size_t sbidx, offset = ctx->priv.buf_offset;
 	unsigned long sb_bindex, id;
-	struct lib_ring_buffer_backend_pages *rpages;
+	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 
 	offset &= chanb->buf_size - 1;
 	sbidx = offset >> chanb->subbuf_size_order;
@@ -214,8 +214,8 @@ void lib_ring_buffer_backend_get_pages(const struct lib_ring_buffer_config *conf
 
 /* Get backend pages from cache. */
 static inline
-struct lib_ring_buffer_backend_pages *
-	lib_ring_buffer_get_backend_pages_from_ctx(const struct lib_ring_buffer_config *config,
+struct lttng_kernel_ring_buffer_backend_pages *
+	lib_ring_buffer_get_backend_pages_from_ctx(const struct lttng_kernel_ring_buffer_config *config,
 		struct lttng_kernel_ring_buffer_ctx *ctx)
 {
 	return ctx->priv.backend_pages;
@@ -227,8 +227,8 @@ struct lib_ring_buffer_backend_pages *
  */
 #ifdef LTTNG_RING_BUFFER_COUNT_EVENTS
 static inline
-void subbuffer_count_record(const struct lib_ring_buffer_config *config,
-			    struct lib_ring_buffer_backend *bufb,
+void subbuffer_count_record(const struct lttng_kernel_ring_buffer_config *config,
+			    struct lttng_kernel_ring_buffer_backend *bufb,
 			    unsigned long idx)
 {
 	unsigned long sb_bindex;
@@ -242,8 +242,8 @@ void subbuffer_count_record(const struct lib_ring_buffer_config *config,
  * perform the decrement atomically.
  */
 static inline
-void subbuffer_consume_record(const struct lib_ring_buffer_config *config,
-			      struct lib_ring_buffer_backend *bufb)
+void subbuffer_consume_record(const struct lttng_kernel_ring_buffer_config *config,
+			      struct lttng_kernel_ring_buffer_backend *bufb)
 {
 	unsigned long sb_bindex;
 
@@ -256,22 +256,22 @@ void subbuffer_consume_record(const struct lib_ring_buffer_config *config,
 }
 #else /* LTTNG_RING_BUFFER_COUNT_EVENTS */
 static inline
-void subbuffer_count_record(const struct lib_ring_buffer_config *config,
-			    struct lib_ring_buffer_backend *bufb,
+void subbuffer_count_record(const struct lttng_kernel_ring_buffer_config *config,
+			    struct lttng_kernel_ring_buffer_backend *bufb,
 			    unsigned long idx)
 {
 }
 static inline
-void subbuffer_consume_record(const struct lib_ring_buffer_config *config,
-			      struct lib_ring_buffer_backend *bufb)
+void subbuffer_consume_record(const struct lttng_kernel_ring_buffer_config *config,
+			      struct lttng_kernel_ring_buffer_backend *bufb)
 {
 }
 #endif /* #else LTTNG_RING_BUFFER_COUNT_EVENTS */
 
 static inline
 unsigned long subbuffer_get_records_count(
-				const struct lib_ring_buffer_config *config,
-				struct lib_ring_buffer_backend *bufb,
+				const struct lttng_kernel_ring_buffer_config *config,
+				struct lttng_kernel_ring_buffer_backend *bufb,
 				unsigned long idx)
 {
 	unsigned long sb_bindex;
@@ -289,11 +289,11 @@ unsigned long subbuffer_get_records_count(
  */
 static inline
 unsigned long subbuffer_count_records_overrun(
-				const struct lib_ring_buffer_config *config,
-				struct lib_ring_buffer_backend *bufb,
+				const struct lttng_kernel_ring_buffer_config *config,
+				struct lttng_kernel_ring_buffer_backend *bufb,
 				unsigned long idx)
 {
-	struct lib_ring_buffer_backend_pages *pages;
+	struct lttng_kernel_ring_buffer_backend_pages *pages;
 	unsigned long overruns, sb_bindex;
 
 	sb_bindex = subbuffer_id_get_index(config, bufb->buf_wsb[idx].id);
@@ -307,12 +307,12 @@ unsigned long subbuffer_count_records_overrun(
 }
 
 static inline
-void subbuffer_set_data_size(const struct lib_ring_buffer_config *config,
-			     struct lib_ring_buffer_backend *bufb,
+void subbuffer_set_data_size(const struct lttng_kernel_ring_buffer_config *config,
+			     struct lttng_kernel_ring_buffer_backend *bufb,
 			     unsigned long idx,
 			     unsigned long data_size)
 {
-	struct lib_ring_buffer_backend_pages *pages;
+	struct lttng_kernel_ring_buffer_backend_pages *pages;
 	unsigned long sb_bindex;
 
 	sb_bindex = subbuffer_id_get_index(config, bufb->buf_wsb[idx].id);
@@ -322,10 +322,10 @@ void subbuffer_set_data_size(const struct lib_ring_buffer_config *config,
 
 static inline
 unsigned long subbuffer_get_read_data_size(
-				const struct lib_ring_buffer_config *config,
-				struct lib_ring_buffer_backend *bufb)
+				const struct lttng_kernel_ring_buffer_config *config,
+				struct lttng_kernel_ring_buffer_backend *bufb)
 {
-	struct lib_ring_buffer_backend_pages *pages;
+	struct lttng_kernel_ring_buffer_backend_pages *pages;
 	unsigned long sb_bindex;
 
 	sb_bindex = subbuffer_id_get_index(config, bufb->buf_rsb.id);
@@ -335,11 +335,11 @@ unsigned long subbuffer_get_read_data_size(
 
 static inline
 unsigned long subbuffer_get_data_size(
-				const struct lib_ring_buffer_config *config,
-				struct lib_ring_buffer_backend *bufb,
+				const struct lttng_kernel_ring_buffer_config *config,
+				struct lttng_kernel_ring_buffer_backend *bufb,
 				unsigned long idx)
 {
-	struct lib_ring_buffer_backend_pages *pages;
+	struct lttng_kernel_ring_buffer_backend_pages *pages;
 	unsigned long sb_bindex;
 
 	sb_bindex = subbuffer_id_get_index(config, bufb->buf_wsb[idx].id);
@@ -348,8 +348,8 @@ unsigned long subbuffer_get_data_size(
 }
 
 static inline
-void subbuffer_inc_packet_count(const struct lib_ring_buffer_config *config,
-				struct lib_ring_buffer_backend *bufb,
+void subbuffer_inc_packet_count(const struct lttng_kernel_ring_buffer_config *config,
+				struct lttng_kernel_ring_buffer_backend *bufb,
 				unsigned long idx)
 {
 	bufb->buf_cnt[idx].seq_cnt++;
@@ -360,8 +360,8 @@ void subbuffer_inc_packet_count(const struct lib_ring_buffer_config *config,
  *                               writer.
  */
 static inline
-void lib_ring_buffer_clear_noref(const struct lib_ring_buffer_config *config,
-				 struct lib_ring_buffer_backend *bufb,
+void lib_ring_buffer_clear_noref(const struct lttng_kernel_ring_buffer_config *config,
+				 struct lttng_kernel_ring_buffer_backend *bufb,
 				 unsigned long idx)
 {
 	unsigned long id, new_id;
@@ -399,8 +399,8 @@ void lib_ring_buffer_clear_noref(const struct lib_ring_buffer_config *config,
  *                                    called by writer.
  */
 static inline
-void lib_ring_buffer_set_noref_offset(const struct lib_ring_buffer_config *config,
-				      struct lib_ring_buffer_backend *bufb,
+void lib_ring_buffer_set_noref_offset(const struct lttng_kernel_ring_buffer_config *config,
+				      struct lttng_kernel_ring_buffer_backend *bufb,
 				      unsigned long idx, unsigned long offset)
 {
 	if (config->mode != RING_BUFFER_OVERWRITE)
@@ -431,8 +431,8 @@ void lib_ring_buffer_set_noref_offset(const struct lib_ring_buffer_config *confi
  * update_read_sb_index - Read-side subbuffer index update.
  */
 static inline
-int update_read_sb_index(const struct lib_ring_buffer_config *config,
-			 struct lib_ring_buffer_backend *bufb,
+int update_read_sb_index(const struct lttng_kernel_ring_buffer_config *config,
+			 struct lttng_kernel_ring_buffer_backend *bufb,
 			 struct channel_backend *chanb,
 			 unsigned long consumed_idx,
 			 unsigned long consumed_count)

@@ -34,7 +34,7 @@ static int compat_put_ulong(compat_ulong_t val, unsigned long arg)
  * there if we ever want to implement an inode with open() operation.
  */
 int lib_ring_buffer_open(struct inode *inode, struct file *file,
-		struct lib_ring_buffer *buf)
+		struct lttng_kernel_ring_buffer *buf)
 {
 	int ret;
 
@@ -67,14 +67,14 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_open);
 static
 int vfs_lib_ring_buffer_open(struct inode *inode, struct file *file)
 {
-	struct lib_ring_buffer *buf = inode->i_private;
+	struct lttng_kernel_ring_buffer *buf = inode->i_private;
 
 	file->private_data = buf;
 	return lib_ring_buffer_open(inode, file, buf);
 }
 
 int lib_ring_buffer_release(struct inode *inode, struct file *file,
-		struct lib_ring_buffer *buf)
+		struct lttng_kernel_ring_buffer *buf)
 {
 	lib_ring_buffer_release_read(buf);
 
@@ -92,17 +92,17 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_release);
 static
 int vfs_lib_ring_buffer_release(struct inode *inode, struct file *file)
 {
-	struct lib_ring_buffer *buf = file->private_data;
+	struct lttng_kernel_ring_buffer *buf = file->private_data;
 
 	return lib_ring_buffer_release(inode, file, buf);
 }
 
 unsigned int lib_ring_buffer_poll(struct file *filp, poll_table *wait,
-		struct lib_ring_buffer *buf)
+		struct lttng_kernel_ring_buffer *buf)
 {
 	unsigned int mask = 0;
 	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
-	const struct lib_ring_buffer_config *config = &chan->backend.config;
+	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 	int finalized, disabled;
 
 	if (filp->f_mode & FMODE_READ) {
@@ -162,16 +162,16 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_poll);
 static
 unsigned int vfs_lib_ring_buffer_poll(struct file *filp, poll_table *wait)
 {
-	struct lib_ring_buffer *buf = filp->private_data;
+	struct lttng_kernel_ring_buffer *buf = filp->private_data;
 
 	return lib_ring_buffer_poll(filp, wait, buf);
 }
 
 long lib_ring_buffer_ioctl(struct file *filp, unsigned int cmd,
-		unsigned long arg, struct lib_ring_buffer *buf)
+		unsigned long arg, struct lttng_kernel_ring_buffer *buf)
 {
 	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
-	const struct lib_ring_buffer_config *config = &chan->backend.config;
+	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 
 	if (lib_ring_buffer_channel_is_disabled(chan))
 		return -EIO;
@@ -299,17 +299,17 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_ioctl);
 static
 long vfs_lib_ring_buffer_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
 {
-	struct lib_ring_buffer *buf = filp->private_data;
+	struct lttng_kernel_ring_buffer *buf = filp->private_data;
 
 	return lib_ring_buffer_ioctl(filp, cmd, arg, buf);
 }
 
 #ifdef CONFIG_COMPAT
 long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
-		unsigned long arg, struct lib_ring_buffer *buf)
+		unsigned long arg, struct lttng_kernel_ring_buffer *buf)
 {
 	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
-	const struct lib_ring_buffer_config *config = &chan->backend.config;
+	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 
 	if (lib_ring_buffer_channel_is_disabled(chan))
 		return -EIO;
@@ -430,7 +430,7 @@ static
 long vfs_lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
 				  unsigned long arg)
 {
-	struct lib_ring_buffer *buf = filp->private_data;
+	struct lttng_kernel_ring_buffer *buf = filp->private_data;
 
 	return lib_ring_buffer_compat_ioctl(filp, cmd, arg, buf);
 }

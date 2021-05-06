@@ -21,26 +21,26 @@ extern const struct file_operations lib_ring_buffer_file_operations;
  * Internal file operations.
  */
 
-struct lib_ring_buffer;
+struct lttng_kernel_ring_buffer;
 
 int lib_ring_buffer_open(struct inode *inode, struct file *file,
-		struct lib_ring_buffer *buf);
+		struct lttng_kernel_ring_buffer *buf);
 int lib_ring_buffer_release(struct inode *inode, struct file *file,
-		struct lib_ring_buffer *buf);
+		struct lttng_kernel_ring_buffer *buf);
 unsigned int lib_ring_buffer_poll(struct file *filp, poll_table *wait,
-		struct lib_ring_buffer *buf);
+		struct lttng_kernel_ring_buffer *buf);
 ssize_t lib_ring_buffer_splice_read(struct file *in, loff_t *ppos,
 		struct pipe_inode_info *pipe, size_t len,
-		unsigned int flags, struct lib_ring_buffer *buf);
+		unsigned int flags, struct lttng_kernel_ring_buffer *buf);
 int lib_ring_buffer_mmap(struct file *filp, struct vm_area_struct *vma,
-		struct lib_ring_buffer *buf);
+		struct lttng_kernel_ring_buffer *buf);
 
 /* Ring Buffer ioctl() and ioctl numbers */
 long lib_ring_buffer_ioctl(struct file *filp, unsigned int cmd,
-		unsigned long arg, struct lib_ring_buffer *buf);
+		unsigned long arg, struct lttng_kernel_ring_buffer *buf);
 #ifdef CONFIG_COMPAT
 long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
-		unsigned long arg, struct lib_ring_buffer *buf);
+		unsigned long arg, struct lttng_kernel_ring_buffer *buf);
 #endif
 
 ssize_t vfs_lib_ring_buffer_file_splice_read(struct file *in, loff_t *ppos,

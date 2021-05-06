@@ -14,7 +14,7 @@ struct lttng_syscall_filter;
 struct lttng_metadata_cache;
 struct perf_event;
 struct perf_event_attr;
-struct lib_ring_buffer_config;
+struct lttng_kernel_ring_buffer_config;
 
 enum lttng_enabler_format_type {
 	LTTNG_ENABLER_FORMAT_STAR_GLOB,
@@ -315,9 +315,9 @@ struct lttng_kernel_channel_buffer_ops_private {
 				unsigned int switch_timer_interval,
 				unsigned int read_timer_interval);
 	void (*channel_destroy)(struct lttng_kernel_ring_buffer_channel *chan);
-	struct lib_ring_buffer *(*buffer_read_open)(struct lttng_kernel_ring_buffer_channel *chan);
+	struct lttng_kernel_ring_buffer *(*buffer_read_open)(struct lttng_kernel_ring_buffer_channel *chan);
 	int (*buffer_has_read_closed_stream)(struct lttng_kernel_ring_buffer_channel *chan);
-	void (*buffer_read_close)(struct lib_ring_buffer *buf);
+	void (*buffer_read_close)(struct lttng_kernel_ring_buffer *buf);
 	/*
 	 * packet_avail_size returns the available size in the current
 	 * packet. Note that the size returned is only a hint, since it
@@ -328,32 +328,32 @@ struct lttng_kernel_channel_buffer_ops_private {
 	wait_queue_head_t *(*get_hp_wait_queue)(struct lttng_kernel_ring_buffer_channel *chan);
 	int (*is_finalized)(struct lttng_kernel_ring_buffer_channel *chan);
 	int (*is_disabled)(struct lttng_kernel_ring_buffer_channel *chan);
-	int (*timestamp_begin) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
+	int (*timestamp_begin) (const struct lttng_kernel_ring_buffer_config *config,
+			struct lttng_kernel_ring_buffer *bufb,
 			uint64_t *timestamp_begin);
-	int (*timestamp_end) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
+	int (*timestamp_end) (const struct lttng_kernel_ring_buffer_config *config,
+			struct lttng_kernel_ring_buffer *bufb,
 			uint64_t *timestamp_end);
-	int (*events_discarded) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
+	int (*events_discarded) (const struct lttng_kernel_ring_buffer_config *config,
+			struct lttng_kernel_ring_buffer *bufb,
 			uint64_t *events_discarded);
-	int (*content_size) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
+	int (*content_size) (const struct lttng_kernel_ring_buffer_config *config,
+			struct lttng_kernel_ring_buffer *bufb,
 			uint64_t *content_size);
-	int (*packet_size) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
+	int (*packet_size) (const struct lttng_kernel_ring_buffer_config *config,
+			struct lttng_kernel_ring_buffer *bufb,
 			uint64_t *packet_size);
-	int (*stream_id) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
+	int (*stream_id) (const struct lttng_kernel_ring_buffer_config *config,
+			struct lttng_kernel_ring_buffer *bufb,
 			uint64_t *stream_id);
-	int (*current_timestamp) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
+	int (*current_timestamp) (const struct lttng_kernel_ring_buffer_config *config,
+			struct lttng_kernel_ring_buffer *bufb,
 			uint64_t *ts);
-	int (*sequence_number) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
+	int (*sequence_number) (const struct lttng_kernel_ring_buffer_config *config,
+			struct lttng_kernel_ring_buffer *bufb,
 			uint64_t *seq);
-	int (*instance_id) (const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
+	int (*instance_id) (const struct lttng_kernel_ring_buffer_config *config,
+			struct lttng_kernel_ring_buffer *bufb,
 			uint64_t *id);
 };
 
@@ -404,7 +404,7 @@ struct lttng_event_notifier_group {
 	struct lttng_kernel_channel_buffer_ops *ops;
 	struct lttng_transport *transport;
 	struct lttng_kernel_ring_buffer_channel *chan;		/* Ring buffer channel for event notifier group. */
-	struct lib_ring_buffer *buf;	/* Ring buffer for event notifier group. */
+	struct lttng_kernel_ring_buffer *buf;	/* Ring buffer for event notifier group. */
 	wait_queue_head_t read_wait;
 	struct irq_work wakeup_pending;	/* Pending wakeup irq work. */
 	struct lttng_kernel_event_notifier *sc_unknown;	/* for unknown syscalls */

@@ -31,8 +31,8 @@
  * @extra_reader_sb: need extra subbuffer for reader
  */
 static
-int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config,
-				     struct lib_ring_buffer_backend *bufb,
+int lib_ring_buffer_backend_allocate(const struct lttng_kernel_ring_buffer_config *config,
+				     struct lttng_kernel_ring_buffer_backend *bufb,
 				     size_t size, size_t num_subbuf,
 				     int extra_reader_sb)
 {
@@ -98,8 +98,8 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 	for (i = 0; i < num_subbuf_alloc; i++) {
 		bufb->array[i] =
 			lttng_kvzalloc_node(ALIGN(
-				sizeof(struct lib_ring_buffer_backend_pages) +
-				sizeof(struct lib_ring_buffer_backend_page)
+				sizeof(struct lttng_kernel_ring_buffer_backend_pages) +
+				sizeof(struct lttng_kernel_ring_buffer_backend_page)
 				* num_pages_per_subbuf,
 				1 << INTERNODE_CACHE_SHIFT),
 				GFP_KERNEL | __GFP_NOWARN,
@@ -110,7 +110,7 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 
 	/* Allocate write-side subbuffer table */
 	bufb->buf_wsb = lttng_kvzalloc_node(ALIGN(
-				sizeof(struct lib_ring_buffer_backend_subbuffer)
+				sizeof(struct lttng_kernel_ring_buffer_backend_subbuffer)
 				* num_subbuf,
 				1 << INTERNODE_CACHE_SHIFT),
 				GFP_KERNEL | __GFP_NOWARN,
@@ -130,7 +130,7 @@ int lib_ring_buffer_backend_allocate(const struct lib_ring_buffer_config *config
 
 	/* Allocate subbuffer packet counter table */
 	bufb->buf_cnt = lttng_kvzalloc_node(ALIGN(
-				sizeof(struct lib_ring_buffer_backend_counts)
+				sizeof(struct lttng_kernel_ring_buffer_backend_counts)
 				* num_subbuf,
 				1 << INTERNODE_CACHE_SHIFT),
 			GFP_KERNEL | __GFP_NOWARN,
@@ -179,10 +179,10 @@ not_enough_pages:
 	return -ENOMEM;
 }
 
-int lib_ring_buffer_backend_create(struct lib_ring_buffer_backend *bufb,
+int lib_ring_buffer_backend_create(struct lttng_kernel_ring_buffer_backend *bufb,
 				   struct channel_backend *chanb, int cpu)
 {
-	const struct lib_ring_buffer_config *config = &chanb->config;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 
 	bufb->chan = container_of(chanb, struct lttng_kernel_ring_buffer_channel, backend);
 	bufb->cpu = cpu;
@@ -192,7 +192,7 @@ int lib_ring_buffer_backend_create(struct lib_ring_buffer_backend *bufb,
 						chanb->extra_reader_sb);
 }
 
-void lib_ring_buffer_backend_free(struct lib_ring_buffer_backend *bufb)
+void lib_ring_buffer_backend_free(struct lttng_kernel_ring_buffer_backend *bufb)
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
 	unsigned long i, j, num_subbuf_alloc;
@@ -212,10 +212,10 @@ void lib_ring_buffer_backend_free(struct lib_ring_buffer_backend *bufb)
 	bufb->allocated = 0;
 }
 
-void lib_ring_buffer_backend_reset(struct lib_ring_buffer_backend *bufb)
+void lib_ring_buffer_backend_reset(struct lttng_kernel_ring_buffer_backend *bufb)
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
-	const struct lib_ring_buffer_config *config = &chanb->config;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 	unsigned long num_subbuf_alloc;
 	unsigned int i;
 
@@ -249,7 +249,7 @@ void lib_ring_buffer_backend_reset(struct lib_ring_buffer_backend *bufb)
 void channel_backend_reset(struct channel_backend *chanb)
 {
 	struct lttng_kernel_ring_buffer_channel *chan = container_of(chanb, struct lttng_kernel_ring_buffer_channel, backend);
-	const struct lib_ring_buffer_config *config = &chanb->config;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 
 	/*
 	 * Don't reset buf_size, subbuf_size, subbuf_size_order,
@@ -273,8 +273,8 @@ int lttng_cpuhp_rb_backend_prepare(unsigned int cpu,
 {
 	struct channel_backend *chanb = container_of(node,
 			struct channel_backend, cpuhp_prepare);
-	const struct lib_ring_buffer_config *config = &chanb->config;
-	struct lib_ring_buffer *buf;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
+	struct lttng_kernel_ring_buffer *buf;
 	int ret;
 
 	CHAN_WARN_ON(chanb, config->alloc == RING_BUFFER_ALLOC_GLOBAL);
@@ -311,8 +311,8 @@ int lib_ring_buffer_cpu_hp_callback(struct notifier_block *nb,
 	unsigned int cpu = (unsigned long)hcpu;
 	struct channel_backend *chanb = container_of(nb, struct channel_backend,
 						     cpu_hp_notifier);
-	const struct lib_ring_buffer_config *config = &chanb->config;
-	struct lib_ring_buffer *buf;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
+	struct lttng_kernel_ring_buffer *buf;
 	int ret;
 
 	CHAN_WARN_ON(chanb, config->alloc == RING_BUFFER_ALLOC_GLOBAL);
@@ -363,7 +363,7 @@ int lib_ring_buffer_cpu_hp_callback(struct notifier_block *nb,
  */
 int channel_backend_init(struct channel_backend *chanb,
 			 const char *name,
-			 const struct lib_ring_buffer_config *config,
+			 const struct lttng_kernel_ring_buffer_config *config,
 			 void *priv, size_t subbuf_size, size_t num_subbuf)
 {
 	struct lttng_kernel_ring_buffer_channel *chan = container_of(chanb, struct lttng_kernel_ring_buffer_channel, backend);
@@ -415,7 +415,7 @@ int channel_backend_init(struct channel_backend *chanb,
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
 		/* Allocating the buffer per-cpu structures */
-		chanb->buf = alloc_percpu(struct lib_ring_buffer);
+		chanb->buf = alloc_percpu(struct lttng_kernel_ring_buffer);
 		if (!chanb->buf)
 			goto free_cpumask;
 
@@ -464,7 +464,7 @@ int channel_backend_init(struct channel_backend *chanb,
 		}
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 	} else {
-		chanb->buf = kzalloc(sizeof(struct lib_ring_buffer), GFP_KERNEL);
+		chanb->buf = kzalloc(sizeof(struct lttng_kernel_ring_buffer), GFP_KERNEL);
 		if (!chanb->buf)
 			goto free_cpumask;
 		ret = lib_ring_buffer_create(chanb->buf, chanb, -1);
@@ -490,7 +490,7 @@ free_bufs:
 #endif
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 		for_each_possible_cpu(i) {
-			struct lib_ring_buffer *buf =
+			struct lttng_kernel_ring_buffer *buf =
 				per_cpu_ptr(chanb->buf, i);
 
 			if (!buf->backend.allocated)
@@ -514,7 +514,7 @@ free_cpumask:
  */
 void channel_backend_unregister_notifiers(struct channel_backend *chanb)
 {
-	const struct lib_ring_buffer_config *config = &chanb->config;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
@@ -537,12 +537,12 @@ void channel_backend_unregister_notifiers(struct channel_backend *chanb)
  */
 void channel_backend_free(struct channel_backend *chanb)
 {
-	const struct lib_ring_buffer_config *config = &chanb->config;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 	unsigned int i;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
 		for_each_possible_cpu(i) {
-			struct lib_ring_buffer *buf = per_cpu_ptr(chanb->buf, i);
+			struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chanb->buf, i);
 
 			if (!buf->backend.allocated)
 				continue;
@@ -551,7 +551,7 @@ void channel_backend_free(struct channel_backend *chanb)
 		free_cpumask_var(chanb->cpumask);
 		free_percpu(chanb->buf);
 	} else {
-		struct lib_ring_buffer *buf = chanb->buf;
+		struct lttng_kernel_ring_buffer *buf = chanb->buf;
 
 		CHAN_WARN_ON(chanb, !buf->backend.allocated);
 		lib_ring_buffer_free(buf);
@@ -567,13 +567,13 @@ void channel_backend_free(struct channel_backend *chanb)
  * @len : length to write
  * @pagecpy : page size copied so far
  */
-void _lib_ring_buffer_write(struct lib_ring_buffer_backend *bufb, size_t offset,
+void _lib_ring_buffer_write(struct lttng_kernel_ring_buffer_backend *bufb, size_t offset,
 			    const void *src, size_t len, size_t pagecpy)
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
-	const struct lib_ring_buffer_config *config = &chanb->config;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 	size_t sbidx, index;
-	struct lib_ring_buffer_backend_pages *rpages;
+	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 
 	do {
@@ -612,14 +612,14 @@ EXPORT_SYMBOL_GPL(_lib_ring_buffer_write);
  * @len : length to write
  * @pagecpy : page size copied so far
  */
-void _lib_ring_buffer_memset(struct lib_ring_buffer_backend *bufb,
+void _lib_ring_buffer_memset(struct lttng_kernel_ring_buffer_backend *bufb,
 			     size_t offset,
 			     int c, size_t len, size_t pagecpy)
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
-	const struct lib_ring_buffer_config *config = &chanb->config;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 	size_t sbidx, index;
-	struct lib_ring_buffer_backend_pages *rpages;
+	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 
 	do {
@@ -656,14 +656,14 @@ EXPORT_SYMBOL_GPL(_lib_ring_buffer_memset);
  * @pagecpy : page size copied so far
  * @pad : character to use for padding
  */
-void _lib_ring_buffer_strcpy(struct lib_ring_buffer_backend *bufb,
+void _lib_ring_buffer_strcpy(struct lttng_kernel_ring_buffer_backend *bufb,
 			size_t offset, const char *src, size_t len,
 			size_t pagecpy, int pad)
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
-	const struct lib_ring_buffer_config *config = &chanb->config;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 	size_t sbidx, index;
-	struct lib_ring_buffer_backend_pages *rpages;
+	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 	int src_terminated = 0;
 
@@ -741,15 +741,15 @@ EXPORT_SYMBOL_GPL(_lib_ring_buffer_strcpy);
  * directly without having the src pointer checked with access_ok()
  * previously.
  */
-void _lib_ring_buffer_copy_from_user_inatomic(struct lib_ring_buffer_backend *bufb,
+void _lib_ring_buffer_copy_from_user_inatomic(struct lttng_kernel_ring_buffer_backend *bufb,
 				      size_t offset,
 				      const void __user *src, size_t len,
 				      size_t pagecpy)
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
-	const struct lib_ring_buffer_config *config = &chanb->config;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 	size_t sbidx, index;
-	struct lib_ring_buffer_backend_pages *rpages;
+	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 	int ret;
 
@@ -797,14 +797,14 @@ EXPORT_SYMBOL_GPL(_lib_ring_buffer_copy_from_user_inatomic);
  * directly without having the src pointer checked with access_ok()
  * previously.
  */
-void _lib_ring_buffer_strcpy_from_user_inatomic(struct lib_ring_buffer_backend *bufb,
+void _lib_ring_buffer_strcpy_from_user_inatomic(struct lttng_kernel_ring_buffer_backend *bufb,
 		size_t offset, const char __user *src, size_t len,
 		size_t pagecpy, int pad)
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
-	const struct lib_ring_buffer_config *config = &chanb->config;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 	size_t sbidx, index;
-	struct lib_ring_buffer_backend_pages *rpages;
+	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 	int src_terminated = 0;
 
@@ -879,13 +879,13 @@ EXPORT_SYMBOL_GPL(_lib_ring_buffer_strcpy_from_user_inatomic);
  * Should be protected by get_subbuf/put_subbuf.
  * Returns the length copied.
  */
-size_t lib_ring_buffer_read(struct lib_ring_buffer_backend *bufb, size_t offset,
+size_t lib_ring_buffer_read(struct lttng_kernel_ring_buffer_backend *bufb, size_t offset,
 			    void *dest, size_t len)
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
-	const struct lib_ring_buffer_config *config = &chanb->config;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 	size_t index, pagecpy, orig_len;
-	struct lib_ring_buffer_backend_pages *rpages;
+	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 
 	orig_len = len;
@@ -930,14 +930,14 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_read);
  * function.
  * Returns -EFAULT on error, 0 if ok.
  */
-int __lib_ring_buffer_copy_to_user(struct lib_ring_buffer_backend *bufb,
+int __lib_ring_buffer_copy_to_user(struct lttng_kernel_ring_buffer_backend *bufb,
 				   size_t offset, void __user *dest, size_t len)
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
-	const struct lib_ring_buffer_config *config = &chanb->config;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 	size_t index;
 	ssize_t pagecpy;
-	struct lib_ring_buffer_backend_pages *rpages;
+	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 
 	offset &= chanb->buf_size - 1;
@@ -982,15 +982,15 @@ EXPORT_SYMBOL_GPL(__lib_ring_buffer_copy_to_user);
  * Should be protected by get_subbuf/put_subbuf.
  * Destination length should be at least 1 to hold '\0'.
  */
-int lib_ring_buffer_read_cstr(struct lib_ring_buffer_backend *bufb, size_t offset,
+int lib_ring_buffer_read_cstr(struct lttng_kernel_ring_buffer_backend *bufb, size_t offset,
 			      void *dest, size_t len)
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
-	const struct lib_ring_buffer_config *config = &chanb->config;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 	size_t index;
 	ssize_t pagecpy, pagelen, strpagelen, orig_offset;
 	char *str;
-	struct lib_ring_buffer_backend_pages *rpages;
+	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 
 	offset &= chanb->buf_size - 1;
@@ -1040,13 +1040,13 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_read_cstr);
  * Should be protected by get_subbuf/put_subbuf.
  * Returns the pointer to the page frame number unsigned long.
  */
-unsigned long *lib_ring_buffer_read_get_pfn(struct lib_ring_buffer_backend *bufb,
+unsigned long *lib_ring_buffer_read_get_pfn(struct lttng_kernel_ring_buffer_backend *bufb,
 					    size_t offset, void ***virt)
 {
 	size_t index;
-	struct lib_ring_buffer_backend_pages *rpages;
+	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 	struct channel_backend *chanb = &bufb->chan->backend;
-	const struct lib_ring_buffer_config *config = &chanb->config;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 	unsigned long sb_bindex, id;
 
 	offset &= chanb->buf_size - 1;
@@ -1072,13 +1072,13 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_read_get_pfn);
  * from/to this address, as long as the read/write is never bigger than a
  * page size.
  */
-void *lib_ring_buffer_read_offset_address(struct lib_ring_buffer_backend *bufb,
+void *lib_ring_buffer_read_offset_address(struct lttng_kernel_ring_buffer_backend *bufb,
 					  size_t offset)
 {
 	size_t index;
-	struct lib_ring_buffer_backend_pages *rpages;
+	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 	struct channel_backend *chanb = &bufb->chan->backend;
-	const struct lib_ring_buffer_config *config = &chanb->config;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 	unsigned long sb_bindex, id;
 
 	offset &= chanb->buf_size - 1;
@@ -1102,13 +1102,13 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_read_offset_address);
  * it's always at the beginning of a page, it's safe to write directly to this
  * address, as long as the write is never bigger than a page size.
  */
-void *lib_ring_buffer_offset_address(struct lib_ring_buffer_backend *bufb,
+void *lib_ring_buffer_offset_address(struct lttng_kernel_ring_buffer_backend *bufb,
 				     size_t offset)
 {
 	size_t sbidx, index;
-	struct lib_ring_buffer_backend_pages *rpages;
+	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 	struct channel_backend *chanb = &bufb->chan->backend;
-	const struct lib_ring_buffer_config *config = &chanb->config;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 	unsigned long sb_bindex, id;
 
 	offset &= chanb->buf_size - 1;

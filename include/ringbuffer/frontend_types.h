@@ -28,7 +28,7 @@ enum switch_mode { SWITCH_ACTIVE, SWITCH_FLUSH };
 /* channel-level read-side iterator */
 struct channel_iter {
 	/* Prio heap of buffers. Lowest timestamps at the top. */
-	struct lttng_ptr_heap heap;	/* Heap of struct lib_ring_buffer ptrs */
+	struct lttng_ptr_heap heap;	/* Heap of struct lttng_kernel_ring_buffer ptrs */
 	struct list_head empty_head;	/* Empty buffers linked-list head */
 	int read_open;			/* Opened for reading ? */
 	u64 last_qs;			/* Last quiescent state timestamp */
@@ -85,7 +85,7 @@ struct commit_counters_cold {
 };
 
 /* Per-buffer read iterator */
-struct lib_ring_buffer_iter {
+struct lttng_kernel_ring_buffer_iter {
 	u64 timestamp;			/* Current record timestamp */
 	size_t header_len;		/* Current record header length */
 	size_t payload_len;		/* Current record payload length */
@@ -103,7 +103,7 @@ struct lib_ring_buffer_iter {
 };
 
 /* ring buffer state */
-struct lib_ring_buffer {
+struct lttng_kernel_ring_buffer {
 	/* First 32 bytes cache-hot cacheline */
 	union v_atomic offset;		/* Current offset in the buffer */
 	struct commit_counters_hot *commit_hot;
@@ -118,7 +118,7 @@ struct lib_ring_buffer {
 					 * Last timestamp written in the buffer.
 					 */
 
-	struct lib_ring_buffer_backend backend;	/* Associated backend */
+	struct lttng_kernel_ring_buffer_backend backend;	/* Associated backend */
 
 	struct commit_counters_cold *commit_cold;
 					/* Commit count per sub-buffer */
@@ -153,7 +153,7 @@ struct lib_ring_buffer {
 	struct timer_list switch_timer;	/* timer for periodical switch */
 	struct timer_list read_timer;	/* timer for read poll */
 	raw_spinlock_t raw_tick_nohz_spinlock;	/* nohz entry lock/trylock */
-	struct lib_ring_buffer_iter iter;	/* read-side iterator */
+	struct lttng_kernel_ring_buffer_iter iter;	/* read-side iterator */
 	unsigned long get_subbuf_consumed;	/* Read-side consumed */
 	unsigned long prod_snapshot;	/* Producer count snapshot */
 	unsigned long cons_snapshot;	/* Consumer count snapshot */
@@ -173,7 +173,7 @@ void lib_ring_buffer_lost_event_too_big(struct lttng_kernel_ring_buffer_channel 
 
 /*
  * Issue warnings and disable channels upon internal error.
- * Can receive struct lib_ring_buffer or struct lib_ring_buffer_backend
+ * Can receive struct lttng_kernel_ring_buffer or struct lttng_kernel_ring_buffer_backend
  * parameters.
  */
 #define CHAN_WARN_ON(c, cond)						\

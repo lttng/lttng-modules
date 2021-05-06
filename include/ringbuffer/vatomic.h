@@ -26,7 +26,7 @@ union v_atomic {
 };
 
 static inline
-long v_read(const struct lib_ring_buffer_config *config, union v_atomic *v_a)
+long v_read(const struct lttng_kernel_ring_buffer_config *config, union v_atomic *v_a)
 {
 	if (config->sync == RING_BUFFER_SYNC_PER_CPU)
 		return local_read(&v_a->l);
@@ -35,7 +35,7 @@ long v_read(const struct lib_ring_buffer_config *config, union v_atomic *v_a)
 }
 
 static inline
-void v_set(const struct lib_ring_buffer_config *config, union v_atomic *v_a,
+void v_set(const struct lttng_kernel_ring_buffer_config *config, union v_atomic *v_a,
 	   long v)
 {
 	if (config->sync == RING_BUFFER_SYNC_PER_CPU)
@@ -45,7 +45,7 @@ void v_set(const struct lib_ring_buffer_config *config, union v_atomic *v_a,
 }
 
 static inline
-void v_add(const struct lib_ring_buffer_config *config, long v, union v_atomic *v_a)
+void v_add(const struct lttng_kernel_ring_buffer_config *config, long v, union v_atomic *v_a)
 {
 	if (config->sync == RING_BUFFER_SYNC_PER_CPU)
 		local_add(v, &v_a->l);
@@ -54,7 +54,7 @@ void v_add(const struct lib_ring_buffer_config *config, long v, union v_atomic *
 }
 
 static inline
-void v_inc(const struct lib_ring_buffer_config *config, union v_atomic *v_a)
+void v_inc(const struct lttng_kernel_ring_buffer_config *config, union v_atomic *v_a)
 {
 	if (config->sync == RING_BUFFER_SYNC_PER_CPU)
 		local_inc(&v_a->l);
@@ -66,13 +66,13 @@ void v_inc(const struct lib_ring_buffer_config *config, union v_atomic *v_a)
  * Non-atomic decrement. Only used by reader, apply to reader-owned subbuffer.
  */
 static inline
-void _v_dec(const struct lib_ring_buffer_config *config, union v_atomic *v_a)
+void _v_dec(const struct lttng_kernel_ring_buffer_config *config, union v_atomic *v_a)
 {
 	--v_a->v;
 }
 
 static inline
-long v_cmpxchg(const struct lib_ring_buffer_config *config, union v_atomic *v_a,
+long v_cmpxchg(const struct lttng_kernel_ring_buffer_config *config, union v_atomic *v_a,
 	       long old, long _new)
 {
 	if (config->sync == RING_BUFFER_SYNC_PER_CPU)
