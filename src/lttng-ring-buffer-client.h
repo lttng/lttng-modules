@@ -89,7 +89,8 @@ size_t ctx_get_aligned_size(size_t offset, struct lttng_kernel_ctx *ctx,
 
 static inline
 void ctx_get_struct_size(struct lttng_kernel_ctx *ctx, size_t *ctx_len,
-		struct lttng_channel *chan, struct lttng_kernel_ring_buffer_ctx *bufctx)
+		struct lttng_kernel_channel_buffer *lttng_chan,
+		struct lttng_kernel_ring_buffer_ctx *bufctx)
 {
 	int i;
 	size_t offset = 0;
@@ -107,7 +108,7 @@ void ctx_get_struct_size(struct lttng_kernel_ctx *ctx, size_t *ctx_len,
 
 static inline
 void ctx_record(struct lttng_kernel_ring_buffer_ctx *bufctx,
-		struct lttng_channel *chan,
+		struct lttng_kernel_channel_buffer *lttng_chan,
 		struct lttng_kernel_ctx *ctx)
 {
 	int i;
@@ -117,7 +118,7 @@ void ctx_record(struct lttng_kernel_ring_buffer_ctx *bufctx,
 	lib_ring_buffer_align_ctx(bufctx, ctx->largest_align);
 	for (i = 0; i < ctx->nr_fields; i++)
 		ctx->fields[i].record(ctx->fields[i].priv, bufctx->probe_ctx,
-				bufctx, chan);
+				bufctx, lttng_chan);
 }
 
 /*
@@ -140,11 +141,11 @@ size_t record_header_size(const struct lib_ring_buffer_config *config,
 				 struct lttng_kernel_ring_buffer_ctx *ctx,
 				 struct lttng_client_ctx *client_ctx)
 {
-	struct lttng_channel *lttng_chan = channel_get_private(chan);
+	struct lttng_kernel_channel_buffer *lttng_chan = channel_get_private(chan);
 	size_t orig_offset = offset;
 	size_t padding;
 
-	switch (lttng_chan->header_type) {
+	switch (lttng_chan->priv->header_type) {
 	case 1:	/* compact */
 		padding = lib_ring_buffer_align(offset, lttng_alignof(uint32_t));
 		offset += padding;
@@ -179,7 +180,7 @@ size_t record_header_size(const struct lib_ring_buffer_config *config,
 		padding = 0;
 		WARN_ON_ONCE(1);
 	}
-	offset += ctx_get_aligned_size(offset, lttng_chan->ctx,
+	offset += ctx_get_aligned_size(offset, lttng_chan->priv->ctx,
 			client_ctx->packet_context_len);
 	*pre_header_padding = padding;
 	return offset - orig_offset;
@@ -206,12 +207,12 @@ void lttng_write_event_header(const struct lib_ring_buffer_config *config,
 			    struct lttng_kernel_ring_buffer_ctx *ctx,
 			    uint32_t event_id)
 {
-	struct lttng_channel *lttng_chan = channel_get_private(ctx->priv.chan);
+	struct lttng_kernel_channel_buffer *lttng_chan = channel_get_private(ctx->priv.chan);
 
 	if (unlikely(ctx->priv.rflags))
 		goto slow_path;
 
-	switch (lttng_chan->header_type) {
+	switch (lttng_chan->priv->header_type) {
 	case 1:	/* compact */
 	{
 		uint32_t id_time = 0;
@@ -241,7 +242,7 @@ void lttng_write_event_header(const struct lib_ring_buffer_config *config,
 		WARN_ON_ONCE(1);
 	}
 
-	ctx_record(ctx, lttng_chan, lttng_chan->ctx);
+	ctx_record(ctx, lttng_chan, lttng_chan->priv->ctx);
 	lib_ring_buffer_align_ctx(ctx, ctx->largest_align);
 
 	return;
@@ -255,9 +256,9 @@ void lttng_write_event_header_slow(const struct lib_ring_buffer_config *config,
 				 struct lttng_kernel_ring_buffer_ctx *ctx,
 				 uint32_t event_id)
 {
-	struct lttng_channel *lttng_chan = channel_get_private(ctx->priv.chan);
+	struct lttng_kernel_channel_buffer *lttng_chan = channel_get_private(ctx->priv.chan);
 
-	switch (lttng_chan->header_type) {
+	switch (lttng_chan->priv->header_type) {
 	case 1:	/* compact */
 		if (!(ctx->priv.rflags & (RING_BUFFER_RFLAG_FULL_TSC | LTTNG_RFLAG_EXTENDED))) {
 			uint32_t id_time = 0;
@@ -311,7 +312,7 @@ void lttng_write_event_header_slow(const struct lib_ring_buffer_config *config,
 	default:
 		WARN_ON_ONCE(1);
 	}
-	ctx_record(ctx, lttng_chan, lttng_chan->ctx);
+	ctx_record(ctx, lttng_chan, lttng_chan->priv->ctx);
 	lib_ring_buffer_align_ctx(ctx, ctx->largest_align);
 }
 
@@ -353,12 +354,12 @@ static void client_buffer_begin(struct lib_ring_buffer *buf, u64 tsc,
 		(struct packet_header *)
 			lib_ring_buffer_offset_address(&buf->backend,
 				subbuf_idx * chan->backend.subbuf_size);
-	struct lttng_channel *lttng_chan = channel_get_private(chan);
-	struct lttng_kernel_session *session = lttng_chan->session;
+	struct lttng_kernel_channel_buffer *lttng_chan = channel_get_private(chan);
+	struct lttng_kernel_session *session = lttng_chan->parent.session;
 
 	header->magic = CTF_MAGIC_NUMBER;
 	memcpy(header->uuid, session->priv->uuid.b, sizeof(session->priv->uuid));
-	header->stream_id = lttng_chan->id;
+	header->stream_id = lttng_chan->priv->id;
 	header->stream_instance_id = buf->backend.cpu;
 	header->ctx.timestamp_begin = tsc;
 	header->ctx.timestamp_end = 0;
@@ -468,9 +469,9 @@ static int client_stream_id(const struct lib_ring_buffer_config *config,
 			uint64_t *stream_id)
 {
 	struct channel *chan = buf->backend.chan;
-	struct lttng_channel *lttng_chan = channel_get_private(chan);
+	struct lttng_kernel_channel_buffer *lttng_chan = channel_get_private(chan);
 
-	*stream_id = lttng_chan->id;
+	*stream_id = lttng_chan->priv->id;
 	return 0;
 }
 
@@ -543,7 +544,7 @@ struct channel *_channel_create(const char *name,
 				unsigned int switch_timer_interval,
 				unsigned int read_timer_interval)
 {
-	struct lttng_channel *lttng_chan = priv;
+	struct lttng_kernel_channel_buffer *lttng_chan = priv;
 	struct channel *chan;
 
 	chan = channel_create(&client_config, name, lttng_chan, buf_addr,
@@ -606,7 +607,7 @@ static
 int lttng_event_reserve(struct lttng_kernel_ring_buffer_ctx *ctx)
 {
 	struct lttng_kernel_event_recorder *event_recorder = ctx->client_priv;
-	struct lttng_channel *lttng_chan = event_recorder->chan;
+	struct lttng_kernel_channel_buffer *lttng_chan = event_recorder->chan;
 	struct lttng_client_ctx client_ctx;
 	int ret, cpu;
 	uint32_t event_id;
@@ -616,13 +617,13 @@ int lttng_event_reserve(struct lttng_kernel_ring_buffer_ctx *ctx)
 		return -EPERM;
 	event_id = event_recorder->priv->id;
 	memset(&ctx->priv, 0, sizeof(ctx->priv));
-	ctx->priv.chan = lttng_chan->chan;
+	ctx->priv.chan = lttng_chan->priv->rb_chan;
 	ctx->priv.reserve_cpu = cpu;
 
 	/* Compute internal size of context structures. */
-	ctx_get_struct_size(lttng_chan->ctx, &client_ctx.packet_context_len, lttng_chan, ctx);
+	ctx_get_struct_size(lttng_chan->priv->ctx, &client_ctx.packet_context_len, lttng_chan, ctx);
 
-	switch (lttng_chan->header_type) {
+	switch (lttng_chan->priv->header_type) {
 	case 1:	/* compact */
 		if (event_id > 30)
 			ctx->priv.rflags |= LTTNG_RFLAG_EXTENDED;
@@ -691,6 +692,12 @@ void lttng_event_strcpy_from_user(struct lttng_kernel_ring_buffer_ctx *ctx,
 }
 
 static
+void lttng_channel_buffer_lost_event_too_big(struct lttng_kernel_channel_buffer *lttng_chan)
+{
+	lib_ring_buffer_lost_event_too_big(lttng_chan->priv->rb_chan);
+}
+
+static
 wait_queue_head_t *lttng_get_writer_buf_wait_queue(struct channel *chan, int cpu)
 {
 	struct lib_ring_buffer *buf = channel_get_ring_buffer(&client_config,
@@ -750,6 +757,7 @@ static struct lttng_transport lttng_relay_transport = {
 		.event_memset = lttng_event_memset,
 		.event_strcpy = lttng_event_strcpy,
 		.event_strcpy_from_user = lttng_event_strcpy_from_user,
+		.lost_event_too_big = lttng_channel_buffer_lost_event_too_big,
 	},
 };
 

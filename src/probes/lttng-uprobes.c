@@ -42,11 +42,11 @@ int lttng_uprobes_event_handler_pre(struct uprobe_consumer *uc, struct pt_regs *
 	{
 		struct lttng_kernel_event_recorder *event_recorder =
 			container_of(event, struct lttng_kernel_event_recorder, parent);
-		struct lttng_channel *chan = event_recorder->chan;
+		struct lttng_kernel_channel_buffer *chan = event_recorder->chan;
 
-		if (unlikely(!LTTNG_READ_ONCE(chan->session->active)))
+		if (unlikely(!LTTNG_READ_ONCE(chan->parent.session->active)))
 			return 0;
-		if (unlikely(!LTTNG_READ_ONCE(chan->enabled)))
+		if (unlikely(!LTTNG_READ_ONCE(chan->parent.enabled)))
 			return 0;
 		break;
 	}
@@ -64,7 +64,7 @@ int lttng_uprobes_event_handler_pre(struct uprobe_consumer *uc, struct pt_regs *
 	{
 		struct lttng_kernel_event_recorder *event_recorder =
 			container_of(event, struct lttng_kernel_event_recorder, parent);
-		struct lttng_channel *chan = event_recorder->chan;
+		struct lttng_kernel_channel_buffer *chan = event_recorder->chan;
 		struct lttng_kernel_ring_buffer_ctx ctx;
 		int ret;
 

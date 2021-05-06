@@ -34,7 +34,7 @@ size_t interruptible_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_c
 static
 void interruptible_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 		struct lttng_kernel_ring_buffer_ctx *ctx,
-		struct lttng_channel *chan)
+		struct lttng_kernel_channel_buffer *chan)
 {
 	struct lttng_kernel_probe_ctx *lttng_probe_ctx = ctx->probe_ctx;
 	int8_t interruptible = lttng_probe_ctx->interruptible;

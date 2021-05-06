@@ -30,7 +30,7 @@ size_t vppid_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, size
 static
 void vppid_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 		  struct lttng_kernel_ring_buffer_ctx *ctx,
-		  struct lttng_channel *chan)
+		  struct lttng_kernel_channel_buffer *chan)
 {
 	struct task_struct *parent;
 	pid_t vppid;

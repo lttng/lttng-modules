@@ -1074,15 +1074,15 @@ static void __event_probe__##_name(_data_proto)						\
 	{										\
 		struct lttng_kernel_event_recorder *__event_recorder =			\
 			container_of(__event, struct lttng_kernel_event_recorder, parent); \
-		struct lttng_channel *__chan = __event_recorder->chan;			\
-		struct lttng_kernel_session *__session = __chan->session;		\
+		struct lttng_kernel_channel_buffer *__chan = __event_recorder->chan;	\
+		struct lttng_kernel_session *__session = __chan->parent.session;	\
 		struct lttng_kernel_id_tracker_rcu *__lf;				\
 											\
 		if (!_TP_SESSION_CHECK(session, __session))				\
 			return;								\
 		if (unlikely(!LTTNG_READ_ONCE(__session->active)))			\
 			return;								\
-		if (unlikely(!LTTNG_READ_ONCE(__chan->enabled)))			\
+		if (unlikely(!LTTNG_READ_ONCE(__chan->parent.enabled)))			\
 			return;								\
 		__lf = lttng_rcu_dereference(__session->pid_tracker.p);			\
 		if (__lf && likely(!lttng_id_tracker_lookup(__lf, current->tgid)))	\
@@ -1131,7 +1131,7 @@ static void __event_probe__##_name(_data_proto)						\
 	{										\
 		struct lttng_kernel_event_recorder *__event_recorder =			\
 			container_of(__event, struct lttng_kernel_event_recorder, parent); \
-		struct lttng_channel *__chan = __event_recorder->chan;			\
+		struct lttng_kernel_channel_buffer *__chan = __event_recorder->chan;	\
 		struct lttng_kernel_ring_buffer_ctx __ctx;				\
 		ssize_t __event_len;							\
 		size_t __event_align;							\
@@ -1139,7 +1139,7 @@ static void __event_probe__##_name(_data_proto)						\
 											\
 		__event_len = __event_get_size__##_name(_locvar_args);			\
 		if (unlikely(__event_len < 0)) {					\
-			lib_ring_buffer_lost_event_too_big(__chan->chan);		\
+			__chan->ops->lost_event_too_big(__chan);			\
 			goto __post;							\
 		}									\
 		__event_align = __event_get_align__##_name(_locvar_args);		\

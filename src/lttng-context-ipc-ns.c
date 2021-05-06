@@ -36,7 +36,7 @@ size_t ipc_ns_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, siz
 static
 void ipc_ns_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 		 struct lttng_kernel_ring_buffer_ctx *ctx,
-		 struct lttng_channel *chan)
+		 struct lttng_kernel_channel_buffer *chan)
 {
 	unsigned int ipc_ns_inum = 0;
 
