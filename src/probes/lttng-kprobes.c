@@ -89,8 +89,16 @@ int lttng_kprobes_event_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	return 0;
 }
 
-static const struct lttng_kernel_type_common *event_type =
-	lttng_kernel_static_type_integer_from_type(unsigned long, __BYTE_ORDER, 16);
+static const struct lttng_kernel_event_field *event_fields[] = {
+	lttng_kernel_static_event_field("ip",
+		lttng_kernel_static_type_integer_from_type(unsigned long, __BYTE_ORDER, 16),
+		false, false, false),
+};
+
+static const struct lttng_kernel_tracepoint_class tp_class = {
+	.nr_fields = ARRAY_SIZE(event_fields),
+	.fields = event_fields,
+};
 
 /*
  * Create event description
@@ -98,43 +106,23 @@ static const struct lttng_kernel_type_common *event_type =
 static
 int lttng_create_kprobe_event(const char *name, struct lttng_kernel_event_recorder *event_recorder)
 {
-	const struct lttng_kernel_event_field **fieldp_array;
-	struct lttng_kernel_event_field *field;
 	struct lttng_kernel_event_desc *desc;
 	int ret;
 
 	desc = kzalloc(sizeof(*desc), GFP_KERNEL);
 	if (!desc)
 		return -ENOMEM;
+	desc->tp_class = &tp_class;
 	desc->event_name = kstrdup(name, GFP_KERNEL);
 	if (!desc->event_name) {
 		ret = -ENOMEM;
 		goto error_str;
 	}
-	desc->nr_fields = 1;
-	fieldp_array = kzalloc(1 * sizeof(struct lttng_kernel_event_field *), GFP_KERNEL);
-	if (!fieldp_array) {
-		ret = -ENOMEM;
-		goto error_fieldp_array;
-	}
-	desc->fields = fieldp_array;
-	desc->fields[0] = field =
-		kzalloc(sizeof(struct lttng_kernel_event_field), GFP_KERNEL);
-	if (!field) {
-		ret = -ENOMEM;
-		goto error_field;
-	}
-	field->name = "ip";
-	field->type = event_type;
 	desc->owner = THIS_MODULE;
 	event_recorder->priv->parent.desc = desc;
 
 	return 0;
 
-error_field:
-	kfree(fieldp_array);
-error_fieldp_array:
-	kfree(desc->event_name);
 error_str:
 	kfree(desc);
 	return ret;
@@ -152,13 +140,12 @@ int lttng_create_kprobe_event_notifier(const char *name, struct lttng_kernel_eve
 	desc = kzalloc(sizeof(*desc), GFP_KERNEL);
 	if (!desc)
 		return -ENOMEM;
+	desc->tp_class = &tp_class;
 	desc->event_name = kstrdup(name, GFP_KERNEL);
 	if (!desc->event_name) {
 		ret = -ENOMEM;
 		goto error_str;
 	}
-	desc->nr_fields = 0;
-
 	desc->owner = THIS_MODULE;
 	event_notifier->priv->parent.desc = desc;
 
@@ -240,7 +227,6 @@ int lttng_kprobes_register_event(const char *name,
 	return 0;
 
 register_error:
-	kfree(event_recorder->priv->parent.desc->fields);
 	kfree(event_recorder->priv->parent.desc->event_name);
 	kfree(event_recorder->priv->parent.desc);
 error:
@@ -288,8 +274,6 @@ EXPORT_SYMBOL_GPL(lttng_kprobes_unregister_event_notifier);
 void lttng_kprobes_destroy_event_private(struct lttng_kernel_event_recorder *event_recorder)
 {
 	kfree(event_recorder->priv->parent.u.kprobe.symbol_name);
-	kfree(event_recorder->priv->parent.desc->fields[0]);
-	kfree(event_recorder->priv->parent.desc->fields);
 	kfree(event_recorder->priv->parent.desc->event_name);
 	kfree(event_recorder->priv->parent.desc);
 }

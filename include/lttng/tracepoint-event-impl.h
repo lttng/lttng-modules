@@ -209,6 +209,42 @@ void __event_template_proto___##_name(void);
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 
 /*
+ * Stage 1.3 of the trace events.
+ *
+ * Create probe callback prototypes.
+ */
+
+/* Reset all macros within TRACEPOINT_EVENT */
+#include <lttng/events-reset.h>
+
+#undef TP_PROTO
+#define TP_PROTO(...)	__VA_ARGS__
+
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
+static void __event_probe__##_name(void *__data, _proto);
+
+#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
+#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
+static void __event_probe__##_name(void *__data);
+
+#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+
+/*
+ * Stage 1.4 of tracepoint event generation.
+ *
+ * Declare toplevel descriptor for the whole probe.
+ */
+
+#define TP_ID1(_token, _system)	_token##_system
+#define TP_ID(_token, _system)	TP_ID1(_token, _system)
+
+static __used struct lttng_kernel_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM);
+
+#undef TP_ID1
+#undef TP_ID
+
+/*
  * Stage 2 of the trace events.
  *
  * Create event field type metadata section.
@@ -299,10 +335,20 @@ void __event_template_proto___##_name(void);
 #undef TP_FIELDS
 #define TP_FIELDS(...)	__VA_ARGS__	/* Only one used in this phase */
 
+#ifndef TP_PROBE_CB
+#define TP_PROBE_CB(_template)	&__event_probe__##_template
+#endif
+
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
 #define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
 	static const struct lttng_kernel_event_field *__event_fields___##_name[] = { \
 		_fields							     \
+	};								     \
+	static const struct lttng_kernel_tracepoint_class lttng_kernel__event_class___##_name = { \
+		.fields = __event_fields___##_name,			     \
+		.nr_fields = ARRAY_SIZE(__event_fields___##_name),	     \
+		.probe_callback = (void (*)(void)) TP_PROBE_CB(_name),	     \
+		.probe_desc = &TP_ID(__probe_desc___, TRACE_SYSTEM),	     \
 	};
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
@@ -332,7 +378,11 @@ void __event_template_proto___##_name(void);
                 .name = #_name,                                                         \
                 .entries = __enum_values__##_name,                                      \
                 .nr_entries = ARRAY_SIZE(__enum_values__##_name),                       \
+		.probe_desc = &TP_ID(__probe_desc___, TRACE_SYSTEM),			\
         }))
+
+#define TP_ID1(_token, _system)	_token##_system
+#define TP_ID(_token, _system)	TP_ID1(_token, _system)
 
 #define LTTNG_CREATE_FIELD_METADATA
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
@@ -340,27 +390,8 @@ void __event_template_proto___##_name(void);
 
 #undef LTTNG_TRACEPOINT_TYPE_VISIBILITY
 
-/*
- * Stage 3 of the trace events.
- *
- * Create probe callback prototypes.
- */
-
-/* Reset all macros within TRACEPOINT_EVENT */
-#include <lttng/events-reset.h>
-
-#undef TP_PROTO
-#define TP_PROTO(...)	__VA_ARGS__
-
-#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE(_name, _proto, _args, _locvar, _code_pre, _fields, _code_post) \
-static void __event_probe__##_name(void *__data, _proto);
-
-#undef LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS
-#define LTTNG_TRACEPOINT_EVENT_CLASS_CODE_NOARGS(_name, _locvar, _code_pre, _fields, _code_post) \
-static void __event_probe__##_name(void *__data);
-
-#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+#undef TP_ID1
+#undef TP_ID
 
 /*
  * Stage 4 of the trace events.
@@ -1164,20 +1195,6 @@ __post:											\
 #undef __get_dynamic_len
 
 /*
- * Stage 7.0 of tracepoint event generation.
- *
- * Declare toplevel descriptor for the whole probe.
- */
-
-#define TP_ID1(_token, _system)	_token##_system
-#define TP_ID(_token, _system)	TP_ID1(_token, _system)
-
-static __used struct lttng_kernel_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM);
-
-#undef TP_ID1
-#undef TP_ID
-
-/*
  * Stage 7.1 of the trace events.
  *
  * Create event descriptions.
@@ -1187,19 +1204,13 @@ static __used struct lttng_kernel_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM
 
 #include <lttng/events-reset.h>	/* Reset all macros within LTTNG_TRACEPOINT_EVENT */
 
-#ifndef TP_PROBE_CB
-#define TP_PROBE_CB(_template)	&__event_probe__##_template
-#endif
-
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map)	\
 static const struct lttng_kernel_event_desc __event_desc___##_map = {	\
 	.event_name = #_map,				     		\
 	.event_kname = #_name,				     		\
+	.tp_class = &lttng_kernel__event_class___##_template,		\
 	.probe_desc = &TP_ID(__probe_desc___, TRACE_SYSTEM),		\
-	.probe_callback = (void (*)(void)) TP_PROBE_CB(_template),	\
-	.fields = __event_fields___##_template,		     		\
-	.nr_fields = ARRAY_SIZE(__event_fields___##_template),		\
 	.owner = THIS_MODULE,				     		\
 };
 
