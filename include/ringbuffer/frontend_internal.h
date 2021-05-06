@@ -79,8 +79,8 @@ unsigned long subbuf_index(unsigned long offset, struct lttng_kernel_ring_buffer
 
 #if (BITS_PER_LONG == 32)
 static inline
-void save_last_tsc(const struct lib_ring_buffer_config *config,
-		   struct lib_ring_buffer *buf, u64 tsc)
+void save_last_tsc(const struct lttng_kernel_ring_buffer_config *config,
+		   struct lttng_kernel_ring_buffer *buf, u64 tsc)
 {
 	if (config->tsc_bits == 0 || config->tsc_bits == 64)
 		return;
@@ -92,8 +92,8 @@ void save_last_tsc(const struct lib_ring_buffer_config *config,
 }
 
 static inline
-int last_tsc_overflow(const struct lib_ring_buffer_config *config,
-		      struct lib_ring_buffer *buf, u64 tsc)
+int last_tsc_overflow(const struct lttng_kernel_ring_buffer_config *config,
+		      struct lttng_kernel_ring_buffer *buf, u64 tsc)
 {
 	unsigned long tsc_shifted;
 
@@ -109,8 +109,8 @@ int last_tsc_overflow(const struct lib_ring_buffer_config *config,
 }
 #else
 static inline
-void save_last_tsc(const struct lib_ring_buffer_config *config,
-		   struct lib_ring_buffer *buf, u64 tsc)
+void save_last_tsc(const struct lttng_kernel_ring_buffer_config *config,
+		   struct lttng_kernel_ring_buffer *buf, u64 tsc)
 {
 	if (config->tsc_bits == 0 || config->tsc_bits == 64)
 		return;
@@ -119,8 +119,8 @@ void save_last_tsc(const struct lib_ring_buffer_config *config,
 }
 
 static inline
-int last_tsc_overflow(const struct lib_ring_buffer_config *config,
-		      struct lib_ring_buffer *buf, u64 tsc)
+int last_tsc_overflow(const struct lttng_kernel_ring_buffer_config *config,
+		      struct lttng_kernel_ring_buffer *buf, u64 tsc)
 {
 	if (config->tsc_bits == 0 || config->tsc_bits == 64)
 		return 0;
@@ -138,12 +138,12 @@ int lib_ring_buffer_reserve_slow(struct lttng_kernel_ring_buffer_ctx *ctx,
 		void *client_ctx);
 
 extern
-void lib_ring_buffer_switch_slow(struct lib_ring_buffer *buf,
+void lib_ring_buffer_switch_slow(struct lttng_kernel_ring_buffer *buf,
 				 enum switch_mode mode);
 
 extern
-void lib_ring_buffer_check_deliver_slow(const struct lib_ring_buffer_config *config,
-				   struct lib_ring_buffer *buf,
+void lib_ring_buffer_check_deliver_slow(const struct lttng_kernel_ring_buffer_config *config,
+				   struct lttng_kernel_ring_buffer *buf,
 			           struct lttng_kernel_ring_buffer_channel *chan,
 			           unsigned long offset,
 				   unsigned long commit_count,
@@ -151,16 +151,16 @@ void lib_ring_buffer_check_deliver_slow(const struct lib_ring_buffer_config *con
 				   u64 tsc);
 
 extern
-void lib_ring_buffer_switch_remote(struct lib_ring_buffer *buf);
+void lib_ring_buffer_switch_remote(struct lttng_kernel_ring_buffer *buf);
 extern
-void lib_ring_buffer_switch_remote_empty(struct lib_ring_buffer *buf);
+void lib_ring_buffer_switch_remote_empty(struct lttng_kernel_ring_buffer *buf);
 extern
-void lib_ring_buffer_clear(struct lib_ring_buffer *buf);
+void lib_ring_buffer_clear(struct lttng_kernel_ring_buffer *buf);
 
 /* Buffer write helpers */
 
 static inline
-void lib_ring_buffer_reserve_push_reader(struct lib_ring_buffer *buf,
+void lib_ring_buffer_reserve_push_reader(struct lttng_kernel_ring_buffer *buf,
 					 struct lttng_kernel_ring_buffer_channel *chan,
 					 unsigned long offset)
 {
@@ -197,10 +197,10 @@ void lib_ring_buffer_reserve_push_reader(struct lib_ring_buffer *buf,
  * algorithm guarantees.
  */
 static inline
-void lib_ring_buffer_clear_reader(struct lib_ring_buffer *buf,
+void lib_ring_buffer_clear_reader(struct lttng_kernel_ring_buffer *buf,
 				  struct lttng_kernel_ring_buffer_channel *chan)
 {
-	const struct lib_ring_buffer_config *config = &chan->backend.config;
+	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 	unsigned long offset, consumed_old, consumed_new;
 
 	do {
@@ -215,16 +215,16 @@ void lib_ring_buffer_clear_reader(struct lib_ring_buffer *buf,
 }
 
 static inline
-int lib_ring_buffer_pending_data(const struct lib_ring_buffer_config *config,
-				 struct lib_ring_buffer *buf,
+int lib_ring_buffer_pending_data(const struct lttng_kernel_ring_buffer_config *config,
+				 struct lttng_kernel_ring_buffer *buf,
 				 struct lttng_kernel_ring_buffer_channel *chan)
 {
 	return !!subbuf_offset(v_read(config, &buf->offset), chan);
 }
 
 static inline
-unsigned long lib_ring_buffer_get_data_size(const struct lib_ring_buffer_config *config,
-					    struct lib_ring_buffer *buf,
+unsigned long lib_ring_buffer_get_data_size(const struct lttng_kernel_ring_buffer_config *config,
+					    struct lttng_kernel_ring_buffer *buf,
 					    unsigned long idx)
 {
 	return subbuffer_get_data_size(config, &buf->backend, idx);
@@ -236,8 +236,8 @@ unsigned long lib_ring_buffer_get_data_size(const struct lib_ring_buffer_config 
  * This is a very specific ftrace use-case, so we keep this as "internal" API.
  */
 static inline
-int lib_ring_buffer_reserve_committed(const struct lib_ring_buffer_config *config,
-				      struct lib_ring_buffer *buf,
+int lib_ring_buffer_reserve_committed(const struct lttng_kernel_ring_buffer_config *config,
+				      struct lttng_kernel_ring_buffer *buf,
 				      struct lttng_kernel_ring_buffer_channel *chan)
 {
 	unsigned long offset, idx, commit_count;
@@ -271,8 +271,8 @@ int lib_ring_buffer_reserve_committed(const struct lib_ring_buffer_config *confi
  * timestamp of the following subbuffers.
  */
 static inline
-void lib_ring_buffer_check_deliver(const struct lib_ring_buffer_config *config,
-				   struct lib_ring_buffer *buf,
+void lib_ring_buffer_check_deliver(const struct lttng_kernel_ring_buffer_config *config,
+				   struct lttng_kernel_ring_buffer *buf,
 			           struct lttng_kernel_ring_buffer_channel *chan,
 			           unsigned long offset,
 				   unsigned long commit_count,
@@ -298,8 +298,8 @@ void lib_ring_buffer_check_deliver(const struct lib_ring_buffer_config *config,
  * useful for crash dump.
  */
 static inline
-void lib_ring_buffer_write_commit_counter(const struct lib_ring_buffer_config *config,
-					  struct lib_ring_buffer *buf,
+void lib_ring_buffer_write_commit_counter(const struct lttng_kernel_ring_buffer_config *config,
+					  struct lttng_kernel_ring_buffer *buf,
 				          struct lttng_kernel_ring_buffer_channel *chan,
 				          unsigned long buf_offset,
 				          unsigned long commit_count,
@@ -324,9 +324,9 @@ void lib_ring_buffer_write_commit_counter(const struct lib_ring_buffer_config *c
 		v_set(config, &cc_hot->seq, commit_count);
 }
 
-extern int lib_ring_buffer_create(struct lib_ring_buffer *buf,
+extern int lib_ring_buffer_create(struct lttng_kernel_ring_buffer *buf,
 				  struct channel_backend *chanb, int cpu);
-extern void lib_ring_buffer_free(struct lib_ring_buffer *buf);
+extern void lib_ring_buffer_free(struct lttng_kernel_ring_buffer *buf);
 
 /* Keep track of trap nesting inside ring buffer code */
 DECLARE_PER_CPU(unsigned int, lib_ring_buffer_nesting);

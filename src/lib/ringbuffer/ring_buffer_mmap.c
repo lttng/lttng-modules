@@ -26,9 +26,9 @@ static vm_fault_t lib_ring_buffer_fault_compat(struct vm_area_struct *vma, struc
 static int lib_ring_buffer_fault_compat(struct vm_area_struct *vma, struct vm_fault *vmf)
 #endif
 {
-	struct lib_ring_buffer *buf = vma->vm_private_data;
+	struct lttng_kernel_ring_buffer *buf = vma->vm_private_data;
 	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
-	const struct lib_ring_buffer_config *config = &chan->backend.config;
+	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 	pgoff_t pgoff = vmf->pgoff;
 	unsigned long *pfnp;
 	void **virt;
@@ -92,12 +92,12 @@ static const struct vm_operations_struct lib_ring_buffer_mmap_ops = {
  *
  *	Caller should already have grabbed mmap_sem.
  */
-static int lib_ring_buffer_mmap_buf(struct lib_ring_buffer *buf,
+static int lib_ring_buffer_mmap_buf(struct lttng_kernel_ring_buffer *buf,
 				    struct vm_area_struct *vma)
 {
 	unsigned long length = vma->vm_end - vma->vm_start;
 	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
-	const struct lib_ring_buffer_config *config = &chan->backend.config;
+	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 	unsigned long mmap_buf_len;
 
 	if (config->output != RING_BUFFER_MMAP)
@@ -118,7 +118,7 @@ static int lib_ring_buffer_mmap_buf(struct lib_ring_buffer *buf,
 }
 
 int lib_ring_buffer_mmap(struct file *filp, struct vm_area_struct *vma,
-		struct lib_ring_buffer *buf)
+		struct lttng_kernel_ring_buffer *buf)
 {
 	return lib_ring_buffer_mmap_buf(buf, vma);
 }
@@ -133,7 +133,7 @@ EXPORT_SYMBOL_GPL(lib_ring_buffer_mmap);
  */
 int vfs_lib_ring_buffer_mmap(struct file *filp, struct vm_area_struct *vma)
 {
-	struct lib_ring_buffer *buf = filp->private_data;
+	struct lttng_kernel_ring_buffer *buf = filp->private_data;
 	return lib_ring_buffer_mmap(filp, vma, buf);
 }
 EXPORT_SYMBOL_GPL(vfs_lib_ring_buffer_mmap);

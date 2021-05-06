@@ -97,10 +97,10 @@ static int subbuf_splice_actor(struct file *in,
 			       struct pipe_inode_info *pipe,
 			       size_t len,
 			       unsigned int flags,
-			       struct lib_ring_buffer *buf)
+			       struct lttng_kernel_ring_buffer *buf)
 {
 	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
-	const struct lib_ring_buffer_config *config = &chan->backend.config;
+	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 	unsigned int poff, subbuf_pages, nr_pages;
 	struct page *pages[PIPE_DEF_BUFFERS];
 	struct partial_page partial[PIPE_DEF_BUFFERS];
@@ -182,10 +182,10 @@ static int subbuf_splice_actor(struct file *in,
 ssize_t lib_ring_buffer_splice_read(struct file *in, loff_t *ppos,
 				    struct pipe_inode_info *pipe, size_t len,
 				    unsigned int flags,
-				    struct lib_ring_buffer *buf)
+				    struct lttng_kernel_ring_buffer *buf)
 {
 	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
-	const struct lib_ring_buffer_config *config = &chan->backend.config;
+	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 	ssize_t spliced;
 	int ret;
 
@@ -239,7 +239,7 @@ ssize_t vfs_lib_ring_buffer_splice_read(struct file *in, loff_t *ppos,
 				    struct pipe_inode_info *pipe, size_t len,
 				    unsigned int flags)
 {
-	struct lib_ring_buffer *buf = in->private_data;
+	struct lttng_kernel_ring_buffer *buf = in->private_data;
 
 	return lib_ring_buffer_splice_read(in, ppos, pipe, len, flags, buf);
 }

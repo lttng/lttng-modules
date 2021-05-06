@@ -15,25 +15,25 @@
 #include <lttng/kernel-version.h>
 #include <lttng/cpuhotplug.h>
 
-struct lib_ring_buffer_backend_page {
+struct lttng_kernel_ring_buffer_backend_page {
 	void *virt;			/* page virtual address (cached) */
 	unsigned long pfn;		/* page frame number */
 };
 
-struct lib_ring_buffer_backend_pages {
+struct lttng_kernel_ring_buffer_backend_pages {
 	unsigned long mmap_offset;	/* offset of the subbuffer in mmap */
 	union v_atomic records_commit;	/* current records committed count */
 	union v_atomic records_unread;	/* records to read */
 	unsigned long data_size;	/* Amount of data to read from subbuf */
-	struct lib_ring_buffer_backend_page p[];
+	struct lttng_kernel_ring_buffer_backend_page p[];
 };
 
-struct lib_ring_buffer_backend_subbuffer {
+struct lttng_kernel_ring_buffer_backend_subbuffer {
 	/* Identifier for subbuf backend pages. Exchanged atomically. */
 	unsigned long id;		/* backend subbuffer identifier */
 };
 
-struct lib_ring_buffer_backend_counts {
+struct lttng_kernel_ring_buffer_backend_counts {
 	/*
 	 * Counter specific to the sub-buffer location within the ring buffer.
 	 * The actual sequence number of the packet within the entire ring
@@ -47,20 +47,20 @@ struct lib_ring_buffer_backend_counts {
  * Forward declaration of frontend-specific channel and ring_buffer.
  */
 struct lttng_kernel_ring_buffer_channel;
-struct lib_ring_buffer;
+struct lttng_kernel_ring_buffer;
 
-struct lib_ring_buffer_backend {
+struct lttng_kernel_ring_buffer_backend {
 	/* Array of ring_buffer_backend_subbuffer for writer */
-	struct lib_ring_buffer_backend_subbuffer *buf_wsb;
+	struct lttng_kernel_ring_buffer_backend_subbuffer *buf_wsb;
 	/* ring_buffer_backend_subbuffer for reader */
-	struct lib_ring_buffer_backend_subbuffer buf_rsb;
+	struct lttng_kernel_ring_buffer_backend_subbuffer buf_rsb;
 	/* Array of lib_ring_buffer_backend_counts for the packet counter */
-	struct lib_ring_buffer_backend_counts *buf_cnt;
+	struct lttng_kernel_ring_buffer_backend_counts *buf_cnt;
 	/*
 	 * Pointer array of backend pages, for whole buffer.
 	 * Indexed by ring_buffer_backend_subbuffer identifier (id) index.
 	 */
-	struct lib_ring_buffer_backend_pages **array;
+	struct lttng_kernel_ring_buffer_backend_pages **array;
 	unsigned int num_pages_per_subbuf;
 
 	struct lttng_kernel_ring_buffer_channel *chan;		/* Associated channel */
@@ -79,7 +79,7 @@ struct channel_backend {
 					 */
 	unsigned int buf_size_order;	/* Order of buffer size */
 	unsigned int extra_reader_sb:1;	/* has extra reader subbuffer ? */
-	struct lib_ring_buffer *buf;	/* Channel per-cpu buffers */
+	struct lttng_kernel_ring_buffer *buf;	/* Channel per-cpu buffers */
 
 	unsigned long num_subbuf;	/* Number of sub-buffers for writer */
 	u64 start_tsc;			/* Channel creation TSC value */
@@ -96,7 +96,7 @@ struct channel_backend {
 	 * source config can vanish before the last reference to this
 	 * channel's streams is released.
 	 */
-	struct lib_ring_buffer_config config; /* Ring buffer configuration */
+	struct lttng_kernel_ring_buffer_config config; /* Ring buffer configuration */
 	cpumask_var_t cpumask;		/* Allocated per-cpu buffers cpumask */
 	char name[NAME_MAX];		/* Channel name */
 };

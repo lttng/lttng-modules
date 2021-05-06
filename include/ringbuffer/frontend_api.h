@@ -33,7 +33,7 @@
  * section.
  */
 static inline
-int lib_ring_buffer_get_cpu(const struct lib_ring_buffer_config *config)
+int lib_ring_buffer_get_cpu(const struct lttng_kernel_ring_buffer_config *config)
 {
 	int cpu, nesting;
 
@@ -55,7 +55,7 @@ int lib_ring_buffer_get_cpu(const struct lib_ring_buffer_config *config)
  * lib_ring_buffer_put_cpu - Follows ring buffer reserve/commit.
  */
 static inline
-void lib_ring_buffer_put_cpu(const struct lib_ring_buffer_config *config)
+void lib_ring_buffer_put_cpu(const struct lttng_kernel_ring_buffer_config *config)
 {
 	barrier();
 	(*lttng_this_cpu_ptr(&lib_ring_buffer_nesting))--;
@@ -69,14 +69,14 @@ void lib_ring_buffer_put_cpu(const struct lib_ring_buffer_config *config)
  * returns 0 if reserve ok, or 1 if the slow path must be taken.
  */
 static inline
-int lib_ring_buffer_try_reserve(const struct lib_ring_buffer_config *config,
+int lib_ring_buffer_try_reserve(const struct lttng_kernel_ring_buffer_config *config,
 				struct lttng_kernel_ring_buffer_ctx *ctx,
 				void *client_ctx,
 				unsigned long *o_begin, unsigned long *o_end,
 				unsigned long *o_old, size_t *before_hdr_pad)
 {
 	struct lttng_kernel_ring_buffer_channel *chan = ctx->priv.chan;
-	struct lib_ring_buffer *buf = ctx->priv.buf;
+	struct lttng_kernel_ring_buffer *buf = ctx->priv.buf;
 	*o_begin = v_read(config, &buf->offset);
 	*o_old = *o_begin;
 
@@ -139,12 +139,12 @@ int lib_ring_buffer_try_reserve(const struct lib_ring_buffer_config *config,
  */
 
 static inline
-int lib_ring_buffer_reserve(const struct lib_ring_buffer_config *config,
+int lib_ring_buffer_reserve(const struct lttng_kernel_ring_buffer_config *config,
 			    struct lttng_kernel_ring_buffer_ctx *ctx,
 			    void *client_ctx)
 {
 	struct lttng_kernel_ring_buffer_channel *chan = ctx->priv.chan;
-	struct lib_ring_buffer *buf;
+	struct lttng_kernel_ring_buffer *buf;
 	unsigned long o_begin, o_end, o_old;
 	size_t before_hdr_pad = 0;
 
@@ -211,8 +211,8 @@ slow_path:
  * disabled, for RING_BUFFER_SYNC_PER_CPU configuration.
  */
 static inline
-void lib_ring_buffer_switch(const struct lib_ring_buffer_config *config,
-			    struct lib_ring_buffer *buf, enum switch_mode mode)
+void lib_ring_buffer_switch(const struct lttng_kernel_ring_buffer_config *config,
+			    struct lttng_kernel_ring_buffer *buf, enum switch_mode mode)
 {
 	lib_ring_buffer_switch_slow(buf, mode);
 }
@@ -228,11 +228,11 @@ void lib_ring_buffer_switch(const struct lib_ring_buffer_config *config,
  * specified sub-buffer, and delivers it if necessary.
  */
 static inline
-void lib_ring_buffer_commit(const struct lib_ring_buffer_config *config,
+void lib_ring_buffer_commit(const struct lttng_kernel_ring_buffer_config *config,
 			    const struct lttng_kernel_ring_buffer_ctx *ctx)
 {
 	struct lttng_kernel_ring_buffer_channel *chan = ctx->priv.chan;
-	struct lib_ring_buffer *buf = ctx->priv.buf;
+	struct lttng_kernel_ring_buffer *buf = ctx->priv.buf;
 	unsigned long offset_end = ctx->priv.buf_offset;
 	unsigned long endidx = subbuf_index(offset_end - 1, chan);
 	unsigned long commit_count;
@@ -300,10 +300,10 @@ void lib_ring_buffer_commit(const struct lib_ring_buffer_config *config,
  * Returns 0 upon success, -EPERM if the record cannot be discarded.
  */
 static inline
-int lib_ring_buffer_try_discard_reserve(const struct lib_ring_buffer_config *config,
+int lib_ring_buffer_try_discard_reserve(const struct lttng_kernel_ring_buffer_config *config,
 					const struct lttng_kernel_ring_buffer_ctx *ctx)
 {
-	struct lib_ring_buffer *buf = ctx->priv.buf;
+	struct lttng_kernel_ring_buffer *buf = ctx->priv.buf;
 	unsigned long end_offset = ctx->priv.pre_offset + ctx->priv.slot_size;
 
 	/*
@@ -328,29 +328,29 @@ int lib_ring_buffer_try_discard_reserve(const struct lib_ring_buffer_config *con
 }
 
 static inline
-void channel_record_disable(const struct lib_ring_buffer_config *config,
+void channel_record_disable(const struct lttng_kernel_ring_buffer_config *config,
 			    struct lttng_kernel_ring_buffer_channel *chan)
 {
 	atomic_inc(&chan->record_disabled);
 }
 
 static inline
-void channel_record_enable(const struct lib_ring_buffer_config *config,
+void channel_record_enable(const struct lttng_kernel_ring_buffer_config *config,
 			   struct lttng_kernel_ring_buffer_channel *chan)
 {
 	atomic_dec(&chan->record_disabled);
 }
 
 static inline
-void lib_ring_buffer_record_disable(const struct lib_ring_buffer_config *config,
-				    struct lib_ring_buffer *buf)
+void lib_ring_buffer_record_disable(const struct lttng_kernel_ring_buffer_config *config,
+				    struct lttng_kernel_ring_buffer *buf)
 {
 	atomic_inc(&buf->record_disabled);
 }
 
 static inline
-void lib_ring_buffer_record_enable(const struct lib_ring_buffer_config *config,
-				   struct lib_ring_buffer *buf)
+void lib_ring_buffer_record_enable(const struct lttng_kernel_ring_buffer_config *config,
+				   struct lttng_kernel_ring_buffer *buf)
 {
 	atomic_dec(&buf->record_disabled);
 }

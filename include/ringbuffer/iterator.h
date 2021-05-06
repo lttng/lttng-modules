@@ -21,7 +21,7 @@
  * is finalized.
  */
 extern ssize_t lib_ring_buffer_get_next_record(struct lttng_kernel_ring_buffer_channel *chan,
-					       struct lib_ring_buffer *buf);
+					       struct lttng_kernel_ring_buffer *buf);
 
 /*
  * Ensure that the current subbuffer is put after client code has read the
@@ -30,7 +30,7 @@ extern ssize_t lib_ring_buffer_get_next_record(struct lttng_kernel_ring_buffer_c
  * However, it should be invoked before returning data to user-space to ensure
  * that the get/put subbuffer state is quiescent.
  */
-extern void lib_ring_buffer_put_current_record(struct lib_ring_buffer *buf);
+extern void lib_ring_buffer_put_current_record(struct lttng_kernel_ring_buffer *buf);
 
 /*
  * channel_get_next_record advances the buffer read position to the next record.
@@ -40,7 +40,7 @@ extern void lib_ring_buffer_put_current_record(struct lib_ring_buffer *buf);
  * Returns the current buffer in ret_buf.
  */
 extern ssize_t channel_get_next_record(struct lttng_kernel_ring_buffer_channel *chan,
-				       struct lib_ring_buffer **ret_buf);
+				       struct lttng_kernel_ring_buffer **ret_buf);
 
 /**
  * read_current_record - copy the buffer current record into dest.
@@ -50,14 +50,14 @@ extern ssize_t channel_get_next_record(struct lttng_kernel_ring_buffer_channel *
  * dest should be large enough to contain the record. Returns the number of
  * bytes copied.
  */
-static inline size_t read_current_record(struct lib_ring_buffer *buf, void *dest)
+static inline size_t read_current_record(struct lttng_kernel_ring_buffer *buf, void *dest)
 {
 	return lib_ring_buffer_read(&buf->backend, buf->iter.read_offset,
 				    dest, buf->iter.payload_len);
 }
 
-extern int lib_ring_buffer_iterator_open(struct lib_ring_buffer *buf);
-extern void lib_ring_buffer_iterator_release(struct lib_ring_buffer *buf);
+extern int lib_ring_buffer_iterator_open(struct lttng_kernel_ring_buffer *buf);
+extern void lib_ring_buffer_iterator_release(struct lttng_kernel_ring_buffer *buf);
 extern int channel_iterator_open(struct lttng_kernel_ring_buffer_channel *chan);
 extern void channel_iterator_release(struct lttng_kernel_ring_buffer_channel *chan);
 
@@ -71,6 +71,6 @@ int channel_iterator_init(struct lttng_kernel_ring_buffer_channel *chan);
 void channel_iterator_unregister_notifiers(struct lttng_kernel_ring_buffer_channel *chan);
 void channel_iterator_free(struct lttng_kernel_ring_buffer_channel *chan);
 void channel_iterator_reset(struct lttng_kernel_ring_buffer_channel *chan);
-void lib_ring_buffer_iterator_reset(struct lib_ring_buffer *buf);
+void lib_ring_buffer_iterator_reset(struct lttng_kernel_ring_buffer *buf);
 
 #endif /* _LIB_RING_BUFFER_ITERATOR_H */

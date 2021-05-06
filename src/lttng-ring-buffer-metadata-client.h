@@ -34,7 +34,7 @@ struct metadata_record_header {
 	uint8_t header_end[0];		/* End of header */
 };
 
-static const struct lib_ring_buffer_config client_config;
+static const struct lttng_kernel_ring_buffer_config client_config;
 
 static inline
 u64 lib_ring_buffer_clock_read(struct lttng_kernel_ring_buffer_channel *chan)
@@ -43,7 +43,7 @@ u64 lib_ring_buffer_clock_read(struct lttng_kernel_ring_buffer_channel *chan)
 }
 
 static inline
-size_t record_header_size(const struct lib_ring_buffer_config *config,
+size_t record_header_size(const struct lttng_kernel_ring_buffer_config *config,
 				 struct lttng_kernel_ring_buffer_channel *chan, size_t offset,
 				 size_t *pre_header_padding,
 				 struct lttng_kernel_ring_buffer_ctx *ctx,
@@ -60,7 +60,7 @@ static u64 client_ring_buffer_clock_read(struct lttng_kernel_ring_buffer_channel
 }
 
 static
-size_t client_record_header_size(const struct lib_ring_buffer_config *config,
+size_t client_record_header_size(const struct lttng_kernel_ring_buffer_config *config,
 				 struct lttng_kernel_ring_buffer_channel *chan, size_t offset,
 				 size_t *pre_header_padding,
 				 struct lttng_kernel_ring_buffer_ctx *ctx,
@@ -81,7 +81,7 @@ static size_t client_packet_header_size(void)
 	return offsetof(struct metadata_packet_header, header_end);
 }
 
-static void client_buffer_begin(struct lib_ring_buffer *buf, u64 tsc,
+static void client_buffer_begin(struct lttng_kernel_ring_buffer *buf, u64 tsc,
 				unsigned int subbuf_idx)
 {
 	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
@@ -109,7 +109,7 @@ static void client_buffer_begin(struct lib_ring_buffer *buf, u64 tsc,
  * offset is assumed to never be 0 here : never deliver a completely empty
  * subbuffer. data_size is between 1 and subbuf_size.
  */
-static void client_buffer_end(struct lib_ring_buffer *buf, u64 tsc,
+static void client_buffer_end(struct lttng_kernel_ring_buffer *buf, u64 tsc,
 			      unsigned int subbuf_idx, unsigned long data_size)
 {
 	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
@@ -131,80 +131,80 @@ static void client_buffer_end(struct lib_ring_buffer *buf, u64 tsc,
 	WARN_ON_ONCE(records_lost != 0);
 }
 
-static int client_buffer_create(struct lib_ring_buffer *buf, void *priv,
+static int client_buffer_create(struct lttng_kernel_ring_buffer *buf, void *priv,
 				int cpu, const char *name)
 {
 	return 0;
 }
 
-static void client_buffer_finalize(struct lib_ring_buffer *buf, void *priv, int cpu)
+static void client_buffer_finalize(struct lttng_kernel_ring_buffer *buf, void *priv, int cpu)
 {
 }
 
-static int client_timestamp_begin(const struct lib_ring_buffer_config *config,
-		struct lib_ring_buffer *buf, uint64_t *timestamp_begin)
+static int client_timestamp_begin(const struct lttng_kernel_ring_buffer_config *config,
+		struct lttng_kernel_ring_buffer *buf, uint64_t *timestamp_begin)
 {
 	return -ENOSYS;
 }
 
-static int client_timestamp_end(const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
+static int client_timestamp_end(const struct lttng_kernel_ring_buffer_config *config,
+			struct lttng_kernel_ring_buffer *bufb,
 			uint64_t *timestamp_end)
 {
 	return -ENOSYS;
 }
 
-static int client_events_discarded(const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
+static int client_events_discarded(const struct lttng_kernel_ring_buffer_config *config,
+			struct lttng_kernel_ring_buffer *bufb,
 			uint64_t *events_discarded)
 {
 	return -ENOSYS;
 }
 
-static int client_current_timestamp(const struct lib_ring_buffer_config *config,
-		struct lib_ring_buffer *bufb,
+static int client_current_timestamp(const struct lttng_kernel_ring_buffer_config *config,
+		struct lttng_kernel_ring_buffer *bufb,
 		uint64_t *ts)
 {
 	return -ENOSYS;
 }
 
-static int client_content_size(const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
+static int client_content_size(const struct lttng_kernel_ring_buffer_config *config,
+			struct lttng_kernel_ring_buffer *bufb,
 			uint64_t *content_size)
 {
 	return -ENOSYS;
 }
 
-static int client_packet_size(const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
+static int client_packet_size(const struct lttng_kernel_ring_buffer_config *config,
+			struct lttng_kernel_ring_buffer *bufb,
 			uint64_t *packet_size)
 {
 	return -ENOSYS;
 }
 
-static int client_stream_id(const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
+static int client_stream_id(const struct lttng_kernel_ring_buffer_config *config,
+			struct lttng_kernel_ring_buffer *bufb,
 			uint64_t *stream_id)
 {
 	return -ENOSYS;
 }
 
-static int client_sequence_number(const struct lib_ring_buffer_config *config,
-			struct lib_ring_buffer *bufb,
+static int client_sequence_number(const struct lttng_kernel_ring_buffer_config *config,
+			struct lttng_kernel_ring_buffer *bufb,
 			uint64_t *seq)
 {
 	return -ENOSYS;
 }
 
 static
-int client_instance_id(const struct lib_ring_buffer_config *config,
-		struct lib_ring_buffer *bufb,
+int client_instance_id(const struct lttng_kernel_ring_buffer_config *config,
+		struct lttng_kernel_ring_buffer *bufb,
 		uint64_t *id)
 {
 	return -ENOSYS;
 }
 
-static const struct lib_ring_buffer_config client_config = {
+static const struct lttng_kernel_ring_buffer_config client_config = {
 	.cb.ring_buffer_clock_read = client_ring_buffer_clock_read,
 	.cb.record_header_size = client_record_header_size,
 	.cb.subbuffer_header_size = client_packet_header_size,
@@ -270,9 +270,9 @@ error:
 }
 
 static
-struct lib_ring_buffer *lttng_buffer_read_open(struct lttng_kernel_ring_buffer_channel *chan)
+struct lttng_kernel_ring_buffer *lttng_buffer_read_open(struct lttng_kernel_ring_buffer_channel *chan)
 {
-	struct lib_ring_buffer *buf;
+	struct lttng_kernel_ring_buffer *buf;
 
 	buf = channel_get_ring_buffer(&client_config, chan, 0);
 	if (!lib_ring_buffer_open_read(buf))
@@ -283,7 +283,7 @@ struct lib_ring_buffer *lttng_buffer_read_open(struct lttng_kernel_ring_buffer_c
 static
 int lttng_buffer_has_read_closed_stream(struct lttng_kernel_ring_buffer_channel *chan)
 {
-	struct lib_ring_buffer *buf;
+	struct lttng_kernel_ring_buffer *buf;
 	int cpu;
 
 	for_each_channel_cpu(cpu, chan) {
@@ -295,7 +295,7 @@ int lttng_buffer_has_read_closed_stream(struct lttng_kernel_ring_buffer_channel 
 }
 
 static
-void lttng_buffer_read_close(struct lib_ring_buffer *buf)
+void lttng_buffer_read_close(struct lttng_kernel_ring_buffer *buf)
 {
 	lib_ring_buffer_release_read(buf);
 }
@@ -356,7 +356,7 @@ static
 size_t lttng_packet_avail_size(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	unsigned long o_begin;
-	struct lib_ring_buffer *buf;
+	struct lttng_kernel_ring_buffer *buf;
 
 	buf = chan->backend.buf;	/* Only for global buffer ! */
 	o_begin = v_read(&client_config, &buf->offset);
@@ -371,7 +371,7 @@ size_t lttng_packet_avail_size(struct lttng_kernel_ring_buffer_channel *chan)
 static
 wait_queue_head_t *lttng_get_writer_buf_wait_queue(struct lttng_kernel_ring_buffer_channel *chan, int cpu)
 {
-	struct lib_ring_buffer *buf = channel_get_ring_buffer(&client_config,
+	struct lttng_kernel_ring_buffer *buf = channel_get_ring_buffer(&client_config,
 					chan, cpu);
 	return &buf->write_wait;
 }

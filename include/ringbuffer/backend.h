@@ -31,18 +31,18 @@
 
 /* Ring buffer backend access (read/write) */
 
-extern size_t lib_ring_buffer_read(struct lib_ring_buffer_backend *bufb,
+extern size_t lib_ring_buffer_read(struct lttng_kernel_ring_buffer_backend *bufb,
 				   size_t offset, void *dest, size_t len);
 
-extern int __lib_ring_buffer_copy_to_user(struct lib_ring_buffer_backend *bufb,
+extern int __lib_ring_buffer_copy_to_user(struct lttng_kernel_ring_buffer_backend *bufb,
 					  size_t offset, void __user *dest,
 					  size_t len);
 
-extern int lib_ring_buffer_read_cstr(struct lib_ring_buffer_backend *bufb,
+extern int lib_ring_buffer_read_cstr(struct lttng_kernel_ring_buffer_backend *bufb,
 				     size_t offset, void *dest, size_t len);
 
 extern unsigned long *
-lib_ring_buffer_read_get_pfn(struct lib_ring_buffer_backend *bufb, size_t offset,
+lib_ring_buffer_read_get_pfn(struct lttng_kernel_ring_buffer_backend *bufb, size_t offset,
 			      void ***virt);
 
 /*
@@ -52,10 +52,10 @@ lib_ring_buffer_read_get_pfn(struct lib_ring_buffer_backend *bufb, size_t offset
  * as long as the write is never bigger than a page size.
  */
 extern void *
-lib_ring_buffer_offset_address(struct lib_ring_buffer_backend *bufb,
+lib_ring_buffer_offset_address(struct lttng_kernel_ring_buffer_backend *bufb,
 			       size_t offset);
 extern void *
-lib_ring_buffer_read_offset_address(struct lib_ring_buffer_backend *bufb,
+lib_ring_buffer_read_offset_address(struct lttng_kernel_ring_buffer_backend *bufb,
 				    size_t offset);
 
 /**
@@ -71,15 +71,15 @@ lib_ring_buffer_read_offset_address(struct lib_ring_buffer_backend *bufb,
  * if copy is crossing a page boundary.
  */
 static inline __attribute__((always_inline))
-void lib_ring_buffer_write(const struct lib_ring_buffer_config *config,
+void lib_ring_buffer_write(const struct lttng_kernel_ring_buffer_config *config,
 			   struct lttng_kernel_ring_buffer_ctx *ctx,
 			   const void *src, size_t len)
 {
-	struct lib_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
+	struct lttng_kernel_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
 	struct channel_backend *chanb = &ctx->priv.chan->backend;
 	size_t index, pagecpy;
 	size_t offset = ctx->priv.buf_offset;
-	struct lib_ring_buffer_backend_pages *backend_pages;
+	struct lttng_kernel_ring_buffer_backend_pages *backend_pages;
 
 	if (unlikely(!len))
 		return;
@@ -112,15 +112,15 @@ void lib_ring_buffer_write(const struct lib_ring_buffer_config *config,
  * boundary.
  */
 static inline
-void lib_ring_buffer_memset(const struct lib_ring_buffer_config *config,
+void lib_ring_buffer_memset(const struct lttng_kernel_ring_buffer_config *config,
 			    struct lttng_kernel_ring_buffer_ctx *ctx, int c, size_t len)
 {
 
-	struct lib_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
+	struct lttng_kernel_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
 	struct channel_backend *chanb = &ctx->priv.chan->backend;
 	size_t index, pagecpy;
 	size_t offset = ctx->priv.buf_offset;
-	struct lib_ring_buffer_backend_pages *backend_pages;
+	struct lttng_kernel_ring_buffer_backend_pages *backend_pages;
 
 	if (unlikely(!len))
 		return;
@@ -144,7 +144,7 @@ void lib_ring_buffer_memset(const struct lib_ring_buffer_config *config,
  * copied. Does *not* terminate @dest with NULL terminating character.
  */
 static inline __attribute__((always_inline))
-size_t lib_ring_buffer_do_strcpy(const struct lib_ring_buffer_config *config,
+size_t lib_ring_buffer_do_strcpy(const struct lttng_kernel_ring_buffer_config *config,
 		char *dest, const char *src, size_t len)
 {
 	size_t count;
@@ -175,7 +175,7 @@ size_t lib_ring_buffer_do_strcpy(const struct lib_ring_buffer_config *config,
  * previously.
  */
 static inline __attribute__((always_inline))
-size_t lib_ring_buffer_do_strcpy_from_user_inatomic(const struct lib_ring_buffer_config *config,
+size_t lib_ring_buffer_do_strcpy_from_user_inatomic(const struct lttng_kernel_ring_buffer_config *config,
 		char *dest, const char __user *src, size_t len)
 {
 	size_t count;
@@ -209,15 +209,15 @@ size_t lib_ring_buffer_do_strcpy_from_user_inatomic(const struct lib_ring_buffer
  * (_ring_buffer_strcpy) if copy is crossing a page boundary.
  */
 static inline
-void lib_ring_buffer_strcpy(const struct lib_ring_buffer_config *config,
+void lib_ring_buffer_strcpy(const struct lttng_kernel_ring_buffer_config *config,
 			   struct lttng_kernel_ring_buffer_ctx *ctx,
 			   const char *src, size_t len, int pad)
 {
-	struct lib_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
+	struct lttng_kernel_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
 	struct channel_backend *chanb = &ctx->priv.chan->backend;
 	size_t index, pagecpy;
 	size_t offset = ctx->priv.buf_offset;
-	struct lib_ring_buffer_backend_pages *backend_pages;
+	struct lttng_kernel_ring_buffer_backend_pages *backend_pages;
 
 	if (unlikely(!len))
 		return;
@@ -267,15 +267,15 @@ void lib_ring_buffer_strcpy(const struct lib_ring_buffer_config *config,
  * Disable the page fault handler to ensure we never try to take the mmap_sem.
  */
 static inline __attribute__((always_inline))
-void lib_ring_buffer_copy_from_user_inatomic(const struct lib_ring_buffer_config *config,
+void lib_ring_buffer_copy_from_user_inatomic(const struct lttng_kernel_ring_buffer_config *config,
 				    struct lttng_kernel_ring_buffer_ctx *ctx,
 				    const void __user *src, size_t len)
 {
-	struct lib_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
+	struct lttng_kernel_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
 	struct channel_backend *chanb = &ctx->priv.chan->backend;
 	size_t index, pagecpy;
 	size_t offset = ctx->priv.buf_offset;
-	struct lib_ring_buffer_backend_pages *backend_pages;
+	struct lttng_kernel_ring_buffer_backend_pages *backend_pages;
 	unsigned long ret;
 
 	if (unlikely(!len))
@@ -334,15 +334,15 @@ fill_buffer:
  * take the mmap_sem.
  */
 static inline
-void lib_ring_buffer_strcpy_from_user_inatomic(const struct lib_ring_buffer_config *config,
+void lib_ring_buffer_strcpy_from_user_inatomic(const struct lttng_kernel_ring_buffer_config *config,
 		struct lttng_kernel_ring_buffer_ctx *ctx,
 		const void __user *src, size_t len, int pad)
 {
-	struct lib_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
+	struct lttng_kernel_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
 	struct channel_backend *chanb = &ctx->priv.chan->backend;
 	size_t index, pagecpy;
 	size_t offset = ctx->priv.buf_offset;
-	struct lib_ring_buffer_backend_pages *backend_pages;
+	struct lttng_kernel_ring_buffer_backend_pages *backend_pages;
 
 	if (unlikely(!len))
 		return;
@@ -404,11 +404,11 @@ fill_buffer:
  */
 static inline
 unsigned long lib_ring_buffer_get_records_unread(
-				const struct lib_ring_buffer_config *config,
-				struct lib_ring_buffer *buf)
+				const struct lttng_kernel_ring_buffer_config *config,
+				struct lttng_kernel_ring_buffer *buf)
 {
-	struct lib_ring_buffer_backend *bufb = &buf->backend;
-	struct lib_ring_buffer_backend_pages *pages;
+	struct lttng_kernel_ring_buffer_backend *bufb = &buf->backend;
+	struct lttng_kernel_ring_buffer_backend_pages *pages;
 	unsigned long records_unread = 0, sb_bindex, id;
 	unsigned int i;
 
