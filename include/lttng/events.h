@@ -109,21 +109,21 @@ struct lttng_kernel_type_sequence {
 struct lttng_kernel_type_struct {
 	struct lttng_kernel_type_common parent;
 	unsigned int nr_fields;
-	const struct lttng_kernel_event_field **fields;	/* Array of pointers to fields. */
+	const struct lttng_kernel_event_field * const *fields;	/* Array of pointers to fields. */
 	unsigned int alignment;
 };
 
 struct lttng_kernel_type_variant {
 	struct lttng_kernel_type_common parent;
 	const char *tag_name;		/* Tag field name. If NULL, use previous field. */
-	const struct lttng_kernel_event_field **choices; /* Array of pointers to fields. */
+	const struct lttng_kernel_event_field * const *choices; /* Array of pointers to fields. */
 	unsigned int nr_choices;
 	unsigned int alignment;
 };
 
 struct lttng_kernel_enum_desc {
 	const char *name;
-	const struct lttng_kernel_enum_entry **entries;
+	const struct lttng_kernel_enum_entry * const *entries;
 	unsigned int nr_entries;
 	const struct lttng_kernel_probe_desc *probe_desc;
 };
@@ -300,7 +300,7 @@ struct lttng_kernel_probe_ctx {
 
 struct lttng_kernel_tracepoint_class {
 	void (*probe_callback)(void);
-	const struct lttng_kernel_event_field **fields;	/* event payload */
+	const struct lttng_kernel_event_field * const *fields;	/* event payload */
 	unsigned int nr_fields;
 	const struct lttng_kernel_probe_desc *probe_desc;
 };
@@ -315,7 +315,7 @@ struct lttng_kernel_event_desc {
 
 struct lttng_kernel_probe_desc {
 	const char *provider_name;
-	const struct lttng_kernel_event_desc **event_desc;
+	const struct lttng_kernel_event_desc * const *event_desc;
 	unsigned int nr_events;
 	struct list_head head;			/* chain registered probes */
 	struct list_head lazy_init_head;

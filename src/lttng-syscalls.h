@@ -45,7 +45,7 @@ typedef __kernel_old_time_t time_t;
 struct trace_syscall_entry {
 	void *event_func;
 	const struct lttng_kernel_event_desc *desc;
-	const struct lttng_kernel_event_field **fields;
+	const struct lttng_kernel_event_field * const *fields;
 	unsigned int nrargs;
 };
 
