@@ -15,7 +15,7 @@ KERNEL_DIR="$(readlink --canonicalize-existing "$1")"
 ln -sf "$(pwd)" "${KERNEL_DIR}/lttng"
 
 # Graft ourself to the kernel build system
-echo 'source "lttng/Kconfig"' >> "${KERNEL_DIR}/Kconfig"
+echo 'source "lttng/src/Kconfig"' >> "${KERNEL_DIR}/Kconfig"
 sed -i 's#+= kernel/#+= kernel/ lttng/#' "${KERNEL_DIR}/Makefile"
 
 echo >&2
