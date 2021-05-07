@@ -254,6 +254,68 @@ void lib_ring_buffer_strcpy(const struct lttng_kernel_ring_buffer_config *config
 }
 
 /**
+ * lib_ring_buffer_pstrcpy - write kernel C-string (input) to a buffer backend P-string
+ * @config : ring buffer instance configuration
+ * @ctx: ring buffer context. (input arguments only)
+ * @src : source pointer to copy from
+ * @len : length of data to copy
+ * @pad : character to use for padding
+ *
+ * This function copies up to @len bytes of data from a source pointer
+ * to a Pascal String into the buffer backend. If a terminating '\0'
+ * character is found in @src before @len characters are copied, pad the
+ * buffer with @pad characters (e.g. '\0').
+ *
+ * The length of the pascal strings in the ring buffer is explicit: it
+ * is either the array or sequence length.
+ */
+static inline
+void lib_ring_buffer_pstrcpy(const struct lttng_kernel_ring_buffer_config *config,
+			   struct lttng_kernel_ring_buffer_ctx *ctx,
+			   const char *src, size_t len, char pad)
+	__attribute__((always_inline));
+static inline
+void lib_ring_buffer_pstrcpy(const struct lttng_kernel_ring_buffer_config *config,
+			   struct lttng_kernel_ring_buffer_ctx *ctx,
+			   const char *src, size_t len, char pad)
+{
+	struct lttng_kernel_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
+	struct channel_backend *chanb = &ctx->priv.chan->backend;
+	size_t index, bytes_left_in_page;
+	size_t offset = ctx->priv.buf_offset;
+	struct lttng_kernel_ring_buffer_backend_pages *backend_pages;
+
+	if (unlikely(!len))
+		return;
+	backend_pages =
+		lib_ring_buffer_get_backend_pages_from_ctx(config, ctx);
+	offset &= chanb->buf_size - 1;
+	index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
+	bytes_left_in_page = min_t(size_t, len, (-offset) & ~PAGE_MASK);
+	if (likely(bytes_left_in_page == len)) {
+		size_t count;
+
+		count = lib_ring_buffer_do_strcpy(config,
+					backend_pages->p[index].virt
+					    + (offset & ~PAGE_MASK),
+					src, len);
+		offset += count;
+		/* Padding */
+		if (unlikely(count < len)) {
+			size_t pad_len = len - count;
+
+			lib_ring_buffer_do_memset(backend_pages->p[index].virt
+						+ (offset & ~PAGE_MASK),
+					pad, pad_len);
+			offset += pad_len;
+		}
+	} else {
+		_lib_ring_buffer_pstrcpy(bufb, offset, src, len, pad);
+	}
+	ctx->priv.buf_offset += len;
+}
+
+/**
  * lib_ring_buffer_copy_from_user_inatomic - write userspace data to a buffer backend
  * @config : ring buffer instance configuration
  * @ctx: ring buffer context. (input arguments only)
@@ -396,6 +458,84 @@ fill_buffer:
 	_lib_ring_buffer_memset(bufb, offset, pad, len - 1, 0);
 	offset += len - 1;
 	_lib_ring_buffer_memset(bufb, offset, '\0', 1, 0);
+	ctx->priv.buf_offset += len;
+}
+
+/**
+ * lib_ring_buffer_pstrcpy_from_user_inatomic - write user-space C-string (input) to a buffer backend P-string
+ * @config : ring buffer instance configuration
+ * @ctx: ring buffer context. (input arguments only)
+ * @src : source pointer to copy from
+ * @len : length of data to copy
+ * @pad : character to use for padding
+ *
+ * This function copies up to @len bytes of data from a source pointer
+ * to a Pascal String into the buffer backend. If a terminating '\0'
+ * character is found in @src before @len characters are copied, pad the
+ * buffer with @pad characters (e.g. '\0').
+ *
+ * The length of the pascal strings in the ring buffer is explicit: it
+ * is either the array or sequence length.
+ */
+static inline
+void lib_ring_buffer_pstrcpy_from_user_inatomic(const struct lttng_kernel_ring_buffer_config *config,
+			   struct lttng_kernel_ring_buffer_ctx *ctx,
+			   const char __user *src, size_t len, char pad)
+	__attribute__((always_inline));
+static inline
+void lib_ring_buffer_pstrcpy_from_user_inatomic(const struct lttng_kernel_ring_buffer_config *config,
+			   struct lttng_kernel_ring_buffer_ctx *ctx,
+			   const char __user *src, size_t len, char pad)
+{
+	struct lttng_kernel_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
+	struct channel_backend *chanb = &ctx->priv.chan->backend;
+	size_t index, bytes_left_in_page;
+	size_t offset = ctx->priv.buf_offset;
+	struct lttng_kernel_ring_buffer_backend_pages *backend_pages;
+
+	if (unlikely(!len))
+		return;
+	backend_pages =
+		lib_ring_buffer_get_backend_pages_from_ctx(config, ctx);
+	offset &= chanb->buf_size - 1;
+	index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
+	bytes_left_in_page = min_t(size_t, len, (-offset) & ~PAGE_MASK);
+
+	if (unlikely(!lttng_access_ok(VERIFY_READ, src, len)))
+		goto fill_buffer;
+
+	pagefault_disable();
+	if (likely(bytes_left_in_page == len)) {
+		size_t count;
+
+		count = lib_ring_buffer_do_strcpy_from_user_inatomic(config,
+					backend_pages->p[index].virt
+					    + (offset & ~PAGE_MASK),
+					src, len);
+		offset += count;
+		/* Padding */
+		if (unlikely(count < len)) {
+			size_t pad_len = len - count;
+
+			lib_ring_buffer_do_memset(backend_pages->p[index].virt
+						+ (offset & ~PAGE_MASK),
+					pad, pad_len);
+			offset += pad_len;
+		}
+	} else {
+		_lib_ring_buffer_pstrcpy_from_user_inatomic(bufb, offset, src, len, pad);
+	}
+	ctx->priv.buf_offset += len;
+	pagefault_enable();
+
+	return;
+
+fill_buffer:
+	/*
+	 * In the error path we call the slow path version to avoid
+	 * the pollution of static inline code.
+	 */
+	_lib_ring_buffer_memset(bufb, offset, pad, len, 0);
 	ctx->priv.buf_offset += len;
 }
 

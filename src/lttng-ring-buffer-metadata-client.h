@@ -355,6 +355,13 @@ void lttng_event_strcpy(struct lttng_kernel_ring_buffer_ctx *ctx, const char *sr
 }
 
 static
+void lttng_event_pstrcpy_pad(struct lttng_kernel_ring_buffer_ctx *ctx, const char *src,
+		size_t len)
+{
+	lib_ring_buffer_pstrcpy(&client_config, ctx, src, len, '\0');
+}
+
+static
 size_t lttng_packet_avail_size(struct lttng_kernel_ring_buffer_channel *chan)
 {
 	unsigned long o_begin;
@@ -429,6 +436,7 @@ static struct lttng_transport lttng_relay_transport = {
 		.event_memset = lttng_event_memset,
 		.event_write = lttng_event_write,
 		.event_strcpy = lttng_event_strcpy,
+		.event_pstrcpy_pad = lttng_event_pstrcpy_pad,
 	},
 };
 
