@@ -392,6 +392,10 @@ struct lttng_kernel_channel_buffer_ops {
 			     size_t len);
 	void (*event_strcpy_from_user)(struct lttng_kernel_ring_buffer_ctx *ctx,
 				       const char __user *src, size_t len);
+	void (*event_pstrcpy_pad)(struct lttng_kernel_ring_buffer_ctx *ctx,
+				  const char *src, size_t len);
+	void (*event_pstrcpy_pad_from_user)(struct lttng_kernel_ring_buffer_ctx *ctx,
+				  const char __user *src, size_t len);
 	void (*lost_event_too_big)(struct lttng_kernel_channel_buffer *lttng_channel);
 };
 

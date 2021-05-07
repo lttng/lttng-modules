@@ -694,6 +694,20 @@ void lttng_event_strcpy_from_user(struct lttng_kernel_ring_buffer_ctx *ctx,
 }
 
 static
+void lttng_event_pstrcpy_pad(struct lttng_kernel_ring_buffer_ctx *ctx, const char *src,
+		size_t len)
+{
+	lib_ring_buffer_pstrcpy(&client_config, ctx, src, len, '\0');
+}
+
+static
+void lttng_event_pstrcpy_pad_from_user(struct lttng_kernel_ring_buffer_ctx *ctx, const char __user *src,
+		size_t len)
+{
+	lib_ring_buffer_pstrcpy_from_user_inatomic(&client_config, ctx, src, len, '\0');
+}
+
+static
 void lttng_channel_buffer_lost_event_too_big(struct lttng_kernel_channel_buffer *lttng_chan)
 {
 	lib_ring_buffer_lost_event_too_big(lttng_chan->priv->rb_chan);
@@ -759,6 +773,8 @@ static struct lttng_transport lttng_relay_transport = {
 		.event_memset = lttng_event_memset,
 		.event_strcpy = lttng_event_strcpy,
 		.event_strcpy_from_user = lttng_event_strcpy_from_user,
+		.event_pstrcpy_pad = lttng_event_pstrcpy_pad,
+		.event_pstrcpy_pad_from_user = lttng_event_pstrcpy_pad_from_user,
 		.lost_event_too_big = lttng_channel_buffer_lost_event_too_big,
 	},
 };

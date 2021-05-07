@@ -839,10 +839,18 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 
 #undef _ctf_array_encoded
 #define _ctf_array_encoded(_type, _item, _src, _length, _encoding, _byte_order, _base, _user, _nowrite) \
-	if (_user) {							\
-		__chan->ops->event_write_from_user(&__ctx, _src, sizeof(_type) * (_length), lttng_alignof(_type)); \
-	} else {							\
-		__chan->ops->event_write(&__ctx, _src, sizeof(_type) * (_length), lttng_alignof(_type)); \
+	if (lttng_kernel_string_encoding_##_encoding == lttng_kernel_string_encoding_none) { \
+		if (_user) {								\
+			__chan->ops->event_write_from_user(&__ctx, _src, sizeof(_type) * (_length), lttng_alignof(_type)); \
+		} else {								\
+			__chan->ops->event_write(&__ctx, _src, sizeof(_type) * (_length), lttng_alignof(_type)); \
+		}									\
+	} else {									\
+		if (_user) {								\
+			__chan->ops->event_pstrcpy_pad_from_user(&__ctx, (const char __user *) (_src), _length); \
+		} else {								\
+			__chan->ops->event_pstrcpy_pad(&__ctx, (const char *) (_src), _length); \
+		}									\
 	}
 
 #if (__BYTE_ORDER == __LITTLE_ENDIAN)
@@ -893,18 +901,28 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 #endif /* #else #if (__BYTE_ORDER == __LITTLE_ENDIAN) */
 
 #undef _ctf_sequence_encoded
-#define _ctf_sequence_encoded(_type, _item, _src, _length_type,		\
+#define _ctf_sequence_encoded(_type, _item, _src, _length_type,			\
 			_src_length, _encoding, _byte_order, _base, _user, _nowrite) \
-	{								\
+	{									\
 		_length_type __tmpl = this_cpu_ptr(&lttng_dynamic_len_stack)->stack[__dynamic_len_idx]; \
 		__chan->ops->event_write(&__ctx, &__tmpl, sizeof(_length_type), lttng_alignof(_length_type));\
-	}								\
-	if (_user) {							\
-		__chan->ops->event_write_from_user(&__ctx, _src,	\
-			sizeof(_type) * __get_dynamic_len(dest), lttng_alignof(_type));	\
-	} else {							\
-		__chan->ops->event_write(&__ctx, _src,			\
-			sizeof(_type) * __get_dynamic_len(dest), lttng_alignof(_type));	\
+	}									\
+	if (lttng_kernel_string_encoding_##_encoding == lttng_kernel_string_encoding_none) { \
+		if (_user) {							\
+			__chan->ops->event_write_from_user(&__ctx, _src,	\
+				sizeof(_type) * __get_dynamic_len(dest), lttng_alignof(_type));	\
+		} else {							\
+			__chan->ops->event_write(&__ctx, _src,			\
+				sizeof(_type) * __get_dynamic_len(dest), lttng_alignof(_type));	\
+		}								\
+	} else {								\
+		if (_user) {							\
+			__chan->ops->event_pstrcpy_pad_from_user(&__ctx, (const char __user *) (_src), \
+				__get_dynamic_len(dest));			\
+		} else {							\
+			__chan->ops->event_pstrcpy_pad(&__ctx, (const char *) (_src), \
+				__get_dynamic_len(dest));			\
+		}								\
 	}
 
 #if (__BYTE_ORDER == __LITTLE_ENDIAN)

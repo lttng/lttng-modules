@@ -730,6 +730,85 @@ void _lib_ring_buffer_strcpy(struct lttng_kernel_ring_buffer_backend *bufb,
 EXPORT_SYMBOL_GPL(_lib_ring_buffer_strcpy);
 
 /**
+ * _lib_ring_buffer_pstrcpy - write to a buffer backend P-string
+ * @bufb : buffer backend
+ * @src : source pointer to copy from
+ * @len : length of data to copy
+ * @pad : character to use for padding
+ *
+ * This function copies up to @len bytes of data from a source pointer
+ * to a Pascal String into the buffer backend. If a terminating '\0'
+ * character is found in @src before @len characters are copied, pad the
+ * buffer with @pad characters (e.g.  '\0').
+ *
+ * The length of the pascal strings in the ring buffer is explicit: it
+ * is either the array or sequence length.
+ */
+void _lib_ring_buffer_pstrcpy(struct lttng_kernel_ring_buffer_backend *bufb,
+			size_t offset, const char *src, size_t len, int pad)
+{
+	struct channel_backend *chanb = &bufb->chan->backend;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
+	size_t sbidx, index, bytes_left_in_page;
+	struct lttng_kernel_ring_buffer_backend_pages *rpages;
+	unsigned long sb_bindex, id;
+	bool src_terminated = false;
+
+	CHAN_WARN_ON(chanb, !len);
+	do {
+		sbidx = offset >> chanb->subbuf_size_order;
+		index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
+
+		/*
+		 * Underlying layer should never ask for writes across
+		 * subbuffers.
+		 */
+		CHAN_WARN_ON(chanb, offset >= chanb->buf_size);
+
+		bytes_left_in_page = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
+		id = bufb->buf_wsb[sbidx].id;
+		sb_bindex = subbuffer_id_get_index(config, id);
+		rpages = bufb->array[sb_bindex];
+		CHAN_WARN_ON(chanb, config->mode == RING_BUFFER_OVERWRITE
+			     && subbuffer_id_is_noref(config, id));
+
+		if (likely(!src_terminated)) {
+			size_t count, to_copy;
+
+			to_copy = bytes_left_in_page;
+			count = lib_ring_buffer_do_strcpy(config,
+					rpages->p[index].virt
+						+ (offset & ~PAGE_MASK),
+					src, to_copy);
+			offset += count;
+			/* Padding */
+			if (unlikely(count < to_copy)) {
+				size_t pad_len = to_copy - count;
+
+				/* Next pages will have padding */
+				src_terminated = true;
+				lib_ring_buffer_do_memset(rpages->p[index].virt
+						+ (offset & ~PAGE_MASK),
+					pad, pad_len);
+				offset += pad_len;
+			}
+		} else {
+			size_t pad_len;
+
+			pad_len = bytes_left_in_page;
+			lib_ring_buffer_do_memset(rpages->p[index].virt
+					+ (offset & ~PAGE_MASK),
+				pad, pad_len);
+			offset += pad_len;
+		}
+		len -= bytes_left_in_page;
+		if (!src_terminated)
+			src += bytes_left_in_page;
+	} while (unlikely(len));
+}
+EXPORT_SYMBOL_GPL(_lib_ring_buffer_pstrcpy);
+
+/**
  * lib_ring_buffer_copy_from_user_inatomic - write user data to a ring_buffer buffer.
  * @bufb : buffer backend
  * @offset : offset within the buffer
@@ -868,6 +947,89 @@ void _lib_ring_buffer_strcpy_from_user_inatomic(struct lttng_kernel_ring_buffer_
 			'\0', 1);
 }
 EXPORT_SYMBOL_GPL(_lib_ring_buffer_strcpy_from_user_inatomic);
+
+/**
+ * _lib_ring_buffer_pstrcpy_from_user_inatomic - write userspace string to a buffer backend P-string
+ * @bufb : buffer backend
+ * @src : source pointer to copy from
+ * @len : length of data to copy
+ * @pad : character to use for padding
+ *
+ * This function copies up to @len bytes of data from a source pointer
+ * to a Pascal String into the buffer backend. If a terminating '\0'
+ * character is found in @src before @len characters are copied, pad the
+ * buffer with @pad characters (e.g.  '\0').
+ *
+ * The length of the pascal strings in the ring buffer is explicit: it
+ * is either the array or sequence length.
+ *
+ * This function deals with userspace pointers, it should never be called
+ * directly without having the src pointer checked with access_ok()
+ * previously.
+ */
+void _lib_ring_buffer_pstrcpy_from_user_inatomic(struct lttng_kernel_ring_buffer_backend *bufb,
+			size_t offset, const char __user *src, size_t len, int pad)
+{
+	struct channel_backend *chanb = &bufb->chan->backend;
+	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
+	size_t sbidx, index, bytes_left_in_page;
+	struct lttng_kernel_ring_buffer_backend_pages *rpages;
+	unsigned long sb_bindex, id;
+	bool src_terminated = false;
+
+	CHAN_WARN_ON(chanb, !len);
+	do {
+		sbidx = offset >> chanb->subbuf_size_order;
+		index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
+
+		/*
+		 * Underlying layer should never ask for writes across
+		 * subbuffers.
+		 */
+		CHAN_WARN_ON(chanb, offset >= chanb->buf_size);
+
+		bytes_left_in_page = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
+		id = bufb->buf_wsb[sbidx].id;
+		sb_bindex = subbuffer_id_get_index(config, id);
+		rpages = bufb->array[sb_bindex];
+		CHAN_WARN_ON(chanb, config->mode == RING_BUFFER_OVERWRITE
+			     && subbuffer_id_is_noref(config, id));
+
+		if (likely(!src_terminated)) {
+			size_t count, to_copy;
+
+			to_copy = bytes_left_in_page;
+			count = lib_ring_buffer_do_strcpy_from_user_inatomic(config,
+					rpages->p[index].virt
+						+ (offset & ~PAGE_MASK),
+					src, to_copy);
+			offset += count;
+			/* Padding */
+			if (unlikely(count < to_copy)) {
+				size_t pad_len = to_copy - count;
+
+				/* Next pages will have padding */
+				src_terminated = true;
+				lib_ring_buffer_do_memset(rpages->p[index].virt
+						+ (offset & ~PAGE_MASK),
+					pad, pad_len);
+				offset += pad_len;
+			}
+		} else {
+			size_t pad_len;
+
+			pad_len = bytes_left_in_page;
+			lib_ring_buffer_do_memset(rpages->p[index].virt
+					+ (offset & ~PAGE_MASK),
+				pad, pad_len);
+			offset += pad_len;
+		}
+		len -= bytes_left_in_page;
+		if (!src_terminated)
+			src += bytes_left_in_page;
+	} while (unlikely(len));
+}
+EXPORT_SYMBOL_GPL(_lib_ring_buffer_pstrcpy_from_user_inatomic);
 
 /**
  * lib_ring_buffer_read - read data from ring_buffer_buffer.
