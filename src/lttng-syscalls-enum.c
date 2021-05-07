@@ -10,6 +10,8 @@
 
 #include <lttng/events.h>
 
+#include "lttng-syscalls.h"
+
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
 #define TP_MODULE_NOINIT

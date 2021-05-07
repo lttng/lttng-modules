@@ -13,6 +13,11 @@
 #include <stddef.h>
 
 #include <asm/ptrace.h>
+#include <linux/compat.h>
+#include <linux/fcntl.h>
+#include <linux/in.h>
+#include <linux/in6.h>
+#include <linux/mman.h>
 
 #include <lttng/events.h>
 #include <lttng/kernel-version.h>

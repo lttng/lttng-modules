@@ -1,8 +1,5 @@
 /* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only) */
 
-#include <linux/fcntl.h>
-#include <linux/mman.h>
-
 #ifndef CREATE_SYSCALL_TABLE
 
 /*
