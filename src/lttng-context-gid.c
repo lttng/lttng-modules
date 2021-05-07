@@ -36,8 +36,7 @@ void gid_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	gid_t gid;
 
 	gid = lttng_current_gid();
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(gid));
-	chan->ops->event_write(ctx, &gid, sizeof(gid));
+	chan->ops->event_write(ctx, &gid, sizeof(gid), lttng_alignof(gid));
 }
 
 static

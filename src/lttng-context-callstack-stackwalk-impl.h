@@ -202,7 +202,6 @@ void lttng_callstack_length_record(void *priv, struct lttng_kernel_probe_ctx *pr
 	struct lttng_stack_trace *trace = stack_trace_context(fdata, cpu);
 	unsigned int nr_seq_entries;
 
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(unsigned int));
 	if (unlikely(!trace)) {
 		nr_seq_entries = 0;
 	} else {
@@ -210,7 +209,7 @@ void lttng_callstack_length_record(void *priv, struct lttng_kernel_probe_ctx *pr
 		if (trace->nr_entries == MAX_ENTRIES)
 			nr_seq_entries++;
 	}
-	chan->ops->event_write(ctx, &nr_seq_entries, sizeof(unsigned int));
+	chan->ops->event_write(ctx, &nr_seq_entries, sizeof(unsigned int), lttng_alignof(unsigned int));
 }
 
 static
@@ -223,19 +222,20 @@ void lttng_callstack_sequence_record(void *priv, struct lttng_kernel_probe_ctx *
 	struct lttng_stack_trace *trace = stack_trace_context(fdata, cpu);
 	unsigned int nr_seq_entries;
 
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(unsigned long));
 	if (unlikely(!trace)) {
+		/* We need to align even if there are 0 elements. */
+		lib_ring_buffer_align_ctx(ctx, lttng_alignof(unsigned long));
 		return;
 	}
 	nr_seq_entries = trace->nr_entries;
 	if (trace->nr_entries == MAX_ENTRIES)
 		nr_seq_entries++;
 	chan->ops->event_write(ctx, trace->entries,
-			sizeof(unsigned long) * trace->nr_entries);
+			sizeof(unsigned long) * trace->nr_entries, lttng_alignof(unsigned long));
 	/* Add our own ULONG_MAX delimiter to show incomplete stack. */
 	if (trace->nr_entries == MAX_ENTRIES) {
 		unsigned long delim = ULONG_MAX;
 
-		chan->ops->event_write(ctx, &delim, sizeof(unsigned long));
+		chan->ops->event_write(ctx, &delim, sizeof(unsigned long), 1);
 	}
 }

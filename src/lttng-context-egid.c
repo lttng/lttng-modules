@@ -36,8 +36,7 @@ void egid_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	gid_t egid;
 
 	egid = lttng_current_egid();
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(egid));
-	chan->ops->event_write(ctx, &egid, sizeof(egid));
+	chan->ops->event_write(ctx, &egid, sizeof(egid), lttng_alignof(egid));
 }
 
 static

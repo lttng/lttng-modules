@@ -34,8 +34,7 @@ void need_reschedule_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx
 {
 	uint8_t need_reschedule = test_tsk_need_resched(current);
 
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(need_reschedule));
-	chan->ops->event_write(ctx, &need_reschedule, sizeof(need_reschedule));
+	chan->ops->event_write(ctx, &need_reschedule, sizeof(need_reschedule), lttng_alignof(need_reschedule));
 }
 
 static

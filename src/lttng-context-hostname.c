@@ -46,7 +46,7 @@ void hostname_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 		ns = nsproxy->uts_ns;
 		hostname = ns->name.nodename;
 		chan->ops->event_write(ctx, hostname,
-				LTTNG_HOSTNAME_CTX_LEN);
+				LTTNG_HOSTNAME_CTX_LEN, 1);
 	} else {
 		chan->ops->event_memset(ctx, 0,
 				LTTNG_HOSTNAME_CTX_LEN);

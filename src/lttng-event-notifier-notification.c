@@ -408,18 +408,16 @@ void notification_send(struct lttng_event_notifier_notification *notif,
 		return;
 	}
 
-	lib_ring_buffer_align_ctx(&ctx, lttng_alignof(kernel_notif));
-
 	/* Write the notif structure. */
 	event_notifier_group->ops->event_write(&ctx, &kernel_notif,
-			sizeof(kernel_notif));
+			sizeof(kernel_notif), lttng_alignof(kernel_notif));
 
 	/*
 	 * Write the capture buffer. No need to realigned as the below is a raw
 	 * char* buffer.
 	 */
 	event_notifier_group->ops->event_write(&ctx, &notif->capture_buf,
-			capture_buffer_content_len);
+			capture_buffer_content_len, 1);
 
 	event_notifier_group->ops->event_commit(&ctx);
 	irq_work_queue(&event_notifier_group->wakeup_pending);

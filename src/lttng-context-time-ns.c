@@ -50,8 +50,7 @@ void time_ns_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	if (current->nsproxy)
 		time_ns_inum = current->nsproxy->time_ns->lttng_ns_inum;
 
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(time_ns_inum));
-	chan->ops->event_write(ctx, &time_ns_inum, sizeof(time_ns_inum));
+	chan->ops->event_write(ctx, &time_ns_inum, sizeof(time_ns_inum), lttng_alignof(time_ns_inum));
 }
 
 static

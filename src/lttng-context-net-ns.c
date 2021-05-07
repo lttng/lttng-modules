@@ -51,8 +51,7 @@ void net_ns_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	if (current->nsproxy)
 		net_ns_inum = current->nsproxy->net_ns->lttng_ns_inum;
 
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(net_ns_inum));
-	chan->ops->event_write(ctx, &net_ns_inum, sizeof(net_ns_inum));
+	chan->ops->event_write(ctx, &net_ns_inum, sizeof(net_ns_inum), lttng_alignof(net_ns_inum));
 }
 
 static

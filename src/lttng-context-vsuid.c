@@ -36,8 +36,7 @@ void vsuid_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	uid_t vsuid;
 
 	vsuid = lttng_current_vsuid();
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(vsuid));
-	chan->ops->event_write(ctx, &vsuid, sizeof(vsuid));
+	chan->ops->event_write(ctx, &vsuid, sizeof(vsuid), lttng_alignof(vsuid));
 }
 
 static

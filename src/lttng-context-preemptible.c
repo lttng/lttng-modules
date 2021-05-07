@@ -46,8 +46,7 @@ void preemptible_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	WARN_ON_ONCE(pc < LTTNG_PREEMPT_DISABLE_NESTING);
 	if (pc == LTTNG_PREEMPT_DISABLE_NESTING)
 		preemptible = 1;
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(preemptible));
-	chan->ops->event_write(ctx, &preemptible, sizeof(preemptible));
+	chan->ops->event_write(ctx, &preemptible, sizeof(preemptible), lttng_alignof(preemptible));
 }
 
 static

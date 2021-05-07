@@ -51,8 +51,7 @@ void cgroup_ns_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	if (current->nsproxy)
 		cgroup_ns_inum = current->nsproxy->cgroup_ns->lttng_ns_inum;
 
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(cgroup_ns_inum));
-	chan->ops->event_write(ctx, &cgroup_ns_inum, sizeof(cgroup_ns_inum));
+	chan->ops->event_write(ctx, &cgroup_ns_inum, sizeof(cgroup_ns_inum), lttng_alignof(cgroup_ns_inum));
 }
 
 static
