@@ -57,8 +57,7 @@ void perf_counter_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 		 */
 		value = 0;
 	}
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(value));
-	chan->ops->event_write(ctx, &value, sizeof(value));
+	chan->ops->event_write(ctx, &value, sizeof(value), lttng_alignof(value));
 }
 
 #if defined(CONFIG_PERF_EVENTS) && (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0))

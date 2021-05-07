@@ -50,8 +50,7 @@ void uts_ns_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	if (current->nsproxy)
 		uts_ns_inum = current->nsproxy->uts_ns->lttng_ns_inum;
 
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(uts_ns_inum));
-	chan->ops->event_write(ctx, &uts_ns_inum, sizeof(uts_ns_inum));
+	chan->ops->event_write(ctx, &uts_ns_inum, sizeof(uts_ns_inum), lttng_alignof(uts_ns_inum));
 }
 
 static

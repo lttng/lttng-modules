@@ -55,8 +55,7 @@ void vppid_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	else
 		vppid = task_tgid_vnr(parent);
 	rcu_read_unlock();
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(vppid));
-	chan->ops->event_write(ctx, &vppid, sizeof(vppid));
+	chan->ops->event_write(ctx, &vppid, sizeof(vppid), lttng_alignof(vppid));
 }
 
 static

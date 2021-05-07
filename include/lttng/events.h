@@ -383,9 +383,9 @@ struct lttng_kernel_channel_buffer_ops {
 	int (*event_reserve)(struct lttng_kernel_ring_buffer_ctx *ctx);
 	void (*event_commit)(struct lttng_kernel_ring_buffer_ctx *ctx);
 	void (*event_write)(struct lttng_kernel_ring_buffer_ctx *ctx, const void *src,
-			    size_t len);
+			    size_t len, size_t alignment);
 	void (*event_write_from_user)(struct lttng_kernel_ring_buffer_ctx *ctx,
-				      const void *src, size_t len);
+				      const void *src, size_t len, size_t alignment);
 	void (*event_memset)(struct lttng_kernel_ring_buffer_ctx *ctx,
 			     int c, size_t len);
 	void (*event_strcpy)(struct lttng_kernel_ring_buffer_ctx *ctx, const char *src,

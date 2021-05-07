@@ -36,8 +36,7 @@ void uid_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	uid_t uid;
 
 	uid = lttng_current_uid();
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(uid));
-	chan->ops->event_write(ctx, &uid, sizeof(uid));
+	chan->ops->event_write(ctx, &uid, sizeof(uid), lttng_alignof(uid));
 }
 
 static

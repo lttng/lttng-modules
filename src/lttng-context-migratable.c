@@ -34,8 +34,7 @@ void migratable_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 {
 	uint8_t migratable = !current->migrate_disable;
 
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(migratable));
-	chan->ops->event_write(ctx, &migratable, sizeof(migratable));
+	chan->ops->event_write(ctx, &migratable, sizeof(migratable), lttng_alignof(migratable));
 }
 
 static

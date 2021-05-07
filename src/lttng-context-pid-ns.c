@@ -51,8 +51,7 @@ void pid_ns_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	if (ns)
 		pid_ns_inum = ns->lttng_ns_inum;
 
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(pid_ns_inum));
-	chan->ops->event_write(ctx, &pid_ns_inum, sizeof(pid_ns_inum));
+	chan->ops->event_write(ctx, &pid_ns_inum, sizeof(pid_ns_inum), lttng_alignof(pid_ns_inum));
 }
 
 static

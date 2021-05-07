@@ -34,8 +34,7 @@ void pid_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	pid_t pid;
 
 	pid = task_tgid_nr(current);
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(pid));
-	chan->ops->event_write(ctx, &pid, sizeof(pid));
+	chan->ops->event_write(ctx, &pid, sizeof(pid), lttng_alignof(pid));
 }
 
 static

@@ -2924,7 +2924,7 @@ int lttng_metadata_output_channel(struct lttng_metadata_stream *stream,
 	}
 	stream->transport->ops.event_write(&ctx,
 			stream->metadata_cache->data + stream->metadata_in,
-			reserve_len);
+			reserve_len, 1);
 	stream->transport->ops.event_commit(&ctx);
 	stream->metadata_in += reserve_len;
 	if (reserve_len < len)

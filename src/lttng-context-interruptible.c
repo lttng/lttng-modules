@@ -39,8 +39,7 @@ void interruptible_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	struct lttng_kernel_probe_ctx *lttng_probe_ctx = ctx->probe_ctx;
 	int8_t interruptible = lttng_probe_ctx->interruptible;
 
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(interruptible));
-	chan->ops->event_write(ctx, &interruptible, sizeof(interruptible));
+	chan->ops->event_write(ctx, &interruptible, sizeof(interruptible), lttng_alignof(interruptible));
 }
 
 static

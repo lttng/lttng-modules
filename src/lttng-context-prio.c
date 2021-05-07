@@ -61,8 +61,7 @@ void prio_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	int prio;
 
 	prio = wrapper_task_prio_sym(current);
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(prio));
-	chan->ops->event_write(ctx, &prio, sizeof(prio));
+	chan->ops->event_write(ctx, &prio, sizeof(prio), lttng_alignof(prio));
 }
 
 static

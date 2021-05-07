@@ -34,8 +34,7 @@ void nice_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	int nice;
 
 	nice = task_nice(current);
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(nice));
-	chan->ops->event_write(ctx, &nice, sizeof(nice));
+	chan->ops->event_write(ctx, &nice, sizeof(nice), lttng_alignof(nice));
 }
 
 static

@@ -44,8 +44,7 @@ void ppid_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	rcu_read_lock();
 	ppid = task_tgid_nr(current->real_parent);
 	rcu_read_unlock();
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(ppid));
-	chan->ops->event_write(ctx, &ppid, sizeof(ppid));
+	chan->ops->event_write(ctx, &ppid, sizeof(ppid), lttng_alignof(ppid));
 }
 
 static

@@ -40,8 +40,7 @@ void vtid_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 		vtid = 0;
 	else
 		vtid = task_pid_vnr(current);
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(vtid));
-	chan->ops->event_write(ctx, &vtid, sizeof(vtid));
+	chan->ops->event_write(ctx, &vtid, sizeof(vtid), lttng_alignof(vtid));
 }
 
 static

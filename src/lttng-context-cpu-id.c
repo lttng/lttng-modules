@@ -34,8 +34,7 @@ void cpu_id_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	int cpu;
 
 	cpu = ctx->priv.reserve_cpu;
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(cpu));
-	chan->ops->event_write(ctx, &cpu, sizeof(cpu));
+	chan->ops->event_write(ctx, &cpu, sizeof(cpu), lttng_alignof(cpu));
 }
 
 static

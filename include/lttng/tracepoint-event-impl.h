@@ -813,8 +813,7 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 #define _ctf_integer_ext_fetched(_type, _item, _src, _byte_order, _base, _nowrite) \
 	{								\
 		_type __tmp = _src;					\
-		lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(__tmp));\
-		__chan->ops->event_write(&__ctx, &__tmp, sizeof(__tmp));\
+		__chan->ops->event_write(&__ctx, &__tmp, sizeof(__tmp), lttng_alignof(__tmp)); \
 	}
 
 #undef _ctf_integer_ext_isuser0
@@ -840,21 +839,19 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 
 #undef _ctf_array_encoded
 #define _ctf_array_encoded(_type, _item, _src, _length, _encoding, _byte_order, _base, _user, _nowrite) \
-	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(_type));	\
 	if (_user) {							\
-		__chan->ops->event_write_from_user(&__ctx, _src, sizeof(_type) * (_length)); \
+		__chan->ops->event_write_from_user(&__ctx, _src, sizeof(_type) * (_length), lttng_alignof(_type)); \
 	} else {							\
-		__chan->ops->event_write(&__ctx, _src, sizeof(_type) * (_length)); \
+		__chan->ops->event_write(&__ctx, _src, sizeof(_type) * (_length), lttng_alignof(_type)); \
 	}
 
 #if (__BYTE_ORDER == __LITTLE_ENDIAN)
 #undef _ctf_array_bitfield
 #define _ctf_array_bitfield(_type, _item, _src, _length, _user, _nowrite) \
-	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(_type));	\
 	if (_user) {							\
-		__chan->ops->event_write_from_user(&__ctx, _src, sizeof(_type) * (_length)); \
+		__chan->ops->event_write_from_user(&__ctx, _src, sizeof(_type) * (_length), lttng_alignof(_type)); \
 	} else {							\
-		__chan->ops->event_write(&__ctx, _src, sizeof(_type) * (_length)); \
+		__chan->ops->event_write(&__ctx, _src, sizeof(_type) * (_length), lttng_alignof(_type)); \
 	}
 #else /* #if (__BYTE_ORDER == __LITTLE_ENDIAN) */
 /*
@@ -890,7 +887,7 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 			default:					\
 				BUG_ON(1);				\
 			}						\
-			__chan->ops->event_write(&__ctx, &_tmp, sizeof(_type)); \
+			__chan->ops->event_write(&__ctx, &_tmp, sizeof(_type), 1); \
 		}							\
 	}
 #endif /* #else #if (__BYTE_ORDER == __LITTLE_ENDIAN) */
@@ -900,16 +897,14 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 			_src_length, _encoding, _byte_order, _base, _user, _nowrite) \
 	{								\
 		_length_type __tmpl = this_cpu_ptr(&lttng_dynamic_len_stack)->stack[__dynamic_len_idx]; \
-		lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(_length_type));\
-		__chan->ops->event_write(&__ctx, &__tmpl, sizeof(_length_type));\
+		__chan->ops->event_write(&__ctx, &__tmpl, sizeof(_length_type), lttng_alignof(_length_type));\
 	}								\
-	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(_type));	\
 	if (_user) {							\
 		__chan->ops->event_write_from_user(&__ctx, _src,	\
-			sizeof(_type) * __get_dynamic_len(dest));	\
+			sizeof(_type) * __get_dynamic_len(dest), lttng_alignof(_type));	\
 	} else {							\
 		__chan->ops->event_write(&__ctx, _src,			\
-			sizeof(_type) * __get_dynamic_len(dest));	\
+			sizeof(_type) * __get_dynamic_len(dest), lttng_alignof(_type));	\
 	}
 
 #if (__BYTE_ORDER == __LITTLE_ENDIAN)
@@ -919,16 +914,14 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 			_user, _nowrite)			\
 	{								\
 		_length_type __tmpl = this_cpu_ptr(&lttng_dynamic_len_stack)->stack[__dynamic_len_idx] * sizeof(_type) * CHAR_BIT; \
-		lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(_length_type));\
-		__chan->ops->event_write(&__ctx, &__tmpl, sizeof(_length_type));\
+		__chan->ops->event_write(&__ctx, &__tmpl, sizeof(_length_type), lttng_alignof(_length_type)); \
 	}								\
-	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(_type));	\
 	if (_user) {							\
 		__chan->ops->event_write_from_user(&__ctx, _src,	\
-			sizeof(_type) * __get_dynamic_len(dest));	\
+			sizeof(_type) * __get_dynamic_len(dest), lttng_alignof(_type));	\
 	} else {							\
 		__chan->ops->event_write(&__ctx, _src,			\
-			sizeof(_type) * __get_dynamic_len(dest));	\
+			sizeof(_type) * __get_dynamic_len(dest), lttng_alignof(_type));	\
 	}
 #else /* #if (__BYTE_ORDER == __LITTLE_ENDIAN) */
 /*
@@ -940,8 +933,7 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 			_user, _nowrite)			\
 	{							\
 		_length_type __tmpl = this_cpu_ptr(&lttng_dynamic_len_stack)->stack[__dynamic_len_idx] * sizeof(_type) * CHAR_BIT; \
-		lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(_length_type));\
-		__chan->ops->event_write(&__ctx, &__tmpl, sizeof(_length_type));\
+		__chan->ops->event_write(&__ctx, &__tmpl, sizeof(_length_type), lttng_alignof(_length_type)); \
 	}								\
 	lib_ring_buffer_align_ctx(&__ctx, lttng_alignof(_type));	\
 	{								\
@@ -972,7 +964,7 @@ static inline size_t __event_get_align__##_name(void *__tp_locvar)	      \
 			default:					\
 				BUG_ON(1);				\
 			}						\
-			__chan->ops->event_write(&__ctx, &_tmp, sizeof(_type)); \
+			__chan->ops->event_write(&__ctx, &_tmp, sizeof(_type), 1); \
 		}							\
 	}
 #endif /* #else #if (__BYTE_ORDER == __LITTLE_ENDIAN) */

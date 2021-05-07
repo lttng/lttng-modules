@@ -36,8 +36,7 @@ void suid_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	uid_t suid;
 
 	suid = lttng_current_suid();
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(suid));
-	chan->ops->event_write(ctx, &suid, sizeof(suid));
+	chan->ops->event_write(ctx, &suid, sizeof(suid), lttng_alignof(suid));
 }
 
 static

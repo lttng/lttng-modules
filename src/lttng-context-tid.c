@@ -34,8 +34,7 @@ void tid_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	pid_t tid;
 
 	tid = task_pid_nr(current);
-	lib_ring_buffer_align_ctx(ctx, lttng_alignof(tid));
-	chan->ops->event_write(ctx, &tid, sizeof(tid));
+	chan->ops->event_write(ctx, &tid, sizeof(tid), lttng_alignof(tid));
 }
 
 static

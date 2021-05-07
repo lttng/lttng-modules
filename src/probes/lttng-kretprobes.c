@@ -86,8 +86,7 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 		ret = chan->ops->event_reserve(&ctx);
 		if (ret < 0)
 			return 0;
-		lib_ring_buffer_align_ctx(&ctx, lttng_alignof(payload));
-		chan->ops->event_write(&ctx, &payload, sizeof(payload));
+		chan->ops->event_write(&ctx, &payload, sizeof(payload), lttng_alignof(payload));
 		chan->ops->event_commit(&ctx);
 		break;
 	}
