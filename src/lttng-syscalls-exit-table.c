@@ -32,11 +32,11 @@
 #define SC_EXIT
 
 #undef sc_in
-#define sc_in(...)	__VA_ARGS__
+#define sc_in(...)
 #undef sc_out
-#define sc_out(...)
+#define sc_out(...)		__VA_ARGS__
 #undef sc_inout
-#define sc_inout(...)	__VA_ARGS__
+#define sc_inout(...)		__VA_ARGS__
 #undef sc_exit
 #define sc_exit(...)		__VA_ARGS__
 
