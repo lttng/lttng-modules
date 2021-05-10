@@ -80,7 +80,6 @@ ifneq ($(KERNELRELEASE),)
                         wrapper/kallsyms.o \
                         wrapper/irqdesc.o \
                         wrapper/fdtable.o \
-                        wrapper/genhd.o \
                         lttng-wrapper-impl.o
 
   ifneq ($(CONFIG_HAVE_SYSCALL_TRACEPOINTS),)
