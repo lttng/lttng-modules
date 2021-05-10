@@ -286,17 +286,17 @@ void lib_ring_buffer_copy_from_user_inatomic(const struct lttng_kernel_ring_buff
 	index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
 	pagecpy = min_t(size_t, len, (-offset) & ~PAGE_MASK);
 
-	pagefault_disable();
 	if (unlikely(!lttng_access_ok(VERIFY_READ, src, len)))
 		goto fill_buffer;
 
+	pagefault_disable();
 	if (likely(pagecpy == len)) {
 		ret = lib_ring_buffer_do_copy_from_user_inatomic(
 			backend_pages->p[index].virt + (offset & ~PAGE_MASK),
 			src, len);
 		if (unlikely(ret > 0)) {
 			/* Copy failed. */
-			goto fill_buffer;
+			goto fill_buffer_enable_pf;
 		}
 	} else {
 		_lib_ring_buffer_copy_from_user_inatomic(bufb, offset, src, len, 0);
@@ -306,8 +306,9 @@ void lib_ring_buffer_copy_from_user_inatomic(const struct lttng_kernel_ring_buff
 
 	return;
 
-fill_buffer:
+fill_buffer_enable_pf:
 	pagefault_enable();
+fill_buffer:
 	/*
 	 * In the error path we call the slow path version to avoid
 	 * the pollution of static inline code.
@@ -353,10 +354,10 @@ void lib_ring_buffer_strcpy_from_user_inatomic(const struct lttng_kernel_ring_bu
 	index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
 	pagecpy = min_t(size_t, len, (-offset) & ~PAGE_MASK);
 
-	pagefault_disable();
 	if (unlikely(!lttng_access_ok(VERIFY_READ, src, len)))
 		goto fill_buffer;
 
+	pagefault_disable();
 	if (likely(pagecpy == len)) {
 		size_t count;
 
@@ -388,7 +389,6 @@ void lib_ring_buffer_strcpy_from_user_inatomic(const struct lttng_kernel_ring_bu
 	return;
 
 fill_buffer:
-	pagefault_enable();
 	/*
 	 * In the error path we call the slow path version to avoid
 	 * the pollution of static inline code.
