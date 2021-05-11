@@ -75,7 +75,8 @@ static inline struct backing_dev_info *lttng_inode_to_bdi(struct inode *inode)
 	LTTNG_KERNEL_RANGE(4,14,218, 4,15,0) ||			\
 	LTTNG_KERNEL_RANGE(4,19,172, 4,20,0) ||			\
 	LTTNG_KERNEL_RANGE(5,4,94, 5,5,0) ||			\
-	LTTNG_UBUNTU_KERNEL_RANGE(4,15,18,141, 4,16,0,0))
+	LTTNG_UBUNTU_KERNEL_RANGE(4,15,18,141, 4,16,0,0) ||	\
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,240,0,0, 4,19,0,0,0,0))
 #define show_inode_state(state)					\
 	__print_flags(state, "|",				\
 		{I_DIRTY_SYNC,		"I_DIRTY_SYNC"},	\
@@ -394,7 +395,8 @@ LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_writepage, writeback_wbc_writepage)
 	LTTNG_KERNEL_RANGE(4,14,196, 4,15,0) || \
 	LTTNG_KERNEL_RANGE(4,9,235, 4,10,0) || \
 	LTTNG_KERNEL_RANGE(4,4,235, 4,5,0) || \
-	LTTNG_UBUNTU_KERNEL_RANGE(4,15,18,119, 4,16,0,0))
+	LTTNG_UBUNTU_KERNEL_RANGE(4,15,18,119, 4,16,0,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,240,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 	TP_PROTO(struct bdi_writeback *wb,
 		 struct wb_writeback_work *work,
