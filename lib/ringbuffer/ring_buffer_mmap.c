@@ -20,7 +20,8 @@
 /*
  * fault() vm_op implementation for ring buffer file mapping.
  */
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,1,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,1,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,193,0,0, 4,19,0,0,0,0))
 static vm_fault_t lib_ring_buffer_fault_compat(struct vm_area_struct *vma, struct vm_fault *vmf)
 #else
 static int lib_ring_buffer_fault_compat(struct vm_area_struct *vma, struct vm_fault *vmf)
@@ -57,7 +58,8 @@ static int lib_ring_buffer_fault_compat(struct vm_area_struct *vma, struct vm_fa
 	return 0;
 }
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,1,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,1,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,193,0,0, 4,19,0,0,0,0))
 static vm_fault_t lib_ring_buffer_fault(struct vm_fault *vmf)
 {
 	struct vm_area_struct *vma = vmf->vma;
