@@ -77,7 +77,7 @@ void lib_ring_buffer_write(const struct lttng_kernel_ring_buffer_config *config,
 {
 	struct lttng_kernel_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
 	struct channel_backend *chanb = &ctx->priv.chan->backend;
-	size_t index, pagecpy;
+	size_t index, bytes_left_in_page;
 	size_t offset = ctx->priv.buf_offset;
 	struct lttng_kernel_ring_buffer_backend_pages *backend_pages;
 
@@ -87,14 +87,14 @@ void lib_ring_buffer_write(const struct lttng_kernel_ring_buffer_config *config,
 		lib_ring_buffer_get_backend_pages_from_ctx(config, ctx);
 	offset &= chanb->buf_size - 1;
 	index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
-	pagecpy = min_t(size_t, len, (-offset) & ~PAGE_MASK);
-	if (likely(pagecpy == len))
+	bytes_left_in_page = min_t(size_t, len, (-offset) & ~PAGE_MASK);
+	if (likely(bytes_left_in_page == len))
 		lib_ring_buffer_do_copy(config,
 					backend_pages->p[index].virt
 					    + (offset & ~PAGE_MASK),
 					src, len);
 	else
-		_lib_ring_buffer_write(bufb, offset, src, len, 0);
+		_lib_ring_buffer_write(bufb, offset, src, len);
 	ctx->priv.buf_offset += len;
 }
 
@@ -118,7 +118,7 @@ void lib_ring_buffer_memset(const struct lttng_kernel_ring_buffer_config *config
 
 	struct lttng_kernel_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
 	struct channel_backend *chanb = &ctx->priv.chan->backend;
-	size_t index, pagecpy;
+	size_t index, bytes_left_in_page;
 	size_t offset = ctx->priv.buf_offset;
 	struct lttng_kernel_ring_buffer_backend_pages *backend_pages;
 
@@ -128,13 +128,13 @@ void lib_ring_buffer_memset(const struct lttng_kernel_ring_buffer_config *config
 		lib_ring_buffer_get_backend_pages_from_ctx(config, ctx);
 	offset &= chanb->buf_size - 1;
 	index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
-	pagecpy = min_t(size_t, len, (-offset) & ~PAGE_MASK);
-	if (likely(pagecpy == len))
+	bytes_left_in_page = min_t(size_t, len, (-offset) & ~PAGE_MASK);
+	if (likely(bytes_left_in_page == len))
 		lib_ring_buffer_do_memset(backend_pages->p[index].virt
 					  + (offset & ~PAGE_MASK),
 					  c, len);
 	else
-		_lib_ring_buffer_memset(bufb, offset, c, len, 0);
+		_lib_ring_buffer_memset(bufb, offset, c, len);
 	ctx->priv.buf_offset += len;
 }
 
@@ -335,7 +335,7 @@ void lib_ring_buffer_copy_from_user_inatomic(const struct lttng_kernel_ring_buff
 {
 	struct lttng_kernel_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
 	struct channel_backend *chanb = &ctx->priv.chan->backend;
-	size_t index, pagecpy;
+	size_t index, bytes_left_in_page;
 	size_t offset = ctx->priv.buf_offset;
 	struct lttng_kernel_ring_buffer_backend_pages *backend_pages;
 	unsigned long ret;
@@ -346,13 +346,13 @@ void lib_ring_buffer_copy_from_user_inatomic(const struct lttng_kernel_ring_buff
 		lib_ring_buffer_get_backend_pages_from_ctx(config, ctx);
 	offset &= chanb->buf_size - 1;
 	index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
-	pagecpy = min_t(size_t, len, (-offset) & ~PAGE_MASK);
+	bytes_left_in_page = min_t(size_t, len, (-offset) & ~PAGE_MASK);
 
 	if (unlikely(!lttng_access_ok(VERIFY_READ, src, len)))
 		goto fill_buffer;
 
 	pagefault_disable();
-	if (likely(pagecpy == len)) {
+	if (likely(bytes_left_in_page == len)) {
 		ret = lib_ring_buffer_do_copy_from_user_inatomic(
 			backend_pages->p[index].virt + (offset & ~PAGE_MASK),
 			src, len);
@@ -361,7 +361,7 @@ void lib_ring_buffer_copy_from_user_inatomic(const struct lttng_kernel_ring_buff
 			goto fill_buffer_enable_pf;
 		}
 	} else {
-		_lib_ring_buffer_copy_from_user_inatomic(bufb, offset, src, len, 0);
+		_lib_ring_buffer_copy_from_user_inatomic(bufb, offset, src, len);
 	}
 	pagefault_enable();
 	ctx->priv.buf_offset += len;
@@ -375,7 +375,7 @@ fill_buffer:
 	 * In the error path we call the slow path version to avoid
 	 * the pollution of static inline code.
 	 */
-	_lib_ring_buffer_memset(bufb, offset, 0, len, 0);
+	_lib_ring_buffer_memset(bufb, offset, 0, len);
 	ctx->priv.buf_offset += len;
 }
 
@@ -455,9 +455,9 @@ fill_buffer:
 	 * In the error path we call the slow path version to avoid
 	 * the pollution of static inline code.
 	 */
-	_lib_ring_buffer_memset(bufb, offset, pad, len - 1, 0);
+	_lib_ring_buffer_memset(bufb, offset, pad, len - 1);
 	offset += len - 1;
-	_lib_ring_buffer_memset(bufb, offset, '\0', 1, 0);
+	_lib_ring_buffer_memset(bufb, offset, '\0', 1);
 	ctx->priv.buf_offset += len;
 }
 
@@ -535,7 +535,7 @@ fill_buffer:
 	 * In the error path we call the slow path version to avoid
 	 * the pollution of static inline code.
 	 */
-	_lib_ring_buffer_memset(bufb, offset, pad, len, 0);
+	_lib_ring_buffer_memset(bufb, offset, pad, len);
 	ctx->priv.buf_offset += len;
 }
 

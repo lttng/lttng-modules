@@ -565,21 +565,17 @@ void channel_backend_free(struct channel_backend *chanb)
  * @offset : offset within the buffer
  * @src : source address
  * @len : length to write
- * @pagecpy : page size copied so far
  */
 void _lib_ring_buffer_write(struct lttng_kernel_ring_buffer_backend *bufb, size_t offset,
-			    const void *src, size_t len, size_t pagecpy)
+			    const void *src, size_t len)
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
 	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
-	size_t sbidx, index;
+	size_t sbidx, index, bytes_left_in_page;
 	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 
 	do {
-		len -= pagecpy;
-		src += pagecpy;
-		offset += pagecpy;
 		sbidx = offset >> chanb->subbuf_size_order;
 		index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
 
@@ -589,7 +585,7 @@ void _lib_ring_buffer_write(struct lttng_kernel_ring_buffer_backend *bufb, size_
 		 */
 		CHAN_WARN_ON(chanb, offset >= chanb->buf_size);
 
-		pagecpy = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
+		bytes_left_in_page = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
 		id = bufb->buf_wsb[sbidx].id;
 		sb_bindex = subbuffer_id_get_index(config, id);
 		rpages = bufb->array[sb_bindex];
@@ -598,11 +594,13 @@ void _lib_ring_buffer_write(struct lttng_kernel_ring_buffer_backend *bufb, size_
 		lib_ring_buffer_do_copy(config,
 					rpages->p[index].virt
 						+ (offset & ~PAGE_MASK),
-					src, pagecpy);
-	} while (unlikely(len != pagecpy));
+					src, bytes_left_in_page);
+		len -= bytes_left_in_page;
+		src += bytes_left_in_page;
+		offset += bytes_left_in_page;
+	} while (unlikely(len));
 }
 EXPORT_SYMBOL_GPL(_lib_ring_buffer_write);
-
 
 /**
  * lib_ring_buffer_memset - write len bytes of c to a ring_buffer buffer.
@@ -610,21 +608,17 @@ EXPORT_SYMBOL_GPL(_lib_ring_buffer_write);
  * @offset : offset within the buffer
  * @c : the byte to write
  * @len : length to write
- * @pagecpy : page size copied so far
  */
 void _lib_ring_buffer_memset(struct lttng_kernel_ring_buffer_backend *bufb,
-			     size_t offset,
-			     int c, size_t len, size_t pagecpy)
+			     size_t offset, int c, size_t len)
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
 	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
-	size_t sbidx, index;
+	size_t sbidx, index, bytes_left_in_page;
 	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 
 	do {
-		len -= pagecpy;
-		offset += pagecpy;
 		sbidx = offset >> chanb->subbuf_size_order;
 		index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
 
@@ -634,7 +628,7 @@ void _lib_ring_buffer_memset(struct lttng_kernel_ring_buffer_backend *bufb,
 		 */
 		CHAN_WARN_ON(chanb, offset >= chanb->buf_size);
 
-		pagecpy = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
+		bytes_left_in_page = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
 		id = bufb->buf_wsb[sbidx].id;
 		sb_bindex = subbuffer_id_get_index(config, id);
 		rpages = bufb->array[sb_bindex];
@@ -642,8 +636,10 @@ void _lib_ring_buffer_memset(struct lttng_kernel_ring_buffer_backend *bufb,
 			     && subbuffer_id_is_noref(config, id));
 		lib_ring_buffer_do_memset(rpages->p[index].virt
 					  + (offset & ~PAGE_MASK),
-					  c, pagecpy);
-	} while (unlikely(len != pagecpy));
+					  c, bytes_left_in_page);
+		len -= bytes_left_in_page;
+		offset += bytes_left_in_page;
+	} while (unlikely(len));
 }
 EXPORT_SYMBOL_GPL(_lib_ring_buffer_memset);
 
@@ -812,28 +808,22 @@ EXPORT_SYMBOL_GPL(_lib_ring_buffer_pstrcpy);
  * @offset : offset within the buffer
  * @src : source address
  * @len : length to write
- * @pagecpy : page size copied so far
  *
  * This function deals with userspace pointers, it should never be called
  * directly without having the src pointer checked with access_ok()
  * previously.
  */
 void _lib_ring_buffer_copy_from_user_inatomic(struct lttng_kernel_ring_buffer_backend *bufb,
-				      size_t offset,
-				      const void __user *src, size_t len,
-				      size_t pagecpy)
+				      size_t offset, const void __user *src, size_t len)
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
 	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
-	size_t sbidx, index;
+	size_t sbidx, index, bytes_left_in_page;
 	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 	int ret;
 
 	do {
-		len -= pagecpy;
-		src += pagecpy;
-		offset += pagecpy;
 		sbidx = offset >> chanb->subbuf_size_order;
 		index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
 
@@ -843,7 +833,7 @@ void _lib_ring_buffer_copy_from_user_inatomic(struct lttng_kernel_ring_buffer_ba
 		 */
 		CHAN_WARN_ON(chanb, offset >= chanb->buf_size);
 
-		pagecpy = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
+		bytes_left_in_page = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
 		id = bufb->buf_wsb[sbidx].id;
 		sb_bindex = subbuffer_id_get_index(config, id);
 		rpages = bufb->array[sb_bindex];
@@ -851,13 +841,16 @@ void _lib_ring_buffer_copy_from_user_inatomic(struct lttng_kernel_ring_buffer_ba
 				&& subbuffer_id_is_noref(config, id));
 		ret = lib_ring_buffer_do_copy_from_user_inatomic(rpages->p[index].virt
 							+ (offset & ~PAGE_MASK),
-							src, pagecpy) != 0;
+							src, bytes_left_in_page) != 0;
 		if (ret > 0) {
 			/* Copy failed. */
-			_lib_ring_buffer_memset(bufb, offset, 0, len, 0);
+			_lib_ring_buffer_memset(bufb, offset, 0, len);
 			break; /* stop copy */
 		}
-	} while (unlikely(len != pagecpy));
+		len -= bytes_left_in_page;
+		src += bytes_left_in_page;
+		offset += bytes_left_in_page;
+	} while (unlikely(len));
 }
 EXPORT_SYMBOL_GPL(_lib_ring_buffer_copy_from_user_inatomic);
 
@@ -1042,7 +1035,7 @@ size_t lib_ring_buffer_read(struct lttng_kernel_ring_buffer_backend *bufb, size_
 {
 	struct channel_backend *chanb = &bufb->chan->backend;
 	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
-	size_t index, pagecpy, orig_len;
+	size_t index, bytes_left_in_page, orig_len;
 	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 
@@ -1052,19 +1045,19 @@ size_t lib_ring_buffer_read(struct lttng_kernel_ring_buffer_backend *bufb, size_
 	if (unlikely(!len))
 		return 0;
 	for (;;) {
-		pagecpy = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
+		bytes_left_in_page = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
 		id = bufb->buf_rsb.id;
 		sb_bindex = subbuffer_id_get_index(config, id);
 		rpages = bufb->array[sb_bindex];
 		CHAN_WARN_ON(chanb, config->mode == RING_BUFFER_OVERWRITE
 			     && subbuffer_id_is_noref(config, id));
 		memcpy(dest, rpages->p[index].virt + (offset & ~PAGE_MASK),
-		       pagecpy);
-		len -= pagecpy;
+		       bytes_left_in_page);
+		len -= bytes_left_in_page;
 		if (likely(!len))
 			break;
-		dest += pagecpy;
-		offset += pagecpy;
+		dest += bytes_left_in_page;
+		offset += bytes_left_in_page;
 		index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
 		/*
 		 * Underlying layer should never ask for reads across
@@ -1094,7 +1087,7 @@ int __lib_ring_buffer_copy_to_user(struct lttng_kernel_ring_buffer_backend *bufb
 	struct channel_backend *chanb = &bufb->chan->backend;
 	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 	size_t index;
-	ssize_t pagecpy;
+	ssize_t bytes_left_in_page;
 	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
 
@@ -1103,7 +1096,7 @@ int __lib_ring_buffer_copy_to_user(struct lttng_kernel_ring_buffer_backend *bufb
 	if (unlikely(!len))
 		return 0;
 	for (;;) {
-		pagecpy = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
+		bytes_left_in_page = min_t(size_t, len, PAGE_SIZE - (offset & ~PAGE_MASK));
 		id = bufb->buf_rsb.id;
 		sb_bindex = subbuffer_id_get_index(config, id);
 		rpages = bufb->array[sb_bindex];
@@ -1111,13 +1104,13 @@ int __lib_ring_buffer_copy_to_user(struct lttng_kernel_ring_buffer_backend *bufb
 			     && subbuffer_id_is_noref(config, id));
 		if (__copy_to_user(dest,
 			       rpages->p[index].virt + (offset & ~PAGE_MASK),
-			       pagecpy))
+			       bytes_left_in_page))
 			return -EFAULT;
-		len -= pagecpy;
+		len -= bytes_left_in_page;
 		if (likely(!len))
 			break;
-		dest += pagecpy;
-		offset += pagecpy;
+		dest += bytes_left_in_page;
+		offset += bytes_left_in_page;
 		index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
 		/*
 		 * Underlying layer should never ask for reads across
@@ -1146,7 +1139,7 @@ int lib_ring_buffer_read_cstr(struct lttng_kernel_ring_buffer_backend *bufb, siz
 	struct channel_backend *chanb = &bufb->chan->backend;
 	const struct lttng_kernel_ring_buffer_config *config = &chanb->config;
 	size_t index;
-	ssize_t pagecpy, pagelen, strpagelen, orig_offset;
+	ssize_t bytes_left_in_page, pagelen, strpagelen, orig_offset;
 	char *str;
 	struct lttng_kernel_ring_buffer_backend_pages *rpages;
 	unsigned long sb_bindex, id;
@@ -1166,12 +1159,12 @@ int lib_ring_buffer_read_cstr(struct lttng_kernel_ring_buffer_backend *bufb, siz
 		pagelen = PAGE_SIZE - (offset & ~PAGE_MASK);
 		strpagelen = strnlen(str, pagelen);
 		if (len) {
-			pagecpy = min_t(size_t, len, strpagelen);
+			bytes_left_in_page = min_t(size_t, len, strpagelen);
 			if (dest) {
-				memcpy(dest, str, pagecpy);
-				dest += pagecpy;
+				memcpy(dest, str, bytes_left_in_page);
+				dest += bytes_left_in_page;
 			}
-			len -= pagecpy;
+			len -= bytes_left_in_page;
 		}
 		offset += strpagelen;
 		index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
