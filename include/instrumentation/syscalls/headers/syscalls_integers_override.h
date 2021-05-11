@@ -145,6 +145,7 @@ SC_LTTNG_TRACEPOINT_EVENT(mmap,
 	)
 )
 
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 /*
  * Enumeration of the open flags, as described in the 'open'
  * system call man page.
@@ -209,5 +210,6 @@ SC_LTTNG_TRACEPOINT_EVENT(fcntl,
 		sc_in(ctf_enum(lttng_fcntl_cmd_flags, unsigned int, cmd, cmd))
 		sc_inout(ctf_integer(unsigned long, arg, arg)))
 )
+#endif /* CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM */
 
 #endif /* CREATE_SYSCALL_TABLE */
