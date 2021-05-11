@@ -40,18 +40,15 @@ int lib_ring_buffer_backend_init(void);
 void lib_ring_buffer_backend_exit(void);
 
 extern void _lib_ring_buffer_write(struct lttng_kernel_ring_buffer_backend *bufb,
-				   size_t offset, const void *src, size_t len,
-				   size_t pagecpy);
+				   size_t offset, const void *src, size_t len);
 extern void _lib_ring_buffer_memset(struct lttng_kernel_ring_buffer_backend *bufb,
-				    size_t offset, int c, size_t len,
-				    size_t pagecpy);
+				    size_t offset, int c, size_t len);
 extern void _lib_ring_buffer_strcpy(struct lttng_kernel_ring_buffer_backend *bufb,
 				   size_t offset, const char *src, size_t len, int pad);
 extern void _lib_ring_buffer_pstrcpy(struct lttng_kernel_ring_buffer_backend *bufb,
 				   size_t offset, const char *src, size_t len, int pad);
 extern void _lib_ring_buffer_copy_from_user_inatomic(struct lttng_kernel_ring_buffer_backend *bufb,
-					    size_t offset, const void *src,
-					    size_t len, size_t pagecpy);
+					    size_t offset, const void __user *src, size_t len);
 extern void _lib_ring_buffer_strcpy_from_user_inatomic(struct lttng_kernel_ring_buffer_backend *bufb,
 		size_t offset, const char __user *src, size_t len, int pad);
 extern void _lib_ring_buffer_pstrcpy_from_user_inatomic(struct lttng_kernel_ring_buffer_backend *bufb,
