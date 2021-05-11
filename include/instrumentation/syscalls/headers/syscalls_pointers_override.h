@@ -1025,6 +1025,7 @@ SC_LTTNG_TRACEPOINT_EVENT(socketpair,
 )
 #endif /* (defined(CONFIG_X86_64) && !defined(LTTNG_SC_COMPAT)) || defined(CONFIG_ARM64) || defined(CONFIG_ARM) */
 
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 /*
  * Enumeration of the open flags, as described in the 'open'
  * system call man page.
@@ -1106,5 +1107,6 @@ SC_LTTNG_TRACEPOINT_EVENT(open,
 		sc_in(ctf_enum(lttng_file_mode, umode_t, mode, mode))
 	)
 )
+#endif /* CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM */
 
 #endif /* CREATE_SYSCALL_TABLE */
