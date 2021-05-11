@@ -14,6 +14,8 @@ SC_LTTNG_TRACEPOINT_EVENT(execve,
 	)
 )
 
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
+
 /*
  * Clone()'s `flags` field has two parts:
  *     1. exit signal: the least significant byte of the `unsigned long` is
@@ -145,6 +147,7 @@ lttng_kernel_static_event_field_array(		\
 )
 #endif
 
+#endif /* CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM */
 
 #define OVERRIDE_32_clone
 #define OVERRIDE_64_clone
@@ -156,6 +159,7 @@ SC_LTTNG_TRACEPOINT_EVENT(clone,
 	TP_FIELDS(
 		sc_exit(ctf_integer(long, ret, ret))
 		sc_in(
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 			ctf_custom_field(
 				ctf_custom_type(
 					lttng_kernel_static_type_struct(2, LTTNG_CLONE_FLAGS, lttng_alignof(unsigned long) * CHAR_BIT)
@@ -165,6 +169,9 @@ SC_LTTNG_TRACEPOINT_EVENT(clone,
 					ctf_integer_type(unsigned long, clone_flags)
 				)
 			)
+#else
+			ctf_integer_hex(unsigned long, flags, clone_flags)
+#endif
 		)
 		sc_in(ctf_integer_hex(unsigned long, newsp, newsp))
 		sc_in(ctf_integer_hex(void *, parent_tid, parent_tid))
