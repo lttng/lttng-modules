@@ -215,7 +215,7 @@ void lib_ring_buffer_strcpy(const struct lttng_kernel_ring_buffer_config *config
 {
 	struct lttng_kernel_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
 	struct channel_backend *chanb = &ctx->priv.chan->backend;
-	size_t index, pagecpy;
+	size_t index, bytes_left_in_page;
 	size_t offset = ctx->priv.buf_offset;
 	struct lttng_kernel_ring_buffer_backend_pages *backend_pages;
 
@@ -225,8 +225,8 @@ void lib_ring_buffer_strcpy(const struct lttng_kernel_ring_buffer_config *config
 		lib_ring_buffer_get_backend_pages_from_ctx(config, ctx);
 	offset &= chanb->buf_size - 1;
 	index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
-	pagecpy = min_t(size_t, len, (-offset) & ~PAGE_MASK);
-	if (likely(pagecpy == len)) {
+	bytes_left_in_page = min_t(size_t, len, (-offset) & ~PAGE_MASK);
+	if (likely(bytes_left_in_page == len)) {
 		size_t count;
 
 		count = lib_ring_buffer_do_strcpy(config,
@@ -248,7 +248,7 @@ void lib_ring_buffer_strcpy(const struct lttng_kernel_ring_buffer_config *config
 					+ (offset & ~PAGE_MASK),
 				'\0', 1);
 	} else {
-		_lib_ring_buffer_strcpy(bufb, offset, src, len, 0, pad);
+		_lib_ring_buffer_strcpy(bufb, offset, src, len, pad);
 	}
 	ctx->priv.buf_offset += len;
 }
@@ -404,7 +404,7 @@ void lib_ring_buffer_strcpy_from_user_inatomic(const struct lttng_kernel_ring_bu
 {
 	struct lttng_kernel_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
 	struct channel_backend *chanb = &ctx->priv.chan->backend;
-	size_t index, pagecpy;
+	size_t index, bytes_left_in_page;
 	size_t offset = ctx->priv.buf_offset;
 	struct lttng_kernel_ring_buffer_backend_pages *backend_pages;
 
@@ -414,13 +414,13 @@ void lib_ring_buffer_strcpy_from_user_inatomic(const struct lttng_kernel_ring_bu
 		lib_ring_buffer_get_backend_pages_from_ctx(config, ctx);
 	offset &= chanb->buf_size - 1;
 	index = (offset & (chanb->subbuf_size - 1)) >> PAGE_SHIFT;
-	pagecpy = min_t(size_t, len, (-offset) & ~PAGE_MASK);
+	bytes_left_in_page = min_t(size_t, len, (-offset) & ~PAGE_MASK);
 
 	if (unlikely(!lttng_access_ok(VERIFY_READ, src, len)))
 		goto fill_buffer;
 
 	pagefault_disable();
-	if (likely(pagecpy == len)) {
+	if (likely(bytes_left_in_page == len)) {
 		size_t count;
 
 		count = lib_ring_buffer_do_strcpy_from_user_inatomic(config,
@@ -443,7 +443,7 @@ void lib_ring_buffer_strcpy_from_user_inatomic(const struct lttng_kernel_ring_bu
 				'\0', 1);
 	} else {
 		_lib_ring_buffer_strcpy_from_user_inatomic(bufb, offset, src,
-					len, 0, pad);
+					len, pad);
 	}
 	pagefault_enable();
 	ctx->priv.buf_offset += len;
