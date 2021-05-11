@@ -165,6 +165,7 @@ static inline long __trace_sched_switch_state(struct task_struct *p)
 
 #endif /* _TRACE_SCHED_DEF_ */
 
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 /*
  * Enumeration of the task state bitmask.
  * Only bit flags are enumerated here, not composition of states.
@@ -198,6 +199,7 @@ LTTNG_TRACEPOINT_ENUM(task_state,
 		ctf_enum_value("TASK_STATE_MAX", TASK_STATE_MAX)
 	)
 )
+#endif /* CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM */
 
 /*
  * Tracepoint for calling kthread_stop, performed to end a kthread:
@@ -339,9 +341,17 @@ LTTNG_TRACEPOINT_EVENT(sched_switch,
 		ctf_integer(pid_t, prev_tid, prev->pid)
 		ctf_integer(int, prev_prio, prev->prio - MAX_RT_PRIO)
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,4,0))
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 		ctf_enum(task_state, long, prev_state, __trace_sched_switch_state(preempt, prev))
 #else
+		ctf_integer(long, prev_state, __trace_sched_switch_state(preempt, prev))
+#endif
+#else
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 		ctf_enum(task_state, long, prev_state, __trace_sched_switch_state(prev))
+#else
+		ctf_integer(long, prev_state, __trace_sched_switch_state(prev))
+#endif
 #endif
 		ctf_array_text(char, next_comm, next->comm, TASK_COMM_LEN)
 		ctf_integer(pid_t, next_tid, next->pid)
