@@ -34,6 +34,7 @@ enum {
 
 #endif /* _TRACE_BLOCK_DEF_ */
 
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 LTTNG_TRACEPOINT_ENUM(block_rq_type,
 	TP_ENUM_VALUES(
 		ctf_enum_value("RWBS_FLAG_WRITE", RWBS_FLAG_WRITE)
@@ -49,6 +50,7 @@ LTTNG_TRACEPOINT_ENUM(block_rq_type,
 		ctf_enum_value("RWBS_FLAG_PREFLUSH", RWBS_FLAG_PREFLUSH)
 	)
 )
+#endif /* CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM */
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,8,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,73,5,0,0, 4,4,73,6,0,0) || \
@@ -64,6 +66,7 @@ LTTNG_TRACEPOINT_ENUM(block_rq_type,
 #define lttng_bio_op(bio)	bio_op(bio)
 #define lttng_bio_rw(bio)	((bio)->bi_opf)
 
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 #define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
 		ctf_enum(block_rq_type, type, rwbs,					      \
 			(((op) == REQ_OP_WRITE || (op) == REQ_OP_WRITE_SAME) ? RWBS_FLAG_WRITE : \
@@ -77,6 +80,21 @@ LTTNG_TRACEPOINT_ENUM(block_rq_type,
 			| ((rw) & REQ_META ? RWBS_FLAG_META : 0)	      \
 			| ((rw) & REQ_PREFLUSH ? RWBS_FLAG_PREFLUSH : 0)      \
 			| ((rw) & REQ_FUA ? RWBS_FLAG_FUA : 0))
+#else
+#define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
+		ctf_integer(type, rwbs,					      \
+			(((op) == REQ_OP_WRITE || (op) == REQ_OP_WRITE_SAME) ? RWBS_FLAG_WRITE : \
+			( (op) == REQ_OP_DISCARD ? RWBS_FLAG_DISCARD :	      \
+			( (op) == REQ_OP_SECURE_ERASE ? (RWBS_FLAG_DISCARD | RWBS_FLAG_SECURE) : \
+			( (op) == REQ_OP_FLUSH ? RWBS_FLAG_FLUSH :	      \
+			( (op) == REQ_OP_READ ? RWBS_FLAG_READ :	      \
+			( 0 ))))))					      \
+			| ((rw) & REQ_RAHEAD ? RWBS_FLAG_RAHEAD : 0)	      \
+			| ((rw) & REQ_SYNC ? RWBS_FLAG_SYNC : 0)	      \
+			| ((rw) & REQ_META ? RWBS_FLAG_META : 0)	      \
+			| ((rw) & REQ_PREFLUSH ? RWBS_FLAG_PREFLUSH : 0)      \
+			| ((rw) & REQ_FUA ? RWBS_FLAG_FUA : 0))
+#endif /* CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM */
 
 #elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0))
 
@@ -85,6 +103,7 @@ LTTNG_TRACEPOINT_ENUM(block_rq_type,
 #define lttng_bio_op(bio)
 #define lttng_bio_rw(bio)	((bio)->bi_rw)
 
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 #define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
 		ctf_enum(block_rq_type, type, rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE : \
 			( (rw) & REQ_DISCARD ? RWBS_FLAG_DISCARD :	      \
@@ -96,6 +115,19 @@ LTTNG_TRACEPOINT_ENUM(block_rq_type,
 			| ((rw) & REQ_SECURE ? RWBS_FLAG_SECURE : 0)	      \
 			| ((rw) & REQ_FLUSH ? RWBS_FLAG_FLUSH : 0)	      \
 			| ((rw) & REQ_FUA ? RWBS_FLAG_FUA : 0))
+#else
+#define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
+		ctf_integer(type, rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :     \
+			( (rw) & REQ_DISCARD ? RWBS_FLAG_DISCARD :	      \
+			( (bytes) ? RWBS_FLAG_READ :			      \
+			( 0 ))))					      \
+			| ((rw) & REQ_RAHEAD ? RWBS_FLAG_RAHEAD : 0)	      \
+			| ((rw) & REQ_SYNC ? RWBS_FLAG_SYNC : 0)	      \
+			| ((rw) & REQ_META ? RWBS_FLAG_META : 0)	      \
+			| ((rw) & REQ_SECURE ? RWBS_FLAG_SECURE : 0)	      \
+			| ((rw) & REQ_FLUSH ? RWBS_FLAG_FLUSH : 0)	      \
+			| ((rw) & REQ_FUA ? RWBS_FLAG_FUA : 0))
+#endif /* CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM */
 
 #else
 
@@ -104,6 +136,7 @@ LTTNG_TRACEPOINT_ENUM(block_rq_type,
 #define lttng_bio_op(bio)
 #define lttng_bio_rw(bio)	((bio)->bi_rw)
 
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 #define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
 		ctf_enum(block_rq_type, type, rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :     \
 			( (rw) & REQ_DISCARD ? RWBS_FLAG_DISCARD :	      \
@@ -113,6 +146,17 @@ LTTNG_TRACEPOINT_ENUM(block_rq_type,
 			| ((rw) & REQ_SYNC ? RWBS_FLAG_SYNC : 0)	      \
 			| ((rw) & REQ_META ? RWBS_FLAG_META : 0)	      \
 			| ((rw) & REQ_SECURE ? RWBS_FLAG_SECURE : 0))
+#else
+#define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
+		ctf_integer(type, rwbs, ((rw) & WRITE ? RWBS_FLAG_WRITE :     \
+			( (rw) & REQ_DISCARD ? RWBS_FLAG_DISCARD :	      \
+			( (bytes) ? RWBS_FLAG_READ :			      \
+			( 0 ))))					      \
+			| ((rw) & REQ_RAHEAD ? RWBS_FLAG_RAHEAD : 0)	      \
+			| ((rw) & REQ_SYNC ? RWBS_FLAG_SYNC : 0)	      \
+			| ((rw) & REQ_META ? RWBS_FLAG_META : 0)	      \
+			| ((rw) & REQ_SECURE ? RWBS_FLAG_SECURE : 0))
+#endif /* CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM */
 
 #endif
 
