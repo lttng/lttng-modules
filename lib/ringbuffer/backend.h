@@ -313,7 +313,7 @@ fill_buffer:
 	 * the pollution of static inline code.
 	 */
 	_lib_ring_buffer_memset(bufb, offset, 0, len, 0);
-	ctx->priv.buf_offset += len;
+	ctx->buf_offset += len;
 }
 
 /**
@@ -396,7 +396,7 @@ fill_buffer:
 	_lib_ring_buffer_memset(bufb, offset, pad, len - 1, 0);
 	offset += len - 1;
 	_lib_ring_buffer_memset(bufb, offset, '\0', 1, 0);
-	ctx->priv.buf_offset += len;
+	ctx->buf_offset += len;
 }
 
 /*
