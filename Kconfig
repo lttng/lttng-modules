@@ -14,4 +14,15 @@ config LTTNG
 
 	  If unsure, say N.
 
+config LTTNG_EXPERIMENTAL_BITWISE_ENUM
+	bool "LTTng experimental bitwise enum support"
+	default n
+	depends on LTTNG
+	help
+	  Enable experimental bitwise enumerations. The traces produced with
+	  this option enabled will generate warnings when read by trace
+	  viewers with default options.
+
+	  If unsure, say N.
+
 source "lttng/tests/Kconfig"

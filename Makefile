@@ -147,18 +147,36 @@ KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
 CFLAGS = $(EXTCFLAGS)
 
+# Experimental bitwise enum defaults to disabled.
+CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM ?= n
+
+# Emulate Kconfig behavior of setting defines for config options.
+LKCPPFLAGS = $(KCPPFLAGS)
+ifeq ($(CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM),y)
+LKCPPFLAGS += -DCONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM=y
+endif
+
 default: modules
 
 modules:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m CONFIG_LTTNG_CLOCK_PLUGIN_TEST=m modules
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) \
+		CONFIG_LTTNG=m CONFIG_LTTNG_CLOCK_PLUGIN_TEST=m \
+		KCPPFLAGS='$(LKCPPFLAGS)' \
+		modules
 
 modules_install:
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m CONFIG_LTTNG_CLOCK_PLUGIN_TEST=m modules_install
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) \
+		CONFIG_LTTNG=m CONFIG_LTTNG_CLOCK_PLUGIN_TEST=m \
+		KCPPFLAGS='$(LKCPPFLAGS)' \
+		modules_install
 
 clean:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
 
 %.i: %.c
-	$(MAKE) -C $(KERNELDIR) M=$(PWD) CONFIG_LTTNG=m CONFIG_LTTNG_CLOCK_PLUGIN_TEST=m $@
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) \
+		CONFIG_LTTNG=m CONFIG_LTTNG_CLOCK_PLUGIN_TEST=m \
+		KCPPFLAGS='$(LKCPPFLAGS)' \
+		$@
 
 endif # KERNELRELEASE

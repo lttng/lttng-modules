@@ -3096,6 +3096,9 @@ static int __init lttng_events_init(void)
 #else
 		"");
 #endif
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
+	printk(KERN_NOTICE "LTTng: Experimental bitwise enum enabled.\n");
+#endif /* CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM */
 	return 0;
 
 error_hotplug:
