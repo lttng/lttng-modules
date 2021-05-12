@@ -2,6 +2,8 @@
 
 #ifndef CREATE_SYSCALL_TABLE
 
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
+
 /*
  * The `flags` argument of the mmap syscall is split in two parts:
  * - The type of mapping is described by the four least significant bits of the 4
@@ -113,10 +115,8 @@ lttng_kernel_static_event_field_array(		\
 )
 #endif
 
-/*
- * Use a custom field here so that tracer writes a single integer and the
- * work of splitting it up in two fields is left to the trace reader.
- */
+#endif /* CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM */
+
 #define OVERRIDE_32_mmap
 #define OVERRIDE_64_mmap
 SC_LTTNG_TRACEPOINT_EVENT(mmap,
@@ -128,6 +128,12 @@ SC_LTTNG_TRACEPOINT_EVENT(mmap,
 	TP_FIELDS(sc_exit(ctf_integer_hex(unsigned long, ret, ret))
 		sc_in(ctf_integer_hex(unsigned long, addr, addr))
 		sc_in(ctf_integer(size_t, len, len))
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
+		/*
+		 * Use a custom field here so that tracer writes a single
+		 * integer and the work of splitting it up in two fields is
+		 * left to the trace reader.
+		 */
 		sc_in(ctf_enum(lttng_mmap_protection, int, prot, prot))
 		sc_in(
 			ctf_custom_field(
@@ -140,6 +146,10 @@ SC_LTTNG_TRACEPOINT_EVENT(mmap,
 				)
 			)
 		)
+#else
+		sc_in(ctf_integer(int, prot, prot))
+		sc_in(ctf_integer(int, flags, flags))
+#endif /* CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM */
 		sc_in(ctf_integer(int, fd, fd))
 		sc_in(ctf_integer(off_t, offset, off))
 	)
