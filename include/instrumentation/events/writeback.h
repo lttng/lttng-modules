@@ -72,7 +72,9 @@ static inline struct backing_dev_info *lttng_inode_to_bdi(struct inode *inode)
  * will generate a compiler warning.
  */
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0) || \
-	LTTNG_UBUNTU_KERNEL_RANGE(5,4,94,67, 5,5,0,0) ||	\
+	LTTNG_KERNEL_RANGE(4,14,218, 4,15,0) ||			\
+	LTTNG_KERNEL_RANGE(4,19,172, 4,20,0) ||			\
+	LTTNG_KERNEL_RANGE(5,4,94, 5,5,0) ||			\
 	LTTNG_UBUNTU_KERNEL_RANGE(4,15,18,141, 4,16,0,0))
 #define show_inode_state(state)					\
 	__print_flags(state, "|",				\
