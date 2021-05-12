@@ -2,6 +2,7 @@
 
 config LTTNG_CLOCK_PLUGIN_TEST
        tristate "Use test plugin as trace clock"
+       default m
        depends on LTTNG
        help
 	 Use the test clock as trace clock. This plugin freezes the
