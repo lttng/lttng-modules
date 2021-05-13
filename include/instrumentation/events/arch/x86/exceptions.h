@@ -5,6 +5,7 @@
 #include <lttng/tracepoint-event.h>
 #include <lttng/kernel-version.h>
 
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0))
 #include <../arch/x86/include/asm/traps.h>
 #else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0)) */
@@ -28,10 +29,12 @@ enum {
 #endif /* ONCE_LTTNG_EXCEPTIONS_H */
 
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0)) */
+#endif /* CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM */
 
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM x86_exceptions
 
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 LTTNG_TRACEPOINT_ENUM(lttng_x86_pf_error_code,
 	TP_ENUM_VALUES(
 		ctf_enum_value("PROTECTION_FAULT",	X86_PF_PROT)
@@ -44,6 +47,7 @@ LTTNG_TRACEPOINT_ENUM(lttng_x86_pf_error_code,
 #endif /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,6,0)) */
 	)
 )
+#endif /* CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM */
 
 LTTNG_TRACEPOINT_EVENT_CLASS(x86_exceptions_class,
 
@@ -61,7 +65,11 @@ LTTNG_TRACEPOINT_EVENT_CLASS(x86_exceptions_class,
 		 * Currently, only 5 low bits are used. Should be made
 		 * larger if error codes are added to the kernel.
 		 */
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 		ctf_enum(lttng_x86_pf_error_code, unsigned char, error_code, error_code)
+#else
+		ctf_integer_hex(unsigned char, error_code, error_code)
+#endif
 	)
 )
 
