@@ -15,7 +15,6 @@ else # KERNELRELEASE
 
 KERNELDIR ?= /lib/modules/$(shell uname -r)/build
 PWD := $(shell pwd)
-CFLAGS = $(EXTCFLAGS)
 
 default: modules
 
