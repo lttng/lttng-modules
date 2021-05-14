@@ -30,7 +30,7 @@
 #define LTTNG_MODULES_MAJOR_VERSION 2
 #define LTTNG_MODULES_MINOR_VERSION 13
 #define LTTNG_MODULES_PATCHLEVEL_VERSION 0
-#define LTTNG_MODULES_EXTRAVERSION "-rc1"
+#define LTTNG_MODULES_EXTRAVERSION "-rc2"
 
 #define LTTNG_VERSION_NAME		"Nordicité"
 #define LTTNG_VERSION_DESCRIPTION	"The product of a collaboration between Champ Libre and Boréale, this farmhouse IPA is brewed with Kveik yeast and Québec-grown barley, oats and juniper branches. The result is a remarkable fruity hazy golden IPA that offers a balanced touch of resinous and woodsy bitterness."

@@ -1,3 +1,72 @@
+2021-05-14 (National Dance Like a Chicken Day) LTTng modules 2.13.0-rc2
+	* fix: adjust ranges for RHEL 8.2 and 8.3
+	* Disable x86 error code bitwise enum in default build
+	* Disable mmap bitwise enum in default build
+	* Disable block rwbs bitwise enum in default build
+	* Disable sched_switch bitwise enum in default build
+	* Disable open[at] bitwise enum in default build
+	* Disable fcntl bitwise enum in default build
+	* Disable clone bitwise enum in default build
+	* Add experimental bitwise enum config option
+	* Add defaults to Kconfig options
+	* Cleanup: remove unused EXTCFLAGS from Makefile
+	* Sync `show_inode_state()` macro with upstream stable kernels
+	* Update .gitreview for stable-2.13
+	* Sync `show_inode_state()` macro with Ubuntu 4.15 kernel
+	* fix: block: remove disk_part_iter (v5.12)
+	* Cleanup: lib ring buffer: rename pagecpy local variable
+	* Cleanup: clarify strcpy/strcpy_from_user local variables
+	* Implement ring buffer Pascal string copy
+	* Move alignment into event write callback
+	* Cleanup: disable page fault after access_ok
+	* Fix: increment buffer offset when failing to copy from user-space
+	* Fix: add missing #include for 3.8 kernel
+	* Fix: builtin script referring to old directories
+	* events.h API const-ness
+	* Rename struct lib_ring_buffer* to struct lttng_kernel_ring_buffer*
+	* Rename struct channel to struct lttng_kernel_ring_buffer_channel
+	* Refactoring: struct lttng_channel
+	* Fix: missing #include for 3.8 kernel
+	* Introduce struct lttng_kernel_tracepoint_class, enum probe_desc field
+	* Set probe descriptor field in event descriptor
+	* Split syscall tracepoint generation in their own files
+	* Include `linux/in{,6}.h` closer to where it's used
+	* Group all syscall enums in one compile unit
+	* Include `linux/mman.h` for mmap flag enum
+	* Add `struct trace_syscall_table`
+	* Define `static_assert()` when not defined by kernel
+	* Move event hash tables to private header
+	* Move forward declarations to private header
+	* Move lttng_syscall_filter forward declaration to private header
+	* Split ID tracker into public/private structures
+	* Move id tracker hash node to private header
+	* Split struct lttng_session into public/private structures
+	* Move struct lttng_metadata_stream to private header
+	* Move event notifier and counter structures to private header
+	* Rename struct lib_ring_buffer_ctx to struct lttng_kernel_ring_buffer_ctx
+	* Refactoring: struct lttng_kernel_channel_buffer_ops
+	* Rename lttng_probe_{,un}register to lttng_kernel_probe_{,un}register
+	* Move metadata cache structure to internal header
+	* Move internal APIs to internal header
+	* Move kprobes, uprobes, kretprobes, syscall structures to internal header
+	* Move kprobe, kretprobe, uprobe APIs to internal header
+	* Remove unused TRACEPOINT_HAS_DATA_ARG
+	* Move enabler APIs to internal header
+	* Move bytecode structures to internal header
+	* Remove include of internal header from tracepoint-event-impl.h
+	* Rename struct lttng_probe_ctx to struct lttng_kernel_probe_ctx
+	* Rename struct lttng_bytecode_runtime to struct lttng_kernel_bytecode_runtime
+	* Rename struct lttng_bytecode_node to struct lttng_kernel_bytecode_node
+	* Move context structures and API to internal header
+	* Move enabler structures to internal header
+	* Makefile: add .o wildcard target
+	* Fix: Makefile: generation of specific .i file not working
+	* Fix: refactor preemptible context
+	* Refactoring: context callbacks
+	* Remove event id parameter from event_reserve callback
+	* Refactoring: ring buffer context
+	* sequence and variant types: use previous field for length/tag if NULL
+
 2021-04-23 (National Take a Chance (on me ?) Day) LTTng modules 2.13.0-rc1
 	* Set the 2.13 release codename and description
 	* Fix: LTTng-modules ABI ioctl wrong direction
