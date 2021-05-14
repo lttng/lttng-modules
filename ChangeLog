@@ -1,3 +1,27 @@
+2021-05-14 (National Dance Like a Chicken Day) LTTng modules 2.12.6
+	* fix: adjust ranges for RHEL 8.2 and 8.3
+	* Disable block rwbs bitwise enum in default build
+	* Disable sched_switch bitwise enum in default build
+	* Add experimental bitwise enum config option
+	* Add defaults to Kconfig options
+	* Sync `show_inode_state()` macro with upstream stable kernels
+	* fix: block: remove disk_part_iter (v5.12)
+	* Fix: Backport of "Fix: increment buffer offset when failing to copy from user-space"
+	* Fix: increment buffer offset when failing to copy from user-space
+	* Sync `show_inode_state()` macro with Ubuntu 4.15 kernel
+	* fix: mm, tracing: kfree event name mismatching with provider kmem (v5.12)
+	* Set 'stable-2.12' branch in git review config
+	* fix backport: block: add a disk_uevent helper (v5.12)
+	* fix: Adjust ranges for Ubuntu 5.4.0-67 kernel
+	* fix: block: add a disk_uevent helper (v5.12)
+	* Fix: properly compare type enumeration
+	* compiler warning cleanup: is_signed_type: compare -1 to 1
+	* Fix: bytecode linker: validate event and field array/sequence encoding
+	* Fix: kretprobe: null ptr deref on session destroy
+	* fix: mm, tracing: record slab name for kmem_cache_free() (v5.12)
+	* Fix: filter interpreter early-exits on uninitialized value
+	* Fix: memory leaks on event destroy
+
 2021-02-17 (Random Act of Kindness Day) LTTng modules 2.12.5
 	* fix: Adjust ranges for Ubuntu 5.8.0-44 kernel
 	* fix: missing include for 'task_struct' in fdtable.h
