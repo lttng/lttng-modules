@@ -709,7 +709,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq, block_rq_merge,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,8,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,8,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,305,0,0, 4,19,0,0,0,0))
+
 /**
  * block_bio_complete - completed all work on the block operation
  * @q: queue holding the block operation

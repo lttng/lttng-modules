@@ -441,7 +441,8 @@ LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,8,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,8,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,305,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 
 	writeback_global_dirty_state,
