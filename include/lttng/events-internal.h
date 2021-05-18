@@ -714,7 +714,8 @@ int lttng_add_uts_ns_to_ctx(struct lttng_kernel_ctx **ctx)
 #endif
 
 #if defined(CONFIG_TIME_NS) && \
-	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,305,0,0, 4,19,0,0,0,0))
 int lttng_add_time_ns_to_ctx(struct lttng_kernel_ctx **ctx);
 #else
 static inline

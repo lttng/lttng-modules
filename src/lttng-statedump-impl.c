@@ -617,7 +617,8 @@ void lttng_statedump_process_ns(struct lttng_kernel_session *session,
 #endif
 		trace_lttng_statedump_process_net_ns(session, p, proxy->net_ns);
 		trace_lttng_statedump_process_uts_ns(session, p, proxy->uts_ns);
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,305,0,0, 4,19,0,0,0,0))
 		trace_lttng_statedump_process_time_ns(session, p, proxy->time_ns);
 #endif
 	}

@@ -17,7 +17,8 @@
 #include <lttng/kernel-version.h>
 #include <wrapper/namespace.h>
 #include <wrapper/user_namespace.h>
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,305,0,0, 4,19,0,0,0,0))
 #include <linux/time_namespace.h>
 #endif
 
@@ -182,7 +183,8 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_uts_ns,
 	)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,305,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_time_ns,
 	TP_PROTO(struct lttng_kernel_session *session,
 		struct task_struct *p,
