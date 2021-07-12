@@ -578,6 +578,65 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__ordered_extent, btrfs_ordered_extent_put,
 )
 #endif
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,14,0))
+LTTNG_TRACEPOINT_EVENT(btrfs_writepage_end_io_hook,
+
+	TP_PROTO(const struct btrfs_inode *inode, u64 start, u64 end, int uptodate),
+
+	TP_ARGS(inode, start, end, uptodate),
+
+	TP_FIELDS(
+		ctf_integer(u64, ino, btrfs_ino(inode))
+		ctf_integer(u64, start, start)
+		ctf_integer(u64, end, end)
+		ctf_integer(int, uptodate, uptodate)
+		ctf_integer(u64, root_objectid, inode->root->root_key.objectid)
+	)
+)
+
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,73,5,0,0, 4,4,73,6,0,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,82,6,0,0, 4,4,82,7,0,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,92,6,0,0, 4,4,92,7,0,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,103,6,0,0, 4,5,0,0,0,0))
+
+LTTNG_TRACEPOINT_EVENT(btrfs_writepage_end_io_hook,
+
+	TP_PROTO(const struct page *page, u64 start, u64 end, int uptodate),
+
+	TP_ARGS(page, start, end, uptodate),
+
+	TP_FIELDS(
+		ctf_integer(ino_t, ino, page->mapping->host->i_ino)
+		ctf_integer(pgoff_t, index, page->index)
+		ctf_integer(u64, start, start)
+		ctf_integer(u64, end, end)
+		ctf_integer(int, uptodate, uptodate)
+		ctf_integer(u64, root_objectid,
+			BTRFS_I(page->mapping->host)->root->root_key.objectid)
+	)
+)
+
+#else
+
+LTTNG_TRACEPOINT_EVENT(btrfs_writepage_end_io_hook,
+
+	TP_PROTO(struct page *page, u64 start, u64 end, int uptodate),
+
+	TP_ARGS(page, start, end, uptodate),
+
+	TP_FIELDS(
+		ctf_integer(ino_t, ino, page->mapping->host->i_ino)
+		ctf_integer(pgoff_t, index, page->index)
+		ctf_integer(u64, start, start)
+		ctf_integer(u64, end, end)
+		ctf_integer(int, uptodate, uptodate)
+		ctf_integer(u64, root_objectid,
+			BTRFS_I(page->mapping->host)->root->root_key.objectid)
+	)
+)
+#endif
+
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,73,5,0,0, 4,4,73,6,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,82,6,0,0, 4,4,82,7,0,0) || \
@@ -617,23 +676,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs__writepage,
 		 const struct writeback_control *wbc),
 
 	TP_ARGS(page, inode, wbc)
-)
-
-LTTNG_TRACEPOINT_EVENT(btrfs_writepage_end_io_hook,
-
-	TP_PROTO(const struct page *page, u64 start, u64 end, int uptodate),
-
-	TP_ARGS(page, start, end, uptodate),
-
-	TP_FIELDS(
-		ctf_integer(ino_t, ino, page->mapping->host->i_ino)
-		ctf_integer(pgoff_t, index, page->index)
-		ctf_integer(u64, start, start)
-		ctf_integer(u64, end, end)
-		ctf_integer(int, uptodate, uptodate)
-		ctf_integer(u64, root_objectid,
-			BTRFS_I(page->mapping->host)->root->root_key.objectid)
-	)
 )
 
 LTTNG_TRACEPOINT_EVENT(btrfs_sync_file,
@@ -688,23 +730,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs__writepage,
 		 struct writeback_control *wbc),
 
 	TP_ARGS(page, inode, wbc)
-)
-
-LTTNG_TRACEPOINT_EVENT(btrfs_writepage_end_io_hook,
-
-	TP_PROTO(struct page *page, u64 start, u64 end, int uptodate),
-
-	TP_ARGS(page, start, end, uptodate),
-
-	TP_FIELDS(
-		ctf_integer(ino_t, ino, page->mapping->host->i_ino)
-		ctf_integer(pgoff_t, index, page->index)
-		ctf_integer(u64, start, start)
-		ctf_integer(u64, end, end)
-		ctf_integer(int, uptodate, uptodate)
-		ctf_integer(u64, root_objectid,
-			BTRFS_I(page->mapping->host)->root->root_key.objectid)
-	)
 )
 
 LTTNG_TRACEPOINT_EVENT(btrfs_sync_file,
