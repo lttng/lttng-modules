@@ -26,7 +26,6 @@
 #include <linux/cpu.h>
 #include <linux/netdevice.h>
 #include <linux/inetdevice.h>
-#include <linux/sched.h>
 #include <linux/mm.h>
 #include <linux/swap.h>
 #include <linux/wait.h>
@@ -43,6 +42,7 @@
 #include <wrapper/genhd.h>
 #include <wrapper/file.h>
 #include <wrapper/fdtable.h>
+#include <wrapper/sched.h>
 
 #ifdef CONFIG_LTTNG_HAS_LIST_IRQ
 #include <linux/irq.h>
@@ -661,7 +661,7 @@ int lttng_enumerate_process_states(struct lttng_kernel_session *session)
 				status = LTTNG_ZOMBIE;
 			else if (p->exit_state == EXIT_DEAD)
 				status = LTTNG_DEAD;
-			else if (p->state == TASK_RUNNING) {
+			else if (lttng_task_is_running(p)) {
 				/* Is this a forked child that has not run yet? */
 				if (list_empty(&p->rt.run_list))
 					status = LTTNG_WAIT_FORK;
@@ -672,7 +672,7 @@ int lttng_enumerate_process_states(struct lttng_kernel_session *session)
 					 * was really running at this time.
 					 */
 					status = LTTNG_WAIT_CPU;
-			} else if (p->state &
+			} else if (lttng_get_task_state(p) &
 				(TASK_INTERRUPTIBLE | TASK_UNINTERRUPTIBLE)) {
 				/* Task is waiting for something to complete */
 				status = LTTNG_WAIT;
