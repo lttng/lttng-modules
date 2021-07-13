@@ -9,7 +9,7 @@
 #define _LTTNG_WRAPPER_SCHED_H
 
 #include <linux/sched.h>
-#include <lttng/kernel-version.h>
+#include <lttng-kernel-version.h>
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,14,0))
 
