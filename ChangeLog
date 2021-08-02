@@ -1,3 +1,6 @@
+2021-08-02 (Ice Cream Sandwich Day) LTTng modules 2.13.0
+	* No change
+
 2021-07-16 (World Snake Day) LTTng modules 2.13.0-rc3
 	* fix: sched: Change task_struct::state (v5.14)
 	* fix: btrfs: pass btrfs_inode to btrfs_writepage_endio_finish_ordered() (v5.14)
