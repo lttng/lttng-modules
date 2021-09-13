@@ -16,6 +16,7 @@
 #include <lttng/events.h>
 #include <lttng/events-internal.h>
 #include <ringbuffer/frontend_types.h>
+#include <wrapper/cpu.h>
 #include <wrapper/vmalloc.h>
 #include <wrapper/perf.h>
 #include <lttng/tracer.h>
@@ -97,10 +98,10 @@ void lttng_destroy_perf_counter_ctx_field(void *priv)
 	{
 		int cpu;
 
-		get_online_cpus();
+		lttng_cpus_read_lock();
 		for_each_online_cpu(cpu)
 			perf_event_release_kernel(events[cpu]);
-		put_online_cpus();
+		lttng_cpus_read_unlock();
 #ifdef CONFIG_HOTPLUG_CPU
 		unregister_cpu_notifier(&perf_field->nb);
 #endif
@@ -304,7 +305,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 		perf_field->nb.priority = 0;
 		register_cpu_notifier(&perf_field->nb);
 #endif
-		get_online_cpus();
+		lttng_cpus_read_lock();
 		for_each_online_cpu(cpu) {
 			events[cpu] = wrapper_perf_event_create_kernel_counter(attr,
 						cpu, NULL, overflow_callback);
@@ -317,7 +318,7 @@ int lttng_add_perf_counter_to_ctx(uint32_t type,
 				goto counter_busy;
 			}
 		}
-		put_online_cpus();
+		lttng_cpus_read_unlock();
 		perf_field->hp_enable = 1;
 	}
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
@@ -351,7 +352,7 @@ counter_error:
 			if (events[cpu] && !IS_ERR(events[cpu]))
 				perf_event_release_kernel(events[cpu]);
 		}
-		put_online_cpus();
+		lttng_cpus_read_unlock();
 #ifdef CONFIG_HOTPLUG_CPU
 		unregister_cpu_notifier(&perf_field->nb);
 #endif
