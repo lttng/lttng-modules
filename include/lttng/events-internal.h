@@ -8,6 +8,8 @@
 #ifndef _LTTNG_EVENTS_INTERNAL_H
 #define _LTTNG_EVENTS_INTERNAL_H
 
+#include <wrapper/compiler_attributes.h>
+
 #include <lttng/events.h>
 
 struct lttng_syscall_filter;
@@ -561,9 +563,12 @@ static inline bool lttng_kernel_type_is_bytewise_integer(const struct lttng_kern
 	if (!type_integer)
 		return false;
 	switch (type_integer->size) {
-	case 8:		/* Fall-through. */
-	case 16:	/* Fall-through. */
-	case 32:	/* Fall-through. */
+	case 8:
+		lttng_fallthrough;
+	case 16:
+		lttng_fallthrough;
+	case 32:
+		lttng_fallthrough;
 	case 64:
 		break;
 	default:

@@ -15,6 +15,7 @@
 #include <linux/bitops.h>
 #include <counter/counter.h>
 #include <counter/counter-internal.h>
+#include <wrapper/compiler_attributes.h>
 #include <wrapper/limits.h>
 
 /*
@@ -256,7 +257,8 @@ static __always_inline int lttng_counter_add(const struct lib_counter_config *co
 				    const size_t *dimension_indexes, int64_t v)
 {
 	switch (config->alloc) {
-	case COUNTER_ALLOC_PER_CPU:	/* Fallthrough */
+	case COUNTER_ALLOC_PER_CPU:
+		lttng_fallthrough;
 	case COUNTER_ALLOC_PER_CPU | COUNTER_ALLOC_GLOBAL:
 		return __lttng_counter_add_percpu(config, counter, dimension_indexes, v);
 	case COUNTER_ALLOC_GLOBAL:

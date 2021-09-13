@@ -34,6 +34,7 @@
 #include <ringbuffer/vfs.h>
 #include <ringbuffer/backend.h>
 #include <ringbuffer/frontend.h>
+#include <wrapper/compiler_attributes.h>
 #include <wrapper/poll.h>
 #include <wrapper/file.h>
 #include <wrapper/kref.h>
@@ -1332,7 +1333,8 @@ long lttng_metadata_ring_buffer_ioctl(struct file *filp,
 		 */
 		return -ENOSYS;
 	}
-	case LTTNG_KERNEL_ABI_RING_BUFFER_FLUSH_EMPTY:	/* Fall-through. */
+	case LTTNG_KERNEL_ABI_RING_BUFFER_FLUSH_EMPTY:
+		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_RING_BUFFER_FLUSH:
 	{
 		struct lttng_metadata_stream *stream = filp->private_data;
@@ -1441,7 +1443,8 @@ long lttng_metadata_ring_buffer_compat_ioctl(struct file *filp,
 		 */
 		return -ENOSYS;
 	}
-	case LTTNG_KERNEL_ABI_RING_BUFFER_FLUSH_EMPTY:	/* Fall-through. */
+	case LTTNG_KERNEL_ABI_RING_BUFFER_FLUSH_EMPTY:
+		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_RING_BUFFER_FLUSH:
 	{
 		struct lttng_metadata_stream *stream = filp->private_data;
@@ -1758,8 +1761,10 @@ int lttng_abi_validate_event_param(struct lttng_kernel_abi_event *event_param)
 	switch (event_param->instrumentation) {
 	case LTTNG_KERNEL_ABI_SYSCALL:
 		switch (event_param->u.syscall.entryexit) {
-		case LTTNG_KERNEL_ABI_SYSCALL_ENTRY:	/* Fall-through */
-		case LTTNG_KERNEL_ABI_SYSCALL_EXIT:		/* Fall-through */
+		case LTTNG_KERNEL_ABI_SYSCALL_ENTRY:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_SYSCALL_EXIT:
+			lttng_fallthrough;
 		case LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT:
 			break;
 		default:
@@ -1783,20 +1788,26 @@ int lttng_abi_validate_event_param(struct lttng_kernel_abi_event *event_param)
 		switch (event_param->u.kretprobe.entryexit) {
 		case LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT:
 			break;
-		case LTTNG_KERNEL_ABI_SYSCALL_ENTRY:	/* Fall-through */
-		case LTTNG_KERNEL_ABI_SYSCALL_EXIT:		/* Fall-through */
+		case LTTNG_KERNEL_ABI_SYSCALL_ENTRY:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_SYSCALL_EXIT:
+			lttng_fallthrough;
 		default:
 			return -EINVAL;
 		}
 		break;
 
-	case LTTNG_KERNEL_ABI_TRACEPOINT:	/* Fall-through */
-	case LTTNG_KERNEL_ABI_KPROBE:	/* Fall-through */
+	case LTTNG_KERNEL_ABI_TRACEPOINT:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KPROBE:
+		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
 		break;
 
-	case LTTNG_KERNEL_ABI_FUNCTION:	/* Fall-through */
-	case LTTNG_KERNEL_ABI_NOOP:		/* Fall-through */
+	case LTTNG_KERNEL_ABI_FUNCTION:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_NOOP:
+		lttng_fallthrough;
 	default:
 		return -EINVAL;
 	}
@@ -1830,18 +1841,23 @@ int lttng_abi_create_event(struct file *channel_file,
 	}
 
 	switch (event_param->instrumentation) {
-	case LTTNG_KERNEL_ABI_TRACEPOINT:		/* Fall-through */
+	case LTTNG_KERNEL_ABI_TRACEPOINT:
+		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_SYSCALL:
 		fops = &lttng_event_recorder_enabler_fops;
 		break;
-	case LTTNG_KERNEL_ABI_KPROBE:			/* Fall-through */
-	case LTTNG_KERNEL_ABI_KRETPROBE:		/* Fall-through */
+	case LTTNG_KERNEL_ABI_KPROBE:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KRETPROBE:
+		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
 		fops = &lttng_event_recorder_event_fops;
 		break;
 
-	case LTTNG_KERNEL_ABI_FUNCTION:			/* Fall-through */
-	case LTTNG_KERNEL_ABI_NOOP:			/* Fall-through */
+	case LTTNG_KERNEL_ABI_FUNCTION:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_NOOP:
+		lttng_fallthrough;
 	default:
 		return -EINVAL;
 	}
@@ -1867,7 +1883,8 @@ int lttng_abi_create_event(struct file *channel_file,
 		goto event_error;
 
 	switch (event_param->instrumentation) {
-	case LTTNG_KERNEL_ABI_TRACEPOINT:		/* Fall-through */
+	case LTTNG_KERNEL_ABI_TRACEPOINT:
+		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_SYSCALL:
 	{
 		struct lttng_event_enabler *event_enabler;
@@ -1887,8 +1904,10 @@ int lttng_abi_create_event(struct file *channel_file,
 		break;
 	}
 
-	case LTTNG_KERNEL_ABI_KPROBE:			/* Fall-through */
-	case LTTNG_KERNEL_ABI_KRETPROBE:		/* Fall-through */
+	case LTTNG_KERNEL_ABI_KPROBE:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KRETPROBE:
+		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
 	{
 		struct lttng_kernel_event_recorder *event;
@@ -1908,8 +1927,10 @@ int lttng_abi_create_event(struct file *channel_file,
 		break;
 	}
 
-	case LTTNG_KERNEL_ABI_FUNCTION:			/* Fall-through */
-	case LTTNG_KERNEL_ABI_NOOP:			/* Fall-through */
+	case LTTNG_KERNEL_ABI_FUNCTION:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_NOOP:
+		lttng_fallthrough;
 	default:
 		ret = -EINVAL;
 		goto event_error;
@@ -2043,18 +2064,23 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 	}
 
 	switch (event_notifier_param->event.instrumentation) {
-	case LTTNG_KERNEL_ABI_TRACEPOINT:		/* Fall-through */
+	case LTTNG_KERNEL_ABI_TRACEPOINT:
+		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_SYSCALL:
 		fops = &lttng_event_notifier_enabler_fops;
 		break;
-	case LTTNG_KERNEL_ABI_KPROBE:			/* Fall-through */
-	case LTTNG_KERNEL_ABI_KRETPROBE:		/* Fall-through */
+	case LTTNG_KERNEL_ABI_KPROBE:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KRETPROBE:
+		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
 		fops = &lttng_event_notifier_event_fops;
 		break;
 
-	case LTTNG_KERNEL_ABI_FUNCTION:			/* Fall-through */
-	case LTTNG_KERNEL_ABI_NOOP:			/* Fall-through */
+	case LTTNG_KERNEL_ABI_FUNCTION:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_NOOP:
+		lttng_fallthrough;
 	default:
 		ret = -EINVAL;
 		goto inval_instr;
@@ -2086,7 +2112,8 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 		goto event_notifier_error;
 
 	switch (event_notifier_param->event.instrumentation) {
-	case LTTNG_KERNEL_ABI_TRACEPOINT:		/* Fall-through */
+	case LTTNG_KERNEL_ABI_TRACEPOINT:
+		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_SYSCALL:
 	{
 		struct lttng_event_notifier_enabler *enabler;
@@ -2110,8 +2137,10 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 		break;
 	}
 
-	case LTTNG_KERNEL_ABI_KPROBE:			/* Fall-through */
-	case LTTNG_KERNEL_ABI_KRETPROBE:		/* Fall-through */
+	case LTTNG_KERNEL_ABI_KPROBE:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KRETPROBE:
+		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
 	{
 		struct lttng_kernel_event_notifier *event_notifier;
@@ -2135,8 +2164,10 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 		break;
 	}
 
-	case LTTNG_KERNEL_ABI_FUNCTION:			/* Fall-through */
-	case LTTNG_KERNEL_ABI_NOOP:			/* Fall-through */
+	case LTTNG_KERNEL_ABI_FUNCTION:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_NOOP:
+		lttng_fallthrough;
 	default:
 		ret = -EINVAL;
 		goto event_notifier_error;

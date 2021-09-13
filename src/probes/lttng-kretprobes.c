@@ -14,6 +14,7 @@
 #include <lttng/events.h>
 #include <lttng/events-internal.h>
 #include <ringbuffer/frontend_types.h>
+#include <wrapper/compiler_attributes.h>
 #include <wrapper/vmalloc.h>
 #include <wrapper/irqflags.h>
 #include <lttng/tracer.h>
@@ -61,7 +62,8 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 			return 0;
 		break;
 	}
-	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:	/* Fall-through. */
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
+		lttng_fallthrough;
 	default:
 		WARN_ON_ONCE(1);
 	}
@@ -90,7 +92,8 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 		chan->ops->event_commit(&ctx);
 		break;
 	}
-	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:	/* Fall-through. */
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
+		lttng_fallthrough;
 	default:
 		WARN_ON_ONCE(1);
 	}
