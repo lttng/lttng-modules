@@ -30,6 +30,7 @@
 #include <linux/uaccess.h>
 #include <linux/slab.h>
 #include <linux/err.h>
+#include <wrapper/compiler_attributes.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
 #include <wrapper/ringbuffer/vfs.h>
 #include <wrapper/ringbuffer/backend.h>
@@ -881,7 +882,8 @@ long lttng_metadata_ring_buffer_ioctl(struct file *filp,
 		 */
 		return -ENOSYS;
 	}
-	case RING_BUFFER_FLUSH_EMPTY:	/* Fall-through. */
+	case RING_BUFFER_FLUSH_EMPTY:
+		lttng_fallthrough;
 	case RING_BUFFER_FLUSH:
 	{
 		struct lttng_metadata_stream *stream = filp->private_data;
@@ -990,7 +992,8 @@ long lttng_metadata_ring_buffer_compat_ioctl(struct file *filp,
 		 */
 		return -ENOSYS;
 	}
-	case RING_BUFFER_FLUSH_EMPTY:	/* Fall-through. */
+	case RING_BUFFER_FLUSH_EMPTY:
+		lttng_fallthrough;
 	case RING_BUFFER_FLUSH:
 	{
 		struct lttng_metadata_stream *stream = filp->private_data;
@@ -1290,14 +1293,19 @@ int lttng_abi_validate_event_param(struct lttng_kernel_event *event_param)
 		}
 		break;
 
-	case LTTNG_KERNEL_TRACEPOINT:	/* Fallthrough */
-	case LTTNG_KERNEL_KPROBE:	/* Fallthrough */
-	case LTTNG_KERNEL_KRETPROBE:	/* Fallthrough */
-	case LTTNG_KERNEL_NOOP:		/* Fallthrough */
+	case LTTNG_KERNEL_TRACEPOINT:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_KPROBE:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_KRETPROBE:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_NOOP:
+		lttng_fallthrough;
 	case LTTNG_KERNEL_UPROBE:
 		break;
 
-	case LTTNG_KERNEL_FUNCTION:	/* Fallthrough */
+	case LTTNG_KERNEL_FUNCTION:
+		lttng_fallthrough;
 	default:
 		return -EINVAL;
 	}

@@ -7,6 +7,7 @@
  * Copyright (C) 2010-2016 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */
 
+#include <wrapper/compiler_attributes.h>
 #include <wrapper/uaccess.h>
 #include <wrapper/objtool.h>
 #include <wrapper/types.h>
@@ -419,7 +420,8 @@ static int dynamic_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		}
 		break;
 	case LOAD_ROOT_CONTEXT:
-	case LOAD_ROOT_APP_CONTEXT:	/* Fall-through */
+		lttng_fallthrough;
+	case LOAD_ROOT_APP_CONTEXT:
 	{
 		ret = context_get_index(lttng_probe_ctx,
 				&stack_top->u.ptr,

@@ -41,6 +41,7 @@
 #include <lttng-abi-old.h>
 #include <lttng-endian.h>
 #include <lttng-string-utils.h>
+#include <wrapper/compiler_attributes.h>
 #include <wrapper/ringbuffer/backend.h>
 #include <wrapper/ringbuffer/frontend.h>
 #include <wrapper/time.h>
@@ -430,7 +431,8 @@ int lttng_event_enable(struct lttng_event *event)
 	case LTTNG_KERNEL_KRETPROBE:
 		ret = lttng_kretprobes_event_enable_state(event, 1);
 		break;
-	case LTTNG_KERNEL_FUNCTION:	/* Fall-through. */
+	case LTTNG_KERNEL_FUNCTION:
+		lttng_fallthrough;
 	default:
 		WARN_ON_ONCE(1);
 		ret = -EINVAL;
@@ -466,7 +468,8 @@ int lttng_event_disable(struct lttng_event *event)
 	case LTTNG_KERNEL_KRETPROBE:
 		ret = lttng_kretprobes_event_enable_state(event, 0);
 		break;
-	case LTTNG_KERNEL_FUNCTION:	/* Fall-through. */
+	case LTTNG_KERNEL_FUNCTION:
+		lttng_fallthrough;
 	default:
 		WARN_ON_ONCE(1);
 		ret = -EINVAL;
@@ -613,7 +616,8 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 	case LTTNG_KERNEL_SYSCALL:
 		event_name = event_param->name;
 		break;
-	case LTTNG_KERNEL_FUNCTION:	/* Fall-through. */
+	case LTTNG_KERNEL_FUNCTION:
+		lttng_fallthrough;
 	default:
 		WARN_ON_ONCE(1);
 		ret = -EINVAL;
@@ -796,7 +800,8 @@ struct lttng_event *_lttng_event_create(struct lttng_channel *chan,
 		ret = try_module_get(event->desc->owner);
 		WARN_ON_ONCE(!ret);
 		break;
-	case LTTNG_KERNEL_FUNCTION:	/* Fall-through */
+	case LTTNG_KERNEL_FUNCTION:
+		lttng_fallthrough;
 	default:
 		WARN_ON_ONCE(1);
 		ret = -EINVAL;
@@ -863,7 +868,8 @@ void register_event(struct lttng_event *event)
 	case LTTNG_KERNEL_NOOP:
 		ret = 0;
 		break;
-	case LTTNG_KERNEL_FUNCTION:	/* Fall-through */
+	case LTTNG_KERNEL_FUNCTION:
+		lttng_fallthrough;
 	default:
 		WARN_ON_ONCE(1);
 	}
@@ -907,7 +913,8 @@ int _lttng_event_unregister(struct lttng_event *event)
 		lttng_uprobes_unregister(event);
 		ret = 0;
 		break;
-	case LTTNG_KERNEL_FUNCTION:	/* Fall-through */
+	case LTTNG_KERNEL_FUNCTION:
+		lttng_fallthrough;
 	default:
 		WARN_ON_ONCE(1);
 	}
@@ -943,7 +950,8 @@ void _lttng_event_destroy(struct lttng_event *event)
 		module_put(event->desc->owner);
 		lttng_uprobes_destroy_private(event);
 		break;
-	case LTTNG_KERNEL_FUNCTION:	/* Fall-through */
+	case LTTNG_KERNEL_FUNCTION:
+		lttng_fallthrough;
 	default:
 		WARN_ON_ONCE(1);
 	}
@@ -2649,7 +2657,7 @@ int print_escaped_ctf_string(struct lttng_session *session, const char *string)
 			if (ret)
 				goto error;
 			/* We still print the current char */
-			/* Fallthrough */
+			lttng_fallthrough;
 		default:
 			ret = lttng_metadata_printf(session, "%c", cur);
 			break;
