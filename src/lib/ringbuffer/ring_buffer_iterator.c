@@ -10,6 +10,7 @@
  */
 
 #include <ringbuffer/iterator.h>
+#include <wrapper/cpu.h>
 #include <wrapper/file.h>
 #include <wrapper/uaccess.h>
 #include <linux/jiffies.h>
@@ -440,13 +441,13 @@ int channel_iterator_init(struct lttng_kernel_ring_buffer_channel *chan)
 			chan->hp_iter_notifier.priority = 10;
 			register_cpu_notifier(&chan->hp_iter_notifier);
 
-			get_online_cpus();
+			lttng_cpus_read_lock();
 			for_each_online_cpu(cpu) {
 				buf = per_cpu_ptr(chan->backend.buf, cpu);
 				lib_ring_buffer_iterator_init(chan, buf);
 			}
 			chan->hp_iter_enable = 1;
-			put_online_cpus();
+			lttng_cpus_read_unlock();
 #else
 			for_each_possible_cpu(cpu) {
 				buf = per_cpu_ptr(chan->backend.buf, cpu);
@@ -519,7 +520,7 @@ int channel_iterator_open(struct lttng_kernel_ring_buffer_channel *chan)
 	CHAN_WARN_ON(chan, config->output != RING_BUFFER_ITERATOR);
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
-		get_online_cpus();
+		lttng_cpus_read_lock();
 		/* Allow CPU hotplug to keep track of opened reader */
 		chan->iter.read_open = 1;
 		for_each_channel_cpu(cpu, chan) {
@@ -529,7 +530,7 @@ int channel_iterator_open(struct lttng_kernel_ring_buffer_channel *chan)
 				goto error;
 			buf->iter.read_open = 1;
 		}
-		put_online_cpus();
+		lttng_cpus_read_unlock();
 	} else {
 		buf = channel_get_ring_buffer(config, chan, 0);
 		ret = lib_ring_buffer_iterator_open(buf);
@@ -538,7 +539,7 @@ int channel_iterator_open(struct lttng_kernel_ring_buffer_channel *chan)
 error:
 	/* Error should always happen on CPU 0, hence no close is required. */
 	CHAN_WARN_ON(chan, cpu != 0);
-	put_online_cpus();
+	lttng_cpus_read_unlock();
 	return ret;
 }
 EXPORT_SYMBOL_GPL(channel_iterator_open);
@@ -550,7 +551,7 @@ void channel_iterator_release(struct lttng_kernel_ring_buffer_channel *chan)
 	int cpu;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
-		get_online_cpus();
+		lttng_cpus_read_lock();
 		for_each_channel_cpu(cpu, chan) {
 			buf = channel_get_ring_buffer(config, chan, cpu);
 			if (buf->iter.read_open) {
@@ -559,7 +560,7 @@ void channel_iterator_release(struct lttng_kernel_ring_buffer_channel *chan)
 			}
 		}
 		chan->iter.read_open = 0;
-		put_online_cpus();
+		lttng_cpus_read_unlock();
 	} else {
 		buf = channel_get_ring_buffer(config, chan, 0);
 		lib_ring_buffer_iterator_release(buf);

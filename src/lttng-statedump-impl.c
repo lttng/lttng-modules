@@ -23,7 +23,6 @@
 #include <linux/file.h>
 #include <linux/interrupt.h>
 #include <linux/irqnr.h>
-#include <linux/cpu.h>
 #include <linux/netdevice.h>
 #include <linux/inetdevice.h>
 #include <linux/mm.h>
@@ -34,6 +33,7 @@
 
 #include <lttng/events.h>
 #include <lttng/tracer.h>
+#include <wrapper/cpu.h>
 #include <wrapper/irqdesc.h>
 #include <wrapper/fdtable.h>
 #include <wrapper/namespace.h>
@@ -770,7 +770,7 @@ int do_lttng_statedump(struct lttng_kernel_session *session)
 	 * is to guarantee that each CPU has been in a state where is was in
 	 * syscall mode (i.e. not in a trap, an IRQ or a soft IRQ).
 	 */
-	get_online_cpus();
+	lttng_cpus_read_lock();
 	atomic_set(&kernel_threads_to_run, num_online_cpus());
 	for_each_online_cpu(cpu) {
 		INIT_DELAYED_WORK(&cpu_work[cpu], lttng_statedump_work_func);
@@ -778,7 +778,7 @@ int do_lttng_statedump(struct lttng_kernel_session *session)
 	}
 	/* Wait for all threads to run */
 	__wait_event(statedump_wq, (atomic_read(&kernel_threads_to_run) == 0));
-	put_online_cpus();
+	lttng_cpus_read_unlock();
 	/* Our work is done */
 	trace_lttng_statedump_end(session);
 	return 0;

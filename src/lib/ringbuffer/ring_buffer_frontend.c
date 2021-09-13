@@ -48,6 +48,7 @@
 #include <ringbuffer/iterator.h>
 #include <ringbuffer/nohz.h>
 #include <wrapper/atomic.h>
+#include <wrapper/cpu.h>
 #include <wrapper/kref.h>
 #include <wrapper/percpu-defs.h>
 #include <wrapper/timer.h>
@@ -724,7 +725,7 @@ static void channel_unregister_notifiers(struct lttng_kernel_ring_buffer_channel
 			int cpu;
 
 #ifdef CONFIG_HOTPLUG_CPU
-			get_online_cpus();
+			lttng_cpus_read_lock();
 			chan->cpu_hp_enable = 0;
 			for_each_online_cpu(cpu) {
 				struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf,
@@ -732,7 +733,7 @@ static void channel_unregister_notifiers(struct lttng_kernel_ring_buffer_channel
 				lib_ring_buffer_stop_switch_timer(buf);
 				lib_ring_buffer_stop_read_timer(buf);
 			}
-			put_online_cpus();
+			lttng_cpus_read_unlock();
 			unregister_cpu_notifier(&chan->cpu_hp_notifier);
 #else
 			for_each_possible_cpu(cpu) {
@@ -772,14 +773,14 @@ void lib_ring_buffer_set_quiescent_channel(struct lttng_kernel_ring_buffer_chann
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
-		get_online_cpus();
+		lttng_cpus_read_lock();
 		for_each_channel_cpu(cpu, chan) {
 			struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf,
 							      cpu);
 
 			lib_ring_buffer_set_quiescent(buf);
 		}
-		put_online_cpus();
+		lttng_cpus_read_unlock();
 	} else {
 		struct lttng_kernel_ring_buffer *buf = chan->backend.buf;
 
@@ -794,14 +795,14 @@ void lib_ring_buffer_clear_quiescent_channel(struct lttng_kernel_ring_buffer_cha
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
-		get_online_cpus();
+		lttng_cpus_read_lock();
 		for_each_channel_cpu(cpu, chan) {
 			struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf,
 							      cpu);
 
 			lib_ring_buffer_clear_quiescent(buf);
 		}
-		put_online_cpus();
+		lttng_cpus_read_unlock();
 	} else {
 		struct lttng_kernel_ring_buffer *buf = chan->backend.buf;
 
@@ -899,7 +900,7 @@ struct lttng_kernel_ring_buffer_channel *channel_create(const struct lttng_kerne
 			chan->cpu_hp_notifier.priority = 6;
 			register_cpu_notifier(&chan->cpu_hp_notifier);
 
-			get_online_cpus();
+			lttng_cpus_read_lock();
 			for_each_online_cpu(cpu) {
 				struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf,
 								       cpu);
@@ -909,7 +910,7 @@ struct lttng_kernel_ring_buffer_channel *channel_create(const struct lttng_kerne
 				spin_unlock(&per_cpu(ring_buffer_nohz_lock, cpu));
 			}
 			chan->cpu_hp_enable = 1;
-			put_online_cpus();
+			lttng_cpus_read_unlock();
 #else
 			for_each_possible_cpu(cpu) {
 				struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf,
