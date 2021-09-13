@@ -11,6 +11,7 @@
 #include <linux/cpumask.h>
 #include <counter/counter.h>
 #include <counter/counter-internal.h>
+#include <wrapper/compiler_attributes.h>
 #include <wrapper/vmalloc.h>
 #include <wrapper/limits.h>
 
@@ -324,7 +325,8 @@ int lttng_counter_aggregate(const struct lib_counter_config *config,
 	*underflow = false;
 
 	switch (config->alloc) {
-	case COUNTER_ALLOC_GLOBAL:	/* Fallthrough */
+	case COUNTER_ALLOC_GLOBAL:
+		lttng_fallthrough;
 	case COUNTER_ALLOC_PER_CPU | COUNTER_ALLOC_GLOBAL:
 		/* Read global counter. */
 		ret = lttng_counter_read(config, counter, dimension_indexes,
@@ -342,7 +344,8 @@ int lttng_counter_aggregate(const struct lib_counter_config *config,
 	switch (config->alloc) {
 	case COUNTER_ALLOC_GLOBAL:
 		break;
-	case COUNTER_ALLOC_PER_CPU | COUNTER_ALLOC_GLOBAL:	/* Fallthrough */
+	case COUNTER_ALLOC_PER_CPU | COUNTER_ALLOC_GLOBAL:
+		lttng_fallthrough;
 	case COUNTER_ALLOC_PER_CPU:
 		//TODO: integrate with CPU hotplug and online cpus
 		for (cpu = 0; cpu < num_possible_cpus(); cpu++) {
@@ -448,7 +451,8 @@ int lttng_counter_clear(const struct lib_counter_config *config,
 	int cpu, ret;
 
 	switch (config->alloc) {
-	case COUNTER_ALLOC_GLOBAL:	/* Fallthrough */
+	case COUNTER_ALLOC_GLOBAL:
+		lttng_fallthrough;
 	case COUNTER_ALLOC_PER_CPU | COUNTER_ALLOC_GLOBAL:
 		/* Clear global counter. */
 		ret = lttng_counter_clear_cpu(config, counter, dimension_indexes, -1);
@@ -462,7 +466,8 @@ int lttng_counter_clear(const struct lib_counter_config *config,
 	switch (config->alloc) {
 	case COUNTER_ALLOC_GLOBAL:
 		break;
-	case COUNTER_ALLOC_PER_CPU | COUNTER_ALLOC_GLOBAL:	/* Fallthrough */
+	case COUNTER_ALLOC_PER_CPU | COUNTER_ALLOC_GLOBAL:
+		lttng_fallthrough;
 	case COUNTER_ALLOC_PER_CPU:
 		//TODO: integrate with CPU hotplug and online cpus
 		for (cpu = 0; cpu < num_possible_cpus(); cpu++) {

@@ -4,6 +4,7 @@
  */
 
 #include <linux/types.h>
+#include <wrapper/compiler_attributes.h>
 
 #include <lttng/string-utils.h>
 
@@ -302,7 +303,7 @@ retry:
 			p = pattern_get_char_at_cb(p_at,
 				pattern_get_char_at_cb_data);
 
-			/* Fall-through. */
+			lttng_fallthrough;
 		default:
 			/*
 			 * Default case which will compare the escaped
