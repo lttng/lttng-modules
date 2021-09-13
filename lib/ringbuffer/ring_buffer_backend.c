@@ -12,10 +12,10 @@
 #include <linux/delay.h>
 #include <linux/errno.h>
 #include <linux/slab.h>
-#include <linux/cpu.h>
 #include <linux/mm.h>
 #include <linux/vmalloc.h>
 
+#include <wrapper/cpu.h>
 #include <wrapper/mm.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
 #include <wrapper/ringbuffer/config.h>
@@ -445,14 +445,14 @@ int channel_backend_init(struct channel_backend *chanb,
 			chanb->cpu_hp_notifier.priority = 5;
 			register_hotcpu_notifier(&chanb->cpu_hp_notifier);
 
-			get_online_cpus();
+			lttng_cpus_read_lock();
 			for_each_online_cpu(i) {
 				ret = lib_ring_buffer_create(per_cpu_ptr(chanb->buf, i),
 							 chanb, i);
 				if (ret)
 					goto free_bufs;	/* cpu hotplug locked */
 			}
-			put_online_cpus();
+			lttng_cpus_read_unlock();
 #else
 			for_each_possible_cpu(i) {
 				ret = lib_ring_buffer_create(per_cpu_ptr(chanb->buf, i),
@@ -485,7 +485,7 @@ free_bufs:
 		 */
 #else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 #ifdef CONFIG_HOTPLUG_CPU
-		put_online_cpus();
+		lttng_cpus_read_unlock();
 		unregister_hotcpu_notifier(&chanb->cpu_hp_notifier);
 #endif
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
