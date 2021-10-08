@@ -8,6 +8,7 @@
  */
 
 #include <linux/errno.h>
+#include <linux/module.h>
 
 /* boot_id depends on sysctl */
 #if defined(CONFIG_SYSCTL)
