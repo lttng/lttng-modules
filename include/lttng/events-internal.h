@@ -220,14 +220,14 @@ struct lttng_event_enabler_common {
 };
 
 struct lttng_event_enabler {
-	struct lttng_event_enabler_common base;
+	struct lttng_event_enabler_common parent;
 	struct list_head node;		/* per-session list of enablers */
 	bool published;			/* published in per-session list. */
 	struct lttng_kernel_channel_buffer *chan;
 };
 
 struct lttng_event_notifier_enabler {
-	struct lttng_event_enabler_common base;
+	struct lttng_event_enabler_common parent;
 	uint64_t error_counter_index;
 	struct list_head node;	/* List of event_notifier enablers */
 	struct lttng_event_notifier_group *group;
@@ -587,14 +587,14 @@ static inline
 struct lttng_event_enabler_common *lttng_event_enabler_as_enabler(
 		struct lttng_event_enabler *event_enabler)
 {
-	return &event_enabler->base;
+	return &event_enabler->parent;
 }
 
 static inline
 struct lttng_event_enabler_common *lttng_event_notifier_enabler_as_enabler(
 		struct lttng_event_notifier_enabler *event_notifier_enabler)
 {
-	return &event_notifier_enabler->base;
+	return &event_notifier_enabler->parent;
 }
 
 int lttng_context_init(void);

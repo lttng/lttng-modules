@@ -1003,7 +1003,7 @@ int create_unknown_event_notifier(
 	const struct lttng_kernel_event_desc *desc;
 	struct lttng_event_notifier_group *group = event_notifier_enabler->group;
 	struct lttng_kernel_abi_event_notifier event_notifier_param;
-	uint64_t user_token = event_notifier_enabler->base.user_token;
+	uint64_t user_token = event_notifier_enabler->parent.user_token;
 	uint64_t error_counter_index = event_notifier_enabler->error_counter_index;
 	struct lttng_event_enabler_common *base_enabler = lttng_event_notifier_enabler_as_enabler(
 		event_notifier_enabler);
@@ -1089,7 +1089,7 @@ static int create_matching_event_notifiers(
 {
 	struct lttng_event_notifier_group *group = event_notifier_enabler->group;
 	const struct lttng_kernel_event_desc *desc;
-	uint64_t user_token = event_notifier_enabler->base.user_token;
+	uint64_t user_token = event_notifier_enabler->parent.user_token;
 	uint64_t error_counter_index = event_notifier_enabler->error_counter_index;
 	unsigned int i;
 	int ret = 0;
@@ -1119,7 +1119,7 @@ static int create_matching_event_notifiers(
 			LTTNG_EVENT_NOTIFIER_HT_SIZE, desc->event_name);
 		lttng_hlist_for_each_entry(event_notifier_priv, head, hlist) {
 			if (event_notifier_priv->parent.desc == desc
-				&& event_notifier_priv->parent.user_token == event_notifier_enabler->base.user_token)
+				&& event_notifier_priv->parent.user_token == event_notifier_enabler->parent.user_token)
 				found = 1;
 		}
 		if (found)

@@ -863,7 +863,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 				const struct lttng_kernel_event_desc *event_desc)
 {
 	struct lttng_kernel_channel_buffer *chan = event_enabler->chan;
-	struct lttng_kernel_abi_event *event_param = &event_enabler->base.event_param;
+	struct lttng_kernel_abi_event *event_param = &event_enabler->parent.event_param;
 	enum lttng_kernel_abi_instrumentation itype = event_param->instrumentation;
 	struct lttng_kernel_session *session = chan->parent.session;
 	struct lttng_kernel_event_recorder *event_recorder;
@@ -2093,7 +2093,7 @@ int lttng_event_notifier_enabler_match_event_notifier(struct lttng_event_notifie
 		return 0;
 	if (lttng_desc_match_enabler(event_notifier->priv->parent.desc, base_enabler)
 			&& event_notifier->priv->group == event_notifier_enabler->group
-			&& event_notifier->priv->parent.user_token == event_notifier_enabler->base.user_token)
+			&& event_notifier->priv->parent.user_token == event_notifier_enabler->parent.user_token)
 		return 1;
 	else
 		return 0;
@@ -2202,7 +2202,7 @@ void lttng_create_tracepoint_event_notifier_if_missing(struct lttng_event_notifi
 				LTTNG_EVENT_NOTIFIER_HT_SIZE, desc->event_name);
 			lttng_hlist_for_each_entry(event_notifier_priv, head, hlist) {
 				if (event_notifier_priv->parent.desc == desc
-						&& event_notifier_priv->parent.user_token == event_notifier_enabler->base.user_token)
+						&& event_notifier_priv->parent.user_token == event_notifier_enabler->parent.user_token)
 					found = 1;
 			}
 			if (found)
@@ -2212,7 +2212,7 @@ void lttng_create_tracepoint_event_notifier_if_missing(struct lttng_event_notifi
 			 * We need to create a event_notifier for this event probe.
 			 */
 			event_notifier = _lttng_event_notifier_create(desc,
-				event_notifier_enabler->base.user_token,
+				event_notifier_enabler->parent.user_token,
 				event_notifier_enabler->error_counter_index,
 				event_notifier_group, NULL,
 				LTTNG_KERNEL_ABI_TRACEPOINT);
@@ -2252,7 +2252,7 @@ void lttng_create_syscall_event_notifier_if_missing(struct lttng_event_notifier_
 static
 void lttng_create_event_if_missing(struct lttng_event_enabler *event_enabler)
 {
-	switch (event_enabler->base.event_param.instrumentation) {
+	switch (event_enabler->parent.event_param.instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		lttng_create_tracepoint_event_if_missing(event_enabler);
 		break;
@@ -2338,7 +2338,7 @@ int lttng_event_enabler_ref_events(struct lttng_event_enabler *event_enabler)
 static
 void lttng_create_event_notifier_if_missing(struct lttng_event_notifier_enabler *event_notifier_enabler)
 {
-	switch (event_notifier_enabler->base.event_param.instrumentation) {
+	switch (event_notifier_enabler->parent.event_param.instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		lttng_create_tracepoint_event_notifier_if_missing(event_notifier_enabler);
 		break;
@@ -2446,7 +2446,7 @@ static bool lttng_event_notifier_group_has_active_event_notifiers(
 
 	list_for_each_entry(event_notifier_enabler, &event_notifier_group->enablers_head,
 			node) {
-		if (event_notifier_enabler->base.enabled)
+		if (event_notifier_enabler->parent.enabled)
 			return true;
 	}
 	return false;
@@ -2482,13 +2482,13 @@ struct lttng_event_enabler *lttng_event_enabler_create(
 	event_enabler = kzalloc(sizeof(*event_enabler), GFP_KERNEL);
 	if (!event_enabler)
 		return NULL;
-	event_enabler->base.format_type = format_type;
-	INIT_LIST_HEAD(&event_enabler->base.filter_bytecode_head);
-	memcpy(&event_enabler->base.event_param, event_param,
-		sizeof(event_enabler->base.event_param));
+	event_enabler->parent.format_type = format_type;
+	INIT_LIST_HEAD(&event_enabler->parent.filter_bytecode_head);
+	memcpy(&event_enabler->parent.event_param, event_param,
+		sizeof(event_enabler->parent.event_param));
 	event_enabler->chan = chan;
 	/* ctx left NULL */
-	event_enabler->base.enabled = 0;
+	event_enabler->parent.enabled = 0;
 	return event_enabler;
 }
 
@@ -2613,18 +2613,18 @@ struct lttng_event_notifier_enabler *lttng_event_notifier_enabler_create(
 	if (!event_notifier_enabler)
 		return NULL;
 
-	event_notifier_enabler->base.format_type = format_type;
-	INIT_LIST_HEAD(&event_notifier_enabler->base.filter_bytecode_head);
+	event_notifier_enabler->parent.format_type = format_type;
+	INIT_LIST_HEAD(&event_notifier_enabler->parent.filter_bytecode_head);
 	INIT_LIST_HEAD(&event_notifier_enabler->capture_bytecode_head);
 
 	event_notifier_enabler->error_counter_index = event_notifier_param->error_counter_index;
 	event_notifier_enabler->num_captures = 0;
 
-	memcpy(&event_notifier_enabler->base.event_param, &event_notifier_param->event,
-		sizeof(event_notifier_enabler->base.event_param));
+	memcpy(&event_notifier_enabler->parent.event_param, &event_notifier_param->event,
+		sizeof(event_notifier_enabler->parent.event_param));
 
-	event_notifier_enabler->base.enabled = 0;
-	event_notifier_enabler->base.user_token = event_notifier_param->event.token;
+	event_notifier_enabler->parent.enabled = 0;
+	event_notifier_enabler->parent.user_token = event_notifier_param->event.token;
 	event_notifier_enabler->group = event_notifier_group;
 
 	mutex_lock(&sessions_mutex);
