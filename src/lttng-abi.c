@@ -1900,6 +1900,8 @@ int lttng_abi_create_event(struct file *channel_file,
 			event_enabler = lttng_event_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
 				event_param, channel);
 		}
+		if (event_enabler)
+			lttng_event_enabler_session_add(channel->parent.session, event_enabler);
 		priv = event_enabler;
 		break;
 	}
@@ -1911,14 +1913,21 @@ int lttng_abi_create_event(struct file *channel_file,
 	case LTTNG_KERNEL_ABI_UPROBE:
 	{
 		struct lttng_kernel_event_recorder *event;
+		struct lttng_event_enabler *event_enabler;
 
+		event_enabler = lttng_event_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
+				event_param, channel);
+		if (!event_enabler) {
+			ret = -ENOMEM;
+			goto event_error;
+		}
 		/*
 		 * We tolerate no failure path after event creation. It
 		 * will stay invariant for the rest of the session.
 		 */
-		event = lttng_kernel_event_recorder_create(channel, event_param,
-				NULL, event_param->instrumentation);
+		event = lttng_kernel_event_recorder_create(event_enabler, NULL);
 		WARN_ON_ONCE(!event);
+		lttng_event_enabler_destroy(event_enabler);
 		if (IS_ERR(event)) {
 			ret = PTR_ERR(event);
 			goto event_error;

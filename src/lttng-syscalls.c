@@ -613,16 +613,17 @@ void syscall_exit_event_notifier_probe(void *__data, struct pt_regs *regs,
  */
 static
 int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *table, size_t table_len,
-	struct hlist_head *chan_table, struct lttng_event_enabler *event_enabler,
+	struct hlist_head *chan_table, struct lttng_event_enabler *syscall_event_enabler,
 	enum sc_type type)
 {
-	struct lttng_kernel_channel_buffer *chan = event_enabler->chan;
+	struct lttng_kernel_channel_buffer *chan = syscall_event_enabler->chan;
 	struct lttng_kernel_session *session = chan->parent.session;
 	unsigned int i;
 
 	/* Allocate events for each syscall matching enabler, insert into table */
 	for (i = 0; i < table_len; i++) {
 		const struct lttng_kernel_event_desc *desc = table[i].desc;
+		struct lttng_event_enabler *event_enabler;
 		struct lttng_kernel_abi_event ev;
 		struct lttng_kernel_event_recorder_private *event_recorder_priv;
 		struct lttng_kernel_event_recorder *event_recorder;
@@ -634,7 +635,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 			continue;
 		}
 		if (lttng_desc_match_enabler(desc,
-				lttng_event_enabler_as_enabler(event_enabler)) <= 0)
+				lttng_event_enabler_as_enabler(syscall_event_enabler)) <= 0)
 			continue;
 		/*
 		 * Check if already created.
@@ -644,7 +645,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 			desc->event_name);
 		lttng_hlist_for_each_entry(event_recorder_priv, head, hlist) {
 			if (event_recorder_priv->parent.desc == desc
-				&& event_recorder_priv->pub->chan == event_enabler->chan)
+				&& event_recorder_priv->pub->chan == chan)
 				found = true;
 		}
 		if (found)
@@ -673,8 +674,13 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1);
 		ev.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
-		event_recorder = _lttng_kernel_event_recorder_create(chan, &ev, desc, ev.instrumentation);
+		event_enabler = lttng_event_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev, chan);
+		if (!event_enabler) {
+			return -ENOMEM;
+		}
+		event_recorder = _lttng_kernel_event_recorder_create(event_enabler, desc);
 		WARN_ON_ONCE(!event_recorder);
+		lttng_event_enabler_destroy(event_enabler);
 		if (IS_ERR(event_recorder)) {
 			/*
 			 * If something goes wrong in event registration
@@ -692,9 +698,9 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 /*
  * Should be called with sessions lock held.
  */
-int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler)
+int lttng_syscalls_register_event(struct lttng_event_enabler *syscall_event_enabler)
 {
-	struct lttng_kernel_channel_buffer *chan = event_enabler->chan;
+	struct lttng_kernel_channel_buffer *chan = syscall_event_enabler->chan;
 	struct lttng_kernel_abi_event ev;
 	int ret;
 
@@ -737,6 +743,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler)
 		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___syscall_entry_unknown;
 		struct lttng_kernel_event_recorder *event_recorder;
+		struct lttng_event_enabler *event_enabler;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
@@ -744,8 +751,12 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler)
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
 		ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
-		event_recorder = _lttng_kernel_event_recorder_create(chan, &ev, desc,
-					    ev.instrumentation);
+		event_enabler = lttng_event_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev, chan);
+		if (!event_enabler) {
+			return -ENOMEM;
+		}
+		event_recorder = _lttng_kernel_event_recorder_create(event_enabler, desc);
+		lttng_event_enabler_destroy(event_enabler);
 		WARN_ON_ONCE(!event_recorder);
 		if (IS_ERR(event_recorder)) {
 			return PTR_ERR(event_recorder);
@@ -757,6 +768,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler)
 		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___compat_syscall_entry_unknown;
 		struct lttng_kernel_event_recorder *event_recorder;
+		struct lttng_event_enabler *event_enabler;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
@@ -764,9 +776,13 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler)
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
 		ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
-		event_recorder = _lttng_kernel_event_recorder_create(chan, &ev, desc,
-					    ev.instrumentation);
+		event_enabler = lttng_event_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev, chan);
+		if (!event_enabler) {
+			return -ENOMEM;
+		}
+		event_recorder = _lttng_kernel_event_recorder_create(event_enabler, desc);
 		WARN_ON_ONCE(!event_recorder);
+		lttng_event_enabler_destroy(event_enabler);
 		if (IS_ERR(event_recorder)) {
 			return PTR_ERR(event_recorder);
 		}
@@ -777,6 +793,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler)
 		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___compat_syscall_exit_unknown;
 		struct lttng_kernel_event_recorder *event_recorder;
+		struct lttng_event_enabler *event_enabler;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
@@ -784,9 +801,13 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler)
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
 		ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
-		event_recorder = _lttng_kernel_event_recorder_create(chan, &ev, desc,
-					    ev.instrumentation);
+		event_enabler = lttng_event_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev, chan);
+		if (!event_enabler) {
+			return -ENOMEM;
+		}
+		event_recorder = _lttng_kernel_event_recorder_create(event_enabler, desc);
 		WARN_ON_ONCE(!event_recorder);
+		lttng_event_enabler_destroy(event_enabler);
 		if (IS_ERR(event_recorder)) {
 			return PTR_ERR(event_recorder);
 		}
@@ -797,6 +818,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler)
 		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___syscall_exit_unknown;
 		struct lttng_kernel_event_recorder *event_recorder;
+		struct lttng_event_enabler *event_enabler;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
@@ -804,9 +826,13 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler)
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
 		ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
-		event_recorder = _lttng_kernel_event_recorder_create(chan, &ev, desc,
-					    ev.instrumentation);
+		event_enabler = lttng_event_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev, chan);
+		if (!event_enabler) {
+			return -ENOMEM;
+		}
+		event_recorder = _lttng_kernel_event_recorder_create(event_enabler, desc);
 		WARN_ON_ONCE(!event_recorder);
+		lttng_event_enabler_destroy(event_enabler);
 		if (IS_ERR(event_recorder)) {
 			return PTR_ERR(event_recorder);
 		}
@@ -814,21 +840,21 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler)
 	}
 
 	ret = lttng_create_syscall_event_if_missing(sc_table.table, sc_table.len,
-			chan->priv->parent.sc_table, event_enabler, SC_TYPE_ENTRY);
+			chan->priv->parent.sc_table, syscall_event_enabler, SC_TYPE_ENTRY);
 	if (ret)
 		return ret;
 	ret = lttng_create_syscall_event_if_missing(sc_exit_table.table, sc_exit_table.len,
-			chan->priv->parent.sc_exit_table, event_enabler, SC_TYPE_EXIT);
+			chan->priv->parent.sc_exit_table, syscall_event_enabler, SC_TYPE_EXIT);
 	if (ret)
 		return ret;
 
 #ifdef CONFIG_COMPAT
 	ret = lttng_create_syscall_event_if_missing(compat_sc_table.table, compat_sc_table.len,
-			chan->priv->parent.compat_sc_table, event_enabler, SC_TYPE_COMPAT_ENTRY);
+			chan->priv->parent.compat_sc_table, syscall_event_enabler, SC_TYPE_COMPAT_ENTRY);
 	if (ret)
 		return ret;
 	ret = lttng_create_syscall_event_if_missing(compat_sc_exit_table.table, compat_sc_exit_table.len,
-			chan->priv->parent.compat_sc_exit_table, event_enabler, SC_TYPE_COMPAT_EXIT);
+			chan->priv->parent.compat_sc_exit_table, syscall_event_enabler, SC_TYPE_COMPAT_EXIT);
 	if (ret)
 		return ret;
 #endif

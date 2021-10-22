@@ -66,7 +66,6 @@ static struct kmem_cache *event_notifier_private_cache;
 
 static void lttng_session_lazy_sync_event_enablers(struct lttng_kernel_session *session);
 static void lttng_session_sync_event_enablers(struct lttng_kernel_session *session);
-static void lttng_event_enabler_destroy(struct lttng_event_enabler *event_enabler);
 static void lttng_event_notifier_enabler_destroy(struct lttng_event_notifier_enabler *event_notifier_enabler);
 static void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group *event_notifier_group);
 
@@ -860,11 +859,12 @@ void _lttng_metadata_channel_hangup(struct lttng_metadata_stream *stream)
  * Supports event creation while tracing session is active.
  * Needs to be called with sessions mutex held.
  */
-struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct lttng_kernel_channel_buffer *chan,
-				struct lttng_kernel_abi_event *event_param,
-				const struct lttng_kernel_event_desc *event_desc,
-				enum lttng_kernel_abi_instrumentation itype)
+struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct lttng_event_enabler *event_enabler,
+				const struct lttng_kernel_event_desc *event_desc)
 {
+	struct lttng_kernel_channel_buffer *chan = event_enabler->chan;
+	struct lttng_kernel_abi_event *event_param = &event_enabler->base.event_param;
+	enum lttng_kernel_abi_instrumentation itype = event_param->instrumentation;
 	struct lttng_kernel_session *session = chan->parent.session;
 	struct lttng_kernel_event_recorder *event_recorder;
 	struct lttng_kernel_event_recorder_private *event_recorder_priv;
@@ -1395,15 +1395,13 @@ int lttng_kernel_counter_clear(struct lttng_counter *counter,
 	return counter->ops->counter_clear(counter->counter, dim_indexes);
 }
 
-struct lttng_kernel_event_recorder *lttng_kernel_event_recorder_create(struct lttng_kernel_channel_buffer *chan,
-				struct lttng_kernel_abi_event *event_param,
-				const struct lttng_kernel_event_desc *event_desc,
-				enum lttng_kernel_abi_instrumentation itype)
+struct lttng_kernel_event_recorder *lttng_kernel_event_recorder_create(struct lttng_event_enabler *event_enabler,
+				const struct lttng_kernel_event_desc *event_desc)
 {
 	struct lttng_kernel_event_recorder *event;
 
 	mutex_lock(&sessions_mutex);
-	event = _lttng_kernel_event_recorder_create(chan, event_param, event_desc, itype);
+	event = _lttng_kernel_event_recorder_create(event_enabler, event_desc);
 	mutex_unlock(&sessions_mutex);
 	return event;
 }
@@ -2160,8 +2158,7 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_enabler *event_
 			 * We need to create an event for this
 			 * event probe.
 			 */
-			event_recorder = _lttng_kernel_event_recorder_create(event_enabler->chan,
-					NULL, desc, LTTNG_KERNEL_ABI_TRACEPOINT);
+			event_recorder = _lttng_kernel_event_recorder_create(event_enabler, desc);
 			if (!event_recorder) {
 				printk(KERN_INFO "LTTng: Unable to create event %s\n",
 					probe_desc->event_desc[i]->event_name);
@@ -2492,11 +2489,17 @@ struct lttng_event_enabler *lttng_event_enabler_create(
 	event_enabler->chan = chan;
 	/* ctx left NULL */
 	event_enabler->base.enabled = 0;
-	mutex_lock(&sessions_mutex);
-	list_add(&event_enabler->node, &event_enabler->chan->parent.session->priv->enablers_head);
-	lttng_session_lazy_sync_event_enablers(event_enabler->chan->parent.session);
-	mutex_unlock(&sessions_mutex);
 	return event_enabler;
+}
+
+void lttng_event_enabler_session_add(struct lttng_kernel_session *session,
+		struct lttng_event_enabler *event_enabler)
+{
+	mutex_lock(&sessions_mutex);
+	list_add(&event_enabler->node, &session->priv->enablers_head);
+	event_enabler->published = true;
+	lttng_session_lazy_sync_event_enablers(session);
+	mutex_unlock(&sessions_mutex);
 }
 
 int lttng_event_enabler_enable(struct lttng_event_enabler *event_enabler)
@@ -2590,12 +2593,12 @@ void lttng_enabler_destroy(struct lttng_enabler *enabler)
 	}
 }
 
-static
 void lttng_event_enabler_destroy(struct lttng_event_enabler *event_enabler)
 {
 	lttng_enabler_destroy(lttng_event_enabler_as_enabler(event_enabler));
 
-	list_del(&event_enabler->node);
+	if (event_enabler->published)
+		list_del(&event_enabler->node);
 	kfree(event_enabler);
 }
 

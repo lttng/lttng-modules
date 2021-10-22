@@ -221,7 +221,8 @@ struct lttng_enabler {
 
 struct lttng_event_enabler {
 	struct lttng_enabler base;
-	struct list_head node;	/* per-session list of enablers */
+	struct list_head node;		/* per-session list of enablers */
+	bool published;			/* published in per-session list. */
 	struct lttng_kernel_channel_buffer *chan;
 };
 
@@ -779,6 +780,9 @@ struct lttng_event_enabler *lttng_event_enabler_create(
 		enum lttng_enabler_format_type format_type,
 		struct lttng_kernel_abi_event *event_param,
 		struct lttng_kernel_channel_buffer *chan);
+void lttng_event_enabler_session_add(struct lttng_kernel_session *session,
+		struct lttng_event_enabler *event_enabler);
+void lttng_event_enabler_destroy(struct lttng_event_enabler *event_enabler);
 
 int lttng_event_enabler_enable(struct lttng_event_enabler *event_enabler);
 int lttng_event_enabler_disable(struct lttng_event_enabler *event_enabler);
@@ -1096,14 +1100,10 @@ struct lttng_kernel_channel_buffer *lttng_global_channel_create(struct lttng_ker
 				       unsigned int read_timer_interval);
 
 void lttng_metadata_channel_destroy(struct lttng_kernel_channel_buffer *chan);
-struct lttng_kernel_event_recorder *lttng_kernel_event_recorder_create(struct lttng_kernel_channel_buffer *chan,
-				struct lttng_kernel_abi_event *event_param,
-				const struct lttng_kernel_event_desc *event_desc,
-				enum lttng_kernel_abi_instrumentation itype);
-struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct lttng_kernel_channel_buffer *chan,
-				struct lttng_kernel_abi_event *event_param,
-				const struct lttng_kernel_event_desc *event_desc,
-				enum lttng_kernel_abi_instrumentation itype);
+struct lttng_kernel_event_recorder *lttng_kernel_event_recorder_create(struct lttng_event_enabler *event_enabler,
+				const struct lttng_kernel_event_desc *event_desc);
+struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct lttng_event_enabler *event_enabler,
+				const struct lttng_kernel_event_desc *event_desc);
 struct lttng_kernel_event_recorder *lttng_event_compat_old_create(struct lttng_kernel_channel_buffer *chan,
 		struct lttng_kernel_abi_old_event *old_event_param,
 		const struct lttng_kernel_event_desc *internal_desc);
