@@ -33,7 +33,7 @@ enum channel_type {
  */
 struct lttng_enabler_ref {
 	struct list_head node;			/* enabler ref list */
-	struct lttng_enabler *ref;		/* backward ref */
+	struct lttng_event_enabler_common *ref;		/* backward ref */
 };
 
 struct lttng_krp;				/* Kretprobe handling */
@@ -181,7 +181,7 @@ enum lttng_kernel_bytecode_type {
 struct lttng_kernel_bytecode_node {
 	enum lttng_kernel_bytecode_type type;
 	struct list_head node;
-	struct lttng_enabler *enabler;
+	struct lttng_event_enabler_common *enabler;
 	struct {
 		uint32_t len;
 		uint32_t reloc_offset;
@@ -207,7 +207,7 @@ struct lttng_kernel_bytecode_runtime {
  * Enabler field, within whatever object is enabling an event. Target of
  * backward reference.
  */
-struct lttng_enabler {
+struct lttng_event_enabler_common {
 	enum lttng_enabler_format_type format_type;
 
 	/* head list of struct lttng_kernel_bytecode_node */
@@ -220,14 +220,14 @@ struct lttng_enabler {
 };
 
 struct lttng_event_enabler {
-	struct lttng_enabler base;
+	struct lttng_event_enabler_common base;
 	struct list_head node;		/* per-session list of enablers */
 	bool published;			/* published in per-session list. */
 	struct lttng_kernel_channel_buffer *chan;
 };
 
 struct lttng_event_notifier_enabler {
-	struct lttng_enabler base;
+	struct lttng_event_enabler_common base;
 	uint64_t error_counter_index;
 	struct list_head node;	/* List of event_notifier enablers */
 	struct lttng_event_notifier_group *group;
@@ -584,14 +584,14 @@ int lttng_kernel_interpret_event_filter(const struct lttng_kernel_event_common *
 		void *event_filter_ctx);
 
 static inline
-struct lttng_enabler *lttng_event_enabler_as_enabler(
+struct lttng_event_enabler_common *lttng_event_enabler_as_enabler(
 		struct lttng_event_enabler *event_enabler)
 {
 	return &event_enabler->base;
 }
 
 static inline
-struct lttng_enabler *lttng_event_notifier_enabler_as_enabler(
+struct lttng_event_enabler_common *lttng_event_notifier_enabler_as_enabler(
 		struct lttng_event_notifier_enabler *event_notifier_enabler)
 {
 	return &event_notifier_enabler->base;
@@ -806,7 +806,7 @@ int lttng_event_notifier_enabler_attach_capture_bytecode(
 		struct lttng_kernel_abi_capture_bytecode __user *bytecode);
 
 int lttng_desc_match_enabler(const struct lttng_kernel_event_desc *desc,
-		struct lttng_enabler *enabler);
+		struct lttng_event_enabler_common *enabler);
 
 void lttng_enabler_link_bytecode(const struct lttng_kernel_event_desc *event_desc,
 		struct lttng_kernel_ctx *ctx,

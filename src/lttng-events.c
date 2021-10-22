@@ -1978,7 +1978,7 @@ int lttng_match_enabler_name(const char *desc_name,
 }
 
 int lttng_desc_match_enabler(const struct lttng_kernel_event_desc *desc,
-		struct lttng_enabler *enabler)
+		struct lttng_event_enabler_common *enabler)
 {
 	const char *desc_name, *enabler_name;
 	bool compat = false, entry = false;
@@ -2070,7 +2070,7 @@ static
 int lttng_event_enabler_match_event(struct lttng_event_enabler *event_enabler,
 		struct lttng_kernel_event_recorder *event_recorder)
 {
-	struct lttng_enabler *base_enabler = lttng_event_enabler_as_enabler(
+	struct lttng_event_enabler_common *base_enabler = lttng_event_enabler_as_enabler(
 		event_enabler);
 
 	if (base_enabler->event_param.instrumentation != event_recorder->priv->parent.instrumentation)
@@ -2086,7 +2086,7 @@ static
 int lttng_event_notifier_enabler_match_event_notifier(struct lttng_event_notifier_enabler *event_notifier_enabler,
 		struct lttng_kernel_event_notifier *event_notifier)
 {
-	struct lttng_enabler *base_enabler = lttng_event_notifier_enabler_as_enabler(
+	struct lttng_event_enabler_common *base_enabler = lttng_event_notifier_enabler_as_enabler(
 		event_notifier_enabler);
 
 	if (base_enabler->event_param.instrumentation != event_notifier->priv->parent.instrumentation)
@@ -2102,7 +2102,7 @@ int lttng_event_notifier_enabler_match_event_notifier(struct lttng_event_notifie
 static
 struct lttng_enabler_ref *lttng_enabler_ref(
 		struct list_head *enablers_ref_list,
-		struct lttng_enabler *enabler)
+		struct lttng_event_enabler_common *enabler)
 {
 	struct lttng_enabler_ref *enabler_ref;
 
@@ -2277,7 +2277,7 @@ int lttng_event_enabler_ref_events(struct lttng_event_enabler *event_enabler)
 {
 	struct lttng_kernel_channel_buffer *chan = event_enabler->chan;
 	struct lttng_kernel_session *session = event_enabler->chan->parent.session;
-	struct lttng_enabler *base_enabler = lttng_event_enabler_as_enabler(event_enabler);
+	struct lttng_event_enabler_common *base_enabler = lttng_event_enabler_as_enabler(event_enabler);
 	struct lttng_kernel_event_recorder_private *event_recorder_priv;
 
 	if (base_enabler->event_param.instrumentation == LTTNG_KERNEL_ABI_SYSCALL &&
@@ -2361,7 +2361,7 @@ int lttng_event_notifier_enabler_ref_event_notifiers(
 		struct lttng_event_notifier_enabler *event_notifier_enabler)
 {
 	struct lttng_event_notifier_group *event_notifier_group = event_notifier_enabler->group;
-	struct lttng_enabler *base_enabler = lttng_event_notifier_enabler_as_enabler(event_notifier_enabler);
+	struct lttng_event_enabler_common *base_enabler = lttng_event_notifier_enabler_as_enabler(event_notifier_enabler);
 	struct lttng_kernel_event_notifier_private *event_notifier_priv;
 
 	if (base_enabler->event_param.instrumentation == LTTNG_KERNEL_ABI_SYSCALL &&
@@ -2521,7 +2521,7 @@ int lttng_event_enabler_disable(struct lttng_event_enabler *event_enabler)
 }
 
 static
-int lttng_enabler_attach_filter_bytecode(struct lttng_enabler *enabler,
+int lttng_enabler_attach_filter_bytecode(struct lttng_event_enabler_common *enabler,
 		struct lttng_kernel_abi_filter_bytecode __user *bytecode)
 {
 	struct lttng_kernel_bytecode_node *bytecode_node;
@@ -2582,7 +2582,7 @@ int lttng_event_add_callsite(struct lttng_kernel_event_common *event,
 }
 
 static
-void lttng_enabler_destroy(struct lttng_enabler *enabler)
+void lttng_enabler_destroy(struct lttng_event_enabler_common *enabler)
 {
 	struct lttng_kernel_bytecode_node *filter_node, *tmp_filter_node;
 
@@ -2680,7 +2680,7 @@ int lttng_event_notifier_enabler_attach_capture_bytecode(
 		struct lttng_kernel_abi_capture_bytecode __user *bytecode)
 {
 	struct lttng_kernel_bytecode_node *bytecode_node;
-	struct lttng_enabler *enabler =
+	struct lttng_event_enabler_common *enabler =
 			lttng_event_notifier_enabler_as_enabler(event_notifier_enabler);
 	uint32_t bytecode_len;
 	int ret;

@@ -578,14 +578,14 @@ void lttng_enabler_link_bytecode(const struct lttng_kernel_event_desc *event_des
 /*
  * We own the filter_bytecode if we return success.
  */
-int lttng_filter_enabler_attach_bytecode(struct lttng_enabler *enabler,
+int lttng_filter_enabler_attach_bytecode(struct lttng_event_enabler_common *enabler,
 		struct lttng_kernel_bytecode_node *filter_bytecode)
 {
 	list_add(&filter_bytecode->node, &enabler->filter_bytecode_head);
 	return 0;
 }
 
-void lttng_free_enabler_filter_bytecode(struct lttng_enabler *enabler)
+void lttng_free_enabler_filter_bytecode(struct lttng_event_enabler_common *enabler)
 {
 	struct lttng_kernel_bytecode_node *filter_bytecode, *tmp;
 

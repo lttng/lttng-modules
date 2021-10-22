@@ -1005,7 +1005,7 @@ int create_unknown_event_notifier(
 	struct lttng_kernel_abi_event_notifier event_notifier_param;
 	uint64_t user_token = event_notifier_enabler->base.user_token;
 	uint64_t error_counter_index = event_notifier_enabler->error_counter_index;
-	struct lttng_enabler *base_enabler = lttng_event_notifier_enabler_as_enabler(
+	struct lttng_event_enabler_common *base_enabler = lttng_event_notifier_enabler_as_enabler(
 		event_notifier_enabler);
 	struct hlist_head *unknown_dispatch_list;
 	int ret = 0;
@@ -1171,7 +1171,7 @@ int lttng_syscalls_create_matching_event_notifiers(
 		struct lttng_event_notifier_enabler *event_notifier_enabler)
 {
 	int ret;
-	struct lttng_enabler *base_enabler =
+	struct lttng_event_enabler_common *base_enabler =
 			lttng_event_notifier_enabler_as_enabler(event_notifier_enabler);
 	enum lttng_kernel_abi_syscall_entryexit entryexit =
 			base_enabler->event_param.u.syscall.entryexit;
