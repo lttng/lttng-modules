@@ -1108,8 +1108,8 @@ struct lttng_kernel_event_notifier *_lttng_event_notifier_create(
 				struct lttng_kernel_abi_event_notifier *event_notifier_param,
 				enum lttng_kernel_abi_instrumentation itype);
 
-int lttng_channel_enable(struct lttng_kernel_channel_buffer *channel);
-int lttng_channel_disable(struct lttng_kernel_channel_buffer *channel);
+int lttng_channel_enable(struct lttng_kernel_channel_common *channel);
+int lttng_channel_disable(struct lttng_kernel_channel_common *channel);
 int lttng_event_enable(struct lttng_kernel_event_common *event);
 int lttng_event_disable(struct lttng_kernel_event_common *event);
 

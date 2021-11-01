@@ -2527,10 +2527,10 @@ old_ctx_end:
 	}
 	case LTTNG_KERNEL_ABI_OLD_ENABLE:
 	case LTTNG_KERNEL_ABI_ENABLE:
-		return lttng_channel_enable(channel);
+		return lttng_channel_enable(&channel->parent);
 	case LTTNG_KERNEL_ABI_OLD_DISABLE:
 	case LTTNG_KERNEL_ABI_DISABLE:
-		return lttng_channel_disable(channel);
+		return lttng_channel_disable(&channel->parent);
 	case LTTNG_KERNEL_ABI_SYSCALL_MASK:
 		return lttng_channel_syscall_mask(channel,
 			(struct lttng_kernel_abi_syscall_mask __user *) arg);

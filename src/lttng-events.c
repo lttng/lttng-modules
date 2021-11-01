@@ -578,47 +578,60 @@ end:
 	return ret;
 }
 
-int lttng_channel_enable(struct lttng_kernel_channel_buffer *channel)
+static
+bool is_channel_buffer_metadata(struct lttng_kernel_channel_common *channel)
+{
+	struct lttng_kernel_channel_buffer *chan_buf;
+
+	if (channel->type != LTTNG_KERNEL_CHANNEL_TYPE_BUFFER)
+		return false;
+	chan_buf = container_of(channel, struct lttng_kernel_channel_buffer, parent);
+	if (chan_buf->priv->channel_type == METADATA_CHANNEL)
+		return true;
+	return false;
+}
+
+int lttng_channel_enable(struct lttng_kernel_channel_common *channel)
 {
 	int ret = 0;
 
 	mutex_lock(&sessions_mutex);
-	if (channel->priv->channel_type == METADATA_CHANNEL) {
+	if (is_channel_buffer_metadata(channel)) {
 		ret = -EPERM;
 		goto end;
 	}
-	if (channel->parent.enabled) {
+	if (channel->enabled) {
 		ret = -EEXIST;
 		goto end;
 	}
 	/* Set transient enabler state to "enabled" */
-	channel->priv->parent.tstate = 1;
-	lttng_session_sync_event_enablers(channel->parent.session);
+	channel->priv->tstate = 1;
+	lttng_session_sync_event_enablers(channel->session);
 	/* Set atomically the state to "enabled" */
-	WRITE_ONCE(channel->parent.enabled, 1);
+	WRITE_ONCE(channel->enabled, 1);
 end:
 	mutex_unlock(&sessions_mutex);
 	return ret;
 }
 
-int lttng_channel_disable(struct lttng_kernel_channel_buffer *channel)
+int lttng_channel_disable(struct lttng_kernel_channel_common *channel)
 {
 	int ret = 0;
 
 	mutex_lock(&sessions_mutex);
-	if (channel->priv->channel_type == METADATA_CHANNEL) {
+	if (is_channel_buffer_metadata(channel)) {
 		ret = -EPERM;
 		goto end;
 	}
-	if (!channel->parent.enabled) {
+	if (!channel->enabled) {
 		ret = -EEXIST;
 		goto end;
 	}
 	/* Set atomically the state to "disabled" */
-	WRITE_ONCE(channel->parent.enabled, 0);
+	WRITE_ONCE(channel->enabled, 0);
 	/* Set transient enabler state to "enabled" */
-	channel->priv->parent.tstate = 0;
-	lttng_session_sync_event_enablers(channel->parent.session);
+	channel->priv->tstate = 0;
+	lttng_session_sync_event_enablers(channel->session);
 end:
 	mutex_unlock(&sessions_mutex);
 	return ret;
