@@ -360,7 +360,7 @@ void lttng_session_destroy(struct lttng_kernel_session *session)
 	mutex_lock(&sessions_mutex);
 	WRITE_ONCE(session->active, 0);
 	list_for_each_entry(chan_priv, &session->priv->chan, node) {
-		ret = lttng_syscalls_unregister_channel(chan_priv->pub);
+		ret = lttng_syscalls_unregister_syscall_table(&chan_priv->parent.syscall_table);
 		WARN_ON(ret);
 	}
 	list_for_each_entry(event_recorder_priv, &session->priv->events, node) {
@@ -369,7 +369,7 @@ void lttng_session_destroy(struct lttng_kernel_session *session)
 	}
 	synchronize_trace();	/* Wait for in-flight events to complete */
 	list_for_each_entry(chan_priv, &session->priv->chan, node) {
-		ret = lttng_syscalls_destroy_channel(chan_priv->pub);
+		ret = lttng_syscalls_destroy_syscall_table(&chan_priv->parent.syscall_table);
 		WARN_ON(ret);
 	}
 	list_for_each_entry_safe(event_recorder_enabler, tmp_event_recorder_enabler,
@@ -410,7 +410,7 @@ void lttng_event_notifier_group_destroy(
 
 	mutex_lock(&sessions_mutex);
 
-	ret = lttng_syscalls_unregister_event_notifier_group(event_notifier_group);
+	ret = lttng_syscalls_unregister_syscall_table(&event_notifier_group->syscall_table);
 	WARN_ON(ret);
 
 	list_for_each_entry_safe(event_notifier_priv, tmpevent_notifier_priv,
@@ -424,7 +424,8 @@ void lttng_event_notifier_group_destroy(
 
 	irq_work_sync(&event_notifier_group->wakeup_pending);
 
-	kfree(event_notifier_group->syscall_table.sc_filter);
+	ret = lttng_syscalls_destroy_syscall_table(&event_notifier_group->syscall_table);
+	WARN_ON(ret);
 
 	list_for_each_entry_safe(event_notifier_enabler, tmp_event_notifier_enabler,
 			&event_notifier_group->enablers_head, node)

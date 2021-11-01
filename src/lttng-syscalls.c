@@ -1108,47 +1108,8 @@ end:
 	return ret;
 }
 
-/*
- * Unregister the syscall event_notifier probes from the callsites.
- */
-int lttng_syscalls_unregister_event_notifier_group(
-		struct lttng_event_notifier_group *event_notifier_group)
+int lttng_syscalls_unregister_syscall_table(struct lttng_kernel_syscall_table *syscall_table)
 {
-	struct lttng_kernel_syscall_table *syscall_table = &event_notifier_group->syscall_table;
-	int ret;
-
-	/*
-	 * Only register the event_notifier probe on the `sys_enter` callsite for now.
-	 * At the moment, we don't think it's desirable to have one fired
-	 * event_notifier for the entry and one for the exit of a syscall.
-	 */
-	if (syscall_table->sys_enter_registered) {
-		ret = lttng_wrapper_tracepoint_probe_unregister("sys_enter",
-				(void *) syscall_entry_event_probe, syscall_table);
-		if (ret)
-			return ret;
-		syscall_table->sys_enter_registered = 0;
-	}
-	if (syscall_table->sys_exit_registered) {
-		ret = lttng_wrapper_tracepoint_probe_unregister("sys_exit",
-				(void *) syscall_exit_event_probe, syscall_table);
-		if (ret)
-			return ret;
-		syscall_table->sys_enter_registered = 0;
-	}
-
-	kfree(syscall_table->syscall_dispatch);
-	kfree(syscall_table->syscall_exit_dispatch);
-#ifdef CONFIG_COMPAT
-	kfree(syscall_table->compat_syscall_dispatch);
-	kfree(syscall_table->compat_syscall_exit_dispatch);
-#endif
-	return 0;
-}
-
-int lttng_syscalls_unregister_channel(struct lttng_kernel_channel_buffer *chan)
-{
-	struct lttng_kernel_syscall_table *syscall_table = &chan->priv->parent.syscall_table;
 	int ret;
 
 	if (!syscall_table->syscall_dispatch)
@@ -1170,10 +1131,8 @@ int lttng_syscalls_unregister_channel(struct lttng_kernel_channel_buffer *chan)
 	return 0;
 }
 
-int lttng_syscalls_destroy_channel(struct lttng_kernel_channel_buffer *chan)
+int lttng_syscalls_destroy_syscall_table(struct lttng_kernel_syscall_table *syscall_table)
 {
-	struct lttng_kernel_syscall_table *syscall_table = &chan->priv->parent.syscall_table;
-
 	kfree(syscall_table->syscall_dispatch);
 	kfree(syscall_table->syscall_exit_dispatch);
 #ifdef CONFIG_COMPAT
