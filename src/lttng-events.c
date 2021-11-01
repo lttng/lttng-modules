@@ -1452,7 +1452,7 @@ void register_event_recorder(struct lttng_kernel_event_recorder *event_recorder)
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		ret = lttng_wrapper_tracepoint_probe_register(desc->event_kname,
 						  desc->tp_class->probe_callback,
-						  event_recorder);
+						  &event_recorder->parent);
 		break;
 
 	case LTTNG_KERNEL_ABI_SYSCALL:
@@ -1495,7 +1495,7 @@ int _lttng_event_recorder_unregister(struct lttng_kernel_event_recorder *event_r
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		ret = lttng_wrapper_tracepoint_probe_unregister(event_priv->desc->event_kname,
 						  event_priv->desc->tp_class->probe_callback,
-						  event_recorder);
+						  &event_recorder->parent);
 		break;
 
 	case LTTNG_KERNEL_ABI_KPROBE:
@@ -1546,7 +1546,7 @@ void register_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		ret = lttng_wrapper_tracepoint_probe_register(desc->event_kname,
 						  desc->tp_class->probe_callback,
-						  event_notifier);
+						  &event_notifier->parent);
 		break;
 
 	case LTTNG_KERNEL_ABI_SYSCALL:
@@ -1587,7 +1587,7 @@ int _lttng_event_notifier_unregister(
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		ret = lttng_wrapper_tracepoint_probe_unregister(event_notifier->priv->parent.desc->event_kname,
 						  event_notifier->priv->parent.desc->tp_class->probe_callback,
-						  event_notifier);
+						  &event_notifier->parent);
 		break;
 
 	case LTTNG_KERNEL_ABI_KPROBE:
