@@ -354,7 +354,7 @@ void lttng_session_destroy(struct lttng_kernel_session *session)
 	struct lttng_kernel_channel_buffer_private *chan_priv, *tmpchan_priv;
 	struct lttng_kernel_event_recorder_private *event_recorder_priv, *tmpevent_recorder_priv;
 	struct lttng_metadata_stream *metadata_stream;
-	struct lttng_event_enabler *event_enabler, *tmp_event_enabler;
+	struct lttng_event_recorder_enabler *event_enabler, *tmp_event_enabler;
 	int ret;
 
 	mutex_lock(&sessions_mutex);
@@ -859,7 +859,7 @@ void _lttng_metadata_channel_hangup(struct lttng_metadata_stream *stream)
  * Supports event creation while tracing session is active.
  * Needs to be called with sessions mutex held.
  */
-struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct lttng_event_enabler *event_enabler,
+struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct lttng_event_recorder_enabler *event_enabler,
 				const struct lttng_kernel_event_desc *event_desc)
 {
 	struct lttng_kernel_channel_buffer *chan = event_enabler->chan;
@@ -1395,7 +1395,7 @@ int lttng_kernel_counter_clear(struct lttng_counter *counter,
 	return counter->ops->counter_clear(counter->counter, dim_indexes);
 }
 
-struct lttng_kernel_event_recorder *lttng_kernel_event_recorder_create(struct lttng_event_enabler *event_enabler,
+struct lttng_kernel_event_recorder *lttng_kernel_event_recorder_create(struct lttng_event_recorder_enabler *event_enabler,
 				const struct lttng_kernel_event_desc *event_desc)
 {
 	struct lttng_kernel_event_recorder *event;
@@ -2067,10 +2067,10 @@ int lttng_desc_match_enabler(const struct lttng_kernel_event_desc *desc,
 }
 
 static
-int lttng_event_enabler_match_event(struct lttng_event_enabler *event_enabler,
+int lttng_event_enabler_match_event(struct lttng_event_recorder_enabler *event_enabler,
 		struct lttng_kernel_event_recorder *event_recorder)
 {
-	struct lttng_event_enabler_common *base_enabler = lttng_event_enabler_as_enabler(
+	struct lttng_event_enabler_common *base_enabler = lttng_event_recorder_enabler_as_enabler(
 		event_enabler);
 
 	if (base_enabler->event_param.instrumentation != event_recorder->priv->parent.instrumentation)
@@ -2114,7 +2114,7 @@ struct lttng_enabler_ref *lttng_enabler_ref(
 }
 
 static
-void lttng_create_tracepoint_event_if_missing(struct lttng_event_enabler *event_enabler)
+void lttng_create_tracepoint_event_if_missing(struct lttng_event_recorder_enabler *event_enabler)
 {
 	struct lttng_kernel_session *session = event_enabler->chan->parent.session;
 	struct lttng_kernel_probe_desc *probe_desc;
@@ -2137,7 +2137,7 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_enabler *event_
 
 			desc = probe_desc->event_desc[i];
 			if (!lttng_desc_match_enabler(desc,
-					lttng_event_enabler_as_enabler(event_enabler)))
+					lttng_event_recorder_enabler_as_enabler(event_enabler)))
 				continue;
 
 			/*
@@ -2225,7 +2225,7 @@ void lttng_create_tracepoint_event_notifier_if_missing(struct lttng_event_notifi
 }
 
 static
-void lttng_create_syscall_event_if_missing(struct lttng_event_enabler *event_enabler)
+void lttng_create_syscall_event_if_missing(struct lttng_event_recorder_enabler *event_enabler)
 {
 	int ret;
 
@@ -2250,7 +2250,7 @@ void lttng_create_syscall_event_notifier_if_missing(struct lttng_event_notifier_
  * Should be called with sessions mutex held.
  */
 static
-void lttng_create_event_if_missing(struct lttng_event_enabler *event_enabler)
+void lttng_create_event_if_missing(struct lttng_event_recorder_enabler *event_enabler)
 {
 	switch (event_enabler->parent.event_param.instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
@@ -2273,11 +2273,11 @@ void lttng_create_event_if_missing(struct lttng_event_enabler *event_enabler)
  * Should be called with sessions mutex held.
  */
 static
-int lttng_event_enabler_ref_events(struct lttng_event_enabler *event_enabler)
+int lttng_event_enabler_ref_events(struct lttng_event_recorder_enabler *event_enabler)
 {
 	struct lttng_kernel_channel_buffer *chan = event_enabler->chan;
 	struct lttng_kernel_session *session = event_enabler->chan->parent.session;
-	struct lttng_event_enabler_common *base_enabler = lttng_event_enabler_as_enabler(event_enabler);
+	struct lttng_event_enabler_common *base_enabler = lttng_event_recorder_enabler_as_enabler(event_enabler);
 	struct lttng_kernel_event_recorder_private *event_recorder_priv;
 
 	if (base_enabler->event_param.instrumentation == LTTNG_KERNEL_ABI_SYSCALL &&
@@ -2305,7 +2305,7 @@ int lttng_event_enabler_ref_events(struct lttng_event_enabler *event_enabler)
 		if (!lttng_event_enabler_match_event(event_enabler, event_recorder))
 			continue;
 		enabler_ref = lttng_enabler_ref(&event_recorder_priv->parent.enablers_ref_head,
-			lttng_event_enabler_as_enabler(event_enabler));
+			lttng_event_recorder_enabler_as_enabler(event_enabler));
 		if (!enabler_ref) {
 			/*
 			 * If no backward ref, create it.
@@ -2314,7 +2314,7 @@ int lttng_event_enabler_ref_events(struct lttng_event_enabler *event_enabler)
 			enabler_ref = kzalloc(sizeof(*enabler_ref), GFP_KERNEL);
 			if (!enabler_ref)
 				return -ENOMEM;
-			enabler_ref->ref = lttng_event_enabler_as_enabler(event_enabler);
+			enabler_ref->ref = lttng_event_recorder_enabler_as_enabler(event_enabler);
 			list_add(&enabler_ref->node,
 				&event_recorder_priv->parent.enablers_ref_head);
 		}
@@ -2325,7 +2325,7 @@ int lttng_event_enabler_ref_events(struct lttng_event_enabler *event_enabler)
 		lttng_enabler_link_bytecode(event_recorder_priv->parent.desc,
 			lttng_static_ctx,
 			&event_recorder_priv->parent.filter_bytecode_runtime_head,
-			&lttng_event_enabler_as_enabler(event_enabler)->filter_bytecode_head);
+			&lttng_event_recorder_enabler_as_enabler(event_enabler)->filter_bytecode_head);
 	}
 	return 0;
 }
@@ -2472,12 +2472,12 @@ int lttng_fix_pending_event_notifiers(void)
 	return 0;
 }
 
-struct lttng_event_enabler *lttng_event_enabler_create(
+struct lttng_event_recorder_enabler *lttng_event_recorder_enabler_create(
 		enum lttng_enabler_format_type format_type,
 		struct lttng_kernel_abi_event *event_param,
 		struct lttng_kernel_channel_buffer *chan)
 {
-	struct lttng_event_enabler *event_enabler;
+	struct lttng_event_recorder_enabler *event_enabler;
 
 	event_enabler = kzalloc(sizeof(*event_enabler), GFP_KERNEL);
 	if (!event_enabler)
@@ -2494,7 +2494,7 @@ struct lttng_event_enabler *lttng_event_enabler_create(
 }
 
 void lttng_event_enabler_session_add(struct lttng_kernel_session *session,
-		struct lttng_event_enabler *event_enabler)
+		struct lttng_event_recorder_enabler *event_enabler)
 {
 	mutex_lock(&sessions_mutex);
 	list_add(&event_enabler->node, &session->priv->enablers_head);
@@ -2503,19 +2503,19 @@ void lttng_event_enabler_session_add(struct lttng_kernel_session *session,
 	mutex_unlock(&sessions_mutex);
 }
 
-int lttng_event_enabler_enable(struct lttng_event_enabler *event_enabler)
+int lttng_event_enabler_enable(struct lttng_event_recorder_enabler *event_enabler)
 {
 	mutex_lock(&sessions_mutex);
-	lttng_event_enabler_as_enabler(event_enabler)->enabled = 1;
+	lttng_event_recorder_enabler_as_enabler(event_enabler)->enabled = 1;
 	lttng_session_lazy_sync_event_enablers(event_enabler->chan->parent.session);
 	mutex_unlock(&sessions_mutex);
 	return 0;
 }
 
-int lttng_event_enabler_disable(struct lttng_event_enabler *event_enabler)
+int lttng_event_enabler_disable(struct lttng_event_recorder_enabler *event_enabler)
 {
 	mutex_lock(&sessions_mutex);
-	lttng_event_enabler_as_enabler(event_enabler)->enabled = 0;
+	lttng_event_recorder_enabler_as_enabler(event_enabler)->enabled = 0;
 	lttng_session_lazy_sync_event_enablers(event_enabler->chan->parent.session);
 	mutex_unlock(&sessions_mutex);
 	return 0;
@@ -2554,12 +2554,12 @@ error_free:
 	return ret;
 }
 
-int lttng_event_enabler_attach_filter_bytecode(struct lttng_event_enabler *event_enabler,
+int lttng_event_enabler_attach_filter_bytecode(struct lttng_event_recorder_enabler *event_enabler,
 		struct lttng_kernel_abi_filter_bytecode __user *bytecode)
 {
 	int ret;
 	ret = lttng_enabler_attach_filter_bytecode(
-		lttng_event_enabler_as_enabler(event_enabler), bytecode);
+		lttng_event_recorder_enabler_as_enabler(event_enabler), bytecode);
 	if (ret)
 		goto error;
 
@@ -2594,9 +2594,9 @@ void lttng_enabler_destroy(struct lttng_event_enabler_common *enabler)
 	}
 }
 
-void lttng_event_enabler_destroy(struct lttng_event_enabler *event_enabler)
+void lttng_event_enabler_destroy(struct lttng_event_recorder_enabler *event_enabler)
 {
-	lttng_enabler_destroy(lttng_event_enabler_as_enabler(event_enabler));
+	lttng_enabler_destroy(lttng_event_recorder_enabler_as_enabler(event_enabler));
 
 	if (event_enabler->published)
 		list_del(&event_enabler->node);
@@ -2741,7 +2741,7 @@ void lttng_event_notifier_enabler_destroy(
 static
 void lttng_session_sync_event_enablers(struct lttng_kernel_session *session)
 {
-	struct lttng_event_enabler *event_enabler;
+	struct lttng_event_recorder_enabler *event_enabler;
 	struct lttng_kernel_event_recorder_private *event_recorder_priv;
 
 	list_for_each_entry(event_enabler, &session->priv->enablers_head, node)

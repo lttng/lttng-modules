@@ -1887,17 +1887,17 @@ int lttng_abi_create_event(struct file *channel_file,
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_SYSCALL:
 	{
-		struct lttng_event_enabler *event_enabler;
+		struct lttng_event_recorder_enabler *event_enabler;
 
 		if (strutils_is_star_glob_pattern(event_param->name)) {
 			/*
 			 * If the event name is a star globbing pattern,
 			 * we create the special star globbing enabler.
 			 */
-			event_enabler = lttng_event_enabler_create(LTTNG_ENABLER_FORMAT_STAR_GLOB,
+			event_enabler = lttng_event_recorder_enabler_create(LTTNG_ENABLER_FORMAT_STAR_GLOB,
 				event_param, channel);
 		} else {
-			event_enabler = lttng_event_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
+			event_enabler = lttng_event_recorder_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
 				event_param, channel);
 		}
 		if (event_enabler)
@@ -1913,9 +1913,9 @@ int lttng_abi_create_event(struct file *channel_file,
 	case LTTNG_KERNEL_ABI_UPROBE:
 	{
 		struct lttng_kernel_event_recorder *event;
-		struct lttng_event_enabler *event_enabler;
+		struct lttng_event_recorder_enabler *event_enabler;
 
-		event_enabler = lttng_event_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
+		event_enabler = lttng_event_recorder_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
 				event_param, channel);
 		if (!event_enabler) {
 			ret = -ENOMEM;
@@ -2700,7 +2700,7 @@ long lttng_event_recorder_event_ioctl(struct file *file, unsigned int cmd, unsig
 static
 long lttng_event_recorder_enabler_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	struct lttng_event_enabler *event_enabler = file->private_data;
+	struct lttng_event_recorder_enabler *event_enabler = file->private_data;
 
 	switch (cmd) {
 	case LTTNG_KERNEL_ABI_OLD_CONTEXT:
@@ -2743,7 +2743,7 @@ int lttng_event_recorder_event_release(struct inode *inode, struct file *file)
 static
 int lttng_event_recorder_enabler_release(struct inode *inode, struct file *file)
 {
-	struct lttng_event_enabler *event_enabler = file->private_data;
+	struct lttng_event_recorder_enabler *event_enabler = file->private_data;
 
 	if (event_enabler)
 		fput(event_enabler->chan->priv->parent.file);

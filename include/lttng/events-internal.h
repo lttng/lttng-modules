@@ -239,7 +239,7 @@ struct lttng_event_enabler_common {
 	uint64_t user_token;		/* User-provided token. */
 };
 
-struct lttng_event_enabler {
+struct lttng_event_recorder_enabler {
 	struct lttng_event_enabler_common parent;
 	struct list_head node;		/* per-session list of enablers */
 	bool published;			/* published in per-session list. */
@@ -587,10 +587,10 @@ int lttng_kernel_interpret_event_filter(const struct lttng_kernel_event_common *
 		void *event_filter_ctx);
 
 static inline
-struct lttng_event_enabler_common *lttng_event_enabler_as_enabler(
-		struct lttng_event_enabler *event_enabler)
+struct lttng_event_enabler_common *lttng_event_recorder_enabler_as_enabler(
+		struct lttng_event_recorder_enabler *event_recorder_enabler)
 {
-	return &event_enabler->parent;
+	return &event_recorder_enabler->parent;
 }
 
 static inline
@@ -779,16 +779,16 @@ int lttng_cpuhp_perf_counter_dead(unsigned int cpu,
 }
 #endif
 
-struct lttng_event_enabler *lttng_event_enabler_create(
+struct lttng_event_recorder_enabler *lttng_event_recorder_enabler_create(
 		enum lttng_enabler_format_type format_type,
 		struct lttng_kernel_abi_event *event_param,
 		struct lttng_kernel_channel_buffer *chan);
 void lttng_event_enabler_session_add(struct lttng_kernel_session *session,
-		struct lttng_event_enabler *event_enabler);
-void lttng_event_enabler_destroy(struct lttng_event_enabler *event_enabler);
+		struct lttng_event_recorder_enabler *event_enabler);
+void lttng_event_enabler_destroy(struct lttng_event_recorder_enabler *event_enabler);
 
-int lttng_event_enabler_enable(struct lttng_event_enabler *event_enabler);
-int lttng_event_enabler_disable(struct lttng_event_enabler *event_enabler);
+int lttng_event_enabler_enable(struct lttng_event_recorder_enabler *event_enabler);
+int lttng_event_enabler_disable(struct lttng_event_recorder_enabler *event_enabler);
 struct lttng_event_notifier_enabler *lttng_event_notifier_enabler_create(
 		struct lttng_event_notifier_group *event_notifier_group,
 		enum lttng_enabler_format_type format_type,
@@ -799,7 +799,7 @@ int lttng_event_notifier_enabler_enable(
 int lttng_event_notifier_enabler_disable(
 		struct lttng_event_notifier_enabler *event_notifier_enabler);
 
-int lttng_event_enabler_attach_filter_bytecode(struct lttng_event_enabler *event_enabler,
+int lttng_event_enabler_attach_filter_bytecode(struct lttng_event_recorder_enabler *event_enabler,
 		struct lttng_kernel_abi_filter_bytecode __user *bytecode);
 int lttng_event_notifier_enabler_attach_filter_bytecode(
 		struct lttng_event_notifier_enabler *event_notifier_enabler,
@@ -817,7 +817,7 @@ void lttng_enabler_link_bytecode(const struct lttng_kernel_event_desc *event_des
 		struct list_head *enabler_bytecode_runtime_head);
 
 #if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
-int lttng_syscalls_register_event(struct lttng_event_enabler *event_enabler);
+int lttng_syscalls_register_event(struct lttng_event_recorder_enabler *event_enabler);
 int lttng_syscalls_unregister_channel(struct lttng_kernel_channel_buffer *chan);
 int lttng_syscalls_destroy_event(struct lttng_kernel_channel_buffer *chan);
 int lttng_syscall_filter_enable_event(
@@ -839,7 +839,7 @@ int lttng_syscall_filter_enable_event_notifier(struct lttng_kernel_event_notifie
 int lttng_syscall_filter_disable_event_notifier(struct lttng_kernel_event_notifier *event_notifier);
 #else
 static inline int lttng_syscalls_register_event(
-		struct lttng_event_enabler *event_enabler)
+		struct lttng_event_recorder_enabler *event_enabler)
 {
 	return -ENOSYS;
 }
@@ -1103,9 +1103,9 @@ struct lttng_kernel_channel_buffer *lttng_global_channel_create(struct lttng_ker
 				       unsigned int read_timer_interval);
 
 void lttng_metadata_channel_destroy(struct lttng_kernel_channel_buffer *chan);
-struct lttng_kernel_event_recorder *lttng_kernel_event_recorder_create(struct lttng_event_enabler *event_enabler,
+struct lttng_kernel_event_recorder *lttng_kernel_event_recorder_create(struct lttng_event_recorder_enabler *event_enabler,
 				const struct lttng_kernel_event_desc *event_desc);
-struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct lttng_event_enabler *event_enabler,
+struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct lttng_event_recorder_enabler *event_enabler,
 				const struct lttng_kernel_event_desc *event_desc);
 struct lttng_kernel_event_recorder *lttng_event_compat_old_create(struct lttng_kernel_channel_buffer *chan,
 		struct lttng_kernel_abi_old_event *old_event_param,

@@ -488,8 +488,8 @@ struct lttng_kernel_syscall_table *get_syscall_table_from_enabler(struct lttng_e
 	switch (event_enabler->enabler_type) {
 	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
 	{
-		struct lttng_event_enabler *event_recorder_enabler =
-			container_of(event_enabler, struct lttng_event_enabler, parent);
+		struct lttng_event_recorder_enabler *event_recorder_enabler =
+			container_of(event_enabler, struct lttng_event_recorder_enabler, parent);
 		return &event_recorder_enabler->chan->priv->parent.syscall_table;
 	}
 	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
@@ -530,7 +530,7 @@ struct lttng_kernel_syscall_table *get_syscall_table_from_event(struct lttng_ker
  */
 static
 int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *table, size_t table_len,
-	struct hlist_head *chan_table, struct lttng_event_enabler *syscall_event_enabler,
+	struct hlist_head *chan_table, struct lttng_event_recorder_enabler *syscall_event_enabler,
 	enum sc_type type)
 {
 	struct lttng_kernel_syscall_table *syscall_table = get_syscall_table_from_enabler(&syscall_event_enabler->parent);
@@ -541,7 +541,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 	/* Allocate events for each syscall matching enabler, insert into table */
 	for (i = 0; i < table_len; i++) {
 		const struct lttng_kernel_event_desc *desc = table[i].desc;
-		struct lttng_event_enabler *event_enabler;
+		struct lttng_event_recorder_enabler *event_enabler;
 		struct lttng_kernel_abi_event ev;
 		struct lttng_kernel_event_recorder_private *event_recorder_priv;
 		struct lttng_kernel_event_recorder *event_recorder;
@@ -553,7 +553,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 			continue;
 		}
 		if (lttng_desc_match_enabler(desc,
-				lttng_event_enabler_as_enabler(syscall_event_enabler)) <= 0)
+				lttng_event_recorder_enabler_as_enabler(syscall_event_enabler)) <= 0)
 			continue;
 		/*
 		 * Check if already created.
@@ -592,7 +592,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1);
 		ev.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
-		event_enabler = lttng_event_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev, chan);
+		event_enabler = lttng_event_recorder_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev, chan);
 		if (!event_enabler) {
 			return -ENOMEM;
 		}
@@ -616,7 +616,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 /*
  * Should be called with sessions lock held.
  */
-int lttng_syscalls_register_event(struct lttng_event_enabler *syscall_event_enabler)
+int lttng_syscalls_register_event(struct lttng_event_recorder_enabler *syscall_event_enabler)
 {
 	struct lttng_kernel_syscall_table *syscall_table = get_syscall_table_from_enabler(&syscall_event_enabler->parent);
 	struct lttng_kernel_abi_event ev;
@@ -657,7 +657,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *syscall_event_enab
 		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___syscall_entry_unknown;
 		struct lttng_kernel_event_recorder *event_recorder;
-		struct lttng_event_enabler *event_enabler;
+		struct lttng_event_recorder_enabler *event_enabler;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
@@ -665,7 +665,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *syscall_event_enab
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
 		ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
-		event_enabler = lttng_event_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev, syscall_event_enabler->chan);
+		event_enabler = lttng_event_recorder_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev, syscall_event_enabler->chan);
 		if (!event_enabler) {
 			return -ENOMEM;
 		}
@@ -682,7 +682,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *syscall_event_enab
 		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___compat_syscall_entry_unknown;
 		struct lttng_kernel_event_recorder *event_recorder;
-		struct lttng_event_enabler *event_enabler;
+		struct lttng_event_recorder_enabler *event_enabler;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
@@ -690,7 +690,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *syscall_event_enab
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
 		ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
-		event_enabler = lttng_event_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev, syscall_event_enabler->chan);
+		event_enabler = lttng_event_recorder_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev, syscall_event_enabler->chan);
 		if (!event_enabler) {
 			return -ENOMEM;
 		}
@@ -707,7 +707,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *syscall_event_enab
 		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___compat_syscall_exit_unknown;
 		struct lttng_kernel_event_recorder *event_recorder;
-		struct lttng_event_enabler *event_enabler;
+		struct lttng_event_recorder_enabler *event_enabler;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
@@ -715,7 +715,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *syscall_event_enab
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
 		ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
-		event_enabler = lttng_event_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev, syscall_event_enabler->chan);
+		event_enabler = lttng_event_recorder_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev, syscall_event_enabler->chan);
 		if (!event_enabler) {
 			return -ENOMEM;
 		}
@@ -732,7 +732,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *syscall_event_enab
 		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___syscall_exit_unknown;
 		struct lttng_kernel_event_recorder *event_recorder;
-		struct lttng_event_enabler *event_enabler;
+		struct lttng_event_recorder_enabler *event_enabler;
 
 		memset(&ev, 0, sizeof(ev));
 		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
@@ -740,7 +740,7 @@ int lttng_syscalls_register_event(struct lttng_event_enabler *syscall_event_enab
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 		ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
 		ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
-		event_enabler = lttng_event_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev, syscall_event_enabler->chan);
+		event_enabler = lttng_event_recorder_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev, syscall_event_enabler->chan);
 		if (!event_enabler) {
 			return -ENOMEM;
 		}
