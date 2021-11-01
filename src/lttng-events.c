@@ -71,7 +71,7 @@ static void lttng_event_enabler_sync(struct lttng_event_enabler_common *event_en
 
 static void _lttng_event_destroy(struct lttng_kernel_event_common *event);
 static void _lttng_channel_destroy(struct lttng_kernel_channel_buffer *chan);
-static int _lttng_event_unregister(struct lttng_kernel_event_recorder *event);
+static int _lttng_event_recorder_unregister(struct lttng_kernel_event_recorder *event);
 static int _lttng_event_notifier_unregister(struct lttng_kernel_event_notifier *event_notifier);
 static
 int _lttng_event_metadata_statedump(struct lttng_kernel_session *session,
@@ -364,7 +364,7 @@ void lttng_session_destroy(struct lttng_kernel_session *session)
 		WARN_ON(ret);
 	}
 	list_for_each_entry(event_recorder_priv, &session->priv->events, node) {
-		ret = _lttng_event_unregister(event_recorder_priv->pub);
+		ret = _lttng_event_recorder_unregister(event_recorder_priv->pub);
 		WARN_ON(ret);
 	}
 	synchronize_trace();	/* Wait for in-flight events to complete */
@@ -1425,7 +1425,7 @@ struct lttng_kernel_event_notifier *lttng_event_notifier_create(
 
 /* Only used for tracepoints for now. */
 static
-void register_event(struct lttng_kernel_event_recorder *event_recorder)
+void register_event_recorder(struct lttng_kernel_event_recorder *event_recorder)
 {
 	const struct lttng_kernel_event_desc *desc;
 	int ret = -EINVAL;
@@ -1467,7 +1467,7 @@ void register_event(struct lttng_kernel_event_recorder *event_recorder)
 /*
  * Only used internally at session destruction.
  */
-int _lttng_event_unregister(struct lttng_kernel_event_recorder *event_recorder)
+int _lttng_event_recorder_unregister(struct lttng_kernel_event_recorder *event_recorder)
 {
 	struct lttng_kernel_event_common_private *event_priv = &event_recorder->priv->parent;
 	const struct lttng_kernel_event_desc *desc;
@@ -2774,9 +2774,9 @@ void lttng_session_sync_event_enablers(struct lttng_kernel_session *session)
 		 * state.
 		 */
 		if (enabled) {
-			register_event(event_recorder);
+			register_event_recorder(event_recorder);
 		} else {
-			_lttng_event_unregister(event_recorder);
+			_lttng_event_recorder_unregister(event_recorder);
 		}
 
 		/* Check if has enablers without bytecode enabled */
