@@ -369,7 +369,7 @@ void lttng_session_destroy(struct lttng_kernel_session *session)
 	}
 	synchronize_trace();	/* Wait for in-flight events to complete */
 	list_for_each_entry(chan_priv, &session->priv->chan, node) {
-		ret = lttng_syscalls_destroy_event(chan_priv->pub);
+		ret = lttng_syscalls_destroy_channel(chan_priv->pub);
 		WARN_ON(ret);
 	}
 	list_for_each_entry_safe(event_recorder_enabler, tmp_event_recorder_enabler,

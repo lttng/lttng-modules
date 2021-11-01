@@ -811,7 +811,7 @@ void lttng_enabler_link_bytecode(const struct lttng_kernel_event_desc *event_des
 #if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
 int lttng_syscalls_register_event(struct lttng_event_recorder_enabler *event_enabler);
 int lttng_syscalls_unregister_channel(struct lttng_kernel_channel_buffer *chan);
-int lttng_syscalls_destroy_event(struct lttng_kernel_channel_buffer *chan);
+int lttng_syscalls_destroy_channel(struct lttng_kernel_channel_buffer *chan);
 int lttng_syscall_filter_enable_event_recorder(struct lttng_kernel_event_recorder *event_recorder);
 int lttng_syscall_filter_disable_event_recorder(struct lttng_kernel_event_recorder *event_recorder);
 

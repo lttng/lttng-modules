@@ -1170,7 +1170,7 @@ int lttng_syscalls_unregister_channel(struct lttng_kernel_channel_buffer *chan)
 	return 0;
 }
 
-int lttng_syscalls_destroy_event(struct lttng_kernel_channel_buffer *chan)
+int lttng_syscalls_destroy_channel(struct lttng_kernel_channel_buffer *chan)
 {
 	struct lttng_kernel_syscall_table *syscall_table = &chan->priv->parent.syscall_table;
 
