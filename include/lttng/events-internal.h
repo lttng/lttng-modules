@@ -787,17 +787,13 @@ void lttng_event_enabler_session_add(struct lttng_kernel_session *session,
 		struct lttng_event_recorder_enabler *event_enabler);
 void lttng_event_enabler_destroy(struct lttng_event_recorder_enabler *event_enabler);
 
-int lttng_event_enabler_enable(struct lttng_event_recorder_enabler *event_enabler);
-int lttng_event_enabler_disable(struct lttng_event_recorder_enabler *event_enabler);
+int lttng_event_enabler_enable(struct lttng_event_enabler_common *event_enabler);
+int lttng_event_enabler_disable(struct lttng_event_enabler_common *event_enabler);
+
 struct lttng_event_notifier_enabler *lttng_event_notifier_enabler_create(
 		struct lttng_event_notifier_group *event_notifier_group,
 		enum lttng_enabler_format_type format_type,
 		struct lttng_kernel_abi_event_notifier *event_notifier_param);
-
-int lttng_event_notifier_enabler_enable(
-		struct lttng_event_notifier_enabler *event_notifier_enabler);
-int lttng_event_notifier_enabler_disable(
-		struct lttng_event_notifier_enabler *event_notifier_enabler);
 
 int lttng_event_enabler_attach_filter_bytecode(struct lttng_event_enabler_common *event_enabler,
 		struct lttng_kernel_abi_filter_bytecode __user *bytecode);
