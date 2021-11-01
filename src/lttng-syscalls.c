@@ -616,7 +616,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 /*
  * Should be called with sessions lock held.
  */
-int lttng_syscalls_register_event(struct lttng_event_recorder_enabler *syscall_event_enabler)
+int lttng_syscalls_register_event_recorder(struct lttng_event_recorder_enabler *syscall_event_enabler)
 {
 	struct lttng_kernel_syscall_table *syscall_table = get_syscall_table_from_enabler(&syscall_event_enabler->parent);
 	struct lttng_kernel_abi_event ev;

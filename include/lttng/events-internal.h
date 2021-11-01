@@ -809,7 +809,7 @@ void lttng_enabler_link_bytecode(const struct lttng_kernel_event_desc *event_des
 		struct list_head *enabler_bytecode_runtime_head);
 
 #if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
-int lttng_syscalls_register_event(struct lttng_event_recorder_enabler *event_enabler);
+int lttng_syscalls_register_event_recorder(struct lttng_event_recorder_enabler *event_enabler);
 int lttng_syscall_filter_enable_event_recorder(struct lttng_kernel_event_recorder *event_recorder);
 int lttng_syscall_filter_disable_event_recorder(struct lttng_kernel_event_recorder *event_recorder);
 
@@ -826,8 +826,7 @@ int lttng_syscalls_create_matching_event_notifiers(
 int lttng_syscall_filter_enable_event_notifier(struct lttng_kernel_event_notifier *event_notifier);
 int lttng_syscall_filter_disable_event_notifier(struct lttng_kernel_event_notifier *event_notifier);
 #else
-static inline int lttng_syscalls_register_event(
-		struct lttng_event_recorder_enabler *event_enabler)
+static inline int lttng_syscalls_register_event_recorder(struct lttng_event_recorder_enabler *event_enabler)
 {
 	return -ENOSYS;
 }

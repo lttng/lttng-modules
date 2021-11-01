@@ -2243,7 +2243,7 @@ void lttng_create_syscall_event_if_missing(struct lttng_event_recorder_enabler *
 {
 	int ret;
 
-	ret = lttng_syscalls_register_event(event_enabler);
+	ret = lttng_syscalls_register_event_recorder(event_enabler);
 	WARN_ON_ONCE(ret);
 }
 
