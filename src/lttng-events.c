@@ -1442,7 +1442,7 @@ void register_event(struct lttng_kernel_event_recorder *event_recorder)
 		break;
 
 	case LTTNG_KERNEL_ABI_SYSCALL:
-		ret = lttng_syscall_filter_enable_event(event_recorder->chan, event_recorder);
+		ret = lttng_syscall_filter_enable_event_recorder(event_recorder);
 		break;
 
 	case LTTNG_KERNEL_ABI_KPROBE:
@@ -1495,7 +1495,7 @@ int _lttng_event_unregister(struct lttng_kernel_event_recorder *event_recorder)
 		break;
 
 	case LTTNG_KERNEL_ABI_SYSCALL:
-		ret = lttng_syscall_filter_disable_event(event_recorder->chan, event_recorder);
+		ret = lttng_syscall_filter_disable_event_recorder(event_recorder);
 		break;
 
 	case LTTNG_KERNEL_ABI_NOOP:

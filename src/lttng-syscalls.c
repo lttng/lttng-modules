@@ -1329,8 +1329,7 @@ int lttng_syscall_filter_enable(
 	return 0;
 }
 
-int lttng_syscall_filter_enable_event_notifier(
-		struct lttng_kernel_event_notifier *event_notifier)
+int lttng_syscall_filter_enable_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
 {
 	struct lttng_event_notifier_group *group = event_notifier->priv->group;
 	struct lttng_kernel_syscall_table *syscall_table = &group->syscall_table;
@@ -1386,10 +1385,9 @@ end:
 	return ret ;
 }
 
-int lttng_syscall_filter_enable_event(
-		struct lttng_kernel_channel_buffer *channel,
-		struct lttng_kernel_event_recorder *event_recorder)
+int lttng_syscall_filter_enable_event_recorder(struct lttng_kernel_event_recorder *event_recorder)
 {
+	struct lttng_kernel_channel_buffer *channel = event_recorder->chan;
 	struct lttng_kernel_syscall_table *syscall_table = &channel->priv->parent.syscall_table;
 
 	WARN_ON_ONCE(event_recorder->priv->parent.instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
@@ -1401,8 +1399,7 @@ int lttng_syscall_filter_enable_event(
 }
 
 static
-int lttng_syscall_filter_disable(
-		struct lttng_syscall_filter *filter,
+int lttng_syscall_filter_disable(struct lttng_syscall_filter *filter,
 		const char *desc_name, enum lttng_syscall_abi abi,
 		enum lttng_syscall_entryexit entryexit)
 {
@@ -1460,8 +1457,7 @@ int lttng_syscall_filter_disable(
 	return 0;
 }
 
-int lttng_syscall_filter_disable_event_notifier(
-		struct lttng_kernel_event_notifier *event_notifier)
+int lttng_syscall_filter_disable_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
 {
 	struct lttng_event_notifier_group *group = event_notifier->priv->group;
 	struct lttng_kernel_syscall_table *syscall_table = &group->syscall_table;
@@ -1479,10 +1475,9 @@ int lttng_syscall_filter_disable_event_notifier(
 	return 0;
 }
 
-int lttng_syscall_filter_disable_event(
-		struct lttng_kernel_channel_buffer *channel,
-		struct lttng_kernel_event_recorder *event_recorder)
+int lttng_syscall_filter_disable_event_recorder(struct lttng_kernel_event_recorder *event_recorder)
 {
+	struct lttng_kernel_channel_buffer *channel = event_recorder->chan;
 	struct lttng_kernel_syscall_table *syscall_table = &channel->priv->parent.syscall_table;
 
 	return lttng_syscall_filter_disable(syscall_table->sc_filter,
