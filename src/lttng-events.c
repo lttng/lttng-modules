@@ -765,7 +765,7 @@ end:
 	return ret;
 }
 
-struct lttng_kernel_channel_buffer *lttng_channel_create(struct lttng_kernel_session *session,
+struct lttng_kernel_channel_buffer *lttng_channel_buffer_create(struct lttng_kernel_session *session,
 				       const char *transport_name,
 				       void *buf_addr,
 				       size_t subbuf_size, size_t num_subbuf,

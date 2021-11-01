@@ -1071,7 +1071,7 @@ int lttng_event_notifier_group_create_error_counter(
 void lttng_event_notifier_group_destroy(
 		struct lttng_event_notifier_group *event_notifier_group);
 
-struct lttng_kernel_channel_buffer *lttng_channel_create(struct lttng_kernel_session *session,
+struct lttng_kernel_channel_buffer *lttng_channel_buffer_create(struct lttng_kernel_session *session,
 				       const char *transport_name,
 				       void *buf_addr,
 				       size_t subbuf_size, size_t num_subbuf,

@@ -550,7 +550,7 @@ int lttng_abi_create_channel(struct file *session_file,
 	 * We tolerate no failure path after channel creation. It will stay
 	 * invariant for the rest of the session.
 	 */
-	chan = lttng_channel_create(session, transport_name, NULL,
+	chan = lttng_channel_buffer_create(session, transport_name, NULL,
 				  chan_param->subbuf_size,
 				  chan_param->num_subbuf,
 				  chan_param->switch_timer_interval,
