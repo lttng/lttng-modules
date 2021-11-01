@@ -119,25 +119,39 @@ struct lttng_kernel_event_notifier_private {
 
 };
 
+struct lttng_kernel_syscall_table {
+	unsigned int sys_enter_registered:1,
+		sys_exit_registered:1;
+
+	struct hlist_head *syscall_dispatch;		/* for syscall tracing */
+	struct hlist_head *compat_syscall_dispatch;
+	struct hlist_head *syscall_exit_dispatch;	/* for syscall exit tracing */
+	struct hlist_head *compat_syscall_exit_dispatch;
+
+	/*
+	 * Combining all unknown syscall events works as long as they
+	 * are only matched by "all" syscalls enablers, but will require
+	 * a design change when we allow matching by syscall number, for
+	 * instance by allocating sc_tables accomodating NR_syscalls
+	 * entries.
+	 */
+	struct hlist_head unknown_syscall_dispatch;	/* for unknown syscalls */
+	struct hlist_head compat_unknown_syscall_dispatch;
+	struct hlist_head unknown_syscall_exit_dispatch;
+	struct hlist_head compat_unknown_syscall_exit_dispatch;
+
+	struct lttng_syscall_filter *sc_filter;
+	int syscall_all_entry;
+	int syscall_all_exit;
+};
+
 struct lttng_kernel_channel_common_private {
 	struct lttng_kernel_channel_common *pub;
 
 	struct file *file;			/* File associated to channel */
-	unsigned int sys_enter_registered:1,
-		sys_exit_registered:1,
-		tstate:1;			/* Transient enable state */
+	unsigned int tstate:1;			/* Transient enable state */
 
-	struct hlist_head *sc_table;		/* for syscall tracing */
-	struct hlist_head *compat_sc_table;
-	struct hlist_head *sc_exit_table;	/* for syscall exit tracing */
-	struct hlist_head *compat_sc_exit_table;
-	struct hlist_head sc_unknown;		/* for unknown syscalls */
-	struct hlist_head sc_compat_unknown;
-	struct hlist_head sc_exit_unknown;
-	struct hlist_head compat_sc_exit_unknown;
-	struct lttng_syscall_filter *sc_filter;
-	int syscall_all_entry;
-	int syscall_all_exit;
+	struct lttng_kernel_syscall_table syscall_table;
 };
 
 struct lttng_kernel_channel_buffer_private {
@@ -178,6 +192,11 @@ enum lttng_kernel_bytecode_type {
 	LTTNG_KERNEL_BYTECODE_TYPE_CAPTURE,
 };
 
+enum lttng_kernel_event_enabler_type {
+	LTTNG_EVENT_ENABLER_TYPE_RECORDER,
+	LTTNG_EVENT_ENABLER_TYPE_NOTIFIER,
+};
+
 struct lttng_kernel_bytecode_node {
 	enum lttng_kernel_bytecode_type type;
 	struct list_head node;
@@ -208,6 +227,7 @@ struct lttng_kernel_bytecode_runtime {
  * backward reference.
  */
 struct lttng_event_enabler_common {
+	enum lttng_kernel_event_enabler_type enabler_type;
 	enum lttng_enabler_format_type format_type;
 
 	/* head list of struct lttng_kernel_bytecode_node */
@@ -410,25 +430,8 @@ struct lttng_event_notifier_group {
 	struct lttng_kernel_ring_buffer *buf;	/* Ring buffer for event notifier group. */
 	wait_queue_head_t read_wait;
 	struct irq_work wakeup_pending;	/* Pending wakeup irq work. */
-	struct lttng_kernel_event_notifier *sc_unknown;	/* for unknown syscalls */
-	struct lttng_kernel_event_notifier *sc_compat_unknown;
 
-	struct lttng_syscall_filter *sc_filter;
-
-	struct hlist_head *event_notifier_syscall_dispatch;
-	struct hlist_head *event_notifier_compat_syscall_dispatch;
-	struct hlist_head *event_notifier_exit_syscall_dispatch;
-	struct hlist_head *event_notifier_exit_compat_syscall_dispatch;
-
-	struct hlist_head event_notifier_unknown_syscall_dispatch;
-	struct hlist_head event_notifier_compat_unknown_syscall_dispatch;
-	struct hlist_head event_notifier_exit_unknown_syscall_dispatch;
-	struct hlist_head event_notifier_exit_compat_unknown_syscall_dispatch;
-
-	int syscall_all_entry;
-	int syscall_all_exit;
-
-	unsigned int sys_enter_registered:1, sys_exit_registered:1;
+	struct lttng_kernel_syscall_table syscall_table;
 
 	struct lttng_counter *error_counter;
 	size_t error_counter_len;

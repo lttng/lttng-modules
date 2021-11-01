@@ -424,7 +424,7 @@ void lttng_event_notifier_group_destroy(
 
 	irq_work_sync(&event_notifier_group->wakeup_pending);
 
-	kfree(event_notifier_group->sc_filter);
+	kfree(event_notifier_group->syscall_table.sc_filter);
 
 	list_for_each_entry_safe(event_notifier_enabler, tmp_event_notifier_enabler,
 			&event_notifier_group->enablers_head, node)
@@ -2288,10 +2288,10 @@ int lttng_event_enabler_ref_events(struct lttng_event_enabler *event_enabler)
 		enum lttng_kernel_abi_syscall_entryexit entryexit = base_enabler->event_param.u.syscall.entryexit;
 
 		if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRY || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT)
-			WRITE_ONCE(chan->priv->parent.syscall_all_entry, enabled);
+			WRITE_ONCE(chan->priv->parent.syscall_table.syscall_all_entry, enabled);
 
 		if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_EXIT || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT)
-			WRITE_ONCE(chan->priv->parent.syscall_all_exit, enabled);
+			WRITE_ONCE(chan->priv->parent.syscall_table.syscall_all_exit, enabled);
 	}
 
 	/* First ensure that probe events are created for this enabler. */
@@ -2373,10 +2373,10 @@ int lttng_event_notifier_enabler_ref_event_notifiers(
 		enum lttng_kernel_abi_syscall_entryexit entryexit = base_enabler->event_param.u.syscall.entryexit;
 
 		if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRY || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT)
-			WRITE_ONCE(event_notifier_group->syscall_all_entry, enabled);
+			WRITE_ONCE(event_notifier_group->syscall_table.syscall_all_entry, enabled);
 
 		if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_EXIT || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT)
-			WRITE_ONCE(event_notifier_group->syscall_all_exit, enabled);
+			WRITE_ONCE(event_notifier_group->syscall_table.syscall_all_exit, enabled);
 
 	}
 
@@ -2482,6 +2482,7 @@ struct lttng_event_enabler *lttng_event_enabler_create(
 	event_enabler = kzalloc(sizeof(*event_enabler), GFP_KERNEL);
 	if (!event_enabler)
 		return NULL;
+	event_enabler->parent.enabler_type = LTTNG_EVENT_ENABLER_TYPE_RECORDER;
 	event_enabler->parent.format_type = format_type;
 	INIT_LIST_HEAD(&event_enabler->parent.filter_bytecode_head);
 	memcpy(&event_enabler->parent.event_param, event_param,
@@ -2613,6 +2614,7 @@ struct lttng_event_notifier_enabler *lttng_event_notifier_enabler_create(
 	if (!event_notifier_enabler)
 		return NULL;
 
+	event_notifier_enabler->parent.enabler_type = LTTNG_EVENT_ENABLER_TYPE_NOTIFIER;
 	event_notifier_enabler->parent.format_type = format_type;
 	INIT_LIST_HEAD(&event_notifier_enabler->parent.filter_bytecode_head);
 	INIT_LIST_HEAD(&event_notifier_enabler->capture_bytecode_head);
