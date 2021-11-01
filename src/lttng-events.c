@@ -2554,16 +2554,33 @@ error_free:
 	return ret;
 }
 
-int lttng_event_enabler_attach_filter_bytecode(struct lttng_event_recorder_enabler *event_enabler,
+int lttng_event_enabler_attach_filter_bytecode(struct lttng_event_enabler_common *event_enabler,
 		struct lttng_kernel_abi_filter_bytecode __user *bytecode)
 {
 	int ret;
-	ret = lttng_enabler_attach_filter_bytecode(
-		lttng_event_recorder_enabler_as_enabler(event_enabler), bytecode);
+	ret = lttng_enabler_attach_filter_bytecode(event_enabler, bytecode);
 	if (ret)
 		goto error;
 
-	lttng_session_lazy_sync_event_enablers(event_enabler->chan->parent.session);
+	switch (event_enabler->enabler_type) {
+	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
+	{
+		struct lttng_event_recorder_enabler *event_recorder_enabler =
+			container_of(event_enabler, struct lttng_event_recorder_enabler, parent);
+		lttng_session_lazy_sync_event_enablers(event_recorder_enabler->chan->parent.session);
+		break;
+	}
+	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
+	{
+		struct lttng_event_notifier_enabler *event_notifier_enabler =
+			container_of(event_enabler, struct lttng_event_notifier_enabler, parent);
+		lttng_event_notifier_group_sync_enablers(event_notifier_enabler->group);
+		break;
+	}
+	default:
+		WARN_ON_ONCE(1);
+		return -ENOSYS;
+	}
 	return 0;
 
 error:
@@ -2656,25 +2673,6 @@ int lttng_event_notifier_enabler_disable(
 	lttng_event_notifier_group_sync_enablers(event_notifier_enabler->group);
 	mutex_unlock(&sessions_mutex);
 	return 0;
-}
-
-int lttng_event_notifier_enabler_attach_filter_bytecode(
-		struct lttng_event_notifier_enabler *event_notifier_enabler,
-		struct lttng_kernel_abi_filter_bytecode __user *bytecode)
-{
-	int ret;
-
-	ret = lttng_enabler_attach_filter_bytecode(
-		lttng_event_notifier_enabler_as_enabler(event_notifier_enabler),
-		bytecode);
-	if (ret)
-		goto error;
-
-	lttng_event_notifier_group_sync_enablers(event_notifier_enabler->group);
-	return 0;
-
-error:
-	return ret;
 }
 
 int lttng_event_notifier_enabler_attach_capture_bytecode(

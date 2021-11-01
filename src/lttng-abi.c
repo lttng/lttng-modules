@@ -1991,8 +1991,7 @@ long lttng_event_notifier_enabler_ioctl(struct file *file, unsigned int cmd, uns
 	case LTTNG_KERNEL_ABI_DISABLE:
 		return lttng_event_notifier_enabler_disable(event_notifier_enabler);
 	case LTTNG_KERNEL_ABI_FILTER:
-		return lttng_event_notifier_enabler_attach_filter_bytecode(
-				event_notifier_enabler,
+		return lttng_event_enabler_attach_filter_bytecode(&event_notifier_enabler->parent,
 			(struct lttng_kernel_abi_filter_bytecode __user *) arg);
 	case LTTNG_KERNEL_ABI_CAPTURE:
 		return lttng_event_notifier_enabler_attach_capture_bytecode(
@@ -2720,8 +2719,7 @@ long lttng_event_recorder_enabler_ioctl(struct file *file, unsigned int cmd, uns
 	case LTTNG_KERNEL_ABI_DISABLE:
 		return lttng_event_enabler_disable(event_enabler);
 	case LTTNG_KERNEL_ABI_FILTER:
-		return lttng_event_enabler_attach_filter_bytecode(
-			event_enabler,
+		return lttng_event_enabler_attach_filter_bytecode(&event_enabler->parent,
 			(struct lttng_kernel_abi_filter_bytecode __user *) arg);
 	case LTTNG_KERNEL_ABI_ADD_CALLSITE:
 		return -EINVAL;

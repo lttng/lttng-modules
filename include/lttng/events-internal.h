@@ -799,10 +799,7 @@ int lttng_event_notifier_enabler_enable(
 int lttng_event_notifier_enabler_disable(
 		struct lttng_event_notifier_enabler *event_notifier_enabler);
 
-int lttng_event_enabler_attach_filter_bytecode(struct lttng_event_recorder_enabler *event_enabler,
-		struct lttng_kernel_abi_filter_bytecode __user *bytecode);
-int lttng_event_notifier_enabler_attach_filter_bytecode(
-		struct lttng_event_notifier_enabler *event_notifier_enabler,
+int lttng_event_enabler_attach_filter_bytecode(struct lttng_event_enabler_common *event_enabler,
 		struct lttng_kernel_abi_filter_bytecode __user *bytecode);
 int lttng_event_notifier_enabler_attach_capture_bytecode(
 		struct lttng_event_notifier_enabler *event_notifier_enabler,
