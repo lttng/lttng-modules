@@ -598,7 +598,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 		}
 		event_recorder = _lttng_kernel_event_recorder_create(event_enabler, desc);
 		WARN_ON_ONCE(!event_recorder);
-		lttng_event_enabler_destroy(event_enabler);
+		lttng_event_enabler_destroy(&event_enabler->parent);
 		if (IS_ERR(event_recorder)) {
 			/*
 			 * If something goes wrong in event registration
@@ -670,7 +670,7 @@ int lttng_syscalls_register_event(struct lttng_event_recorder_enabler *syscall_e
 			return -ENOMEM;
 		}
 		event_recorder = _lttng_kernel_event_recorder_create(event_enabler, desc);
-		lttng_event_enabler_destroy(event_enabler);
+		lttng_event_enabler_destroy(&event_enabler->parent);
 		WARN_ON_ONCE(!event_recorder);
 		if (IS_ERR(event_recorder)) {
 			return PTR_ERR(event_recorder);
@@ -696,7 +696,7 @@ int lttng_syscalls_register_event(struct lttng_event_recorder_enabler *syscall_e
 		}
 		event_recorder = _lttng_kernel_event_recorder_create(event_enabler, desc);
 		WARN_ON_ONCE(!event_recorder);
-		lttng_event_enabler_destroy(event_enabler);
+		lttng_event_enabler_destroy(&event_enabler->parent);
 		if (IS_ERR(event_recorder)) {
 			return PTR_ERR(event_recorder);
 		}
@@ -721,7 +721,7 @@ int lttng_syscalls_register_event(struct lttng_event_recorder_enabler *syscall_e
 		}
 		event_recorder = _lttng_kernel_event_recorder_create(event_enabler, desc);
 		WARN_ON_ONCE(!event_recorder);
-		lttng_event_enabler_destroy(event_enabler);
+		lttng_event_enabler_destroy(&event_enabler->parent);
 		if (IS_ERR(event_recorder)) {
 			return PTR_ERR(event_recorder);
 		}
@@ -746,7 +746,7 @@ int lttng_syscalls_register_event(struct lttng_event_recorder_enabler *syscall_e
 		}
 		event_recorder = _lttng_kernel_event_recorder_create(event_enabler, desc);
 		WARN_ON_ONCE(!event_recorder);
-		lttng_event_enabler_destroy(event_enabler);
+		lttng_event_enabler_destroy(&event_enabler->parent);
 		if (IS_ERR(event_recorder)) {
 			return PTR_ERR(event_recorder);
 		}

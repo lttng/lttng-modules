@@ -1927,7 +1927,7 @@ int lttng_abi_create_event(struct file *channel_file,
 		 */
 		event = lttng_kernel_event_recorder_create(event_enabler, NULL);
 		WARN_ON_ONCE(!event);
-		lttng_event_enabler_destroy(event_enabler);
+		lttng_event_enabler_destroy(&event_enabler->parent);
 		if (IS_ERR(event)) {
 			ret = PTR_ERR(event);
 			goto event_error;

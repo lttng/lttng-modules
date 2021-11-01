@@ -66,7 +66,6 @@ static struct kmem_cache *event_notifier_private_cache;
 
 static void lttng_session_lazy_sync_event_enablers(struct lttng_kernel_session *session);
 static void lttng_session_sync_event_enablers(struct lttng_kernel_session *session);
-static void lttng_event_notifier_enabler_destroy(struct lttng_event_notifier_enabler *event_notifier_enabler);
 static void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group *event_notifier_group);
 static void lttng_event_enabler_sync(struct lttng_event_enabler_common *event_enabler);
 
@@ -355,7 +354,7 @@ void lttng_session_destroy(struct lttng_kernel_session *session)
 	struct lttng_kernel_channel_buffer_private *chan_priv, *tmpchan_priv;
 	struct lttng_kernel_event_recorder_private *event_recorder_priv, *tmpevent_recorder_priv;
 	struct lttng_metadata_stream *metadata_stream;
-	struct lttng_event_recorder_enabler *event_enabler, *tmp_event_enabler;
+	struct lttng_event_recorder_enabler *event_recorder_enabler, *tmp_event_recorder_enabler;
 	int ret;
 
 	mutex_lock(&sessions_mutex);
@@ -373,9 +372,9 @@ void lttng_session_destroy(struct lttng_kernel_session *session)
 		ret = lttng_syscalls_destroy_event(chan_priv->pub);
 		WARN_ON(ret);
 	}
-	list_for_each_entry_safe(event_enabler, tmp_event_enabler,
+	list_for_each_entry_safe(event_recorder_enabler, tmp_event_recorder_enabler,
 			&session->priv->enablers_head, node)
-		lttng_event_enabler_destroy(event_enabler);
+		lttng_event_enabler_destroy(&event_recorder_enabler->parent);
 	list_for_each_entry_safe(event_recorder_priv, tmpevent_recorder_priv, &session->priv->events, node)
 		_lttng_event_destroy(&event_recorder_priv->pub->parent);
 	list_for_each_entry_safe(chan_priv, tmpchan_priv, &session->priv->chan, node) {
@@ -429,7 +428,7 @@ void lttng_event_notifier_group_destroy(
 
 	list_for_each_entry_safe(event_notifier_enabler, tmp_event_notifier_enabler,
 			&event_notifier_group->enablers_head, node)
-		lttng_event_notifier_enabler_destroy(event_notifier_enabler);
+		lttng_event_enabler_destroy(&event_notifier_enabler->parent);
 
 	list_for_each_entry_safe(event_notifier_priv, tmpevent_notifier_priv,
 			&event_notifier_group->event_notifiers_head, node)
@@ -2593,13 +2592,33 @@ void lttng_enabler_destroy(struct lttng_event_enabler_common *enabler)
 	}
 }
 
-void lttng_event_enabler_destroy(struct lttng_event_recorder_enabler *event_enabler)
+void lttng_event_enabler_destroy(struct lttng_event_enabler_common *event_enabler)
 {
-	lttng_enabler_destroy(lttng_event_recorder_enabler_as_enabler(event_enabler));
+	switch (event_enabler->enabler_type) {
+	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
+	{
+		struct lttng_event_recorder_enabler *event_recorder_enabler =
+			container_of(event_enabler, struct lttng_event_recorder_enabler, parent);
 
-	if (event_enabler->published)
-		list_del(&event_enabler->node);
-	kfree(event_enabler);
+		lttng_enabler_destroy(event_enabler);
+		if (event_recorder_enabler->published)
+			list_del(&event_recorder_enabler->node);
+		kfree(event_recorder_enabler);
+		break;
+	}
+	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
+	{
+		struct lttng_event_notifier_enabler *event_notifier_enabler =
+			container_of(event_enabler, struct lttng_event_notifier_enabler, parent);
+
+		list_del(&event_notifier_enabler->node);
+		lttng_enabler_destroy(event_enabler);
+		kfree(event_notifier_enabler);
+		break;
+	}
+	default:
+		WARN_ON_ONCE(1);
+	}
 }
 
 struct lttng_event_notifier_enabler *lttng_event_notifier_enabler_create(
@@ -2697,20 +2716,6 @@ error_free:
 	lttng_kvfree(bytecode_node);
 end:
 	return ret;
-}
-
-static
-void lttng_event_notifier_enabler_destroy(
-		struct lttng_event_notifier_enabler *event_notifier_enabler)
-{
-	if (!event_notifier_enabler) {
-		return;
-	}
-
-	list_del(&event_notifier_enabler->node);
-
-	lttng_enabler_destroy(lttng_event_notifier_enabler_as_enabler(event_notifier_enabler));
-	kfree(event_notifier_enabler);
 }
 
 /*
