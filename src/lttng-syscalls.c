@@ -812,7 +812,6 @@ int lttng_syscalls_register_event_notifier(
 {
 	struct lttng_event_notifier_group *group = event_notifier_enabler->group;
 	struct lttng_kernel_syscall_table *syscall_table = &group->syscall_table;
-	unsigned int i;
 	int ret = 0;
 
 	wrapper_vmalloc_sync_mappings();
@@ -821,26 +820,12 @@ int lttng_syscalls_register_event_notifier(
 		syscall_table->syscall_dispatch = kzalloc(sizeof(struct hlist_head) * sc_table.len, GFP_KERNEL);
 		if (!syscall_table->syscall_dispatch)
 			return -ENOMEM;
-
-		/* Initialize all list_head */
-		for (i = 0; i < sc_table.len; i++)
-			INIT_HLIST_HEAD(&syscall_table->syscall_dispatch[i]);
-
-		/* Init the unknown syscall notifier list. */
-		INIT_HLIST_HEAD(&syscall_table->unknown_syscall_dispatch);
 	}
 
 	if (!syscall_table->syscall_exit_dispatch) {
 		syscall_table->syscall_exit_dispatch = kzalloc(sizeof(struct hlist_head) * sc_table.len, GFP_KERNEL);
 		if (!syscall_table->syscall_exit_dispatch)
 			return -ENOMEM;
-
-		/* Initialize all list_head */
-		for (i = 0; i < sc_table.len; i++)
-			INIT_HLIST_HEAD(&syscall_table->syscall_exit_dispatch[i]);
-
-		/* Init the unknown exit syscall notifier list. */
-		INIT_HLIST_HEAD(&syscall_table->unknown_syscall_exit_dispatch);
 	}
 
 #ifdef CONFIG_COMPAT
@@ -848,13 +833,6 @@ int lttng_syscalls_register_event_notifier(
 		syscall_table->compat_syscall_dispatch = kzalloc(sizeof(struct hlist_head) * compat_sc_table.len, GFP_KERNEL);
 		if (!syscall_table->compat_syscall_dispatch)
 			return -ENOMEM;
-
-		/* Initialize all list_head */
-		for (i = 0; i < compat_sc_table.len; i++)
-			INIT_HLIST_HEAD(&syscall_table->compat_syscall_dispatch[i]);
-
-		/* Init the unknown syscall notifier list. */
-		INIT_HLIST_HEAD(&syscall_table->compat_unknown_syscall_dispatch);
 	}
 
 	if (!syscall_table->compat_syscall_exit_dispatch) {
@@ -863,13 +841,6 @@ int lttng_syscalls_register_event_notifier(
 					GFP_KERNEL);
 		if (!syscall_table->compat_syscall_exit_dispatch)
 			return -ENOMEM;
-
-		/* Initialize all list_head */
-		for (i = 0; i < compat_sc_exit_table.len; i++)
-			INIT_HLIST_HEAD(&syscall_table->compat_syscall_exit_dispatch[i]);
-
-		/* Init the unknown exit syscall notifier list. */
-		INIT_HLIST_HEAD(&syscall_table->compat_unknown_syscall_exit_dispatch);
 	}
 #endif
 
