@@ -2238,20 +2238,11 @@ void lttng_create_tracepoint_event_notifier_if_missing(struct lttng_event_notifi
 }
 
 static
-void lttng_create_syscall_event_if_missing(struct lttng_event_recorder_enabler *event_enabler)
+void lttng_create_syscall_event_if_missing(struct lttng_event_enabler_common *event_enabler)
 {
 	int ret;
 
-	ret = lttng_syscalls_register_event(&event_enabler->parent);
-	WARN_ON_ONCE(ret);
-}
-
-static
-void lttng_create_syscall_event_notifier_if_missing(struct lttng_event_notifier_enabler *event_notifier_enabler)
-{
-	int ret;
-
-	ret = lttng_syscalls_register_event(&event_notifier_enabler->parent);
+	ret = lttng_syscalls_register_event(event_enabler);
 	WARN_ON_ONCE(ret);
 }
 
@@ -2269,7 +2260,7 @@ void lttng_create_event_if_missing(struct lttng_event_recorder_enabler *event_en
 		break;
 
 	case LTTNG_KERNEL_ABI_SYSCALL:
-		lttng_create_syscall_event_if_missing(event_enabler);
+		lttng_create_syscall_event_if_missing(&event_enabler->parent);
 		break;
 
 	default:
@@ -2355,7 +2346,7 @@ void lttng_create_event_notifier_if_missing(struct lttng_event_notifier_enabler 
 		break;
 
 	case LTTNG_KERNEL_ABI_SYSCALL:
-		lttng_create_syscall_event_notifier_if_missing(event_notifier_enabler);
+		lttng_create_syscall_event_if_missing(&event_notifier_enabler->parent);
 		break;
 
 	default:
