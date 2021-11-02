@@ -881,8 +881,8 @@ int create_unknown_event_notifier(
 	/*
 	 * Check if already created.
 	 */
-	head = utils_borrow_hash_table_bucket(group->event_notifiers_ht.table,
-		LTTNG_EVENT_NOTIFIER_HT_SIZE, desc->event_name);
+	head = utils_borrow_hash_table_bucket(group->events_ht.table,
+		LTTNG_EVENT_HT_SIZE, desc->event_name);
 	lttng_hlist_for_each_entry(event_notifier_priv, head, hlist) {
 		if (event_notifier_priv->parent.desc == desc &&
 				event_notifier_priv->parent.user_token == base_enabler->user_token)
@@ -950,8 +950,8 @@ static int create_matching_event_notifiers(
 		/*
 		 * Check if already created.
 		 */
-		head = utils_borrow_hash_table_bucket(group->event_notifiers_ht.table,
-			LTTNG_EVENT_NOTIFIER_HT_SIZE, desc->event_name);
+		head = utils_borrow_hash_table_bucket(group->events_ht.table,
+			LTTNG_EVENT_HT_SIZE, desc->event_name);
 		lttng_hlist_for_each_entry(event_notifier_priv, head, hlist) {
 			if (event_notifier_priv->parent.desc == desc
 				&& event_notifier_priv->parent.user_token == event_notifier_enabler->parent.user_token)

@@ -321,8 +321,8 @@ struct lttng_event_notifier_group *lttng_event_notifier_group_create(void)
 
 	INIT_LIST_HEAD(&event_notifier_group->enablers_head);
 	INIT_LIST_HEAD(&event_notifier_group->event_notifiers_head);
-	for (i = 0; i < LTTNG_EVENT_NOTIFIER_HT_SIZE; i++)
-		INIT_HLIST_HEAD(&event_notifier_group->event_notifiers_ht.table[i]);
+	for (i = 0; i < LTTNG_EVENT_HT_SIZE; i++)
+		INIT_HLIST_HEAD(&event_notifier_group->events_ht.table[i]);
 
 	list_add(&event_notifier_group->node, &event_notifier_groups);
 
@@ -1190,8 +1190,8 @@ struct lttng_kernel_event_notifier *_lttng_event_notifier_create(
 		goto type_error;
 	}
 
-	head = utils_borrow_hash_table_bucket(event_notifier_group->event_notifiers_ht.table,
-		LTTNG_EVENT_NOTIFIER_HT_SIZE, event_name);
+	head = utils_borrow_hash_table_bucket(event_notifier_group->events_ht.table,
+		LTTNG_EVENT_HT_SIZE, event_name);
 	lttng_hlist_for_each_entry(event_notifier_priv, head, hlist) {
 		WARN_ON_ONCE(!event_notifier_priv->parent.desc);
 		if (!strncmp(event_notifier_priv->parent.desc->event_name, event_name,
@@ -2143,8 +2143,8 @@ void lttng_create_tracepoint_event_notifier_if_missing(struct lttng_event_notifi
 			 * Check if already created.
 			 */
 			head = utils_borrow_hash_table_bucket(
-				event_notifier_group->event_notifiers_ht.table,
-				LTTNG_EVENT_NOTIFIER_HT_SIZE, desc->event_name);
+				event_notifier_group->events_ht.table,
+				LTTNG_EVENT_HT_SIZE, desc->event_name);
 			lttng_hlist_for_each_entry(event_notifier_priv, head, hlist) {
 				if (event_notifier_priv->parent.desc == desc
 						&& event_notifier_priv->parent.user_token == event_notifier_enabler->parent.user_token)

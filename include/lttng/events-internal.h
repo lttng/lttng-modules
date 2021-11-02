@@ -410,11 +410,11 @@ struct lttng_counter {
 	struct lttng_counter_ops *ops;
 };
 
-#define LTTNG_EVENT_NOTIFIER_HT_BITS		12
-#define LTTNG_EVENT_NOTIFIER_HT_SIZE		(1U << LTTNG_EVENT_NOTIFIER_HT_BITS)
+#define LTTNG_EVENT_HT_BITS		12
+#define LTTNG_EVENT_HT_SIZE		(1U << LTTNG_EVENT_HT_BITS)
 
-struct lttng_event_notifier_ht {
-	struct hlist_head table[LTTNG_EVENT_NOTIFIER_HT_SIZE];
+struct lttng_event_ht {
+	struct hlist_head table[LTTNG_EVENT_HT_SIZE];
 };
 
 struct lttng_event_notifier_group {
@@ -423,7 +423,7 @@ struct lttng_event_notifier_group {
 	struct list_head node;		/* event notifier group list */
 	struct list_head enablers_head; /* List of enablers */
 	struct list_head event_notifiers_head; /* List of event notifier */
-	struct lttng_event_notifier_ht event_notifiers_ht; /* Hash table of event notifiers */
+	struct lttng_event_ht events_ht; /* Hash table of event notifiers */
 	struct lttng_kernel_channel_buffer_ops *ops;
 	struct lttng_transport *transport;
 	struct lttng_kernel_ring_buffer_channel *chan;		/* Ring buffer channel for event notifier group. */
@@ -449,13 +449,6 @@ struct lttng_counter_transport {
 	struct module *owner;
 	struct list_head node;
 	struct lttng_counter_ops ops;
-};
-
-#define LTTNG_EVENT_HT_BITS		12
-#define LTTNG_EVENT_HT_SIZE		(1U << LTTNG_EVENT_HT_BITS)
-
-struct lttng_event_ht {
-	struct hlist_head table[LTTNG_EVENT_HT_SIZE];
 };
 
 struct lttng_kernel_session_private {
