@@ -1497,10 +1497,9 @@ const struct file_operations lttng_syscall_list_fops = {
 /*
  * A syscall is enabled if it is traced for either entry or exit.
  */
-long lttng_channel_syscall_mask(struct lttng_kernel_channel_buffer *channel,
+long lttng_syscall_table_get_active_mask(struct lttng_kernel_syscall_table *syscall_table,
 		struct lttng_kernel_abi_syscall_mask __user *usyscall_mask)
 {
-	struct lttng_kernel_syscall_table *syscall_table = &channel->priv->parent.syscall_table;
 	uint32_t len, sc_tables_len, bitmask_len;
 	int ret = 0, bit;
 	char *tmp_mask;

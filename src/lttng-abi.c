@@ -2532,7 +2532,7 @@ old_ctx_end:
 	case LTTNG_KERNEL_ABI_DISABLE:
 		return lttng_channel_disable(&channel->parent);
 	case LTTNG_KERNEL_ABI_SYSCALL_MASK:
-		return lttng_channel_syscall_mask(channel,
+		return lttng_syscall_table_get_active_mask(&channel->priv->parent.syscall_table,
 			(struct lttng_kernel_abi_syscall_mask __user *) arg);
 	default:
 		return -ENOIOCTLCMD;
