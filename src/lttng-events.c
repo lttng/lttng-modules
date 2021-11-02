@@ -1438,32 +1438,40 @@ struct lttng_kernel_event_notifier *lttng_event_notifier_create(
 
 /* Only used for tracepoints for now. */
 static
-void register_event_recorder(struct lttng_kernel_event_recorder *event_recorder)
+void register_event(struct lttng_kernel_event_common *event)
 {
 	const struct lttng_kernel_event_desc *desc;
 	int ret = -EINVAL;
 
-	if (event_recorder->priv->parent.registered)
+	if (event->priv->registered)
 		return;
 
-	desc = event_recorder->priv->parent.desc;
-	switch (event_recorder->priv->parent.instrumentation) {
+	desc = event->priv->desc;
+	switch (event->priv->instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		ret = lttng_wrapper_tracepoint_probe_register(desc->event_kname,
 						  desc->tp_class->probe_callback,
-						  &event_recorder->parent);
+						  event);
 		break;
 
 	case LTTNG_KERNEL_ABI_SYSCALL:
-		ret = lttng_syscall_filter_enable_event(&event_recorder->parent);
+		ret = lttng_syscall_filter_enable_event(event);
 		break;
 
 	case LTTNG_KERNEL_ABI_KPROBE:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
-		lttng_fallthrough;
-	case LTTNG_KERNEL_ABI_KRETPROBE:
 		ret = 0;
+
+	case LTTNG_KERNEL_ABI_KRETPROBE:
+		switch (event->type) {
+		case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+			ret = 0;
+			break;
+		case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
+			WARN_ON_ONCE(1);
+			break;
+		}
 		break;
 
 	case LTTNG_KERNEL_ABI_FUNCTION:
@@ -1474,7 +1482,7 @@ void register_event_recorder(struct lttng_kernel_event_recorder *event_recorder)
 		WARN_ON_ONCE(1);
 	}
 	if (!ret)
-		event_recorder->priv->parent.registered = 1;
+		event->priv->registered = 1;
 }
 
 /*
@@ -1528,47 +1536,6 @@ int _lttng_event_recorder_unregister(struct lttng_kernel_event_recorder *event_r
 	if (!ret)
 		event_priv->registered = 0;
 	return ret;
-}
-
-/* Only used for tracepoints for now. */
-static
-void register_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
-{
-	const struct lttng_kernel_event_desc *desc;
-	int ret = -EINVAL;
-
-	if (event_notifier->priv->parent.registered)
-		return;
-
-	desc = event_notifier->priv->parent.desc;
-	switch (event_notifier->priv->parent.instrumentation) {
-	case LTTNG_KERNEL_ABI_TRACEPOINT:
-		ret = lttng_wrapper_tracepoint_probe_register(desc->event_kname,
-						  desc->tp_class->probe_callback,
-						  &event_notifier->parent);
-		break;
-
-	case LTTNG_KERNEL_ABI_SYSCALL:
-		ret = lttng_syscall_filter_enable_event(&event_notifier->parent);
-		break;
-
-	case LTTNG_KERNEL_ABI_KPROBE:
-		lttng_fallthrough;
-	case LTTNG_KERNEL_ABI_UPROBE:
-		ret = 0;
-		break;
-
-	case LTTNG_KERNEL_ABI_KRETPROBE:
-		lttng_fallthrough;
-	case LTTNG_KERNEL_ABI_FUNCTION:
-		lttng_fallthrough;
-	case LTTNG_KERNEL_ABI_NOOP:
-		lttng_fallthrough;
-	default:
-		WARN_ON_ONCE(1);
-	}
-	if (!ret)
-		event_notifier->priv->parent.registered = 1;
 }
 
 static
@@ -2776,7 +2743,7 @@ void lttng_session_sync_event_enablers(struct lttng_kernel_session *session)
 		 * state.
 		 */
 		if (enabled) {
-			register_event_recorder(event_recorder);
+			register_event(&event_recorder->parent);
 		} else {
 			_lttng_event_recorder_unregister(event_recorder);
 		}
@@ -2866,7 +2833,7 @@ void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group 
 		 */
 		if (enabled) {
 			if (!event_notifier_priv->parent.registered)
-				register_event_notifier(event_notifier);
+				register_event(&event_notifier->parent);
 		} else {
 			if (event_notifier_priv->parent.registered)
 				_lttng_event_notifier_unregister(event_notifier);
