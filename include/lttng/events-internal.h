@@ -920,19 +920,15 @@ int lttng_event_add_callsite(struct lttng_kernel_event_common *event,
 
 #ifdef CONFIG_UPROBES
 int lttng_uprobes_register_event(const char *name,
-	int fd, struct lttng_kernel_event_recorder *event);
+	int fd, struct lttng_kernel_event_common *event);
 int lttng_uprobes_event_add_callsite(struct lttng_kernel_event_common *event,
 	struct lttng_kernel_abi_event_callsite __user *callsite);
-void lttng_uprobes_unregister_event(struct lttng_kernel_event_recorder *event);
-void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_recorder *event);
-int lttng_uprobes_register_event_notifier(const char *name,
-	int fd, struct lttng_kernel_event_notifier *event_notifier);
-void lttng_uprobes_unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier);
-void lttng_uprobes_destroy_event_notifier_private(struct lttng_kernel_event_notifier *event_notifier);
+void lttng_uprobes_unregister_event(struct lttng_kernel_event_common *event);
+void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_common *event);
 #else
 static inline
 int lttng_uprobes_register_event(const char *name,
-	int fd, struct lttng_kernel_event_recorder *event)
+	int fd, struct lttng_kernel_event_common *event)
 {
 	return -ENOSYS;
 }
@@ -945,29 +941,12 @@ int lttng_uprobes_event_add_callsite(struct lttng_kernel_event_common *event,
 }
 
 static inline
-void lttng_uprobes_unregister_event(struct lttng_kernel_event_recorder *event)
+void lttng_uprobes_unregister_event(struct lttng_kernel_event_common *event)
 {
 }
 
 static inline
-void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_recorder *event)
-{
-}
-
-static inline
-int lttng_uprobes_register_event_notifier(const char *name,
-	int fd, struct lttng_kernel_event_notifier *event_notifier)
-{
-	return -ENOSYS;
-}
-
-static inline
-void lttng_uprobes_unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
-{
-}
-
-static inline
-void lttng_uprobes_destroy_event_notifier_private(struct lttng_kernel_event_notifier *event_notifier)
+void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_common *event)
 {
 }
 #endif

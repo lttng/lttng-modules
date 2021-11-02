@@ -1114,7 +1114,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 
 		ret = lttng_uprobes_register_event(event_param->name,
 				event_param->u.uprobe.fd,
-				event_recorder);
+				&event_recorder->parent);
 		if (ret)
 			goto register_error;
 		ret = try_module_get(event_recorder->priv->parent.desc->owner);
@@ -1321,10 +1321,9 @@ struct lttng_kernel_event_notifier *_lttng_event_notifier_create(
 		 */
 		smp_wmb();
 
-		ret = lttng_uprobes_register_event_notifier(
-				event_notifier_param->event.name,
+		ret = lttng_uprobes_register_event(event_notifier_param->event.name,
 				event_notifier_param->event.u.uprobe.fd,
-				event_notifier);
+				&event_notifier->parent);
 		if (ret)
 			goto register_error;
 		ret = try_module_get(event_notifier->priv->parent.desc->owner);
@@ -1517,7 +1516,7 @@ int _lttng_event_recorder_unregister(struct lttng_kernel_event_recorder *event_r
 		break;
 
 	case LTTNG_KERNEL_ABI_UPROBE:
-		lttng_uprobes_unregister_event(event_recorder);
+		lttng_uprobes_unregister_event(&event_recorder->parent);
 		ret = 0;
 		break;
 
@@ -1596,7 +1595,7 @@ int _lttng_event_notifier_unregister(
 		break;
 
 	case LTTNG_KERNEL_ABI_UPROBE:
-		lttng_uprobes_unregister_event_notifier(event_notifier);
+		lttng_uprobes_unregister_event(&event_notifier->parent);
 		ret = 0;
 		break;
 
@@ -1659,7 +1658,7 @@ void _lttng_event_destroy(struct lttng_kernel_event_common *event)
 
 		case LTTNG_KERNEL_ABI_UPROBE:
 			module_put(event_priv->desc->owner);
-			lttng_uprobes_destroy_event_private(event_recorder);
+			lttng_uprobes_destroy_event_private(&event_recorder->parent);
 			break;
 
 		case LTTNG_KERNEL_ABI_FUNCTION:
@@ -1694,7 +1693,7 @@ void _lttng_event_destroy(struct lttng_kernel_event_common *event)
 
 		case LTTNG_KERNEL_ABI_UPROBE:
 			module_put(event_notifier->priv->parent.desc->owner);
-			lttng_uprobes_destroy_event_notifier_private(event_notifier);
+			lttng_uprobes_destroy_event_private(&event_notifier->parent);
 			break;
 
 		case LTTNG_KERNEL_ABI_KRETPROBE:

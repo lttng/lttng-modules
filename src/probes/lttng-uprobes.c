@@ -113,7 +113,7 @@ static const struct lttng_kernel_tracepoint_class tp_class = {
  * Create event description.
  */
 static
-int lttng_create_uprobe_event(const char *name, struct lttng_kernel_event_recorder *event_recorder)
+int lttng_create_uprobe_event(const char *name, struct lttng_kernel_event_common *event)
 {
 	struct lttng_kernel_event_desc *desc;
 	int ret;
@@ -128,35 +128,7 @@ int lttng_create_uprobe_event(const char *name, struct lttng_kernel_event_record
 		goto error_str;
 	}
 	desc->owner = THIS_MODULE;
-	event_recorder->priv->parent.desc = desc;
-
-	return 0;
-
-error_str:
-	kfree(desc);
-	return ret;
-}
-
-/*
- * Create event_notifier description.
- */
-static
-int lttng_create_uprobe_event_notifier(const char *name, struct lttng_kernel_event_notifier *event_notifier)
-{
-	struct lttng_kernel_event_desc *desc;
-	int ret;
-
-	desc = kzalloc(sizeof(*desc), GFP_KERNEL);
-	if (!desc)
-		return -ENOMEM;
-	desc->tp_class = &tp_class;
-	desc->event_name = kstrdup(name, GFP_KERNEL);
-	if (!desc->event_name) {
-		ret = -ENOMEM;
-		goto error_str;
-	}
-	desc->owner = THIS_MODULE;
-	event_notifier->priv->parent.desc = desc;
+	event->priv->desc = desc;
 
 	return 0;
 
@@ -276,50 +248,27 @@ inode_error:
 	return ret;
 }
 
-int lttng_uprobes_register_event(const char *name, int fd, struct lttng_kernel_event_recorder *event_recorder)
+int lttng_uprobes_register_event(const char *name, int fd, struct lttng_kernel_event_common *event)
 {
 	int ret = 0;
 
-	ret = lttng_create_uprobe_event(name, event_recorder);
+	ret = lttng_create_uprobe_event(name, event);
 	if (ret)
 		goto error;
 
-	ret = lttng_uprobes_register(&event_recorder->priv->parent.u.uprobe, fd);
+	ret = lttng_uprobes_register(&event->priv->u.uprobe, fd);
 	if (ret)
 		goto register_error;
 
 	return 0;
 
 register_error:
-	kfree(event_recorder->priv->parent.desc->event_name);
-	kfree(event_recorder->priv->parent.desc);
+	kfree(event->priv->desc->event_name);
+	kfree(event->priv->desc);
 error:
 	return ret;
 }
 EXPORT_SYMBOL_GPL(lttng_uprobes_register_event);
-
-int lttng_uprobes_register_event_notifier(const char *name, int fd,
-		struct lttng_kernel_event_notifier *event_notifier)
-{
-	int ret = 0;
-
-	ret = lttng_create_uprobe_event_notifier(name, event_notifier);
-	if (ret)
-		goto error;
-
-	ret = lttng_uprobes_register(&event_notifier->priv->parent.u.uprobe, fd);
-	if (ret)
-		goto register_error;
-
-	return 0;
-
-register_error:
-	kfree(event_notifier->priv->parent.desc->event_name);
-	kfree(event_notifier->priv->parent.desc);
-error:
-	return ret;
-}
-EXPORT_SYMBOL_GPL(lttng_uprobes_register_event_notifier);
 
 static
 void lttng_uprobes_unregister(struct inode *inode, struct list_head *head)
@@ -337,23 +286,17 @@ void lttng_uprobes_unregister(struct inode *inode, struct list_head *head)
 	}
 }
 
-void lttng_uprobes_unregister_event(struct lttng_kernel_event_recorder *event_recorder)
+void lttng_uprobes_unregister_event(struct lttng_kernel_event_common *event)
 {
-	lttng_uprobes_unregister(event_recorder->priv->parent.u.uprobe.inode, &event_recorder->priv->parent.u.uprobe.head);
+	lttng_uprobes_unregister(event->priv->u.uprobe.inode, &event->priv->u.uprobe.head);
 }
 EXPORT_SYMBOL_GPL(lttng_uprobes_unregister_event);
 
-void lttng_uprobes_unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
+void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_common *event)
 {
-	lttng_uprobes_unregister(event_notifier->priv->parent.u.uprobe.inode, &event_notifier->priv->parent.u.uprobe.head);
-}
-EXPORT_SYMBOL_GPL(lttng_uprobes_unregister_event_notifier);
-
-void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_recorder *event_recorder)
-{
-	iput(event_recorder->priv->parent.u.uprobe.inode);
-	kfree(event_recorder->priv->parent.desc->event_name);
-	kfree(event_recorder->priv->parent.desc);
+	iput(event->priv->u.uprobe.inode);
+	kfree(event->priv->desc->event_name);
+	kfree(event->priv->desc);
 }
 EXPORT_SYMBOL_GPL(lttng_uprobes_destroy_event_private);
 
