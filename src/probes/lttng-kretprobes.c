@@ -132,7 +132,7 @@ static const struct lttng_kernel_tracepoint_class tp_class = {
  * Create event description
  */
 static
-int lttng_create_kprobe_event(const char *name, struct lttng_kernel_event_recorder *event_recorder,
+int lttng_create_kprobe_event(const char *name, struct lttng_kernel_event_common *event,
 			      enum lttng_kretprobe_type type)
 {
 	struct lttng_kernel_event_desc *desc;
@@ -164,7 +164,7 @@ int lttng_create_kprobe_event(const char *name, struct lttng_kernel_event_record
 	desc->event_name = alloc_name;
 	desc->tp_class = &tp_class;
 	desc->owner = THIS_MODULE;
-	event_recorder->priv->parent.desc = desc;
+	event->priv->desc = desc;
 
 	return 0;
 
@@ -177,8 +177,8 @@ int lttng_kretprobes_register(const char *name,
 			   const char *symbol_name,
 			   uint64_t offset,
 			   uint64_t addr,
-			   struct lttng_kernel_event_recorder *event_recorder_entry,
-			   struct lttng_kernel_event_recorder *event_recorder_exit)
+			   struct lttng_kernel_event_common *event_entry,
+			   struct lttng_kernel_event_common *event_exit)
 {
 	int ret;
 	struct lttng_krp *lttng_krp;
@@ -187,10 +187,10 @@ int lttng_kretprobes_register(const char *name,
 	if (symbol_name[0] == '\0')
 		symbol_name = NULL;
 
-	ret = lttng_create_kprobe_event(name, event_recorder_entry, EVENT_ENTRY);
+	ret = lttng_create_kprobe_event(name, event_entry, EVENT_ENTRY);
 	if (ret)
 		goto error;
-	ret = lttng_create_kprobe_event(name, event_recorder_exit, EVENT_EXIT);
+	ret = lttng_create_kprobe_event(name, event_exit, EVENT_EXIT);
 	if (ret)
 		goto event_exit_error;
 	lttng_krp = kzalloc(sizeof(*lttng_krp), GFP_KERNEL);
@@ -206,21 +206,18 @@ int lttng_kretprobes_register(const char *name,
 			ret = -ENOMEM;
 			goto name_error;
 		}
-		lttng_krp->krp.kp.symbol_name =
-			alloc_symbol;
-		event_recorder_entry->priv->parent.u.kretprobe.symbol_name =
-			alloc_symbol;
-		event_recorder_exit->priv->parent.u.kretprobe.symbol_name =
-			alloc_symbol;
+		lttng_krp->krp.kp.symbol_name = alloc_symbol;
+		event_entry->priv->u.kretprobe.symbol_name = alloc_symbol;
+		event_exit->priv->u.kretprobe.symbol_name = alloc_symbol;
 	}
 	lttng_krp->krp.kp.offset = offset;
 	lttng_krp->krp.kp.addr = (void *) (unsigned long) addr;
 
 	/* Allow probe handler to find event structures */
-	lttng_krp->event[EVENT_ENTRY] = &event_recorder_entry->parent;
-	lttng_krp->event[EVENT_EXIT] = &event_recorder_exit->parent;
-	event_recorder_entry->priv->parent.u.kretprobe.lttng_krp = lttng_krp;
-	event_recorder_exit->priv->parent.u.kretprobe.lttng_krp = lttng_krp;
+	lttng_krp->event[EVENT_ENTRY] = event_entry;
+	lttng_krp->event[EVENT_EXIT] = event_exit;
+	event_entry->priv->u.kretprobe.lttng_krp = lttng_krp;
+	event_exit->priv->u.kretprobe.lttng_krp = lttng_krp;
 
 	/*
 	 * Both events must be unregistered before the kretprobe is
@@ -248,11 +245,11 @@ register_error:
 name_error:
 	kfree(lttng_krp);
 krp_error:
-	kfree(event_recorder_exit->priv->parent.desc->event_name);
-	kfree(event_recorder_exit->priv->parent.desc);
+	kfree(event_exit->priv->desc->event_name);
+	kfree(event_exit->priv->desc);
 event_exit_error:
-	kfree(event_recorder_entry->priv->parent.desc->event_name);
-	kfree(event_recorder_entry->priv->parent.desc);
+	kfree(event_entry->priv->desc->event_name);
+	kfree(event_entry->priv->desc);
 error:
 	return ret;
 }
@@ -266,9 +263,9 @@ void _lttng_kretprobes_unregister_release(struct kref *kref)
 	unregister_kretprobe(&lttng_krp->krp);
 }
 
-void lttng_kretprobes_unregister(struct lttng_kernel_event_recorder *event_recorder)
+void lttng_kretprobes_unregister(struct lttng_kernel_event_common *event)
 {
-	kref_put(&event_recorder->priv->parent.u.kretprobe.lttng_krp->kref_register,
+	kref_put(&event->priv->u.kretprobe.lttng_krp->kref_register,
 		_lttng_kretprobes_unregister_release);
 }
 EXPORT_SYMBOL_GPL(lttng_kretprobes_unregister);
@@ -281,11 +278,11 @@ void _lttng_kretprobes_release(struct kref *kref)
 	kfree(lttng_krp->krp.kp.symbol_name);
 }
 
-void lttng_kretprobes_destroy_private(struct lttng_kernel_event_recorder *event_recorder)
+void lttng_kretprobes_destroy_private(struct lttng_kernel_event_common *event)
 {
-	kfree(event_recorder->priv->parent.desc->event_name);
-	kfree(event_recorder->priv->parent.desc);
-	kref_put(&event_recorder->priv->parent.u.kretprobe.lttng_krp->kref_alloc,
+	kfree(event->priv->desc->event_name);
+	kfree(event->priv->desc);
+	kref_put(&event->priv->u.kretprobe.lttng_krp->kref_alloc,
 		_lttng_kretprobes_release);
 }
 EXPORT_SYMBOL_GPL(lttng_kretprobes_destroy_private);

@@ -1036,7 +1036,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 				event_param->u.kretprobe.symbol_name,
 				event_param->u.kretprobe.offset,
 				event_param->u.kretprobe.addr,
-				event_recorder, event_recorder_return);
+				&event_recorder->parent, &event_recorder_return->parent);
 		if (ret) {
 			kmem_cache_free(event_recorder_private_cache, event_recorder_return_priv);
 			kmem_cache_free(event_recorder_cache, event_recorder_return);
@@ -1503,7 +1503,7 @@ int _lttng_event_recorder_unregister(struct lttng_kernel_event_recorder *event_r
 		break;
 
 	case LTTNG_KERNEL_ABI_KRETPROBE:
-		lttng_kretprobes_unregister(event_recorder);
+		lttng_kretprobes_unregister(&event_recorder->parent);
 		ret = 0;
 		break;
 
@@ -1650,7 +1650,7 @@ void _lttng_event_destroy(struct lttng_kernel_event_common *event)
 
 		case LTTNG_KERNEL_ABI_KRETPROBE:
 			module_put(event_priv->desc->owner);
-			lttng_kretprobes_destroy_private(event_recorder);
+			lttng_kretprobes_destroy_private(&event_recorder->parent);
 			break;
 
 		case LTTNG_KERNEL_ABI_SYSCALL:

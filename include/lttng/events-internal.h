@@ -931,10 +931,10 @@ int lttng_kretprobes_register(const char *name,
 		const char *symbol_name,
 		uint64_t offset,
 		uint64_t addr,
-		struct lttng_kernel_event_recorder *event_entry,
-		struct lttng_kernel_event_recorder *event_exit);
-void lttng_kretprobes_unregister(struct lttng_kernel_event_recorder *event);
-void lttng_kretprobes_destroy_private(struct lttng_kernel_event_recorder *event);
+		struct lttng_kernel_event_common *event_entry,
+		struct lttng_kernel_event_common *event_exit);
+void lttng_kretprobes_unregister(struct lttng_kernel_event_common *event);
+void lttng_kretprobes_destroy_private(struct lttng_kernel_event_common *event);
 int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_common *event,
 	int enable);
 #else
@@ -943,19 +943,19 @@ int lttng_kretprobes_register(const char *name,
 		const char *symbol_name,
 		uint64_t offset,
 		uint64_t addr,
-		struct lttng_kernel_event_recorder *event_entry,
-		struct lttng_kernel_event_recorder *event_exit)
+		struct lttng_kernel_event_common *event_entry,
+		struct lttng_kernel_event_common *event_exit)
 {
 	return -ENOSYS;
 }
 
 static inline
-void lttng_kretprobes_unregister(struct lttng_kernel_event_recorder *event)
+void lttng_kretprobes_unregister(struct lttng_kernel_event_common *event)
 {
 }
 
 static inline
-void lttng_kretprobes_destroy_private(struct lttng_kernel_event_recorder *event)
+void lttng_kretprobes_destroy_private(struct lttng_kernel_event_common *event)
 {
 }
 
