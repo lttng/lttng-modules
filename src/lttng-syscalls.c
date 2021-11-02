@@ -536,9 +536,9 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 	struct hlist_head *chan_table, struct lttng_event_recorder_enabler *syscall_event_enabler,
 	enum sc_type type)
 {
+	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&syscall_event_enabler->parent);
 	struct lttng_kernel_syscall_table *syscall_table = get_syscall_table_from_enabler(&syscall_event_enabler->parent);
 	struct lttng_kernel_channel_buffer *chan = syscall_event_enabler->chan;
-	struct lttng_kernel_session *session = chan->parent.session;
 	unsigned int i;
 
 	/* Allocate events for each syscall matching enabler, insert into table */
@@ -561,9 +561,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 		/*
 		 * Check if already created.
 		 */
-		head = utils_borrow_hash_table_bucket(
-			session->priv->events_ht.table, LTTNG_EVENT_HT_SIZE,
-			desc->event_name);
+		head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, desc->event_name);
 		lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
 			if (event_priv->desc == desc
 				&& get_syscall_table_from_event(event_priv->pub) == syscall_table)
@@ -832,6 +830,7 @@ int create_unknown_event_notifier(
 		struct lttng_event_notifier_enabler *event_notifier_enabler,
 		enum sc_type type)
 {
+	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&event_notifier_enabler->parent);
 	struct lttng_kernel_event_common_private *event_priv;
 	struct lttng_kernel_event_notifier *event_notifier;
 	const struct lttng_kernel_event_desc *desc;
@@ -881,8 +880,7 @@ int create_unknown_event_notifier(
 	/*
 	 * Check if already created.
 	 */
-	head = utils_borrow_hash_table_bucket(group->events_ht.table,
-		LTTNG_EVENT_HT_SIZE, desc->event_name);
+	head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, desc->event_name);
 	lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
 		if (event_priv->desc == desc &&
 				event_priv->user_token == base_enabler->user_token)
@@ -926,6 +924,7 @@ static int create_matching_event_notifiers(
 		const struct trace_syscall_entry *table,
 		size_t table_len, enum sc_type type)
 {
+	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&syscall_event_notifier_enabler->parent);
 	struct lttng_event_notifier_group *group = syscall_event_notifier_enabler->group;
 	const struct lttng_kernel_event_desc *desc;
 	uint64_t user_token = syscall_event_notifier_enabler->parent.user_token;
@@ -955,8 +954,7 @@ static int create_matching_event_notifiers(
 		/*
 		 * Check if already created.
 		 */
-		head = utils_borrow_hash_table_bucket(group->events_ht.table,
-			LTTNG_EVENT_HT_SIZE, desc->event_name);
+		head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, desc->event_name);
 		lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
 			if (event_priv->desc == desc
 				&& event_priv->user_token == syscall_event_notifier_enabler->parent.user_token)

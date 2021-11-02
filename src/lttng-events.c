@@ -875,10 +875,10 @@ void _lttng_metadata_channel_hangup(struct lttng_metadata_stream *stream)
 struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct lttng_event_recorder_enabler *event_enabler,
 				const struct lttng_kernel_event_desc *event_desc)
 {
+	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&event_enabler->parent);
 	struct lttng_kernel_channel_buffer *chan = event_enabler->chan;
 	struct lttng_kernel_abi_event *event_param = &event_enabler->parent.event_param;
 	enum lttng_kernel_abi_instrumentation itype = event_param->instrumentation;
-	struct lttng_kernel_session *session = chan->parent.session;
 	struct lttng_kernel_event_recorder *event_recorder;
 	struct lttng_kernel_event_recorder_private *event_recorder_priv;
 	struct lttng_kernel_event_common_private *event_priv;
@@ -916,8 +916,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 		goto type_error;
 	}
 
-	head = utils_borrow_hash_table_bucket(session->priv->events_ht.table,
-		LTTNG_EVENT_HT_SIZE, event_name);
+	head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, event_name);
 	lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
 		event_recorder_priv = container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
 
@@ -1157,6 +1156,7 @@ full:
 struct lttng_kernel_event_notifier *_lttng_event_notifier_create(struct lttng_event_notifier_enabler *event_enabler,
 		const struct lttng_kernel_event_desc *event_desc)
 {
+	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&event_enabler->parent);
 	struct lttng_event_notifier_group *event_notifier_group = event_enabler->group;
 	struct lttng_kernel_abi_event *event_param = &event_enabler->parent.event_param;
 	uint64_t token = event_enabler->parent.user_token;
@@ -1194,8 +1194,7 @@ struct lttng_kernel_event_notifier *_lttng_event_notifier_create(struct lttng_ev
 		goto type_error;
 	}
 
-	head = utils_borrow_hash_table_bucket(event_notifier_group->events_ht.table,
-		LTTNG_EVENT_HT_SIZE, event_name);
+	head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, event_name);
 	lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
 		event_notifier_priv = container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
 
@@ -2061,7 +2060,7 @@ struct lttng_enabler_ref *lttng_enabler_ref(
 static
 void lttng_create_tracepoint_event_if_missing(struct lttng_event_recorder_enabler *event_enabler)
 {
-	struct lttng_kernel_session *session = event_enabler->chan->parent.session;
+	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&event_enabler->parent);
 	struct lttng_kernel_probe_desc *probe_desc;
 	const struct lttng_kernel_event_desc *desc;
 	int i;
@@ -2089,9 +2088,7 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_recorder_enable
 			/*
 			 * Check if already created.
 			 */
-			head = utils_borrow_hash_table_bucket(
-				session->priv->events_ht.table, LTTNG_EVENT_HT_SIZE,
-				desc->event_name);
+			head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, desc->event_name);
 			lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
 				event_recorder_priv = container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
 				if (event_priv->desc == desc
@@ -2117,7 +2114,7 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_recorder_enable
 static
 void lttng_create_tracepoint_event_notifier_if_missing(struct lttng_event_notifier_enabler *event_notifier_enabler)
 {
-	struct lttng_event_notifier_group *event_notifier_group = event_notifier_enabler->group;
+	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&event_notifier_enabler->parent);
 	struct lttng_kernel_probe_desc *probe_desc;
 	const struct lttng_kernel_event_desc *desc;
 	int i;
@@ -2144,8 +2141,7 @@ void lttng_create_tracepoint_event_notifier_if_missing(struct lttng_event_notifi
 			/*
 			 * Check if already created.
 			 */
-			head = utils_borrow_hash_table_bucket(
-				event_notifier_group->events_ht.table,
+			head = utils_borrow_hash_table_bucket(events_ht->table,
 				LTTNG_EVENT_HT_SIZE, desc->event_name);
 			lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
 				if (event_priv->desc == desc
