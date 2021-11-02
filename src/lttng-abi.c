@@ -2132,15 +2132,17 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 			 * we create the special star globbing enabler.
 			 */
 			enabler = lttng_event_notifier_enabler_create(
-					event_notifier_group,
 					LTTNG_ENABLER_FORMAT_STAR_GLOB,
-					event_notifier_param);
+					event_notifier_param,
+					event_notifier_group);
 		} else {
 			enabler = lttng_event_notifier_enabler_create(
-					event_notifier_group,
 					LTTNG_ENABLER_FORMAT_NAME,
-					event_notifier_param);
+					event_notifier_param,
+					event_notifier_group);
 		}
+		if (enabler)
+			lttng_event_notifier_enabler_group_add(event_notifier_group, enabler);
 		priv = enabler;
 		break;
 	}
@@ -2152,18 +2154,17 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 	case LTTNG_KERNEL_ABI_UPROBE:
 	{
 		struct lttng_kernel_event_notifier *event_notifier;
+		struct lttng_event_notifier_enabler *event_notifier_enabler;
 
-		/*
-		 * We tolerate no failure path after event notifier creation.
-		 * It will stay invariant for the rest of the session.
-		 */
-		event_notifier = lttng_event_notifier_create(NULL,
-				event_notifier_param->event.token,
-				event_notifier_param->error_counter_index,
-				event_notifier_group,
-				event_notifier_param,
-				event_notifier_param->event.instrumentation);
+		event_notifier_enabler = lttng_event_notifier_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
+				event_notifier_param, event_notifier_group);
+		if (!event_notifier_enabler) {
+			ret = -ENOMEM;
+			goto event_notifier_error;
+		}
+		event_notifier = lttng_event_notifier_create(event_notifier_enabler, NULL);
 		WARN_ON_ONCE(!event_notifier);
+		lttng_event_enabler_destroy(&event_notifier_enabler->parent);
 		if (IS_ERR(event_notifier)) {
 			ret = PTR_ERR(event_notifier);
 			goto event_notifier_error;

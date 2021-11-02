@@ -250,6 +250,7 @@ struct lttng_event_notifier_enabler {
 	struct lttng_event_enabler_common parent;
 	uint64_t error_counter_index;
 	struct list_head node;	/* List of event_notifier enablers */
+	bool published;		/* published in group list. */
 	struct lttng_event_notifier_group *group;
 
 	/* head list of struct lttng_kernel_bytecode_node */
@@ -780,9 +781,11 @@ void lttng_event_enabler_session_add(struct lttng_kernel_session *session,
 		struct lttng_event_recorder_enabler *event_enabler);
 
 struct lttng_event_notifier_enabler *lttng_event_notifier_enabler_create(
-		struct lttng_event_notifier_group *event_notifier_group,
 		enum lttng_enabler_format_type format_type,
-		struct lttng_kernel_abi_event_notifier *event_notifier_param);
+		struct lttng_kernel_abi_event_notifier *event_notifier_param,
+		struct lttng_event_notifier_group *event_notifier_group);
+void lttng_event_notifier_enabler_group_add(struct lttng_event_notifier_group *event_notifier_group,
+		struct lttng_event_notifier_enabler *event_notifier_enabler);
 int lttng_event_notifier_enabler_attach_capture_bytecode(
 		struct lttng_event_notifier_enabler *event_notifier_enabler,
 		struct lttng_kernel_abi_capture_bytecode __user *bytecode);
@@ -1015,20 +1018,10 @@ struct lttng_kernel_event_recorder *lttng_event_compat_old_create(struct lttng_k
 		struct lttng_kernel_abi_old_event *old_event_param,
 		const struct lttng_kernel_event_desc *internal_desc);
 
-struct lttng_kernel_event_notifier *lttng_event_notifier_create(
-				const struct lttng_kernel_event_desc *event_notifier_desc,
-				uint64_t id,
-				uint64_t error_counter_idx,
-				struct lttng_event_notifier_group *event_notifier_group,
-				struct lttng_kernel_abi_event_notifier *event_notifier_param,
-				enum lttng_kernel_abi_instrumentation itype);
-struct lttng_kernel_event_notifier *_lttng_event_notifier_create(
-				const struct lttng_kernel_event_desc *event_notifier_desc,
-				uint64_t id,
-				uint64_t error_counter_idx,
-				struct lttng_event_notifier_group *event_notifier_group,
-				struct lttng_kernel_abi_event_notifier *event_notifier_param,
-				enum lttng_kernel_abi_instrumentation itype);
+struct lttng_kernel_event_notifier *lttng_event_notifier_create(struct lttng_event_notifier_enabler *event_enabler,
+				const struct lttng_kernel_event_desc *event_notifier_desc);
+struct lttng_kernel_event_notifier *_lttng_event_notifier_create(struct lttng_event_notifier_enabler *event_enabler,
+				const struct lttng_kernel_event_desc *event_notifier_desc);
 
 int lttng_channel_enable(struct lttng_kernel_channel_common *channel);
 int lttng_channel_disable(struct lttng_kernel_channel_common *channel);
