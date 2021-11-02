@@ -809,7 +809,7 @@ void lttng_enabler_link_bytecode(const struct lttng_kernel_event_desc *event_des
 		struct list_head *enabler_bytecode_runtime_head);
 
 #if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
-int lttng_syscalls_register_event_recorder(struct lttng_event_recorder_enabler *event_enabler);
+int lttng_syscalls_register_event(struct lttng_event_enabler_common *event_enabler);
 int lttng_syscall_filter_enable_event(struct lttng_kernel_event_common *event);
 int lttng_syscall_filter_disable_event(struct lttng_kernel_event_common *event);
 
@@ -819,12 +819,10 @@ int lttng_syscalls_destroy_syscall_table(struct lttng_kernel_syscall_table *sysc
 long lttng_channel_syscall_mask(struct lttng_kernel_channel_buffer *channel,
 		struct lttng_kernel_abi_syscall_mask __user *usyscall_mask);
 
-int lttng_syscalls_register_event_notifier(
-		struct lttng_event_notifier_enabler *event_notifier_enabler);
 int lttng_syscalls_create_matching_event_notifiers(
 		struct lttng_event_notifier_enabler *event_notifier_enabler);
 #else
-static inline int lttng_syscalls_register_event_recorder(struct lttng_event_recorder_enabler *event_enabler)
+static inline int lttng_syscalls_register_event(struct lttng_event_enabler_common *event_enabler)
 {
 	return -ENOSYS;
 }
@@ -851,12 +849,6 @@ static inline int lttng_syscalls_destroy_syscall_table(struct lttng_kernel_sysca
 
 static inline long lttng_channel_syscall_mask(struct lttng_kernel_channel_buffer *channel,
 		struct lttng_kernel_syscall_mask __user *usyscall_mask)
-{
-	return -ENOSYS;
-}
-
-static inline int lttng_syscalls_register_event_notifier(
-		struct lttng_event_notifier_group *group)
 {
 	return -ENOSYS;
 }
