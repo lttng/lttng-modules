@@ -132,6 +132,9 @@ struct lttng_syscall_filter {
 	DECLARE_BITMAP(sc_compat_exit, NR_compat_syscalls);
 };
 
+static
+int lttng_syscalls_create_matching_event_notifiers(struct lttng_event_enabler_common *event_enabler);
+
 static void syscall_entry_event_unknown(struct hlist_head *unknown_action_list_head,
 	struct pt_regs *regs, long id)
 {
@@ -816,6 +819,11 @@ int lttng_syscalls_register_event(struct lttng_event_enabler_common *syscall_eve
 		}
 		syscall_table->sys_exit_registered = 1;
 	}
+
+	ret = lttng_syscalls_create_matching_event_notifiers(syscall_event_enabler);
+	if (ret)
+		return ret;
+
 	return ret;
 }
 
@@ -994,14 +1002,17 @@ end:
 
 }
 
-int lttng_syscalls_create_matching_event_notifiers(
-		struct lttng_event_notifier_enabler *event_notifier_enabler)
+static
+int lttng_syscalls_create_matching_event_notifiers(struct lttng_event_enabler_common *event_enabler)
 {
 	int ret;
-	struct lttng_event_enabler_common *base_enabler =
-			lttng_event_notifier_enabler_as_enabler(event_notifier_enabler);
 	enum lttng_kernel_abi_syscall_entryexit entryexit =
-			base_enabler->event_param.u.syscall.entryexit;
+			event_enabler->event_param.u.syscall.entryexit;
+	struct lttng_event_notifier_enabler *event_notifier_enabler;
+
+	if (event_enabler->enabler_type != LTTNG_EVENT_ENABLER_TYPE_NOTIFIER)
+		return 0;
+	event_notifier_enabler = container_of(event_enabler, struct lttng_event_notifier_enabler, parent);
 
 	if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRY || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT) {
 		ret = create_matching_event_notifiers(event_notifier_enabler,

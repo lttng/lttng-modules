@@ -2253,8 +2253,6 @@ void lttng_create_syscall_event_notifier_if_missing(struct lttng_event_notifier_
 
 	ret = lttng_syscalls_register_event(&event_notifier_enabler->parent);
 	WARN_ON_ONCE(ret);
-	ret = lttng_syscalls_create_matching_event_notifiers(event_notifier_enabler);
-	WARN_ON_ONCE(ret);
 }
 
 /*
