@@ -881,6 +881,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 	struct lttng_kernel_session *session = chan->parent.session;
 	struct lttng_kernel_event_recorder *event_recorder;
 	struct lttng_kernel_event_recorder_private *event_recorder_priv;
+	struct lttng_kernel_event_common_private *event_priv;
 	const char *event_name;
 	struct hlist_head *head;
 	int ret;
@@ -917,9 +918,11 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 
 	head = utils_borrow_hash_table_bucket(session->priv->events_ht.table,
 		LTTNG_EVENT_HT_SIZE, event_name);
-	lttng_hlist_for_each_entry(event_recorder_priv, head, hlist) {
-		WARN_ON_ONCE(!event_recorder_priv->parent.desc);
-		if (!strncmp(event_recorder_priv->parent.desc->event_name, event_name,
+	lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
+		event_recorder_priv = container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+
+		WARN_ON_ONCE(!event_priv->desc);
+		if (!strncmp(event_priv->desc->event_name, event_name,
 					LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1)
 				&& chan == event_recorder_priv->pub->chan) {
 			ret = -EEXIST;
@@ -1134,7 +1137,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 	if (ret) {
 		goto statedump_error;
 	}
-	hlist_add_head(&event_recorder->priv->hlist, head);
+	hlist_add_head(&event_recorder->priv->parent.hlist_node, head);
 	list_add(&event_recorder->priv->node, &chan->parent.session->priv->events);
 	return event_recorder;
 
@@ -1160,6 +1163,7 @@ struct lttng_kernel_event_notifier *_lttng_event_notifier_create(struct lttng_ev
 	enum lttng_kernel_abi_instrumentation itype = event_param->instrumentation;
 	struct lttng_kernel_event_notifier *event_notifier;
 	struct lttng_kernel_event_notifier_private *event_notifier_priv;
+	struct lttng_kernel_event_common_private *event_priv;
 	struct lttng_counter *error_counter;
 	const char *event_name;
 	struct hlist_head *head;
@@ -1192,12 +1196,14 @@ struct lttng_kernel_event_notifier *_lttng_event_notifier_create(struct lttng_ev
 
 	head = utils_borrow_hash_table_bucket(event_notifier_group->events_ht.table,
 		LTTNG_EVENT_HT_SIZE, event_name);
-	lttng_hlist_for_each_entry(event_notifier_priv, head, hlist) {
-		WARN_ON_ONCE(!event_notifier_priv->parent.desc);
-		if (!strncmp(event_notifier_priv->parent.desc->event_name, event_name,
+	lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
+		event_notifier_priv = container_of(event_priv, struct lttng_kernel_event_notifier_private, parent);
+
+		WARN_ON_ONCE(!event_priv->desc);
+		if (!strncmp(event_priv->desc->event_name, event_name,
 					LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1)
 				&& event_notifier_group == event_notifier_priv->group
-				&& token == event_notifier_priv->parent.user_token) {
+				&& token == event_priv->user_token) {
 			ret = -EEXIST;
 			goto exist;
 		}
@@ -1342,7 +1348,7 @@ struct lttng_kernel_event_notifier *_lttng_event_notifier_create(struct lttng_ev
 	}
 
 	list_add(&event_notifier->priv->node, &event_notifier_group->event_notifiers_head);
-	hlist_add_head(&event_notifier->priv->hlist, head);
+	hlist_add_head(&event_notifier->priv->parent.hlist_node, head);
 
 	/*
 	 * Clear the error counter bucket. The sessiond keeps track of which
@@ -2071,8 +2077,9 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_recorder_enable
 		for (i = 0; i < probe_desc->nr_events; i++) {
 			int found = 0;
 			struct hlist_head *head;
-			struct lttng_kernel_event_recorder_private *event_recorder_private;
+			struct lttng_kernel_event_recorder_private *event_recorder_priv;
 			struct lttng_kernel_event_recorder *event_recorder;
+			struct lttng_kernel_event_common_private *event_priv;
 
 			desc = probe_desc->event_desc[i];
 			if (!lttng_desc_match_enabler(desc,
@@ -2085,9 +2092,10 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_recorder_enable
 			head = utils_borrow_hash_table_bucket(
 				session->priv->events_ht.table, LTTNG_EVENT_HT_SIZE,
 				desc->event_name);
-			lttng_hlist_for_each_entry(event_recorder_private, head, hlist) {
-				if (event_recorder_private->parent.desc == desc
-						&& event_recorder_private->pub->chan == event_enabler->chan)
+			lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
+				event_recorder_priv = container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
+				if (event_priv->desc == desc
+						&& event_recorder_priv->pub->chan == event_enabler->chan)
 					found = 1;
 			}
 			if (found)
@@ -2125,8 +2133,8 @@ void lttng_create_tracepoint_event_notifier_if_missing(struct lttng_event_notifi
 		for (i = 0; i < probe_desc->nr_events; i++) {
 			int found = 0;
 			struct hlist_head *head;
-			struct lttng_kernel_event_notifier_private *event_notifier_priv;
 			struct lttng_kernel_event_notifier *event_notifier;
+			struct lttng_kernel_event_common_private *event_priv;
 
 			desc = probe_desc->event_desc[i];
 			if (!lttng_desc_match_enabler(desc,
@@ -2139,9 +2147,9 @@ void lttng_create_tracepoint_event_notifier_if_missing(struct lttng_event_notifi
 			head = utils_borrow_hash_table_bucket(
 				event_notifier_group->events_ht.table,
 				LTTNG_EVENT_HT_SIZE, desc->event_name);
-			lttng_hlist_for_each_entry(event_notifier_priv, head, hlist) {
-				if (event_notifier_priv->parent.desc == desc
-						&& event_notifier_priv->parent.user_token == event_notifier_enabler->parent.user_token)
+			lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
+				if (event_priv->desc == desc
+						&& event_priv->user_token == event_notifier_enabler->parent.user_token)
 					found = 1;
 			}
 			if (found)

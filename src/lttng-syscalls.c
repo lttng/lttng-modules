@@ -546,8 +546,8 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 		const struct lttng_kernel_event_desc *desc = table[i].desc;
 		struct lttng_event_recorder_enabler *event_enabler;
 		struct lttng_kernel_abi_event ev;
-		struct lttng_kernel_event_recorder_private *event_recorder_priv;
 		struct lttng_kernel_event_recorder *event_recorder;
+		struct lttng_kernel_event_common_private *event_priv;
 		struct hlist_head *head;
 		bool found = false;
 
@@ -564,9 +564,9 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 		head = utils_borrow_hash_table_bucket(
 			session->priv->events_ht.table, LTTNG_EVENT_HT_SIZE,
 			desc->event_name);
-		lttng_hlist_for_each_entry(event_recorder_priv, head, hlist) {
-			if (event_recorder_priv->parent.desc == desc
-				&& get_syscall_table_from_event(event_recorder_priv->parent.pub) == syscall_table)
+		lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
+			if (event_priv->desc == desc
+				&& get_syscall_table_from_event(event_priv->pub) == syscall_table)
 				found = true;
 		}
 		if (found)
@@ -832,7 +832,7 @@ int create_unknown_event_notifier(
 		struct lttng_event_notifier_enabler *event_notifier_enabler,
 		enum sc_type type)
 {
-	struct lttng_kernel_event_notifier_private *event_notifier_priv;
+	struct lttng_kernel_event_common_private *event_priv;
 	struct lttng_kernel_event_notifier *event_notifier;
 	const struct lttng_kernel_event_desc *desc;
 	struct lttng_event_notifier_group *group = event_notifier_enabler->group;
@@ -883,9 +883,9 @@ int create_unknown_event_notifier(
 	 */
 	head = utils_borrow_hash_table_bucket(group->events_ht.table,
 		LTTNG_EVENT_HT_SIZE, desc->event_name);
-	lttng_hlist_for_each_entry(event_notifier_priv, head, hlist) {
-		if (event_notifier_priv->parent.desc == desc &&
-				event_notifier_priv->parent.user_token == base_enabler->user_token)
+	lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
+		if (event_priv->desc == desc &&
+				event_priv->user_token == base_enabler->user_token)
 			found = true;
 	}
 	if (found)
@@ -936,7 +936,7 @@ static int create_matching_event_notifiers(
 	/* iterate over all syscall and create event_notifier that match */
 	for (i = 0; i < table_len; i++) {
 		struct lttng_event_notifier_enabler *event_notifier_enabler;
-		struct lttng_kernel_event_notifier_private *event_notifier_priv;
+		struct lttng_kernel_event_common_private *event_priv;
 		struct lttng_kernel_event_notifier *event_notifier;
 		struct lttng_kernel_abi_event_notifier event_notifier_param;
 		struct hlist_head *head;
@@ -957,9 +957,9 @@ static int create_matching_event_notifiers(
 		 */
 		head = utils_borrow_hash_table_bucket(group->events_ht.table,
 			LTTNG_EVENT_HT_SIZE, desc->event_name);
-		lttng_hlist_for_each_entry(event_notifier_priv, head, hlist) {
-			if (event_notifier_priv->parent.desc == desc
-				&& event_notifier_priv->parent.user_token == syscall_event_notifier_enabler->parent.user_token)
+		lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
+			if (event_priv->desc == desc
+				&& event_priv->user_token == syscall_event_notifier_enabler->parent.user_token)
 				found = 1;
 		}
 		if (found)
