@@ -1288,73 +1288,68 @@ int lttng_syscall_filter_enable(
 	return 0;
 }
 
-int lttng_syscall_filter_enable_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
+int lttng_syscall_filter_enable_event(struct lttng_kernel_event_common *event)
 {
-	struct lttng_event_notifier_group *group = event_notifier->priv->group;
-	struct lttng_kernel_syscall_table *syscall_table = &group->syscall_table;
-	unsigned int syscall_id = event_notifier->priv->parent.u.syscall.syscall_id;
-	struct hlist_head *dispatch_list;
-	int ret = 0;
+	struct lttng_kernel_syscall_table *syscall_table = get_syscall_table_from_event(event);
+	int ret;
 
-	WARN_ON_ONCE(event_notifier->priv->parent.instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
+	WARN_ON_ONCE(event->priv->instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
 
 	ret = lttng_syscall_filter_enable(syscall_table->sc_filter,
-		event_notifier->priv->parent.desc->event_name,
-		event_notifier->priv->parent.u.syscall.abi,
-		event_notifier->priv->parent.u.syscall.entryexit);
-	if (ret) {
-		goto end;
-	}
+		event->priv->desc->event_name, event->priv->u.syscall.abi,
+		event->priv->u.syscall.entryexit);
+	if (ret)
+		return ret;
 
-	switch (event_notifier->priv->parent.u.syscall.entryexit) {
-	case LTTNG_SYSCALL_ENTRY:
-		switch (event_notifier->priv->parent.u.syscall.abi) {
-		case LTTNG_SYSCALL_ABI_NATIVE:
-			dispatch_list = &syscall_table->syscall_dispatch[syscall_id];
+	switch (event->type) {
+	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+		break;
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
+	{
+		unsigned int syscall_id = event->priv->u.syscall.syscall_id;
+		struct hlist_head *dispatch_list;
+
+		switch (event->priv->u.syscall.entryexit) {
+		case LTTNG_SYSCALL_ENTRY:
+			switch (event->priv->u.syscall.abi) {
+			case LTTNG_SYSCALL_ABI_NATIVE:
+				dispatch_list = &syscall_table->syscall_dispatch[syscall_id];
+				break;
+			case LTTNG_SYSCALL_ABI_COMPAT:
+				dispatch_list = &syscall_table->compat_syscall_dispatch[syscall_id];
+				break;
+			default:
+				ret = -EINVAL;
+				goto end;
+			}
 			break;
-		case LTTNG_SYSCALL_ABI_COMPAT:
-			dispatch_list = &syscall_table->compat_syscall_dispatch[syscall_id];
+		case LTTNG_SYSCALL_EXIT:
+			switch (event->priv->u.syscall.abi) {
+			case LTTNG_SYSCALL_ABI_NATIVE:
+				dispatch_list = &syscall_table->syscall_exit_dispatch[syscall_id];
+				break;
+			case LTTNG_SYSCALL_ABI_COMPAT:
+				dispatch_list = &syscall_table->compat_syscall_exit_dispatch[syscall_id];
+				break;
+			default:
+				ret = -EINVAL;
+				goto end;
+			}
 			break;
 		default:
 			ret = -EINVAL;
 			goto end;
 		}
+
+		hlist_add_head_rcu(&event->priv->u.syscall.node, dispatch_list);
 		break;
-	case LTTNG_SYSCALL_EXIT:
-		switch (event_notifier->priv->parent.u.syscall.abi) {
-		case LTTNG_SYSCALL_ABI_NATIVE:
-			dispatch_list = &syscall_table->syscall_exit_dispatch[syscall_id];
-			break;
-		case LTTNG_SYSCALL_ABI_COMPAT:
-			dispatch_list = &syscall_table->compat_syscall_exit_dispatch[syscall_id];
-			break;
-		default:
-			ret = -EINVAL;
-			goto end;
-		}
-		break;
+	}
 	default:
-		ret = -EINVAL;
-		goto end;
+		WARN_ON_ONCE(1);
+		return -ENOSYS;
 	}
-
-	hlist_add_head_rcu(&event_notifier->priv->parent.u.syscall.node, dispatch_list);
-
 end:
-	return ret ;
-}
-
-int lttng_syscall_filter_enable_event_recorder(struct lttng_kernel_event_recorder *event_recorder)
-{
-	struct lttng_kernel_channel_buffer *channel = event_recorder->chan;
-	struct lttng_kernel_syscall_table *syscall_table = &channel->priv->parent.syscall_table;
-
-	WARN_ON_ONCE(event_recorder->priv->parent.instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
-
-	return lttng_syscall_filter_enable(syscall_table->sc_filter,
-		event_recorder->priv->parent.desc->event_name,
-		event_recorder->priv->parent.u.syscall.abi,
-		event_recorder->priv->parent.u.syscall.entryexit);
+	return ret;
 }
 
 static
@@ -1416,33 +1411,30 @@ int lttng_syscall_filter_disable(struct lttng_syscall_filter *filter,
 	return 0;
 }
 
-int lttng_syscall_filter_disable_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
+int lttng_syscall_filter_disable_event(struct lttng_kernel_event_common *event)
 {
-	struct lttng_event_notifier_group *group = event_notifier->priv->group;
-	struct lttng_kernel_syscall_table *syscall_table = &group->syscall_table;
+	struct lttng_kernel_syscall_table *syscall_table = get_syscall_table_from_event(event);
 	int ret;
 
-	WARN_ON_ONCE(event_notifier->priv->parent.instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
-
 	ret = lttng_syscall_filter_disable(syscall_table->sc_filter,
-		event_notifier->priv->parent.desc->event_name,
-		event_notifier->priv->parent.u.syscall.abi,
-		event_notifier->priv->parent.u.syscall.entryexit);
-	WARN_ON_ONCE(ret != 0);
+		event->priv->desc->event_name, event->priv->u.syscall.abi,
+		event->priv->u.syscall.entryexit);
+	if (ret)
+		return ret;
 
-	hlist_del_rcu(&event_notifier->priv->parent.u.syscall.node);
+	switch (event->type) {
+	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+		break;
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
+	{
+		hlist_del_rcu(&event->priv->u.syscall.node);
+		break;
+	}
+	default:
+		WARN_ON_ONCE(1);
+		return -ENOSYS;
+	}
 	return 0;
-}
-
-int lttng_syscall_filter_disable_event_recorder(struct lttng_kernel_event_recorder *event_recorder)
-{
-	struct lttng_kernel_channel_buffer *channel = event_recorder->chan;
-	struct lttng_kernel_syscall_table *syscall_table = &channel->priv->parent.syscall_table;
-
-	return lttng_syscall_filter_disable(syscall_table->sc_filter,
-		event_recorder->priv->parent.desc->event_name,
-		event_recorder->priv->parent.u.syscall.abi,
-		event_recorder->priv->parent.u.syscall.entryexit);
 }
 
 static

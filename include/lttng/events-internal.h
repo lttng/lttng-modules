@@ -810,8 +810,8 @@ void lttng_enabler_link_bytecode(const struct lttng_kernel_event_desc *event_des
 
 #if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
 int lttng_syscalls_register_event_recorder(struct lttng_event_recorder_enabler *event_enabler);
-int lttng_syscall_filter_enable_event_recorder(struct lttng_kernel_event_recorder *event_recorder);
-int lttng_syscall_filter_disable_event_recorder(struct lttng_kernel_event_recorder *event_recorder);
+int lttng_syscall_filter_enable_event(struct lttng_kernel_event_common *event);
+int lttng_syscall_filter_disable_event(struct lttng_kernel_event_common *event);
 
 int lttng_syscalls_unregister_syscall_table(struct lttng_kernel_syscall_table *syscall_table);
 int lttng_syscalls_destroy_syscall_table(struct lttng_kernel_syscall_table *syscall_table);
@@ -823,20 +823,18 @@ int lttng_syscalls_register_event_notifier(
 		struct lttng_event_notifier_enabler *event_notifier_enabler);
 int lttng_syscalls_create_matching_event_notifiers(
 		struct lttng_event_notifier_enabler *event_notifier_enabler);
-int lttng_syscall_filter_enable_event_notifier(struct lttng_kernel_event_notifier *event_notifier);
-int lttng_syscall_filter_disable_event_notifier(struct lttng_kernel_event_notifier *event_notifier);
 #else
 static inline int lttng_syscalls_register_event_recorder(struct lttng_event_recorder_enabler *event_enabler)
 {
 	return -ENOSYS;
 }
 
-static inline int lttng_syscall_filter_enable_event_recorder(struct lttng_kernel_event_recorder *event_recorder)
+static inline int lttng_syscall_filter_enable_event(struct lttng_kernel_event_common *event)
 {
 	return -ENOSYS;
 }
 
-static inline int lttng_syscall_filter_disable_event_recorder(struct lttng_kernel_event_recorder *event_recorder)
+static inline int lttng_syscall_filter_disable_event(struct lttng_kernel_event_common *event)
 {
 	return -ENOSYS;
 }
@@ -864,16 +862,6 @@ static inline int lttng_syscalls_register_event_notifier(
 }
 
 static inline int lttng_syscalls_create_matching_event_notifiers(struct lttng_event_notifier_enabler *event_notifier_enabler)
-{
-	return -ENOSYS;
-}
-
-static inline int lttng_syscall_filter_enable_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
-{
-	return -ENOSYS;
-}
-
-static inline int lttng_syscall_filter_disable_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
 {
 	return -ENOSYS;
 }
