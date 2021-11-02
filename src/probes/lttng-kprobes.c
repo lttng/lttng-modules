@@ -103,7 +103,7 @@ static const struct lttng_kernel_tracepoint_class tp_class = {
  * Create event description
  */
 static
-int lttng_create_kprobe_event(const char *name, struct lttng_kernel_event_recorder *event_recorder)
+int lttng_create_kprobe_event(const char *name, struct lttng_kernel_event_common *event)
 {
 	struct lttng_kernel_event_desc *desc;
 	int ret;
@@ -118,35 +118,7 @@ int lttng_create_kprobe_event(const char *name, struct lttng_kernel_event_record
 		goto error_str;
 	}
 	desc->owner = THIS_MODULE;
-	event_recorder->priv->parent.desc = desc;
-
-	return 0;
-
-error_str:
-	kfree(desc);
-	return ret;
-}
-
-/*
- * Create event_notifier description
- */
-static
-int lttng_create_kprobe_event_notifier(const char *name, struct lttng_kernel_event_notifier *event_notifier)
-{
-	struct lttng_kernel_event_desc *desc;
-	int ret;
-
-	desc = kzalloc(sizeof(*desc), GFP_KERNEL);
-	if (!desc)
-		return -ENOMEM;
-	desc->tp_class = &tp_class;
-	desc->event_name = kstrdup(name, GFP_KERNEL);
-	if (!desc->event_name) {
-		ret = -ENOMEM;
-		goto error_str;
-	}
-	desc->owner = THIS_MODULE;
-	event_notifier->priv->parent.desc = desc;
+	event->priv->desc = desc;
 
 	return 0;
 
@@ -210,81 +182,42 @@ int lttng_kprobes_register_event(const char *name,
 			   const char *symbol_name,
 			   uint64_t offset,
 			   uint64_t addr,
-			   struct lttng_kernel_event_recorder *event_recorder)
+			   struct lttng_kernel_event_common *event)
 {
 	int ret;
 
-	ret = lttng_create_kprobe_event(name, event_recorder);
+	ret = lttng_create_kprobe_event(name, event);
 	if (ret)
 		goto error;
 
 	ret = _lttng_kprobes_register(symbol_name, offset, addr,
-		&event_recorder->priv->parent.u.kprobe, lttng_kprobes_event_handler_pre);
+		&event->priv->u.kprobe, lttng_kprobes_event_handler_pre);
 	if (ret)
 		goto register_error;
 
 	return 0;
 
 register_error:
-	kfree(event_recorder->priv->parent.desc->event_name);
-	kfree(event_recorder->priv->parent.desc);
+	kfree(event->priv->desc->event_name);
+	kfree(event->priv->desc);
 error:
 	return ret;
 }
 EXPORT_SYMBOL_GPL(lttng_kprobes_register_event);
 
-int lttng_kprobes_register_event_notifier(const char *symbol_name,
-			   uint64_t offset,
-			   uint64_t addr,
-			   struct lttng_kernel_event_notifier *event_notifier)
+void lttng_kprobes_unregister_event(struct lttng_kernel_event_common *event)
 {
-	int ret;
-	ret = lttng_create_kprobe_event_notifier(symbol_name, event_notifier);
-	if (ret)
-		goto error;
-
-	ret = _lttng_kprobes_register(symbol_name, offset, addr,
-		&event_notifier->priv->parent.u.kprobe, lttng_kprobes_event_handler_pre);
-	if (ret)
-		goto register_error;
-
-	return 0;
-
-register_error:
-	kfree(event_notifier->priv->parent.desc->event_name);
-	kfree(event_notifier->priv->parent.desc);
-error:
-	return ret;
-}
-EXPORT_SYMBOL_GPL(lttng_kprobes_register_event_notifier);
-
-void lttng_kprobes_unregister_event(struct lttng_kernel_event_recorder *event_recorder)
-{
-	unregister_kprobe(&event_recorder->priv->parent.u.kprobe.kp);
+	unregister_kprobe(&event->priv->u.kprobe.kp);
 }
 EXPORT_SYMBOL_GPL(lttng_kprobes_unregister_event);
 
-void lttng_kprobes_unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
+void lttng_kprobes_destroy_event_private(struct lttng_kernel_event_common *event)
 {
-	unregister_kprobe(&event_notifier->priv->parent.u.kprobe.kp);
-}
-EXPORT_SYMBOL_GPL(lttng_kprobes_unregister_event_notifier);
-
-void lttng_kprobes_destroy_event_private(struct lttng_kernel_event_recorder *event_recorder)
-{
-	kfree(event_recorder->priv->parent.u.kprobe.symbol_name);
-	kfree(event_recorder->priv->parent.desc->event_name);
-	kfree(event_recorder->priv->parent.desc);
+	kfree(event->priv->u.kprobe.symbol_name);
+	kfree(event->priv->desc->event_name);
+	kfree(event->priv->desc);
 }
 EXPORT_SYMBOL_GPL(lttng_kprobes_destroy_event_private);
-
-void lttng_kprobes_destroy_event_notifier_private(struct lttng_kernel_event_notifier *event_notifier)
-{
-	kfree(event_notifier->priv->parent.u.kprobe.symbol_name);
-	kfree(event_notifier->priv->parent.desc->event_name);
-	kfree(event_notifier->priv->parent.desc);
-}
-EXPORT_SYMBOL_GPL(lttng_kprobes_destroy_event_notifier_private);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");

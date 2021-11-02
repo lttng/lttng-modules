@@ -981,7 +981,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 				event_param->u.kprobe.symbol_name,
 				event_param->u.kprobe.offset,
 				event_param->u.kprobe.addr,
-				event_recorder);
+				&event_recorder->parent);
 		if (ret) {
 			ret = -EINVAL;
 			goto register_error;
@@ -1257,11 +1257,11 @@ struct lttng_kernel_event_notifier *_lttng_event_notifier_create(
 		 * registration.
 		 */
 		smp_wmb();
-		ret = lttng_kprobes_register_event_notifier(
+		ret = lttng_kprobes_register_event(event_notifier_param->event.u.kprobe.symbol_name,
 				event_notifier_param->event.u.kprobe.symbol_name,
 				event_notifier_param->event.u.kprobe.offset,
 				event_notifier_param->event.u.kprobe.addr,
-				event_notifier);
+				&event_notifier->parent);
 		if (ret) {
 			ret = -EINVAL;
 			goto register_error;
@@ -1498,7 +1498,7 @@ int _lttng_event_recorder_unregister(struct lttng_kernel_event_recorder *event_r
 		break;
 
 	case LTTNG_KERNEL_ABI_KPROBE:
-		lttng_kprobes_unregister_event(event_recorder);
+		lttng_kprobes_unregister_event(&event_recorder->parent);
 		ret = 0;
 		break;
 
@@ -1590,7 +1590,7 @@ int _lttng_event_notifier_unregister(
 		break;
 
 	case LTTNG_KERNEL_ABI_KPROBE:
-		lttng_kprobes_unregister_event_notifier(event_notifier);
+		lttng_kprobes_unregister_event(&event_notifier->parent);
 		ret = 0;
 		break;
 
@@ -1645,7 +1645,7 @@ void _lttng_event_destroy(struct lttng_kernel_event_common *event)
 
 		case LTTNG_KERNEL_ABI_KPROBE:
 			module_put(event_priv->desc->owner);
-			lttng_kprobes_destroy_event_private(event_recorder);
+			lttng_kprobes_destroy_event_private(&event_recorder->parent);
 			break;
 
 		case LTTNG_KERNEL_ABI_KRETPROBE:
@@ -1685,7 +1685,7 @@ void _lttng_event_destroy(struct lttng_kernel_event_common *event)
 
 		case LTTNG_KERNEL_ABI_KPROBE:
 			module_put(event_notifier->priv->parent.desc->owner);
-			lttng_kprobes_destroy_event_notifier_private(event_notifier);
+			lttng_kprobes_destroy_event_private(&event_notifier->parent);
 			break;
 
 		case LTTNG_KERNEL_ABI_SYSCALL:

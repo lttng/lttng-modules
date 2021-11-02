@@ -865,52 +865,27 @@ int lttng_kprobes_register_event(const char *name,
 		const char *symbol_name,
 		uint64_t offset,
 		uint64_t addr,
-		struct lttng_kernel_event_recorder *event);
-void lttng_kprobes_unregister_event(struct lttng_kernel_event_recorder *event);
-void lttng_kprobes_destroy_event_private(struct lttng_kernel_event_recorder *event);
-int lttng_kprobes_register_event_notifier(const char *symbol_name,
-		uint64_t offset,
-		uint64_t addr,
-		struct lttng_kernel_event_notifier *event_notifier);
-void lttng_kprobes_unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier);
-void lttng_kprobes_destroy_event_notifier_private(struct lttng_kernel_event_notifier *event_notifier);
+		struct lttng_kernel_event_common *event);
+void lttng_kprobes_unregister_event(struct lttng_kernel_event_common *event);
+void lttng_kprobes_destroy_event_private(struct lttng_kernel_event_common *event);
 #else
 static inline
 int lttng_kprobes_register_event(const char *name,
 		const char *symbol_name,
 		uint64_t offset,
 		uint64_t addr,
-		struct lttng_kernel_event_recorder *event)
+		struct lttng_kernel_event_common *event)
 {
 	return -ENOSYS;
 }
 
 static inline
-void lttng_kprobes_unregister_event(struct lttng_kernel_event_recorder *event)
+void lttng_kprobes_unregister_event(struct lttng_kernel_event_common *event)
 {
 }
 
 static inline
-void lttng_kprobes_destroy_event_private(struct lttng_kernel_event_recorder *event)
-{
-}
-
-static inline
-int lttng_kprobes_register_event_notifier(const char *symbol_name,
-		uint64_t offset,
-		uint64_t addr,
-		struct lttng_kernel_event_notifier *event_notifier)
-{
-	return -ENOSYS;
-}
-
-static inline
-void lttng_kprobes_unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
-{
-}
-
-static inline
-void lttng_kprobes_destroy_event_notifier_private(struct lttng_kernel_event_notifier *event_notifier)
+void lttng_kprobes_destroy_event_private(struct lttng_kernel_event_common *event)
 {
 }
 #endif
