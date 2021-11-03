@@ -2201,20 +2201,19 @@ void lttng_create_syscall_event_if_missing(struct lttng_event_enabler_common *ev
 }
 
 /*
- * Create struct lttng_kernel_event_recorder if it is missing and present in the list of
- * tracepoint probes.
+ * Create event if it is missing and present in the list of tracepoint probes.
  * Should be called with sessions mutex held.
  */
 static
-void lttng_create_event_if_missing(struct lttng_event_recorder_enabler *event_enabler)
+void lttng_create_event_if_missing(struct lttng_event_enabler_common *event_enabler)
 {
-	switch (event_enabler->parent.event_param.instrumentation) {
+	switch (event_enabler->event_param.instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
-		lttng_create_tracepoint_event_if_missing(&event_enabler->parent);
+		lttng_create_tracepoint_event_if_missing(event_enabler);
 		break;
 
 	case LTTNG_KERNEL_ABI_SYSCALL:
-		lttng_create_syscall_event_if_missing(&event_enabler->parent);
+		lttng_create_syscall_event_if_missing(event_enabler);
 		break;
 
 	default:
@@ -2251,7 +2250,7 @@ int lttng_event_enabler_ref_events(struct lttng_event_recorder_enabler *event_en
 	}
 
 	/* First ensure that probe events are created for this enabler. */
-	lttng_create_event_if_missing(event_enabler);
+	lttng_create_event_if_missing(&event_enabler->parent);
 
 	/* For each event matching event_enabler in session event list. */
 	list_for_each_entry(event_recorder_priv, &session->priv->events, node) {
@@ -2287,29 +2286,6 @@ int lttng_event_enabler_ref_events(struct lttng_event_recorder_enabler *event_en
 }
 
 /*
- * Create struct lttng_kernel_event_notifier if it is missing and present in the list of
- * tracepoint probes.
- * Should be called with sessions mutex held.
- */
-static
-void lttng_create_event_notifier_if_missing(struct lttng_event_notifier_enabler *event_notifier_enabler)
-{
-	switch (event_notifier_enabler->parent.event_param.instrumentation) {
-	case LTTNG_KERNEL_ABI_TRACEPOINT:
-		lttng_create_tracepoint_event_if_missing(&event_notifier_enabler->parent);
-		break;
-
-	case LTTNG_KERNEL_ABI_SYSCALL:
-		lttng_create_syscall_event_if_missing(&event_notifier_enabler->parent);
-		break;
-
-	default:
-		WARN_ON_ONCE(1);
-		break;
-	}
-}
-
-/*
  * Create event_notifiers associated with a event_notifier enabler (if not already present).
  */
 static
@@ -2337,7 +2313,7 @@ int lttng_event_notifier_enabler_ref_event_notifiers(
 	}
 
 	/* First ensure that probe event_notifiers are created for this enabler. */
-	lttng_create_event_notifier_if_missing(event_notifier_enabler);
+	lttng_create_event_if_missing(&event_notifier_enabler->parent);
 
 	/* Link the created event_notifier with its associated enabler. */
 	list_for_each_entry(event_notifier_priv, &event_notifier_group->event_notifiers_head, node) {
