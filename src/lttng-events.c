@@ -2222,6 +2222,32 @@ void lttng_create_event_if_missing(struct lttng_event_enabler_common *event_enab
 	}
 }
 
+static
+void lttng_event_enabler_init_event_capture(struct lttng_event_enabler_common *event_enabler,
+		struct lttng_kernel_event_common *event)
+{
+	switch (event_enabler->enabler_type) {
+	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
+		break;
+	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
+	{
+		struct lttng_event_notifier_enabler *event_notifier_enabler =
+			container_of(event_enabler, struct lttng_event_notifier_enabler, parent);
+		struct lttng_kernel_event_notifier *event_notifier =
+			container_of(event, struct lttng_kernel_event_notifier, parent);
+
+		/* Link capture bytecodes if not linked yet. */
+		lttng_enabler_link_bytecode(event->priv->desc,
+			lttng_static_ctx, &event_notifier->priv->capture_bytecode_runtime_head,
+			&event_notifier_enabler->capture_bytecode_head);
+		event_notifier->priv->num_captures = event_notifier_enabler->num_captures;
+		break;
+	}
+	default:
+		WARN_ON_ONCE(1);
+	}
+}
+
 /*
  * Create events associated with an event_enabler (if not already present),
  * and add backward reference from the event to the enabler.
@@ -2319,12 +2345,7 @@ int lttng_event_notifier_enabler_ref_event_notifiers(
 			lttng_static_ctx, &event_notifier_priv->parent.filter_bytecode_runtime_head,
 			&lttng_event_notifier_enabler_as_enabler(event_notifier_enabler)->filter_bytecode_head);
 
-		/* Link capture bytecodes if not linked yet. */
-		lttng_enabler_link_bytecode(event_notifier_priv->parent.desc,
-			lttng_static_ctx, &event_notifier_priv->capture_bytecode_runtime_head,
-			&event_notifier_enabler->capture_bytecode_head);
-
-		event_notifier_priv->num_captures = event_notifier_enabler->num_captures;
+		lttng_event_enabler_init_event_capture(&event_notifier_enabler->parent, &event_notifier->parent);
 	}
 	return 0;
 }
