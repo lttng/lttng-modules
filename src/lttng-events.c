@@ -2011,36 +2011,85 @@ int lttng_desc_match_enabler(const struct lttng_kernel_event_desc *desc,
 }
 
 static
-int lttng_event_enabler_match_event(struct lttng_event_recorder_enabler *event_enabler,
-		struct lttng_kernel_event_recorder *event_recorder)
+bool lttng_event_enabler_match_event(struct lttng_event_enabler_common *event_enabler,
+		struct lttng_kernel_event_common *event)
 {
-	struct lttng_event_enabler_common *base_enabler = lttng_event_recorder_enabler_as_enabler(
-		event_enabler);
+	if (event_enabler->event_param.instrumentation != event->priv->instrumentation)
+		return false;
 
-	if (base_enabler->event_param.instrumentation != event_recorder->priv->parent.instrumentation)
-		return 0;
-	if (lttng_desc_match_enabler(event_recorder->priv->parent.desc, base_enabler)
-			&& event_recorder->chan == event_enabler->chan)
-		return 1;
-	else
-		return 0;
+	switch (event_enabler->enabler_type) {
+	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
+	{
+		struct lttng_event_recorder_enabler *event_recorder_enabler =
+			container_of(event_enabler, struct lttng_event_recorder_enabler, parent);
+		struct lttng_kernel_event_recorder *event_recorder =
+			container_of(event, struct lttng_kernel_event_recorder, parent);
+
+		if (lttng_desc_match_enabler(event->priv->desc, event_enabler)
+				&& event_recorder->chan == event_recorder_enabler->chan)
+			return true;
+		else
+			return false;
+	}
+	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
+	{
+		struct lttng_event_notifier_enabler *event_notifier_enabler =
+			container_of(event_enabler, struct lttng_event_notifier_enabler, parent);
+		struct lttng_kernel_event_notifier *event_notifier =
+			container_of(event, struct lttng_kernel_event_notifier, parent);
+
+		if (lttng_desc_match_enabler(event->priv->desc, event_enabler)
+				&& event_notifier->priv->group == event_notifier_enabler->group
+				&& event->priv->user_token == event_enabler->user_token)
+			return true;
+		else
+			return false;
+	}
+	default:
+		WARN_ON_ONCE(1);
+		return false;
+	}
 }
 
 static
-int lttng_event_notifier_enabler_match_event_notifier(struct lttng_event_notifier_enabler *event_notifier_enabler,
-		struct lttng_kernel_event_notifier *event_notifier)
+bool lttng_event_enabler_desc_match_event(struct lttng_event_enabler_common *event_enabler,
+		const struct lttng_kernel_event_desc *desc,
+		struct lttng_kernel_event_common *event)
 {
-	struct lttng_event_enabler_common *base_enabler = lttng_event_notifier_enabler_as_enabler(
-		event_notifier_enabler);
+	if (event_enabler->event_param.instrumentation != event->priv->instrumentation)
+		return false;
 
-	if (base_enabler->event_param.instrumentation != event_notifier->priv->parent.instrumentation)
-		return 0;
-	if (lttng_desc_match_enabler(event_notifier->priv->parent.desc, base_enabler)
-			&& event_notifier->priv->group == event_notifier_enabler->group
-			&& event_notifier->priv->parent.user_token == event_notifier_enabler->parent.user_token)
-		return 1;
-	else
-		return 0;
+	switch (event_enabler->enabler_type) {
+	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
+	{
+		struct lttng_event_recorder_enabler *event_recorder_enabler =
+			container_of(event_enabler, struct lttng_event_recorder_enabler, parent);
+		struct lttng_kernel_event_recorder *event_recorder =
+			container_of(event, struct lttng_kernel_event_recorder, parent);
+
+		if (event->priv->desc == desc && event_recorder->chan == event_recorder_enabler->chan)
+			return true;
+		else
+			return false;
+	}
+	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
+	{
+		struct lttng_event_notifier_enabler *event_notifier_enabler =
+			container_of(event_enabler, struct lttng_event_notifier_enabler, parent);
+		struct lttng_kernel_event_notifier *event_notifier =
+			container_of(event, struct lttng_kernel_event_notifier, parent);
+
+		if (event->priv->desc == desc
+				&& event_notifier->priv->group == event_notifier_enabler->group
+				&& event->priv->user_token == event_enabler->user_token)
+			return true;
+		else
+			return false;
+	}
+	default:
+		WARN_ON_ONCE(1);
+		return false;
+	}
 }
 
 static
@@ -2076,7 +2125,6 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_recorder_enable
 		for (i = 0; i < probe_desc->nr_events; i++) {
 			int found = 0;
 			struct hlist_head *head;
-			struct lttng_kernel_event_recorder_private *event_recorder_priv;
 			struct lttng_kernel_event_recorder *event_recorder;
 			struct lttng_kernel_event_common_private *event_priv;
 
@@ -2090,9 +2138,7 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_recorder_enable
 			 */
 			head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, desc->event_name);
 			lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
-				event_recorder_priv = container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
-				if (event_priv->desc == desc
-						&& event_recorder_priv->pub->chan == event_enabler->chan)
+				if (lttng_event_enabler_desc_match_event(&event_enabler->parent, desc, event_priv->pub))
 					found = 1;
 			}
 			if (found)
@@ -2144,8 +2190,7 @@ void lttng_create_tracepoint_event_notifier_if_missing(struct lttng_event_notifi
 			head = utils_borrow_hash_table_bucket(events_ht->table,
 				LTTNG_EVENT_HT_SIZE, desc->event_name);
 			lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
-				if (event_priv->desc == desc
-						&& event_priv->user_token == event_notifier_enabler->parent.user_token)
+				if (lttng_event_enabler_desc_match_event(&event_notifier_enabler->parent, desc, event_priv->pub))
 					found = 1;
 			}
 			if (found)
@@ -2230,7 +2275,7 @@ int lttng_event_enabler_ref_events(struct lttng_event_recorder_enabler *event_en
 		struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
 		struct lttng_enabler_ref *enabler_ref;
 
-		if (!lttng_event_enabler_match_event(event_enabler, event_recorder))
+		if (!lttng_event_enabler_match_event(&event_enabler->parent, &event_recorder->parent))
 			continue;
 		enabler_ref = lttng_enabler_ref(&event_recorder_priv->parent.enablers_ref_head,
 			lttng_event_recorder_enabler_as_enabler(event_enabler));
@@ -2316,7 +2361,7 @@ int lttng_event_notifier_enabler_ref_event_notifiers(
 		struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
 		struct lttng_enabler_ref *enabler_ref;
 
-		if (!lttng_event_notifier_enabler_match_event_notifier(event_notifier_enabler, event_notifier))
+		if (!lttng_event_enabler_match_event(&event_notifier_enabler->parent, &event_notifier->parent))
 			continue;
 
 		enabler_ref = lttng_enabler_ref(&event_notifier_priv->parent.enablers_ref_head,
