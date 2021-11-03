@@ -2143,13 +2143,13 @@ struct lttng_enabler_ref *lttng_enabler_ref(
 }
 
 static
-void lttng_create_tracepoint_event_if_missing(struct lttng_event_recorder_enabler *event_enabler)
+void lttng_create_tracepoint_event_if_missing(struct lttng_event_enabler_common *event_enabler)
 {
-	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&event_enabler->parent);
+	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(event_enabler);
 	struct lttng_kernel_probe_desc *probe_desc;
 	const struct lttng_kernel_event_desc *desc;
-	int i;
 	struct list_head *probe_list;
+	int i;
 
 	probe_list = lttng_get_probe_list_head();
 	/*
@@ -2165,8 +2165,7 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_recorder_enable
 			struct lttng_kernel_event_common_private *event_priv;
 
 			desc = probe_desc->event_desc[i];
-			if (!lttng_desc_match_enabler(desc,
-					lttng_event_recorder_enabler_as_enabler(event_enabler)))
+			if (!lttng_desc_match_enabler(desc, event_enabler))
 				continue;
 
 			/*
@@ -2174,7 +2173,7 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_recorder_enable
 			 */
 			head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, desc->event_name);
 			lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
-				if (lttng_event_enabler_desc_match_event(&event_enabler->parent, desc, event_priv->pub))
+				if (lttng_event_enabler_desc_match_event(event_enabler, desc, event_priv->pub))
 					found = 1;
 			}
 			if (found)
@@ -2183,60 +2182,9 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_recorder_enable
 			/*
 			 * We need to create an event for this event probe.
 			 */
-			event = _lttng_kernel_event_create(&event_enabler->parent, desc);
+			event = _lttng_kernel_event_create(event_enabler, desc);
 			if (!event) {
 				printk(KERN_INFO "LTTng: Unable to create event %s\n",
-					probe_desc->event_desc[i]->event_name);
-			}
-		}
-	}
-}
-
-static
-void lttng_create_tracepoint_event_notifier_if_missing(struct lttng_event_notifier_enabler *event_notifier_enabler)
-{
-	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&event_notifier_enabler->parent);
-	struct lttng_kernel_probe_desc *probe_desc;
-	const struct lttng_kernel_event_desc *desc;
-	int i;
-	struct list_head *probe_list;
-
-	probe_list = lttng_get_probe_list_head();
-	/*
-	 * For each probe event, if we find that a probe event matches
-	 * our enabler, create an associated lttng_event_notifier if not
-	 * already present.
-	 */
-	list_for_each_entry(probe_desc, probe_list, head) {
-		for (i = 0; i < probe_desc->nr_events; i++) {
-			int found = 0;
-			struct hlist_head *head;
-			struct lttng_kernel_event_common *event;
-			struct lttng_kernel_event_common_private *event_priv;
-
-			desc = probe_desc->event_desc[i];
-			if (!lttng_desc_match_enabler(desc,
-					lttng_event_notifier_enabler_as_enabler(event_notifier_enabler)))
-				continue;
-
-			/*
-			 * Check if already created.
-			 */
-			head = utils_borrow_hash_table_bucket(events_ht->table,
-				LTTNG_EVENT_HT_SIZE, desc->event_name);
-			lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
-				if (lttng_event_enabler_desc_match_event(&event_notifier_enabler->parent, desc, event_priv->pub))
-					found = 1;
-			}
-			if (found)
-				continue;
-
-			/*
-			 * We need to create a event_notifier for this event probe.
-			 */
-			event = _lttng_kernel_event_create(&event_notifier_enabler->parent, desc);
-			if (IS_ERR(event)) {
-				printk(KERN_INFO "Unable to create event_notifier %s\n",
 					probe_desc->event_desc[i]->event_name);
 			}
 		}
@@ -2262,7 +2210,7 @@ void lttng_create_event_if_missing(struct lttng_event_recorder_enabler *event_en
 {
 	switch (event_enabler->parent.event_param.instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
-		lttng_create_tracepoint_event_if_missing(event_enabler);
+		lttng_create_tracepoint_event_if_missing(&event_enabler->parent);
 		break;
 
 	case LTTNG_KERNEL_ABI_SYSCALL:
@@ -2348,7 +2296,7 @@ void lttng_create_event_notifier_if_missing(struct lttng_event_notifier_enabler 
 {
 	switch (event_notifier_enabler->parent.event_param.instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
-		lttng_create_tracepoint_event_notifier_if_missing(event_notifier_enabler);
+		lttng_create_tracepoint_event_if_missing(&event_notifier_enabler->parent);
 		break;
 
 	case LTTNG_KERNEL_ABI_SYSCALL:
