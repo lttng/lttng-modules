@@ -2598,6 +2598,57 @@ end:
 	return ret;
 }
 
+static
+void lttng_event_sync_filter_state(struct lttng_kernel_event_common *event)
+{
+	int has_enablers_without_filter_bytecode = 0, nr_filters = 0;
+	struct lttng_kernel_bytecode_runtime *runtime;
+	struct lttng_enabler_ref *enabler_ref;
+
+	/* Check if has enablers without bytecode enabled */
+	list_for_each_entry(enabler_ref, &event->priv->enablers_ref_head, node) {
+		if (enabler_ref->ref->enabled
+				&& list_empty(&enabler_ref->ref->filter_bytecode_head)) {
+			has_enablers_without_filter_bytecode = 1;
+			break;
+		}
+	}
+	event->priv->has_enablers_without_filter_bytecode = has_enablers_without_filter_bytecode;
+
+	/* Enable filters */
+	list_for_each_entry(runtime, &event->priv->filter_bytecode_runtime_head, node) {
+		lttng_bytecode_sync_state(runtime);
+		nr_filters++;
+	}
+	WRITE_ONCE(event->eval_filter, !(has_enablers_without_filter_bytecode || !nr_filters));
+}
+
+static
+void lttng_event_sync_capture_state(struct lttng_kernel_event_common *event)
+{
+	switch (event->type) {
+	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+		break;
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
+	{
+		struct lttng_kernel_event_notifier *event_notifier =
+			container_of(event, struct lttng_kernel_event_notifier, parent);
+		struct lttng_kernel_bytecode_runtime *runtime;
+		int nr_captures = 0;
+
+		/* Enable captures */
+		list_for_each_entry(runtime, &event_notifier->priv->capture_bytecode_runtime_head, node) {
+			lttng_bytecode_sync_state(runtime);
+			nr_captures++;
+		}
+		WRITE_ONCE(event_notifier->eval_capture, !!nr_captures);
+		break;
+	}
+	default:
+		WARN_ON_ONCE(1);
+	}
+}
+
 /*
  * lttng_session_sync_event_enablers should be called just before starting a
  * session.
@@ -2619,9 +2670,7 @@ void lttng_session_sync_event_enablers(struct lttng_kernel_session *session)
 	list_for_each_entry(event_recorder_priv, &session->priv->events, parent.node) {
 		struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
 		struct lttng_enabler_ref *enabler_ref;
-		struct lttng_kernel_bytecode_runtime *runtime;
-		int enabled = 0, has_enablers_without_filter_bytecode = 0;
-		int nr_filters = 0;
+		int enabled = 0;
 
 		switch (event_recorder_priv->parent.instrumentation) {
 		case LTTNG_KERNEL_ABI_TRACEPOINT:
@@ -2659,26 +2708,7 @@ void lttng_session_sync_event_enablers(struct lttng_kernel_session *session)
 			_lttng_event_unregister(&event_recorder->parent);
 		}
 
-		/* Check if has enablers without bytecode enabled */
-		list_for_each_entry(enabler_ref,
-				&event_recorder_priv->parent.enablers_ref_head, node) {
-			if (enabler_ref->ref->enabled
-					&& list_empty(&enabler_ref->ref->filter_bytecode_head)) {
-				has_enablers_without_filter_bytecode = 1;
-				break;
-			}
-		}
-		event_recorder_priv->parent.has_enablers_without_filter_bytecode =
-			has_enablers_without_filter_bytecode;
-
-		/* Enable filters */
-		list_for_each_entry(runtime,
-				&event_recorder_priv->parent.filter_bytecode_runtime_head, node) {
-			lttng_bytecode_sync_state(runtime);
-			nr_filters++;
-		}
-		WRITE_ONCE(event_recorder_priv->parent.pub->eval_filter,
-			!(has_enablers_without_filter_bytecode || !nr_filters));
+		lttng_event_sync_filter_state(&event_recorder_priv->pub->parent);
 	}
 }
 
@@ -2714,9 +2744,7 @@ void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group 
 	list_for_each_entry(event_notifier_priv, &event_notifier_group->event_notifiers_head, parent.node) {
 		struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
 		struct lttng_enabler_ref *enabler_ref;
-		struct lttng_kernel_bytecode_runtime *runtime;
-		int enabled = 0, has_enablers_without_filter_bytecode = 0;
-		int nr_filters = 0, nr_captures = 0;
+		int enabled = 0;
 
 		switch (event_notifier_priv->parent.instrumentation) {
 		case LTTNG_KERNEL_ABI_TRACEPOINT:
@@ -2750,34 +2778,8 @@ void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group 
 				_lttng_event_unregister(&event_notifier->parent);
 		}
 
-		/* Check if has enablers without bytecode enabled */
-		list_for_each_entry(enabler_ref,
-				&event_notifier_priv->parent.enablers_ref_head, node) {
-			if (enabler_ref->ref->enabled
-					&& list_empty(&enabler_ref->ref->filter_bytecode_head)) {
-				has_enablers_without_filter_bytecode = 1;
-				break;
-			}
-		}
-		event_notifier_priv->parent.has_enablers_without_filter_bytecode =
-			has_enablers_without_filter_bytecode;
-
-		/* Enable filters */
-		list_for_each_entry(runtime,
-				&event_notifier_priv->parent.filter_bytecode_runtime_head, node) {
-			lttng_bytecode_sync_state(runtime);
-			nr_filters++;
-		}
-		WRITE_ONCE(event_notifier_priv->parent.pub->eval_filter,
-			!(has_enablers_without_filter_bytecode || !nr_filters));
-
-		/* Enable captures */
-		list_for_each_entry(runtime,
-				&event_notifier_priv->capture_bytecode_runtime_head, node) {
-			lttng_bytecode_sync_state(runtime);
-			nr_captures++;
-		}
-		WRITE_ONCE(event_notifier->eval_capture, !!nr_captures);
+		lttng_event_sync_filter_state(&event_notifier_priv->pub->parent);
+		lttng_event_sync_capture_state(&event_notifier_priv->pub->parent);
 	}
 }
 
