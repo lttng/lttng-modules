@@ -872,6 +872,7 @@ void _lttng_metadata_channel_hangup(struct lttng_metadata_stream *stream)
  * Supports event creation while tracing session is active.
  * Needs to be called with sessions mutex held.
  */
+static
 struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct lttng_event_recorder_enabler *event_enabler,
 				const struct lttng_kernel_event_desc *event_desc)
 {
@@ -1153,7 +1154,8 @@ full:
 	return ERR_PTR(ret);
 }
 
-struct lttng_kernel_event_notifier *_lttng_event_notifier_create(struct lttng_event_notifier_enabler *event_enabler,
+static
+struct lttng_kernel_event_notifier *_lttng_kernel_event_notifier_create(struct lttng_event_notifier_enabler *event_enabler,
 		const struct lttng_kernel_event_desc *event_desc)
 {
 	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&event_enabler->parent);
@@ -1390,6 +1392,50 @@ type_error:
 	return ERR_PTR(ret);
 }
 
+struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_enabler_common *event_enabler,
+				const struct lttng_kernel_event_desc *event_desc)
+{
+	switch (event_enabler->enabler_type) {
+	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
+	{
+		struct lttng_event_recorder_enabler *event_recorder_enabler =
+			container_of(event_enabler, struct lttng_event_recorder_enabler, parent);
+		struct lttng_kernel_event_recorder *event_recorder;
+
+		event_recorder = _lttng_kernel_event_recorder_create(event_recorder_enabler, event_desc);
+		if (!event_recorder)
+			return NULL;
+		return &event_recorder->parent;
+	}
+	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
+	{
+		struct lttng_event_notifier_enabler *event_notifier_enabler =
+			container_of(event_enabler, struct lttng_event_notifier_enabler, parent);
+		struct lttng_kernel_event_notifier *event_notifier;
+
+		event_notifier = _lttng_kernel_event_notifier_create(event_notifier_enabler, event_desc);
+		if (!event_notifier)
+			return NULL;
+		return &event_notifier->parent;
+	}
+	default:
+		return NULL;
+	}
+}
+
+struct lttng_kernel_event_common *lttng_kernel_event_create(struct lttng_event_enabler_common *event_enabler,
+				const struct lttng_kernel_event_desc *event_desc)
+{
+	struct lttng_kernel_event_common *event;
+
+	mutex_lock(&sessions_mutex);
+	event = _lttng_kernel_event_create(event_enabler, event_desc);
+	mutex_unlock(&sessions_mutex);
+	return event;
+}
+
+
+
 int lttng_kernel_counter_read(struct lttng_counter *counter,
 		const size_t *dim_indexes, int32_t cpu,
 		int64_t *val, bool *overflow, bool *underflow)
@@ -1410,28 +1456,6 @@ int lttng_kernel_counter_clear(struct lttng_counter *counter,
 		const size_t *dim_indexes)
 {
 	return counter->ops->counter_clear(counter->counter, dim_indexes);
-}
-
-struct lttng_kernel_event_recorder *lttng_kernel_event_recorder_create(struct lttng_event_recorder_enabler *event_enabler,
-				const struct lttng_kernel_event_desc *event_desc)
-{
-	struct lttng_kernel_event_recorder *event;
-
-	mutex_lock(&sessions_mutex);
-	event = _lttng_kernel_event_recorder_create(event_enabler, event_desc);
-	mutex_unlock(&sessions_mutex);
-	return event;
-}
-
-struct lttng_kernel_event_notifier *lttng_event_notifier_create(struct lttng_event_notifier_enabler *event_enabler,
-		const struct lttng_kernel_event_desc *event_desc)
-{
-	struct lttng_kernel_event_notifier *event_notifier;
-
-	mutex_lock(&sessions_mutex);
-	event_notifier = _lttng_event_notifier_create(event_enabler, event_desc);
-	mutex_unlock(&sessions_mutex);
-	return event_notifier;
 }
 
 /* Only used for tracepoints for now. */
@@ -2125,7 +2149,7 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_recorder_enable
 		for (i = 0; i < probe_desc->nr_events; i++) {
 			int found = 0;
 			struct hlist_head *head;
-			struct lttng_kernel_event_recorder *event_recorder;
+			struct lttng_kernel_event_common *event;
 			struct lttng_kernel_event_common_private *event_priv;
 
 			desc = probe_desc->event_desc[i];
@@ -2145,11 +2169,10 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_recorder_enable
 				continue;
 
 			/*
-			 * We need to create an event for this
-			 * event probe.
+			 * We need to create an event for this event probe.
 			 */
-			event_recorder = _lttng_kernel_event_recorder_create(event_enabler, desc);
-			if (!event_recorder) {
+			event = _lttng_kernel_event_create(&event_enabler->parent, desc);
+			if (!event) {
 				printk(KERN_INFO "LTTng: Unable to create event %s\n",
 					probe_desc->event_desc[i]->event_name);
 			}
@@ -2176,7 +2199,7 @@ void lttng_create_tracepoint_event_notifier_if_missing(struct lttng_event_notifi
 		for (i = 0; i < probe_desc->nr_events; i++) {
 			int found = 0;
 			struct hlist_head *head;
-			struct lttng_kernel_event_notifier *event_notifier;
+			struct lttng_kernel_event_common *event;
 			struct lttng_kernel_event_common_private *event_priv;
 
 			desc = probe_desc->event_desc[i];
@@ -2199,8 +2222,8 @@ void lttng_create_tracepoint_event_notifier_if_missing(struct lttng_event_notifi
 			/*
 			 * We need to create a event_notifier for this event probe.
 			 */
-			event_notifier = _lttng_event_notifier_create(event_notifier_enabler, desc);
-			if (IS_ERR(event_notifier)) {
+			event = _lttng_kernel_event_create(&event_notifier_enabler->parent, desc);
+			if (IS_ERR(event)) {
 				printk(KERN_INFO "Unable to create event_notifier %s\n",
 					probe_desc->event_desc[i]->event_name);
 			}

@@ -546,7 +546,7 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 		const struct lttng_kernel_event_desc *desc = table[i].desc;
 		struct lttng_event_recorder_enabler *event_enabler;
 		struct lttng_kernel_abi_event ev;
-		struct lttng_kernel_event_recorder *event_recorder;
+		struct lttng_kernel_event_common *event;
 		struct lttng_kernel_event_common_private *event_priv;
 		struct hlist_head *head;
 		bool found = false;
@@ -597,19 +597,19 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 		if (!event_enabler) {
 			return -ENOMEM;
 		}
-		event_recorder = _lttng_kernel_event_recorder_create(event_enabler, desc);
-		WARN_ON_ONCE(!event_recorder);
+		event = _lttng_kernel_event_create(&event_enabler->parent, desc);
+		WARN_ON_ONCE(!event);
 		lttng_event_enabler_destroy(&event_enabler->parent);
-		if (IS_ERR(event_recorder)) {
+		if (IS_ERR(event)) {
 			/*
 			 * If something goes wrong in event registration
 			 * after the first one, we have no choice but to
 			 * leave the previous events in there, until
 			 * deleted by session teardown.
 			 */
-			return PTR_ERR(event_recorder);
+			return PTR_ERR(event);
 		}
-		hlist_add_head(&event_recorder->priv->parent.u.syscall.node, &chan_table[i]);
+		hlist_add_head(&event->priv->u.syscall.node, &chan_table[i]);
 	}
 	return 0;
 }
@@ -631,7 +631,7 @@ int lttng_syscalls_populate_events(struct lttng_event_enabler_common *syscall_ev
 	if (hlist_empty(&syscall_table->unknown_syscall_dispatch)) {
 		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___syscall_entry_unknown;
-		struct lttng_kernel_event_recorder *event_recorder;
+		struct lttng_kernel_event_common *event;
 		struct lttng_event_recorder_enabler *event_enabler;
 
 		memset(&ev, 0, sizeof(ev));
@@ -644,19 +644,19 @@ int lttng_syscalls_populate_events(struct lttng_event_enabler_common *syscall_ev
 		if (!event_enabler) {
 			return -ENOMEM;
 		}
-		event_recorder = _lttng_kernel_event_recorder_create(event_enabler, desc);
+		event = _lttng_kernel_event_create(&event_enabler->parent, desc);
 		lttng_event_enabler_destroy(&event_enabler->parent);
-		WARN_ON_ONCE(!event_recorder);
-		if (IS_ERR(event_recorder)) {
-			return PTR_ERR(event_recorder);
+		WARN_ON_ONCE(!event);
+		if (IS_ERR(event)) {
+			return PTR_ERR(event);
 		}
-		hlist_add_head(&event_recorder->priv->parent.u.syscall.node, &syscall_table->unknown_syscall_dispatch);
+		hlist_add_head(&event->priv->u.syscall.node, &syscall_table->unknown_syscall_dispatch);
 	}
 
 	if (hlist_empty(&syscall_table->compat_unknown_syscall_dispatch)) {
 		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___compat_syscall_entry_unknown;
-		struct lttng_kernel_event_recorder *event_recorder;
+		struct lttng_kernel_event_common *event;
 		struct lttng_event_recorder_enabler *event_enabler;
 
 		memset(&ev, 0, sizeof(ev));
@@ -669,19 +669,19 @@ int lttng_syscalls_populate_events(struct lttng_event_enabler_common *syscall_ev
 		if (!event_enabler) {
 			return -ENOMEM;
 		}
-		event_recorder = _lttng_kernel_event_recorder_create(event_enabler, desc);
-		WARN_ON_ONCE(!event_recorder);
+		event = _lttng_kernel_event_create(&event_enabler->parent, desc);
+		WARN_ON_ONCE(!event);
 		lttng_event_enabler_destroy(&event_enabler->parent);
-		if (IS_ERR(event_recorder)) {
-			return PTR_ERR(event_recorder);
+		if (IS_ERR(event)) {
+			return PTR_ERR(event);
 		}
-		hlist_add_head(&event_recorder->priv->parent.u.syscall.node, &syscall_table->compat_unknown_syscall_dispatch);
+		hlist_add_head(&event->priv->u.syscall.node, &syscall_table->compat_unknown_syscall_dispatch);
 	}
 
 	if (hlist_empty(&syscall_table->compat_unknown_syscall_exit_dispatch)) {
 		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___compat_syscall_exit_unknown;
-		struct lttng_kernel_event_recorder *event_recorder;
+		struct lttng_kernel_event_common *event;
 		struct lttng_event_recorder_enabler *event_enabler;
 
 		memset(&ev, 0, sizeof(ev));
@@ -694,19 +694,19 @@ int lttng_syscalls_populate_events(struct lttng_event_enabler_common *syscall_ev
 		if (!event_enabler) {
 			return -ENOMEM;
 		}
-		event_recorder = _lttng_kernel_event_recorder_create(event_enabler, desc);
-		WARN_ON_ONCE(!event_recorder);
+		event = _lttng_kernel_event_create(&event_enabler->parent, desc);
+		WARN_ON_ONCE(!event);
 		lttng_event_enabler_destroy(&event_enabler->parent);
-		if (IS_ERR(event_recorder)) {
-			return PTR_ERR(event_recorder);
+		if (IS_ERR(event)) {
+			return PTR_ERR(event);
 		}
-		hlist_add_head(&event_recorder->priv->parent.u.syscall.node, &syscall_table->compat_unknown_syscall_exit_dispatch);
+		hlist_add_head(&event->priv->u.syscall.node, &syscall_table->compat_unknown_syscall_exit_dispatch);
 	}
 
 	if (hlist_empty(&syscall_table->unknown_syscall_exit_dispatch)) {
 		const struct lttng_kernel_event_desc *desc =
 			&__event_desc___syscall_exit_unknown;
-		struct lttng_kernel_event_recorder *event_recorder;
+		struct lttng_kernel_event_common *event;
 		struct lttng_event_recorder_enabler *event_enabler;
 
 		memset(&ev, 0, sizeof(ev));
@@ -719,13 +719,13 @@ int lttng_syscalls_populate_events(struct lttng_event_enabler_common *syscall_ev
 		if (!event_enabler) {
 			return -ENOMEM;
 		}
-		event_recorder = _lttng_kernel_event_recorder_create(event_enabler, desc);
-		WARN_ON_ONCE(!event_recorder);
+		event = _lttng_kernel_event_create(&event_enabler->parent, desc);
+		WARN_ON_ONCE(!event);
 		lttng_event_enabler_destroy(&event_enabler->parent);
-		if (IS_ERR(event_recorder)) {
-			return PTR_ERR(event_recorder);
+		if (IS_ERR(event)) {
+			return PTR_ERR(event);
 		}
-		hlist_add_head(&event_recorder->priv->parent.u.syscall.node, &syscall_table->unknown_syscall_exit_dispatch);
+		hlist_add_head(&event->priv->u.syscall.node, &syscall_table->unknown_syscall_exit_dispatch);
 	}
 
 	ret = lttng_create_syscall_event_if_missing(sc_table.table, sc_table.len,
@@ -832,7 +832,7 @@ int create_unknown_event_notifier(
 {
 	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&event_notifier_enabler->parent);
 	struct lttng_kernel_event_common_private *event_priv;
-	struct lttng_kernel_event_notifier *event_notifier;
+	struct lttng_kernel_event_common *event;
 	const struct lttng_kernel_event_desc *desc;
 	struct lttng_event_notifier_group *group = event_notifier_enabler->group;
 	struct lttng_kernel_syscall_table *syscall_table = &group->syscall_table;
@@ -904,16 +904,16 @@ int create_unknown_event_notifier(
 	event_notifier_enabler = lttng_event_notifier_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
 			&event_notifier_param, group);
 	WARN_ON_ONCE(!event_notifier_enabler);
-	event_notifier = _lttng_event_notifier_create(event_notifier_enabler, desc);
+	event = _lttng_kernel_event_create(&event_notifier_enabler->parent, desc);
 	lttng_event_enabler_destroy(&event_notifier_enabler->parent);
-	if (IS_ERR(event_notifier)) {
+	if (IS_ERR(event)) {
 		printk(KERN_INFO "Unable to create unknown notifier %s\n",
 			desc->event_name);
 		ret = -ENOMEM;
 		goto end;
 	}
 
-	hlist_add_head_rcu(&event_notifier->priv->parent.u.syscall.node, unknown_dispatch_list);
+	hlist_add_head_rcu(&event->priv->u.syscall.node, unknown_dispatch_list);
 
 end:
 	return ret;
@@ -936,7 +936,7 @@ static int create_matching_event_notifiers(
 	for (i = 0; i < table_len; i++) {
 		struct lttng_event_notifier_enabler *event_notifier_enabler;
 		struct lttng_kernel_event_common_private *event_priv;
-		struct lttng_kernel_event_notifier *event_notifier;
+		struct lttng_kernel_event_common *event;
 		struct lttng_kernel_abi_event_notifier event_notifier_param;
 		struct hlist_head *head;
 		int found = 0;
@@ -992,16 +992,16 @@ static int create_matching_event_notifiers(
 		event_notifier_enabler = lttng_event_notifier_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
 				&event_notifier_param, group);
 		WARN_ON_ONCE(!event_notifier_enabler);
-		event_notifier = _lttng_event_notifier_create(event_notifier_enabler, desc);
+		event = _lttng_kernel_event_create(&event_notifier_enabler->parent, desc);
 		lttng_event_enabler_destroy(&event_notifier_enabler->parent);
-		if (IS_ERR(event_notifier)) {
+		if (IS_ERR(event)) {
 			printk(KERN_INFO "Unable to create event_notifier %s\n",
 				desc->event_name);
 			ret = -ENOMEM;
 			goto end;
 		}
 
-		event_notifier->priv->parent.u.syscall.syscall_id = i;
+		event->priv->u.syscall.syscall_id = i;
 	}
 
 end:

@@ -1031,18 +1031,10 @@ struct lttng_kernel_channel_buffer *lttng_global_channel_create(struct lttng_ker
 				       unsigned int read_timer_interval);
 
 void lttng_metadata_channel_destroy(struct lttng_kernel_channel_buffer *chan);
-struct lttng_kernel_event_recorder *lttng_kernel_event_recorder_create(struct lttng_event_recorder_enabler *event_enabler,
+struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_enabler_common *event_enabler,
 				const struct lttng_kernel_event_desc *event_desc);
-struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct lttng_event_recorder_enabler *event_enabler,
+struct lttng_kernel_event_common *lttng_kernel_event_create(struct lttng_event_enabler_common *event_enabler,
 				const struct lttng_kernel_event_desc *event_desc);
-struct lttng_kernel_event_recorder *lttng_event_compat_old_create(struct lttng_kernel_channel_buffer *chan,
-		struct lttng_kernel_abi_old_event *old_event_param,
-		const struct lttng_kernel_event_desc *internal_desc);
-
-struct lttng_kernel_event_notifier *lttng_event_notifier_create(struct lttng_event_notifier_enabler *event_enabler,
-				const struct lttng_kernel_event_desc *event_notifier_desc);
-struct lttng_kernel_event_notifier *_lttng_event_notifier_create(struct lttng_event_notifier_enabler *event_enabler,
-				const struct lttng_kernel_event_desc *event_notifier_desc);
 
 int lttng_channel_enable(struct lttng_kernel_channel_common *channel);
 int lttng_channel_disable(struct lttng_kernel_channel_common *channel);
