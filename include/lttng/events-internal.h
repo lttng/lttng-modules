@@ -819,6 +819,11 @@ void lttng_event_enabler_destroy(struct lttng_event_enabler_common *event_enable
 
 int lttng_desc_match_enabler(const struct lttng_kernel_event_desc *desc,
 		struct lttng_event_enabler_common *enabler);
+bool lttng_event_enabler_match_event(struct lttng_event_enabler_common *event_enabler,
+		struct lttng_kernel_event_common *event);
+bool lttng_event_enabler_desc_match_event(struct lttng_event_enabler_common *event_enabler,
+		const struct lttng_kernel_event_desc *desc,
+		struct lttng_kernel_event_common *event);
 
 void lttng_enabler_link_bytecode(const struct lttng_kernel_event_desc *event_desc,
 		struct lttng_kernel_ctx *ctx,
