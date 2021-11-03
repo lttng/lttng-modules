@@ -2645,67 +2645,114 @@ void lttng_event_sync_capture_state(struct lttng_kernel_event_common *event)
 	}
 }
 
+static
+bool lttng_get_event_enabled_state(struct lttng_kernel_event_common *event)
+{
+	struct lttng_enabler_ref *enabler_ref;
+	bool enabled = false;
+
+	switch (event->priv->instrumentation) {
+	case LTTNG_KERNEL_ABI_TRACEPOINT:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_SYSCALL:
+		/* Enable events */
+		list_for_each_entry(enabler_ref, &event->priv->enablers_ref_head, node) {
+			if (enabler_ref->ref->enabled) {
+				enabled = true;
+				break;
+			}
+		}
+		break;
+	default:
+		WARN_ON_ONCE(1);
+		return false;
+	}
+
+	switch (event->type) {
+	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+	{
+		struct lttng_kernel_event_recorder *event_recorder =
+			container_of(event, struct lttng_kernel_event_recorder, parent);
+
+		/*
+		 * Enabled state is based on union of enablers, with
+		 * intersection of session and channel transient enable
+		 * states.
+		 */
+		return enabled && event_recorder->chan->parent.session->priv->tstate && event_recorder->chan->priv->parent.tstate;
+	}
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
+		return enabled;
+	default:
+		WARN_ON_ONCE(1);
+		return false;
+	}
+}
+
+static
+bool lttng_event_is_lazy_sync(struct lttng_kernel_event_common *event)
+{
+	switch (event->priv->instrumentation) {
+	case LTTNG_KERNEL_ABI_TRACEPOINT:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_SYSCALL:
+		return true;
+
+	default:
+		/* Not handled with lazy sync. */
+		return false;
+	}
+}
+
 /*
- * lttng_session_sync_event_enablers should be called just before starting a
- * session.
  * Should be called with sessions mutex held.
  */
 static
-void lttng_session_sync_event_enablers(struct lttng_kernel_session *session)
+void lttng_sync_event_list(struct list_head *event_enabler_list,
+		struct list_head *event_list)
 {
+	struct lttng_kernel_event_common_private *event_priv;
 	struct lttng_event_enabler_common *event_enabler;
-	struct lttng_kernel_event_recorder_private *event_recorder_priv;
 
-	list_for_each_entry(event_enabler, &session->priv->enablers_head, node)
+	list_for_each_entry(event_enabler, event_enabler_list, node)
 		lttng_event_enabler_ref_events(event_enabler);
+
 	/*
 	 * For each event, if at least one of its enablers is enabled,
 	 * and its channel and session transient states are enabled, we
 	 * enable the event, else we disable it.
 	 */
-	list_for_each_entry(event_recorder_priv, &session->priv->events, parent.node) {
-		struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
-		struct lttng_enabler_ref *enabler_ref;
-		int enabled = 0;
+	list_for_each_entry(event_priv, event_list, node) {
+		struct lttng_kernel_event_common *event = event_priv->pub;
+		bool enabled;
 
-		switch (event_recorder_priv->parent.instrumentation) {
-		case LTTNG_KERNEL_ABI_TRACEPOINT:
-			lttng_fallthrough;
-		case LTTNG_KERNEL_ABI_SYSCALL:
-			/* Enable events */
-			list_for_each_entry(enabler_ref,
-					&event_recorder_priv->parent.enablers_ref_head, node) {
-				if (enabler_ref->ref->enabled) {
-					enabled = 1;
-					break;
-				}
-			}
-			break;
-
-		default:
-			/* Not handled with lazy sync. */
+		if (!lttng_event_is_lazy_sync(event))
 			continue;
-		}
-		/*
-		 * Enabled state is based on union of enablers, with
-		 * intesection of session and channel transient enable
-		 * states.
-		 */
-		enabled = enabled && session->priv->tstate && event_recorder->chan->priv->parent.tstate;
 
-		WRITE_ONCE(event_recorder->parent.enabled, enabled);
+		enabled = lttng_get_event_enabled_state(event);
+		WRITE_ONCE(event->enabled, enabled);
 		/*
-		 * Sync tracepoint registration with event enabled
-		 * state.
+		 * Sync tracepoint registration with event enabled state.
 		 */
 		if (enabled) {
-			register_event(&event_recorder->parent);
+			register_event(event);
 		} else {
-			_lttng_event_unregister(&event_recorder->parent);
+			_lttng_event_unregister(event);
 		}
 
-		lttng_event_sync_filter_state(&event_recorder_priv->pub->parent);
+		lttng_event_sync_filter_state(event);
+		lttng_event_sync_capture_state(event);
 	}
+}
+
+/*
+ * lttng_session_sync_event_enablers should be called just before starting a
+ * session.
+ */
+static
+void lttng_session_sync_event_enablers(struct lttng_kernel_session *session)
+{
+	lttng_sync_event_list(&session->priv->enablers_head, &session->priv->events);
 }
 
 /*
@@ -2727,56 +2774,7 @@ void lttng_session_lazy_sync_event_enablers(struct lttng_kernel_session *session
 static
 void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group *event_notifier_group)
 {
-	struct lttng_event_enabler_common *event_enabler;
-	struct lttng_kernel_event_notifier_private *event_notifier_priv;
-
-	list_for_each_entry(event_enabler, &event_notifier_group->enablers_head, node)
-		lttng_event_enabler_ref_events(event_enabler);
-
-	/*
-	 * For each event_notifier, if at least one of its enablers is enabled,
-	 * we enable the event_notifier, else we disable it.
-	 */
-	list_for_each_entry(event_notifier_priv, &event_notifier_group->event_notifiers_head, parent.node) {
-		struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
-		struct lttng_enabler_ref *enabler_ref;
-		int enabled = 0;
-
-		switch (event_notifier_priv->parent.instrumentation) {
-		case LTTNG_KERNEL_ABI_TRACEPOINT:
-			lttng_fallthrough;
-		case LTTNG_KERNEL_ABI_SYSCALL:
-			/* Enable event_notifiers */
-			list_for_each_entry(enabler_ref,
-					&event_notifier_priv->parent.enablers_ref_head, node) {
-				if (enabler_ref->ref->enabled) {
-					enabled = 1;
-					break;
-				}
-			}
-			break;
-
-		default:
-			/* Not handled with sync. */
-			continue;
-		}
-
-		WRITE_ONCE(event_notifier->parent.enabled, enabled);
-		/*
-		 * Sync tracepoint registration with event_notifier enabled
-		 * state.
-		 */
-		if (enabled) {
-			if (!event_notifier_priv->parent.registered)
-				register_event(&event_notifier->parent);
-		} else {
-			if (event_notifier_priv->parent.registered)
-				_lttng_event_unregister(&event_notifier->parent);
-		}
-
-		lttng_event_sync_filter_state(&event_notifier_priv->pub->parent);
-		lttng_event_sync_capture_state(&event_notifier_priv->pub->parent);
-	}
+	lttng_sync_event_list(&event_notifier_group->enablers_head, &event_notifier_group->event_notifiers_head);
 }
 
 static
