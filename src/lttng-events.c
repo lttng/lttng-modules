@@ -362,7 +362,7 @@ void lttng_session_destroy(struct lttng_kernel_session *session)
 		ret = lttng_syscalls_unregister_syscall_table(&chan_priv->parent.syscall_table);
 		WARN_ON(ret);
 	}
-	list_for_each_entry(event_recorder_priv, &session->priv->events, node) {
+	list_for_each_entry(event_recorder_priv, &session->priv->events, parent.node) {
 		ret = _lttng_event_unregister(&event_recorder_priv->pub->parent);
 		WARN_ON(ret);
 	}
@@ -374,7 +374,7 @@ void lttng_session_destroy(struct lttng_kernel_session *session)
 	list_for_each_entry_safe(event_recorder_enabler, tmp_event_recorder_enabler,
 			&session->priv->enablers_head, node)
 		lttng_event_enabler_destroy(&event_recorder_enabler->parent);
-	list_for_each_entry_safe(event_recorder_priv, tmpevent_recorder_priv, &session->priv->events, node)
+	list_for_each_entry_safe(event_recorder_priv, tmpevent_recorder_priv, &session->priv->events, parent.node)
 		_lttng_event_destroy(&event_recorder_priv->pub->parent);
 	list_for_each_entry_safe(chan_priv, tmpchan_priv, &session->priv->chan, node) {
 		BUG_ON(chan_priv->channel_type == METADATA_CHANNEL);
@@ -413,7 +413,7 @@ void lttng_event_notifier_group_destroy(
 	WARN_ON(ret);
 
 	list_for_each_entry_safe(event_notifier_priv, tmpevent_notifier_priv,
-			&event_notifier_group->event_notifiers_head, node) {
+			&event_notifier_group->event_notifiers_head, parent.node) {
 		ret = _lttng_event_unregister(&event_notifier_priv->pub->parent);
 		WARN_ON(ret);
 	}
@@ -431,7 +431,7 @@ void lttng_event_notifier_group_destroy(
 		lttng_event_enabler_destroy(&event_notifier_enabler->parent);
 
 	list_for_each_entry_safe(event_notifier_priv, tmpevent_notifier_priv,
-			&event_notifier_group->event_notifiers_head, node)
+			&event_notifier_group->event_notifiers_head, parent.node)
 		_lttng_event_destroy(&event_notifier_priv->pub->parent);
 
 	if (event_notifier_group->error_counter) {
@@ -567,7 +567,7 @@ int lttng_session_metadata_regenerate(struct lttng_kernel_session *session)
 		chan_priv->metadata_dumped = 0;
 	}
 
-	list_for_each_entry(event_recorder_priv, &session->priv->events, node) {
+	list_for_each_entry(event_recorder_priv, &session->priv->events, parent.node) {
 		event_recorder_priv->metadata_dumped = 0;
 	}
 
@@ -1060,7 +1060,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 			module_put(event_recorder->priv->parent.desc->owner);
 			goto statedump_error;
 		}
-		list_add(&event_recorder_return->priv->node, &chan->parent.session->priv->events);
+		list_add(&event_recorder_return->priv->parent.node, &chan->parent.session->priv->events);
 		break;
 	}
 
@@ -1138,7 +1138,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 		goto statedump_error;
 	}
 	hlist_add_head(&event_recorder->priv->parent.hlist_node, head);
-	list_add(&event_recorder->priv->node, &chan->parent.session->priv->events);
+	list_add(&event_recorder->priv->parent.node, &chan->parent.session->priv->events);
 	return event_recorder;
 
 statedump_error:
@@ -1348,7 +1348,7 @@ struct lttng_kernel_event_notifier *_lttng_kernel_event_notifier_create(struct l
 		goto register_error;
 	}
 
-	list_add(&event_notifier->priv->node, &event_notifier_group->event_notifiers_head);
+	list_add(&event_notifier->priv->parent.node, &event_notifier_group->event_notifiers_head);
 	hlist_add_head(&event_notifier->priv->parent.hlist_node, head);
 
 	/*
@@ -1623,7 +1623,7 @@ void _lttng_event_destroy(struct lttng_kernel_event_common *event)
 		default:
 			WARN_ON_ONCE(1);
 		}
-		list_del(&event_recorder->priv->node);
+		list_del(&event_recorder->priv->parent.node);
 		kmem_cache_free(event_recorder_private_cache, event_recorder->priv);
 		kmem_cache_free(event_recorder_cache, event_recorder);
 		break;
@@ -1660,7 +1660,7 @@ void _lttng_event_destroy(struct lttng_kernel_event_common *event)
 		default:
 			WARN_ON_ONCE(1);
 		}
-		list_del(&event_notifier->priv->node);
+		list_del(&event_notifier->priv->parent.node);
 		kmem_cache_free(event_notifier_private_cache, event_notifier->priv);
 		kmem_cache_free(event_notifier_cache, event_notifier);
 		break;
@@ -2253,7 +2253,7 @@ int lttng_event_enabler_ref_events(struct lttng_event_recorder_enabler *event_en
 	lttng_create_event_if_missing(&event_enabler->parent);
 
 	/* For each event matching event_enabler in session event list. */
-	list_for_each_entry(event_recorder_priv, &session->priv->events, node) {
+	list_for_each_entry(event_recorder_priv, &session->priv->events, parent.node) {
 		struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
 		struct lttng_enabler_ref *enabler_ref;
 
@@ -2316,7 +2316,7 @@ int lttng_event_notifier_enabler_ref_event_notifiers(
 	lttng_create_event_if_missing(&event_notifier_enabler->parent);
 
 	/* Link the created event_notifier with its associated enabler. */
-	list_for_each_entry(event_notifier_priv, &event_notifier_group->event_notifiers_head, node) {
+	list_for_each_entry(event_notifier_priv, &event_notifier_group->event_notifiers_head, parent.node) {
 		struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
 		struct lttng_enabler_ref *enabler_ref;
 
@@ -2672,7 +2672,7 @@ void lttng_session_sync_event_enablers(struct lttng_kernel_session *session)
 	 * and its channel and session transient states are enabled, we
 	 * enable the event, else we disable it.
 	 */
-	list_for_each_entry(event_recorder_priv, &session->priv->events, node) {
+	list_for_each_entry(event_recorder_priv, &session->priv->events, parent.node) {
 		struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
 		struct lttng_enabler_ref *enabler_ref;
 		struct lttng_kernel_bytecode_runtime *runtime;
@@ -2767,7 +2767,7 @@ void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group 
 	 * For each event_notifier, if at least one of its enablers is enabled,
 	 * we enable the event_notifier, else we disable it.
 	 */
-	list_for_each_entry(event_notifier_priv, &event_notifier_group->event_notifiers_head, node) {
+	list_for_each_entry(event_notifier_priv, &event_notifier_group->event_notifiers_head, parent.node) {
 		struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
 		struct lttng_enabler_ref *enabler_ref;
 		struct lttng_kernel_bytecode_runtime *runtime;
@@ -4088,7 +4088,7 @@ skip_session:
 			goto end;
 	}
 
-	list_for_each_entry(event_recorder_priv, &session->priv->events, node) {
+	list_for_each_entry(event_recorder_priv, &session->priv->events, parent.node) {
 		ret = _lttng_event_metadata_statedump(session, event_recorder_priv->pub->chan,
 				event_recorder_priv->pub);
 		if (ret)

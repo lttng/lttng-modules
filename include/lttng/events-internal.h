@@ -79,6 +79,7 @@ struct lttng_kernel_event_common_private {
 	struct list_head filter_bytecode_runtime_head;
 
 	struct hlist_node hlist_node;			/* node in events hash table */
+	struct list_head node;				/* node in event list */
 
 	enum lttng_kernel_abi_instrumentation instrumentation;
 	/* Selected by instrumentation */
@@ -102,7 +103,6 @@ struct lttng_kernel_event_recorder_private {
 	struct lttng_kernel_event_common_private parent;
 
 	struct lttng_kernel_event_recorder *pub;	/* Public event interface */
-	struct list_head node;				/* Event recorder list */
 	struct lttng_kernel_ctx *ctx;
 	unsigned int id;
 	unsigned int metadata_dumped:1;
@@ -115,7 +115,6 @@ struct lttng_kernel_event_notifier_private {
 	struct lttng_event_notifier_group *group;	/* weak ref */
 	size_t num_captures;				/* Needed to allocate the msgpack array. */
 	uint64_t error_counter_index;
-	struct list_head node;				/* Event notifier list */
 	struct list_head capture_bytecode_runtime_head;
 };
 
