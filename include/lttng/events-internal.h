@@ -236,20 +236,19 @@ struct lttng_event_enabler_common {
 	unsigned int enabled:1;
 
 	uint64_t user_token;		/* User-provided token. */
+
+	struct list_head node;		/* list of enablers */
+	bool published;			/* published in list. */
 };
 
 struct lttng_event_recorder_enabler {
 	struct lttng_event_enabler_common parent;
-	struct list_head node;		/* per-session list of enablers */
-	bool published;			/* published in per-session list. */
 	struct lttng_kernel_channel_buffer *chan;
 };
 
 struct lttng_event_notifier_enabler {
 	struct lttng_event_enabler_common parent;
 	uint64_t error_counter_index;
-	struct list_head node;	/* List of event_notifier enablers */
-	bool published;		/* published in group list. */
 	struct lttng_event_notifier_group *group;
 
 	/* head list of struct lttng_kernel_bytecode_node */
