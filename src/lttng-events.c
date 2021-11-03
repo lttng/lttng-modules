@@ -2223,6 +2223,15 @@ void lttng_create_event_if_missing(struct lttng_event_enabler_common *event_enab
 }
 
 static
+void lttng_event_enabler_init_event_filter(struct lttng_event_enabler_common *event_enabler,
+		struct lttng_kernel_event_common *event)
+{
+	/* Link filter bytecodes if not linked yet. */
+	lttng_enabler_link_bytecode(event->priv->desc, lttng_static_ctx,
+		&event->priv->filter_bytecode_runtime_head, &event_enabler->filter_bytecode_head);
+}
+
+static
 void lttng_event_enabler_init_event_capture(struct lttng_event_enabler_common *event_enabler,
 		struct lttng_kernel_event_common *event)
 {
@@ -2287,13 +2296,7 @@ int lttng_event_enabler_ref_events(struct lttng_event_recorder_enabler *event_en
 				&event_recorder_priv->parent.enablers_ref_head);
 		}
 
-		/*
-		 * Link filter bytecodes if not linked yet.
-		 */
-		lttng_enabler_link_bytecode(event_recorder_priv->parent.desc,
-			lttng_static_ctx,
-			&event_recorder_priv->parent.filter_bytecode_runtime_head,
-			&lttng_event_recorder_enabler_as_enabler(event_enabler)->filter_bytecode_head);
+		lttng_event_enabler_init_event_filter(&event_enabler->parent, &event_recorder->parent);
 	}
 	return 0;
 }
@@ -2338,13 +2341,7 @@ int lttng_event_notifier_enabler_ref_event_notifiers(
 				&event_notifier_priv->parent.enablers_ref_head);
 		}
 
-		/*
-		 * Link filter bytecodes if not linked yet.
-		 */
-		lttng_enabler_link_bytecode(event_notifier_priv->parent.desc,
-			lttng_static_ctx, &event_notifier_priv->parent.filter_bytecode_runtime_head,
-			&lttng_event_notifier_enabler_as_enabler(event_notifier_enabler)->filter_bytecode_head);
-
+		lttng_event_enabler_init_event_filter(&event_notifier_enabler->parent, &event_notifier->parent);
 		lttng_event_enabler_init_event_capture(&event_notifier_enabler->parent, &event_notifier->parent);
 	}
 	return 0;
