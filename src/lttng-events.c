@@ -1945,7 +1945,8 @@ int lttng_match_enabler_name(const char *desc_name,
 	return 1;
 }
 
-int lttng_desc_match_enabler(const struct lttng_kernel_event_desc *desc,
+static
+int lttng_desc_match_enabler_check(const struct lttng_kernel_event_desc *desc,
 		struct lttng_event_enabler_common *enabler)
 {
 	const char *desc_name, *enabler_name;
@@ -2032,6 +2033,19 @@ int lttng_desc_match_enabler(const struct lttng_kernel_event_desc *desc,
 		WARN_ON_ONCE(1);
 		return -EINVAL;
 	}
+}
+
+bool lttng_desc_match_enabler(const struct lttng_kernel_event_desc *desc,
+		struct lttng_event_enabler_common *enabler)
+{
+	int ret;
+
+	ret = lttng_desc_match_enabler_check(desc, enabler);
+	if (ret < 0) {
+		WARN_ON_ONCE(1);
+		return false;
+	}
+	return ret;
 }
 
 bool lttng_event_enabler_match_event(struct lttng_event_enabler_common *event_enabler,

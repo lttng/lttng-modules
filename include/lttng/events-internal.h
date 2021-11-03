@@ -817,7 +817,7 @@ int lttng_event_enabler_attach_filter_bytecode(struct lttng_event_enabler_common
 		struct lttng_kernel_abi_filter_bytecode __user *bytecode);
 void lttng_event_enabler_destroy(struct lttng_event_enabler_common *event_enabler);
 
-int lttng_desc_match_enabler(const struct lttng_kernel_event_desc *desc,
+bool lttng_desc_match_enabler(const struct lttng_kernel_event_desc *desc,
 		struct lttng_event_enabler_common *enabler);
 bool lttng_event_enabler_match_event(struct lttng_event_enabler_common *event_enabler,
 		struct lttng_kernel_event_common *event);

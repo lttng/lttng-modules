@@ -554,8 +554,8 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 			/* Unknown syscall */
 			continue;
 		}
-		if (lttng_desc_match_enabler(desc,
-				lttng_event_recorder_enabler_as_enabler(syscall_event_enabler)) <= 0)
+		if (!lttng_desc_match_enabler(desc,
+				lttng_event_recorder_enabler_as_enabler(syscall_event_enabler)))
 			continue;
 		/*
 		 * Check if already created.
