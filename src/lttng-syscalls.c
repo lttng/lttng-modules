@@ -1397,6 +1397,29 @@ int lttng_syscall_filter_disable_event(struct lttng_kernel_event_common *event)
 	return 0;
 }
 
+void lttng_syscall_table_set_wildcard_all(struct lttng_event_enabler_common *event_enabler)
+{
+	struct lttng_kernel_syscall_table *syscall_table = get_syscall_table_from_enabler(event_enabler);
+	enum lttng_kernel_abi_syscall_entryexit entryexit;
+	int enabled = event_enabler->enabled;
+
+	if (event_enabler->event_param.instrumentation != LTTNG_KERNEL_ABI_SYSCALL)
+		return;
+	if (event_enabler->event_param.u.syscall.abi != LTTNG_KERNEL_ABI_SYSCALL_ABI_ALL)
+		return;
+	if (event_enabler->event_param.u.syscall.match != LTTNG_KERNEL_ABI_SYSCALL_MATCH_NAME)
+		return;
+	if (strcmp(event_enabler->event_param.name, "*"))
+		return;
+
+	entryexit = event_enabler->event_param.u.syscall.entryexit;
+	if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRY || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT)
+		WRITE_ONCE(syscall_table->syscall_all_entry, enabled);
+
+	if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_EXIT || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT)
+		WRITE_ONCE(syscall_table->syscall_all_exit, enabled);
+}
+
 static
 const struct trace_syscall_entry *syscall_list_get_entry(loff_t *pos)
 {

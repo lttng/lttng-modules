@@ -2230,24 +2230,11 @@ void lttng_create_event_if_missing(struct lttng_event_enabler_common *event_enab
 static
 int lttng_event_enabler_ref_events(struct lttng_event_recorder_enabler *event_enabler)
 {
-	struct lttng_kernel_channel_buffer *chan = event_enabler->chan;
 	struct lttng_event_enabler_common *base_enabler = lttng_event_recorder_enabler_as_enabler(event_enabler);
 	struct lttng_kernel_event_recorder_private *event_recorder_priv;
 	struct list_head *event_list_head = lttng_get_event_list_head_from_enabler(&event_enabler->parent);
 
-	if (base_enabler->event_param.instrumentation == LTTNG_KERNEL_ABI_SYSCALL &&
-			base_enabler->event_param.u.syscall.abi == LTTNG_KERNEL_ABI_SYSCALL_ABI_ALL &&
-			base_enabler->event_param.u.syscall.match == LTTNG_KERNEL_ABI_SYSCALL_MATCH_NAME &&
-			!strcmp(base_enabler->event_param.name, "*")) {
-		int enabled = base_enabler->enabled;
-		enum lttng_kernel_abi_syscall_entryexit entryexit = base_enabler->event_param.u.syscall.entryexit;
-
-		if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRY || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT)
-			WRITE_ONCE(chan->priv->parent.syscall_table.syscall_all_entry, enabled);
-
-		if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_EXIT || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT)
-			WRITE_ONCE(chan->priv->parent.syscall_table.syscall_all_exit, enabled);
-	}
+	lttng_syscall_table_set_wildcard_all(base_enabler);
 
 	/* First ensure that probe events are created for this enabler. */
 	lttng_create_event_if_missing(&event_enabler->parent);
@@ -2292,26 +2279,10 @@ static
 int lttng_event_notifier_enabler_ref_event_notifiers(
 		struct lttng_event_notifier_enabler *event_notifier_enabler)
 {
-	struct lttng_event_notifier_group *event_notifier_group = event_notifier_enabler->group;
-	struct lttng_event_enabler_common *base_enabler = lttng_event_notifier_enabler_as_enabler(event_notifier_enabler);
 	struct lttng_kernel_event_notifier_private *event_notifier_priv;
 	struct list_head *event_list_head = lttng_get_event_list_head_from_enabler(&event_notifier_enabler->parent);
 
-	if (base_enabler->event_param.instrumentation == LTTNG_KERNEL_ABI_SYSCALL &&
-			base_enabler->event_param.u.syscall.abi == LTTNG_KERNEL_ABI_SYSCALL_ABI_ALL &&
-			base_enabler->event_param.u.syscall.match == LTTNG_KERNEL_ABI_SYSCALL_MATCH_NAME &&
-			!strcmp(base_enabler->event_param.name, "*")) {
-
-		int enabled = base_enabler->enabled;
-		enum lttng_kernel_abi_syscall_entryexit entryexit = base_enabler->event_param.u.syscall.entryexit;
-
-		if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRY || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT)
-			WRITE_ONCE(event_notifier_group->syscall_table.syscall_all_entry, enabled);
-
-		if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_EXIT || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT)
-			WRITE_ONCE(event_notifier_group->syscall_table.syscall_all_exit, enabled);
-
-	}
+	lttng_syscall_table_set_wildcard_all(&event_notifier_enabler->parent);
 
 	/* First ensure that probe event_notifiers are created for this enabler. */
 	lttng_create_event_if_missing(&event_notifier_enabler->parent);

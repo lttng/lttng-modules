@@ -860,6 +860,8 @@ int lttng_syscalls_destroy_syscall_table(struct lttng_kernel_syscall_table *sysc
 
 long lttng_syscall_table_get_active_mask(struct lttng_kernel_syscall_table *syscall_table,
 		struct lttng_kernel_abi_syscall_mask __user *usyscall_mask);
+
+void lttng_syscall_table_set_wildcard_all(struct lttng_event_enabler_common *event_enabler);
 #else
 static inline int lttng_syscalls_register_event(struct lttng_event_enabler_common *event_enabler)
 {
@@ -897,6 +899,9 @@ static inline int lttng_syscalls_create_matching_event_notifiers(struct lttng_ev
 	return -ENOSYS;
 }
 
+static inline void lttng_syscall_table_set_wildcard_all(struct lttng_event_enabler_common *event_enabler)
+{
+}
 #endif
 
 #ifdef CONFIG_KPROBES
