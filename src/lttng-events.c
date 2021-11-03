@@ -2231,9 +2231,9 @@ static
 int lttng_event_enabler_ref_events(struct lttng_event_recorder_enabler *event_enabler)
 {
 	struct lttng_kernel_channel_buffer *chan = event_enabler->chan;
-	struct lttng_kernel_session *session = event_enabler->chan->parent.session;
 	struct lttng_event_enabler_common *base_enabler = lttng_event_recorder_enabler_as_enabler(event_enabler);
 	struct lttng_kernel_event_recorder_private *event_recorder_priv;
+	struct list_head *event_list_head = lttng_get_event_list_head_from_enabler(&event_enabler->parent);
 
 	if (base_enabler->event_param.instrumentation == LTTNG_KERNEL_ABI_SYSCALL &&
 			base_enabler->event_param.u.syscall.abi == LTTNG_KERNEL_ABI_SYSCALL_ABI_ALL &&
@@ -2253,7 +2253,7 @@ int lttng_event_enabler_ref_events(struct lttng_event_recorder_enabler *event_en
 	lttng_create_event_if_missing(&event_enabler->parent);
 
 	/* For each event matching event_enabler in session event list. */
-	list_for_each_entry(event_recorder_priv, &session->priv->events, parent.node) {
+	list_for_each_entry(event_recorder_priv, event_list_head, parent.node) {
 		struct lttng_kernel_event_recorder *event_recorder = event_recorder_priv->pub;
 		struct lttng_enabler_ref *enabler_ref;
 
@@ -2295,6 +2295,7 @@ int lttng_event_notifier_enabler_ref_event_notifiers(
 	struct lttng_event_notifier_group *event_notifier_group = event_notifier_enabler->group;
 	struct lttng_event_enabler_common *base_enabler = lttng_event_notifier_enabler_as_enabler(event_notifier_enabler);
 	struct lttng_kernel_event_notifier_private *event_notifier_priv;
+	struct list_head *event_list_head = lttng_get_event_list_head_from_enabler(&event_notifier_enabler->parent);
 
 	if (base_enabler->event_param.instrumentation == LTTNG_KERNEL_ABI_SYSCALL &&
 			base_enabler->event_param.u.syscall.abi == LTTNG_KERNEL_ABI_SYSCALL_ABI_ALL &&
@@ -2316,7 +2317,7 @@ int lttng_event_notifier_enabler_ref_event_notifiers(
 	lttng_create_event_if_missing(&event_notifier_enabler->parent);
 
 	/* Link the created event_notifier with its associated enabler. */
-	list_for_each_entry(event_notifier_priv, &event_notifier_group->event_notifiers_head, parent.node) {
+	list_for_each_entry(event_notifier_priv, event_list_head, parent.node) {
 		struct lttng_kernel_event_notifier *event_notifier = event_notifier_priv->pub;
 		struct lttng_enabler_ref *enabler_ref;
 

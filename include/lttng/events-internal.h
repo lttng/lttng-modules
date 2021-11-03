@@ -614,6 +614,27 @@ struct lttng_event_ht *lttng_get_event_ht_from_enabler(struct lttng_event_enable
 	}
 }
 
+static inline
+struct list_head *lttng_get_event_list_head_from_enabler(struct lttng_event_enabler_common *event_enabler)
+{
+	switch (event_enabler->enabler_type) {
+	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
+	{
+		struct lttng_event_recorder_enabler *event_recorder_enabler =
+			container_of(event_enabler, struct lttng_event_recorder_enabler, parent);
+		return &event_recorder_enabler->chan->parent.session->priv->events;
+	}
+	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
+	{
+		struct lttng_event_notifier_enabler *event_notifier_enabler =
+			container_of(event_enabler, struct lttng_event_notifier_enabler, parent);
+		return &event_notifier_enabler->group->event_notifiers_head;
+	}
+	default:
+		return NULL;
+	}
+}
+
 int lttng_context_init(void);
 void lttng_context_exit(void);
 int lttng_kernel_context_append(struct lttng_kernel_ctx **ctx_p,
