@@ -1026,6 +1026,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 				const struct lttng_kernel_event_desc *event_desc)
 {
 	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&event_enabler->parent);
+	struct list_head *event_list_head = lttng_get_event_list_head_from_enabler(&event_enabler->parent);
 	struct lttng_kernel_channel_buffer *chan = event_enabler->chan;
 	struct lttng_kernel_abi_event *event_param = &event_enabler->parent.event_param;
 	enum lttng_kernel_abi_instrumentation itype = event_param->instrumentation;
@@ -1170,7 +1171,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 			module_put(event->priv->desc->owner);
 			goto statedump_error;
 		}
-		list_add(&event_return->priv->node, &chan->parent.session->priv->events);
+		list_add(&event_return->priv->node, event_list_head);
 		break;
 	}
 
@@ -1248,7 +1249,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 		goto statedump_error;
 	}
 	hlist_add_head(&event->priv->hlist_node, head);
-	list_add(&event->priv->node, &chan->parent.session->priv->events);
+	list_add(&event->priv->node, event_list_head);
 	return event_recorder;
 
 statedump_error:
@@ -1267,7 +1268,7 @@ struct lttng_kernel_event_notifier *_lttng_kernel_event_notifier_create(struct l
 		const struct lttng_kernel_event_desc *event_desc)
 {
 	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&event_enabler->parent);
-	struct lttng_event_notifier_group *event_notifier_group = event_enabler->group;
+	struct list_head *event_list_head = lttng_get_event_list_head_from_enabler(&event_enabler->parent);
 	struct lttng_kernel_abi_event *event_param = &event_enabler->parent.event_param;
 	enum lttng_kernel_abi_instrumentation itype = event_param->instrumentation;
 	struct lttng_kernel_event_common_private *event_priv;
@@ -1428,7 +1429,7 @@ struct lttng_kernel_event_notifier *_lttng_kernel_event_notifier_create(struct l
 		goto register_error;
 	}
 
-	list_add(&event->priv->node, &event_notifier_group->event_notifiers_head);
+	list_add(&event->priv->node, event_list_head);
 	hlist_add_head(&event->priv->hlist_node, head);
 
 	ret = lttng_kernel_event_notifier_clear_error_counter(event);
