@@ -73,9 +73,7 @@ static void _lttng_event_destroy(struct lttng_kernel_event_common *event);
 static void _lttng_channel_destroy(struct lttng_kernel_channel_buffer *chan);
 static int _lttng_event_unregister(struct lttng_kernel_event_common *event);
 static
-int _lttng_event_metadata_statedump(struct lttng_kernel_session *session,
-				  struct lttng_kernel_channel_buffer *chan,
-				  struct lttng_kernel_event_recorder *event);
+int _lttng_event_recorder_metadata_statedump(struct lttng_kernel_event_common *event);
 static
 int _lttng_session_metadata_statedump(struct lttng_kernel_session *session);
 static
@@ -1163,7 +1161,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 		WARN_ON_ONCE(!ret);
 		ret = try_module_get(event_return->priv->desc->owner);
 		WARN_ON_ONCE(!ret);
-		ret = _lttng_event_metadata_statedump(chan->parent.session, chan, event_recorder_return);
+		ret = _lttng_event_recorder_metadata_statedump(event_return);
 		WARN_ON_ONCE(ret > 0);
 		if (ret) {
 			lttng_kernel_event_free(event_return);
@@ -1243,7 +1241,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 		ret = -EINVAL;
 		goto register_error;
 	}
-	ret = _lttng_event_metadata_statedump(chan->parent.session, chan, event_recorder);
+	ret = _lttng_event_recorder_metadata_statedump(event);
 	WARN_ON_ONCE(ret > 0);
 	if (ret) {
 		goto statedump_error;
@@ -3664,11 +3662,18 @@ int _lttng_fields_metadata_statedump(struct lttng_kernel_session *session,
  * transaction.
  */
 static
-int _lttng_event_metadata_statedump(struct lttng_kernel_session *session,
-				  struct lttng_kernel_channel_buffer *chan,
-				  struct lttng_kernel_event_recorder *event_recorder)
+int _lttng_event_recorder_metadata_statedump(struct lttng_kernel_event_common *event)
 {
+	struct lttng_kernel_event_recorder *event_recorder;
+	struct lttng_kernel_channel_buffer *chan;
+	struct lttng_kernel_session *session;
 	int ret = 0;
+
+	if (event->type != LTTNG_KERNEL_EVENT_TYPE_RECORDER)
+		return 0;
+	event_recorder = container_of(event, struct lttng_kernel_event_recorder, parent);
+	chan = event_recorder->chan;
+	session = chan->parent.session;
 
 	if (event_recorder->priv->metadata_dumped || !LTTNG_READ_ONCE(session->active))
 		return 0;
@@ -4124,8 +4129,7 @@ skip_session:
 	}
 
 	list_for_each_entry(event_recorder_priv, &session->priv->events, parent.node) {
-		ret = _lttng_event_metadata_statedump(session, event_recorder_priv->pub->chan,
-				event_recorder_priv->pub);
+		ret = _lttng_event_recorder_metadata_statedump(&event_recorder_priv->pub->parent);
 		if (ret)
 			goto end;
 	}
