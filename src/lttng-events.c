@@ -1043,10 +1043,10 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 	switch (itype) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		/* Event will be enabled by enabler sync. */
-		event_recorder->parent.enabled = 0;
-		event_recorder->priv->parent.registered = 0;
-		event_recorder->priv->parent.desc = lttng_event_desc_get(event_name);
-		if (!event_recorder->priv->parent.desc) {
+		event->enabled = 0;
+		event->priv->registered = 0;
+		event->priv->desc = lttng_event_desc_get(event_name);
+		if (!event->priv->desc) {
 			ret = -ENOENT;
 			goto register_error;
 		}
@@ -1059,8 +1059,8 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 		 * Needs to be explicitly enabled after creation, since
 		 * we may want to apply filters.
 		 */
-		event_recorder->parent.enabled = 0;
-		event_recorder->priv->parent.registered = 1;
+		event->enabled = 0;
+		event->priv->registered = 1;
 		/*
 		 * Populate lttng_event structure before event
 		 * registration.
@@ -1070,12 +1070,12 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 				event_param->u.kprobe.symbol_name,
 				event_param->u.kprobe.offset,
 				event_param->u.kprobe.addr,
-				&event_recorder->parent);
+				event);
 		if (ret) {
 			ret = -EINVAL;
 			goto register_error;
 		}
-		ret = try_module_get(event_recorder->priv->parent.desc->owner);
+		ret = try_module_get(event->priv->desc->owner);
 		WARN_ON_ONCE(!ret);
 		break;
 
@@ -1125,8 +1125,8 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 		WARN_ON_ONCE(ret > 0);
 		if (ret) {
 			lttng_kernel_event_free(event_return);
-			module_put(event_recorder_return->priv->parent.desc->owner);
-			module_put(event_recorder->priv->parent.desc->owner);
+			module_put(event_return->priv->desc->owner);
+			module_put(event->priv->desc->owner);
 			goto statedump_error;
 		}
 		list_add(&event_return->priv->node, &chan->parent.session->priv->events);
@@ -1138,18 +1138,18 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 		 * Needs to be explicitly enabled after creation, since
 		 * we may want to apply filters.
 		 */
-		event_recorder->parent.enabled = 0;
-		event_recorder->priv->parent.registered = 0;
-		event_recorder->priv->parent.desc = event_desc;
+		event->enabled = 0;
+		event->priv->registered = 0;
+		event->priv->desc = event_desc;
 		switch (event_param->u.syscall.entryexit) {
 		case LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT:
 			ret = -EINVAL;
 			goto register_error;
 		case LTTNG_KERNEL_ABI_SYSCALL_ENTRY:
-			event_recorder->priv->parent.u.syscall.entryexit = LTTNG_SYSCALL_ENTRY;
+			event->priv->u.syscall.entryexit = LTTNG_SYSCALL_ENTRY;
 			break;
 		case LTTNG_KERNEL_ABI_SYSCALL_EXIT:
-			event_recorder->priv->parent.u.syscall.entryexit = LTTNG_SYSCALL_EXIT;
+			event->priv->u.syscall.entryexit = LTTNG_SYSCALL_EXIT;
 			break;
 		}
 		switch (event_param->u.syscall.abi) {
@@ -1157,13 +1157,13 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 			ret = -EINVAL;
 			goto register_error;
 		case LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE:
-			event_recorder->priv->parent.u.syscall.abi = LTTNG_SYSCALL_ABI_NATIVE;
+			event->priv->u.syscall.abi = LTTNG_SYSCALL_ABI_NATIVE;
 			break;
 		case LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT:
-			event_recorder->priv->parent.u.syscall.abi = LTTNG_SYSCALL_ABI_COMPAT;
+			event->priv->u.syscall.abi = LTTNG_SYSCALL_ABI_COMPAT;
 			break;
 		}
-		if (!event_recorder->priv->parent.desc) {
+		if (!event->priv->desc) {
 			ret = -EINVAL;
 			goto register_error;
 		}
@@ -1174,8 +1174,8 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 		 * Needs to be explicitly enabled after creation, since
 		 * we may want to apply filters.
 		 */
-		event_recorder->parent.enabled = 0;
-		event_recorder->priv->parent.registered = 1;
+		event->enabled = 0;
+		event->priv->registered = 1;
 
 		/*
 		 * Populate lttng_event structure before event
@@ -1185,10 +1185,10 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 
 		ret = lttng_uprobes_register_event(event_param->name,
 				event_param->u.uprobe.fd,
-				&event_recorder->parent);
+				event);
 		if (ret)
 			goto register_error;
-		ret = try_module_get(event_recorder->priv->parent.desc->owner);
+		ret = try_module_get(event->priv->desc->owner);
 		WARN_ON_ONCE(!ret);
 		break;
 
@@ -1206,8 +1206,8 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 	if (ret) {
 		goto statedump_error;
 	}
-	hlist_add_head(&event_recorder->priv->parent.hlist_node, head);
-	list_add(&event_recorder->priv->parent.node, &chan->parent.session->priv->events);
+	hlist_add_head(&event->priv->hlist_node, head);
+	list_add(&event->priv->node, &chan->parent.session->priv->events);
 	return event_recorder;
 
 statedump_error:
@@ -1288,10 +1288,10 @@ struct lttng_kernel_event_notifier *_lttng_kernel_event_notifier_create(struct l
 	switch (itype) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		/* Event will be enabled by enabler sync. */
-		event_notifier->parent.enabled = 0;
-		event_notifier->priv->parent.registered = 0;
-		event_notifier->priv->parent.desc = lttng_event_desc_get(event_name);
-		if (!event_notifier->priv->parent.desc) {
+		event->enabled = 0;
+		event->priv->registered = 0;
+		event->priv->desc = lttng_event_desc_get(event_name);
+		if (!event->priv->desc) {
 			ret = -ENOENT;
 			goto register_error;
 		}
@@ -1304,8 +1304,8 @@ struct lttng_kernel_event_notifier *_lttng_kernel_event_notifier_create(struct l
 		 * Needs to be explicitly enabled after creation, since
 		 * we may want to apply filters.
 		 */
-		event_notifier->parent.enabled = 0;
-		event_notifier->priv->parent.registered = 1;
+		event->enabled = 0;
+		event->priv->registered = 1;
 		/*
 		 * Populate lttng_event_notifier structure before event
 		 * registration.
@@ -1315,12 +1315,12 @@ struct lttng_kernel_event_notifier *_lttng_kernel_event_notifier_create(struct l
 				event_param->u.kprobe.symbol_name,
 				event_param->u.kprobe.offset,
 				event_param->u.kprobe.addr,
-				&event_notifier->parent);
+				event);
 		if (ret) {
 			ret = -EINVAL;
 			goto register_error;
 		}
-		ret = try_module_get(event_notifier->priv->parent.desc->owner);
+		ret = try_module_get(event->priv->desc->owner);
 		WARN_ON_ONCE(!ret);
 		break;
 
@@ -1329,18 +1329,18 @@ struct lttng_kernel_event_notifier *_lttng_kernel_event_notifier_create(struct l
 		 * Needs to be explicitly enabled after creation, since
 		 * we may want to apply filters.
 		 */
-		event_notifier->parent.enabled = 0;
-		event_notifier->priv->parent.registered = 0;
-		event_notifier->priv->parent.desc = event_desc;
+		event->enabled = 0;
+		event->priv->registered = 0;
+		event->priv->desc = event_desc;
 		switch (event_param->u.syscall.entryexit) {
 		case LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT:
 			ret = -EINVAL;
 			goto register_error;
 		case LTTNG_KERNEL_ABI_SYSCALL_ENTRY:
-			event_notifier->priv->parent.u.syscall.entryexit = LTTNG_SYSCALL_ENTRY;
+			event->priv->u.syscall.entryexit = LTTNG_SYSCALL_ENTRY;
 			break;
 		case LTTNG_KERNEL_ABI_SYSCALL_EXIT:
-			event_notifier->priv->parent.u.syscall.entryexit = LTTNG_SYSCALL_EXIT;
+			event->priv->u.syscall.entryexit = LTTNG_SYSCALL_EXIT;
 			break;
 		}
 		switch (event_param->u.syscall.abi) {
@@ -1348,14 +1348,14 @@ struct lttng_kernel_event_notifier *_lttng_kernel_event_notifier_create(struct l
 			ret = -EINVAL;
 			goto register_error;
 		case LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE:
-			event_notifier->priv->parent.u.syscall.abi = LTTNG_SYSCALL_ABI_NATIVE;
+			event->priv->u.syscall.abi = LTTNG_SYSCALL_ABI_NATIVE;
 			break;
 		case LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT:
-			event_notifier->priv->parent.u.syscall.abi = LTTNG_SYSCALL_ABI_COMPAT;
+			event->priv->u.syscall.abi = LTTNG_SYSCALL_ABI_COMPAT;
 			break;
 		}
 
-		if (!event_notifier->priv->parent.desc) {
+		if (!event->priv->desc) {
 			ret = -EINVAL;
 			goto register_error;
 		}
@@ -1366,8 +1366,8 @@ struct lttng_kernel_event_notifier *_lttng_kernel_event_notifier_create(struct l
 		 * Needs to be explicitly enabled after creation, since
 		 * we may want to apply filters.
 		 */
-		event_notifier->parent.enabled = 0;
-		event_notifier->priv->parent.registered = 1;
+		event->enabled = 0;
+		event->priv->registered = 1;
 
 		/*
 		 * Populate lttng_event_notifier structure before
@@ -1377,10 +1377,10 @@ struct lttng_kernel_event_notifier *_lttng_kernel_event_notifier_create(struct l
 
 		ret = lttng_uprobes_register_event(event_param->name,
 				event_param->u.uprobe.fd,
-				&event_notifier->parent);
+				event);
 		if (ret)
 			goto register_error;
-		ret = try_module_get(event_notifier->priv->parent.desc->owner);
+		ret = try_module_get(event->priv->desc->owner);
 		WARN_ON_ONCE(!ret);
 		break;
 
@@ -1396,8 +1396,8 @@ struct lttng_kernel_event_notifier *_lttng_kernel_event_notifier_create(struct l
 		goto register_error;
 	}
 
-	list_add(&event_notifier->priv->parent.node, &event_notifier_group->event_notifiers_head);
-	hlist_add_head(&event_notifier->priv->parent.hlist_node, head);
+	list_add(&event->priv->node, &event_notifier_group->event_notifiers_head);
+	hlist_add_head(&event->priv->hlist_node, head);
 
 	/*
 	 * Clear the error counter bucket. The sessiond keeps track of which
