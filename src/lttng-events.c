@@ -970,6 +970,53 @@ void lttng_kernel_event_free(struct lttng_kernel_event_common *event)
 	}
 }
 
+static
+int lttng_kernel_event_notifier_clear_error_counter(struct lttng_kernel_event_common *event)
+{
+	switch (event->type) {
+	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+		return 0;
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
+	{
+		struct lttng_kernel_event_notifier *event_notifier =
+			container_of(event, struct lttng_kernel_event_notifier, parent);
+		struct lttng_counter *error_counter;
+		struct lttng_event_notifier_group *event_notifier_group = event_notifier->priv->group;
+		size_t dimension_index[1];
+		int ret;
+
+		/*
+		 * Clear the error counter bucket. The sessiond keeps track of which
+		 * bucket is currently in use. We trust it. The session lock
+		 * synchronizes against concurrent creation of the error
+		 * counter.
+		 */
+		error_counter = event_notifier_group->error_counter;
+		if (!error_counter)
+			return 0;
+		/*
+		 * Check that the index is within the boundary of the counter.
+		 */
+		if (event_notifier->priv->error_counter_index >= event_notifier_group->error_counter_len) {
+			printk(KERN_INFO "LTTng: event_notifier: Error counter index out-of-bound: counter-len=%zu, index=%llu\n",
+				event_notifier_group->error_counter_len, event_notifier->priv->error_counter_index);
+			return -EINVAL;
+		}
+
+		dimension_index[0] = event_notifier->priv->error_counter_index;
+		ret = error_counter->ops->counter_clear(error_counter->counter, dimension_index);
+		if (ret) {
+			printk(KERN_INFO "LTTng: event_notifier: Unable to clear error counter bucket %llu\n",
+				event_notifier->priv->error_counter_index);
+			return -EINVAL;
+		}
+		return 0;
+	}
+	default:
+		return -EINVAL;
+	}
+}
+
 /*
  * Supports event creation while tracing session is active.
  * Needs to be called with sessions mutex held.
@@ -1226,7 +1273,6 @@ struct lttng_kernel_event_notifier *_lttng_kernel_event_notifier_create(struct l
 	struct lttng_kernel_event_common_private *event_priv;
 	struct lttng_kernel_event_common *event;
 	struct lttng_kernel_event_notifier *event_notifier;
-	struct lttng_counter *error_counter;
 	const char *event_name;
 	struct hlist_head *head;
 	int ret;
@@ -1385,35 +1431,9 @@ struct lttng_kernel_event_notifier *_lttng_kernel_event_notifier_create(struct l
 	list_add(&event->priv->node, &event_notifier_group->event_notifiers_head);
 	hlist_add_head(&event->priv->hlist_node, head);
 
-	/*
-	 * Clear the error counter bucket. The sessiond keeps track of which
-	 * bucket is currently in use. We trust it. The session lock
-	 * synchronizes against concurrent creation of the error
-	 * counter.
-	 */
-	error_counter = event_notifier_group->error_counter;
-	if (error_counter) {
-		size_t dimension_index[1];
-
-		/*
-		 * Check that the index is within the boundary of the counter.
-		 */
-		if (event_notifier->priv->error_counter_index >= event_notifier_group->error_counter_len) {
-			printk(KERN_INFO "LTTng: event_notifier: Error counter index out-of-bound: counter-len=%zu, index=%llu\n",
-				event_notifier_group->error_counter_len, event_notifier->priv->error_counter_index);
-			ret = -EINVAL;
-			goto register_error;
-		}
-
-		dimension_index[0] = event_notifier->priv->error_counter_index;
-		ret = error_counter->ops->counter_clear(error_counter->counter, dimension_index);
-		if (ret) {
-			printk(KERN_INFO "LTTng: event_notifier: Unable to clear error counter bucket %llu\n",
-				event_notifier->priv->error_counter_index);
-			goto register_error;
-		}
-	}
-
+	ret = lttng_kernel_event_notifier_clear_error_counter(event);
+	if (ret)
+		goto register_error;
 	return event_notifier;
 
 register_error:
