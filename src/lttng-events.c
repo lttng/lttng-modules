@@ -1466,12 +1466,13 @@ struct lttng_kernel_event_notifier *_lttng_kernel_event_notifier_create(struct l
 		goto register_error;
 	}
 
-	list_add(&event->priv->node, event_list_head);
-	hlist_add_head(&event->priv->hlist_node, head);
-
 	ret = lttng_kernel_event_notifier_clear_error_counter(event);
 	if (ret)
 		goto register_error;
+
+	list_add(&event->priv->node, event_list_head);
+	hlist_add_head(&event->priv->hlist_node, head);
+
 	return event_notifier;
 
 register_error:
