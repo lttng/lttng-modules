@@ -865,6 +865,48 @@ void _lttng_metadata_channel_hangup(struct lttng_metadata_stream *stream)
 }
 
 static
+bool lttng_kernel_event_id_available(struct lttng_event_enabler_common *event_enabler)
+{
+	struct lttng_kernel_abi_event *event_param = &event_enabler->event_param;
+        enum lttng_kernel_abi_instrumentation itype = event_param->instrumentation;
+
+	switch (event_enabler->enabler_type) {
+	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
+	{
+		struct lttng_event_recorder_enabler *event_recorder_enabler =
+			container_of(event_enabler, struct lttng_event_recorder_enabler, parent);
+		struct lttng_kernel_channel_buffer *chan = event_recorder_enabler->chan;
+
+		switch (itype) {
+		case LTTNG_KERNEL_ABI_TRACEPOINT:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_KPROBE:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_SYSCALL:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_UPROBE:
+			if (chan->priv->free_event_id == -1U)
+				return false;
+			return true;
+		case LTTNG_KERNEL_ABI_KRETPROBE:
+			/* kretprobes require 2 event IDs. */
+			if (chan->priv->free_event_id >= -2U)
+				return false;
+			return true;
+		default:
+			WARN_ON_ONCE(1);
+			return false;
+		}
+	}
+	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
+		return true;
+	default:
+		WARN_ON_ONCE(1);
+		return false;
+	}
+}
+
+static
 struct lttng_kernel_event_common *lttng_kernel_event_alloc(struct lttng_event_enabler_common *event_enabler)
 {
 	struct lttng_kernel_abi_event *event_param = &event_enabler->event_param;
@@ -1025,7 +1067,6 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 {
 	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&event_enabler->parent);
 	struct list_head *event_list_head = lttng_get_event_list_head_from_enabler(&event_enabler->parent);
-	struct lttng_kernel_channel_buffer *chan = event_enabler->chan;
 	struct lttng_kernel_abi_event *event_param = &event_enabler->parent.event_param;
 	enum lttng_kernel_abi_instrumentation itype = event_param->instrumentation;
 	struct lttng_kernel_event_common_private *event_priv;
@@ -1035,7 +1076,7 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 	struct hlist_head *head;
 	int ret;
 
-	if (chan->priv->free_event_id == -1U) {
+	if (!lttng_kernel_event_id_available(&event_enabler->parent)) {
 		ret = -EMFILE;
 		goto full;
 	}
