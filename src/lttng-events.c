@@ -1122,7 +1122,6 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 	case LTTNG_KERNEL_ABI_KRETPROBE:
 	{
 		struct lttng_kernel_event_common *event_return;
-		struct lttng_kernel_event_recorder *event_recorder_return;
 
 		/* kretprobe defines 2 events */
 		/*
@@ -1137,7 +1136,6 @@ struct lttng_kernel_event_recorder *_lttng_kernel_event_recorder_create(struct l
 			ret = -ENOMEM;
 			goto alloc_error;
 		}
-		event_recorder_return = container_of(event_return, struct lttng_kernel_event_recorder, parent);
 
 		event_return->enabled = 0;
 		event_return->priv->registered = 1;
