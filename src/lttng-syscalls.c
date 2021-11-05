@@ -815,8 +815,6 @@ int lttng_event_enabler_create_syscall_events_if_missing(struct lttng_event_enab
 			return -ENOMEM;
 	}
 
-	lttng_syscall_event_enabler_create_matching_events(syscall_event_enabler);
-
 	if (!syscall_table->sys_enter_registered) {
 		ret = lttng_wrapper_tracepoint_probe_register("sys_enter",
 				(void *) syscall_entry_event_probe, syscall_table);
@@ -834,6 +832,8 @@ int lttng_event_enabler_create_syscall_events_if_missing(struct lttng_event_enab
 		}
 		syscall_table->sys_exit_registered = 1;
 	}
+
+	lttng_syscall_event_enabler_create_matching_events(syscall_event_enabler);
 
 	return ret;
 }
