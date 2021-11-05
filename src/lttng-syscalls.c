@@ -527,46 +527,20 @@ struct lttng_kernel_syscall_table *get_syscall_table_from_event(struct lttng_ker
 	}
 }
 
-/*
- * noinline to diminish caller stack size.
- * Should be called with sessions lock held.
- */
 static
-int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *table, size_t table_len,
-	struct hlist_head *chan_table, struct lttng_event_recorder_enabler *syscall_event_enabler,
-	enum sc_type type)
+void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common *syscall_event_enabler,
+		const struct lttng_kernel_event_desc *desc, struct hlist_head *dispatch_table,
+		enum sc_type type, unsigned int syscall_nr)
 {
-	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&syscall_event_enabler->parent);
-	struct lttng_kernel_channel_buffer *chan = syscall_event_enabler->chan;
-	unsigned int i;
+	struct lttng_kernel_event_common *event;
 
-	/* Allocate events for each syscall matching enabler, insert into table */
-	for (i = 0; i < table_len; i++) {
-		const struct lttng_kernel_event_desc *desc = table[i].desc;
-		struct lttng_event_recorder_enabler *event_enabler;
+	switch (syscall_event_enabler->enabler_type) {
+	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
+	{
+		struct lttng_event_recorder_enabler *syscall_event_recorder_enabler =
+			container_of(syscall_event_enabler, struct lttng_event_recorder_enabler, parent);
+		struct lttng_event_recorder_enabler *event_recorder_enabler;
 		struct lttng_kernel_abi_event ev;
-		struct lttng_kernel_event_common *event;
-		struct lttng_kernel_event_common_private *event_priv;
-		struct hlist_head *head;
-		bool found = false;
-
-		if (!desc) {
-			/* Unknown syscall */
-			continue;
-		}
-		if (!lttng_desc_match_enabler(desc,
-				lttng_event_recorder_enabler_as_enabler(syscall_event_enabler)))
-			continue;
-		/*
-		 * Check if already created.
-		 */
-		head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, desc->event_name);
-		lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
-			if (lttng_event_enabler_desc_match_event(&syscall_event_enabler->parent, desc, event_priv->pub))
-				found = true;
-		}
-		if (found)
-			continue;
 
 		/* We need to create an event for this syscall/enabler. */
 		memset(&ev, 0, sizeof(ev));
@@ -591,23 +565,112 @@ int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *tabl
 		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1);
 		ev.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
-		event_enabler = lttng_event_recorder_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev, chan);
-		if (!event_enabler) {
-			return -ENOMEM;
+		event_recorder_enabler = lttng_event_recorder_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev,
+				syscall_event_recorder_enabler->chan);
+		WARN_ON_ONCE(!event_recorder_enabler);
+		if (!event_recorder_enabler)
+			return;
+		event = _lttng_kernel_event_create(&event_recorder_enabler->parent, desc);
+		WARN_ON_ONCE(!event || IS_ERR(event));
+		lttng_event_enabler_destroy(&event_recorder_enabler->parent);
+		if (!event || IS_ERR(event)) {
+			printk(KERN_INFO "Unable to create event recorder %s\n", desc->event_name);
+			return;
 		}
-		event = _lttng_kernel_event_create(&event_enabler->parent, desc);
-		WARN_ON_ONCE(!event);
-		lttng_event_enabler_destroy(&event_enabler->parent);
-		if (IS_ERR(event)) {
-			/*
-			 * If something goes wrong in event registration
-			 * after the first one, we have no choice but to
-			 * leave the previous events in there, until
-			 * deleted by session teardown.
-			 */
-			return PTR_ERR(event);
+		hlist_add_head(&event->priv->u.syscall.node, &dispatch_table[syscall_nr]);
+		break;
+	}
+	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
+	{
+		struct lttng_event_notifier_enabler *syscall_event_notifier_enabler =
+			container_of(syscall_event_enabler, struct lttng_event_notifier_enabler, parent);
+		struct lttng_event_notifier_enabler *event_notifier_enabler;
+		struct lttng_kernel_abi_event_notifier event_notifier_param;
+		uint64_t user_token = syscall_event_enabler->user_token;
+		uint64_t error_counter_index = syscall_event_notifier_enabler->error_counter_index;
+
+		memset(&event_notifier_param, 0, sizeof(event_notifier_param));
+		switch (type) {
+		case SC_TYPE_ENTRY:
+			event_notifier_param.event.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
+			event_notifier_param.event.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
+			break;
+		case SC_TYPE_EXIT:
+			event_notifier_param.event.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
+			event_notifier_param.event.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
+			break;
+		case SC_TYPE_COMPAT_ENTRY:
+			event_notifier_param.event.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
+			event_notifier_param.event.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
+			break;
+		case SC_TYPE_COMPAT_EXIT:
+			event_notifier_param.event.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
+			event_notifier_param.event.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
+			break;
 		}
-		hlist_add_head(&event->priv->u.syscall.node, &chan_table[i]);
+		strncat(event_notifier_param.event.name, desc->event_name,
+			LTTNG_KERNEL_ABI_SYM_NAME_LEN - strlen(event_notifier_param.event.name) - 1);
+		event_notifier_param.event.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
+		event_notifier_param.event.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
+		event_notifier_param.event.token = user_token;
+		event_notifier_param.error_counter_index = error_counter_index;
+
+		event_notifier_enabler = lttng_event_notifier_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
+				&event_notifier_param, syscall_event_notifier_enabler->group);
+		WARN_ON_ONCE(!event_notifier_enabler);
+		event = _lttng_kernel_event_create(&event_notifier_enabler->parent, desc);
+		WARN_ON_ONCE(!event || IS_ERR(event));
+		lttng_event_enabler_destroy(&event_notifier_enabler->parent);
+		if (!event || IS_ERR(event)) {
+			printk(KERN_INFO "Unable to create event notifier %s\n", desc->event_name);
+			return;
+		}
+		event->priv->u.syscall.syscall_id = syscall_nr;
+		break;
+	}
+	default:
+		break;
+	}
+}
+
+/*
+ * noinline to diminish caller stack size.
+ * Should be called with sessions lock held.
+ */
+static
+int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *table, size_t table_len,
+	struct hlist_head *dispatch_table, struct lttng_event_recorder_enabler *syscall_event_enabler,
+	enum sc_type type)
+{
+	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&syscall_event_enabler->parent);
+	unsigned int i;
+
+	/* Allocate events for each syscall matching enabler, insert into table */
+	for (i = 0; i < table_len; i++) {
+		const struct lttng_kernel_event_desc *desc = table[i].desc;
+		struct lttng_kernel_event_common_private *event_priv;
+		struct hlist_head *head;
+		bool found = false;
+
+		if (!desc) {
+			/* Unknown syscall */
+			continue;
+		}
+		if (!lttng_desc_match_enabler(desc,
+				lttng_event_recorder_enabler_as_enabler(syscall_event_enabler)))
+			continue;
+		/*
+		 * Check if already created.
+		 */
+		head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, desc->event_name);
+		lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
+			if (lttng_event_enabler_desc_match_event(&syscall_event_enabler->parent, desc, event_priv->pub))
+				found = true;
+		}
+		if (found)
+			continue;
+
+		lttng_syscall_event_enabler_create_event(&syscall_event_enabler->parent, desc, dispatch_table, type, i);
 	}
 	return 0;
 }
@@ -822,55 +885,37 @@ int lttng_event_enabler_create_syscall_events_if_missing(struct lttng_event_enab
 }
 
 static
-int create_unknown_event_notifier(
+void create_unknown_event_notifier(
 		struct lttng_event_notifier_enabler *event_notifier_enabler,
 		enum sc_type type)
 {
+	struct lttng_kernel_syscall_table *syscall_table = get_syscall_table_from_enabler(&event_notifier_enabler->parent);
 	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&event_notifier_enabler->parent);
 	struct lttng_kernel_event_common_private *event_priv;
-	struct lttng_kernel_event_common *event;
 	const struct lttng_kernel_event_desc *desc;
-	struct lttng_event_notifier_group *group = event_notifier_enabler->group;
-	struct lttng_kernel_syscall_table *syscall_table = &group->syscall_table;
-	struct lttng_kernel_abi_event_notifier event_notifier_param;
-	uint64_t user_token = event_notifier_enabler->parent.user_token;
-	uint64_t error_counter_index = event_notifier_enabler->error_counter_index;
-	struct lttng_event_enabler_common *base_enabler = lttng_event_notifier_enabler_as_enabler(
-		event_notifier_enabler);
 	struct hlist_head *unknown_dispatch_list;
-	int ret = 0;
 	bool found = false;
-	enum lttng_kernel_abi_syscall_abi abi;
-	enum lttng_kernel_abi_syscall_entryexit entryexit;
 	struct hlist_head *head;
 
 	switch (type) {
 	case SC_TYPE_ENTRY:
 		desc = &__event_desc___syscall_entry_unknown;
 		unknown_dispatch_list = &syscall_table->unknown_syscall_dispatch;
-		entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
-		abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
 		break;
 	case SC_TYPE_EXIT:
 		desc = &__event_desc___syscall_exit_unknown;
 		unknown_dispatch_list = &syscall_table->unknown_syscall_exit_dispatch;
-		entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
-		abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
 		break;
 	case SC_TYPE_COMPAT_ENTRY:
 		desc = &__event_desc___compat_syscall_entry_unknown;
 		unknown_dispatch_list = &syscall_table->compat_unknown_syscall_dispatch;
-		entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
-		abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
 		break;
 	case SC_TYPE_COMPAT_EXIT:
 		desc = &__event_desc___compat_syscall_exit_unknown;
 		unknown_dispatch_list = &syscall_table->compat_unknown_syscall_exit_dispatch;
-		entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
-		abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
 		break;
 	default:
-		BUG_ON(1);
+		WARN_ON_ONCE(1);
 	}
 
 	/*
@@ -878,61 +923,26 @@ int create_unknown_event_notifier(
 	 */
 	head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, desc->event_name);
 	lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
-		if (lttng_event_enabler_desc_match_event(base_enabler, desc, event_priv->pub))
+		if (lttng_event_enabler_desc_match_event(&event_notifier_enabler->parent, desc, event_priv->pub))
 			found = true;
 	}
-	if (found)
-		goto end;
-
-	memset(&event_notifier_param, 0, sizeof(event_notifier_param));
-	strncat(event_notifier_param.event.name, desc->event_name,
-		LTTNG_KERNEL_ABI_SYM_NAME_LEN - strlen(event_notifier_param.event.name) - 1);
-
-	event_notifier_param.event.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
-
-	event_notifier_param.event.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
-	event_notifier_param.event.token = user_token;
-	event_notifier_param.event.u.syscall.abi = abi;
-	event_notifier_param.event.u.syscall.entryexit = entryexit;
-	event_notifier_param.error_counter_index = error_counter_index;
-
-	event_notifier_enabler = lttng_event_notifier_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
-			&event_notifier_param, group);
-	WARN_ON_ONCE(!event_notifier_enabler);
-	event = _lttng_kernel_event_create(&event_notifier_enabler->parent, desc);
-	lttng_event_enabler_destroy(&event_notifier_enabler->parent);
-	if (IS_ERR(event)) {
-		printk(KERN_INFO "Unable to create unknown notifier %s\n",
-			desc->event_name);
-		ret = -ENOMEM;
-		goto end;
-	}
-
-	hlist_add_head_rcu(&event->priv->u.syscall.node, unknown_dispatch_list);
-
-end:
-	return ret;
+	if (!found)
+		lttng_syscall_event_enabler_create_event(&event_notifier_enabler->parent, desc, unknown_dispatch_list, type, -1U);
 }
 
-static int create_matching_event_notifiers(
+static
+void create_matching_event_notifiers(
 		struct lttng_event_notifier_enabler *syscall_event_notifier_enabler,
 		const struct trace_syscall_entry *table,
 		size_t table_len, enum sc_type type)
 {
 	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&syscall_event_notifier_enabler->parent);
-	struct lttng_event_notifier_group *group = syscall_event_notifier_enabler->group;
 	const struct lttng_kernel_event_desc *desc;
-	uint64_t user_token = syscall_event_notifier_enabler->parent.user_token;
-	uint64_t error_counter_index = syscall_event_notifier_enabler->error_counter_index;
 	unsigned int i;
-	int ret = 0;
 
 	/* iterate over all syscall and create event_notifier that match */
 	for (i = 0; i < table_len; i++) {
-		struct lttng_event_notifier_enabler *event_notifier_enabler;
 		struct lttng_kernel_event_common_private *event_priv;
-		struct lttng_kernel_event_common *event;
-		struct lttng_kernel_abi_event_notifier event_notifier_param;
 		struct hlist_head *head;
 		int found = 0;
 
@@ -957,50 +967,8 @@ static int create_matching_event_notifiers(
 		if (found)
 			continue;
 
-		memset(&event_notifier_param, 0, sizeof(event_notifier_param));
-		switch (type) {
-		case SC_TYPE_ENTRY:
-			event_notifier_param.event.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
-			event_notifier_param.event.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
-			break;
-		case SC_TYPE_EXIT:
-			event_notifier_param.event.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
-			event_notifier_param.event.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
-			break;
-		case SC_TYPE_COMPAT_ENTRY:
-			event_notifier_param.event.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
-			event_notifier_param.event.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
-			break;
-		case SC_TYPE_COMPAT_EXIT:
-			event_notifier_param.event.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
-			event_notifier_param.event.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
-			break;
-		}
-		strncat(event_notifier_param.event.name, desc->event_name,
-			LTTNG_KERNEL_ABI_SYM_NAME_LEN - strlen(event_notifier_param.event.name) - 1);
-		event_notifier_param.event.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
-		event_notifier_param.event.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
-		event_notifier_param.event.token = user_token;
-		event_notifier_param.error_counter_index = error_counter_index;
-
-		event_notifier_enabler = lttng_event_notifier_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
-				&event_notifier_param, group);
-		WARN_ON_ONCE(!event_notifier_enabler);
-		event = _lttng_kernel_event_create(&event_notifier_enabler->parent, desc);
-		lttng_event_enabler_destroy(&event_notifier_enabler->parent);
-		if (IS_ERR(event)) {
-			printk(KERN_INFO "Unable to create event_notifier %s\n",
-				desc->event_name);
-			ret = -ENOMEM;
-			goto end;
-		}
-
-		event->priv->u.syscall.syscall_id = i;
+		lttng_syscall_event_enabler_create_event(&syscall_event_notifier_enabler->parent, desc, NULL, type, i);
 	}
-
-end:
-	return ret;
-
 }
 
 static
@@ -1016,53 +984,25 @@ int lttng_syscalls_create_matching_event_notifiers(struct lttng_event_enabler_co
 	event_notifier_enabler = container_of(event_enabler, struct lttng_event_notifier_enabler, parent);
 
 	if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRY || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT) {
-		ret = create_matching_event_notifiers(event_notifier_enabler,
+		create_matching_event_notifiers(event_notifier_enabler,
 			sc_table.table, sc_table.len, SC_TYPE_ENTRY);
-		if (ret)
-			goto end;
-
-		ret = create_matching_event_notifiers(event_notifier_enabler,
+		create_matching_event_notifiers(event_notifier_enabler,
 			compat_sc_table.table, compat_sc_table.len,
 			SC_TYPE_COMPAT_ENTRY);
-		if (ret)
-			goto end;
-
-		ret = create_unknown_event_notifier(event_notifier_enabler,
-				SC_TYPE_ENTRY);
-		if (ret)
-			goto end;
-
-		ret = create_unknown_event_notifier(event_notifier_enabler,
-				SC_TYPE_COMPAT_ENTRY);
-		if (ret)
-			goto end;
+		create_unknown_event_notifier(event_notifier_enabler, SC_TYPE_ENTRY);
+		create_unknown_event_notifier(event_notifier_enabler, SC_TYPE_COMPAT_ENTRY);
 	}
 
 	if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_EXIT || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT) {
-		ret = create_matching_event_notifiers(event_notifier_enabler,
+		create_matching_event_notifiers(event_notifier_enabler,
 			sc_exit_table.table, sc_exit_table.len,
 			SC_TYPE_EXIT);
-		if (ret)
-			goto end;
-
-		ret = create_unknown_event_notifier(event_notifier_enabler,
-				SC_TYPE_EXIT);
-		if (ret)
-			goto end;
-
-		ret = create_matching_event_notifiers(event_notifier_enabler,
+		create_matching_event_notifiers(event_notifier_enabler,
 			compat_sc_exit_table.table, compat_sc_exit_table.len,
 			SC_TYPE_COMPAT_EXIT);
-		if (ret)
-			goto end;
-
-		ret = create_unknown_event_notifier(event_notifier_enabler,
-				SC_TYPE_COMPAT_EXIT);
-		if (ret)
-			goto end;
+		create_unknown_event_notifier(event_notifier_enabler, SC_TYPE_EXIT);
+		create_unknown_event_notifier(event_notifier_enabler, SC_TYPE_COMPAT_EXIT);
 	}
-
-end:
 	return ret;
 }
 
