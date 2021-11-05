@@ -678,6 +678,20 @@ void lttng_syscall_event_enabler_create_matching_events(struct lttng_event_enabl
 }
 
 static
+bool lttng_syscall_event_enabler_is_wildcard_all(struct lttng_event_enabler_common *event_enabler)
+{
+	if (event_enabler->event_param.instrumentation != LTTNG_KERNEL_ABI_SYSCALL)
+		return false;
+	if (event_enabler->event_param.u.syscall.abi != LTTNG_KERNEL_ABI_SYSCALL_ABI_ALL)
+		return false;
+	if (event_enabler->event_param.u.syscall.match != LTTNG_KERNEL_ABI_SYSCALL_MATCH_NAME)
+		return false;
+	if (strcmp(event_enabler->event_param.name, "*"))
+		return false;
+	return true;
+}
+
+static
 void create_unknown_syscall_event(struct lttng_event_enabler_common *event_enabler, enum sc_type type)
 {
 	struct lttng_kernel_syscall_table *syscall_table = get_syscall_table_from_enabler(event_enabler);
@@ -687,6 +701,18 @@ void create_unknown_syscall_event(struct lttng_event_enabler_common *event_enabl
 	struct hlist_head *unknown_dispatch_list;
 	bool found = false;
 	struct hlist_head *head;
+
+	/*
+	 * Considering that currently system calls can only be enabled on a per
+	 * name basis (or wildcard based on a name), unknown syscall events are
+	 * only used when matching *all* system calls, because this is the only
+	 * case which can be associated with an unknown system call.
+	 *
+	 * When enabling system call on a per system call number basis will be
+	 * supported, this will need to be revisited.
+	 */
+	if (!lttng_syscall_event_enabler_is_wildcard_all(event_enabler))
+		return;
 
 	switch (type) {
 	case SC_TYPE_ENTRY:
@@ -1192,15 +1218,8 @@ void lttng_syscall_table_set_wildcard_all(struct lttng_event_enabler_common *eve
 	enum lttng_kernel_abi_syscall_entryexit entryexit;
 	int enabled = event_enabler->enabled;
 
-	if (event_enabler->event_param.instrumentation != LTTNG_KERNEL_ABI_SYSCALL)
+	if (!lttng_syscall_event_enabler_is_wildcard_all(event_enabler))
 		return;
-	if (event_enabler->event_param.u.syscall.abi != LTTNG_KERNEL_ABI_SYSCALL_ABI_ALL)
-		return;
-	if (event_enabler->event_param.u.syscall.match != LTTNG_KERNEL_ABI_SYSCALL_MATCH_NAME)
-		return;
-	if (strcmp(event_enabler->event_param.name, "*"))
-		return;
-
 	entryexit = event_enabler->event_param.u.syscall.entryexit;
 	if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRY || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT)
 		WRITE_ONCE(syscall_table->syscall_all_entry, enabled);
