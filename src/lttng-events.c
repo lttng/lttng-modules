@@ -2079,7 +2079,7 @@ void lttng_event_enabler_create_tracepoint_events_if_missing(struct lttng_event_
 	 */
 	list_for_each_entry(probe_desc, probe_list, head) {
 		for (i = 0; i < probe_desc->nr_events; i++) {
-			int found = 0;
+			bool found = false;
 			struct hlist_head *head;
 			struct lttng_kernel_event_common *event;
 			struct lttng_kernel_event_common_private *event_priv;
@@ -2093,8 +2093,10 @@ void lttng_event_enabler_create_tracepoint_events_if_missing(struct lttng_event_
 			 */
 			head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, desc->event_name);
 			lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
-				if (lttng_event_enabler_desc_match_event(event_enabler, desc, event_priv->pub))
-					found = 1;
+				if (lttng_event_enabler_desc_match_event(event_enabler, desc, event_priv->pub)) {
+					found = true;
+					break;
+				}
 			}
 			if (found)
 				continue;
