@@ -796,8 +796,6 @@ int lttng_event_enabler_create_syscall_events_if_missing(struct lttng_event_enab
 	if (ret)
 		return ret;
 
-	wrapper_vmalloc_sync_mappings();
-
 	if (!syscall_table->sys_enter_registered) {
 		ret = lttng_wrapper_tracepoint_probe_register("sys_enter",
 				(void *) syscall_entry_event_probe, syscall_table);
