@@ -641,7 +641,6 @@ static
 void lttng_syscall_event_enabler_create_matching_events(struct lttng_event_enabler_common *syscall_event_enabler_common,
 		const struct trace_syscall_entry *table,
 		size_t table_len,
-		struct hlist_head *dispatch_table,
 		enum sc_type type)
 {
 	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(syscall_event_enabler_common);
@@ -677,7 +676,7 @@ void lttng_syscall_event_enabler_create_matching_events(struct lttng_event_enabl
 		if (found)
 			continue;
 
-		lttng_syscall_event_enabler_create_event(syscall_event_enabler_common, desc, dispatch_table, type, i);
+		lttng_syscall_event_enabler_create_event(syscall_event_enabler_common, desc, NULL, type, i);
 	}
 }
 
@@ -766,17 +765,13 @@ int lttng_syscalls_populate_events(struct lttng_event_enabler_common *syscall_ev
 	event_recorder_enabler = container_of(syscall_event_enabler, struct lttng_event_recorder_enabler, parent);
 	chan = event_recorder_enabler->chan;
 
-	lttng_syscall_event_enabler_create_matching_events(&event_recorder_enabler->parent, sc_table.table, sc_table.len,
-			NULL, SC_TYPE_ENTRY);
-	lttng_syscall_event_enabler_create_matching_events(&event_recorder_enabler->parent, sc_exit_table.table, sc_exit_table.len,
-			NULL, SC_TYPE_EXIT);
+	lttng_syscall_event_enabler_create_matching_events(&event_recorder_enabler->parent, sc_table.table, sc_table.len, SC_TYPE_ENTRY);
+	lttng_syscall_event_enabler_create_matching_events(&event_recorder_enabler->parent, sc_exit_table.table, sc_exit_table.len, SC_TYPE_EXIT);
 	create_unknown_syscall_event(syscall_event_enabler, SC_TYPE_ENTRY);
 	create_unknown_syscall_event(syscall_event_enabler, SC_TYPE_EXIT);
 
-	lttng_syscall_event_enabler_create_matching_events(&event_recorder_enabler->parent, compat_sc_table.table, compat_sc_table.len,
-			NULL, SC_TYPE_COMPAT_ENTRY);
-	lttng_syscall_event_enabler_create_matching_events(&event_recorder_enabler->parent, compat_sc_exit_table.table, compat_sc_exit_table.len,
-			NULL, SC_TYPE_COMPAT_EXIT);
+	lttng_syscall_event_enabler_create_matching_events(&event_recorder_enabler->parent, compat_sc_table.table, compat_sc_table.len, SC_TYPE_COMPAT_ENTRY);
+	lttng_syscall_event_enabler_create_matching_events(&event_recorder_enabler->parent, compat_sc_exit_table.table, compat_sc_exit_table.len, SC_TYPE_COMPAT_EXIT);
 	create_unknown_syscall_event(syscall_event_enabler, SC_TYPE_COMPAT_ENTRY);
 	create_unknown_syscall_event(syscall_event_enabler, SC_TYPE_COMPAT_EXIT);
 
@@ -869,18 +864,18 @@ int lttng_syscalls_create_matching_event_notifiers(struct lttng_event_enabler_co
 
 	if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRY || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT) {
 		lttng_syscall_event_enabler_create_matching_events(&event_notifier_enabler->parent,
-			sc_table.table, sc_table.len, NULL, SC_TYPE_ENTRY);
+			sc_table.table, sc_table.len, SC_TYPE_ENTRY);
 		lttng_syscall_event_enabler_create_matching_events(&event_notifier_enabler->parent,
-			compat_sc_table.table, compat_sc_table.len, NULL, SC_TYPE_COMPAT_ENTRY);
+			compat_sc_table.table, compat_sc_table.len, SC_TYPE_COMPAT_ENTRY);
 		create_unknown_syscall_event(event_enabler, SC_TYPE_ENTRY);
 		create_unknown_syscall_event(event_enabler, SC_TYPE_COMPAT_ENTRY);
 	}
 
 	if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_EXIT || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT) {
 		lttng_syscall_event_enabler_create_matching_events(&event_notifier_enabler->parent,
-			sc_exit_table.table, sc_exit_table.len, NULL, SC_TYPE_EXIT);
+			sc_exit_table.table, sc_exit_table.len, SC_TYPE_EXIT);
 		lttng_syscall_event_enabler_create_matching_events(&event_notifier_enabler->parent,
-			compat_sc_exit_table.table, compat_sc_exit_table.len, NULL, SC_TYPE_COMPAT_EXIT);
+			compat_sc_exit_table.table, compat_sc_exit_table.len, SC_TYPE_COMPAT_EXIT);
 		create_unknown_syscall_event(event_enabler, SC_TYPE_EXIT);
 		create_unknown_syscall_event(event_enabler, SC_TYPE_COMPAT_EXIT);
 	}
