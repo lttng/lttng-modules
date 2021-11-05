@@ -577,7 +577,8 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 			printk(KERN_INFO "Unable to create event recorder %s\n", desc->event_name);
 			return;
 		}
-		hlist_add_head(&event->priv->u.syscall.node, &dispatch_table[syscall_nr]);
+		if (dispatch_table)
+			hlist_add_head_rcu(&event->priv->u.syscall.node, &dispatch_table[syscall_nr]);
 		break;
 	}
 	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
