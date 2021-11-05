@@ -636,46 +636,45 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 	}
 }
 
-/*
- * noinline to diminish caller stack size.
- * Should be called with sessions lock held.
- */
 static
-int lttng_create_syscall_event_if_missing(const struct trace_syscall_entry *table, size_t table_len,
-	struct hlist_head *dispatch_table, struct lttng_event_recorder_enabler *syscall_event_enabler,
-	enum sc_type type)
+void lttng_syscall_event_enabler_create_matching_events(struct lttng_event_enabler_common *syscall_event_enabler_common,
+		const struct trace_syscall_entry *table,
+		size_t table_len,
+		struct hlist_head *dispatch_table,
+		enum sc_type type)
 {
-	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&syscall_event_enabler->parent);
+	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(syscall_event_enabler_common);
+	const struct lttng_kernel_event_desc *desc;
 	unsigned int i;
 
-	/* Allocate events for each syscall matching enabler, insert into table */
+	/* iterate over all syscall and create event_notifier that match */
 	for (i = 0; i < table_len; i++) {
-		const struct lttng_kernel_event_desc *desc = table[i].desc;
 		struct lttng_kernel_event_common_private *event_priv;
 		struct hlist_head *head;
-		bool found = false;
+		int found = 0;
 
+		desc = table[i].desc;
 		if (!desc) {
 			/* Unknown syscall */
 			continue;
 		}
-		if (!lttng_desc_match_enabler(desc,
-				lttng_event_recorder_enabler_as_enabler(syscall_event_enabler)))
+
+		if (!lttng_desc_match_enabler(desc, syscall_event_enabler_common))
 			continue;
+
 		/*
 		 * Check if already created.
 		 */
 		head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, desc->event_name);
 		lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
-			if (lttng_event_enabler_desc_match_event(&syscall_event_enabler->parent, desc, event_priv->pub))
-				found = true;
+			if (lttng_event_enabler_desc_match_event(syscall_event_enabler_common, desc, event_priv->pub))
+				found = 1;
 		}
 		if (found)
 			continue;
 
-		lttng_syscall_event_enabler_create_event(&syscall_event_enabler->parent, desc, dispatch_table, type, i);
+		lttng_syscall_event_enabler_create_event(syscall_event_enabler_common, desc, dispatch_table, type, i);
 	}
-	return 0;
 }
 
 static
@@ -792,24 +791,16 @@ int lttng_syscalls_populate_events(struct lttng_event_enabler_common *syscall_ev
 		hlist_add_head(&event->priv->u.syscall.node, &syscall_table->unknown_syscall_exit_dispatch);
 	}
 
-	ret = lttng_create_syscall_event_if_missing(sc_table.table, sc_table.len,
-			syscall_table->syscall_dispatch, event_recorder_enabler, SC_TYPE_ENTRY);
-	if (ret)
-		return ret;
-	ret = lttng_create_syscall_event_if_missing(sc_exit_table.table, sc_exit_table.len,
-			syscall_table->syscall_exit_dispatch, event_recorder_enabler, SC_TYPE_EXIT);
-	if (ret)
-		return ret;
+	lttng_syscall_event_enabler_create_matching_events(&event_recorder_enabler->parent, sc_table.table, sc_table.len,
+			syscall_table->syscall_dispatch, SC_TYPE_ENTRY);
+	lttng_syscall_event_enabler_create_matching_events(&event_recorder_enabler->parent, sc_exit_table.table, sc_exit_table.len,
+			syscall_table->syscall_exit_dispatch, SC_TYPE_EXIT);
 
 #ifdef CONFIG_COMPAT
-	ret = lttng_create_syscall_event_if_missing(compat_sc_table.table, compat_sc_table.len,
-			syscall_table->compat_syscall_dispatch, event_recorder_enabler, SC_TYPE_COMPAT_ENTRY);
-	if (ret)
-		return ret;
-	ret = lttng_create_syscall_event_if_missing(compat_sc_exit_table.table, compat_sc_exit_table.len,
-			syscall_table->compat_syscall_exit_dispatch, event_recorder_enabler, SC_TYPE_COMPAT_EXIT);
-	if (ret)
-		return ret;
+	lttng_syscall_event_enabler_create_matching_events(&event_recorder_enabler->parent, compat_sc_table.table, compat_sc_table.len,
+			syscall_table->compat_syscall_dispatch, SC_TYPE_COMPAT_ENTRY);
+	lttng_syscall_event_enabler_create_matching_events(&event_recorder_enabler->parent, compat_sc_exit_table.table, compat_sc_exit_table.len,
+			syscall_table->compat_syscall_exit_dispatch, SC_TYPE_COMPAT_EXIT);
 #endif
 	return ret;
 }
@@ -934,47 +925,6 @@ void create_unknown_event_notifier(
 }
 
 static
-void create_matching_event_notifiers(
-		struct lttng_event_notifier_enabler *syscall_event_notifier_enabler,
-		const struct trace_syscall_entry *table,
-		size_t table_len, enum sc_type type)
-{
-	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(&syscall_event_notifier_enabler->parent);
-	const struct lttng_kernel_event_desc *desc;
-	unsigned int i;
-
-	/* iterate over all syscall and create event_notifier that match */
-	for (i = 0; i < table_len; i++) {
-		struct lttng_kernel_event_common_private *event_priv;
-		struct hlist_head *head;
-		int found = 0;
-
-		desc = table[i].desc;
-		if (!desc) {
-			/* Unknown syscall */
-			continue;
-		}
-
-		if (!lttng_desc_match_enabler(desc,
-				lttng_event_notifier_enabler_as_enabler(syscall_event_notifier_enabler)))
-			continue;
-
-		/*
-		 * Check if already created.
-		 */
-		head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, desc->event_name);
-		lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
-			if (lttng_event_enabler_desc_match_event(&syscall_event_notifier_enabler->parent, desc, event_priv->pub))
-				found = 1;
-		}
-		if (found)
-			continue;
-
-		lttng_syscall_event_enabler_create_event(&syscall_event_notifier_enabler->parent, desc, NULL, type, i);
-	}
-}
-
-static
 int lttng_syscalls_create_matching_event_notifiers(struct lttng_event_enabler_common *event_enabler)
 {
 	int ret;
@@ -987,22 +937,19 @@ int lttng_syscalls_create_matching_event_notifiers(struct lttng_event_enabler_co
 	event_notifier_enabler = container_of(event_enabler, struct lttng_event_notifier_enabler, parent);
 
 	if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRY || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT) {
-		create_matching_event_notifiers(event_notifier_enabler,
-			sc_table.table, sc_table.len, SC_TYPE_ENTRY);
-		create_matching_event_notifiers(event_notifier_enabler,
-			compat_sc_table.table, compat_sc_table.len,
-			SC_TYPE_COMPAT_ENTRY);
+		lttng_syscall_event_enabler_create_matching_events(&event_notifier_enabler->parent,
+			sc_table.table, sc_table.len, NULL, SC_TYPE_ENTRY);
+		lttng_syscall_event_enabler_create_matching_events(&event_notifier_enabler->parent,
+			compat_sc_table.table, compat_sc_table.len, NULL, SC_TYPE_COMPAT_ENTRY);
 		create_unknown_event_notifier(event_notifier_enabler, SC_TYPE_ENTRY);
 		create_unknown_event_notifier(event_notifier_enabler, SC_TYPE_COMPAT_ENTRY);
 	}
 
 	if (entryexit == LTTNG_KERNEL_ABI_SYSCALL_EXIT || entryexit == LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT) {
-		create_matching_event_notifiers(event_notifier_enabler,
-			sc_exit_table.table, sc_exit_table.len,
-			SC_TYPE_EXIT);
-		create_matching_event_notifiers(event_notifier_enabler,
-			compat_sc_exit_table.table, compat_sc_exit_table.len,
-			SC_TYPE_COMPAT_EXIT);
+		lttng_syscall_event_enabler_create_matching_events(&event_notifier_enabler->parent,
+			sc_exit_table.table, sc_exit_table.len, NULL, SC_TYPE_EXIT);
+		lttng_syscall_event_enabler_create_matching_events(&event_notifier_enabler->parent,
+			compat_sc_exit_table.table, compat_sc_exit_table.len, NULL, SC_TYPE_COMPAT_EXIT);
 		create_unknown_event_notifier(event_notifier_enabler, SC_TYPE_EXIT);
 		create_unknown_event_notifier(event_notifier_enabler, SC_TYPE_COMPAT_EXIT);
 	}
