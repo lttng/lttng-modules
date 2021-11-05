@@ -649,7 +649,7 @@ void lttng_syscall_event_enabler_create_matching_syscall_table_events(struct ltt
 	for (i = 0; i < table_len; i++) {
 		struct lttng_kernel_event_common_private *event_priv;
 		struct hlist_head *head;
-		int found = 0;
+		bool found = false;
 
 		desc = table[i].desc;
 		if (!desc) {
@@ -665,8 +665,10 @@ void lttng_syscall_event_enabler_create_matching_syscall_table_events(struct ltt
 		 */
 		head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, desc->event_name);
 		lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
-			if (lttng_event_enabler_desc_match_event(syscall_event_enabler_common, desc, event_priv->pub))
-				found = 1;
+			if (lttng_event_enabler_desc_match_event(syscall_event_enabler_common, desc, event_priv->pub)) {
+				found = true;
+				break;
+			}
 		}
 		if (found)
 			continue;
@@ -741,8 +743,10 @@ void create_unknown_syscall_event(struct lttng_event_enabler_common *event_enabl
 	 */
 	head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, desc->event_name);
 	lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
-		if (lttng_event_enabler_desc_match_event(event_enabler, desc, event_priv->pub))
+		if (lttng_event_enabler_desc_match_event(event_enabler, desc, event_priv->pub)) {
 			found = true;
+			break;
+		}
 	}
 	if (!found)
 		lttng_syscall_event_enabler_create_event(event_enabler, desc, unknown_dispatch_list, type, -1U);
