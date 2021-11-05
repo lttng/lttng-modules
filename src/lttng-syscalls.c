@@ -647,6 +647,9 @@ void lttng_syscall_event_enabler_create_matching_events(struct lttng_event_enabl
 	const struct lttng_kernel_event_desc *desc;
 	unsigned int i;
 
+	if (!IS_ENABLED(CONFIG_COMPAT) && (type == SC_TYPE_COMPAT_ENTRY || type == SC_TYPE_COMPAT_EXIT))
+		return;
+
 	/* iterate over all syscall and create event_notifier that match */
 	for (i = 0; i < table_len; i++) {
 		struct lttng_kernel_event_common_private *event_priv;
@@ -701,6 +704,9 @@ void create_unknown_syscall_event(struct lttng_event_enabler_common *event_enabl
 	struct hlist_head *unknown_dispatch_list;
 	bool found = false;
 	struct hlist_head *head;
+
+	if (!IS_ENABLED(CONFIG_COMPAT) && (type == SC_TYPE_COMPAT_ENTRY || type == SC_TYPE_COMPAT_EXIT))
+		return;
 
 	/*
 	 * Considering that currently system calls can only be enabled on a per
@@ -767,14 +773,13 @@ int lttng_syscalls_populate_events(struct lttng_event_enabler_common *syscall_ev
 	create_unknown_syscall_event(syscall_event_enabler, SC_TYPE_ENTRY);
 	create_unknown_syscall_event(syscall_event_enabler, SC_TYPE_EXIT);
 
-#ifdef CONFIG_COMPAT
 	lttng_syscall_event_enabler_create_matching_events(&event_recorder_enabler->parent, compat_sc_table.table, compat_sc_table.len,
 			syscall_table->compat_syscall_dispatch, SC_TYPE_COMPAT_ENTRY);
 	lttng_syscall_event_enabler_create_matching_events(&event_recorder_enabler->parent, compat_sc_exit_table.table, compat_sc_exit_table.len,
 			syscall_table->compat_syscall_exit_dispatch, SC_TYPE_COMPAT_EXIT);
 	create_unknown_syscall_event(syscall_event_enabler, SC_TYPE_COMPAT_ENTRY);
 	create_unknown_syscall_event(syscall_event_enabler, SC_TYPE_COMPAT_EXIT);
-#endif
+
 	return ret;
 }
 
@@ -798,7 +803,6 @@ int lttng_event_enabler_create_syscall_events_if_missing(struct lttng_event_enab
 		if (!syscall_table->syscall_exit_dispatch)
 			return -ENOMEM;
 	}
-
 
 #ifdef CONFIG_COMPAT
 	if (!syscall_table->compat_syscall_dispatch) {
