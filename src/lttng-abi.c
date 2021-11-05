@@ -1926,7 +1926,7 @@ int lttng_abi_create_event(struct file *channel_file,
 		 * will stay invariant for the rest of the session.
 		 */
 		event = lttng_kernel_event_create(&event_enabler->parent, NULL);
-		WARN_ON_ONCE(!event);
+		WARN_ON_ONCE(IS_ERR(event));
 		lttng_event_enabler_destroy(&event_enabler->parent);
 		if (IS_ERR(event)) {
 			ret = PTR_ERR(event);
@@ -2163,7 +2163,7 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 			goto event_notifier_error;
 		}
 		event = lttng_kernel_event_create(&event_notifier_enabler->parent, NULL);
-		WARN_ON_ONCE(!event);
+		WARN_ON_ONCE(IS_ERR(event));
 		lttng_event_enabler_destroy(&event_notifier_enabler->parent);
 		if (IS_ERR(event)) {
 			ret = PTR_ERR(event);

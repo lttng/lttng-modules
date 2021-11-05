@@ -2103,7 +2103,7 @@ void lttng_event_enabler_create_tracepoint_events_if_missing(struct lttng_event_
 			 * We need to create an event for this event probe.
 			 */
 			event = _lttng_kernel_event_create(event_enabler, desc);
-			if (!event) {
+			if (IS_ERR(event)) {
 				printk(KERN_INFO "LTTng: Unable to create event %s\n",
 					probe_desc->event_desc[i]->event_name);
 			}

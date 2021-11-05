@@ -568,9 +568,9 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 		if (!event_recorder_enabler)
 			return;
 		event = _lttng_kernel_event_create(&event_recorder_enabler->parent, desc);
-		WARN_ON_ONCE(!event || IS_ERR(event));
+		WARN_ON_ONCE(IS_ERR(event));
 		lttng_event_enabler_destroy(&event_recorder_enabler->parent);
-		if (!event || IS_ERR(event)) {
+		if (IS_ERR(event)) {
 			printk(KERN_INFO "Unable to create event recorder %s\n", desc->event_name);
 			return;
 		}
@@ -618,9 +618,9 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 				&event_notifier_param, syscall_event_notifier_enabler->group);
 		WARN_ON_ONCE(!event_notifier_enabler);
 		event = _lttng_kernel_event_create(&event_notifier_enabler->parent, desc);
-		WARN_ON_ONCE(!event || IS_ERR(event));
+		WARN_ON_ONCE(IS_ERR(event));
 		lttng_event_enabler_destroy(&event_notifier_enabler->parent);
-		if (!event || IS_ERR(event)) {
+		if (IS_ERR(event)) {
 			printk(KERN_INFO "Unable to create event notifier %s\n", desc->event_name);
 			return;
 		}
