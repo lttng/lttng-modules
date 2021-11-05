@@ -2063,7 +2063,7 @@ struct lttng_enabler_ref *lttng_enabler_ref(
 }
 
 static
-void lttng_create_tracepoint_event_if_missing(struct lttng_event_enabler_common *event_enabler)
+void lttng_event_enabler_create_tracepoint_events_if_missing(struct lttng_event_enabler_common *event_enabler)
 {
 	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(event_enabler);
 	struct lttng_kernel_probe_desc *probe_desc;
@@ -2111,29 +2111,23 @@ void lttng_create_tracepoint_event_if_missing(struct lttng_event_enabler_common 
 	}
 }
 
-static
-void lttng_create_syscall_event_if_missing(struct lttng_event_enabler_common *event_enabler)
-{
-	int ret;
-
-	ret = lttng_syscalls_register_event(event_enabler);
-	WARN_ON_ONCE(ret);
-}
-
 /*
  * Create event if it is missing and present in the list of tracepoint probes.
  * Should be called with sessions mutex held.
  */
 static
-void lttng_create_event_if_missing(struct lttng_event_enabler_common *event_enabler)
+void lttng_event_enabler_create_events_if_missing(struct lttng_event_enabler_common *event_enabler)
 {
+	int ret;
+
 	switch (event_enabler->event_param.instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
-		lttng_create_tracepoint_event_if_missing(event_enabler);
+		lttng_event_enabler_create_tracepoint_events_if_missing(event_enabler);
 		break;
 
 	case LTTNG_KERNEL_ABI_SYSCALL:
-		lttng_create_syscall_event_if_missing(event_enabler);
+		ret = lttng_event_enabler_create_syscall_events_if_missing(event_enabler);
+		WARN_ON_ONCE(ret);
 		break;
 
 	default:
@@ -2191,7 +2185,7 @@ int lttng_event_enabler_ref_events(struct lttng_event_enabler_common *event_enab
 	lttng_syscall_table_set_wildcard_all(event_enabler);
 
 	/* First ensure that probe events are created for this enabler. */
-	lttng_create_event_if_missing(event_enabler);
+	lttng_event_enabler_create_events_if_missing(event_enabler);
 
 	/* Link the created event with its associated enabler. */
 	list_for_each_entry(event_priv, event_list_head, node) {

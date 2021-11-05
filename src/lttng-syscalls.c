@@ -751,7 +751,7 @@ int lttng_syscalls_populate_events(struct lttng_event_enabler_common *syscall_ev
 /*
  * Should be called with sessions lock held.
  */
-int lttng_syscalls_register_event(struct lttng_event_enabler_common *syscall_event_enabler)
+int lttng_event_enabler_create_syscall_events_if_missing(struct lttng_event_enabler_common *syscall_event_enabler)
 {
 	struct lttng_kernel_syscall_table *syscall_table = get_syscall_table_from_enabler(syscall_event_enabler);
 	int ret;

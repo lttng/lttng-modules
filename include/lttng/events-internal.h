@@ -853,7 +853,7 @@ void lttng_enabler_link_bytecode(const struct lttng_kernel_event_desc *event_des
 		struct list_head *enabler_bytecode_runtime_head);
 
 #if defined(CONFIG_HAVE_SYSCALL_TRACEPOINTS)
-int lttng_syscalls_register_event(struct lttng_event_enabler_common *event_enabler);
+int lttng_event_enabler_create_syscall_events_if_missing(struct lttng_event_enabler_common *event_enabler);
 int lttng_syscall_filter_enable_event(struct lttng_kernel_event_common *event);
 int lttng_syscall_filter_disable_event(struct lttng_kernel_event_common *event);
 
@@ -865,7 +865,7 @@ long lttng_syscall_table_get_active_mask(struct lttng_kernel_syscall_table *sysc
 
 void lttng_syscall_table_set_wildcard_all(struct lttng_event_enabler_common *event_enabler);
 #else
-static inline int lttng_syscalls_register_event(struct lttng_event_enabler_common *event_enabler)
+static inline int lttng_event_enabler_create_syscall_events_if_missing(struct lttng_event_enabler_common *event_enabler)
 {
 	return -ENOSYS;
 }
