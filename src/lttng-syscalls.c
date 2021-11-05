@@ -627,6 +627,8 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 			return;
 		}
 		event->priv->u.syscall.syscall_id = syscall_nr;
+		if (dispatch_table)
+			hlist_add_head_rcu(&event->priv->u.syscall.node, dispatch_table);
 		break;
 	}
 	default:
