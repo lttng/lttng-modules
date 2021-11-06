@@ -642,9 +642,10 @@ void lttng_syscall_event_enabler_create_matching_syscall_table_events(struct ltt
 	const struct lttng_kernel_event_desc *desc;
 	unsigned int i;
 
-	if (!IS_ENABLED(CONFIG_COMPAT) && (type == SC_TYPE_COMPAT_ENTRY || type == SC_TYPE_COMPAT_EXIT))
+#ifndef CONFIG_COMPAT
+	if (type == SC_TYPE_COMPAT_ENTRY || type == SC_TYPE_COMPAT_EXIT)
 		return;
-
+#endif
 	/* iterate over all syscall and create event that match */
 	for (i = 0; i < table_len; i++) {
 		struct lttng_kernel_event_common_private *event_priv;
@@ -702,9 +703,10 @@ void create_unknown_syscall_event(struct lttng_event_enabler_common *event_enabl
 	bool found = false;
 	struct hlist_head *head;
 
-	if (!IS_ENABLED(CONFIG_COMPAT) && (type == SC_TYPE_COMPAT_ENTRY || type == SC_TYPE_COMPAT_EXIT))
+#ifndef CONFIG_COMPAT
+	if (type == SC_TYPE_COMPAT_ENTRY || type == SC_TYPE_COMPAT_EXIT)
 		return;
-
+#endif
 	/*
 	 * Considering that currently system calls can only be enabled on a per
 	 * name basis (or wildcard based on a name), unknown syscall events are
