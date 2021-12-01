@@ -130,6 +130,15 @@ struct lttng_syscall_filter {
 	DECLARE_BITMAP(sc_exit, NR_syscalls);
 	DECLARE_BITMAP(sc_compat_entry, NR_compat_syscalls);
 	DECLARE_BITMAP(sc_compat_exit, NR_compat_syscalls);
+
+	/*
+	 * Reference counters keeping track of number of events enabled
+	 * for each bit.
+	 */
+	u32 sc_entry_refcount_map[NR_syscalls];
+	u32 sc_exit_refcount_map[NR_syscalls];
+	u32 sc_compat_entry_refcount_map[NR_compat_syscalls];
+	u32 sc_compat_exit_refcount_map[NR_compat_syscalls];
 };
 
 static void syscall_entry_event_unknown(struct hlist_head *unknown_action_list_head,
@@ -973,6 +982,7 @@ int lttng_syscall_filter_enable(
 {
 	const char *syscall_name;
 	unsigned long *bitmap;
+	u32 *refcount_map;
 	int syscall_nr;
 
 	syscall_name = get_syscall_name(desc_name, abi, entryexit);
@@ -995,9 +1005,11 @@ int lttng_syscall_filter_enable(
 		switch (abi) {
 		case LTTNG_SYSCALL_ABI_NATIVE:
 			bitmap = filter->sc_entry;
+			refcount_map = filter->sc_entry_refcount_map;
 			break;
 		case LTTNG_SYSCALL_ABI_COMPAT:
 			bitmap = filter->sc_compat_entry;
+			refcount_map = filter->sc_compat_entry_refcount_map;
 			break;
 		default:
 			return -EINVAL;
@@ -1007,9 +1019,11 @@ int lttng_syscall_filter_enable(
 		switch (abi) {
 		case LTTNG_SYSCALL_ABI_NATIVE:
 			bitmap = filter->sc_exit;
+			refcount_map = filter->sc_exit_refcount_map;
 			break;
 		case LTTNG_SYSCALL_ABI_COMPAT:
 			bitmap = filter->sc_compat_exit;
+			refcount_map = filter->sc_compat_exit_refcount_map;
 			break;
 		default:
 			return -EINVAL;
@@ -1018,9 +1032,10 @@ int lttng_syscall_filter_enable(
 	default:
 		return -EINVAL;
 	}
-	if (test_bit(syscall_nr, bitmap))
-		return -EEXIST;
-	bitmap_set(bitmap, syscall_nr, 1);
+	if (refcount_map[syscall_nr] == U32_MAX)
+		return -EOVERFLOW;
+	if (refcount_map[syscall_nr]++ == 0)
+		bitmap_set(bitmap, syscall_nr, 1);
 	return 0;
 }
 
@@ -1032,6 +1047,10 @@ int lttng_syscall_filter_enable_event(struct lttng_kernel_event_common *event)
 	int ret;
 
 	WARN_ON_ONCE(event->priv->instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
+
+	/* Skip unknown syscall */
+	if (syscall_id == -1U)
+		return 0;
 
 	ret = lttng_syscall_filter_enable(syscall_table->sc_filter,
 		event->priv->desc->event_name, event->priv->u.syscall.abi,
@@ -1083,6 +1102,7 @@ int lttng_syscall_filter_disable(struct lttng_syscall_filter *filter,
 {
 	const char *syscall_name;
 	unsigned long *bitmap;
+	u32 *refcount_map;
 	int syscall_nr;
 
 	syscall_name = get_syscall_name(desc_name, abi, entryexit);
@@ -1105,9 +1125,11 @@ int lttng_syscall_filter_disable(struct lttng_syscall_filter *filter,
 		switch (abi) {
 		case LTTNG_SYSCALL_ABI_NATIVE:
 			bitmap = filter->sc_entry;
+			refcount_map = filter->sc_entry_refcount_map;
 			break;
 		case LTTNG_SYSCALL_ABI_COMPAT:
 			bitmap = filter->sc_compat_entry;
+			refcount_map = filter->sc_compat_entry_refcount_map;
 			break;
 		default:
 			return -EINVAL;
@@ -1117,9 +1139,11 @@ int lttng_syscall_filter_disable(struct lttng_syscall_filter *filter,
 		switch (abi) {
 		case LTTNG_SYSCALL_ABI_NATIVE:
 			bitmap = filter->sc_exit;
+			refcount_map = filter->sc_exit_refcount_map;
 			break;
 		case LTTNG_SYSCALL_ABI_COMPAT:
 			bitmap = filter->sc_compat_exit;
+			refcount_map = filter->sc_compat_exit_refcount_map;
 			break;
 		default:
 			return -EINVAL;
@@ -1128,17 +1152,22 @@ int lttng_syscall_filter_disable(struct lttng_syscall_filter *filter,
 	default:
 		return -EINVAL;
 	}
-	if (!test_bit(syscall_nr, bitmap))
-		return -EEXIST;
-	bitmap_clear(bitmap, syscall_nr, 1);
-
+	if (refcount_map[syscall_nr] == 0)
+		return -ENOENT;
+	if (--refcount_map[syscall_nr] == 0)
+		bitmap_clear(bitmap, syscall_nr, 1);
 	return 0;
 }
 
 int lttng_syscall_filter_disable_event(struct lttng_kernel_event_common *event)
 {
 	struct lttng_kernel_syscall_table *syscall_table = get_syscall_table_from_event(event);
+	unsigned int syscall_id = event->priv->u.syscall.syscall_id;
 	int ret;
+
+	/* Skip unknown syscall */
+	if (syscall_id == -1U)
+		return 0;
 
 	ret = lttng_syscall_filter_disable(syscall_table->sc_filter,
 		event->priv->desc->event_name, event->priv->u.syscall.abi,
