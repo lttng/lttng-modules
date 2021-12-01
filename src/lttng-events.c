@@ -71,7 +71,7 @@ static void lttng_event_enabler_sync(struct lttng_event_enabler_common *event_en
 
 static void _lttng_event_destroy(struct lttng_kernel_event_common *event);
 static void _lttng_channel_destroy(struct lttng_kernel_channel_buffer *chan);
-static int _lttng_event_unregister(struct lttng_kernel_event_common *event);
+static void _lttng_event_unregister(struct lttng_kernel_event_common *event);
 static
 int _lttng_event_recorder_metadata_statedump(struct lttng_kernel_event_common *event);
 static
@@ -360,10 +360,8 @@ void lttng_session_destroy(struct lttng_kernel_session *session)
 		ret = lttng_syscalls_unregister_syscall_table(&chan_priv->parent.syscall_table);
 		WARN_ON(ret);
 	}
-	list_for_each_entry(event_recorder_priv, &session->priv->events, parent.node) {
-		ret = _lttng_event_unregister(&event_recorder_priv->pub->parent);
-		WARN_ON(ret);
-	}
+	list_for_each_entry(event_recorder_priv, &session->priv->events, parent.node)
+		_lttng_event_unregister(&event_recorder_priv->pub->parent);
 	synchronize_trace();	/* Wait for in-flight events to complete */
 	list_for_each_entry(chan_priv, &session->priv->chan, node) {
 		ret = lttng_syscalls_destroy_syscall_table(&chan_priv->parent.syscall_table);
@@ -410,10 +408,8 @@ void lttng_event_notifier_group_destroy(
 	WARN_ON(ret);
 
 	list_for_each_entry_safe(event_notifier_priv, tmpevent_notifier_priv,
-			&event_notifier_group->event_notifiers_head, parent.node) {
-		ret = _lttng_event_unregister(&event_notifier_priv->pub->parent);
-		WARN_ON(ret);
-	}
+			&event_notifier_group->event_notifiers_head, parent.node)
+		_lttng_event_unregister(&event_notifier_priv->pub->parent);
 
 	/* Wait for in-flight event notifier to complete */
 	synchronize_trace();
@@ -1337,15 +1333,14 @@ int lttng_kernel_counter_clear(struct lttng_counter *counter,
 	return counter->ops->counter_clear(counter->counter, dim_indexes);
 }
 
-/* Only used for tracepoints for now. */
+/* Only used for tracepoints and system calls for now. */
 static
 void register_event(struct lttng_kernel_event_common *event)
 {
 	const struct lttng_kernel_event_desc *desc;
 	int ret = -EINVAL;
 
-	if (event->priv->registered)
-		return;
+	WARN_ON_ONCE(event->priv->registered);
 
 	desc = event->priv->desc;
 	switch (event->priv->instrumentation) {
@@ -1383,18 +1378,19 @@ void register_event(struct lttng_kernel_event_common *event)
 	default:
 		WARN_ON_ONCE(1);
 	}
+	WARN_ON_ONCE(ret);
 	if (!ret)
 		event->priv->registered = 1;
 }
 
-int _lttng_event_unregister(struct lttng_kernel_event_common *event)
+static
+void unregister_event(struct lttng_kernel_event_common *event)
 {
 	struct lttng_kernel_event_common_private *event_priv = event->priv;
 	const struct lttng_kernel_event_desc *desc;
 	int ret = -EINVAL;
 
-	if (!event_priv->registered)
-		return 0;
+	WARN_ON_ONCE(!event->priv->registered);
 
 	desc = event_priv->desc;
 	switch (event_priv->instrumentation) {
@@ -1446,9 +1442,16 @@ int _lttng_event_unregister(struct lttng_kernel_event_common *event)
 	default:
 		WARN_ON_ONCE(1);
 	}
+	WARN_ON_ONCE(ret);
 	if (!ret)
 		event_priv->registered = 0;
-	return ret;
+}
+
+static
+void _lttng_event_unregister(struct lttng_kernel_event_common *event)
+{
+	if (event->priv->registered)
+		unregister_event(event);
 }
 
 /*
@@ -2652,9 +2655,11 @@ void lttng_sync_event_list(struct list_head *event_enabler_list,
 		 * Sync tracepoint registration with event enabled state.
 		 */
 		if (enabled) {
-			register_event(event);
+			if (!event_priv->registered)
+				register_event(event);
 		} else {
-			_lttng_event_unregister(event);
+			if (event_priv->registered)
+				unregister_event(event);
 		}
 
 		lttng_event_sync_filter_state(event);
