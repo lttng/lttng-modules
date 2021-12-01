@@ -135,6 +135,15 @@ struct lttng_syscall_filter {
 	DECLARE_BITMAP(sc_exit, NR_syscalls);
 	DECLARE_BITMAP(sc_compat_entry, NR_compat_syscalls);
 	DECLARE_BITMAP(sc_compat_exit, NR_compat_syscalls);
+
+	/*
+	 * Reference counters keeping track of number of events enabled
+	 * for each bit.
+	 */
+	u32 sc_entry_refcount_map[NR_syscalls];
+	u32 sc_exit_refcount_map[NR_syscalls];
+	u32 sc_compat_entry_refcount_map[NR_compat_syscalls];
+	u32 sc_compat_exit_refcount_map[NR_compat_syscalls];
 };
 
 static void syscall_entry_event_unknown(struct hlist_head *unknown_action_list_head,
@@ -1367,6 +1376,7 @@ int lttng_syscall_filter_enable(
 {
 	const char *syscall_name;
 	unsigned long *bitmap;
+	u32 *refcount_map;
 	int syscall_nr;
 
 	syscall_name = get_syscall_name(desc_name, abi, entryexit);
@@ -1389,9 +1399,11 @@ int lttng_syscall_filter_enable(
 		switch (abi) {
 		case LTTNG_SYSCALL_ABI_NATIVE:
 			bitmap = filter->sc_entry;
+			refcount_map = filter->sc_entry_refcount_map;
 			break;
 		case LTTNG_SYSCALL_ABI_COMPAT:
 			bitmap = filter->sc_compat_entry;
+			refcount_map = filter->sc_compat_entry_refcount_map;
 			break;
 		default:
 			return -EINVAL;
@@ -1401,9 +1413,11 @@ int lttng_syscall_filter_enable(
 		switch (abi) {
 		case LTTNG_SYSCALL_ABI_NATIVE:
 			bitmap = filter->sc_exit;
+			refcount_map = filter->sc_exit_refcount_map;
 			break;
 		case LTTNG_SYSCALL_ABI_COMPAT:
 			bitmap = filter->sc_compat_exit;
+			refcount_map = filter->sc_compat_exit_refcount_map;
 			break;
 		default:
 			return -EINVAL;
@@ -1412,9 +1426,10 @@ int lttng_syscall_filter_enable(
 	default:
 		return -EINVAL;
 	}
-	if (test_bit(syscall_nr, bitmap))
-		return -EEXIST;
-	bitmap_set(bitmap, syscall_nr, 1);
+	if (refcount_map[syscall_nr] == U32_MAX)
+		return -EOVERFLOW;
+	if (refcount_map[syscall_nr]++ == 0)
+		bitmap_set(bitmap, syscall_nr, 1);
 	return 0;
 }
 
@@ -1428,13 +1443,16 @@ int lttng_syscall_filter_enable_event_notifier(
 
 	WARN_ON_ONCE(event_notifier->priv->parent.instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
 
+	/* Skip unknown syscall */
+	if (syscall_id == -1U)
+		return 0;
+
 	ret = lttng_syscall_filter_enable(group->sc_filter,
 		event_notifier->priv->parent.desc->event_name,
 		event_notifier->priv->parent.u.syscall.abi,
 		event_notifier->priv->parent.u.syscall.entryexit);
-	if (ret) {
-		goto end;
-	}
+	if (ret)
+		return ret;
 
 	switch (event_notifier->priv->parent.u.syscall.entryexit) {
 	case LTTNG_SYSCALL_ENTRY:
@@ -1471,14 +1489,20 @@ int lttng_syscall_filter_enable_event_notifier(
 	hlist_add_head_rcu(&event_notifier->priv->parent.u.syscall.node, dispatch_list);
 
 end:
-	return ret ;
+	return ret;
 }
 
 int lttng_syscall_filter_enable_event(
 		struct lttng_kernel_channel_buffer *channel,
 		struct lttng_kernel_event_recorder *event_recorder)
 {
+	unsigned int syscall_id = event_recorder->priv->parent.u.syscall.syscall_id;
+
 	WARN_ON_ONCE(event_recorder->priv->parent.instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
+
+	/* Skip unknown syscall */
+	if (syscall_id == -1U)
+		return 0;
 
 	return lttng_syscall_filter_enable(channel->priv->parent.sc_filter,
 		event_recorder->priv->parent.desc->event_name,
@@ -1494,6 +1518,7 @@ int lttng_syscall_filter_disable(
 {
 	const char *syscall_name;
 	unsigned long *bitmap;
+	u32 *refcount_map;
 	int syscall_nr;
 
 	syscall_name = get_syscall_name(desc_name, abi, entryexit);
@@ -1516,9 +1541,11 @@ int lttng_syscall_filter_disable(
 		switch (abi) {
 		case LTTNG_SYSCALL_ABI_NATIVE:
 			bitmap = filter->sc_entry;
+			refcount_map = filter->sc_entry_refcount_map;
 			break;
 		case LTTNG_SYSCALL_ABI_COMPAT:
 			bitmap = filter->sc_compat_entry;
+			refcount_map = filter->sc_compat_entry_refcount_map;
 			break;
 		default:
 			return -EINVAL;
@@ -1528,9 +1555,11 @@ int lttng_syscall_filter_disable(
 		switch (abi) {
 		case LTTNG_SYSCALL_ABI_NATIVE:
 			bitmap = filter->sc_exit;
+			refcount_map = filter->sc_exit_refcount_map;
 			break;
 		case LTTNG_SYSCALL_ABI_COMPAT:
 			bitmap = filter->sc_compat_exit;
+			refcount_map = filter->sc_compat_exit_refcount_map;
 			break;
 		default:
 			return -EINVAL;
@@ -1539,10 +1568,10 @@ int lttng_syscall_filter_disable(
 	default:
 		return -EINVAL;
 	}
-	if (!test_bit(syscall_nr, bitmap))
-		return -EEXIST;
-	bitmap_clear(bitmap, syscall_nr, 1);
-
+	if (refcount_map[syscall_nr] == 0)
+		return -ENOENT;
+	if (--refcount_map[syscall_nr] == 0)
+		bitmap_clear(bitmap, syscall_nr, 1);
 	return 0;
 }
 
@@ -1550,15 +1579,21 @@ int lttng_syscall_filter_disable_event_notifier(
 		struct lttng_kernel_event_notifier *event_notifier)
 {
 	struct lttng_event_notifier_group *group = event_notifier->priv->group;
+	unsigned int syscall_id = event_notifier->priv->parent.u.syscall.syscall_id;
 	int ret;
 
 	WARN_ON_ONCE(event_notifier->priv->parent.instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
+
+	/* Skip unknown syscall */
+	if (syscall_id == -1U)
+		return 0;
 
 	ret = lttng_syscall_filter_disable(group->sc_filter,
 		event_notifier->priv->parent.desc->event_name,
 		event_notifier->priv->parent.u.syscall.abi,
 		event_notifier->priv->parent.u.syscall.entryexit);
-	WARN_ON_ONCE(ret != 0);
+	if (ret)
+		return ret;
 
 	hlist_del_rcu(&event_notifier->priv->parent.u.syscall.node);
 	return 0;
@@ -1568,6 +1603,12 @@ int lttng_syscall_filter_disable_event(
 		struct lttng_kernel_channel_buffer *channel,
 		struct lttng_kernel_event_recorder *event_recorder)
 {
+	unsigned int syscall_id = event_recorder->priv->parent.u.syscall.syscall_id;
+
+	/* Skip unknown syscall */
+	if (syscall_id == -1U)
+		return 0;
+
 	return lttng_syscall_filter_disable(channel->priv->parent.sc_filter,
 		event_recorder->priv->parent.desc->event_name,
 		event_recorder->priv->parent.u.syscall.abi,
