@@ -72,8 +72,8 @@ static void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier
 
 static void _lttng_event_destroy(struct lttng_kernel_event_common *event);
 static void _lttng_channel_destroy(struct lttng_kernel_channel_buffer *chan);
-static int _lttng_event_unregister(struct lttng_kernel_event_recorder *event);
-static int _lttng_event_notifier_unregister(struct lttng_kernel_event_notifier *event_notifier);
+static void _lttng_event_unregister(struct lttng_kernel_event_recorder *event);
+static void _lttng_event_notifier_unregister(struct lttng_kernel_event_notifier *event_notifier);
 static
 int _lttng_event_metadata_statedump(struct lttng_kernel_session *session,
 				  struct lttng_kernel_channel_buffer *chan,
@@ -364,10 +364,8 @@ void lttng_session_destroy(struct lttng_kernel_session *session)
 		ret = lttng_syscalls_unregister_channel(chan_priv->pub);
 		WARN_ON(ret);
 	}
-	list_for_each_entry(event_recorder_priv, &session->priv->events, node) {
-		ret = _lttng_event_unregister(event_recorder_priv->pub);
-		WARN_ON(ret);
-	}
+	list_for_each_entry(event_recorder_priv, &session->priv->events, node)
+		_lttng_event_unregister(event_recorder_priv->pub);
 	synchronize_trace();	/* Wait for in-flight events to complete */
 	list_for_each_entry(chan_priv, &session->priv->chan, node) {
 		ret = lttng_syscalls_destroy_event(chan_priv->pub);
@@ -415,10 +413,8 @@ void lttng_event_notifier_group_destroy(
 	WARN_ON(ret);
 
 	list_for_each_entry_safe(event_notifier_priv, tmpevent_notifier_priv,
-			&event_notifier_group->event_notifiers_head, node) {
-		ret = _lttng_event_notifier_unregister(event_notifier_priv->pub);
-		WARN_ON(ret);
-	}
+			&event_notifier_group->event_notifiers_head, node)
+		_lttng_event_notifier_unregister(event_notifier_priv->pub);
 
 	/* Wait for in-flight event notifier to complete */
 	synchronize_trace();
@@ -1432,8 +1428,7 @@ void register_event(struct lttng_kernel_event_recorder *event_recorder)
 	const struct lttng_kernel_event_desc *desc;
 	int ret = -EINVAL;
 
-	if (event_recorder->priv->parent.registered)
-		return;
+	WARN_ON_ONCE(event_recorder->priv->parent.registered);
 
 	desc = event_recorder->priv->parent.desc;
 	switch (event_recorder->priv->parent.instrumentation) {
@@ -1469,14 +1464,14 @@ void register_event(struct lttng_kernel_event_recorder *event_recorder)
 /*
  * Only used internally at session destruction.
  */
-int _lttng_event_unregister(struct lttng_kernel_event_recorder *event_recorder)
+static
+void unregister_event(struct lttng_kernel_event_recorder *event_recorder)
 {
 	struct lttng_kernel_event_common_private *event_priv = &event_recorder->priv->parent;
 	const struct lttng_kernel_event_desc *desc;
 	int ret = -EINVAL;
 
-	if (!event_priv->registered)
-		return 0;
+	WARN_ON_ONCE(!event_priv->registered);
 
 	desc = event_priv->desc;
 	switch (event_priv->instrumentation) {
@@ -1514,9 +1509,16 @@ int _lttng_event_unregister(struct lttng_kernel_event_recorder *event_recorder)
 	default:
 		WARN_ON_ONCE(1);
 	}
+	WARN_ON_ONCE(ret);
 	if (!ret)
 		event_priv->registered = 0;
-	return ret;
+}
+
+static
+void _lttng_event_unregister(struct lttng_kernel_event_recorder *event_recorder)
+{
+	if (event_recorder->priv->parent.registered)
+		unregister_event(event_recorder);
 }
 
 /* Only used for tracepoints for now. */
@@ -1526,8 +1528,7 @@ void register_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
 	const struct lttng_kernel_event_desc *desc;
 	int ret = -EINVAL;
 
-	if (event_notifier->priv->parent.registered)
-		return;
+	WARN_ON_ONCE(event_notifier->priv->parent.registered);
 
 	desc = event_notifier->priv->parent.desc;
 	switch (event_notifier->priv->parent.instrumentation) {
@@ -1561,14 +1562,12 @@ void register_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
 }
 
 static
-int _lttng_event_notifier_unregister(
-		struct lttng_kernel_event_notifier *event_notifier)
+int unregister_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
 {
 	const struct lttng_kernel_event_desc *desc;
 	int ret = -EINVAL;
 
-	if (!event_notifier->priv->parent.registered)
-		return 0;
+	WARN_ON_ONCE(!event_notifier->priv->parent.registered);
 
 	desc = event_notifier->priv->parent.desc;
 	switch (event_notifier->priv->parent.instrumentation) {
@@ -1604,6 +1603,13 @@ int _lttng_event_notifier_unregister(
 	if (!ret)
 		event_notifier->priv->parent.registered = 0;
 	return ret;
+}
+
+static
+void _lttng_event_notifier_unregister(struct lttng_kernel_event_notifier *event_notifier)
+{
+	if (event_notifier->priv->parent.registered)
+		unregister_event_notifier(event_notifier);
 }
 
 /*
@@ -2784,9 +2790,11 @@ void lttng_session_sync_event_enablers(struct lttng_kernel_session *session)
 		 * state.
 		 */
 		if (enabled) {
-			register_event(event_recorder);
+			if (!event_recorder_priv->parent.registered)
+				register_event(event_recorder);
 		} else {
-			_lttng_event_unregister(event_recorder);
+			if (event_recorder_priv->parent.registered)
+				_lttng_event_unregister(event_recorder);
 		}
 
 		/* Check if has enablers without bytecode enabled */
@@ -2877,7 +2885,7 @@ void lttng_event_notifier_group_sync_enablers(struct lttng_event_notifier_group 
 				register_event_notifier(event_notifier);
 		} else {
 			if (event_notifier_priv->parent.registered)
-				_lttng_event_notifier_unregister(event_notifier);
+				unregister_event_notifier(event_notifier);
 		}
 
 		/* Check if has enablers without bytecode enabled */
