@@ -535,8 +535,7 @@ struct lttng_kernel_syscall_table *get_syscall_table_from_event(struct lttng_ker
 
 static
 void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common *syscall_event_enabler,
-		const struct lttng_kernel_event_desc *desc, struct hlist_head *dispatch_table,
-		enum sc_type type, unsigned int syscall_nr)
+		const struct lttng_kernel_event_desc *desc, enum sc_type type, unsigned int syscall_nr)
 {
 	struct lttng_kernel_event_common *event;
 
@@ -584,8 +583,6 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 			return;
 		}
 		event->priv->u.syscall.syscall_id = syscall_nr;
-		if (dispatch_table)
-			hlist_add_head_rcu(&event->priv->u.syscall.node, dispatch_table);
 		break;
 	}
 	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
@@ -634,8 +631,6 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 			return;
 		}
 		event->priv->u.syscall.syscall_id = syscall_nr;
-		if (dispatch_table)
-			hlist_add_head_rcu(&event->priv->u.syscall.node, dispatch_table);
 		break;
 	}
 	default:
@@ -683,7 +678,7 @@ void lttng_syscall_event_enabler_create_matching_syscall_table_events(struct ltt
 		if (found)
 			continue;
 
-		lttng_syscall_event_enabler_create_event(syscall_event_enabler_common, desc, NULL, type, i);
+		lttng_syscall_event_enabler_create_event(syscall_event_enabler_common, desc, type, i);
 	}
 }
 
@@ -704,11 +699,9 @@ bool lttng_syscall_event_enabler_is_wildcard_all(struct lttng_event_enabler_comm
 static
 void create_unknown_syscall_event(struct lttng_event_enabler_common *event_enabler, enum sc_type type)
 {
-	struct lttng_kernel_syscall_table *syscall_table = get_syscall_table_from_enabler(event_enabler);
 	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(event_enabler);
 	struct lttng_kernel_event_common_private *event_priv;
 	const struct lttng_kernel_event_desc *desc;
-	struct hlist_head *unknown_dispatch_list;
 	bool found = false;
 	struct hlist_head *head;
 
@@ -731,19 +724,15 @@ void create_unknown_syscall_event(struct lttng_event_enabler_common *event_enabl
 	switch (type) {
 	case SC_TYPE_ENTRY:
 		desc = &__event_desc___syscall_entry_unknown;
-		unknown_dispatch_list = &syscall_table->unknown_syscall_dispatch;
 		break;
 	case SC_TYPE_EXIT:
 		desc = &__event_desc___syscall_exit_unknown;
-		unknown_dispatch_list = &syscall_table->unknown_syscall_exit_dispatch;
 		break;
 	case SC_TYPE_COMPAT_ENTRY:
 		desc = &__event_desc___compat_syscall_entry_unknown;
-		unknown_dispatch_list = &syscall_table->compat_unknown_syscall_dispatch;
 		break;
 	case SC_TYPE_COMPAT_EXIT:
 		desc = &__event_desc___compat_syscall_exit_unknown;
-		unknown_dispatch_list = &syscall_table->compat_unknown_syscall_exit_dispatch;
 		break;
 	default:
 		WARN_ON_ONCE(1);
@@ -760,7 +749,7 @@ void create_unknown_syscall_event(struct lttng_event_enabler_common *event_enabl
 		}
 	}
 	if (!found)
-		lttng_syscall_event_enabler_create_event(event_enabler, desc, unknown_dispatch_list, type, -1U);
+		lttng_syscall_event_enabler_create_event(event_enabler, desc, type, -1U);
 }
 
 static
@@ -889,52 +878,6 @@ int lttng_syscalls_destroy_syscall_table(struct lttng_kernel_syscall_table *sysc
 }
 
 static
-int get_syscall_nr(const char *syscall_name)
-{
-	int syscall_nr = -1;
-	int i;
-
-	for (i = 0; i < sc_table.len; i++) {
-		const struct trace_syscall_entry *entry;
-		const char *it_name;
-
-		entry = &sc_table.table[i];
-		if (!entry->desc)
-			continue;
-		it_name = entry->desc->event_name;
-		it_name += strlen(SYSCALL_ENTRY_STR);
-		if (!strcmp(syscall_name, it_name)) {
-			syscall_nr = i;
-			break;
-		}
-	}
-	return syscall_nr;
-}
-
-static
-int get_compat_syscall_nr(const char *syscall_name)
-{
-	int syscall_nr = -1;
-	int i;
-
-	for (i = 0; i < compat_sc_table.len; i++) {
-		const struct trace_syscall_entry *entry;
-		const char *it_name;
-
-		entry = &compat_sc_table.table[i];
-		if (!entry->desc)
-			continue;
-		it_name = entry->desc->event_name;
-		it_name += strlen(COMPAT_SYSCALL_ENTRY_STR);
-		if (!strcmp(syscall_name, it_name)) {
-			syscall_nr = i;
-			break;
-		}
-	}
-	return syscall_nr;
-}
-
-static
 uint32_t get_sc_tables_len(void)
 {
 	return sc_table.len + compat_sc_table.len;
@@ -978,27 +921,14 @@ static
 int lttng_syscall_filter_enable(
 		struct lttng_syscall_filter *filter,
 		const char *desc_name, enum lttng_syscall_abi abi,
-		enum lttng_syscall_entryexit entryexit)
+		enum lttng_syscall_entryexit entryexit,
+		unsigned int syscall_id)
 {
 	const char *syscall_name;
 	unsigned long *bitmap;
 	u32 *refcount_map;
-	int syscall_nr;
 
 	syscall_name = get_syscall_name(desc_name, abi, entryexit);
-
-	switch (abi) {
-	case LTTNG_SYSCALL_ABI_NATIVE:
-		syscall_nr = get_syscall_nr(syscall_name);
-		break;
-	case LTTNG_SYSCALL_ABI_COMPAT:
-		syscall_nr = get_compat_syscall_nr(syscall_name);
-		break;
-	default:
-		return -EINVAL;
-	}
-	if (syscall_nr < 0)
-		return -ENOENT;
 
 	switch (entryexit) {
 	case LTTNG_SYSCALL_ENTRY:
@@ -1032,10 +962,10 @@ int lttng_syscall_filter_enable(
 	default:
 		return -EINVAL;
 	}
-	if (refcount_map[syscall_nr] == U32_MAX)
+	if (refcount_map[syscall_id] == U32_MAX)
 		return -EOVERFLOW;
-	if (refcount_map[syscall_nr]++ == 0)
-		bitmap_set(bitmap, syscall_nr, 1);
+	if (refcount_map[syscall_id]++ == 0)
+		bitmap_set(bitmap, syscall_id, 1);
 	return 0;
 }
 
@@ -1048,46 +978,77 @@ int lttng_syscall_filter_enable_event(struct lttng_kernel_event_common *event)
 
 	WARN_ON_ONCE(event->priv->instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
 
-	/* Skip unknown syscall */
-	if (syscall_id == -1U)
-		return 0;
-
-	ret = lttng_syscall_filter_enable(syscall_table->sc_filter,
-		event->priv->desc->event_name, event->priv->u.syscall.abi,
-		event->priv->u.syscall.entryexit);
-	if (ret)
-		return ret;
-
-	switch (event->priv->u.syscall.entryexit) {
-	case LTTNG_SYSCALL_ENTRY:
-		switch (event->priv->u.syscall.abi) {
-		case LTTNG_SYSCALL_ABI_NATIVE:
-			dispatch_list = &syscall_table->syscall_dispatch[syscall_id];
+	/* Unknown syscall */
+	if (syscall_id == -1U) {
+		switch (event->priv->u.syscall.entryexit) {
+		case LTTNG_SYSCALL_ENTRY:
+			switch (event->priv->u.syscall.abi) {
+			case LTTNG_SYSCALL_ABI_NATIVE:
+				dispatch_list = &syscall_table->unknown_syscall_dispatch;
+				break;
+			case LTTNG_SYSCALL_ABI_COMPAT:
+				dispatch_list = &syscall_table->compat_unknown_syscall_dispatch;
+				break;
+			default:
+				ret = -EINVAL;
+				goto end;
+			}
 			break;
-		case LTTNG_SYSCALL_ABI_COMPAT:
-			dispatch_list = &syscall_table->compat_syscall_dispatch[syscall_id];
-			break;
-		default:
-			ret = -EINVAL;
-			goto end;
-		}
-		break;
-	case LTTNG_SYSCALL_EXIT:
-		switch (event->priv->u.syscall.abi) {
-		case LTTNG_SYSCALL_ABI_NATIVE:
-			dispatch_list = &syscall_table->syscall_exit_dispatch[syscall_id];
-			break;
-		case LTTNG_SYSCALL_ABI_COMPAT:
-			dispatch_list = &syscall_table->compat_syscall_exit_dispatch[syscall_id];
+		case LTTNG_SYSCALL_EXIT:
+			switch (event->priv->u.syscall.abi) {
+			case LTTNG_SYSCALL_ABI_NATIVE:
+				dispatch_list = &syscall_table->unknown_syscall_exit_dispatch;
+				break;
+			case LTTNG_SYSCALL_ABI_COMPAT:
+				dispatch_list = &syscall_table->compat_unknown_syscall_exit_dispatch;
+				break;
+			default:
+				ret = -EINVAL;
+				goto end;
+			}
 			break;
 		default:
 			ret = -EINVAL;
 			goto end;
 		}
-		break;
-	default:
-		ret = -EINVAL;
-		goto end;
+	} else {
+		ret = lttng_syscall_filter_enable(syscall_table->sc_filter,
+			event->priv->desc->event_name, event->priv->u.syscall.abi,
+			event->priv->u.syscall.entryexit, syscall_id);
+		if (ret)
+			return ret;
+
+		switch (event->priv->u.syscall.entryexit) {
+		case LTTNG_SYSCALL_ENTRY:
+			switch (event->priv->u.syscall.abi) {
+			case LTTNG_SYSCALL_ABI_NATIVE:
+				dispatch_list = &syscall_table->syscall_dispatch[syscall_id];
+				break;
+			case LTTNG_SYSCALL_ABI_COMPAT:
+				dispatch_list = &syscall_table->compat_syscall_dispatch[syscall_id];
+				break;
+			default:
+				ret = -EINVAL;
+				goto end;
+			}
+			break;
+		case LTTNG_SYSCALL_EXIT:
+			switch (event->priv->u.syscall.abi) {
+			case LTTNG_SYSCALL_ABI_NATIVE:
+				dispatch_list = &syscall_table->syscall_exit_dispatch[syscall_id];
+				break;
+			case LTTNG_SYSCALL_ABI_COMPAT:
+				dispatch_list = &syscall_table->compat_syscall_exit_dispatch[syscall_id];
+				break;
+			default:
+				ret = -EINVAL;
+				goto end;
+			}
+			break;
+		default:
+			ret = -EINVAL;
+			goto end;
+		}
 	}
 
 	hlist_add_head_rcu(&event->priv->u.syscall.node, dispatch_list);
@@ -1098,27 +1059,14 @@ end:
 static
 int lttng_syscall_filter_disable(struct lttng_syscall_filter *filter,
 		const char *desc_name, enum lttng_syscall_abi abi,
-		enum lttng_syscall_entryexit entryexit)
+		enum lttng_syscall_entryexit entryexit,
+		unsigned int syscall_id)
 {
 	const char *syscall_name;
 	unsigned long *bitmap;
 	u32 *refcount_map;
-	int syscall_nr;
 
 	syscall_name = get_syscall_name(desc_name, abi, entryexit);
-
-	switch (abi) {
-	case LTTNG_SYSCALL_ABI_NATIVE:
-		syscall_nr = get_syscall_nr(syscall_name);
-		break;
-	case LTTNG_SYSCALL_ABI_COMPAT:
-		syscall_nr = get_compat_syscall_nr(syscall_name);
-		break;
-	default:
-		return -EINVAL;
-	}
-	if (syscall_nr < 0)
-		return -ENOENT;
 
 	switch (entryexit) {
 	case LTTNG_SYSCALL_ENTRY:
@@ -1152,10 +1100,10 @@ int lttng_syscall_filter_disable(struct lttng_syscall_filter *filter,
 	default:
 		return -EINVAL;
 	}
-	if (refcount_map[syscall_nr] == 0)
+	if (refcount_map[syscall_id] == 0)
 		return -ENOENT;
-	if (--refcount_map[syscall_nr] == 0)
-		bitmap_clear(bitmap, syscall_nr, 1);
+	if (--refcount_map[syscall_id] == 0)
+		bitmap_clear(bitmap, syscall_id, 1);
 	return 0;
 }
 
@@ -1165,15 +1113,14 @@ int lttng_syscall_filter_disable_event(struct lttng_kernel_event_common *event)
 	unsigned int syscall_id = event->priv->u.syscall.syscall_id;
 	int ret;
 
-	/* Skip unknown syscall */
-	if (syscall_id == -1U)
-		return 0;
-
-	ret = lttng_syscall_filter_disable(syscall_table->sc_filter,
-		event->priv->desc->event_name, event->priv->u.syscall.abi,
-		event->priv->u.syscall.entryexit);
-	if (ret)
-		return ret;
+	/* Except for unknown syscall */
+	if (syscall_id != -1U) {
+		ret = lttng_syscall_filter_disable(syscall_table->sc_filter,
+			event->priv->desc->event_name, event->priv->u.syscall.abi,
+			event->priv->u.syscall.entryexit, syscall_id);
+		if (ret)
+			return ret;
+	}
 	hlist_del_rcu(&event->priv->u.syscall.node);
 	return 0;
 }
