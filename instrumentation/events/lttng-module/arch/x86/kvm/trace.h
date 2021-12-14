@@ -115,7 +115,39 @@ LTTNG_TRACEPOINT_EVENT_MAP(kvm_apic, kvm_x86_apic,
 /*
  * Tracepoint for kvm guest exit:
  */
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,16,0))
+LTTNG_TRACEPOINT_EVENT_CODE_MAP(kvm_exit, kvm_x86_exit,
+	TP_PROTO(struct kvm_vcpu *vcpu, u32 isa),
+	TP_ARGS(vcpu, isa),
+
+	TP_locvar(
+		u32 reason;
+		u64 info1, info2;
+		u32 intr_info, error_code;
+	),
+
+	TP_code_pre(
+		kvm_x86_ops.get_exit_info(vcpu, &tp_locvar->reason,
+				&tp_locvar->info1,
+				&tp_locvar->info2,
+				&tp_locvar->intr_info,
+				&tp_locvar->error_code);
+	),
+
+	TP_FIELDS(
+		ctf_integer(u32, exit_reason, tp_locvar->reason)
+		ctf_integer(unsigned long, guest_rip, kvm_rip_read(vcpu))
+		ctf_integer(u32, isa, isa)
+		ctf_integer(u64, info1, tp_locvar->info1)
+		ctf_integer(u64, info2, tp_locvar->info2)
+		ctf_integer(u32, intr_info, tp_locvar->intr_info)
+		ctf_integer(u32, error_code, tp_locvar->error_code)
+		ctf_integer(unsigned int, vcpu_id, vcpu->vcpu_id)
+	),
+
+	TP_code_post()
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0))
 LTTNG_TRACEPOINT_EVENT_CODE_MAP(kvm_exit, kvm_x86_exit,
 	TP_PROTO(unsigned int exit_reason, struct kvm_vcpu *vcpu, u32 isa),
 	TP_ARGS(exit_reason, vcpu, isa),
