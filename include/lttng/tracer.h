@@ -11,7 +11,6 @@
  * Copyright (C) 2005-2012 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */
 
-#include <stdarg.h>
 #include <linux/types.h>
 #include <linux/limits.h>
 #include <linux/list.h>

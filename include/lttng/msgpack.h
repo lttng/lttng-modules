@@ -21,7 +21,6 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#include <stddef.h>
 #ifdef __KERNEL__
 #include <linux/types.h>
 #else /* __KERNEL__ */

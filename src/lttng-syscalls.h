@@ -10,8 +10,6 @@
 #ifndef LTTNG_SYSCALLS_H
 #define LTTNG_SYSCALLS_H
 
-#include <stddef.h>
-
 #include <asm/ptrace.h>
 #include <linux/compat.h>
 #include <linux/fcntl.h>
