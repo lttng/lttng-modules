@@ -28,6 +28,7 @@
 #include <wrapper/file.h>
 #include <wrapper/rcu.h>
 #include <wrapper/syscall.h>
+#include <wrapper/limits.h>
 #include <lttng/events.h>
 #include <lttng/events-internal.h>
 #include <lttng/utils.h>

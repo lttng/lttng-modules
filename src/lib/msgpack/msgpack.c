@@ -20,7 +20,6 @@
 
 #define _GNU_SOURCE
 #define _LGPL_SOURCE
-#include <stddef.h>
 
 #define MSGPACK_FIXSTR_ID_MASK		0xA0
 #define MSGPACK_FIXMAP_ID_MASK		0x80
