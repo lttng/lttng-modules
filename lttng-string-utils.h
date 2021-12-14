@@ -6,8 +6,6 @@
  * Copyright (C) 2017 Philippe Proulx <pproulx@efficios.com>
  */
 
-#include <stdbool.h>
-
 typedef char (*strutils_get_char_at_cb)(size_t, void *);
 
 bool strutils_is_star_glob_pattern(const char *pattern);

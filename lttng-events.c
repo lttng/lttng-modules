@@ -46,6 +46,12 @@
 #include <wrapper/ringbuffer/frontend.h>
 #include <wrapper/time.h>
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,16,0))
+#include <linux/stdarg.h>
+#else
+#include <stdarg.h>
+#endif
+
 #define METADATA_CACHE_DEFAULT_SIZE 4096
 
 static LIST_HEAD(sessions);
