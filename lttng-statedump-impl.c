@@ -31,6 +31,8 @@
 #include <linux/mutex.h>
 #include <linux/device.h>
 
+#include <linux/blkdev.h>
+
 #include <lttng-events.h>
 #include <lttng-tracer.h>
 #include <wrapper/cpu.h>
