@@ -233,7 +233,27 @@ LTTNG_TRACEPOINT_EVENT_MAP(
 	)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,16,0))
+LTTNG_TRACEPOINT_EVENT_MAP(
+	fast_page_fault,
+
+	kvm_mmu_fast_page_fault,
+
+	TP_PROTO(struct kvm_vcpu *vcpu, struct kvm_page_fault *fault,
+		 u64 *sptep, u64 old_spte, int ret),
+	TP_ARGS(vcpu, fault, sptep, old_spte, ret),
+
+	TP_FIELDS(
+		ctf_integer(int, vcpu_id, vcpu->vcpu_id)
+		ctf_integer(gpa_t, cr2_or_gpa, fault->addr)
+		ctf_integer(u32, error_code, fault->error_code)
+		ctf_integer_hex(u64 *, sptep, sptep)
+		ctf_integer(u64, old_spte, old_spte)
+		ctf_integer(u64, new_spte, *sptep)
+		ctf_integer(int, ret, ret)
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0))
 LTTNG_TRACEPOINT_EVENT_MAP(
 	fast_page_fault,
 
