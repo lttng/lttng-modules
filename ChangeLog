@@ -1,3 +1,17 @@
+2022-01-05 (National Bird Day) LTTng modules 2.12.7
+	* fix: mm: move kvmalloc-related functions to slab.h (v5.16)
+	* fix: block: don't call blk_status_to_errno in blk_update_request (v5.16)
+	* fix: KVM: MMU: change tracepoints arguments to kvm_page_fault (v5.16)
+	* fix: KVM: x86: Get exit_reason as part of kvm_x86_ops.get_exit_info (v5.16)
+	* fix: isystem: delete global -isystem compile option (v5.16)
+	* fix: block: move block-related definitions out of fs.h (v5.16)
+	* fix: implicit-int error in EXPORT_SYMBOL_GPL
+	* fix: Revert "Makefile: Enable -Wimplicit-fallthrough for Clang" (v5.15)
+	* fix: cpu/hotplug: Remove deprecated CPU-hotplug functions. (v5.15)
+	* fix: sched: Change task_struct::state (v5.14)
+	* fix: btrfs: pass btrfs_inode to btrfs_writepage_endio_finish_ordered() (v5.14)
+	* fix: adjust ranges for RHEL 8.4
+
 2021-05-14 (National Dance Like a Chicken Day) LTTng modules 2.12.6
 	* fix: adjust ranges for RHEL 8.2 and 8.3
 	* Disable block rwbs bitwise enum in default build
