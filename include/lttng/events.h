@@ -94,7 +94,7 @@ struct lttng_kernel_type_array {
 	struct lttng_kernel_type_common parent;
 	const struct lttng_kernel_type_common *elem_type;
 	unsigned int length;			/* Num. elems. */
-	unsigned int alignment;
+	unsigned int alignment;		/* Alignment in bytes before elements. */
 	enum lttng_kernel_string_encoding encoding;
 };
 
@@ -102,7 +102,7 @@ struct lttng_kernel_type_sequence {
 	struct lttng_kernel_type_common parent;
 	const char *length_name;	/* Length field name. If NULL, use previous field. */
 	const struct lttng_kernel_type_common *elem_type;
-	unsigned int alignment;		/* Alignment before elements. */
+	unsigned int alignment;		/* Alignment in bytes before elements. */
 	enum lttng_kernel_string_encoding encoding;
 };
 
@@ -110,7 +110,7 @@ struct lttng_kernel_type_struct {
 	struct lttng_kernel_type_common parent;
 	unsigned int nr_fields;
 	const struct lttng_kernel_event_field * const *fields;	/* Array of pointers to fields. */
-	unsigned int alignment;
+	unsigned int alignment;		/* Alignment in bits */
 };
 
 struct lttng_kernel_type_variant {
@@ -118,7 +118,7 @@ struct lttng_kernel_type_variant {
 	const char *tag_name;		/* Tag field name. If NULL, use previous field. */
 	const struct lttng_kernel_event_field * const *choices; /* Array of pointers to fields. */
 	unsigned int nr_choices;
-	unsigned int alignment;
+	unsigned int alignment;		/* Alignment in bytes */
 };
 
 struct lttng_kernel_enum_desc {

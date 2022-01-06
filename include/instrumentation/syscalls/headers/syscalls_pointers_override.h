@@ -505,7 +505,7 @@ static_assert(((ARRAY_SIZE(lttng_pollfd_flag_fields) - 1) + POLL_FLAGS_PADDING_S
 #endif /* LTTNG_TRACEPOINT_TYPE_EXTERN */
 
 LTTNG_TRACEPOINT_TYPE(PARAMS(const struct lttng_kernel_type_struct lttng_pollfd_flag_fields_struct),
-	PARAMS(lttng_kernel_static_type_struct_init( ARRAY_SIZE(lttng_pollfd_flag_fields), lttng_pollfd_flag_fields, 0)))
+	PARAMS(lttng_kernel_static_type_struct_init(ARRAY_SIZE(lttng_pollfd_flag_fields), lttng_pollfd_flag_fields, 0)))
 
 #ifndef LTTNG_TRACEPOINT_TYPE_EXTERN
 static const struct lttng_kernel_event_field *lttng_pollfd_fields[] = {
