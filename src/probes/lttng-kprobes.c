@@ -33,10 +33,8 @@ int lttng_kprobes_event_handler_pre(struct kprobe *p, struct pt_regs *regs)
 	switch (event->type) {
 	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
 	{
-		struct lttng_kernel_event_recorder_private *event_recorder_priv =
-			container_of(event_priv, struct lttng_kernel_event_recorder_private, parent);
 		struct lttng_kernel_event_recorder *event_recorder =
-			event_recorder_priv->pub;
+			container_of(event, struct lttng_kernel_event_recorder, parent);
 		struct lttng_kernel_channel_buffer *chan = event_recorder->chan;
 
 		if (unlikely(!LTTNG_READ_ONCE(chan->parent.session->active)))

@@ -359,7 +359,7 @@ void lttng_session_destroy(struct lttng_kernel_session *session)
 		ret = lttng_syscalls_unregister_syscall_table(&chan_priv->parent.syscall_table);
 		WARN_ON(ret);
 	}
-	list_for_each_entry(event_recorder_priv, &session->priv->events, parent.node)
+	list_for_each_entry(event_recorder_priv, &session->priv->events, parent.parent.node)
 		_lttng_event_unregister(&event_recorder_priv->pub->parent);
 	synchronize_trace();	/* Wait for in-flight events to complete */
 	list_for_each_entry(chan_priv, &session->priv->chan, node) {
@@ -368,7 +368,7 @@ void lttng_session_destroy(struct lttng_kernel_session *session)
 	}
 	list_for_each_entry_safe(event_enabler, tmp_event_enabler, &session->priv->enablers_head, node)
 		lttng_event_enabler_destroy(event_enabler);
-	list_for_each_entry_safe(event_recorder_priv, tmpevent_recorder_priv, &session->priv->events, parent.node)
+	list_for_each_entry_safe(event_recorder_priv, tmpevent_recorder_priv, &session->priv->events, parent.parent.node)
 		_lttng_event_destroy(&event_recorder_priv->pub->parent);
 	list_for_each_entry_safe(chan_priv, tmpchan_priv, &session->priv->chan, node) {
 		BUG_ON(chan_priv->channel_type == METADATA_CHANNEL);
@@ -559,7 +559,7 @@ int lttng_session_metadata_regenerate(struct lttng_kernel_session *session)
 		chan_priv->metadata_dumped = 0;
 	}
 
-	list_for_each_entry(event_recorder_priv, &session->priv->events, parent.node) {
+	list_for_each_entry(event_recorder_priv, &session->priv->events, parent.parent.node) {
 		event_recorder_priv->metadata_dumped = 0;
 	}
 
@@ -925,18 +925,19 @@ struct lttng_kernel_event_common *lttng_kernel_event_alloc(struct lttng_event_en
 			return NULL;
 		}
 		event_recorder_priv->pub = event_recorder;
-		event_recorder_priv->parent.pub = &event_recorder->parent;
+		event_recorder_priv->parent.parent.pub = &event_recorder->parent;
 		event_recorder->priv = event_recorder_priv;
-		event_recorder->parent.priv = &event_recorder_priv->parent;
+		event_recorder->parent.priv = &event_recorder_priv->parent.parent;
 
 		event_recorder->parent.type = LTTNG_KERNEL_EVENT_TYPE_RECORDER;
 		event_recorder->parent.run_filter = lttng_kernel_interpret_event_filter;
-		event_recorder->priv->parent.instrumentation = itype;
-		INIT_LIST_HEAD(&event_recorder->priv->parent.filter_bytecode_runtime_head);
-		INIT_LIST_HEAD(&event_recorder->priv->parent.enablers_ref_head);
+		event_recorder->priv->parent.parent.instrumentation = itype;
+		INIT_LIST_HEAD(&event_recorder->priv->parent.parent.filter_bytecode_runtime_head);
+		INIT_LIST_HEAD(&event_recorder->priv->parent.parent.enablers_ref_head);
 
 		event_recorder->chan = chan;
-		event_recorder->priv->id = chan->priv->free_event_id++;
+		event_recorder->priv->parent.chan = &chan->parent;
+		event_recorder->priv->parent.id = chan->priv->free_event_id++;
 		return &event_recorder->parent;
 	}
 	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
@@ -1500,7 +1501,7 @@ void _lttng_event_destroy(struct lttng_kernel_event_common *event)
 		default:
 			WARN_ON_ONCE(1);
 		}
-		list_del(&event_recorder->priv->parent.node);
+		list_del(&event_recorder->priv->parent.parent.node);
 		kmem_cache_free(event_recorder_private_cache, event_recorder->priv);
 		kmem_cache_free(event_recorder_cache, event_recorder);
 		break;
@@ -3450,7 +3451,7 @@ int _lttng_fields_metadata_statedump(struct lttng_kernel_session *session,
 				   struct lttng_kernel_event_recorder *event_recorder)
 {
 	const char *prev_field_name = NULL;
-	const struct lttng_kernel_event_desc *desc = event_recorder->priv->parent.desc;
+	const struct lttng_kernel_event_desc *desc = event_recorder->priv->parent.parent.desc;
 	int ret = 0;
 	int i;
 
@@ -3493,10 +3494,10 @@ int _lttng_event_recorder_metadata_statedump(struct lttng_kernel_event_common *e
 	ret = lttng_metadata_printf(session,
 		"event {\n"
 		"	name = \"%s\";\n"
-		"	id = %u;\n"
+		"	id = %llu;\n"
 		"	stream_id = %u;\n",
-		event_recorder->priv->parent.desc->event_name,
-		event_recorder->priv->id,
+		event_recorder->priv->parent.parent.desc->event_name,
+		event_recorder->priv->parent.id,
 		event_recorder->chan->priv->id);
 	if (ret)
 		goto end;
@@ -3928,7 +3929,7 @@ skip_session:
 			goto end;
 	}
 
-	list_for_each_entry(event_recorder_priv, &session->priv->events, parent.node) {
+	list_for_each_entry(event_recorder_priv, &session->priv->events, parent.parent.node) {
 		ret = _lttng_event_recorder_metadata_statedump(&event_recorder_priv->pub->parent);
 		if (ret)
 			goto end;

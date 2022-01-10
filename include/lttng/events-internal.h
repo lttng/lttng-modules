@@ -100,12 +100,18 @@ struct lttng_kernel_event_common_private {
 	} u;
 };
 
-struct lttng_kernel_event_recorder_private {
+struct lttng_kernel_event_session_common_private {
 	struct lttng_kernel_event_common_private parent;
 
-	struct lttng_kernel_event_recorder *pub;	/* Public event interface */
 	struct lttng_kernel_ctx *ctx;
-	unsigned int id;
+	struct lttng_kernel_channel_common *chan;
+	uint64_t id;					/* Event id */
+};
+
+struct lttng_kernel_event_recorder_private {
+	struct lttng_kernel_event_session_common_private parent;
+
+	struct lttng_kernel_event_recorder *pub;	/* Public event interface */
 	unsigned int metadata_dumped:1;
 };
 

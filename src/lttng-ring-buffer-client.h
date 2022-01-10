@@ -616,7 +616,7 @@ int lttng_event_reserve(struct lttng_kernel_ring_buffer_ctx *ctx)
 	cpu = lib_ring_buffer_get_cpu(&client_config);
 	if (unlikely(cpu < 0))
 		return -EPERM;
-	event_id = event_recorder->priv->id;
+	event_id = (uint32_t)event_recorder->priv->parent.id;
 	memset(&ctx->priv, 0, sizeof(ctx->priv));
 	ctx->priv.chan = lttng_chan->priv->rb_chan;
 	ctx->priv.reserve_cpu = cpu;
