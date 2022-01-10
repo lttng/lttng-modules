@@ -1931,9 +1931,9 @@ int lttng_abi_create_event(struct file *channel_file,
 		 * We tolerate no failure path after event creation. It
 		 * will stay invariant for the rest of the session.
 		 */
-		event = lttng_kernel_event_create(&event_enabler->parent, NULL);
+		event = lttng_kernel_event_create(&event_enabler->parent.parent, NULL);
 		WARN_ON_ONCE(IS_ERR(event));
-		lttng_event_enabler_destroy(&event_enabler->parent);
+		lttng_event_enabler_destroy(&event_enabler->parent.parent);
 		if (IS_ERR(event)) {
 			ret = PTR_ERR(event);
 			goto event_error;
@@ -2722,12 +2722,12 @@ long lttng_event_recorder_enabler_ioctl(struct file *file, unsigned int cmd, uns
 	}
 	case LTTNG_KERNEL_ABI_OLD_ENABLE:
 	case LTTNG_KERNEL_ABI_ENABLE:
-		return lttng_event_enabler_enable(&event_enabler->parent);
+		return lttng_event_enabler_enable(&event_enabler->parent.parent);
 	case LTTNG_KERNEL_ABI_OLD_DISABLE:
 	case LTTNG_KERNEL_ABI_DISABLE:
-		return lttng_event_enabler_disable(&event_enabler->parent);
+		return lttng_event_enabler_disable(&event_enabler->parent.parent);
 	case LTTNG_KERNEL_ABI_FILTER:
-		return lttng_event_enabler_attach_filter_bytecode(&event_enabler->parent,
+		return lttng_event_enabler_attach_filter_bytecode(&event_enabler->parent.parent,
 			(struct lttng_kernel_abi_filter_bytecode __user *) arg);
 	case LTTNG_KERNEL_ABI_ADD_CALLSITE:
 		return -EINVAL;

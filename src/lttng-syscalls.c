@@ -494,7 +494,7 @@ struct lttng_kernel_syscall_table *get_syscall_table_from_enabler(struct lttng_e
 	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
 	{
 		struct lttng_event_recorder_enabler *event_recorder_enabler =
-			container_of(event_enabler, struct lttng_event_recorder_enabler, parent);
+			container_of(event_enabler, struct lttng_event_recorder_enabler, parent.parent);
 		return &event_recorder_enabler->chan->priv->parent.syscall_table;
 	}
 	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
@@ -539,7 +539,7 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
 	{
 		struct lttng_event_recorder_enabler *syscall_event_recorder_enabler =
-			container_of(syscall_event_enabler, struct lttng_event_recorder_enabler, parent);
+			container_of(syscall_event_enabler, struct lttng_event_recorder_enabler, parent.parent);
 		struct lttng_event_recorder_enabler *event_recorder_enabler;
 		struct lttng_kernel_abi_event ev;
 
@@ -571,9 +571,9 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 		WARN_ON_ONCE(!event_recorder_enabler);
 		if (!event_recorder_enabler)
 			return;
-		event = _lttng_kernel_event_create(&event_recorder_enabler->parent, desc);
+		event = _lttng_kernel_event_create(&event_recorder_enabler->parent.parent, desc);
 		WARN_ON_ONCE(IS_ERR(event));
-		lttng_event_enabler_destroy(&event_recorder_enabler->parent);
+		lttng_event_enabler_destroy(&event_recorder_enabler->parent.parent);
 		if (IS_ERR(event)) {
 			printk(KERN_INFO "Unable to create event recorder %s\n", desc->event_name);
 			return;
