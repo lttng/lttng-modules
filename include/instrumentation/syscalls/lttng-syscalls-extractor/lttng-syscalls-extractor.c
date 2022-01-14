@@ -5,7 +5,7 @@
  * Dump syscall metadata to console.
  *
  * Copyright 2011 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
- * Copyright 2011 Julien Desfossez <julien.desfossez@polymtl.ca>
+ * Copyright 2011 EfficiOS Inc.
  */
 
 #include <linux/module.h>
