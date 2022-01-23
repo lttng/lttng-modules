@@ -310,7 +310,31 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_abort,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
+/**
+ * block_rq_requeue - place block IO request back on a queue
+ * @rq: block IO operation request
+ *
+ * The block operation request @rq is being placed back into queue
+ * @q.  For some reason the request was not completed and needs to be
+ * put back in the queue.
+ */
+LTTNG_TRACEPOINT_EVENT(block_rq_requeue,
+
+	TP_PROTO(struct request *rq),
+
+	TP_ARGS(rq),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev,
+			rq->q->disk ? disk_devt(rq->q->disk) : 0)
+		ctf_integer(sector_t, sector, blk_rq_trace_sector(rq))
+		ctf_integer(unsigned int, nr_sector, blk_rq_trace_nr_sectors(rq))
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			lttng_req_op(rq), lttng_req_rw(rq), blk_rq_bytes(rq))
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
 /**
  * block_rq_requeue - place block IO request back on a queue
  * @rq: block IO operation request
@@ -380,7 +404,24 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_requeue,
  * do for the request. If @rq->bio is non-NULL then there is
  * additional work required to complete the request.
  */
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,16,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
+LTTNG_TRACEPOINT_EVENT(block_rq_complete,
+
+	TP_PROTO(struct request *rq, blk_status_t error, unsigned int nr_bytes),
+
+	TP_ARGS(rq, error, nr_bytes),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev,
+			rq->q->disk ? disk_devt(rq->q->disk) : 0)
+		ctf_integer(sector_t, sector, blk_rq_pos(rq))
+		ctf_integer(unsigned int, nr_sector, nr_bytes >> 9)
+		ctf_integer(int, error, blk_status_to_errno(error))
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			lttng_req_op(rq), lttng_req_rw(rq), nr_bytes)
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,16,0))
 LTTNG_TRACEPOINT_EVENT(block_rq_complete,
 
 	TP_PROTO(struct request *rq, blk_status_t error, unsigned int nr_bytes),
@@ -519,7 +560,26 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_complete,
 
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,15,0)) */
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(block_rq,
+
+	TP_PROTO(struct request *rq),
+
+	TP_ARGS(rq),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev,
+			rq->q->disk ? disk_devt(rq->q->disk) : 0)
+		ctf_integer(sector_t, sector, blk_rq_trace_sector(rq))
+		ctf_integer(unsigned int, nr_sector, blk_rq_trace_nr_sectors(rq))
+		ctf_integer(unsigned int, bytes, blk_rq_bytes(rq))
+		ctf_integer(pid_t, tid, current->pid)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			lttng_req_op(rq), lttng_req_rw(rq), blk_rq_bytes(rq))
+		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(block_rq,
 
 	TP_PROTO(struct request *rq),
@@ -1513,7 +1573,34 @@ LTTNG_TRACEPOINT_EVENT(block_bio_remap,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
+/**
+ * block_rq_remap - map request for a block operation request
+ * @rq: block IO operation request
+ * @dev: device for the operation
+ * @from: original sector for the operation
+ *
+ * The block operation request @rq in @q has been remapped.  The block
+ * operation request @rq holds the current information and @from hold
+ * the original sector.
+ */
+LTTNG_TRACEPOINT_EVENT(block_rq_remap,
+
+	TP_PROTO(struct request *rq, dev_t dev, sector_t from),
+
+	TP_ARGS(rq, dev, from),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, disk_devt(rq->q->disk))
+		ctf_integer(sector_t, sector, blk_rq_pos(rq))
+		ctf_integer(unsigned int, nr_sector, blk_rq_sectors(rq))
+		ctf_integer(dev_t, old_dev, dev)
+		ctf_integer(sector_t, old_sector, from)
+		blk_rwbs_ctf_integer(unsigned int, rwbs,
+			lttng_req_op(rq), lttng_req_rw(rq), blk_rq_bytes(rq))
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
 /**
  * block_rq_remap - map request for a block operation request
  * @rq: block IO operation request
