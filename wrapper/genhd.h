@@ -14,6 +14,12 @@
 
 #include <linux/genhd.h>
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
+#define LTTNG_GENHD_FL_HIDDEN GENHD_FL_HIDDEN
+#else
+#define LTTNG_GENHD_FL_HIDDEN GENHD_FL_SUPPRESS_PARTITION_INFO
+#endif
+
 #ifdef CONFIG_KALLSYMS_ALL
 
 #include <linux/kallsyms.h>

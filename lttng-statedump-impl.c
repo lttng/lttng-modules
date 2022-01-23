@@ -328,7 +328,7 @@ int lttng_enumerate_block_devices(struct lttng_session *session)
 		 * suppressed
 		 */
 		if (get_capacity(disk) == 0 ||
-		    (disk->flags & GENHD_FL_SUPPRESS_PARTITION_INFO))
+		    (disk->flags & LTTNG_GENHD_FL_HIDDEN))
 			continue;
 
 		ret = lttng_statedump_each_block_device(session, disk);
