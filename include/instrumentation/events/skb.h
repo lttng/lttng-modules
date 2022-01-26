@@ -13,6 +13,36 @@
 /*
  * Tracepoint for free an sk_buff:
  */
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
+LTTNG_TRACEPOINT_ENUM(skb_drop_reason,
+	TP_ENUM_VALUES(
+		ctf_enum_value("NOT_SPECIFIED",	SKB_DROP_REASON_NOT_SPECIFIED)
+		ctf_enum_value("NO_SOCKET",	SKB_DROP_REASON_NO_SOCKET)
+		ctf_enum_value("PKT_TOO_SMALL",	SKB_DROP_REASON_PKT_TOO_SMALL)
+		ctf_enum_value("TCP_CSUM",	SKB_DROP_REASON_TCP_CSUM)
+		ctf_enum_value("TCP_FILTER",	SKB_DROP_REASON_TCP_FILTER)
+		ctf_enum_value("UDP_CSUM",	SKB_DROP_REASON_UDP_CSUM)
+		ctf_enum_value("MAX",		SKB_DROP_REASON_MAX)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_MAP(kfree_skb,
+
+	skb_kfree,
+
+	TP_PROTO(struct sk_buff *skb, void *location,
+		enum skb_drop_reason reason),
+
+	TP_ARGS(skb, location, reason),
+
+	TP_FIELDS(
+		ctf_integer_hex(void *, skbaddr, skb)
+		ctf_integer_hex(void *, location, location)
+		ctf_integer_network(unsigned short, protocol, skb->protocol)
+		ctf_enum(skb_drop_reason, uint8_t, reason, reason)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT_MAP(kfree_skb,
 
 	skb_kfree,
@@ -27,6 +57,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(kfree_skb,
 		ctf_integer_network(unsigned short, protocol, skb->protocol)
 	)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT_MAP(consume_skb,
 
