@@ -43,7 +43,19 @@ struct extent_state;
 #define lttng_fs_info_fsid fs_info->fsid
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
+LTTNG_TRACEPOINT_EVENT(btrfs_transaction_commit,
+
+	TP_PROTO(const struct btrfs_fs_info *fs_info),
+
+	TP_ARGS(fs_info),
+
+	TP_FIELDS(
+		ctf_integer(u64, generation, fs_info->generation)
+		ctf_integer(u64, root_objectid, BTRFS_ROOT_TREE_OBJECTID)
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,73,5,0,0, 4,4,73,6,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,82,6,0,0, 4,4,82,7,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,92,6,0,0, 4,4,92,7,0,0) || \
@@ -59,7 +71,25 @@ LTTNG_TRACEPOINT_EVENT(btrfs_transaction_commit,
 		ctf_integer(u64, root_objectid, root->root_key.objectid)
 	)
 )
+#else
+LTTNG_TRACEPOINT_EVENT(btrfs_transaction_commit,
 
+	TP_PROTO(struct btrfs_root *root),
+
+	TP_ARGS(root),
+
+	TP_FIELDS(
+		ctf_integer(u64, generation, root->fs_info->generation)
+		ctf_integer(u64, root_objectid, root->root_key.objectid)
+	)
+)
+#endif
+
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,73,5,0,0, 4,4,73,6,0,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,82,6,0,0, 4,4,82,7,0,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,92,6,0,0, 4,4,92,7,0,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,103,6,0,0, 4,5,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__inode,
 
 	TP_PROTO(const struct inode *inode),
@@ -99,18 +129,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__inode, btrfs_inode_evict,
 	TP_ARGS(inode)
 )
 #else
-LTTNG_TRACEPOINT_EVENT(btrfs_transaction_commit,
-
-	TP_PROTO(struct btrfs_root *root),
-
-	TP_ARGS(root),
-
-	TP_FIELDS(
-		ctf_integer(u64, generation, root->fs_info->generation)
-		ctf_integer(u64, root_objectid, root->root_key.objectid)
-	)
-)
-
 LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__inode,
 
 	TP_PROTO(struct inode *inode),
