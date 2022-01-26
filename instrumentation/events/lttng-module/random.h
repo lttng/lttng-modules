@@ -8,6 +8,36 @@
 #include <probes/lttng-tracepoint-event.h>
 #include <linux/writeback.h>
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(random__mix_pool_bytes,
+	TP_PROTO(int bytes, unsigned long IP),
+
+	TP_ARGS(bytes, IP),
+
+	TP_FIELDS(
+		ctf_integer(int, bytes, bytes)
+		ctf_integer_hex(unsigned long, IP, IP)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(random__mix_pool_bytes, mix_pool_bytes,
+
+	random_mix_pool_bytes,
+
+	TP_PROTO(int bytes, unsigned long IP),
+
+	TP_ARGS(bytes, IP)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(random__mix_pool_bytes, mix_pool_bytes_nolock,
+
+	random_mix_pool_bytes_nolock,
+
+	TP_PROTO(int bytes, unsigned long IP),
+
+	TP_ARGS(bytes, IP)
+)
+#else
 LTTNG_TRACEPOINT_EVENT_CLASS(random__mix_pool_bytes,
 	TP_PROTO(const char *pool_name, int bytes, unsigned long IP),
 
@@ -37,8 +67,24 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(random__mix_pool_bytes, mix_pool_bytes_noloc
 
 	TP_ARGS(pool_name, bytes, IP)
 )
+#endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,2,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
+LTTNG_TRACEPOINT_EVENT_MAP(credit_entropy_bits,
+
+	random_credit_entropy_bits,
+
+	TP_PROTO(int bits, int entropy_count, unsigned long IP),
+
+	TP_ARGS(bits, entropy_count, IP),
+
+	TP_FIELDS(
+		ctf_integer(int, bits, bits)
+		ctf_integer(int, entropy_count, entropy_count)
+		ctf_integer_hex(unsigned long, IP, IP)
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,2,0))
 LTTNG_TRACEPOINT_EVENT_MAP(credit_entropy_bits,
 
 	random_credit_entropy_bits,
@@ -89,6 +135,38 @@ LTTNG_TRACEPOINT_EVENT_MAP(get_random_bytes,
 	)
 )
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(random__extract_entropy,
+	TP_PROTO(int nbytes, int entropy_count, unsigned long IP),
+
+	TP_ARGS(nbytes, entropy_count, IP),
+
+	TP_FIELDS(
+		ctf_integer(int, nbytes, nbytes)
+		ctf_integer(int, entropy_count, entropy_count)
+		ctf_integer_hex(unsigned long, IP, IP)
+	)
+)
+
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(random__extract_entropy, extract_entropy,
+
+	random_extract_entropy,
+
+	TP_PROTO(int nbytes, int entropy_count, unsigned long IP),
+
+	TP_ARGS(nbytes, entropy_count, IP)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(random__extract_entropy, extract_entropy_user,
+
+	random_extract_entropy_user,
+
+	TP_PROTO(int nbytes, int entropy_count, unsigned long IP),
+
+	TP_ARGS(nbytes, entropy_count, IP)
+)
+#else
 LTTNG_TRACEPOINT_EVENT_CLASS(random__extract_entropy,
 	TP_PROTO(const char *pool_name, int nbytes, int entropy_count,
 		 unsigned long IP),
@@ -123,6 +201,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(random__extract_entropy, extract_entropy_use
 
 	TP_ARGS(pool_name, nbytes, entropy_count, IP)
 )
+#endif
 
 
 
