@@ -380,7 +380,7 @@ struct lttng_metadata_stream {
 	unsigned int metadata_out;	/* Bytes consumed from stream */
 	int finalized;			/* Has channel been finalized */
 	wait_queue_head_t read_wait;	/* Reader buffer-level wait queue */
-	struct list_head list;		/* Stream list */
+	struct list_head node;		/* Stream list */
 	struct lttng_transport *transport;
 	uint64_t version;		/* Current version of the metadata cache */
 	bool coherent;			/* Stream in a coherent state */

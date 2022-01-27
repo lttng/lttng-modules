@@ -375,7 +375,7 @@ void lttng_session_destroy(struct lttng_kernel_session *session)
 		_lttng_channel_destroy(chan_priv->pub);
 	}
 	mutex_lock(&session->priv->metadata_cache->lock);
-	list_for_each_entry(metadata_stream, &session->priv->metadata_cache->metadata_stream, list)
+	list_for_each_entry(metadata_stream, &session->priv->metadata_cache->metadata_stream, node)
 		_lttng_metadata_channel_hangup(metadata_stream);
 	mutex_unlock(&session->priv->metadata_cache->lock);
 	lttng_id_tracker_fini(&session->pid_tracker);
@@ -548,7 +548,7 @@ int lttng_session_metadata_regenerate(struct lttng_kernel_session *session)
 	memset(cache->data, 0, cache->cache_alloc);
 	cache->metadata_written = 0;
 	cache->version++;
-	list_for_each_entry(stream, &session->priv->metadata_cache->metadata_stream, list) {
+	list_for_each_entry(stream, &session->priv->metadata_cache->metadata_stream, node) {
 		stream->metadata_out = 0;
 		stream->metadata_in = 0;
 	}
@@ -2788,7 +2788,7 @@ void lttng_metadata_end(struct lttng_kernel_session *session)
 	if (atomic_dec_return(&session->priv->metadata_cache->producing) == 0) {
 		struct lttng_metadata_stream *stream;
 
-		list_for_each_entry(stream, &session->priv->metadata_cache->metadata_stream, list)
+		list_for_each_entry(stream, &session->priv->metadata_cache->metadata_stream, node)
 			wake_up_interruptible(&stream->read_wait);
 		mutex_unlock(&session->priv->metadata_cache->lock);
 	}
