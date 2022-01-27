@@ -448,6 +448,22 @@ struct lttng_kernel_channel_buffer {
 	struct lttng_kernel_channel_buffer_ops *ops;
 };
 
+struct lttng_kernel_channel_counter;
+struct lttng_kernel_channel_counter_ops_private;
+
+struct lttng_kernel_channel_counter_ops {
+	struct lttng_kernel_channel_counter_ops_private *priv;	/* Private channel counter ops interface */
+
+	int (*event_counter_add)(struct lttng_kernel_event_counter *event_counter, int64_t v);
+};
+
+struct lttng_kernel_channel_counter {
+	struct lttng_kernel_channel_common parent;
+	struct lttng_kernel_channel_counter_private *priv;	/* Private channel counter interface */
+
+	struct lttng_kernel_channel_counter_ops *ops;
+};
+
 #define LTTNG_DYNAMIC_LEN_STACK_SIZE	128
 
 struct lttng_dynamic_len_stack {
