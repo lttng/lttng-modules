@@ -61,6 +61,7 @@ struct lttng_counter_dimension {
 enum lttng_kernel_event_enabler_type {
 	LTTNG_EVENT_ENABLER_TYPE_RECORDER,
 	LTTNG_EVENT_ENABLER_TYPE_NOTIFIER,
+	LTTNG_EVENT_ENABLER_TYPE_COUNTER,
 };
 
 enum channel_type {
@@ -201,6 +202,7 @@ struct lttng_kernel_channel_common_private {
 
 	struct file *file;			/* File associated to channel */
 	unsigned int tstate:1;			/* Transient enable state */
+	bool coalesce_hits;
 
 	struct lttng_kernel_syscall_table syscall_table;
 };
@@ -684,10 +686,12 @@ struct lttng_event_ht *lttng_get_event_ht_from_enabler(struct lttng_event_enable
 {
 	switch (event_enabler->enabler_type) {
 	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
+		lttng_fallthrough;
+	case LTTNG_EVENT_ENABLER_TYPE_COUNTER:
 	{
-		struct lttng_event_recorder_enabler *event_recorder_enabler =
-			container_of(event_enabler, struct lttng_event_recorder_enabler, parent.parent);
-		return &event_recorder_enabler->chan->parent.session->priv->events_name_ht;
+		struct lttng_event_enabler_session_common *event_enabler_session =
+			container_of(event_enabler, struct lttng_event_enabler_session_common, parent);
+		return &event_enabler_session->chan->session->priv->events_name_ht;
 	}
 	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
 	{
@@ -705,10 +709,12 @@ struct list_head *lttng_get_event_list_head_from_enabler(struct lttng_event_enab
 {
 	switch (event_enabler->enabler_type) {
 	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
+		lttng_fallthrough;
+	case LTTNG_EVENT_ENABLER_TYPE_COUNTER:
 	{
-		struct lttng_event_recorder_enabler *event_recorder_enabler =
-			container_of(event_enabler, struct lttng_event_recorder_enabler, parent.parent);
-		return &event_recorder_enabler->chan->parent.session->priv->events_head;
+		struct lttng_event_enabler_session_common *event_enabler_session =
+			container_of(event_enabler, struct lttng_event_enabler_session_common, parent);
+		return &event_enabler_session->chan->session->priv->events_head;
 	}
 	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
 	{

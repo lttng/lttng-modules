@@ -492,10 +492,12 @@ struct lttng_kernel_syscall_table *get_syscall_table_from_enabler(struct lttng_e
 {
 	switch (event_enabler->enabler_type) {
 	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
+		lttng_fallthrough;
+	case LTTNG_EVENT_ENABLER_TYPE_COUNTER:
 	{
-		struct lttng_event_recorder_enabler *event_recorder_enabler =
-			container_of(event_enabler, struct lttng_event_recorder_enabler, parent.parent);
-		return &event_recorder_enabler->chan->priv->parent.syscall_table;
+		struct lttng_event_enabler_session_common *event_enabler_session =
+			container_of(event_enabler, struct lttng_event_enabler_session_common, parent);
+		return &event_enabler_session->chan->priv->syscall_table;
 	}
 	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
 	{
@@ -513,10 +515,13 @@ struct lttng_kernel_syscall_table *get_syscall_table_from_event(struct lttng_ker
 {
 	switch (event->type) {
 	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_EVENT_TYPE_COUNTER:
 	{
-		struct lttng_kernel_event_recorder *event_recorder =
-			container_of(event, struct lttng_kernel_event_recorder, parent);
-		return &event_recorder->chan->priv->parent.syscall_table;
+		struct lttng_kernel_event_common_private *event_priv = event->priv;
+		struct lttng_kernel_event_session_common_private *event_session_priv =
+			container_of(event_priv, struct lttng_kernel_event_session_common_private, parent);
+		return &event_session_priv->chan->priv->syscall_table;
 	}
 	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
 	{
