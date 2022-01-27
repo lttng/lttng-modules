@@ -299,6 +299,12 @@ struct lttng_event_recorder_enabler {
 	struct lttng_kernel_channel_buffer *chan;
 };
 
+struct lttng_event_counter_enabler {
+	struct lttng_event_enabler_session_common parent;
+	struct lttng_kernel_channel_counter *chan;
+	struct lttng_counter_key key;
+};
+
 struct lttng_event_notifier_enabler {
 	struct lttng_event_enabler_common parent;
 	uint64_t error_counter_index;
