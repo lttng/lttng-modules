@@ -350,6 +350,7 @@ struct lttng_kernel_event_common_private;
 enum lttng_kernel_event_type {
 	LTTNG_KERNEL_EVENT_TYPE_RECORDER = 0,
 	LTTNG_KERNEL_EVENT_TYPE_NOTIFIER = 1,
+	LTTNG_KERNEL_EVENT_TYPE_COUNTER = 2
 };
 
 struct lttng_kernel_event_common {
@@ -509,5 +510,31 @@ int lttng_kernel_probe_register(struct lttng_kernel_probe_desc *desc);
 void lttng_kernel_probe_unregister(struct lttng_kernel_probe_desc *desc);
 
 bool lttng_id_tracker_lookup(struct lttng_kernel_id_tracker_rcu *p, int id);
+
+static inline
+struct lttng_kernel_channel_common *lttng_kernel_get_chan_common_from_event_common(
+		struct lttng_kernel_event_common *event)
+{
+	switch (event->type) {
+	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+	{
+		struct lttng_kernel_event_recorder *event_recorder =
+			container_of(event, struct lttng_kernel_event_recorder, parent);
+		struct lttng_kernel_channel_buffer *chan_buf = event_recorder->chan;
+
+		return &chan_buf->parent;
+	}
+	case LTTNG_KERNEL_EVENT_TYPE_COUNTER:
+	{
+		struct lttng_kernel_event_counter *event_counter =
+			container_of(event, struct lttng_kernel_event_counter, parent);
+		struct lttng_kernel_channel_counter *chan_counter = event_counter->chan;
+
+		return &chan_counter->parent;
+	}
+	default:
+		return NULL;
+	}
+}
 
 #endif /* _LTTNG_EVENTS_H */

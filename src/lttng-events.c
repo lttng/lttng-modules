@@ -66,6 +66,8 @@ static LIST_HEAD(lttng_counter_transport_list);
 static DEFINE_MUTEX(sessions_mutex);
 static struct kmem_cache *event_recorder_cache;
 static struct kmem_cache *event_recorder_private_cache;
+static struct kmem_cache *event_counter_cache;
+static struct kmem_cache *event_counter_private_cache;
 static struct kmem_cache *event_notifier_cache;
 static struct kmem_cache *event_notifier_private_cache;
 
@@ -992,6 +994,15 @@ void lttng_kernel_event_free(struct lttng_kernel_event_common *event)
 		kmem_cache_free(event_recorder_cache, event_recorder);
 		break;
 	}
+	case LTTNG_KERNEL_EVENT_TYPE_COUNTER:
+	{
+		struct lttng_kernel_event_counter *event_counter =
+			container_of(event, struct lttng_kernel_event_counter, parent);
+
+		kmem_cache_free(event_counter_private_cache, event_counter->priv);
+		kmem_cache_free(event_counter_cache, event_counter);
+		break;
+	}
 	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
 	{
 		struct lttng_kernel_event_notifier *event_notifier =
@@ -1359,6 +1370,8 @@ void register_event(struct lttng_kernel_event_common *event)
 	case LTTNG_KERNEL_ABI_KRETPROBE:
 		switch (event->type) {
 		case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_EVENT_TYPE_COUNTER:
 			ret = 0;
 			break;
 		case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
@@ -1404,6 +1417,7 @@ void unregister_event(struct lttng_kernel_event_common *event)
 	case LTTNG_KERNEL_ABI_KRETPROBE:
 		switch (event->type) {
 		case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+		case LTTNG_KERNEL_EVENT_TYPE_COUNTER:
 			lttng_kretprobes_unregister(event);
 			ret = 0;
 			break;
@@ -1420,6 +1434,7 @@ void unregister_event(struct lttng_kernel_event_common *event)
 	case LTTNG_KERNEL_ABI_NOOP:
 		switch (event->type) {
 		case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+		case LTTNG_KERNEL_EVENT_TYPE_COUNTER:
 			ret = 0;
 			break;
 		case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
@@ -4109,6 +4124,16 @@ static int __init lttng_events_init(void)
 		ret = -ENOMEM;
 		goto error_kmem_event_recorder_private;
 	}
+	event_counter_cache = KMEM_CACHE(lttng_kernel_event_counter, 0);
+	if (!event_counter_cache) {
+		ret = -ENOMEM;
+		goto error_kmem_event_counter;
+	}
+	event_counter_private_cache = KMEM_CACHE(lttng_kernel_event_counter_private, 0);
+	if (!event_counter_private_cache) {
+		ret = -ENOMEM;
+		goto error_kmem_event_counter_private;
+	}
 	event_notifier_cache = KMEM_CACHE(lttng_kernel_event_notifier, 0);
 	if (!event_notifier_cache) {
 		ret = -ENOMEM;
@@ -4158,6 +4183,10 @@ error_abi:
 error_kmem_event_notifier_private:
 	kmem_cache_destroy(event_notifier_cache);
 error_kmem_event_notifier:
+	kmem_cache_destroy(event_counter_private_cache);
+error_kmem_event_counter_private:
+	kmem_cache_destroy(event_counter_cache);
+error_kmem_event_counter:
 	kmem_cache_destroy(event_recorder_private_cache);
 error_kmem_event_recorder_private:
 	kmem_cache_destroy(event_recorder_cache);
@@ -4197,6 +4226,8 @@ static void __exit lttng_events_exit(void)
 		lttng_session_destroy(session_priv->pub);
 	kmem_cache_destroy(event_recorder_cache);
 	kmem_cache_destroy(event_recorder_private_cache);
+	kmem_cache_destroy(event_counter_cache);
+	kmem_cache_destroy(event_counter_private_cache);
 	kmem_cache_destroy(event_notifier_cache);
 	kmem_cache_destroy(event_notifier_private_cache);
 	lttng_tracepoint_exit();
