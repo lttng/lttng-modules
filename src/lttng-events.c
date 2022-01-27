@@ -135,7 +135,7 @@ int lttng_session_active(void)
 {
 	struct lttng_kernel_session_private *iter;
 
-	list_for_each_entry(iter, &sessions, list) {
+	list_for_each_entry(iter, &sessions, node) {
 		if (iter->pub->active)
 			return 1;
 	}
@@ -180,7 +180,7 @@ struct lttng_kernel_session *lttng_session_create(void)
 	INIT_LIST_HEAD(&session_priv->enablers_head);
 	for (i = 0; i < LTTNG_EVENT_HT_SIZE; i++)
 		INIT_HLIST_HEAD(&session_priv->events_ht.table[i]);
-	list_add(&session_priv->list, &sessions);
+	list_add(&session_priv->node, &sessions);
 
 	if (lttng_id_tracker_init(&session->pid_tracker, session, TRACKER_PID))
 		goto tracker_alloc_error;
@@ -385,7 +385,7 @@ void lttng_session_destroy(struct lttng_kernel_session *session)
 	lttng_id_tracker_fini(&session->gid_tracker);
 	lttng_id_tracker_fini(&session->vgid_tracker);
 	kref_put(&session->priv->metadata_cache->refcount, metadata_cache_destroy);
-	list_del(&session->priv->list);
+	list_del(&session->priv->node);
 	mutex_unlock(&sessions_mutex);
 	lttng_kvfree(session->priv);
 	lttng_kvfree(session);
@@ -2226,7 +2226,7 @@ int lttng_fix_pending_events(void)
 {
 	struct lttng_kernel_session_private *session_priv;
 
-	list_for_each_entry(session_priv, &sessions, list)
+	list_for_each_entry(session_priv, &sessions, node)
 		lttng_session_lazy_sync_event_enablers(session_priv->pub);
 	return 0;
 }
@@ -4238,7 +4238,7 @@ static void __exit lttng_events_exit(void)
 	lttng_exit_cpu_hotplug();
 	lttng_logger_exit();
 	lttng_abi_exit();
-	list_for_each_entry_safe(session_priv, tmpsession_priv, &sessions, list)
+	list_for_each_entry_safe(session_priv, tmpsession_priv, &sessions, node)
 		lttng_session_destroy(session_priv->pub);
 	kmem_cache_destroy(event_recorder_cache);
 	kmem_cache_destroy(event_recorder_private_cache);
