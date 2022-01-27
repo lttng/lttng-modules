@@ -154,6 +154,13 @@ struct lttng_kernel_event_recorder_private {
 	unsigned int metadata_dumped:1;
 };
 
+struct lttng_kernel_event_counter_private {
+	struct lttng_kernel_event_session_common_private parent;
+
+	struct lttng_kernel_event_counter *pub;		/* Public event interface */
+	char key[LTTNG_KEY_TOKEN_STRING_LEN_MAX];
+};
+
 struct lttng_kernel_event_notifier_private {
 	struct lttng_kernel_event_common_private parent;
 
