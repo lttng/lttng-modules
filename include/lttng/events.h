@@ -27,6 +27,7 @@
 #define lttng_is_signed_type(type)	(((type) -1) < (type) 1)
 
 struct lttng_kernel_channel_buffer;
+struct lttng_kernel_channel_counter;
 struct lttng_kernel_session;
 struct lttng_kernel_ring_buffer_ctx;
 
@@ -372,6 +373,15 @@ struct lttng_kernel_event_recorder {
 	struct lttng_kernel_event_recorder_private *priv;	/* Private event record interface */
 
 	struct lttng_kernel_channel_buffer *chan;
+};
+
+struct lttng_kernel_event_counter_private;
+
+struct lttng_kernel_event_counter {
+	struct lttng_kernel_event_common parent;
+	struct lttng_kernel_event_counter_private *priv;	/* Private event counter interface */
+
+	struct lttng_kernel_channel_counter *chan;
 };
 
 struct lttng_kernel_notification_ctx {
