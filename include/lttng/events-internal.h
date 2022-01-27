@@ -24,6 +24,45 @@ enum lttng_enabler_format_type {
 	LTTNG_ENABLER_FORMAT_NAME,
 };
 
+#define LTTNG_KEY_TOKEN_STRING_LEN_MAX LTTNG_KERNEL_ABI_KEY_TOKEN_STRING_LEN_MAX
+
+enum lttng_key_token_type {
+	LTTNG_KEY_TOKEN_STRING = 0,
+	LTTNG_KEY_TOKEN_EVENT_NAME = 1,
+};
+
+struct lttng_key_token {
+	enum lttng_key_token_type type;
+	union {
+		char string[LTTNG_KEY_TOKEN_STRING_LEN_MAX];
+	} arg;
+};
+
+#define LTTNG_NR_KEY_TOKEN LTTNG_KERNEL_ABI_NR_KEY_TOKEN
+struct lttng_counter_key_dimension {
+	size_t nr_key_tokens;
+	struct lttng_key_token key_tokens[LTTNG_NR_KEY_TOKEN];
+};
+
+#define LTTNG_COUNTER_DIMENSION_MAX LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX
+struct lttng_counter_key {
+	size_t nr_dimensions;
+	struct lttng_counter_key_dimension key_dimensions[LTTNG_COUNTER_DIMENSION_MAX];
+};
+
+struct lttng_counter_dimension {
+	uint64_t size;
+	uint64_t underflow_index;
+	uint64_t overflow_index;
+	uint8_t has_underflow;
+	uint8_t has_overflow;
+};
+
+enum lttng_kernel_event_enabler_type {
+	LTTNG_EVENT_ENABLER_TYPE_RECORDER,
+	LTTNG_EVENT_ENABLER_TYPE_NOTIFIER,
+};
+
 enum channel_type {
 	PER_CPU_CHANNEL,
 	METADATA_CHANNEL,
@@ -196,44 +235,6 @@ struct lttng_interpreter_output;
 enum lttng_kernel_bytecode_type {
 	LTTNG_KERNEL_BYTECODE_TYPE_FILTER,
 	LTTNG_KERNEL_BYTECODE_TYPE_CAPTURE,
-};
-
-enum lttng_kernel_event_enabler_type {
-	LTTNG_EVENT_ENABLER_TYPE_RECORDER,
-	LTTNG_EVENT_ENABLER_TYPE_NOTIFIER,
-};
-
-enum lttng_key_token_type {
-	LTTNG_KEY_TOKEN_STRING = 0,
-	LTTNG_KEY_TOKEN_EVENT_NAME = 1,
-};
-
-#define LTTNG_KEY_TOKEN_STRING_LEN_MAX LTTNG_KERNEL_ABI_KEY_TOKEN_STRING_LEN_MAX
-struct lttng_key_token {
-	enum lttng_key_token_type type;
-	union {
-		char string[LTTNG_KEY_TOKEN_STRING_LEN_MAX];
-	} arg;
-};
-
-#define LTTNG_NR_KEY_TOKEN LTTNG_KERNEL_ABI_NR_KEY_TOKEN
-struct lttng_counter_key_dimension {
-	size_t nr_key_tokens;
-	struct lttng_key_token key_tokens[LTTNG_NR_KEY_TOKEN];
-};
-
-#define LTTNG_COUNTER_DIMENSION_MAX LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX
-struct lttng_counter_key {
-	size_t nr_dimensions;
-	struct lttng_counter_key_dimension key_dimensions[LTTNG_COUNTER_DIMENSION_MAX];
-};
-
-struct lttng_counter_dimension {
-	uint64_t size;
-	uint64_t underflow_index;
-	uint64_t overflow_index;
-	uint8_t has_underflow;
-	uint8_t has_overflow;
 };
 
 struct lttng_kernel_bytecode_node {
