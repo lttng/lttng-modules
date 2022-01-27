@@ -515,7 +515,7 @@ struct lttng_kernel_session_private {
 	int been_active;			/* Has trace session been active ? */
 	struct file *file;			/* File associated to session */
 	struct list_head chan_head;		/* Channel list head */
-	struct list_head events;		/* Event list head */
+	struct list_head events_head;		/* Event list head */
 	struct list_head list;			/* Session list */
 	unsigned int free_chan_id;		/* Next chan ID to allocate */
 	guid_t uuid;				/* Trace session unique ID */
@@ -673,7 +673,7 @@ struct list_head *lttng_get_event_list_head_from_enabler(struct lttng_event_enab
 	{
 		struct lttng_event_recorder_enabler *event_recorder_enabler =
 			container_of(event_enabler, struct lttng_event_recorder_enabler, parent.parent);
-		return &event_recorder_enabler->chan->parent.session->priv->events;
+		return &event_recorder_enabler->chan->parent.session->priv->events_head;
 	}
 	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
 	{
