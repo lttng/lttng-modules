@@ -514,7 +514,7 @@ struct lttng_kernel_session_private {
 
 	int been_active;			/* Has trace session been active ? */
 	struct file *file;			/* File associated to session */
-	struct list_head chan;			/* Channel list head */
+	struct list_head chan_head;		/* Channel list head */
 	struct list_head events;		/* Event list head */
 	struct list_head list;			/* Session list */
 	unsigned int free_chan_id;		/* Next chan ID to allocate */
