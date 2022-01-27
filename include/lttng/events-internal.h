@@ -516,16 +516,17 @@ struct lttng_kernel_session_private {
 	struct file *file;			/* File associated to session */
 	struct list_head chan_head;		/* Channel list head */
 	struct list_head events_head;		/* Event list head */
+	struct list_head enablers_head;		/* List of event enablers */
+
+	struct lttng_event_ht events_ht;	/* Hash table of events */
+
 	struct list_head list;			/* Session list */
 	unsigned int free_chan_id;		/* Next chan ID to allocate */
 	guid_t uuid;				/* Trace session unique ID */
 	struct lttng_metadata_cache *metadata_cache;
 	unsigned int metadata_dumped:1,
 		tstate:1;			/* Transient enable state */
-	/* List of event enablers */
-	struct list_head enablers_head;
-	/* Hash table of events */
-	struct lttng_event_ht events_ht;
+
 	char name[LTTNG_KERNEL_ABI_SESSION_NAME_LEN];
 	char creation_time[LTTNG_KERNEL_ABI_SESSION_CREATION_TIME_ISO8601_LEN];
 };
