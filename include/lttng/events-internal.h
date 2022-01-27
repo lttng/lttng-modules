@@ -518,7 +518,7 @@ struct lttng_kernel_session_private {
 	struct list_head events_head;		/* Event list head */
 	struct list_head enablers_head;		/* List of event enablers */
 
-	struct lttng_event_ht events_ht;	/* Hash table of events */
+	struct lttng_event_ht events_name_ht;	/* Hash table of events, indexed by name */
 
 	struct list_head node;			/* Session list */
 	unsigned int free_chan_id;		/* Next chan ID to allocate */
@@ -653,7 +653,7 @@ struct lttng_event_ht *lttng_get_event_ht_from_enabler(struct lttng_event_enable
 	{
 		struct lttng_event_recorder_enabler *event_recorder_enabler =
 			container_of(event_enabler, struct lttng_event_recorder_enabler, parent.parent);
-		return &event_recorder_enabler->chan->parent.session->priv->events_ht;
+		return &event_recorder_enabler->chan->parent.session->priv->events_name_ht;
 	}
 	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
 	{

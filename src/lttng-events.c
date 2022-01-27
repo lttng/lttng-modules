@@ -179,7 +179,7 @@ struct lttng_kernel_session *lttng_session_create(void)
 		sizeof(metadata_cache->uuid));
 	INIT_LIST_HEAD(&session_priv->enablers_head);
 	for (i = 0; i < LTTNG_EVENT_HT_SIZE; i++)
-		INIT_HLIST_HEAD(&session_priv->events_ht.table[i]);
+		INIT_HLIST_HEAD(&session_priv->events_name_ht.table[i]);
 	list_add(&session_priv->node, &sessions);
 
 	if (lttng_id_tracker_init(&session->pid_tracker, session, TRACKER_PID))
