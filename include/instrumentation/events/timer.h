@@ -17,6 +17,38 @@ struct timer_list;
 
 #endif /* _TRACE_TIMER_DEF_ */
 
+LTTNG_TRACEPOINT_ENUM(hrtimer_mode,
+	TP_ENUM_VALUES(
+		ctf_enum_value("HRTIMER_MODE_ABS", HRTIMER_MODE_ABS)
+		ctf_enum_value("HRTIMER_MODE_REL", HRTIMER_MODE_REL)
+		ctf_enum_value("HRTIMER_MODE_PINNED", HRTIMER_MODE_PINNED)
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,16,0))
+		ctf_enum_value("HRTIMER_MODE_SOFT", HRTIMER_MODE_SOFT)
+#endif
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,4,0))
+		ctf_enum_value("HRTIMER_MODE_HARD", HRTIMER_MODE_HARD)
+#endif
+
+		ctf_enum_value("HRTIMER_MODE_ABS_PINNED", HRTIMER_MODE_ABS_PINNED)
+		ctf_enum_value("HRTIMER_MODE_REL_PINNED", HRTIMER_MODE_REL_PINNED)
+
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,16,0))
+		ctf_enum_value("HRTIMER_MODE_ABS_SOFT", HRTIMER_MODE_ABS_SOFT)
+		ctf_enum_value("HRTIMER_MODE_REL_SOFT", HRTIMER_MODE_REL_SOFT)
+
+		ctf_enum_value("HRTIMER_MODE_ABS_PINNED_SOFT", HRTIMER_MODE_ABS_PINNED_SOFT)
+		ctf_enum_value("HRTIMER_MODE_REL_PINNED_SOFT", HRTIMER_MODE_REL_PINNED_SOFT)
+#endif
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,4,0))
+		ctf_enum_value("HRTIMER_MODE_ABS_HARD", HRTIMER_MODE_ABS_HARD)
+		ctf_enum_value("HRTIMER_MODE_REL_HARD", HRTIMER_MODE_REL_HARD)
+
+		ctf_enum_value("HRTIMER_MODE_ABS_PINNED_HARD", HRTIMER_MODE_ABS_PINNED_HARD)
+		ctf_enum_value("HRTIMER_MODE_REL_PINNED_HARD", HRTIMER_MODE_REL_PINNED_HARD)
+#endif
+	)
+)
+
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 #define lttng_ktime_get_tv64(kt)	(kt)
 #else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
@@ -177,7 +209,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_init,
 	TP_FIELDS(
 		ctf_integer_hex(void *, hrtimer, hrtimer)
 		ctf_integer(clockid_t, clockid, clockid)
-		ctf_integer(enum hrtimer_mode, mode, mode)
+		ctf_enum(hrtimer_mode, unsigned int, mode, mode)
 	)
 )
 
@@ -202,7 +234,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_start,
 			lttng_ktime_get_tv64(hrtimer_get_expires(hrtimer)))
 		ctf_integer(s64, softexpires,
 			lttng_ktime_get_tv64(hrtimer_get_softexpires(hrtimer)))
-		ctf_integer(enum hrtimer_mode, mode, mode)
+		ctf_enum(hrtimer_mode, unsigned int, mode, mode)
 	)
 )
 #else
