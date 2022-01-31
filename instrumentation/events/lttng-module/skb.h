@@ -20,7 +20,7 @@ LTTNG_TRACEPOINT_ENUM(skb_drop_reason,
 		ctf_enum_value("NO_SOCKET",	SKB_DROP_REASON_NO_SOCKET)
 		ctf_enum_value("PKT_TOO_SMALL",	SKB_DROP_REASON_PKT_TOO_SMALL)
 		ctf_enum_value("TCP_CSUM",	SKB_DROP_REASON_TCP_CSUM)
-		ctf_enum_value("TCP_FILTER",	SKB_DROP_REASON_TCP_FILTER)
+		ctf_enum_value("SOCKET_FILTER",	SKB_DROP_REASON_SOCKET_FILTER)
 		ctf_enum_value("UDP_CSUM",	SKB_DROP_REASON_UDP_CSUM)
 		ctf_enum_value("MAX",		SKB_DROP_REASON_MAX)
 	)
