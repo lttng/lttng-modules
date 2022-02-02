@@ -222,6 +222,41 @@ struct lttng_kernel_channel_buffer_private {
 	struct lttng_transport *transport;
 };
 
+struct lttng_kernel_channel_counter_ops_private {
+	struct lttng_kernel_channel_counter_ops *pub;	/* Public channel counter ops interface */
+
+	struct lttng_kernel_channel_counter *(*counter_create)(size_t nr_dimensions,
+			const struct lttng_counter_dimension *dimensions,
+			int64_t global_sum_step);
+	void (*counter_destroy)(struct lttng_kernel_channel_counter *counter);
+	int (*counter_add)(struct lttng_kernel_channel_counter *counter,
+			const size_t *dimension_indexes, int64_t v);
+	int (*counter_read)(struct lttng_kernel_channel_counter *counter,
+			const size_t *dimension_indexes, int cpu,
+			int64_t *value, bool *overflow, bool *underflow);
+	int (*counter_aggregate)(struct lttng_kernel_channel_counter *counter,
+			const size_t *dimension_indexes, int64_t *value,
+			bool *overflow, bool *underflow);
+	int (*counter_clear)(struct lttng_kernel_channel_counter *counter,
+			const size_t *dimension_indexes);
+};
+
+struct lttng_kernel_channel_counter_private {
+	struct lttng_kernel_channel_common_private parent;
+
+	struct lttng_kernel_channel_counter *pub;		/* Public channel counter interface */
+	struct lib_counter *counter;
+	struct lttng_kernel_channel_counter_ops *ops;
+
+	/* Event notifier group owner. */
+	struct lttng_event_notifier_group *event_notifier_group;
+
+	/* Session owner. */
+	struct lttng_session *session;
+	struct list_head node;				/* Counter list (in session) */
+	size_t free_index;				/* Next index to allocate */
+};
+
 enum lttng_kernel_bytecode_interpreter_ret {
 	LTTNG_KERNEL_BYTECODE_INTERPRETER_ERROR = -1,
 	LTTNG_KERNEL_BYTECODE_INTERPRETER_OK = 0,
