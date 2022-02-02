@@ -44,6 +44,7 @@
 #include <lttng/endian.h>
 #include <lttng/string-utils.h>
 #include <lttng/utils.h>
+#include <counter/counter.h>
 #include <ringbuffer/backend.h>
 #include <ringbuffer/frontend.h>
 
@@ -895,7 +896,42 @@ bool lttng_kernel_event_id_available(struct lttng_event_enabler_common *event_en
 			return false;
 		}
 	}
-	//TODO: LTTNG_EVENT_ENABLER_TYPE_COUNTER
+	case LTTNG_EVENT_ENABLER_TYPE_COUNTER:
+	{
+		struct lttng_event_counter_enabler *event_counter_enabler =
+			container_of(event_enabler, struct lttng_event_counter_enabler, parent.parent);
+		struct lttng_kernel_channel_counter *chan = event_counter_enabler->chan;
+		struct lib_counter *counter = chan->priv->counter;
+		size_t nr_dimensions, max_nr_elem;
+
+		if (lttng_counter_get_nr_dimensions(&counter->config, counter, &nr_dimensions))
+			return false;
+		WARN_ON_ONCE(nr_dimensions != 1);
+		if (nr_dimensions != 1)
+			return false;
+		if (lttng_counter_get_max_nr_elem(&counter->config, counter, &max_nr_elem))
+			return false;
+		switch (itype) {
+		case LTTNG_KERNEL_ABI_TRACEPOINT:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_KPROBE:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_SYSCALL:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_UPROBE:
+			if (chan->priv->free_index >= max_nr_elem)
+				return false;
+			return true;
+		case LTTNG_KERNEL_ABI_KRETPROBE:
+			/* kretprobes require 2 event IDs. */
+			if (chan->priv->free_index + 1 >= max_nr_elem)
+				return false;
+			return true;
+		default:
+			WARN_ON_ONCE(1);
+			return false;
+		}
+	}
 	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
 		return true;
 	default:
