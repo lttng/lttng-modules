@@ -2256,7 +2256,6 @@ struct lttng_enabler_ref *lttng_enabler_ref(
 static
 void lttng_event_enabler_create_tracepoint_events_if_missing(struct lttng_event_enabler_common *event_enabler)
 {
-	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(event_enabler);
 	struct lttng_kernel_probe_desc *probe_desc;
 	const struct lttng_kernel_event_desc *desc;
 	struct list_head *probe_list;
@@ -2270,33 +2269,19 @@ void lttng_event_enabler_create_tracepoint_events_if_missing(struct lttng_event_
 	 */
 	list_for_each_entry(probe_desc, probe_list, head) {
 		for (i = 0; i < probe_desc->nr_events; i++) {
-			bool found = false;
-			struct hlist_head *head;
 			struct lttng_kernel_event_common *event;
-			struct lttng_kernel_event_common_private *event_priv;
 
 			desc = probe_desc->event_desc[i];
 			if (!lttng_desc_match_enabler(desc, event_enabler))
 				continue;
-
-			/*
-			 * Check if already created.
-			 */
-			head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, desc->event_name);
-			lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
-				if (lttng_event_enabler_desc_match_event(event_enabler, desc, event_priv->pub)) {
-					found = true;
-					break;
-				}
-			}
-			if (found)
-				continue;
-
 			/*
 			 * We need to create an event for this event probe.
 			 */
 			event = _lttng_kernel_event_create(event_enabler, desc);
 			if (IS_ERR(event)) {
+				/* Skip if already found. */
+				if (PTR_ERR(event) == -EEXIST)
+					continue;
 				printk(KERN_INFO "LTTng: Unable to create event %s\n",
 					probe_desc->event_desc[i]->event_name);
 			}
