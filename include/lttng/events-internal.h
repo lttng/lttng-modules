@@ -930,9 +930,6 @@ bool lttng_desc_match_enabler(const struct lttng_kernel_event_desc *desc,
 		struct lttng_event_enabler_common *enabler);
 bool lttng_event_enabler_match_event(struct lttng_event_enabler_common *event_enabler,
 		struct lttng_kernel_event_common *event);
-bool lttng_event_enabler_desc_match_event(struct lttng_event_enabler_common *event_enabler,
-		const struct lttng_kernel_event_desc *desc,
-		struct lttng_kernel_event_common *event);
 bool lttng_event_enabler_event_name_match_event(struct lttng_event_enabler_common *event_enabler,
 		const char *event_name,
 		struct lttng_kernel_event_common *event);
@@ -1224,6 +1221,11 @@ extern const struct file_operations lttng_syscall_list_fops;
 struct lttng_kernel_channel_buffer *lttng_kernel_alloc_channel_buffer(void);
 struct lttng_kernel_channel_counter *lttng_kernel_alloc_channel_counter(void);
 void lttng_kernel_free_channel_common(struct lttng_kernel_channel_common *chan);
+
+int format_event_key(struct lttng_event_enabler_common *event_enabler, char *key_string,
+		     const char *event_name);
+bool lttng_event_enabler_event_name_key_match_event(struct lttng_event_enabler_common *event_enabler,
+		const char *event_name, const char *key_string, struct lttng_kernel_event_common *event);
 
 #define lttng_kernel_static_ctx_field(_event_field, _get_size, _record, _get_value, _destroy, _priv)	\
 	__LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_ctx_field, {					\

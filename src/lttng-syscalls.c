@@ -653,6 +653,7 @@ void lttng_syscall_event_enabler_create_matching_syscall_table_events(struct ltt
 #endif
 	/* iterate over all syscall and create event that match */
 	for (i = 0; i < table_len; i++) {
+		char key_string[LTTNG_KEY_TOKEN_STRING_LEN_MAX] = { 0 };
 		struct lttng_kernel_event_common_private *event_priv;
 		struct hlist_head *head;
 		bool found = false;
@@ -666,12 +667,15 @@ void lttng_syscall_event_enabler_create_matching_syscall_table_events(struct ltt
 		if (!lttng_desc_match_enabler(desc, syscall_event_enabler_common))
 			continue;
 
+		if (format_event_key(syscall_event_enabler_common, key_string, desc->event_name))
+			continue;
+
 		/*
 		 * Check if already created.
 		 */
 		head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, desc->event_name);
 		lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
-			if (lttng_event_enabler_desc_match_event(syscall_event_enabler_common, desc, event_priv->pub)) {
+			if (lttng_event_enabler_event_name_key_match_event(syscall_event_enabler_common, desc->event_name, key_string, event_priv->pub)) {
 				found = true;
 				break;
 			}
@@ -700,6 +704,7 @@ bool lttng_syscall_event_enabler_is_wildcard_all(struct lttng_event_enabler_comm
 static
 void create_unknown_syscall_event(struct lttng_event_enabler_common *event_enabler, enum sc_type type)
 {
+	char key_string[LTTNG_KEY_TOKEN_STRING_LEN_MAX] = { 0 };
 	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(event_enabler);
 	struct lttng_kernel_event_common_private *event_priv;
 	const struct lttng_kernel_event_desc *desc;
@@ -739,12 +744,15 @@ void create_unknown_syscall_event(struct lttng_event_enabler_common *event_enabl
 		WARN_ON_ONCE(1);
 	}
 
+	if (format_event_key(event_enabler, key_string, desc->event_name))
+		return;
+
 	/*
 	 * Check if already created.
 	 */
 	head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, desc->event_name);
 	lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
-		if (lttng_event_enabler_desc_match_event(event_enabler, desc, event_priv->pub)) {
+		if (lttng_event_enabler_event_name_key_match_event(event_enabler, desc->event_name, key_string, event_priv->pub)) {
 			found = true;
 			break;
 		}
