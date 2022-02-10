@@ -1815,7 +1815,7 @@ int lttng_abi_validate_event_param(struct lttng_kernel_abi_event *event_param)
 }
 
 static
-int lttng_abi_create_event(struct file *channel_file,
+int lttng_abi_create_event_recorder_enabler(struct file *channel_file,
 			   struct lttng_kernel_abi_event *event_param)
 {
 	const struct file_operations *fops;
@@ -2458,7 +2458,7 @@ long lttng_channel_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		default:
 			break;
 		}
-		ret = lttng_abi_create_event(file, uevent_param);
+		ret = lttng_abi_create_event_recorder_enabler(file, uevent_param);
 
 old_event_error_free_old_param:
 		kfree(old_uevent_param);
@@ -2475,7 +2475,7 @@ old_event_end:
 				(struct lttng_kernel_abi_event __user *) arg,
 				sizeof(uevent_param)))
 			return -EFAULT;
-		return lttng_abi_create_event(file, &uevent_param);
+		return lttng_abi_create_event_recorder_enabler(file, &uevent_param);
 	}
 	case LTTNG_KERNEL_ABI_OLD_CONTEXT:
 	{
