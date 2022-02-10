@@ -2154,48 +2154,6 @@ bool lttng_event_enabler_match_event(struct lttng_event_enabler_common *event_en
 	}
 }
 
-bool lttng_event_enabler_event_name_match_event(struct lttng_event_enabler_common *event_enabler,
-		const char *event_name,
-		struct lttng_kernel_event_common *event)
-{
-	if (event_enabler->event_param.instrumentation != event->priv->instrumentation)
-		return false;
-
-	switch (event_enabler->enabler_type) {
-	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
-	{
-		struct lttng_event_recorder_enabler *event_recorder_enabler =
-			container_of(event_enabler, struct lttng_event_recorder_enabler, parent.parent);
-		struct lttng_kernel_event_recorder *event_recorder =
-			container_of(event, struct lttng_kernel_event_recorder, parent);
-
-		if (!strncmp(event->priv->desc->event_name, event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1)
-				&& event_recorder->chan == event_recorder_enabler->chan)
-			return true;
-		else
-			return false;
-	}
-	//TODO: LTTNG_EVENT_ENABLER_TYPE_COUNTER
-	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
-	{
-		struct lttng_event_notifier_enabler *event_notifier_enabler =
-			container_of(event_enabler, struct lttng_event_notifier_enabler, parent);
-		struct lttng_kernel_event_notifier *event_notifier =
-			container_of(event, struct lttng_kernel_event_notifier, parent);
-
-		if (!strncmp(event->priv->desc->event_name, event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1)
-				&& event_notifier->priv->group == event_notifier_enabler->group
-				&& event->priv->user_token == event_enabler->user_token)
-			return true;
-		else
-			return false;
-	}
-	default:
-		WARN_ON_ONCE(1);
-		return false;
-	}
-}
-
 static
 struct lttng_enabler_ref *lttng_enabler_ref(
 		struct list_head *enablers_ref_list,
