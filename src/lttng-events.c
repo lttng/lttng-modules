@@ -658,6 +658,8 @@ int lttng_event_enable(struct lttng_kernel_event_common *event)
 			break;
 		}
 		break;
+	case LTTNG_KERNEL_EVENT_TYPE_COUNTER:
+		break;
 	default:
 		break;
 	}
@@ -721,6 +723,8 @@ int lttng_event_disable(struct lttng_kernel_event_common *event)
 		default:
 			break;
 		}
+		break;
+	case LTTNG_KERNEL_EVENT_TYPE_COUNTER:
 		break;
 	default:
 		break;
@@ -1178,7 +1182,8 @@ static
 bool match_event_key(struct lttng_kernel_event_common *event, const char *key_string)
 {
 	switch (event->type) {
-	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:	/* Fall-through */
+	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+		lttng_fallthrough;
 	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
 		return true;
 
@@ -1616,6 +1621,7 @@ void unregister_event(struct lttng_kernel_event_common *event)
 	case LTTNG_KERNEL_ABI_KRETPROBE:
 		switch (event->type) {
 		case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+			lttng_fallthrough;
 		case LTTNG_KERNEL_EVENT_TYPE_COUNTER:
 			lttng_kretprobes_unregister(event);
 			ret = 0;
@@ -1633,6 +1639,7 @@ void unregister_event(struct lttng_kernel_event_common *event)
 	case LTTNG_KERNEL_ABI_NOOP:
 		switch (event->type) {
 		case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+			lttng_fallthrough;
 		case LTTNG_KERNEL_EVENT_TYPE_COUNTER:
 			ret = 0;
 			break;
@@ -2632,6 +2639,8 @@ void lttng_event_sync_capture_state(struct lttng_kernel_event_common *event)
 {
 	switch (event->type) {
 	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_EVENT_TYPE_COUNTER:
 		break;
 	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
 	{
@@ -2678,16 +2687,18 @@ bool lttng_get_event_enabled_state(struct lttng_kernel_event_common *event)
 
 	switch (event->type) {
 	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_EVENT_TYPE_COUNTER:
 	{
-		struct lttng_kernel_event_recorder *event_recorder =
-			container_of(event, struct lttng_kernel_event_recorder, parent);
+		struct lttng_kernel_event_session_common_private *event_session_common_priv =
+			container_of(event->priv, struct lttng_kernel_event_session_common_private, parent);
 
 		/*
 		 * Enabled state is based on union of enablers, with
 		 * intersection of session and channel transient enable
 		 * states.
 		 */
-		return enabled && event_recorder->chan->parent.session->priv->tstate && event_recorder->chan->priv->parent.tstate;
+		return enabled && event_session_common_priv->chan->session->priv->tstate && event_session_common_priv->chan->priv->tstate;
 	}
 	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
 		return enabled;
