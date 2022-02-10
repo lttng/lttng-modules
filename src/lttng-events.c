@@ -1131,6 +1131,133 @@ int lttng_kernel_event_notifier_clear_error_counter(struct lttng_kernel_event_co
 	}
 }
 
+static
+int format_event_key(struct lttng_event_enabler_common *event_enabler, char *key_string,
+		     const char *event_name)
+{
+	struct lttng_event_counter_enabler *event_counter_enabler;
+	const struct lttng_counter_key_dimension *dim;
+	size_t i, left = LTTNG_KEY_TOKEN_STRING_LEN_MAX;
+	const struct lttng_counter_key *key;
+
+	if (event_enabler->enabler_type != LTTNG_EVENT_ENABLER_TYPE_COUNTER) {
+		return 0;
+	}
+	event_counter_enabler = container_of(event_enabler, struct lttng_event_counter_enabler, parent.parent);
+	key = &event_counter_enabler->key;
+	if (!key->nr_dimensions)
+		return 0;
+	/* Currently event keys can only be specified on a single dimension. */
+	if (key->nr_dimensions != 1)
+		return -EINVAL;
+	dim = &key->key_dimensions[0];
+	for (i = 0; i < dim->nr_key_tokens; i++) {
+		const struct lttng_key_token *token = &dim->key_tokens[i];
+		size_t token_len;
+		const char *str;
+
+		switch (token->type) {
+		case LTTNG_KEY_TOKEN_STRING:
+			str = token->arg.string;
+			break;
+		case LTTNG_KEY_TOKEN_EVENT_NAME:
+			str = event_name;
+			break;
+		default:
+			return -EINVAL;
+		}
+		token_len = strlen(str);
+		if (token_len >= left)
+			return -EINVAL;
+		strcat(key_string, str);
+		left -= token_len;
+	}
+	return 0;
+}
+
+static
+bool match_event_key(struct lttng_kernel_event_common *event, const char *key_string)
+{
+	switch (event->type) {
+	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:	/* Fall-through */
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
+		return true;
+
+	case LTTNG_KERNEL_EVENT_TYPE_COUNTER:
+	{
+		struct lttng_kernel_event_counter_private *event_counter_priv =
+			container_of(event->priv, struct lttng_kernel_event_counter_private, parent.parent);
+
+		if (key_string[0] == '\0')
+			return true;
+		return !strcmp(key_string, event_counter_priv->key);
+	}
+
+	default:
+		WARN_ON_ONCE(1);
+		return false;
+	}
+}
+
+static
+bool match_event_session_token(struct lttng_kernel_event_session_common_private *event_session_priv,
+		uint64_t token)
+{
+	if (event_session_priv->chan->priv->coalesce_hits)
+		return true;
+	if (event_session_priv->parent.user_token == token)
+		return true;
+	return false;
+}
+
+static
+bool lttng_event_enabler_event_name_key_match_event(struct lttng_event_enabler_common *event_enabler,
+		const char *event_name, const char *key_string, struct lttng_kernel_event_common *event)
+{
+	switch (event_enabler->enabler_type) {
+	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
+		lttng_fallthrough;
+	case LTTNG_EVENT_ENABLER_TYPE_COUNTER:
+	{
+		struct lttng_event_enabler_session_common *event_session_enabler =
+			container_of(event_enabler, struct lttng_event_enabler_session_common, parent);
+		struct lttng_kernel_event_session_common_private *event_session_priv =
+			container_of(event->priv, struct lttng_kernel_event_session_common_private, parent);
+		bool same_event = false, same_channel = false, same_key = false,
+				same_token = false;
+
+		WARN_ON_ONCE(!event->priv->desc);
+		if (!strncmp(event->priv->desc->event_name, event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1))
+			same_event = true;
+		if (event_session_enabler->chan == event_session_priv->chan) {
+			same_channel = true;
+			if (match_event_session_token(event_session_priv, event_enabler->user_token))
+				same_token = true;
+		}
+		if (match_event_key(event, key_string))
+			same_key = true;
+		return same_event && same_channel && same_key && same_token;
+	}
+
+	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
+	{
+		/*
+		 * Check if event_notifier already exists by checking
+		 * if the event_notifier and enabler share the same
+		 * description and id.
+		 */
+		if (!strncmp(event->priv->desc->event_name, event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1)
+				&& event->priv->user_token == event_enabler->user_token)
+			return true;
+		else
+			return false;
+	}
+	default:
+		WARN_ON_ONCE(1);
+		return false;
+	}
+}
+
 /*
  * Supports event creation while tracing session is active.
  * Needs to be called with sessions mutex held.
@@ -1138,15 +1265,15 @@ int lttng_kernel_event_notifier_clear_error_counter(struct lttng_kernel_event_co
 struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_enabler_common *event_enabler,
 				const struct lttng_kernel_event_desc *event_desc)
 {
-	char key_string[LTTNG_KEY_TOKEN_STRING_LEN_MAX] = { 0 };	//TODO
+	char key_string[LTTNG_KEY_TOKEN_STRING_LEN_MAX] = { 0 };
 	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(event_enabler);
 	struct list_head *event_list_head = lttng_get_event_list_head_from_enabler(event_enabler);
 	struct lttng_kernel_abi_event *event_param = &event_enabler->event_param;
 	enum lttng_kernel_abi_instrumentation itype = event_param->instrumentation;
-	struct lttng_kernel_event_common_private *event_priv;
+	struct lttng_kernel_event_common_private *event_priv_iter;
 	struct lttng_kernel_event_common *event;
-	const char *event_name;
 	struct hlist_head *head;
+	const char *event_name;
 	int ret;
 
 	if (!lttng_kernel_event_id_available(event_enabler)) {
@@ -1179,9 +1306,15 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 		goto type_error;
 	}
 
+	if (format_event_key(event_enabler, key_string, event_name)) {
+		ret = -EINVAL;
+		goto type_error;
+	}
+
 	head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, event_name);
-	lttng_hlist_for_each_entry(event_priv, head, hlist_node) {
-		if (lttng_event_enabler_event_name_match_event(event_enabler, event_name, event_priv->pub)) {
+	lttng_hlist_for_each_entry(event_priv_iter, head, hlist_node) {
+		if (lttng_event_enabler_event_name_key_match_event(event_enabler,
+				event_name, key_string, event_priv_iter->pub)) {
 			ret = -EEXIST;
 			goto exist;
 		}
@@ -1963,17 +2096,6 @@ bool lttng_desc_match_enabler(const struct lttng_kernel_event_desc *desc,
 		return false;
 	}
 	return ret;
-}
-
-static
-bool match_event_session_token(struct lttng_kernel_event_session_common_private *event_session_priv,
-		uint64_t token)
-{
-	if (event_session_priv->chan->priv->coalesce_hits)
-		return true;
-	if (event_session_priv->parent.user_token == token)
-		return true;
-	return false;
 }
 
 static
