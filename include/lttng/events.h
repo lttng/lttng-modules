@@ -426,6 +426,7 @@ struct lttng_kernel_channel_buffer_ops {
 
 enum lttng_kernel_channel_type {
 	LTTNG_KERNEL_CHANNEL_TYPE_BUFFER = 0,
+	LTTNG_KERNEL_CHANNEL_TYPE_COUNTER = 1,
 };
 
 struct lttng_kernel_channel_common_private;

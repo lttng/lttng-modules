@@ -232,12 +232,15 @@ struct lttng_counter_transport *lttng_counter_transport_find(const char *name)
 	return NULL;
 }
 
-struct lttng_counter *lttng_kernel_counter_create(
+struct lttng_kernel_channel_counter *lttng_kernel_counter_create(
 		const char *counter_transport_name,
-		size_t number_dimensions, const size_t *dimensions_sizes)
+		size_t number_dimensions,
+		const struct lttng_counter_dimension *dimensions,
+		int64_t global_sum_step,
+		bool coalesce_hits)
 {
-	struct lttng_counter *counter = NULL;
 	struct lttng_counter_transport *counter_transport = NULL;
+	struct lttng_kernel_channel_counter *counter = NULL;
 
 	counter_transport = lttng_counter_transport_find(counter_transport_name);
 	if (!counter_transport) {
@@ -250,29 +253,32 @@ struct lttng_counter *lttng_kernel_counter_create(
 		goto notransport;
 	}
 
-	counter = lttng_kvzalloc(sizeof(struct lttng_counter), GFP_KERNEL);
+	counter = counter_transport->ops.priv->counter_create(number_dimensions, dimensions,
+			global_sum_step);
 	if (!counter)
-		goto nomem;
+		goto create_error;
 
 	/* Create event notifier error counter. */
 	counter->ops = &counter_transport->ops;
-	counter->transport = counter_transport;
-
-	counter->counter = counter->ops->counter_create(
-			number_dimensions, dimensions_sizes, 0);
-	if (!counter->counter) {
-		goto create_error;
-	}
+	counter->priv->parent.coalesce_hits = coalesce_hits;
+	counter->priv->transport = counter_transport;
 
 	return counter;
 
 create_error:
-	lttng_kvfree(counter);
-nomem:
 	if (counter_transport)
 		module_put(counter_transport->owner);
 notransport:
 	return NULL;
+}
+
+static
+void lttng_kernel_counter_destroy(struct lttng_kernel_channel_counter *counter)
+{
+	struct lttng_counter_transport *counter_transport = counter->priv->transport;
+
+	counter->ops->priv->counter_destroy(counter);
+	module_put(counter_transport->owner);
 }
 
 struct lttng_event_notifier_group *lttng_event_notifier_group_create(void)
@@ -429,14 +435,8 @@ void lttng_event_notifier_group_destroy(
 			&event_notifier_group->event_notifiers_head, parent.node)
 		_lttng_event_destroy(&event_notifier_priv->pub->parent);
 
-	if (event_notifier_group->error_counter) {
-		struct lttng_counter *error_counter = event_notifier_group->error_counter;
-
-		error_counter->ops->counter_destroy(error_counter->counter);
-		module_put(error_counter->transport->owner);
-		lttng_kvfree(error_counter);
-		event_notifier_group->error_counter = NULL;
-	}
+	if (event_notifier_group->error_counter)
+		lttng_kernel_counter_destroy(event_notifier_group->error_counter);
 
 	event_notifier_group->ops->priv->channel_destroy(event_notifier_group->chan);
 	module_put(event_notifier_group->transport->owner);
@@ -769,7 +769,6 @@ struct lttng_kernel_channel_buffer *lttng_channel_buffer_create(struct lttng_ker
 				       enum channel_type channel_type)
 {
 	struct lttng_kernel_channel_buffer *chan;
-	struct lttng_kernel_channel_buffer_private *chan_priv;
 	struct lttng_transport *transport = NULL;
 
 	mutex_lock(&sessions_mutex);
@@ -785,15 +784,9 @@ struct lttng_kernel_channel_buffer *lttng_channel_buffer_create(struct lttng_ker
 		printk(KERN_WARNING "LTTng: Can't lock transport module.\n");
 		goto notransport;
 	}
-	chan = kzalloc(sizeof(struct lttng_kernel_channel_buffer), GFP_KERNEL);
+	chan = lttng_kernel_alloc_channel_buffer();
 	if (!chan)
 		goto nomem;
-	chan_priv = kzalloc(sizeof(struct lttng_kernel_channel_buffer_private), GFP_KERNEL);
-	if (!chan_priv)
-		goto nomem_priv;
-	chan->priv = chan_priv;
-	chan_priv->pub = chan;
-	chan->parent.type = LTTNG_KERNEL_CHANNEL_TYPE_BUFFER;
 	chan->parent.session = session;
 	chan->priv->id = session->priv->free_chan_id++;
 	chan->ops = &transport->ops;
@@ -816,9 +809,7 @@ struct lttng_kernel_channel_buffer *lttng_channel_buffer_create(struct lttng_ker
 	return chan;
 
 create_error:
-	kfree(chan_priv);
-nomem_priv:
-	kfree(chan);
+	lttng_kernel_free_channel_common(&chan->parent);
 nomem:
 	if (transport)
 		module_put(transport->owner);
@@ -1060,12 +1051,15 @@ int lttng_kernel_event_notifier_clear_error_counter(struct lttng_kernel_event_co
 {
 	switch (event->type) {
 	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_EVENT_TYPE_COUNTER:
 		return 0;
+
 	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
 	{
 		struct lttng_kernel_event_notifier *event_notifier =
 			container_of(event, struct lttng_kernel_event_notifier, parent);
-		struct lttng_counter *error_counter;
+		struct lttng_kernel_channel_counter *error_counter;
 		struct lttng_event_notifier_group *event_notifier_group = event_notifier->priv->group;
 		size_t dimension_index[1];
 		int ret;
@@ -1089,7 +1083,7 @@ int lttng_kernel_event_notifier_clear_error_counter(struct lttng_kernel_event_co
 		}
 
 		dimension_index[0] = event_notifier->priv->error_counter_index;
-		ret = error_counter->ops->counter_clear(error_counter->counter, dimension_index);
+		ret = error_counter->ops->priv->counter_clear(error_counter, dimension_index);
 		if (ret) {
 			printk(KERN_INFO "LTTng: event_notifier: Unable to clear error counter bucket %llu\n",
 				event_notifier->priv->error_counter_index);
@@ -1356,26 +1350,26 @@ struct lttng_kernel_event_common *lttng_kernel_event_create(struct lttng_event_e
 	return event;
 }
 
-int lttng_kernel_counter_read(struct lttng_counter *counter,
+int lttng_kernel_counter_read(struct lttng_kernel_channel_counter *counter,
 		const size_t *dim_indexes, int32_t cpu,
 		int64_t *val, bool *overflow, bool *underflow)
 {
-	return counter->ops->counter_read(counter->counter, dim_indexes,
+	return counter->ops->priv->counter_read(counter, dim_indexes,
 			cpu, val, overflow, underflow);
 }
 
-int lttng_kernel_counter_aggregate(struct lttng_counter *counter,
+int lttng_kernel_counter_aggregate(struct lttng_kernel_channel_counter *counter,
 		const size_t *dim_indexes, int64_t *val,
 		bool *overflow, bool *underflow)
 {
-	return counter->ops->counter_aggregate(counter->counter, dim_indexes,
+	return counter->ops->priv->counter_aggregate(counter, dim_indexes,
 			val, overflow, underflow);
 }
 
-int lttng_kernel_counter_clear(struct lttng_counter *counter,
+int lttng_kernel_counter_clear(struct lttng_kernel_channel_counter *counter,
 		const size_t *dim_indexes)
 {
-	return counter->ops->counter_clear(counter->counter, dim_indexes);
+	return counter->ops->priv->counter_clear(counter, dim_indexes);
 }
 
 /* Only used for tracepoints and system calls for now. */
@@ -4052,6 +4046,87 @@ void lttng_counter_transport_unregister(struct lttng_counter_transport *transpor
 	mutex_unlock(&sessions_mutex);
 }
 EXPORT_SYMBOL_GPL(lttng_counter_transport_unregister);
+
+struct lttng_kernel_channel_buffer *lttng_kernel_alloc_channel_buffer(void)
+{
+	struct lttng_kernel_channel_buffer *lttng_chan_buf;
+	struct lttng_kernel_channel_common *lttng_chan_common;
+	struct lttng_kernel_channel_buffer_private *lttng_chan_buf_priv;
+
+	lttng_chan_buf = kzalloc(sizeof(struct lttng_kernel_channel_buffer), GFP_KERNEL);
+	if (!lttng_chan_buf)
+		goto nomem;
+	lttng_chan_buf_priv = kzalloc(sizeof(struct lttng_kernel_channel_buffer_private), GFP_KERNEL);
+	if (!lttng_chan_buf_priv)
+		goto nomem_priv;
+	lttng_chan_common = &lttng_chan_buf->parent;
+	lttng_chan_common->type = LTTNG_KERNEL_CHANNEL_TYPE_BUFFER;
+	lttng_chan_buf->priv = lttng_chan_buf_priv;
+	lttng_chan_common->priv = &lttng_chan_buf_priv->parent;
+	lttng_chan_buf_priv->pub = lttng_chan_buf;
+	lttng_chan_buf_priv->parent.pub = lttng_chan_common;
+	return lttng_chan_buf;
+
+nomem_priv:
+	kfree(lttng_chan_buf);
+nomem:
+	return NULL;
+}
+EXPORT_SYMBOL_GPL(lttng_kernel_alloc_channel_buffer);
+
+struct lttng_kernel_channel_counter *lttng_kernel_alloc_channel_counter(void)
+{
+	struct lttng_kernel_channel_counter *lttng_chan_counter;
+	struct lttng_kernel_channel_common *lttng_chan_common;
+	struct lttng_kernel_channel_counter_private *lttng_chan_counter_priv;
+
+	lttng_chan_counter = kzalloc(sizeof(struct lttng_kernel_channel_counter), GFP_KERNEL);
+	if (!lttng_chan_counter)
+		goto nomem;
+	lttng_chan_counter_priv = kzalloc(sizeof(struct lttng_kernel_channel_counter_private), GFP_KERNEL);
+	if (!lttng_chan_counter_priv)
+		goto nomem_priv;
+	lttng_chan_common = &lttng_chan_counter->parent;
+	lttng_chan_common->type = LTTNG_KERNEL_CHANNEL_TYPE_COUNTER;
+	lttng_chan_counter->priv = lttng_chan_counter_priv;
+	lttng_chan_common->priv = &lttng_chan_counter_priv->parent;
+	lttng_chan_counter_priv->pub = lttng_chan_counter;
+	lttng_chan_counter_priv->parent.pub = lttng_chan_common;
+	return lttng_chan_counter;
+
+nomem_priv:
+	kfree(lttng_chan_counter);
+nomem:
+	return NULL;
+}
+EXPORT_SYMBOL_GPL(lttng_kernel_alloc_channel_counter);
+
+void lttng_kernel_free_channel_common(struct lttng_kernel_channel_common *chan)
+{
+	switch (chan->type) {
+	case LTTNG_KERNEL_CHANNEL_TYPE_BUFFER:
+	{
+		struct lttng_kernel_channel_buffer *chan_buf = container_of(chan,
+				struct lttng_kernel_channel_buffer, parent);
+
+		kfree(chan_buf->priv);
+		kfree(chan_buf);
+		break;
+	}
+	case LTTNG_KERNEL_CHANNEL_TYPE_COUNTER:
+	{
+		struct lttng_kernel_channel_counter *chan_counter = container_of(chan,
+				struct lttng_kernel_channel_counter, parent);
+
+		kfree(chan_counter->priv);
+		kfree(chan_counter);
+		break;
+	}
+	default:
+		WARN_ON_ONCE(1);
+	}
+}
+EXPORT_SYMBOL_GPL(lttng_kernel_free_channel_common);
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
 

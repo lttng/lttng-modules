@@ -613,14 +613,14 @@ int lttng_abi_session_set_creation_time(struct lttng_kernel_session *session,
 static
 int lttng_counter_release(struct inode *inode, struct file *file)
 {
-	struct lttng_counter *counter = file->private_data;
+	struct lttng_kernel_channel_counter *counter = file->private_data;
 
 	if (counter) {
 		/*
 		 * Do not destroy the counter itself. Wait of the owner
 		 * (event_notifier group) to be destroyed.
 		 */
-		fput(counter->owner);
+		fput(counter->priv->owner);
 	}
 
 	return 0;
@@ -629,7 +629,7 @@ int lttng_counter_release(struct inode *inode, struct file *file)
 static
 long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	struct lttng_counter *counter = file->private_data;
+	struct lttng_kernel_channel_counter *counter = file->private_data;
 	size_t indexes[LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX] = { 0 };
 	int i;
 
@@ -652,14 +652,12 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			return -EINVAL;
 		if (local_counter_read.index.number_dimensions > LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX)
 			return -EINVAL;
-
 		/* Cast all indexes into size_t. */
 		for (i = 0; i < local_counter_read.index.number_dimensions; i++)
-			indexes[i] = (size_t) local_counter_read.index.dimension_indexes[i];
+			indexes[i] = local_counter_read.index.dimension_indexes[i];
 		cpu = local_counter_read.cpu;
 
-		ret = lttng_kernel_counter_read(counter, indexes, cpu, &value,
-				&overflow, &underflow);
+		ret = lttng_kernel_counter_read(counter, indexes, cpu, &value, &overflow, &underflow);
 		if (ret)
 			return ret;
 		local_counter_read.value.value = value;
@@ -689,13 +687,11 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			return -EINVAL;
 		if (local_counter_aggregate.index.number_dimensions > LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX)
 			return -EINVAL;
-
 		/* Cast all indexes into size_t. */
 		for (i = 0; i < local_counter_aggregate.index.number_dimensions; i++)
-			indexes[i] = (size_t) local_counter_aggregate.index.dimension_indexes[i];
+			indexes[i] = local_counter_aggregate.index.dimension_indexes[i];
 
-		ret = lttng_kernel_counter_aggregate(counter, indexes, &value,
-				&overflow, &underflow);
+		ret = lttng_kernel_counter_aggregate(counter, indexes, &value, &overflow, &underflow);
 		if (ret)
 			return ret;
 		local_counter_aggregate.value.value = value;
@@ -722,11 +718,9 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			return -EINVAL;
 		if (local_counter_clear.index.number_dimensions > LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX)
 			return -EINVAL;
-
 		/* Cast all indexes into size_t. */
 		for (i = 0; i < local_counter_clear.index.number_dimensions; i++)
-			indexes[i] = (size_t) local_counter_clear.index.dimension_indexes[i];
-
+			indexes[i] = local_counter_clear.index.dimension_indexes[i];
 		return lttng_kernel_counter_clear(counter, indexes);
 	}
 	default:
@@ -2209,11 +2203,12 @@ long lttng_abi_event_notifier_group_create_error_counter(
 {
 	int counter_fd, ret;
 	char *counter_transport_name;
-	size_t counter_len;
-	struct lttng_counter *counter = NULL;
+	struct lttng_kernel_channel_counter *chan_counter = NULL;
 	struct file *counter_file;
 	struct lttng_event_notifier_group *event_notifier_group =
 			(struct lttng_event_notifier_group *) event_notifier_group_file->private_data;
+	struct lttng_counter_dimension dimensions[1];
+	size_t counter_len;
 
 	if (error_counter_conf->arithmetic != LTTNG_KERNEL_ABI_COUNTER_ARITHMETIC_MODULAR) {
 		printk(KERN_ERR "LTTng: event_notifier: Error counter of the wrong arithmetic type.\n");
@@ -2264,39 +2259,41 @@ long lttng_abi_event_notifier_group_create_error_counter(
 	}
 
 	counter_len = error_counter_conf->dimensions[0].size;
+	dimensions[0].size = counter_len;
+	dimensions[0].underflow_index = 0;
+	dimensions[0].overflow_index = 0;
+	dimensions[0].has_underflow = 0;
+	dimensions[0].has_overflow = 0;
 
 	if (!atomic_long_add_unless(&event_notifier_group_file->f_count, 1, LONG_MAX)) {
 		ret = -EOVERFLOW;
 		goto refcount_error;
 	}
 
-	counter = lttng_kernel_counter_create(counter_transport_name,
-			1, &counter_len);
-	if (!counter) {
+	chan_counter = lttng_kernel_counter_create(counter_transport_name, 1, dimensions, 0, false);
+	if (!chan_counter) {
 		ret = -EINVAL;
-		goto counter_error;
+		goto create_error;
 	}
 
+	chan_counter->priv->parent.file = counter_file;
+	chan_counter->priv->owner = event_notifier_group->file;
+	counter_file->private_data = chan_counter;
 	event_notifier_group->error_counter_len = counter_len;
 	/*
 	 * store-release to publish error counter matches load-acquire
 	 * in record_error. Ensures the counter is created and the
 	 * error_counter_len is set before they are used.
 	 */
-	smp_store_release(&event_notifier_group->error_counter, counter);
-
-	counter->file = counter_file;
-	counter->owner = event_notifier_group->file;
-	counter_file->private_data = counter;
-	/* Ownership transferred. */
-	counter = NULL;
+	smp_store_release(&event_notifier_group->error_counter,
+				chan_counter);
 
 	fd_install(counter_fd, counter_file);
 	lttng_unlock_sessions();
 
 	return counter_fd;
 
-counter_error:
+create_error:
 	atomic_long_dec(&event_notifier_group_file->f_count);
 refcount_error:
 	fput(counter_file);

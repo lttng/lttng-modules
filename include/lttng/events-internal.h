@@ -233,9 +233,17 @@ struct lttng_kernel_channel_counter_ops_private {
 	void (*counter_destroy)(struct lttng_kernel_channel_counter *counter);
 	int (*counter_add)(struct lttng_kernel_channel_counter *counter,
 			const size_t *dimension_indexes, int64_t v);
+	/*
+	 * counter_read reads a specific cpu's counter if @cpu >= 0, or
+	 * the global aggregation counter if @cpu == -1.
+	 */
 	int (*counter_read)(struct lttng_kernel_channel_counter *counter,
 			const size_t *dimension_indexes, int cpu,
 			int64_t *value, bool *overflow, bool *underflow);
+	/*
+	 * counter_aggregate returns the total sum of all per-cpu counters and
+	 * the global aggregation counter.
+	 */
 	int (*counter_aggregate)(struct lttng_kernel_channel_counter *counter,
 			const size_t *dimension_indexes, int64_t *value,
 			bool *overflow, bool *underflow);
@@ -250,6 +258,11 @@ struct lttng_kernel_channel_counter_private {
 	struct lib_counter *counter;
 	struct lttng_kernel_channel_counter_ops *ops;
 
+	/* Owned either by session or event notifier group. */
+
+	/* Session or event notifier group file owner. */
+	struct file *owner;
+
 	/* Event notifier group owner. */
 	struct lttng_event_notifier_group *event_notifier_group;
 
@@ -257,6 +270,7 @@ struct lttng_kernel_channel_counter_private {
 	struct lttng_session *session;
 	struct list_head node;				/* Counter list (in session) */
 	size_t free_index;				/* Next index to allocate */
+	struct lttng_counter_transport *transport;
 };
 
 enum lttng_kernel_bytecode_interpreter_ret {
@@ -474,34 +488,17 @@ struct lttng_kernel_channel_buffer_ops_private {
 			uint64_t *id);
 };
 
-struct lttng_counter_ops {
-	struct lib_counter *(*counter_create)(size_t nr_dimensions,
-			const size_t *max_nr_elem,	/* for each dimension */
-			int64_t global_sum_step);
-	void (*counter_destroy)(struct lib_counter *counter);
-	int (*counter_add)(struct lib_counter *counter, const size_t *dimension_indexes,
-			int64_t v);
-	/*
-	 * counter_read reads a specific cpu's counter if @cpu >= 0, or
-	 * the global aggregation counter if @cpu == -1.
-	 */
-	int (*counter_read)(struct lib_counter *counter, const size_t *dimension_indexes, int cpu,
-			 int64_t *value, bool *overflow, bool *underflow);
-	/*
-	 * counter_aggregate returns the total sum of all per-cpu counters and
-	 * the global aggregation counter.
-	 */
-	int (*counter_aggregate)(struct lib_counter *counter, const size_t *dimension_indexes,
-			int64_t *value, bool *overflow, bool *underflow);
-	int (*counter_clear)(struct lib_counter *counter, const size_t *dimension_indexes);
+struct lttng_counter_map_descriptor {
+	uint64_t user_token;
+	size_t array_index;
+	char key[LTTNG_KERNEL_ABI_COUNTER_KEY_LEN];
 };
 
-struct lttng_counter {
-	struct file *file;		/* File associated to counter. */
-	struct file *owner;
-	struct lttng_counter_transport *transport;
-	struct lib_counter *counter;
-	struct lttng_counter_ops *ops;
+struct lttng_counter_map {
+	struct lttng_counter_map_descriptor *descriptors;
+	size_t nr_descriptors;
+	size_t alloc_len;
+	struct mutex lock;		/* counter map lock */
 };
 
 #define LTTNG_EVENT_HT_BITS		12
@@ -527,7 +524,7 @@ struct lttng_event_notifier_group {
 
 	struct lttng_kernel_syscall_table syscall_table;
 
-	struct lttng_counter *error_counter;
+	struct lttng_kernel_channel_counter *error_counter;
 	size_t error_counter_len;
 };
 
@@ -542,7 +539,7 @@ struct lttng_counter_transport {
 	char *name;
 	struct module *owner;
 	struct list_head node;
-	struct lttng_counter_ops ops;
+	struct lttng_kernel_channel_counter_ops ops;
 };
 
 struct lttng_kernel_session_private {
@@ -1124,16 +1121,19 @@ int lttng_session_metadata_regenerate(struct lttng_kernel_session *session);
 int lttng_session_statedump(struct lttng_kernel_session *session);
 void metadata_cache_destroy(struct kref *kref);
 
-struct lttng_counter *lttng_kernel_counter_create(
-		const char *counter_transport_name, size_t number_dimensions,
-		const size_t *dimensions_sizes);
-int lttng_kernel_counter_read(struct lttng_counter *counter,
+struct lttng_kernel_channel_counter *lttng_kernel_counter_create(
+		const char *counter_transport_name,
+		size_t number_dimensions,
+		const struct lttng_counter_dimension *dimensions,
+		int64_t global_sum_step,
+		bool coalesce_hits);
+int lttng_kernel_counter_read(struct lttng_kernel_channel_counter *counter,
 		const size_t *dimension_indexes, int32_t cpu,
 		int64_t *val, bool *overflow, bool *underflow);
-int lttng_kernel_counter_aggregate(struct lttng_counter *counter,
+int lttng_kernel_counter_aggregate(struct lttng_kernel_channel_counter *counter,
 		const size_t *dimension_indexes, int64_t *val,
 		bool *overflow, bool *underflow);
-int lttng_kernel_counter_clear(struct lttng_counter *counter,
+int lttng_kernel_counter_clear(struct lttng_kernel_channel_counter *counter,
 		const size_t *dimension_indexes);
 struct lttng_event_notifier_group *lttng_event_notifier_group_create(void);
 int lttng_event_notifier_group_create_error_counter(
@@ -1220,6 +1220,10 @@ int lttng_calibrate(struct lttng_kernel_abi_calibrate *calibrate);
 
 extern const struct file_operations lttng_tracepoint_list_fops;
 extern const struct file_operations lttng_syscall_list_fops;
+
+struct lttng_kernel_channel_buffer *lttng_kernel_alloc_channel_buffer(void);
+struct lttng_kernel_channel_counter *lttng_kernel_alloc_channel_counter(void);
+void lttng_kernel_free_channel_common(struct lttng_kernel_channel_common *chan);
 
 #define lttng_kernel_static_ctx_field(_event_field, _get_size, _record, _get_value, _destroy, _priv)	\
 	__LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_ctx_field, {					\
