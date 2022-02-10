@@ -932,7 +932,8 @@ bool lttng_kernel_event_id_available(struct lttng_event_enabler_common *event_en
 }
 
 static
-struct lttng_kernel_event_common *lttng_kernel_event_alloc(struct lttng_event_enabler_common *event_enabler)
+struct lttng_kernel_event_common *lttng_kernel_event_alloc(struct lttng_event_enabler_common *event_enabler,
+		const char *key_string)
 {
 	struct lttng_kernel_abi_event *event_param = &event_enabler->event_param;
         enum lttng_kernel_abi_instrumentation itype = event_param->instrumentation;
@@ -970,7 +971,6 @@ struct lttng_kernel_event_common *lttng_kernel_event_alloc(struct lttng_event_en
 		event_recorder->priv->parent.id = chan->priv->free_event_id++;
 		return &event_recorder->parent;
 	}
-	//TODO: LTTNG_EVENT_ENABLER_TYPE_COUNTER
 	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
 	{
 		struct lttng_event_notifier_enabler *event_notifier_enabler =
@@ -1004,6 +1004,41 @@ struct lttng_kernel_event_common *lttng_kernel_event_alloc(struct lttng_event_en
 		event_notifier->notification_send = lttng_event_notifier_notification_send;
 		INIT_LIST_HEAD(&event_notifier->priv->capture_bytecode_runtime_head);
 		return &event_notifier->parent;
+	}
+	case LTTNG_EVENT_ENABLER_TYPE_COUNTER:
+	{
+		struct lttng_event_counter_enabler *event_counter_enabler =
+			container_of(event_enabler, struct lttng_event_counter_enabler, parent.parent);
+		struct lttng_kernel_event_counter *event_counter;
+		struct lttng_kernel_event_counter_private *event_counter_priv;
+		struct lttng_kernel_channel_counter *chan = event_counter_enabler->chan;
+
+		event_counter = kmem_cache_zalloc(event_counter_cache, GFP_KERNEL);
+		if (!event_counter)
+			return NULL;
+		event_counter_priv = kmem_cache_zalloc(event_counter_private_cache, GFP_KERNEL);
+		if (!event_counter_priv) {
+			kmem_cache_free(event_counter_private_cache, event_counter);
+			return NULL;
+		}
+		event_counter_priv->pub = event_counter;
+		event_counter_priv->parent.parent.pub = &event_counter->parent;
+		event_counter->priv = event_counter_priv;
+		event_counter->parent.priv = &event_counter_priv->parent.parent;
+
+		event_counter->parent.type = LTTNG_KERNEL_EVENT_TYPE_COUNTER;
+		event_counter->parent.run_filter = lttng_kernel_interpret_event_filter;
+		event_counter->priv->parent.parent.instrumentation = itype;
+		INIT_LIST_HEAD(&event_counter->priv->parent.parent.filter_bytecode_runtime_head);
+		INIT_LIST_HEAD(&event_counter->priv->parent.parent.enablers_ref_head);
+
+		event_counter->chan = chan;
+		event_counter->priv->parent.chan = &chan->parent;
+		if (!chan->priv->parent.coalesce_hits)
+			event_counter->priv->parent.parent.user_token = event_counter_enabler->parent.parent.user_token;
+		strcpy(event_counter_priv->key, key_string);
+		event_counter->priv->parent.id = chan->priv->free_index++;
+		return &event_counter->parent;
 	}
 	default:
 		return NULL;
@@ -1103,6 +1138,7 @@ int lttng_kernel_event_notifier_clear_error_counter(struct lttng_kernel_event_co
 struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_enabler_common *event_enabler,
 				const struct lttng_kernel_event_desc *event_desc)
 {
+	char key_string[LTTNG_KEY_TOKEN_STRING_LEN_MAX] = { 0 };	//TODO
 	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(event_enabler);
 	struct list_head *event_list_head = lttng_get_event_list_head_from_enabler(event_enabler);
 	struct lttng_kernel_abi_event *event_param = &event_enabler->event_param;
@@ -1151,7 +1187,7 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 		}
 	}
 
-	event = lttng_kernel_event_alloc(event_enabler);
+	event = lttng_kernel_event_alloc(event_enabler, key_string);
 	if (!event) {
 		ret = -ENOMEM;
 		goto alloc_error;
@@ -1208,7 +1244,7 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 		event->enabled = 0;
 		event->priv->registered = 1;
 
-		event_return = lttng_kernel_event_alloc(event_enabler);
+		event_return = lttng_kernel_event_alloc(event_enabler, key_string);
 		if (!event) {
 			ret = -ENOMEM;
 			goto alloc_error;
