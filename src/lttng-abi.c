@@ -65,8 +65,8 @@ static const struct file_operations lttng_session_fops;
 static const struct file_operations lttng_event_notifier_group_fops;
 static const struct file_operations lttng_channel_fops;
 static const struct file_operations lttng_metadata_fops;
-static const struct file_operations lttng_event_recorder_event_fops;
-static const struct file_operations lttng_event_recorder_enabler_fops;
+static const struct file_operations lttng_event_session_fops;
+static const struct file_operations lttng_event_session_enabler_fops;
 static struct file_operations lttng_stream_ring_buffer_file_operations;
 
 static int put_u64(uint64_t val, unsigned long arg);
@@ -1844,14 +1844,14 @@ int lttng_abi_create_event(struct file *channel_file,
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_SYSCALL:
-		fops = &lttng_event_recorder_enabler_fops;
+		fops = &lttng_event_session_enabler_fops;
 		break;
 	case LTTNG_KERNEL_ABI_KPROBE:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_KRETPROBE:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
-		fops = &lttng_event_recorder_event_fops;
+		fops = &lttng_event_session_fops;
 		break;
 
 	case LTTNG_KERNEL_ABI_FUNCTION:
@@ -1932,7 +1932,7 @@ int lttng_abi_create_event(struct file *channel_file,
 			ret = PTR_ERR(event);
 			goto event_error;
 		}
-		priv = container_of(event, struct lttng_kernel_event_recorder, parent);
+		priv = event;
 		break;
 	}
 
@@ -1961,19 +1961,19 @@ fd_error:
 static
 long lttng_event_notifier_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	struct lttng_kernel_event_notifier *event_notifier = file->private_data;
+	struct lttng_kernel_event_common *event = file->private_data;
 
 	switch (cmd) {
 	case LTTNG_KERNEL_ABI_ENABLE:
-		return lttng_event_enable(&event_notifier->parent);
+		return lttng_event_enable(event);
 	case LTTNG_KERNEL_ABI_DISABLE:
-		return lttng_event_disable(&event_notifier->parent);
+		return lttng_event_disable(event);
 	case LTTNG_KERNEL_ABI_FILTER:
 		return -EINVAL;
 	case LTTNG_KERNEL_ABI_CAPTURE:
 		return -EINVAL;
 	case LTTNG_KERNEL_ABI_ADD_CALLSITE:
-		return lttng_event_add_callsite(&event_notifier->parent,
+		return lttng_event_add_callsite(event,
 			(struct lttng_kernel_abi_event_callsite __user *) arg);
 	default:
 		return -ENOIOCTLCMD;
@@ -1983,20 +1983,24 @@ long lttng_event_notifier_event_ioctl(struct file *file, unsigned int cmd, unsig
 static
 long lttng_event_notifier_enabler_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	struct lttng_event_notifier_enabler *event_notifier_enabler = file->private_data;
+	struct lttng_event_enabler_common *event = file->private_data;
 
 	switch (cmd) {
 	case LTTNG_KERNEL_ABI_ENABLE:
-		return lttng_event_enabler_enable(&event_notifier_enabler->parent);
+		return lttng_event_enabler_enable(event);
 	case LTTNG_KERNEL_ABI_DISABLE:
-		return lttng_event_enabler_disable(&event_notifier_enabler->parent);
+		return lttng_event_enabler_disable(event);
 	case LTTNG_KERNEL_ABI_FILTER:
-		return lttng_event_enabler_attach_filter_bytecode(&event_notifier_enabler->parent,
+		return lttng_event_enabler_attach_filter_bytecode(event,
 			(struct lttng_kernel_abi_filter_bytecode __user *) arg);
 	case LTTNG_KERNEL_ABI_CAPTURE:
+	{
+		struct lttng_event_notifier_enabler *event_notifier_enabler =
+			container_of(event, struct lttng_event_notifier_enabler, parent);
 		return lttng_event_notifier_enabler_attach_capture_bytecode(
 			event_notifier_enabler,
 			(struct lttng_kernel_abi_capture_bytecode __user *) arg);
+	}
 	case LTTNG_KERNEL_ABI_ADD_CALLSITE:
 		return -EINVAL;
 	default:
@@ -2007,20 +2011,26 @@ long lttng_event_notifier_enabler_ioctl(struct file *file, unsigned int cmd, uns
 static
 int lttng_event_notifier_event_release(struct inode *inode, struct file *file)
 {
-	struct lttng_kernel_event_notifier *event_notifier = file->private_data;
+	struct lttng_kernel_event_common *event = file->private_data;
 
-	if (event_notifier)
+	if (event) {
+		struct lttng_kernel_event_notifier *event_notifier =
+			container_of(event, struct lttng_kernel_event_notifier, parent);
 		fput(event_notifier->priv->group->file);
+	}
 	return 0;
 }
 
 static
 int lttng_event_notifier_enabler_release(struct inode *inode, struct file *file)
 {
-	struct lttng_event_notifier_enabler *event_notifier_enabler = file->private_data;
+	struct lttng_event_enabler_common *event_enabler = file->private_data;
 
-	if (event_notifier_enabler)
+	if (event_enabler) {
+		struct lttng_event_notifier_enabler *event_notifier_enabler =
+			container_of(event_enabler, struct lttng_event_notifier_enabler, parent);
 		fput(event_notifier_enabler->group->file);
+	}
 	return 0;
 }
 
@@ -2169,7 +2179,7 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 			ret = PTR_ERR(event);
 			goto event_notifier_error;
 		}
-		priv = container_of(event, struct lttng_kernel_event_notifier, parent);
+		priv = event;
 		break;
 	}
 
@@ -2640,7 +2650,7 @@ static const struct file_operations lttng_metadata_fops = {
 };
 
 /**
- *	lttng_event_recorder_event_ioctl - lttng syscall through ioctl
+ *	lttng_event_ioctl - lttng syscall through ioctl
  *
  *	@file: the file
  *	@cmd: the command
@@ -2655,9 +2665,9 @@ static const struct file_operations lttng_metadata_fops = {
  *		Disable recording for this event (strong disable)
  */
 static
-long lttng_event_recorder_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+long lttng_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	struct lttng_kernel_event_recorder *event_recorder = file->private_data;
+	struct lttng_kernel_event_common *event = file->private_data;
 
 	switch (cmd) {
 	case LTTNG_KERNEL_ABI_OLD_CONTEXT:
@@ -2672,14 +2682,14 @@ long lttng_event_recorder_event_ioctl(struct file *file, unsigned int cmd, unsig
 	}
 	case LTTNG_KERNEL_ABI_OLD_ENABLE:
 	case LTTNG_KERNEL_ABI_ENABLE:
-		return lttng_event_enable(&event_recorder->parent);
+		return lttng_event_enable(event);
 	case LTTNG_KERNEL_ABI_OLD_DISABLE:
 	case LTTNG_KERNEL_ABI_DISABLE:
-		return lttng_event_disable(&event_recorder->parent);
+		return lttng_event_disable(event);
 	case LTTNG_KERNEL_ABI_FILTER:
 		return -EINVAL;
 	case LTTNG_KERNEL_ABI_ADD_CALLSITE:
-		return lttng_event_add_callsite(&event_recorder->parent,
+		return lttng_event_add_callsite(event,
 			(struct lttng_kernel_abi_event_callsite __user *) arg);
 	default:
 		return -ENOIOCTLCMD;
@@ -2702,9 +2712,9 @@ long lttng_event_recorder_event_ioctl(struct file *file, unsigned int cmd, unsig
  *		Disable recording for this event (strong disable)
  */
 static
-long lttng_event_recorder_enabler_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+long lttng_event_enabler_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
-	struct lttng_event_recorder_enabler *event_enabler = file->private_data;
+	struct lttng_event_enabler_common *event_enabler = file->private_data;
 
 	switch (cmd) {
 	case LTTNG_KERNEL_ABI_OLD_CONTEXT:
@@ -2719,12 +2729,12 @@ long lttng_event_recorder_enabler_ioctl(struct file *file, unsigned int cmd, uns
 	}
 	case LTTNG_KERNEL_ABI_OLD_ENABLE:
 	case LTTNG_KERNEL_ABI_ENABLE:
-		return lttng_event_enabler_enable(&event_enabler->parent.parent);
+		return lttng_event_enabler_enable(event_enabler);
 	case LTTNG_KERNEL_ABI_OLD_DISABLE:
 	case LTTNG_KERNEL_ABI_DISABLE:
-		return lttng_event_enabler_disable(&event_enabler->parent.parent);
+		return lttng_event_enabler_disable(event_enabler);
 	case LTTNG_KERNEL_ABI_FILTER:
-		return lttng_event_enabler_attach_filter_bytecode(&event_enabler->parent.parent,
+		return lttng_event_enabler_attach_filter_bytecode(event_enabler,
 			(struct lttng_kernel_abi_filter_bytecode __user *) arg);
 	case LTTNG_KERNEL_ABI_ADD_CALLSITE:
 		return -EINVAL;
@@ -2734,40 +2744,46 @@ long lttng_event_recorder_enabler_ioctl(struct file *file, unsigned int cmd, uns
 }
 
 static
-int lttng_event_recorder_event_release(struct inode *inode, struct file *file)
+int lttng_event_session_release(struct inode *inode, struct file *file)
 {
-	struct lttng_kernel_event_recorder *event = file->private_data;
+	struct lttng_kernel_event_common *event = file->private_data;
 
-	if (event)
-		fput(event->chan->priv->parent.file);
+	if (event) {
+		struct lttng_kernel_event_session_common_private *event_session_priv =
+			container_of(event->priv, struct lttng_kernel_event_session_common_private, parent);
+		fput(event_session_priv->chan->priv->file);
+	}
 	return 0;
 }
 
 static
-int lttng_event_recorder_enabler_release(struct inode *inode, struct file *file)
+int lttng_event_session_enabler_release(struct inode *inode, struct file *file)
 {
-	struct lttng_event_recorder_enabler *event_enabler = file->private_data;
+	struct lttng_event_enabler_common *event_enabler = file->private_data;
 
-	if (event_enabler)
-		fput(event_enabler->chan->priv->parent.file);
+	if (event_enabler) {
+		struct lttng_event_enabler_session_common *event_session_enabler =
+			container_of(event_enabler, struct lttng_event_enabler_session_common, parent);
+		fput(event_session_enabler->chan->priv->file);
+	}
 	return 0;
 }
 
-static const struct file_operations lttng_event_recorder_event_fops = {
+static const struct file_operations lttng_event_session_fops = {
 	.owner = THIS_MODULE,
-	.release = lttng_event_recorder_event_release,
-	.unlocked_ioctl = lttng_event_recorder_event_ioctl,
+	.release = lttng_event_session_release,
+	.unlocked_ioctl = lttng_event_ioctl,
 #ifdef CONFIG_COMPAT
-	.compat_ioctl = lttng_event_recorder_event_ioctl,
+	.compat_ioctl = lttng_event_ioctl,
 #endif
 };
 
-static const struct file_operations lttng_event_recorder_enabler_fops = {
+static const struct file_operations lttng_event_session_enabler_fops = {
 	.owner = THIS_MODULE,
-	.release = lttng_event_recorder_enabler_release,
-	.unlocked_ioctl = lttng_event_recorder_enabler_ioctl,
+	.release = lttng_event_session_enabler_release,
+	.unlocked_ioctl = lttng_event_enabler_ioctl,
 #ifdef CONFIG_COMPAT
-	.compat_ioctl = lttng_event_recorder_enabler_ioctl,
+	.compat_ioctl = lttng_event_enabler_ioctl,
 #endif
 };
 
