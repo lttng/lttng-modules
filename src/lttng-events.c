@@ -2362,6 +2362,13 @@ int lttng_event_enabler_ref_events(struct lttng_event_enabler_common *event_enab
 	struct list_head *event_list_head = lttng_get_event_list_head_from_enabler(event_enabler);
 	struct lttng_kernel_event_common_private *event_priv;
 
+	 /*
+	  * Only try to create events for enablers that are enabled, the user
+	  * might still be attaching filter or exclusion to the event enabler.
+	  */
+	if (!event_enabler->enabled)
+		goto end;
+
 	lttng_syscall_table_set_wildcard_all(event_enabler);
 
 	/* First ensure that probe events are created for this enabler. */
@@ -2392,6 +2399,7 @@ int lttng_event_enabler_ref_events(struct lttng_event_enabler_common *event_enab
 		lttng_event_enabler_init_event_filter(event_enabler, event);
 		lttng_event_enabler_init_event_capture(event_enabler, event);
 	}
+end:
 	return 0;
 }
 
