@@ -571,6 +571,7 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1);
 		ev.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
+		ev.token = syscall_event_enabler->user_token;
 		event_recorder_enabler = lttng_event_recorder_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev,
 				syscall_event_recorder_enabler->chan);
 		WARN_ON_ONCE(!event_recorder_enabler);
@@ -592,7 +593,6 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 			container_of(syscall_event_enabler, struct lttng_event_notifier_enabler, parent);
 		struct lttng_event_notifier_enabler *event_notifier_enabler;
 		struct lttng_kernel_abi_event_notifier event_notifier_param;
-		uint64_t user_token = syscall_event_enabler->user_token;
 		uint64_t error_counter_index = syscall_event_notifier_enabler->error_counter_index;
 
 		memset(&event_notifier_param, 0, sizeof(event_notifier_param));
@@ -618,7 +618,7 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 			LTTNG_KERNEL_ABI_SYM_NAME_LEN - strlen(event_notifier_param.event.name) - 1);
 		event_notifier_param.event.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
 		event_notifier_param.event.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
-		event_notifier_param.event.token = user_token;
+		event_notifier_param.event.token = syscall_event_enabler->user_token;
 		event_notifier_param.error_counter_index = error_counter_index;
 
 		event_notifier_enabler = lttng_event_notifier_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
@@ -633,6 +633,53 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 		}
 		event->priv->u.syscall.syscall_id = syscall_nr;
 		break;
+	case LTTNG_EVENT_ENABLER_TYPE_COUNTER:
+	{
+		struct lttng_event_counter_enabler *syscall_event_counter_enabler =
+			container_of(syscall_event_enabler, struct lttng_event_counter_enabler, parent.parent);
+		struct lttng_event_counter_enabler *event_counter_enabler;
+		struct lttng_kernel_abi_event ev;
+
+		/* We need to create an event for this syscall/enabler. */
+		memset(&ev, 0, sizeof(ev));
+		switch (type) {
+		case SC_TYPE_ENTRY:
+			ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
+			ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
+			break;
+		case SC_TYPE_EXIT:
+			ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
+			ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_NATIVE;
+			break;
+		case SC_TYPE_COMPAT_ENTRY:
+			ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_ENTRY;
+			ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
+			break;
+		case SC_TYPE_COMPAT_EXIT:
+			ev.u.syscall.entryexit = LTTNG_KERNEL_ABI_SYSCALL_EXIT;
+			ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
+			break;
+		}
+		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1);
+		ev.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
+		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
+		ev.token = syscall_event_enabler->user_token;
+		event_counter_enabler = lttng_event_counter_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev,
+				NULL, &syscall_event_counter_enabler->key, syscall_event_counter_enabler->chan);
+		WARN_ON_ONCE(!event_counter_enabler);
+		if (!event_counter_enabler)
+			return;
+		event = _lttng_kernel_event_create(&event_counter_enabler->parent.parent, desc);
+		lttng_event_enabler_destroy(&event_counter_enabler->parent.parent);
+		if (IS_ERR(event)) {
+			if (PTR_ERR(event) != -EEXIST)
+				printk(KERN_INFO "Unable to create event counter %s\n", desc->event_name);
+			return;
+		}
+		event->priv->u.syscall.syscall_id = syscall_nr;
+		break;
+	}
+
 	}
 	default:
 		break;

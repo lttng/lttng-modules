@@ -908,7 +908,7 @@ struct lttng_event_recorder_enabler *lttng_event_recorder_enabler_create(
 		struct lttng_kernel_abi_event *event_param,
 		struct lttng_kernel_channel_buffer *chan);
 void lttng_event_enabler_session_add(struct lttng_kernel_session *session,
-		struct lttng_event_recorder_enabler *event_enabler);
+		struct lttng_event_enabler_session_common *event_enabler);
 
 struct lttng_event_notifier_enabler *lttng_event_notifier_enabler_create(
 		enum lttng_enabler_format_type format_type,
@@ -1223,6 +1223,12 @@ int format_event_key(struct lttng_event_enabler_common *event_enabler, char *key
 		     const char *event_name);
 bool lttng_event_enabler_event_name_key_match_event(struct lttng_event_enabler_common *event_enabler,
 		const char *event_name, const char *key_string, struct lttng_kernel_event_common *event);
+struct lttng_event_counter_enabler *lttng_event_counter_enabler_create(
+		enum lttng_enabler_format_type format_type,
+		struct lttng_kernel_abi_event *event_param,
+		const struct lttng_kernel_abi_counter_key *abi_key,
+		const struct lttng_counter_key *kernel_key,
+		struct lttng_kernel_channel_counter *chan);
 
 #define lttng_kernel_static_ctx_field(_event_field, _get_size, _record, _get_value, _destroy, _priv)	\
 	__LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_ctx_field, {					\

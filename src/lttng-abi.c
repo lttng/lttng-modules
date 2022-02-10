@@ -38,6 +38,7 @@
 #include <wrapper/compiler_attributes.h>
 #include <wrapper/poll.h>
 #include <wrapper/kref.h>
+#include <wrapper/uaccess.h>
 #include <lttng/string-utils.h>
 #include <lttng/abi.h>
 #include <lttng/abi-old.h>
@@ -71,6 +72,11 @@ static struct file_operations lttng_stream_ring_buffer_file_operations;
 
 static int put_u64(uint64_t val, unsigned long arg);
 static int put_u32(uint32_t val, unsigned long arg);
+
+static
+int lttng_abi_create_event_counter_enabler(struct file *channel_file,
+			   struct lttng_kernel_abi_event *event_param,
+			   const struct lttng_kernel_abi_counter_key *key_param);
 
 static int validate_zeroed_padding(char *p, size_t len)
 {
@@ -723,6 +729,37 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			indexes[i] = local_counter_clear.index.dimension_indexes[i];
 		return lttng_kernel_counter_clear(counter, indexes);
 	}
+	case LTTNG_KERNEL_ABI_COUNTER_EVENT:
+	{
+		struct lttng_kernel_abi_counter_event *counter_event_param;
+		struct lttng_kernel_abi_counter_event __user *ucounter_event_param =
+				(struct lttng_kernel_abi_counter_event __user *) arg;
+		struct lttng_kernel_abi_event *event_param;
+		struct lttng_kernel_abi_counter_key *key_param;
+		long ret;
+
+		counter_event_param = kzalloc(sizeof(*counter_event_param), GFP_KERNEL);
+		if (!counter_event_param)
+			return -ENOMEM;
+		if (copy_from_user(counter_event_param, ucounter_event_param,
+				sizeof(*counter_event_param)))
+			return -EFAULT;
+		if (validate_zeroed_padding(counter_event_param->padding,
+				sizeof(counter_event_param->padding)))
+			return -EINVAL;
+		if (validate_zeroed_padding(counter_event_param->event.padding,
+				sizeof(counter_event_param->event.padding)))
+			return -EINVAL;
+		event_param = &counter_event_param->event;
+		key_param = &counter_event_param->key;
+		ret = lttng_abi_create_event_counter_enabler(file, event_param, key_param);
+		kfree(counter_event_param);
+		return ret;
+	}
+	case LTTNG_KERNEL_ABI_ENABLE:
+		return lttng_channel_enable(&counter->parent);
+	case LTTNG_KERNEL_ABI_DISABLE:
+		return lttng_channel_disable(&counter->parent);
 	default:
 		return -ENOSYS;
 	}
@@ -1867,7 +1904,7 @@ int lttng_abi_create_event_recorder_enabler(struct file *channel_file,
 		ret = event_fd;
 		goto fd_error;
 	}
-	event_file = anon_inode_getfile("[lttng_event]",
+	event_file = anon_inode_getfile("[lttng_event_recorder]",
 					fops, NULL, O_RDWR);
 	if (IS_ERR(event_file)) {
 		ret = PTR_ERR(event_file);
@@ -1901,7 +1938,7 @@ int lttng_abi_create_event_recorder_enabler(struct file *channel_file,
 				event_param, channel);
 		}
 		if (event_enabler)
-			lttng_event_enabler_session_add(channel->parent.session, event_enabler);
+			lttng_event_enabler_session_add(channel->parent.session, &event_enabler->parent);
 		priv = event_enabler;
 		break;
 	}
@@ -1917,6 +1954,151 @@ int lttng_abi_create_event_recorder_enabler(struct file *channel_file,
 
 		event_enabler = lttng_event_recorder_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
 				event_param, channel);
+		if (!event_enabler) {
+			ret = -ENOMEM;
+			goto event_error;
+		}
+		/*
+		 * We tolerate no failure path after event creation. It
+		 * will stay invariant for the rest of the session.
+		 */
+		event = lttng_kernel_event_create(&event_enabler->parent.parent, NULL);
+		WARN_ON_ONCE(IS_ERR(event));
+		lttng_event_enabler_destroy(&event_enabler->parent.parent);
+		if (IS_ERR(event)) {
+			ret = PTR_ERR(event);
+			goto event_error;
+		}
+		priv = event;
+		break;
+	}
+
+	case LTTNG_KERNEL_ABI_FUNCTION:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_NOOP:
+		lttng_fallthrough;
+	default:
+		ret = -EINVAL;
+		goto event_error;
+	}
+	event_file->private_data = priv;
+	fd_install(event_fd, event_file);
+	return event_fd;
+
+event_error:
+	atomic_long_dec(&channel_file->f_count);
+refcount_error:
+	fput(event_file);
+file_error:
+	put_unused_fd(event_fd);
+fd_error:
+	return ret;
+}
+
+static
+int lttng_abi_create_event_counter_enabler(struct file *channel_file,
+			   struct lttng_kernel_abi_event *event_param,
+			   const struct lttng_kernel_abi_counter_key *key_param)
+{
+	const struct file_operations *fops;
+	struct lttng_kernel_channel_counter *channel = channel_file->private_data;
+	int event_fd, ret;
+	struct file *event_file;
+	void *priv;
+
+	event_param->name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
+	switch (event_param->instrumentation) {
+	case LTTNG_KERNEL_ABI_KRETPROBE:
+		event_param->u.kretprobe.symbol_name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
+		break;
+	case LTTNG_KERNEL_ABI_KPROBE:
+		event_param->u.kprobe.symbol_name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
+		break;
+	case LTTNG_KERNEL_ABI_FUNCTION:
+		WARN_ON_ONCE(1);
+		/* Not implemented. */
+		break;
+	default:
+		break;
+	}
+
+	switch (event_param->instrumentation) {
+	case LTTNG_KERNEL_ABI_TRACEPOINT:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_SYSCALL:
+		fops = &lttng_event_session_enabler_fops;
+		break;
+	case LTTNG_KERNEL_ABI_KPROBE:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KRETPROBE:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_UPROBE:
+		fops = &lttng_event_session_fops;
+		break;
+
+	case LTTNG_KERNEL_ABI_FUNCTION:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_NOOP:
+		lttng_fallthrough;
+	default:
+		return -EINVAL;
+	}
+
+	event_fd = get_unused_fd_flags(0);
+	if (event_fd < 0) {
+		ret = event_fd;
+		goto fd_error;
+	}
+	event_file = anon_inode_getfile("[lttng_event_counter]",
+					fops, NULL, O_RDWR);
+	if (IS_ERR(event_file)) {
+		ret = PTR_ERR(event_file);
+		goto file_error;
+	}
+	/* The event holds a reference on the channel */
+	if (!atomic_long_add_unless(&channel_file->f_count, 1, LONG_MAX)) {
+		ret = -EOVERFLOW;
+		goto refcount_error;
+	}
+	ret = lttng_abi_validate_event_param(event_param);
+	if (ret)
+		goto event_error;
+
+	switch (event_param->instrumentation) {
+	case LTTNG_KERNEL_ABI_TRACEPOINT:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_SYSCALL:
+	{
+		struct lttng_event_counter_enabler *event_enabler;
+
+		if (strutils_is_star_glob_pattern(event_param->name)) {
+			/*
+			 * If the event name is a star globbing pattern,
+			 * we create the special star globbing enabler.
+			 */
+			event_enabler = lttng_event_counter_enabler_create(LTTNG_ENABLER_FORMAT_STAR_GLOB,
+				event_param, key_param, NULL, channel);
+		} else {
+			event_enabler = lttng_event_counter_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
+				event_param, key_param, NULL, channel);
+		}
+		if (event_enabler)
+			lttng_event_enabler_session_add(channel->parent.session, &event_enabler->parent);
+		priv = event_enabler;
+		break;
+	}
+
+	case LTTNG_KERNEL_ABI_KPROBE:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KRETPROBE:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_UPROBE:
+	{
+		struct lttng_kernel_event_common *event;
+		struct lttng_event_counter_enabler *event_enabler;
+
+		event_enabler = lttng_event_counter_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
+				event_param, key_param, NULL, channel);
 		if (!event_enabler) {
 			ret = -ENOMEM;
 			goto event_error;
