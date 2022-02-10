@@ -1065,6 +1065,7 @@ static void __event_probe__##_name(_data_proto)						\
 {											\
 	struct probe_local_vars { _locvar };						\
 	struct lttng_kernel_event_common *__event = __data;				\
+	struct lttng_kernel_channel_common *__chan_common;				\
 	struct lttng_kernel_probe_ctx __lttng_probe_ctx = {				\
 		.event = __event,							\
 		.interruptible = !irqs_disabled(),					\
@@ -1079,20 +1080,18 @@ static void __event_probe__##_name(_data_proto)						\
 			&__tp_locvar;							\
 	bool __interpreter_stack_prepared = false;					\
 											\
-	switch (__event->type) {							\
-	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:						\
-	{										\
-		struct lttng_kernel_event_recorder *__event_recorder =			\
-			container_of(__event, struct lttng_kernel_event_recorder, parent); \
-		struct lttng_kernel_channel_buffer *__chan = __event_recorder->chan;	\
-		struct lttng_kernel_session *__session = __chan->parent.session;	\
+	if (unlikely(!READ_ONCE(__event->enabled)))					\
+		return;									\
+	__chan_common = lttng_kernel_get_chan_common_from_event_common(__event);	\
+	if (__chan_common) {								\
+		struct lttng_kernel_session *__session = __chan_common->session;	\
 		struct lttng_kernel_id_tracker_rcu *__lf;				\
 											\
 		if (!_TP_SESSION_CHECK(session, __session))				\
 			return;								\
 		if (unlikely(!LTTNG_READ_ONCE(__session->active)))			\
 			return;								\
-		if (unlikely(!LTTNG_READ_ONCE(__chan->parent.enabled)))			\
+		if (unlikely(!LTTNG_READ_ONCE(__chan_common->enabled)))			\
 			return;								\
 		__lf = lttng_rcu_dereference(__session->pid_tracker.p);			\
 		if (__lf && likely(!lttng_id_tracker_lookup(__lf, current->tgid)))	\
@@ -1116,15 +1115,7 @@ static void __event_probe__##_name(_data_proto)						\
 		if (__lf && likely(!lttng_id_tracker_lookup(__lf,			\
 				from_kgid_munged(current_user_ns(), current_gid()))))	\
 			return;								\
-		break;									\
 	}										\
-	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:						\
-		break;									\
-	default:									\
-		WARN_ON_ONCE(1);							\
-	}										\
-	if (unlikely(!READ_ONCE(__event->enabled)))					\
-		return;									\
 	__orig_dynamic_len_offset = this_cpu_ptr(&lttng_dynamic_len_stack)->offset;	\
 	__dynamic_len_idx = __orig_dynamic_len_offset;					\
 	_code_pre									\
@@ -1178,6 +1169,14 @@ static void __event_probe__##_name(_data_proto)						\
 				__stackvar.__interpreter_stack_data,			\
 				&__lttng_probe_ctx,					\
 				&__notif_ctx);						\
+		break;									\
+	}										\
+	case LTTNG_KERNEL_EVENT_TYPE_COUNTER:						\
+	{										\
+		struct lttng_kernel_event_counter *__event_counter =			\
+			container_of(__event, struct lttng_kernel_event_counter, parent); \
+											\
+		(void) __event_counter->chan->ops->event_counter_add(__event_counter, 1); \
 		break;									\
 	}										\
 	default:									\
