@@ -249,6 +249,10 @@ struct lttng_kernel_channel_counter_ops_private {
 			bool *overflow, bool *underflow);
 	int (*counter_clear)(struct lttng_kernel_channel_counter *counter,
 			const size_t *dimension_indexes);
+	int (*counter_get_nr_dimensions)(struct lttng_kernel_channel_counter *counter,
+			size_t *nr_dimensions);
+	int (*counter_get_max_nr_elem)(struct lttng_kernel_channel_counter *counter,
+			size_t *max_nr_elem);	/* array of size nr_dimensions */
 };
 
 struct lttng_kernel_channel_counter_private {
@@ -1129,6 +1133,10 @@ int lttng_kernel_counter_aggregate(struct lttng_kernel_channel_counter *counter,
 		bool *overflow, bool *underflow);
 int lttng_kernel_counter_clear(struct lttng_kernel_channel_counter *counter,
 		const size_t *dimension_indexes);
+int lttng_kernel_counter_get_nr_dimensions(struct lttng_kernel_channel_counter *counter,
+		size_t *nr_dimensions);
+int lttng_kernel_counter_get_max_nr_elem(struct lttng_kernel_channel_counter *counter,
+		size_t *max_nr_elem);
 struct lttng_event_notifier_group *lttng_event_notifier_group_create(void);
 int lttng_event_notifier_group_create_error_counter(
 		struct file *event_notifier_group_file,

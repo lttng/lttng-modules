@@ -896,15 +896,14 @@ bool lttng_kernel_event_id_available(struct lttng_event_enabler_common *event_en
 		struct lttng_event_counter_enabler *event_counter_enabler =
 			container_of(event_enabler, struct lttng_event_counter_enabler, parent.parent);
 		struct lttng_kernel_channel_counter *chan = event_counter_enabler->chan;
-		struct lib_counter *counter = chan->priv->counter;
 		size_t nr_dimensions, max_nr_elem;
 
-		if (lttng_counter_get_nr_dimensions(&counter->config, counter, &nr_dimensions))
+		if (lttng_kernel_counter_get_nr_dimensions(chan, &nr_dimensions))
 			return false;
 		WARN_ON_ONCE(nr_dimensions != 1);
 		if (nr_dimensions != 1)
 			return false;
-		if (lttng_counter_get_max_nr_elem(&counter->config, counter, &max_nr_elem))
+		if (lttng_kernel_counter_get_max_nr_elem(chan, &max_nr_elem))
 			return false;
 		switch (itype) {
 		case LTTNG_KERNEL_ABI_TRACEPOINT:
@@ -1539,6 +1538,18 @@ int lttng_kernel_counter_clear(struct lttng_kernel_channel_counter *counter,
 		const size_t *dim_indexes)
 {
 	return counter->ops->priv->counter_clear(counter, dim_indexes);
+}
+
+int lttng_kernel_counter_get_nr_dimensions(struct lttng_kernel_channel_counter *counter,
+		size_t *nr_dimensions)
+{
+	return counter->ops->priv->counter_get_nr_dimensions(counter, nr_dimensions);
+}
+
+int lttng_kernel_counter_get_max_nr_elem(struct lttng_kernel_channel_counter *counter,
+		size_t *max_nr_elem)
+{
+	return counter->ops->priv->counter_get_max_nr_elem(counter, max_nr_elem);
 }
 
 /* Only used for tracepoints and system calls for now. */

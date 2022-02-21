@@ -91,6 +91,16 @@ static int counter_clear(struct lttng_kernel_channel_counter *counter, const siz
 	return lttng_counter_clear(&client_config, counter->priv->counter, dimension_indexes);
 }
 
+static int counter_get_nr_dimensions(struct lttng_kernel_channel_counter *counter, size_t *nr_dimensions)
+{
+	return lttng_counter_get_nr_dimensions(&client_config, counter->priv->counter,  nr_dimensions);
+}
+
+static int counter_get_max_nr_elem(struct lttng_kernel_channel_counter *counter, size_t *max_nr_elem)
+{
+	return lttng_counter_get_max_nr_elem(&client_config, counter->priv->counter, max_nr_elem);
+}
+
 static struct lttng_counter_transport lttng_counter_transport = {
 	.name = "counter-per-cpu-32-modular",
 	.owner = THIS_MODULE,
@@ -103,6 +113,8 @@ static struct lttng_counter_transport lttng_counter_transport = {
 			.counter_read = counter_read,
 			.counter_aggregate = counter_aggregate,
 			.counter_clear = counter_clear,
+			.counter_get_nr_dimensions = counter_get_nr_dimensions,
+			.counter_get_max_nr_elem = counter_get_max_nr_elem,
 		}),
 		.event_counter_add = event_counter_add,
 	},
