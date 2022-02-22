@@ -140,6 +140,18 @@ ifneq ($(CONFIG_TIME_NS),)
   lttng-tracer-objs += lttng-context-time-ns.o
 endif
 
+ifneq ($(CONFIG_KPROBES),)
+  lttng-tracer-objs += lttng-kprobes.o
+endif
+
+ifneq ($(CONFIG_UPROBES),)
+  lttng-tracer-objs += lttng-uprobes.o
+endif
+
+ifneq ($(CONFIG_KRETPROBES),)
+  lttng-tracer-objs += lttng-kretprobes.o
+endif
+
 obj-$(CONFIG_LTTNG) += lttng-statedump.o
 lttng-statedump-objs := lttng-statedump-impl.o
 

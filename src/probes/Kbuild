@@ -236,18 +236,6 @@ else
   endif
 endif # CONFIG_KALLSYMS_ALL
 
-ifneq ($(CONFIG_KPROBES),)
-  obj-$(CONFIG_LTTNG) += lttng-kprobes.o
-endif # CONFIG_KPROBES
-
-ifneq ($(CONFIG_UPROBES),)
-  obj-$(CONFIG_LTTNG) += lttng-uprobes.o
-endif # CONFIG_UPROBES
-
-ifneq ($(CONFIG_KRETPROBES),)
-  obj-$(CONFIG_LTTNG) += lttng-kretprobes.o
-endif # CONFIG_KRETPROBES
-
 ifneq ($(CONFIG_PREEMPTIRQ_EVENTS),)
   obj-$(CONFIG_LTTNG) += lttng-probe-preemptirq.o
 endif # CONFIG_PREEMPTIRQ_EVENTS
