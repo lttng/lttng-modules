@@ -274,7 +274,6 @@ event_exit_error:
 error:
 	return ret;
 }
-EXPORT_SYMBOL_GPL(lttng_kretprobes_register);
 
 static
 void _lttng_kretprobes_unregister_release(struct kref *kref)
@@ -289,7 +288,6 @@ void lttng_kretprobes_unregister(struct lttng_kernel_event_common *event)
 	kref_put(&event->priv->u.kretprobe.lttng_krp->kref_register,
 		_lttng_kretprobes_unregister_release);
 }
-EXPORT_SYMBOL_GPL(lttng_kretprobes_unregister);
 
 static
 void _lttng_kretprobes_release(struct kref *kref)
@@ -306,7 +304,6 @@ void lttng_kretprobes_destroy_private(struct lttng_kernel_event_common *event)
 	kref_put(&event->priv->u.kretprobe.lttng_krp->kref_alloc,
 		_lttng_kretprobes_release);
 }
-EXPORT_SYMBOL_GPL(lttng_kretprobes_destroy_private);
 
 int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_common *event,
 		int enable)
@@ -326,7 +323,6 @@ int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_common *event,
 	WRITE_ONCE(event_exit->enabled, enable);
 	return 0;
 }
-EXPORT_SYMBOL_GPL(lttng_kretprobes_event_enable_state);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");

@@ -255,7 +255,6 @@ int lttng_uprobes_event_add_callsite(struct lttng_kernel_event_common *event,
 	return lttng_uprobes_add_callsite(&event->priv->u.uprobe, callsite,
 		lttng_uprobes_event_handler_pre, event);
 }
-EXPORT_SYMBOL_GPL(lttng_uprobes_event_add_callsite);
 
 static
 int lttng_uprobes_register(struct lttng_uprobe *uprobe, int fd)
@@ -296,7 +295,6 @@ register_error:
 error:
 	return ret;
 }
-EXPORT_SYMBOL_GPL(lttng_uprobes_register_event);
 
 static
 void lttng_uprobes_unregister(struct inode *inode, struct list_head *head)
@@ -318,7 +316,6 @@ void lttng_uprobes_unregister_event(struct lttng_kernel_event_common *event)
 {
 	lttng_uprobes_unregister(event->priv->u.uprobe.inode, &event->priv->u.uprobe.head);
 }
-EXPORT_SYMBOL_GPL(lttng_uprobes_unregister_event);
 
 void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_common *event)
 {
@@ -326,7 +323,6 @@ void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_common *event
 	kfree(event->priv->desc->event_name);
 	kfree(event->priv->desc);
 }
-EXPORT_SYMBOL_GPL(lttng_uprobes_destroy_event_private);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Yannick Brosseau");

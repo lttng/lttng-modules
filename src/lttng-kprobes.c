@@ -221,13 +221,11 @@ register_error:
 error:
 	return ret;
 }
-EXPORT_SYMBOL_GPL(lttng_kprobes_register_event);
 
 void lttng_kprobes_unregister_event(struct lttng_kernel_event_common *event)
 {
 	unregister_kprobe(&event->priv->u.kprobe.kp);
 }
-EXPORT_SYMBOL_GPL(lttng_kprobes_unregister_event);
 
 void lttng_kprobes_destroy_event_private(struct lttng_kernel_event_common *event)
 {
@@ -235,7 +233,6 @@ void lttng_kprobes_destroy_event_private(struct lttng_kernel_event_common *event
 	kfree(event->priv->desc->event_name);
 	kfree(event->priv->desc);
 }
-EXPORT_SYMBOL_GPL(lttng_kprobes_destroy_event_private);
 
 MODULE_LICENSE("GPL and additional rights");
 MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");
