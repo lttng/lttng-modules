@@ -256,12 +256,27 @@ struct lttng_kernel_channel_counter_ops_private {
 			size_t *max_nr_elem);	/* array of size nr_dimensions */
 };
 
+struct lttng_counter_map_descriptor {
+	uint64_t user_token;
+	size_t array_index;
+	char key[LTTNG_KERNEL_ABI_COUNTER_KEY_LEN];
+};
+
+struct lttng_counter_map {
+	struct lttng_counter_map_descriptor *descriptors;
+	size_t nr_descriptors;
+	size_t alloc_len;
+	struct mutex lock;		/* counter map lock */
+};
+
 struct lttng_kernel_channel_counter_private {
 	struct lttng_kernel_channel_common_private parent;
 
 	struct lttng_kernel_channel_counter *pub;		/* Public channel counter interface */
 	struct lib_counter *counter;
 	struct lttng_kernel_channel_counter_ops *ops;
+
+	struct lttng_counter_map map;
 
 	/* Owned either by session or event notifier group. */
 
@@ -489,19 +504,6 @@ struct lttng_kernel_channel_buffer_ops_private {
 	int (*instance_id) (const struct lttng_kernel_ring_buffer_config *config,
 			struct lttng_kernel_ring_buffer *bufb,
 			uint64_t *id);
-};
-
-struct lttng_counter_map_descriptor {
-	uint64_t user_token;
-	size_t array_index;
-	char key[LTTNG_KERNEL_ABI_COUNTER_KEY_LEN];
-};
-
-struct lttng_counter_map {
-	struct lttng_counter_map_descriptor *descriptors;
-	size_t nr_descriptors;
-	size_t alloc_len;
-	struct mutex lock;		/* counter map lock */
 };
 
 #define LTTNG_EVENT_HT_BITS		12

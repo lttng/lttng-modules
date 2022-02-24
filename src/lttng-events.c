@@ -262,6 +262,7 @@ struct lttng_kernel_channel_counter *lttng_kernel_counter_create(
 	counter->ops = &counter_transport->ops;
 	counter->priv->parent.coalesce_hits = coalesce_hits;
 	counter->priv->transport = counter_transport;
+	mutex_init(&counter->priv->map.lock);
 
 	return counter;
 
@@ -278,6 +279,7 @@ void lttng_kernel_counter_destroy(struct lttng_kernel_channel_counter *counter)
 	struct lttng_counter_transport *counter_transport = counter->priv->transport;
 
 	counter->ops->priv->counter_destroy(counter);
+	lttng_kvfree(counter->priv->map.descriptors);
 	module_put(counter_transport->owner);
 }
 
@@ -1303,6 +1305,73 @@ bool lttng_event_enabler_event_name_key_match_event(struct lttng_event_enabler_c
 	}
 }
 
+static
+int lttng_counter_append_descriptor(struct lttng_kernel_channel_counter *counter,
+		uint64_t user_token,
+		size_t index,
+		const char *key)
+{
+	struct lttng_counter_map *map = &counter->priv->map;
+	struct lttng_counter_map_descriptor *last;
+	int ret = 0;
+
+	if (strlen(key) >= LTTNG_KERNEL_ABI_COUNTER_KEY_LEN) {
+		WARN_ON_ONCE(1);
+		return -EOVERFLOW;
+	}
+	mutex_lock(&map->lock);
+	if (map->nr_descriptors == map->alloc_len) {
+		struct lttng_counter_map_descriptor *new_table, *old_table;
+		size_t old_len = map->nr_descriptors;
+		size_t new_len = max_t(size_t, old_len + 1, map->alloc_len * 2);
+
+		old_table = map->descriptors;
+		new_table = lttng_kvzalloc(sizeof(struct lttng_counter_map_descriptor) * new_len,
+				GFP_KERNEL);
+		if (!new_table) {
+			ret = -ENOMEM;
+			goto unlock;
+		}
+
+		if (old_table)
+			memcpy(new_table, old_table, old_len * sizeof(struct lttng_counter_map_descriptor));
+
+		map->descriptors = new_table;
+		map->alloc_len = new_len;
+		lttng_kvfree(old_table);
+	}
+	last = &map->descriptors[map->nr_descriptors++];
+	last->user_token = user_token;
+	last->array_index = index;
+	strcpy(last->key, key);
+unlock:
+	mutex_unlock(&map->lock);
+	return ret;
+}
+
+static
+int lttng_append_event_to_channel_map(struct lttng_event_enabler_common *event_enabler,
+		struct lttng_kernel_event_common *event,
+		const char *event_name)
+{
+	struct lttng_event_counter_enabler *event_counter_enabler;
+	struct lttng_kernel_channel_counter *chan_counter;
+	struct lttng_kernel_event_counter *event_counter;
+	const char *name = "<UNKNOWN>";
+
+	if (event_enabler->enabler_type != LTTNG_EVENT_ENABLER_TYPE_COUNTER)
+		return 0;
+	event_counter_enabler = container_of(event_enabler, struct lttng_event_counter_enabler, parent.parent);
+	event_counter = container_of(event, struct lttng_kernel_event_counter, parent);
+	chan_counter = event_counter_enabler->chan;
+	if (event_counter->priv->key[0])
+		name = event_counter->priv->key;
+	else
+		name = event_name;
+	return lttng_counter_append_descriptor(chan_counter, event_enabler->user_token,
+			event_counter->priv->parent.id, name);
+}
+
 /*
  * Supports event creation while tracing session is active.
  * Needs to be called with sessions mutex held.
@@ -1408,6 +1477,8 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 		}
 		ret = try_module_get(event->priv->desc->owner);
 		WARN_ON_ONCE(!ret);
+		ret = lttng_append_event_to_channel_map(event_enabler, event, event_name);
+		WARN_ON_ONCE(ret);
 		break;
 
 	case LTTNG_KERNEL_ABI_KRETPROBE:
@@ -1459,6 +1530,10 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 			goto statedump_error;
 		}
 		list_add(&event_return->priv->node, event_list_head);
+		ret = lttng_append_event_to_channel_map(event_enabler, event, event_name);
+		WARN_ON_ONCE(ret);
+		ret = lttng_append_event_to_channel_map(event_enabler, event_return, event_name);
+		WARN_ON_ONCE(ret);
 		break;
 	}
 
@@ -1516,6 +1591,8 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 			goto register_error;
 		ret = try_module_get(event->priv->desc->owner);
 		WARN_ON_ONCE(!ret);
+		ret = lttng_append_event_to_channel_map(event_enabler, event, event_name);
+		WARN_ON_ONCE(ret);
 		break;
 
 	default:
@@ -2358,6 +2435,8 @@ int lttng_event_enabler_ref_events(struct lttng_event_enabler_common *event_enab
 
 		enabler_ref = lttng_enabler_ref(&event_priv->enablers_ref_head, event_enabler);
 		if (!enabler_ref) {
+			int ret;
+
 			/*
 			 * If no backward ref, create it.
 			 * Add backward ref from event_notifier to enabler.
@@ -2368,6 +2447,10 @@ int lttng_event_enabler_ref_events(struct lttng_event_enabler_common *event_enab
 
 			enabler_ref->ref = event_enabler;
 			list_add(&enabler_ref->node, &event_priv->enablers_ref_head);
+
+			ret = lttng_append_event_to_channel_map(event_enabler, event,
+					event->priv->desc->event_name);
+			WARN_ON_ONCE(ret);
 		}
 
 		lttng_event_enabler_init_event_filter(event_enabler, event);

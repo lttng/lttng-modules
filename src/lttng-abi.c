@@ -764,6 +764,55 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return lttng_channel_enable(&counter->parent);
 	case LTTNG_KERNEL_ABI_DISABLE:
 		return lttng_channel_disable(&counter->parent);
+	case LTTNG_KERNEL_ABI_SYSCALL_MASK:
+		return lttng_syscall_table_get_active_mask(&counter->priv->parent.syscall_table,
+			(struct lttng_kernel_abi_syscall_mask __user *) arg);
+	case LTTNG_KERNEL_ABI_COUNTER_MAP_NR_DESCRIPTORS:
+	{
+		uint64_t __user *user_nr_descriptors = (uint64_t __user *) arg;
+		uint64_t nr_descriptors;
+
+		mutex_lock(&counter->priv->map.lock);
+		nr_descriptors = counter->priv->map.nr_descriptors;
+		mutex_unlock(&counter->priv->map.lock);
+		return put_user(nr_descriptors, user_nr_descriptors);
+	}
+	case LTTNG_KERNEL_ABI_COUNTER_MAP_DESCRIPTOR:
+	{
+		struct lttng_kernel_abi_counter_map_descriptor __user *user_descriptor =
+			(struct lttng_kernel_abi_counter_map_descriptor __user *) arg;
+		struct lttng_kernel_abi_counter_map_descriptor local_descriptor;
+		struct lttng_counter_map_descriptor *kernel_descriptor;
+		int ret;
+
+		if (copy_from_user(&local_descriptor, user_descriptor,
+					sizeof(local_descriptor)))
+			return -EFAULT;
+		if (validate_zeroed_padding(local_descriptor.padding,
+				sizeof(local_descriptor.padding)))
+			return -EINVAL;
+
+		mutex_lock(&counter->priv->map.lock);
+		if (local_descriptor.descriptor_index >= counter->priv->map.nr_descriptors) {
+			ret = -EOVERFLOW;
+			goto map_descriptor_error_unlock;
+		}
+		kernel_descriptor = &counter->priv->map.descriptors[local_descriptor.descriptor_index];
+		local_descriptor.user_token = kernel_descriptor->user_token;
+		local_descriptor.array_index = kernel_descriptor->array_index;
+		memcpy(local_descriptor.key, kernel_descriptor->key, LTTNG_KERNEL_ABI_COUNTER_KEY_LEN);
+		mutex_unlock(&counter->priv->map.lock);
+
+		if (copy_to_user(user_descriptor, &local_descriptor,
+					sizeof(local_descriptor)))
+			return -EFAULT;
+
+		return 0;
+
+	map_descriptor_error_unlock:
+		mutex_unlock(&counter->priv->map.lock);
+		return ret;
+	}
 	default:
 		return -ENOSYS;
 	}
