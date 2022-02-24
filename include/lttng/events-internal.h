@@ -204,6 +204,8 @@ struct lttng_kernel_channel_common_private {
 	unsigned int tstate:1;			/* Transient enable state */
 	bool coalesce_hits;
 
+	struct list_head node;			/* Channel list in session */
+
 	struct lttng_kernel_syscall_table syscall_table;
 };
 
@@ -220,7 +222,6 @@ struct lttng_kernel_channel_buffer_private {
 	struct lttng_kernel_ctx *ctx;
 	struct lttng_kernel_ring_buffer_channel *rb_chan;		/* Ring buffer channel */
 	unsigned int metadata_dumped:1;
-	struct list_head node;			/* Channel list in session */
 	struct lttng_transport *transport;
 };
 
@@ -271,8 +272,6 @@ struct lttng_kernel_channel_counter_private {
 	struct lttng_event_notifier_group *event_notifier_group;
 
 	/* Session owner. */
-	struct lttng_session *session;
-	struct list_head node;				/* Counter list (in session) */
 	size_t free_index;				/* Next index to allocate */
 	struct lttng_counter_transport *transport;
 };
@@ -1157,7 +1156,7 @@ struct lttng_kernel_channel_buffer *lttng_global_channel_create(struct lttng_ker
 				       unsigned int switch_timer_interval,
 				       unsigned int read_timer_interval);
 
-void lttng_metadata_channel_destroy(struct lttng_kernel_channel_buffer *chan);
+void lttng_metadata_channel_buffer_destroy(struct lttng_kernel_channel_buffer *chan);
 struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_enabler_common *event_enabler,
 				const struct lttng_kernel_event_desc *event_desc);
 struct lttng_kernel_event_common *lttng_kernel_event_create(struct lttng_event_enabler_common *event_enabler,

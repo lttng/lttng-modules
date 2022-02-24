@@ -77,6 +77,10 @@ static
 int lttng_abi_create_event_counter_enabler(struct file *channel_file,
 			   struct lttng_kernel_abi_event *event_param,
 			   const struct lttng_kernel_abi_counter_key *key_param);
+static
+long lttng_abi_session_create_counter(
+		struct lttng_kernel_session *session,
+		const struct lttng_kernel_abi_counter_conf *counter_conf);
 
 static int validate_zeroed_padding(char *p, size_t len)
 {
@@ -994,6 +998,16 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 				sizeof(struct lttng_kernel_abi_session_creation_time)))
 			return -EFAULT;
 		return lttng_abi_session_set_creation_time(session, &time);
+	}
+	case LTTNG_KERNEL_ABI_COUNTER:
+	{
+		struct lttng_kernel_abi_counter_conf counter_conf;
+
+		if (copy_from_user(&counter_conf,
+				(struct lttng_kernel_abi_counter_conf __user *) arg,
+				sizeof(struct lttng_kernel_abi_counter_conf)))
+			return -EFAULT;
+		return lttng_abi_session_create_counter(session, &counter_conf);
 	}
 	default:
 		return -ENOIOCTLCMD;
@@ -2389,6 +2403,96 @@ inval_instr:
 }
 
 static
+long lttng_abi_session_create_counter(
+		struct lttng_kernel_session *session,
+		const struct lttng_kernel_abi_counter_conf *counter_conf)
+{
+	int counter_fd, ret;
+	char *counter_transport_name;
+	struct lttng_kernel_channel_counter *chan_counter = NULL;
+	struct file *counter_file;
+	struct lttng_counter_dimension dimensions[1];
+	size_t counter_len;
+
+	if (counter_conf->arithmetic != LTTNG_KERNEL_ABI_COUNTER_ARITHMETIC_MODULAR) {
+		printk(KERN_ERR "LTTng: Maps: Counter of the wrong arithmetic type.\n");
+		return -EINVAL;
+	}
+
+	if (counter_conf->number_dimensions != 1) {
+		printk(KERN_ERR "LTTng: Maps: Counter has more than one dimension.\n");
+		return -EINVAL;
+	}
+
+	switch (counter_conf->bitness) {
+	case LTTNG_KERNEL_ABI_COUNTER_BITNESS_64:
+		counter_transport_name = "counter-per-cpu-64-modular";
+		break;
+	case LTTNG_KERNEL_ABI_COUNTER_BITNESS_32:
+		counter_transport_name = "counter-per-cpu-32-modular";
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	lttng_lock_sessions();
+
+	counter_fd = get_unused_fd_flags(0);
+	if (counter_fd < 0) {
+		ret = counter_fd;
+		goto fd_error;
+	}
+
+	counter_file = anon_inode_getfile("[lttng_counter]",
+				       &lttng_counter_fops,
+				       NULL, O_RDONLY);
+	if (IS_ERR(counter_file)) {
+		ret = PTR_ERR(counter_file);
+		goto file_error;
+	}
+
+	counter_len = counter_conf->dimensions[0].size;
+	dimensions[0].size = counter_len;
+	dimensions[0].underflow_index = 0;
+	dimensions[0].overflow_index = 0;
+	dimensions[0].has_underflow = 0;
+	dimensions[0].has_overflow = 0;
+
+	if (!atomic_long_add_unless(&session->priv->file->f_count, 1, LONG_MAX)) {
+		ret = -EOVERFLOW;
+		goto refcount_error;
+	}
+
+	chan_counter = lttng_kernel_counter_create(counter_transport_name, 1, dimensions, 0,
+				counter_conf->coalesce_hits);
+	if (!chan_counter) {
+		ret = -EINVAL;
+		goto create_error;
+	}
+
+	chan_counter->priv->parent.file = counter_file;
+	chan_counter->priv->owner = session->priv->file;
+	chan_counter->parent.session = session;
+	list_add(&chan_counter->priv->parent.node, &session->priv->chan_head);
+	counter_file->private_data = chan_counter;
+
+	fd_install(counter_fd, counter_file);
+	lttng_unlock_sessions();
+
+	return counter_fd;
+
+create_error:
+	atomic_long_dec(&session->priv->file->f_count);
+refcount_error:
+	fput(counter_file);
+file_error:
+	put_unused_fd(counter_fd);
+fd_error:
+	lttng_unlock_sessions();
+	return ret;
+}
+
+static
 long lttng_abi_event_notifier_group_create_error_counter(
 		struct file *event_notifier_group_file,
 		const struct lttng_kernel_abi_counter_conf *error_counter_conf)
@@ -2806,7 +2910,7 @@ int lttng_metadata_channel_release(struct inode *inode, struct file *file)
 
 	if (channel) {
 		fput(channel->parent.session->priv->file);
-		lttng_metadata_channel_destroy(channel);
+		lttng_metadata_channel_buffer_destroy(channel);
 	}
 
 	return 0;
