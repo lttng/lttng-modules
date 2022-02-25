@@ -183,6 +183,8 @@ struct lttng_kernel_session *lttng_session_create(void)
 	INIT_LIST_HEAD(&session_priv->enablers_head);
 	for (i = 0; i < LTTNG_EVENT_HT_SIZE; i++)
 		INIT_HLIST_HEAD(&session_priv->events_name_ht.table[i]);
+	for (i = 0; i < LTTNG_EVENT_HT_SIZE; i++)
+		INIT_HLIST_HEAD(&session_priv->events_key_ht.table[i]);
 	list_add(&session_priv->node, &sessions);
 
 	if (lttng_id_tracker_init(&session->pid_tracker, session, TRACKER_PID))
@@ -981,6 +983,7 @@ bool lttng_kernel_event_id_available(struct lttng_event_enabler_common *event_en
 
 static
 struct lttng_kernel_event_common *lttng_kernel_event_alloc(struct lttng_event_enabler_common *event_enabler,
+		struct hlist_head *key_head,
 		const char *key_string)
 {
 	struct lttng_kernel_abi_event *event_param = &event_enabler->event_param;
@@ -995,6 +998,7 @@ struct lttng_kernel_event_common *lttng_kernel_event_alloc(struct lttng_event_en
 		struct lttng_kernel_event_recorder_private *event_recorder_priv;
 		struct lttng_kernel_channel_buffer *chan = event_recorder_enabler->chan;
 
+		WARN_ON_ONCE(key_head);	/* not implemented. */
 		event_recorder = kmem_cache_zalloc(event_recorder_cache, GFP_KERNEL);
 		if (!event_recorder)
 			return NULL;
@@ -1026,6 +1030,7 @@ struct lttng_kernel_event_common *lttng_kernel_event_alloc(struct lttng_event_en
 		struct lttng_kernel_event_notifier *event_notifier;
 		struct lttng_kernel_event_notifier_private *event_notifier_priv;
 
+		WARN_ON_ONCE(key_head);	/* not implemented. */
 		event_notifier = kmem_cache_zalloc(event_notifier_cache, GFP_KERNEL);
 		if (!event_notifier)
 			return NULL;
@@ -1060,6 +1065,7 @@ struct lttng_kernel_event_common *lttng_kernel_event_alloc(struct lttng_event_en
 		struct lttng_kernel_event_counter *event_counter;
 		struct lttng_kernel_event_counter_private *event_counter_priv;
 		struct lttng_kernel_channel_counter *chan = event_counter_enabler->chan;
+		bool key_found = false;
 
 		event_counter = kmem_cache_zalloc(event_counter_cache, GFP_KERNEL);
 		if (!event_counter)
@@ -1085,7 +1091,20 @@ struct lttng_kernel_event_common *lttng_kernel_event_alloc(struct lttng_event_en
 		if (!chan->priv->parent.coalesce_hits)
 			event_counter->priv->parent.parent.user_token = event_counter_enabler->parent.parent.user_token;
 		strcpy(event_counter_priv->key, key_string);
-		event_counter->priv->parent.id = chan->priv->free_index++;
+		if (key_head) {
+			struct lttng_kernel_event_counter_private *event_counter_priv_iter;
+
+			lttng_hlist_for_each_entry(event_counter_priv_iter, key_head, hlist_key_node) {
+				if (!strcmp(key_string, event_counter_priv_iter->key)) {
+					/* Same key, use same id. */
+					key_found = true;
+					event_counter->priv->parent.id = event_counter_priv_iter->parent.id;
+					break;
+				}
+			}
+		}
+		if (!key_found)
+			event_counter->priv->parent.id = chan->priv->free_index++;
 		return &event_counter->parent;
 	}
 	default:
@@ -1380,13 +1399,14 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 				const struct lttng_kernel_event_desc *event_desc)
 {
 	char key_string[LTTNG_KEY_TOKEN_STRING_LEN_MAX] = { 0 };
-	struct lttng_event_ht *events_ht = lttng_get_events_name_ht_from_enabler(event_enabler);
+	struct lttng_event_ht *events_name_ht = lttng_get_events_name_ht_from_enabler(event_enabler);
+	struct lttng_event_ht *events_key_ht = lttng_get_events_key_ht_from_enabler(event_enabler);
 	struct list_head *event_list_head = lttng_get_event_list_head_from_enabler(event_enabler);
 	struct lttng_kernel_abi_event *event_param = &event_enabler->event_param;
 	enum lttng_kernel_abi_instrumentation itype = event_param->instrumentation;
 	struct lttng_kernel_event_common_private *event_priv_iter;
 	struct lttng_kernel_event_common *event;
-	struct hlist_head *head;
+	struct hlist_head *name_head, *key_head = NULL;
 	const char *event_name;
 	int ret;
 
@@ -1425,8 +1445,8 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 		goto type_error;
 	}
 
-	head = utils_borrow_hash_table_bucket(events_ht->table, LTTNG_EVENT_HT_SIZE, event_name);
-	lttng_hlist_for_each_entry(event_priv_iter, head, hlist_node) {
+	name_head = utils_borrow_hash_table_bucket(events_name_ht->table, LTTNG_EVENT_HT_SIZE, event_name);
+	lttng_hlist_for_each_entry(event_priv_iter, name_head, hlist_name_node) {
 		if (lttng_event_enabler_event_name_key_match_event(event_enabler,
 				event_name, key_string, event_priv_iter->pub)) {
 			ret = -EEXIST;
@@ -1434,7 +1454,10 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 		}
 	}
 
-	event = lttng_kernel_event_alloc(event_enabler, key_string);
+	if (key_string[0] != '\0')
+		key_head = utils_borrow_hash_table_bucket(events_key_ht->table, LTTNG_EVENT_HT_SIZE, key_string);
+
+	event = lttng_kernel_event_alloc(event_enabler, key_head, key_string);
 	if (!event) {
 		ret = -ENOMEM;
 		goto alloc_error;
@@ -1493,7 +1516,7 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 		event->enabled = 0;
 		event->priv->registered = 1;
 
-		event_return = lttng_kernel_event_alloc(event_enabler, key_string);
+		event_return = lttng_kernel_event_alloc(event_enabler, key_head, key_string);
 		if (!event) {
 			ret = -ENOMEM;
 			goto alloc_error;
@@ -1530,6 +1553,11 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 			goto statedump_error;
 		}
 		list_add(&event_return->priv->node, event_list_head);
+		if (key_head) {
+			struct lttng_kernel_event_counter_private *event_return_counter_priv =
+				container_of(event_return->priv, struct lttng_kernel_event_counter_private, parent.parent);
+			hlist_add_head(&event_return_counter_priv->hlist_key_node, key_head);
+		}
 		ret = lttng_append_event_to_channel_map(event_enabler, event, event_name);
 		WARN_ON_ONCE(ret);
 		ret = lttng_append_event_to_channel_map(event_enabler, event_return, event_name);
@@ -1612,7 +1640,12 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 		goto register_error;
 	}
 
-	hlist_add_head(&event->priv->hlist_node, head);
+	hlist_add_head(&event->priv->hlist_name_node, name_head);
+	if (key_head) {
+		struct lttng_kernel_event_counter_private *event_counter_priv =
+			container_of(event->priv, struct lttng_kernel_event_counter_private, parent.parent);
+		hlist_add_head(&event_counter_priv->hlist_key_node, key_head);
+	}
 	list_add(&event->priv->node, event_list_head);
 
 	return event;
@@ -1817,7 +1850,24 @@ void _lttng_event_destroy(struct lttng_kernel_event_common *event)
 	/* Remove from event list. */
 	list_del(&event->priv->node);
 	/* Remove from event hash table. */
-	hlist_del(&event->priv->hlist_node);
+	hlist_del(&event->priv->hlist_name_node);
+
+	switch (event->type) {
+	case LTTNG_KERNEL_EVENT_TYPE_COUNTER:
+	{
+		struct lttng_kernel_event_counter_private *event_counter_priv =
+			container_of(event->priv, struct lttng_kernel_event_counter_private, parent.parent);
+		if (event_counter_priv->key[0] != '\0')
+			hlist_del(&event_counter_priv->hlist_key_node);
+		break;
+	}
+	case LTTNG_KERNEL_EVENT_TYPE_RECORDER:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
+		break;
+	default:
+		WARN_ON_ONCE(1);
+	}
 
 	switch (event->priv->instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:

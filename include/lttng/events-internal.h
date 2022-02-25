@@ -119,7 +119,7 @@ struct lttng_kernel_event_common_private {
 	/* list of struct lttng_kernel_bytecode_runtime, sorted by seqnum */
 	struct list_head filter_bytecode_runtime_head;
 
-	struct hlist_node hlist_node;			/* node in events hash table */
+	struct hlist_node hlist_name_node;		/* node in events name hash table */
 	struct list_head node;				/* node in event list */
 
 	enum lttng_kernel_abi_instrumentation instrumentation;
@@ -158,6 +158,7 @@ struct lttng_kernel_event_counter_private {
 	struct lttng_kernel_event_session_common_private parent;
 
 	struct lttng_kernel_event_counter *pub;		/* Public event interface */
+	struct hlist_node hlist_key_node;		/* node in events key hash table */
 	char key[LTTNG_KEY_TOKEN_STRING_LEN_MAX];
 };
 
@@ -557,6 +558,7 @@ struct lttng_kernel_session_private {
 	struct list_head enablers_head;		/* List of event enablers */
 
 	struct lttng_event_ht events_name_ht;	/* Hash table of events, indexed by name */
+	struct lttng_event_ht events_key_ht;	/* Hash table of events, indexed by key */
 
 	struct list_head node;			/* Session list */
 	unsigned int free_chan_id;		/* Next chan ID to allocate */
@@ -701,6 +703,25 @@ struct lttng_event_ht *lttng_get_events_name_ht_from_enabler(struct lttng_event_
 			container_of(event_enabler, struct lttng_event_notifier_enabler, parent);
 		return &event_notifier_enabler->group->events_name_ht;
 	}
+	default:
+		return NULL;
+	}
+}
+
+static inline
+struct lttng_event_ht *lttng_get_events_key_ht_from_enabler(struct lttng_event_enabler_common *event_enabler)
+{
+	switch (event_enabler->enabler_type) {
+	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
+		lttng_fallthrough;
+	case LTTNG_EVENT_ENABLER_TYPE_COUNTER:
+	{
+		struct lttng_event_enabler_session_common *event_enabler_session =
+			container_of(event_enabler, struct lttng_event_enabler_session_common, parent);
+		return &event_enabler_session->chan->session->priv->events_key_ht;
+	}
+	case LTTNG_EVENT_ENABLER_TYPE_NOTIFIER:
+		lttng_fallthrough;
 	default:
 		return NULL;
 	}
