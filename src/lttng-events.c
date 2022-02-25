@@ -1380,7 +1380,7 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 				const struct lttng_kernel_event_desc *event_desc)
 {
 	char key_string[LTTNG_KEY_TOKEN_STRING_LEN_MAX] = { 0 };
-	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(event_enabler);
+	struct lttng_event_ht *events_ht = lttng_get_events_name_ht_from_enabler(event_enabler);
 	struct list_head *event_list_head = lttng_get_event_list_head_from_enabler(event_enabler);
 	struct lttng_kernel_abi_event *event_param = &event_enabler->event_param;
 	enum lttng_kernel_abi_instrumentation itype = event_param->instrumentation;

@@ -690,7 +690,7 @@ static
 void lttng_syscall_event_enabler_create_matching_syscall_table_events(struct lttng_event_enabler_common *syscall_event_enabler_common,
 		const struct trace_syscall_entry *table, size_t table_len, enum sc_type type)
 {
-	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(syscall_event_enabler_common);
+	struct lttng_event_ht *events_ht = lttng_get_events_name_ht_from_enabler(syscall_event_enabler_common);
 	const struct lttng_kernel_event_desc *desc;
 	unsigned int i;
 
@@ -752,7 +752,7 @@ static
 void create_unknown_syscall_event(struct lttng_event_enabler_common *event_enabler, enum sc_type type)
 {
 	char key_string[LTTNG_KEY_TOKEN_STRING_LEN_MAX] = { 0 };
-	struct lttng_event_ht *events_ht = lttng_get_event_ht_from_enabler(event_enabler);
+	struct lttng_event_ht *events_ht = lttng_get_events_name_ht_from_enabler(event_enabler);
 	struct lttng_kernel_event_common_private *event_priv;
 	const struct lttng_kernel_event_desc *desc;
 	bool found = false;

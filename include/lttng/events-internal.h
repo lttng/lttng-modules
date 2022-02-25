@@ -684,7 +684,7 @@ struct lttng_event_enabler_common *lttng_event_notifier_enabler_as_enabler(
 }
 
 static inline
-struct lttng_event_ht *lttng_get_event_ht_from_enabler(struct lttng_event_enabler_common *event_enabler)
+struct lttng_event_ht *lttng_get_events_name_ht_from_enabler(struct lttng_event_enabler_common *event_enabler)
 {
 	switch (event_enabler->enabler_type) {
 	case LTTNG_EVENT_ENABLER_TYPE_RECORDER:
