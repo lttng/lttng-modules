@@ -330,7 +330,7 @@ struct lttng_event_notifier_group *lttng_event_notifier_group_create(void)
 	INIT_LIST_HEAD(&event_notifier_group->enablers_head);
 	INIT_LIST_HEAD(&event_notifier_group->event_notifiers_head);
 	for (i = 0; i < LTTNG_EVENT_HT_SIZE; i++)
-		INIT_HLIST_HEAD(&event_notifier_group->events_ht.table[i]);
+		INIT_HLIST_HEAD(&event_notifier_group->events_name_ht.table[i]);
 
 	list_add(&event_notifier_group->node, &event_notifier_groups);
 

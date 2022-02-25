@@ -519,7 +519,7 @@ struct lttng_event_notifier_group {
 	struct list_head node;		/* event notifier group list */
 	struct list_head enablers_head; /* List of enablers */
 	struct list_head event_notifiers_head; /* List of event notifier */
-	struct lttng_event_ht events_ht; /* Hash table of event notifiers */
+	struct lttng_event_ht events_name_ht; /* Hash table of event notifiers, indexed by name */
 	struct lttng_kernel_channel_buffer_ops *ops;
 	struct lttng_transport *transport;
 	struct lttng_kernel_ring_buffer_channel *chan;		/* Ring buffer channel for event notifier group. */
@@ -699,7 +699,7 @@ struct lttng_event_ht *lttng_get_events_name_ht_from_enabler(struct lttng_event_
 	{
 		struct lttng_event_notifier_enabler *event_notifier_enabler =
 			container_of(event_enabler, struct lttng_event_notifier_enabler, parent);
-		return &event_notifier_enabler->group->events_ht;
+		return &event_notifier_enabler->group->events_name_ht;
 	}
 	default:
 		return NULL;
