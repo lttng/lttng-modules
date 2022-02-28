@@ -104,6 +104,16 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 		chan->ops->event_commit(&ctx);
 		break;
 	}
+	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
+	{
+		struct lttng_kernel_event_notifier *event_notifier =
+			container_of(event, struct lttng_kernel_event_notifier, parent);
+		struct lttng_kernel_notification_ctx notif_ctx;
+
+		notif_ctx.eval_capture = LTTNG_READ_ONCE(event_notifier->eval_capture);
+		event_notifier->notification_send(event_notifier, NULL, NULL, &notif_ctx);
+		break;
+	}
 	case LTTNG_KERNEL_EVENT_TYPE_COUNTER:
 	{
 		struct lttng_kernel_event_counter *event_counter =
@@ -112,8 +122,6 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 		(void) event_counter->chan->ops->event_counter_add(event_counter, 1);
 		break;
 	}
-	case LTTNG_KERNEL_EVENT_TYPE_NOTIFIER:
-		lttng_fallthrough;
 	default:
 		WARN_ON_ONCE(1);
 	}

@@ -2389,27 +2389,6 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 	switch (event_notifier_param->event.instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		lttng_fallthrough;
-	case LTTNG_KERNEL_ABI_UPROBE:
-		break;
-	case LTTNG_KERNEL_ABI_KPROBE:
-		event_notifier_param->event.u.kprobe.symbol_name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
-		break;
-	case LTTNG_KERNEL_ABI_SYSCALL:
-		break;
-	case LTTNG_KERNEL_ABI_KRETPROBE:
-		/* Placing an event notifier on kretprobe is not supported. */
-		lttng_fallthrough;
-	case LTTNG_KERNEL_ABI_FUNCTION:
-		lttng_fallthrough;
-	case LTTNG_KERNEL_ABI_NOOP:
-	default:
-		ret = -EINVAL;
-		goto inval_instr;
-	}
-
-	switch (event_notifier_param->event.instrumentation) {
-	case LTTNG_KERNEL_ABI_TRACEPOINT:
-		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_SYSCALL:
 		fops = &lttng_event_notifier_enabler_fops;
 		break;
@@ -2431,6 +2410,16 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 	}
 
 	event_notifier_param->event.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
+	switch (event_notifier_param->event.instrumentation) {
+	case LTTNG_KERNEL_ABI_KRETPROBE:
+		event_notifier_param->event.u.kretprobe.symbol_name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
+		break;
+	case LTTNG_KERNEL_ABI_KPROBE:
+		event_notifier_param->event.u.kprobe.symbol_name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
+		break;
+	default:
+		break;
+	}
 
 	event_notifier_fd = get_unused_fd_flags(0);
 	if (event_notifier_fd < 0) {
@@ -2485,8 +2474,6 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 
 	case LTTNG_KERNEL_ABI_KPROBE:
 		lttng_fallthrough;
-	case LTTNG_KERNEL_ABI_KRETPROBE:
-		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
 	{
 		struct lttng_kernel_event_common *event;
@@ -2505,6 +2492,48 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 			goto event_notifier_error;
 		}
 		priv = event;
+		break;
+	}
+
+	case LTTNG_KERNEL_ABI_KRETPROBE:
+	{
+		struct lttng_kernel_event_common *event[2];
+		struct lttng_event_notifier_enabler *event_enabler;
+		struct lttng_kernel_event_pair event_pair;
+
+		if (strlen(event_notifier_param->event.name) + strlen("_entry") >= LTTNG_KERNEL_ABI_SYM_NAME_LEN)
+			return -EINVAL;
+
+		memset(&event_pair, 0, sizeof(event_pair));
+		event_enabler = lttng_event_notifier_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
+				event_notifier_param, event_notifier_group);
+		if (!event_enabler) {
+			ret = -ENOMEM;
+			goto event_notifier_error;
+		}
+
+		strcpy(event_pair.name, event_notifier_param->event.name);
+		strcat(event_pair.name, "_entry");
+		/*
+		 * We tolerate no failure path after event creation. It
+		 * will stay invariant for the rest of the session.
+		 */
+		event[0] = lttng_kernel_event_create(&event_enabler->parent, NULL, &event_pair);
+		if (IS_ERR(event[0])) {
+			lttng_event_enabler_destroy(&event_enabler->parent);
+			ret = PTR_ERR(event[0]);
+			goto event_notifier_error;
+		}
+
+		strcpy(event_pair.name, event_notifier_param->event.name);
+		strcat(event_pair.name, "_exit");
+		event[1] = lttng_kernel_event_create(&event_enabler->parent, NULL, &event_pair);
+		lttng_event_enabler_destroy(&event_enabler->parent);
+		if (IS_ERR(event[1])) {
+			ret = PTR_ERR(event[1]);
+			goto event_notifier_error;
+		}
+		priv = event[0];
 		break;
 	}
 
