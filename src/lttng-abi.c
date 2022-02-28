@@ -2310,6 +2310,7 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 
 	switch (event_notifier_param->event.instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
+		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
 		break;
 	case LTTNG_KERNEL_ABI_KPROBE:
@@ -2319,7 +2320,9 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 		break;
 	case LTTNG_KERNEL_ABI_KRETPROBE:
 		/* Placing an event notifier on kretprobe is not supported. */
+		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_FUNCTION:
+		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_NOOP:
 	default:
 		ret = -EINVAL;
