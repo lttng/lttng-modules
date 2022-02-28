@@ -152,50 +152,31 @@ static const struct lttng_kernel_tracepoint_class tp_class = {
 /*
  * Create event description
  */
-static
-int lttng_create_kprobe_event(const char *name, struct lttng_kernel_event_common *event,
-			      enum lttng_kretprobe_type type)
+struct lttng_kernel_event_desc *lttng_create_kretprobes_event_desc(const char *name)
 {
 	struct lttng_kernel_event_desc *desc;
 	char *alloc_name;
 	size_t name_len;
-	const char *suffix = NULL;
-	int ret;
 
 	desc = kzalloc(sizeof(*desc), GFP_KERNEL);
 	if (!desc)
-		return -ENOMEM;
+		return NULL;
 	name_len = strlen(name);
-	switch (type) {
-	case EVENT_ENTRY:
-		suffix = "_entry";
-		break;
-	case EVENT_EXIT:
-		suffix = "_exit";
-		break;
-	}
-	name_len += strlen(suffix);
 	alloc_name = kmalloc(name_len + 1, GFP_KERNEL);
-	if (!alloc_name) {
-		ret = -ENOMEM;
+	if (!alloc_name)
 		goto error_str;
-	}
 	strcpy(alloc_name, name);
-	strcat(alloc_name, suffix);
 	desc->event_name = alloc_name;
 	desc->tp_class = &tp_class;
 	desc->owner = THIS_MODULE;
-	event->priv->desc = desc;
-
-	return 0;
+	return desc;
 
 error_str:
 	kfree(desc);
-	return ret;
+	return NULL;
 }
 
-int lttng_kretprobes_register(const char *name,
-			   const char *symbol_name,
+int lttng_kretprobes_register(const char *symbol_name,
 			   uint64_t offset,
 			   uint64_t addr,
 			   struct lttng_kernel_event_common *event_entry,
@@ -208,12 +189,6 @@ int lttng_kretprobes_register(const char *name,
 	if (symbol_name[0] == '\0')
 		symbol_name = NULL;
 
-	ret = lttng_create_kprobe_event(name, event_entry, EVENT_ENTRY);
-	if (ret)
-		goto error;
-	ret = lttng_create_kprobe_event(name, event_exit, EVENT_EXIT);
-	if (ret)
-		goto event_exit_error;
 	lttng_krp = kzalloc(sizeof(*lttng_krp), GFP_KERNEL);
 	if (!lttng_krp)
 		goto krp_error;
@@ -266,12 +241,6 @@ register_error:
 name_error:
 	kfree(lttng_krp);
 krp_error:
-	kfree(event_exit->priv->desc->event_name);
-	kfree(event_exit->priv->desc);
-event_exit_error:
-	kfree(event_entry->priv->desc->event_name);
-	kfree(event_entry->priv->desc);
-error:
 	return ret;
 }
 

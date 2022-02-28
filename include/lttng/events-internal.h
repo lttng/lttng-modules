@@ -455,6 +455,15 @@ struct lttng_metadata_stream {
 	bool coherent;			/* Stream in a coherent state */
 };
 
+struct lttng_kernel_event_pair {
+	/* Input */
+	char name[LTTNG_KERNEL_ABI_SYM_NAME_LEN];
+
+	/* Output from lttng_kernel_event_create() */
+	struct lttng_kernel_event_common *event[2];
+	int refcount;
+};
+
 struct lttng_kernel_channel_buffer_ops_private {
 	struct lttng_kernel_channel_buffer_ops *pub;	/* Public channel buffer ops interface */
 
@@ -1083,8 +1092,8 @@ void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_common *event
 #endif
 
 #ifdef CONFIG_KRETPROBES
-int lttng_kretprobes_register(const char *name,
-		const char *symbol_name,
+struct lttng_kernel_event_desc *lttng_create_kretprobes_event_desc(const char *name);
+int lttng_kretprobes_register(const char *symbol_name,
 		uint64_t offset,
 		uint64_t addr,
 		struct lttng_kernel_event_common *event_entry,
@@ -1095,8 +1104,12 @@ int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_common *event,
 	int enable);
 #else
 static inline
-int lttng_kretprobes_register(const char *name,
-		const char *symbol_name,
+struct lttng_kernel_event_desc *lttng_create_kretprobes_event_desc(const char *name)
+{
+	return NULL;
+}
+static inline
+int lttng_kretprobes_register(const char *symbol_name,
 		uint64_t offset,
 		uint64_t addr,
 		struct lttng_kernel_event_common *event_entry,
@@ -1181,9 +1194,11 @@ struct lttng_kernel_channel_buffer *lttng_global_channel_create(struct lttng_ker
 
 void lttng_metadata_channel_buffer_destroy(struct lttng_kernel_channel_buffer *chan);
 struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_enabler_common *event_enabler,
-				const struct lttng_kernel_event_desc *event_desc);
+				const struct lttng_kernel_event_desc *event_desc,
+				struct lttng_kernel_event_pair *event_pair);
 struct lttng_kernel_event_common *lttng_kernel_event_create(struct lttng_event_enabler_common *event_enabler,
-				const struct lttng_kernel_event_desc *event_desc);
+				const struct lttng_kernel_event_desc *event_desc,
+				struct lttng_kernel_event_pair *event_pair);
 
 int lttng_channel_enable(struct lttng_kernel_channel_common *channel);
 int lttng_channel_disable(struct lttng_kernel_channel_common *channel);

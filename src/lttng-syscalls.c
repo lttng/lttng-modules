@@ -577,7 +577,7 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 		WARN_ON_ONCE(!event_recorder_enabler);
 		if (!event_recorder_enabler)
 			return;
-		event = _lttng_kernel_event_create(&event_recorder_enabler->parent.parent, desc);
+		event = _lttng_kernel_event_create(&event_recorder_enabler->parent.parent, desc, NULL);
 		WARN_ON_ONCE(IS_ERR(event));
 		lttng_event_enabler_destroy(&event_recorder_enabler->parent.parent);
 		if (IS_ERR(event)) {
@@ -624,7 +624,7 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 		event_notifier_enabler = lttng_event_notifier_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
 				&event_notifier_param, syscall_event_notifier_enabler->group);
 		WARN_ON_ONCE(!event_notifier_enabler);
-		event = _lttng_kernel_event_create(&event_notifier_enabler->parent, desc);
+		event = _lttng_kernel_event_create(&event_notifier_enabler->parent, desc, NULL);
 		WARN_ON_ONCE(IS_ERR(event));
 		lttng_event_enabler_destroy(&event_notifier_enabler->parent);
 		if (IS_ERR(event)) {
@@ -669,7 +669,7 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 		WARN_ON_ONCE(!event_counter_enabler);
 		if (!event_counter_enabler)
 			return;
-		event = _lttng_kernel_event_create(&event_counter_enabler->parent.parent, desc);
+		event = _lttng_kernel_event_create(&event_counter_enabler->parent.parent, desc, NULL);
 		lttng_event_enabler_destroy(&event_counter_enabler->parent.parent);
 		if (IS_ERR(event)) {
 			if (PTR_ERR(event) != -EEXIST)

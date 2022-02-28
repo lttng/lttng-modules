@@ -1396,7 +1396,8 @@ int lttng_append_event_to_channel_map(struct lttng_event_enabler_common *event_e
  * Needs to be called with sessions mutex held.
  */
 struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_enabler_common *event_enabler,
-				const struct lttng_kernel_event_desc *event_desc)
+				const struct lttng_kernel_event_desc *event_desc,
+				struct lttng_kernel_event_pair *event_pair)
 {
 	char key_string[LTTNG_KEY_TOKEN_STRING_LEN_MAX] = { 0 };
 	struct lttng_event_ht *events_name_ht = lttng_get_events_name_ht_from_enabler(event_enabler);
@@ -1410,9 +1411,11 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 	const char *event_name;
 	int ret;
 
-	if (!lttng_kernel_event_id_available(event_enabler)) {
-		ret = -EMFILE;
-		goto full;
+	if (event_pair == NULL || event_pair->refcount == 0) {
+		if (!lttng_kernel_event_id_available(event_enabler)) {
+			ret = -EMFILE;
+			goto full;
+		}
 	}
 
 	switch (itype) {
@@ -1424,10 +1427,12 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
 		lttng_fallthrough;
-	case LTTNG_KERNEL_ABI_KRETPROBE:
-		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_SYSCALL:
 		event_name = event_param->name;
+		break;
+
+	case LTTNG_KERNEL_ABI_KRETPROBE:
+		event_name = event_pair->name;
 		break;
 
 	case LTTNG_KERNEL_ABI_FUNCTION:
@@ -1506,61 +1511,37 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 
 	case LTTNG_KERNEL_ABI_KRETPROBE:
 	{
-		struct lttng_kernel_event_common *event_return;
-
-		/* kretprobe defines 2 events */
 		/*
 		 * Needs to be explicitly enabled after creation, since
 		 * we may want to apply filters.
 		 */
 		event->enabled = 0;
 		event->priv->registered = 1;
-
-		event_return = lttng_kernel_event_alloc(event_enabler, key_head, key_string);
-		if (!event) {
+		event->priv->desc = lttng_create_kretprobes_event_desc(event_name);
+		if (!event->priv->desc) {
 			ret = -ENOMEM;
-			goto alloc_error;
-		}
-
-		event_return->enabled = 0;
-		event_return->priv->registered = 1;
-
-		/*
-		 * Populate lttng_event structure before kretprobe registration.
-		 */
-		smp_wmb();
-		ret = lttng_kretprobes_register(event_name,
-				event_param->u.kretprobe.symbol_name,
-				event_param->u.kretprobe.offset,
-				event_param->u.kretprobe.addr,
-				event, event_return);
-		if (ret) {
-			lttng_kernel_event_free(event_return);
-			ret = -EINVAL;
 			goto register_error;
 		}
-		/* Take 2 refs on the module: one per event. */
+		event_pair->event[event_pair->refcount++] = event;
+
+		/* kretprobe defines 2 events. */
+		if (event_pair->refcount == 2) {
+			/*
+			 * Populate lttng_event structure before kretprobe registration.
+			 */
+			smp_wmb();
+			ret = lttng_kretprobes_register(event_param->u.kretprobe.symbol_name,
+					event_param->u.kretprobe.offset,
+					event_param->u.kretprobe.addr,
+					event_pair->event[0], event_pair->event[1]);
+			if (ret) {
+				ret = -EINVAL;
+				goto register_error;
+			}
+		}
 		ret = try_module_get(event->priv->desc->owner);
 		WARN_ON_ONCE(!ret);
-		ret = try_module_get(event_return->priv->desc->owner);
-		WARN_ON_ONCE(!ret);
-		ret = _lttng_event_recorder_metadata_statedump(event_return);
-		WARN_ON_ONCE(ret > 0);
-		if (ret) {
-			lttng_kernel_event_free(event_return);
-			module_put(event_return->priv->desc->owner);
-			module_put(event->priv->desc->owner);
-			goto statedump_error;
-		}
-		list_add(&event_return->priv->node, event_list_head);
-		if (key_head) {
-			struct lttng_kernel_event_counter_private *event_return_counter_priv =
-				container_of(event_return->priv, struct lttng_kernel_event_counter_private, parent.parent);
-			hlist_add_head(&event_return_counter_priv->hlist_key_node, key_head);
-		}
 		ret = lttng_append_event_to_channel_map(event_enabler, event, event_name);
-		WARN_ON_ONCE(ret);
-		ret = lttng_append_event_to_channel_map(event_enabler, event_return, event_name);
 		WARN_ON_ONCE(ret);
 		break;
 	}
@@ -1662,12 +1643,13 @@ full:
 }
 
 struct lttng_kernel_event_common *lttng_kernel_event_create(struct lttng_event_enabler_common *event_enabler,
-				const struct lttng_kernel_event_desc *event_desc)
+				const struct lttng_kernel_event_desc *event_desc,
+				struct lttng_kernel_event_pair *event_pair)
 {
 	struct lttng_kernel_event_common *event;
 
 	mutex_lock(&sessions_mutex);
-	event = _lttng_kernel_event_create(event_enabler, event_desc);
+	event = _lttng_kernel_event_create(event_enabler, event_desc, event_pair);
 	mutex_unlock(&sessions_mutex);
 	return event;
 }
@@ -2378,7 +2360,7 @@ void lttng_event_enabler_create_tracepoint_events_if_missing(struct lttng_event_
 			/*
 			 * We need to create an event for this event probe.
 			 */
-			event = _lttng_kernel_event_create(event_enabler, desc);
+			event = _lttng_kernel_event_create(event_enabler, desc, NULL);
 			if (IS_ERR(event)) {
 				/* Skip if already found. */
 				if (PTR_ERR(event) == -EEXIST)
