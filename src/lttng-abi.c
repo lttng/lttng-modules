@@ -1767,11 +1767,11 @@ int lttng_abi_validate_event_param(struct lttng_kernel_abi_event *event_param)
 	switch (event_param->instrumentation) {
 	case LTTNG_KERNEL_ABI_SYSCALL:
 		switch (event_param->u.syscall.entryexit) {
+		case LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT:
+			lttng_fallthrough;
 		case LTTNG_KERNEL_ABI_SYSCALL_ENTRY:
 			lttng_fallthrough;
 		case LTTNG_KERNEL_ABI_SYSCALL_EXIT:
-			lttng_fallthrough;
-		case LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT:
 			break;
 		default:
 			return -EINVAL;
@@ -1792,11 +1792,11 @@ int lttng_abi_validate_event_param(struct lttng_kernel_abi_event *event_param)
 
 	case LTTNG_KERNEL_ABI_KRETPROBE:
 		switch (event_param->u.kretprobe.entryexit) {
-		case LTTNG_KERNEL_ABI_SYSCALL_ENTRYEXIT:
+		case LTTNG_KERNEL_ABI_KRETPROBE_ENTRYEXIT:
 			break;
-		case LTTNG_KERNEL_ABI_SYSCALL_ENTRY:
+		case LTTNG_KERNEL_ABI_KRETPROBE_ENTRY:
 			lttng_fallthrough;
-		case LTTNG_KERNEL_ABI_SYSCALL_EXIT:
+		case LTTNG_KERNEL_ABI_KRETPROBE_EXIT:
 			lttng_fallthrough;
 		default:
 			return -EINVAL;
