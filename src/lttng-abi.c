@@ -76,6 +76,7 @@ static int put_u32(uint32_t val, unsigned long arg);
 static
 int lttng_abi_create_event_counter_enabler(struct file *channel_file,
 			   struct lttng_kernel_abi_event *event_param,
+			   struct lttng_kernel_abi_event_ext *event_param_ext,
 			   const struct lttng_kernel_abi_counter_key *key_param);
 static
 long lttng_abi_session_create_counter(
@@ -637,6 +638,66 @@ int lttng_counter_release(struct inode *inode, struct file *file)
 }
 
 static
+int copy_user_event_param_ext(struct lttng_kernel_abi_event_ext *event_param_ext,
+			struct lttng_kernel_abi_event *event_param)
+{
+	struct lttng_kernel_abi_event_ext __user *uevent_ext =
+		(struct lttng_kernel_abi_event_ext __user *) (unsigned long) event_param->event_ext;
+	uint32_t len;
+	int ret;
+
+	memset(event_param_ext, 0, sizeof(*event_param_ext));
+	/* Use zeroed defaults if extension parameters are not set. */
+	if (!uevent_ext)
+		return 0;
+	ret = get_user(len, &uevent_ext->len);
+	if (ret)
+		return ret;
+	if (len > sizeof(struct lttng_kernel_abi_event_ext)) {
+		size_t zeroes_len = len - sizeof(struct lttng_kernel_abi_event_ext);
+		char __user *zeroes_begin = (char __user *)uevent_ext +
+						sizeof(struct lttng_kernel_abi_event_ext);
+
+		/*
+		 * Userspace exposes unknown features. Make sure those are
+		 * zeroed (default).
+		 */
+		ret = check_zeroed_user(zeroes_begin, zeroes_len);
+		if (ret < 0)
+			return ret;
+		if (!ret)
+			return -E2BIG;
+	}
+	if (copy_from_user(event_param_ext, uevent_ext, len))
+		return -EFAULT;
+	/* Ensure that len is consistent with the initial get_user(). */
+	event_param_ext->len = len;
+	return 0;
+}
+
+static
+int user_event_param_ext_get_match_check(const struct lttng_kernel_abi_event_ext *event_param_ext,
+		enum lttng_kernel_abi_match_check *_match_check)
+{
+	enum lttng_kernel_abi_match_check match_check = LTTNG_KERNEL_ABI_MATCH_DEFAULT;
+
+	if (event_param_ext->len < offsetofend(struct lttng_kernel_abi_event_ext, match_check))
+		goto end;
+	match_check = event_param_ext->match_check;
+	switch (match_check) {
+	case LTTNG_KERNEL_ABI_MATCH_DEFAULT:
+	case LTTNG_KERNEL_ABI_MATCH_IMMEDIATE:
+	case LTTNG_KERNEL_ABI_MATCH_LAZY:
+		break;
+	default:
+		return -EINVAL;
+	}
+end:
+	*_match_check = match_check;
+	return 0;
+}
+
+static
 long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	struct lttng_kernel_channel_counter *counter = file->private_data;
@@ -740,6 +801,7 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 				(struct lttng_kernel_abi_counter_event __user *) arg;
 		struct lttng_kernel_abi_event *event_param;
 		struct lttng_kernel_abi_counter_key *key_param;
+		struct lttng_kernel_abi_event_ext event_param_ext;
 		long ret;
 
 		counter_event_param = kzalloc(sizeof(*counter_event_param), GFP_KERNEL);
@@ -751,12 +813,12 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		if (validate_zeroed_padding(counter_event_param->padding,
 				sizeof(counter_event_param->padding)))
 			return -EINVAL;
-		if (validate_zeroed_padding(counter_event_param->event.padding,
-				sizeof(counter_event_param->event.padding)))
-			return -EINVAL;
 		event_param = &counter_event_param->event;
 		key_param = &counter_event_param->key;
-		ret = lttng_abi_create_event_counter_enabler(file, event_param, key_param);
+		ret = copy_user_event_param_ext(&event_param_ext, event_param);
+		if (ret)
+			return ret;
+		ret = lttng_abi_create_event_counter_enabler(file, event_param, &event_param_ext, key_param);
 		kfree(counter_event_param);
 		return ret;
 	}
@@ -1855,8 +1917,14 @@ refcount_error:
 }
 
 static
-int lttng_abi_validate_event_param(struct lttng_kernel_abi_event *event_param)
+int lttng_abi_validate_event_param(struct lttng_kernel_abi_event *event_param,
+		struct lttng_kernel_abi_event_ext *event_param_ext)
 {
+	enum lttng_kernel_abi_match_check match_check;
+
+	if (user_event_param_ext_get_match_check(event_param_ext, &match_check))
+		return -EINVAL;
+
 	/* Limit ABI to implemented features. */
 	switch (event_param->instrumentation) {
 	case LTTNG_KERNEL_ABI_SYSCALL:
@@ -1882,6 +1950,14 @@ int lttng_abi_validate_event_param(struct lttng_kernel_abi_event *event_param)
 		default:
 			return -EINVAL;
 		}
+		switch (match_check) {
+		case LTTNG_KERNEL_ABI_MATCH_DEFAULT:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_MATCH_LAZY:
+			break;
+		default:
+			return -EINVAL;
+		}
 		break;
 
 	case LTTNG_KERNEL_ABI_KRETPROBE:
@@ -1895,13 +1971,38 @@ int lttng_abi_validate_event_param(struct lttng_kernel_abi_event *event_param)
 		default:
 			return -EINVAL;
 		}
+		switch (match_check) {
+		case LTTNG_KERNEL_ABI_MATCH_DEFAULT:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_MATCH_IMMEDIATE:
+			break;
+		default:
+			return -EINVAL;
+		}
 		break;
 
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
-		lttng_fallthrough;
+		switch (match_check) {
+		case LTTNG_KERNEL_ABI_MATCH_DEFAULT:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_MATCH_LAZY:
+			break;
+		default:
+			return -EINVAL;
+		}
+		break;
+
 	case LTTNG_KERNEL_ABI_KPROBE:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
+		switch (match_check) {
+		case LTTNG_KERNEL_ABI_MATCH_DEFAULT:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_MATCH_IMMEDIATE:
+			break;
+		default:
+			return -EINVAL;
+		}
 		break;
 
 	case LTTNG_KERNEL_ABI_FUNCTION:
@@ -1915,8 +2016,82 @@ int lttng_abi_validate_event_param(struct lttng_kernel_abi_event *event_param)
 }
 
 static
+int lttng_abi_validate_event_match(struct lttng_kernel_abi_event *event_param,
+		struct lttng_kernel_abi_event_ext *event_param_ext)
+{
+	enum lttng_kernel_abi_match_check match_check;
+	int ret;
+
+	if (user_event_param_ext_get_match_check(event_param_ext, &match_check))
+		return -EINVAL;
+
+	/* Validate match */
+	if (match_check == LTTNG_KERNEL_ABI_MATCH_DEFAULT) {
+		switch (event_param->instrumentation) {
+		case LTTNG_KERNEL_ABI_TRACEPOINT:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_SYSCALL:
+			match_check = LTTNG_KERNEL_ABI_MATCH_LAZY;
+			break;
+		case LTTNG_KERNEL_ABI_KPROBE:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_KRETPROBE:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_UPROBE:
+			match_check = LTTNG_KERNEL_ABI_MATCH_IMMEDIATE;
+			break;
+
+		case LTTNG_KERNEL_ABI_FUNCTION:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_NOOP:
+			lttng_fallthrough;
+		default:
+			return -EINVAL;
+		}
+	}
+
+	if (match_check == LTTNG_KERNEL_ABI_MATCH_IMMEDIATE) {
+		switch (event_param->instrumentation) {
+			break;
+		case LTTNG_KERNEL_ABI_KPROBE:
+			ret = lttng_kprobes_match_check(event_param->u.kprobe.symbol_name,
+					event_param->u.kprobe.offset,
+					event_param->u.kprobe.addr);
+			if (ret)
+				return ret;
+			break;
+		case LTTNG_KERNEL_ABI_KRETPROBE:
+			ret = lttng_kretprobes_match_check(event_param->u.kretprobe.symbol_name,
+					event_param->u.kretprobe.offset,
+					event_param->u.kretprobe.addr);
+			if (ret)
+				return ret;
+			break;
+		case LTTNG_KERNEL_ABI_UPROBE:
+			/*
+			 * uprobes are immediately created, which includes match checking.
+			 */
+			break;
+
+		case LTTNG_KERNEL_ABI_TRACEPOINT:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_SYSCALL:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_FUNCTION:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_NOOP:
+			lttng_fallthrough;
+		default:
+			return -EINVAL;
+		}
+	}
+	return 0;
+}
+
+static
 int lttng_abi_create_event_recorder_enabler(struct file *channel_file,
-			   struct lttng_kernel_abi_event *event_param)
+			   struct lttng_kernel_abi_event *event_param,
+			   struct lttng_kernel_abi_event_ext *event_param_ext)
 {
 	const struct file_operations *fops;
 	struct lttng_kernel_channel_buffer *channel = channel_file->private_data;
@@ -1978,7 +2153,10 @@ int lttng_abi_create_event_recorder_enabler(struct file *channel_file,
 		ret = -EOVERFLOW;
 		goto refcount_error;
 	}
-	ret = lttng_abi_validate_event_param(event_param);
+	ret = lttng_abi_validate_event_param(event_param, event_param_ext);
+	if (ret)
+		goto event_error;
+	ret = lttng_abi_validate_event_match(event_param, event_param_ext);
 	if (ret)
 		goto event_error;
 
@@ -2100,6 +2278,7 @@ fd_error:
 static
 int lttng_abi_create_event_counter_enabler(struct file *channel_file,
 			   struct lttng_kernel_abi_event *event_param,
+			   struct lttng_kernel_abi_event_ext *event_param_ext,
 			   const struct lttng_kernel_abi_counter_key *key_param)
 {
 	const struct file_operations *fops;
@@ -2162,7 +2341,10 @@ int lttng_abi_create_event_counter_enabler(struct file *channel_file,
 		ret = -EOVERFLOW;
 		goto refcount_error;
 	}
-	ret = lttng_abi_validate_event_param(event_param);
+	ret = lttng_abi_validate_event_param(event_param, event_param_ext);
+	if (ret)
+		goto event_error;
+	ret = lttng_abi_validate_event_match(event_param, event_param_ext);
 	if (ret)
 		goto event_error;
 
@@ -2377,7 +2559,8 @@ static const struct file_operations lttng_event_notifier_enabler_fops = {
 
 static
 int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
-		struct lttng_kernel_abi_event_notifier *event_notifier_param)
+		struct lttng_kernel_abi_event_notifier *event_notifier_param,
+		struct lttng_kernel_abi_event_ext *event_param_ext)
 {
 	struct lttng_event_notifier_group *event_notifier_group =
 			event_notifier_group_file->private_data;
@@ -2440,7 +2623,10 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 		goto refcount_error;
 	}
 
-	ret = lttng_abi_validate_event_param(&event_notifier_param->event);
+	ret = lttng_abi_validate_event_param(&event_notifier_param->event, event_param_ext);
+	if (ret)
+		goto event_notifier_error;
+	ret = lttng_abi_validate_event_match(&event_notifier_param->event, event_param_ext);
 	if (ret)
 		goto event_notifier_error;
 
@@ -2770,12 +2956,17 @@ long lttng_event_notifier_group_ioctl(struct file *file, unsigned int cmd,
 	case LTTNG_KERNEL_ABI_EVENT_NOTIFIER_CREATE:
 	{
 		struct lttng_kernel_abi_event_notifier uevent_notifier_param;
+		struct lttng_kernel_abi_event_ext uevent_param_ext;
+		int ret;
 
 		if (copy_from_user(&uevent_notifier_param,
 				(struct lttng_kernel_abi_event_notifier __user *) arg,
 				sizeof(uevent_notifier_param)))
 			return -EFAULT;
-		return lttng_abi_create_event_notifier(file, &uevent_notifier_param);
+		ret = copy_user_event_param_ext(&uevent_param_ext, &uevent_notifier_param.event);
+		if (ret)
+			return ret;
+		return lttng_abi_create_event_notifier(file, &uevent_notifier_param, &uevent_param_ext);
 	}
 	case LTTNG_KERNEL_ABI_COUNTER:
 	{
@@ -2902,7 +3093,7 @@ long lttng_channel_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		default:
 			break;
 		}
-		ret = lttng_abi_create_event_recorder_enabler(file, uevent_param);
+		ret = lttng_abi_create_event_recorder_enabler(file, uevent_param, NULL);
 
 old_event_error_free_old_param:
 		kfree(old_uevent_param);
@@ -2914,12 +3105,17 @@ old_event_end:
 	case LTTNG_KERNEL_ABI_EVENT:
 	{
 		struct lttng_kernel_abi_event uevent_param;
+		struct lttng_kernel_abi_event_ext uevent_param_ext;
+		int ret;
 
 		if (copy_from_user(&uevent_param,
 				(struct lttng_kernel_abi_event __user *) arg,
 				sizeof(uevent_param)))
 			return -EFAULT;
-		return lttng_abi_create_event_recorder_enabler(file, &uevent_param);
+		ret = copy_user_event_param_ext(&uevent_param_ext, &uevent_param);
+		if (ret)
+			return ret;
+		return lttng_abi_create_event_recorder_enabler(file, &uevent_param, &uevent_param_ext);
 	}
 	case LTTNG_KERNEL_ABI_OLD_CONTEXT:
 	{

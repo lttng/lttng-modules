@@ -131,15 +131,42 @@ struct lttng_kernel_abi_syscall {
 } __attribute__((packed));
 
 /*
+ * An immediate match requires that the requested event matches existing
+ * instrumentation when the ioctl is issued, whereas a lazy match does not
+ * have this constraint.
+ *
+ * Instrumentation                  default
+ * ---------------------------------------------------------------------------
+ * LTTNG_KERNEL_ABI_TRACEPOINT:     lazy
+ * LTTNG_KERNEL_ABI_SYSCALL:        lazy
+ * LTTNG_KERNEL_ABI_KPROBE:         immediate
+ * LTTNG_KERNEL_ABI_KRETPROBE:      immediate
+ * LTTNG_KERNEL_ABI_UPROBE:         immediate
+ */
+enum lttng_kernel_abi_match_check {
+	LTTNG_KERNEL_ABI_MATCH_DEFAULT = 0,
+	LTTNG_KERNEL_ABI_MATCH_IMMEDIATE = 1,
+	LTTNG_KERNEL_ABI_MATCH_LAZY = 2,
+};
+
+/*
+ * Extended event parameters.
+ */
+struct lttng_kernel_abi_event_ext {
+	uint32_t len;				/* length of this structure */
+
+	uint8_t match_check;			/* enum lttng_kernel_abi_match_check */
+}  __attribute__((packed));
+
+/*
  * For syscall tracing, name = "*" means "enable all".
  */
-#define LTTNG_KERNEL_ABI_EVENT_PADDING1	8
 #define LTTNG_KERNEL_ABI_EVENT_PADDING2	LTTNG_KERNEL_ABI_SYM_NAME_LEN + 32
 struct lttng_kernel_abi_event {
 	char name[LTTNG_KERNEL_ABI_SYM_NAME_LEN];	/* event name */
 	uint32_t instrumentation;		/* enum lttng_kernel_abi_instrumentation */
 	uint64_t token;				/* User-provided token */
-	char padding[LTTNG_KERNEL_ABI_EVENT_PADDING1];
+	uint64_t event_ext;			/* struct lttng_kernel_abi_event_ext */
 
 	/* Per instrumentation type configuration */
 	union {
