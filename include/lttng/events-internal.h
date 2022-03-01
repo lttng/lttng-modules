@@ -1109,6 +1109,7 @@ void lttng_kretprobes_unregister(struct lttng_kernel_event_common *event);
 void lttng_kretprobes_destroy_private(struct lttng_kernel_event_common *event);
 int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_common *event,
 	int enable);
+int lttng_kretprobes_match_check(const char *symbol_name, uint64_t offset, uint64_t addr);
 #else
 static inline
 struct lttng_kernel_event_desc *lttng_create_kretprobes_event_desc(const char *name)
@@ -1140,6 +1141,11 @@ int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_common *event,
 	int enable)
 {
 	return -ENOSYS;
+}
+static inline
+int lttng_kretprobes_match_check(const char *symbol_name, uint64_t offset, uint64_t addr)
+{
+	return -ENOENT;
 }
 #endif
 

@@ -184,24 +184,23 @@ error_str:
 	return NULL;
 }
 
-int lttng_kretprobes_register(const char *symbol_name,
+static
+int _lttng_kretprobes_register(const char *symbol_name,
 			   uint64_t offset,
 			   uint64_t addr,
+			   struct lttng_krp *lttng_krp,
+			   kretprobe_handler_t entry_handler,
+			   kretprobe_handler_t exit_handler,
 			   struct lttng_kernel_event_common *event_entry,
 			   struct lttng_kernel_event_common *event_exit)
 {
 	int ret;
-	struct lttng_krp *lttng_krp;
 
 	/* Kprobes expects a NULL symbol name if unused */
 	if (symbol_name[0] == '\0')
 		symbol_name = NULL;
-
-	lttng_krp = kzalloc(sizeof(*lttng_krp), GFP_KERNEL);
-	if (!lttng_krp)
-		goto krp_error;
-	lttng_krp->krp.entry_handler = lttng_kretprobes_handler_entry;
-	lttng_krp->krp.handler = lttng_kretprobes_handler_exit;
+	lttng_krp->krp.entry_handler = entry_handler;
+	lttng_krp->krp.handler = exit_handler;
 	if (symbol_name) {
 		char *alloc_symbol;
 
@@ -211,8 +210,10 @@ int lttng_kretprobes_register(const char *symbol_name,
 			goto name_error;
 		}
 		lttng_krp->krp.kp.symbol_name = alloc_symbol;
-		event_entry->priv->u.kretprobe.symbol_name = alloc_symbol;
-		event_exit->priv->u.kretprobe.symbol_name = alloc_symbol;
+		if (event_entry)
+			event_entry->priv->u.kretprobe.symbol_name = alloc_symbol;
+		if (event_exit)
+			event_exit->priv->u.kretprobe.symbol_name = alloc_symbol;
 	}
 	lttng_krp->krp.kp.offset = offset;
 	lttng_krp->krp.kp.addr = (void *) (unsigned long) addr;
@@ -220,8 +221,10 @@ int lttng_kretprobes_register(const char *symbol_name,
 	/* Allow probe handler to find event structures */
 	lttng_krp->event[EVENT_ENTRY] = event_entry;
 	lttng_krp->event[EVENT_EXIT] = event_exit;
-	event_entry->priv->u.kretprobe.lttng_krp = lttng_krp;
-	event_exit->priv->u.kretprobe.lttng_krp = lttng_krp;
+	if (event_entry)
+		event_entry->priv->u.kretprobe.lttng_krp = lttng_krp;
+	if (event_exit)
+		event_exit->priv->u.kretprobe.lttng_krp = lttng_krp;
 
 	/*
 	 * Both events must be unregistered before the kretprobe is
@@ -247,6 +250,29 @@ int lttng_kretprobes_register(const char *symbol_name,
 register_error:
 	kfree(lttng_krp->krp.kp.symbol_name);
 name_error:
+	return ret;
+}
+
+int lttng_kretprobes_register(const char *symbol_name,
+			   uint64_t offset,
+			   uint64_t addr,
+			   struct lttng_kernel_event_common *event_entry,
+			   struct lttng_kernel_event_common *event_exit)
+{
+	int ret = -ENOMEM;
+	struct lttng_krp *lttng_krp;
+
+	lttng_krp = kzalloc(sizeof(*lttng_krp), GFP_KERNEL);
+	if (!lttng_krp)
+		goto krp_error;
+	ret = _lttng_kretprobes_register(symbol_name, offset, addr, lttng_krp,
+			lttng_kretprobes_handler_entry, lttng_kretprobes_handler_exit,
+			event_entry, event_exit);
+	if (ret)
+		goto register_error;
+	return 0;
+
+register_error:
 	kfree(lttng_krp);
 krp_error:
 	return ret;
@@ -272,6 +298,21 @@ void _lttng_kretprobes_release(struct kref *kref)
 	struct lttng_krp *lttng_krp =
 		container_of(kref, struct lttng_krp, kref_alloc);
 	kfree(lttng_krp->krp.kp.symbol_name);
+}
+
+int lttng_kretprobes_match_check(const char *symbol_name, uint64_t offset, uint64_t addr)
+{
+	struct lttng_krp lttng_krp;
+	int ret;
+
+	memset(&lttng_krp, 0, sizeof(lttng_krp));
+	ret = _lttng_kretprobes_register(symbol_name, offset, addr, &lttng_krp, NULL, NULL,
+			NULL, NULL);
+	if (ret)
+		return -ENOENT;
+	unregister_kretprobe(&lttng_krp.krp);
+	kfree(lttng_krp.krp.kp.symbol_name);
+	return 0;
 }
 
 void lttng_kretprobes_destroy_private(struct lttng_kernel_event_common *event)
