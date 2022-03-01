@@ -227,6 +227,21 @@ void lttng_kprobes_unregister_event(struct lttng_kernel_event_common *event)
 	unregister_kprobe(&event->priv->u.kprobe.kp);
 }
 
+int lttng_kprobes_match_check(const char *symbol_name, uint64_t offset, uint64_t addr)
+{
+	struct lttng_kprobe lttng_kp;
+	int ret;
+
+	memset(&lttng_kp, 0, sizeof(lttng_kp));
+	ret = _lttng_kprobes_register(symbol_name, offset, addr, &lttng_kp, NULL);
+	if (ret)
+		return -ENOENT;
+	unregister_kprobe(&lttng_kp.kp);
+	kfree(lttng_kp.symbol_name);
+	return 0;
+
+}
+
 void lttng_kprobes_destroy_event_private(struct lttng_kernel_event_common *event)
 {
 	kfree(event->priv->u.kprobe.symbol_name);
