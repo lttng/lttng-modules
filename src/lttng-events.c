@@ -688,11 +688,11 @@ int lttng_event_enable(struct lttng_kernel_event_common *event)
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_SYSCALL:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KPROBE:
 		ret = -EINVAL;
 		break;
 
-	case LTTNG_KERNEL_ABI_KPROBE:
-		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
 		WRITE_ONCE(event->enabled, 1);
 		break;
@@ -747,11 +747,11 @@ int lttng_event_disable(struct lttng_kernel_event_common *event)
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_SYSCALL:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KPROBE:
 		ret = -EINVAL;
 		break;
 
-	case LTTNG_KERNEL_ABI_KPROBE:
-		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
 		WRITE_ONCE(event->enabled, 0);
 		break;
@@ -1469,18 +1469,10 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 		break;
 
 	case LTTNG_KERNEL_ABI_KPROBE:
-		/*
-		 * Needs to be explicitly enabled after creation, since
-		 * we may want to apply filters.
-		 */
+		/* Event will be enabled by enabler sync. */
 		event->enabled = 0;
-		event->priv->registered = 1;
-		/*
-		 * Populate lttng_event structure before event
-		 * registration.
-		 */
-		smp_wmb();
-		ret = lttng_kprobes_register_event(event_name,
+		event->priv->registered = 0;
+		ret = lttng_kprobes_init_event(event_name,
 				event_param->u.kprobe.symbol_name,
 				event_param->u.kprobe.offset,
 				event_param->u.kprobe.addr,
@@ -1489,10 +1481,13 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 			ret = -EINVAL;
 			goto register_error;
 		}
+		/*
+		 * Populate lttng_event structure before event
+		 * registration.
+		 */
+		smp_wmb();
 		ret = try_module_get(event->priv->desc->owner);
 		WARN_ON_ONCE(!ret);
-		ret = lttng_append_event_to_channel_map(event_enabler, event, event_name);
-		WARN_ON_ONCE(ret);
 		break;
 
 	case LTTNG_KERNEL_ABI_KRETPROBE:
@@ -1674,7 +1669,7 @@ int lttng_kernel_counter_get_max_nr_elem(struct lttng_kernel_channel_counter *co
 	return counter->ops->priv->counter_get_max_nr_elem(counter, max_nr_elem);
 }
 
-/* Only used for tracepoints and system calls for now. */
+/* Used for tracepoints, system calls, and kprobe. */
 static
 void register_event(struct lttng_kernel_event_common *event)
 {
@@ -1696,7 +1691,9 @@ void register_event(struct lttng_kernel_event_common *event)
 		break;
 
 	case LTTNG_KERNEL_ABI_KPROBE:
-		lttng_fallthrough;
+		ret = lttng_kprobes_register_event(event);
+		break;
+
 	case LTTNG_KERNEL_ABI_UPROBE:
 		ret = 0;
 		break;
@@ -2231,6 +2228,19 @@ int lttng_desc_match_enabler_check(const struct lttng_kernel_event_desc *desc,
 		}
 		break;
 
+	case LTTNG_KERNEL_ABI_KPROBE:
+		desc_name = desc->event_name;
+		switch (enabler->format_type) {
+		case LTTNG_ENABLER_FORMAT_STAR_GLOB:
+			return -EINVAL;
+		case LTTNG_ENABLER_FORMAT_NAME:
+			return lttng_match_enabler_name(desc_name, enabler_name);
+		default:
+			return -EINVAL;
+		}
+		break;
+
+
 	default:
 		WARN_ON_ONCE(1);
 		return -EINVAL;
@@ -2358,6 +2368,21 @@ void lttng_event_enabler_create_tracepoint_events_if_missing(struct lttng_event_
 	}
 }
 
+/* Try to create the event associated with this kprobe enabler. */
+static
+void lttng_event_enabler_create_kprobe_event_if_missing(struct lttng_event_enabler_common *event_enabler)
+{
+	struct lttng_kernel_event_common *event;
+
+	event = _lttng_kernel_event_create(event_enabler, NULL, NULL);
+	if (IS_ERR(event)) {
+		if (PTR_ERR(event) != -EEXIST) {
+			printk(KERN_INFO "LTTng: Unable to create kprobe event %s\n",
+				event_enabler->event_param.name);
+		}
+	}
+}
+
 /*
  * Create event if it is missing and present in the list of tracepoint probes.
  * Should be called with sessions mutex held.
@@ -2375,6 +2400,10 @@ void lttng_event_enabler_create_events_if_missing(struct lttng_event_enabler_com
 	case LTTNG_KERNEL_ABI_SYSCALL:
 		ret = lttng_event_enabler_create_syscall_events_if_missing(event_enabler);
 		WARN_ON_ONCE(ret);
+		break;
+
+	case LTTNG_KERNEL_ABI_KPROBE:
+		lttng_event_enabler_create_kprobe_event_if_missing(event_enabler);
 		break;
 
 	default:
@@ -2915,6 +2944,8 @@ bool lttng_get_event_enabled_state(struct lttng_kernel_event_common *event)
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_SYSCALL:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KPROBE:
 		/* Enable events */
 		list_for_each_entry(enabler_ref, &event->priv->enablers_ref_head, node) {
 			if (enabler_ref->ref->enabled) {
@@ -2958,6 +2989,8 @@ bool lttng_event_is_lazy_sync(struct lttng_kernel_event_common *event)
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_SYSCALL:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KPROBE:
 		return true;
 
 	default:

@@ -117,11 +117,39 @@ static const struct lttng_kernel_tracepoint_class tp_class = {
 	.fields = event_fields,
 };
 
-/*
- * Create event description
- */
 static
-int lttng_create_kprobe_event(const char *name, struct lttng_kernel_event_common *event)
+int lttng_kp_init(struct lttng_kprobe *lttng_kp, const char *symbol_name, uint64_t offset, uint64_t addr,
+		kprobe_pre_handler_t pre_handler)
+{
+	/* Kprobes expects a NULL symbol name if unused */
+	if (symbol_name[0] == '\0')
+		symbol_name = NULL;
+
+	lttng_kp->pre_handler = pre_handler;
+
+	if (symbol_name) {
+		lttng_kp->symbol_name =
+			kzalloc(LTTNG_KERNEL_ABI_SYM_NAME_LEN * sizeof(char),
+				GFP_KERNEL);
+		if (!lttng_kp->symbol_name)
+			return -ENOMEM;
+		memcpy(lttng_kp->symbol_name, symbol_name,
+		       LTTNG_KERNEL_ABI_SYM_NAME_LEN * sizeof(char));
+	}
+
+	lttng_kp->offset = offset;
+	lttng_kp->addr = addr;
+	return 0;
+}
+
+/*
+ * Initialize event
+ */
+int lttng_kprobes_init_event(const char *name,
+		const char *symbol_name,
+		uint64_t offset,
+		uint64_t addr,
+		struct lttng_kernel_event_common *event)
 {
 	struct lttng_kernel_event_desc *desc;
 	int ret;
@@ -137,46 +165,22 @@ int lttng_create_kprobe_event(const char *name, struct lttng_kernel_event_common
 	}
 	desc->owner = THIS_MODULE;
 	event->priv->desc = desc;
-
+	ret = lttng_kp_init(&event->priv->u.kprobe, symbol_name, offset, addr,
+			lttng_kprobes_event_handler_pre);
+	if (ret)
+		goto error_init;
 	return 0;
 
+error_init:
+	kfree(desc->event_name);
 error_str:
 	kfree(desc);
 	return ret;
 }
 
 static
-int _lttng_kprobes_register(const char *symbol_name,
-			   uint64_t offset,
-			   uint64_t addr,
-			   struct lttng_kprobe *lttng_kp,
-			   kprobe_pre_handler_t pre_handler)
+int _lttng_kprobes_register(struct lttng_kprobe *lttng_kp)
 {
-	int ret;
-
-	/* Kprobes expects a NULL symbol name if unused */
-	if (symbol_name[0] == '\0')
-		symbol_name = NULL;
-
-	memset(&lttng_kp->kp, 0, sizeof(lttng_kp->kp));
-	lttng_kp->kp.pre_handler = pre_handler;
-
-	if (symbol_name) {
-		lttng_kp->symbol_name =
-			kzalloc(LTTNG_KERNEL_ABI_SYM_NAME_LEN * sizeof(char),
-				GFP_KERNEL);
-		if (!lttng_kp->symbol_name) {
-			ret = -ENOMEM;
-			goto name_error;
-		}
-		memcpy(lttng_kp->symbol_name, symbol_name,
-		       LTTNG_KERNEL_ABI_SYM_NAME_LEN * sizeof(char));
-		lttng_kp->kp.symbol_name = lttng_kp->symbol_name;
-	}
-
-	lttng_kp->kp.offset = offset;
-	lttng_kp->kp.addr = (void *) (unsigned long) addr;
-
 	/*
 	 * Ensure the memory we just allocated don't notify page faults.
 	 * Well.. kprobes itself puts the page fault handler on the blacklist,
@@ -184,42 +188,21 @@ int _lttng_kprobes_register(const char *symbol_name,
 	 */
 	wrapper_vmalloc_sync_mappings();
 
-	ret = register_kprobe(&lttng_kp->kp);
-	if (ret)
-		goto register_error;
-
-	return 0;
-
-register_error:
-	kfree(lttng_kp->symbol_name);
-name_error:
-	return ret;
+	/*
+	 * Populate struct kprobe on each registration because kprobe internally
+	 * does destructive changes to its state (e.g. addr=NULL).
+	 */
+	memset(&lttng_kp->kp, 0, sizeof(lttng_kp->kp));
+	lttng_kp->kp.symbol_name = lttng_kp->symbol_name;
+	lttng_kp->kp.addr = (void *)(unsigned long)lttng_kp->addr;
+	lttng_kp->kp.offset = lttng_kp->offset;
+	lttng_kp->kp.pre_handler = lttng_kp->pre_handler;
+	return register_kprobe(&lttng_kp->kp);
 }
 
-int lttng_kprobes_register_event(const char *name,
-			   const char *symbol_name,
-			   uint64_t offset,
-			   uint64_t addr,
-			   struct lttng_kernel_event_common *event)
+int lttng_kprobes_register_event(struct lttng_kernel_event_common *event)
 {
-	int ret;
-
-	ret = lttng_create_kprobe_event(name, event);
-	if (ret)
-		goto error;
-
-	ret = _lttng_kprobes_register(symbol_name, offset, addr,
-		&event->priv->u.kprobe, lttng_kprobes_event_handler_pre);
-	if (ret)
-		goto register_error;
-
-	return 0;
-
-register_error:
-	kfree(event->priv->desc->event_name);
-	kfree(event->priv->desc);
-error:
-	return ret;
+	return _lttng_kprobes_register(&event->priv->u.kprobe);
 }
 
 void lttng_kprobes_unregister_event(struct lttng_kernel_event_common *event)
@@ -230,15 +213,21 @@ void lttng_kprobes_unregister_event(struct lttng_kernel_event_common *event)
 int lttng_kprobes_match_check(const char *symbol_name, uint64_t offset, uint64_t addr)
 {
 	struct lttng_kprobe lttng_kp;
-	int ret;
+	int ret = 0;
 
 	memset(&lttng_kp, 0, sizeof(lttng_kp));
-	ret = _lttng_kprobes_register(symbol_name, offset, addr, &lttng_kp, NULL);
+	ret = lttng_kp_init(&lttng_kp, symbol_name, offset, addr, NULL);
 	if (ret)
-		return -ENOENT;
+		return ret;
+	ret = _lttng_kprobes_register(&lttng_kp);
+	if (ret) {
+		ret = -ENOENT;
+		goto end;
+	}
 	unregister_kprobe(&lttng_kp.kp);
+end:
 	kfree(lttng_kp.symbol_name);
-	return 0;
+	return ret;
 
 }
 

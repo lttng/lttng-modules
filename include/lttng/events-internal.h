@@ -89,6 +89,9 @@ struct lttng_uprobe_handler {
 struct lttng_kprobe {
 	struct kprobe kp;
 	char *symbol_name;
+	uint64_t addr;
+	uint64_t offset;
+	kprobe_pre_handler_t pre_handler;
 };
 
 struct lttng_uprobe {
@@ -1026,22 +1029,28 @@ static inline void lttng_syscall_table_set_wildcard_all(struct lttng_event_enabl
 #endif
 
 #ifdef CONFIG_KPROBES
-int lttng_kprobes_register_event(const char *name,
+int lttng_kprobes_init_event(const char *name,
 		const char *symbol_name,
 		uint64_t offset,
 		uint64_t addr,
 		struct lttng_kernel_event_common *event);
+int lttng_kprobes_register_event(struct lttng_kernel_event_common *event);
 void lttng_kprobes_unregister_event(struct lttng_kernel_event_common *event);
 void lttng_kprobes_destroy_event_private(struct lttng_kernel_event_common *event);
 int lttng_kprobes_match_check(const char *symbol_name, uint64_t offset, uint64_t addr);
 
 #else
 static inline
-int lttng_kprobes_register_event(const char *name,
+int lttng_kprobes_init_event(const char *name,
 		const char *symbol_name,
 		uint64_t offset,
 		uint64_t addr,
 		struct lttng_kernel_event_common *event)
+{
+	return -ENOSYS;
+}
+static inline
+int lttng_kprobes_register_event(struct lttng_kernel_event_common *event)
 {
 	return -ENOSYS;
 }

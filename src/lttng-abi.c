@@ -2119,10 +2119,10 @@ int lttng_abi_create_event_recorder_enabler(struct file *channel_file,
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_SYSCALL:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KPROBE:
 		fops = &lttng_event_session_enabler_fops;
 		break;
-	case LTTNG_KERNEL_ABI_KPROBE:
-		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_KRETPROBE:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
@@ -2185,7 +2185,17 @@ int lttng_abi_create_event_recorder_enabler(struct file *channel_file,
 	}
 
 	case LTTNG_KERNEL_ABI_KPROBE:
-		lttng_fallthrough;
+	{
+		struct lttng_event_recorder_enabler *event_enabler;
+
+		event_enabler = lttng_event_recorder_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
+				event_param, channel);
+		if (event_enabler)
+			lttng_event_enabler_session_add(channel->parent.session, &event_enabler->parent);
+		priv = event_enabler;
+		break;
+	}
+
 	case LTTNG_KERNEL_ABI_UPROBE:
 	{
 		struct lttng_kernel_event_common *event;
@@ -2307,10 +2317,11 @@ int lttng_abi_create_event_counter_enabler(struct file *channel_file,
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_SYSCALL:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KPROBE:
 		fops = &lttng_event_session_enabler_fops;
 		break;
-	case LTTNG_KERNEL_ABI_KPROBE:
-		lttng_fallthrough;
+
 	case LTTNG_KERNEL_ABI_KRETPROBE:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
@@ -2373,7 +2384,17 @@ int lttng_abi_create_event_counter_enabler(struct file *channel_file,
 	}
 
 	case LTTNG_KERNEL_ABI_KPROBE:
-		lttng_fallthrough;
+	{
+		struct lttng_event_counter_enabler *event_enabler;
+
+		event_enabler = lttng_event_counter_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
+				event_param, key_param, NULL, channel);
+		if (event_enabler)
+			lttng_event_enabler_session_add(channel->parent.session, &event_enabler->parent);
+		priv = event_enabler;
+		break;
+	}
+
 	case LTTNG_KERNEL_ABI_UPROBE:
 	{
 		struct lttng_kernel_event_common *event;
@@ -2573,10 +2594,11 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_SYSCALL:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KPROBE:
 		fops = &lttng_event_notifier_enabler_fops;
 		break;
-	case LTTNG_KERNEL_ABI_KPROBE:
-		lttng_fallthrough;
+
 	case LTTNG_KERNEL_ABI_KRETPROBE:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
@@ -2659,7 +2681,17 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 	}
 
 	case LTTNG_KERNEL_ABI_KPROBE:
-		lttng_fallthrough;
+	{
+		struct lttng_event_notifier_enabler *enabler;
+
+		enabler = lttng_event_notifier_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
+					event_notifier_param, event_notifier_group);
+		if (enabler)
+			lttng_event_notifier_enabler_group_add(event_notifier_group, enabler);
+		priv = enabler;
+		break;
+	}
+
 	case LTTNG_KERNEL_ABI_UPROBE:
 	{
 		struct lttng_kernel_event_common *event;
@@ -3374,8 +3406,19 @@ long lttng_event_enabler_ioctl(struct file *file, unsigned int cmd, unsigned lon
 	case LTTNG_KERNEL_ABI_DISABLE:
 		return lttng_event_enabler_disable(event_enabler);
 	case LTTNG_KERNEL_ABI_FILTER:
-		return lttng_event_enabler_attach_filter_bytecode(event_enabler,
-			(struct lttng_kernel_abi_filter_bytecode __user *) arg);
+		/*
+		 * Filters are only supported by tracepoint and syscall instrumentation.
+		 */
+		switch (event_enabler->event_param.instrumentation) {
+		case LTTNG_KERNEL_ABI_TRACEPOINT:
+			lttng_fallthrough;
+		case LTTNG_KERNEL_ABI_SYSCALL:
+			return lttng_event_enabler_attach_filter_bytecode(event_enabler,
+				(struct lttng_kernel_abi_filter_bytecode __user *) arg);
+
+		default:
+			return -EINVAL;
+		}
 	case LTTNG_KERNEL_ABI_ADD_CALLSITE:
 		return -EINVAL;
 	default:
