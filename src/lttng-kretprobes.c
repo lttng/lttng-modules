@@ -28,8 +28,14 @@ enum lttng_kretprobe_type {
 
 struct lttng_krp {
 	struct kretprobe krp;
-	struct lttng_kernel_event_common *event[2];	/* ENTRY and EXIT */
-	struct kref kref_register;
+	char *symbol_name;
+	uint64_t addr;
+	uint64_t offset;
+	kretprobe_handler_t entry_handler;
+	kretprobe_handler_t exit_handler;
+	struct lttng_kernel_event_common *event[NR_LTTNG_KRETPROBE_ENTRYEXIT];	/* entry/exit events */
+
+	int refcount_register;			/* register kretprobe when > 0 */
 	struct kref kref_alloc;
 };
 
@@ -157,189 +163,169 @@ static const struct lttng_kernel_tracepoint_class tp_class = {
 	.fields = event_fields,
 };
 
-/*
- * Create event description
- */
-struct lttng_kernel_event_desc *lttng_create_kretprobes_event_desc(const char *name)
-{
-	struct lttng_kernel_event_desc *desc;
-	char *alloc_name;
-	size_t name_len;
-
-	desc = kzalloc(sizeof(*desc), GFP_KERNEL);
-	if (!desc)
-		return NULL;
-	name_len = strlen(name);
-	alloc_name = kmalloc(name_len + 1, GFP_KERNEL);
-	if (!alloc_name)
-		goto error_str;
-	strcpy(alloc_name, name);
-	desc->event_name = alloc_name;
-	desc->tp_class = &tp_class;
-	desc->owner = THIS_MODULE;
-	return desc;
-
-error_str:
-	kfree(desc);
-	return NULL;
-}
-
 static
-int _lttng_kretprobes_register(const char *symbol_name,
-			   uint64_t offset,
-			   uint64_t addr,
-			   struct lttng_krp *lttng_krp,
-			   kretprobe_handler_t entry_handler,
-			   kretprobe_handler_t exit_handler,
-			   struct lttng_kernel_event_common *event_entry,
-			   struct lttng_kernel_event_common *event_exit)
+int lttng_krp_init(struct lttng_krp *lttng_krp,
+		const char *symbol_name, uint64_t offset, uint64_t addr,
+		kretprobe_handler_t entry_handler,
+		kretprobe_handler_t exit_handler)
 {
-	int ret;
-
-	/* Kprobes expects a NULL symbol name if unused */
+	/* Kretprobes expects a NULL symbol name if unused */
 	if (symbol_name[0] == '\0')
 		symbol_name = NULL;
-	lttng_krp->krp.entry_handler = entry_handler;
-	lttng_krp->krp.handler = exit_handler;
+
+	lttng_krp->entry_handler = entry_handler;
+	lttng_krp->exit_handler = exit_handler;
+
 	if (symbol_name) {
-		char *alloc_symbol;
-
-		alloc_symbol = kstrdup(symbol_name, GFP_KERNEL);
-		if (!alloc_symbol) {
-			ret = -ENOMEM;
-			goto name_error;
-		}
-		lttng_krp->krp.kp.symbol_name = alloc_symbol;
-		if (event_entry)
-			event_entry->priv->u.kretprobe.symbol_name = alloc_symbol;
-		if (event_exit)
-			event_exit->priv->u.kretprobe.symbol_name = alloc_symbol;
+		lttng_krp->symbol_name =
+			kzalloc(LTTNG_KERNEL_ABI_SYM_NAME_LEN * sizeof(char),
+				GFP_KERNEL);
+		if (!lttng_krp->symbol_name)
+			return -ENOMEM;
+		memcpy(lttng_krp->symbol_name, symbol_name,
+		       LTTNG_KERNEL_ABI_SYM_NAME_LEN * sizeof(char));
 	}
-	lttng_krp->krp.kp.offset = offset;
-	lttng_krp->krp.kp.addr = (void *) (unsigned long) addr;
 
-	/* Allow probe handler to find event structures */
-	lttng_krp->event[EVENT_ENTRY] = event_entry;
-	lttng_krp->event[EVENT_EXIT] = event_exit;
-	if (event_entry)
-		event_entry->priv->u.kretprobe.lttng_krp = lttng_krp;
-	if (event_exit)
-		event_exit->priv->u.kretprobe.lttng_krp = lttng_krp;
-
-	/*
-	 * Both events must be unregistered before the kretprobe is
-	 * unregistered. Same for memory allocation.
-	 */
-	kref_init(&lttng_krp->kref_alloc);
-	kref_get(&lttng_krp->kref_alloc);	/* inc refcount to 2, no overflow. */
-	kref_init(&lttng_krp->kref_register);
-	kref_get(&lttng_krp->kref_register);	/* inc refcount to 2, no overflow. */
-
-	/*
-	 * Ensure the memory we just allocated don't trigger page faults.
-	 * Well.. kprobes itself puts the page fault handler on the blacklist,
-	 * but we can never be too careful.
-	 */
-	wrapper_vmalloc_sync_mappings();
-
-	ret = register_kretprobe(&lttng_krp->krp);
-	if (ret)
-		goto register_error;
+	lttng_krp->offset = offset;
+	lttng_krp->addr = addr;
 	return 0;
-
-register_error:
-	kfree(lttng_krp->krp.kp.symbol_name);
-name_error:
-	return ret;
 }
 
-int lttng_kretprobes_register(const char *symbol_name,
-			   uint64_t offset,
-			   uint64_t addr,
-			   struct lttng_kernel_event_common *event_entry,
-			   struct lttng_kernel_event_common *event_exit)
+struct lttng_krp *lttng_kretprobes_create_krp(const char *symbol_name,
+			uint64_t offset, uint64_t addr)
 {
-	int ret = -ENOMEM;
 	struct lttng_krp *lttng_krp;
+	int ret;
 
 	lttng_krp = kzalloc(sizeof(*lttng_krp), GFP_KERNEL);
 	if (!lttng_krp)
-		goto krp_error;
-	ret = _lttng_kretprobes_register(symbol_name, offset, addr, lttng_krp,
-			lttng_kretprobes_handler_entry, lttng_kretprobes_handler_exit,
-			event_entry, event_exit);
+		return NULL;
+	kref_init(&lttng_krp->kref_alloc);
+	ret = lttng_krp_init(lttng_krp, symbol_name, offset, addr,
+			lttng_kretprobes_handler_entry,
+			lttng_kretprobes_handler_exit);
 	if (ret)
-		goto register_error;
-	return 0;
+		goto error_init;
+	return lttng_krp;
 
-register_error:
+error_init:
 	kfree(lttng_krp);
-krp_error:
-	return ret;
-}
-
-static
-void _lttng_kretprobes_unregister_release(struct kref *kref)
-{
-	struct lttng_krp *lttng_krp =
-		container_of(kref, struct lttng_krp, kref_register);
-	unregister_kretprobe(&lttng_krp->krp);
-}
-
-void lttng_kretprobes_unregister(struct lttng_kernel_event_common *event)
-{
-	kref_put(&event->priv->u.kretprobe.lttng_krp->kref_register,
-		_lttng_kretprobes_unregister_release);
+	return NULL;
 }
 
 static
 void _lttng_kretprobes_release(struct kref *kref)
 {
-	struct lttng_krp *lttng_krp =
-		container_of(kref, struct lttng_krp, kref_alloc);
+	struct lttng_krp *lttng_krp = container_of(kref, struct lttng_krp, kref_alloc);
+
 	kfree(lttng_krp->krp.kp.symbol_name);
+	kfree(lttng_krp);
+}
+
+void lttng_kretprobes_put_krp(struct lttng_krp *krp)
+{
+	kref_put(&krp->kref_alloc, _lttng_kretprobes_release);
+}
+
+/*
+ * Initialize event
+ */
+int lttng_kretprobes_init_event(const char *name,
+		enum lttng_kretprobe_entryexit entryexit,
+		struct lttng_kernel_event_common *event,
+		struct lttng_krp *krp)
+{
+	struct lttng_kernel_event_desc *desc;
+	int ret;
+
+	desc = kzalloc(sizeof(*desc), GFP_KERNEL);
+	if (!desc)
+		return -ENOMEM;
+	desc->tp_class = &tp_class;
+	desc->event_name = kstrdup(name, GFP_KERNEL);
+	if (!desc->event_name) {
+		ret = -ENOMEM;
+		goto error_str;
+	}
+	desc->owner = THIS_MODULE;
+	event->priv->desc = desc;
+	event->priv->u.kretprobe.lttng_krp = krp;
+	event->priv->u.kretprobe.entryexit = entryexit;
+	kref_get(&krp->kref_alloc);
+	krp->event[entryexit] = event;
+	return 0;
+
+error_str:
+	kfree(desc);
+	return ret;
+}
+
+static
+int _lttng_kretprobes_register(struct lttng_krp *lttng_krp)
+{
+	if (lttng_krp->refcount_register++ != 0)
+		return 0;	/* Already registered */
+
+	/*
+	 * Ensure the memory we just allocated don't notify page faults.
+	 * Well.. kprobes itself puts the page fault handler on the blacklist,
+	 * but we can never be too careful.
+	 */
+	wrapper_vmalloc_sync_mappings();
+
+	/*
+	 * Populate struct kprobe on each registration because kprobe internally
+	 * does destructive changes to its state (e.g. addr=NULL).
+	 */
+	memset(&lttng_krp->krp, 0, sizeof(lttng_krp->krp));
+	lttng_krp->krp.kp.symbol_name = lttng_krp->symbol_name;
+	lttng_krp->krp.kp.addr = (void *)(unsigned long)lttng_krp->addr;
+	lttng_krp->krp.kp.offset = lttng_krp->offset;
+	lttng_krp->krp.entry_handler = lttng_krp->entry_handler;
+	lttng_krp->krp.handler = lttng_krp->exit_handler;
+	return register_kretprobe(&lttng_krp->krp);
+}
+
+int lttng_kretprobes_register_event(struct lttng_kernel_event_common *event)
+{
+	return _lttng_kretprobes_register(event->priv->u.kretprobe.lttng_krp);
+}
+
+void lttng_kretprobes_unregister_event(struct lttng_kernel_event_common *event)
+{
+	struct lttng_krp *lttng_krp = event->priv->u.kretprobe.lttng_krp;
+
+	WARN_ON_ONCE(!lttng_krp->refcount_register);
+	if (--lttng_krp->refcount_register != 0)
+		return;		/* Already unregistered */
+	unregister_kretprobe(&lttng_krp->krp);
 }
 
 int lttng_kretprobes_match_check(const char *symbol_name, uint64_t offset, uint64_t addr)
 {
 	struct lttng_krp lttng_krp;
-	int ret;
+	int ret = 0;
 
 	memset(&lttng_krp, 0, sizeof(lttng_krp));
-	ret = _lttng_kretprobes_register(symbol_name, offset, addr, &lttng_krp, NULL, NULL,
-			NULL, NULL);
+	ret = lttng_krp_init(&lttng_krp, symbol_name, offset, addr, NULL, NULL);
 	if (ret)
-		return -ENOENT;
+		return ret;
+	ret = _lttng_kretprobes_register(&lttng_krp);
+	if (ret) {
+		ret = -ENOENT;
+		goto end;
+	}
 	unregister_kretprobe(&lttng_krp.krp);
-	kfree(lttng_krp.krp.kp.symbol_name);
-	return 0;
+end:
+	kfree(lttng_krp.symbol_name);
+	return ret;
 }
 
-void lttng_kretprobes_destroy_private(struct lttng_kernel_event_common *event)
+void lttng_kretprobes_destroy_event_private(struct lttng_kernel_event_common *event)
 {
 	kfree(event->priv->desc->event_name);
 	kfree(event->priv->desc);
-	kref_put(&event->priv->u.kretprobe.lttng_krp->kref_alloc,
-		_lttng_kretprobes_release);
-}
-
-int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_common *event,
-		int enable)
-{
-	struct lttng_kernel_event_common *event_exit;
-	struct lttng_krp *lttng_krp;
-
-	if (event->priv->instrumentation != LTTNG_KERNEL_ABI_KRETPROBE) {
-		return -EINVAL;
-	}
-	if (event->enabled == enable) {
-		return -EBUSY;
-	}
-	lttng_krp = event->priv->u.kretprobe.lttng_krp;
-	event_exit = lttng_krp->event[EVENT_EXIT];
-	WRITE_ONCE(event->enabled, enable);
-	WRITE_ONCE(event_exit->enabled, enable);
-	return 0;
+	lttng_kretprobes_put_krp(event->priv->u.kretprobe.lttng_krp);
 }
 
 MODULE_LICENSE("GPL and additional rights");

@@ -109,6 +109,13 @@ enum lttng_syscall_abi {
 	LTTNG_SYSCALL_ABI_COMPAT,
 };
 
+enum lttng_kretprobe_entryexit {
+	LTTNG_KRETPROBE_ENTRY,
+	LTTNG_KRETPROBE_EXIT,
+
+	NR_LTTNG_KRETPROBE_ENTRYEXIT,
+};
+
 struct lttng_kernel_event_common_private {
 	struct lttng_kernel_event_common *pub;		/* Public event interface */
 
@@ -131,6 +138,7 @@ struct lttng_kernel_event_common_private {
 		struct lttng_kprobe kprobe;
 		struct lttng_uprobe uprobe;
 		struct {
+			enum lttng_kretprobe_entryexit entryexit;
 			struct lttng_krp *lttng_krp;
 			char *symbol_name;
 		} kretprobe;
@@ -461,10 +469,9 @@ struct lttng_metadata_stream {
 struct lttng_kernel_event_pair {
 	/* Input */
 	char name[LTTNG_KERNEL_ABI_SYM_NAME_LEN];
-
-	/* Output from lttng_kernel_event_create() */
-	struct lttng_kernel_event_common *event[2];
-	int refcount;
+	struct lttng_krp *krp;
+	bool check_ids;
+	enum lttng_kretprobe_entryexit entryexit;
 };
 
 struct lttng_kernel_channel_buffer_ops_private {
@@ -1108,18 +1115,49 @@ void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_common *event
 #endif
 
 #ifdef CONFIG_KRETPROBES
-struct lttng_kernel_event_desc *lttng_create_kretprobes_event_desc(const char *name);
-int lttng_kretprobes_register(const char *symbol_name,
-		uint64_t offset,
-		uint64_t addr,
-		struct lttng_kernel_event_common *event_entry,
-		struct lttng_kernel_event_common *event_exit);
-void lttng_kretprobes_unregister(struct lttng_kernel_event_common *event);
-void lttng_kretprobes_destroy_private(struct lttng_kernel_event_common *event);
-int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_common *event,
-	int enable);
+struct lttng_krp *lttng_kretprobes_create_krp(const char *symbol_name,
+			uint64_t offset, uint64_t addr);
+void lttng_kretprobes_put_krp(struct lttng_krp *krp);
+int lttng_kretprobes_init_event(const char *name,
+		enum lttng_kretprobe_entryexit entryexit,
+		struct lttng_kernel_event_common *event,
+		struct lttng_krp *krp);
+int lttng_kretprobes_register_event(struct lttng_kernel_event_common *event);
+void lttng_kretprobes_unregister_event(struct lttng_kernel_event_common *event);
+void lttng_kretprobes_destroy_event_private(struct lttng_kernel_event_common *event);
 int lttng_kretprobes_match_check(const char *symbol_name, uint64_t offset, uint64_t addr);
 #else
+static inline
+struct lttng_krp *lttng_kretprobes_create_krp(const char *symbol_name,
+			uint64_t offset, uint64_t addr)
+{
+	return NULL;
+}
+static inline
+void lttng_kretprobes_put_krp(struct lttng_krp *krp) { }
+int lttng_kretprobes_init_event(const char *name,
+		enum lttng_kretprobe_entryexit entryexit,
+		struct lttng_kernel_event_common *event,
+		struct lttng_krp *krp)
+{
+	return -ENOSYS;
+}
+static inline
+int lttng_kretprobes_register_event(struct lttng_kernel_event_common *event)
+{
+	return -ENOSYS;
+}
+static inline
+void lttng_kretprobes_unregister_event(struct lttng_kernel_event_common *event) { }
+static inline
+void lttng_kretprobes_destroy_event_private(struct lttng_kernel_event_common *event) { }
+static inline
+int lttng_kretprobes_match_check(const char *symbol_name, uint64_t offset, uint64_t addr)
+{
+	return -ENOENT;
+}
+
+
 static inline
 struct lttng_kernel_event_desc *lttng_create_kretprobes_event_desc(const char *name)
 {
@@ -1133,28 +1171,6 @@ int lttng_kretprobes_register(const char *symbol_name,
 		struct lttng_kernel_event_common *event_exit)
 {
 	return -ENOSYS;
-}
-
-static inline
-void lttng_kretprobes_unregister(struct lttng_kernel_event_common *event)
-{
-}
-
-static inline
-void lttng_kretprobes_destroy_private(struct lttng_kernel_event_common *event)
-{
-}
-
-static inline
-int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_common *event,
-	int enable)
-{
-	return -ENOSYS;
-}
-static inline
-int lttng_kretprobes_match_check(const char *symbol_name, uint64_t offset, uint64_t addr)
-{
-	return -ENOENT;
 }
 #endif
 

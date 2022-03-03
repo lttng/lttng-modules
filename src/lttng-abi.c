@@ -1963,11 +1963,11 @@ int lttng_abi_validate_event_param(struct lttng_kernel_abi_event *event_param,
 	case LTTNG_KERNEL_ABI_KRETPROBE:
 		switch (event_param->u.kretprobe.entryexit) {
 		case LTTNG_KERNEL_ABI_KRETPROBE_ENTRYEXIT:
-			break;
+			lttng_fallthrough;
 		case LTTNG_KERNEL_ABI_KRETPROBE_ENTRY:
 			lttng_fallthrough;
 		case LTTNG_KERNEL_ABI_KRETPROBE_EXIT:
-			lttng_fallthrough;
+			break;
 		default:
 			return -EINVAL;
 		}
@@ -2121,10 +2121,11 @@ int lttng_abi_create_event_recorder_enabler(struct file *channel_file,
 	case LTTNG_KERNEL_ABI_SYSCALL:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_KPROBE:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KRETPROBE:
 		fops = &lttng_event_session_enabler_fops;
 		break;
-	case LTTNG_KERNEL_ABI_KRETPROBE:
-		lttng_fallthrough;
+
 	case LTTNG_KERNEL_ABI_UPROBE:
 		fops = &lttng_event_session_fops;
 		break;
@@ -2185,6 +2186,8 @@ int lttng_abi_create_event_recorder_enabler(struct file *channel_file,
 	}
 
 	case LTTNG_KERNEL_ABI_KPROBE:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KRETPROBE:
 	{
 		struct lttng_event_recorder_enabler *event_enabler;
 
@@ -2218,48 +2221,6 @@ int lttng_abi_create_event_recorder_enabler(struct file *channel_file,
 			goto event_error;
 		}
 		priv = event;
-		break;
-	}
-
-	case LTTNG_KERNEL_ABI_KRETPROBE:
-	{
-		struct lttng_kernel_event_common *event[2];
-		struct lttng_event_recorder_enabler *event_enabler;
-		struct lttng_kernel_event_pair event_pair;
-
-		if (strlen(event_param->name) + strlen("_entry") >= LTTNG_KERNEL_ABI_SYM_NAME_LEN)
-			return -EINVAL;
-
-		memset(&event_pair, 0, sizeof(event_pair));
-		event_enabler = lttng_event_recorder_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
-				event_param, channel);
-		if (!event_enabler) {
-			ret = -ENOMEM;
-			goto event_error;
-		}
-
-		strcpy(event_pair.name, event_param->name);
-		strcat(event_pair.name, "_entry");
-		/*
-		 * We tolerate no failure path after event creation. It
-		 * will stay invariant for the rest of the session.
-		 */
-		event[0] = lttng_kernel_event_create(&event_enabler->parent.parent, NULL, &event_pair);
-		if (IS_ERR(event[0])) {
-			lttng_event_enabler_destroy(&event_enabler->parent.parent);
-			ret = PTR_ERR(event[0]);
-			goto event_error;
-		}
-
-		strcpy(event_pair.name, event_param->name);
-		strcat(event_pair.name, "_exit");
-		event[1] = lttng_kernel_event_create(&event_enabler->parent.parent, NULL, &event_pair);
-		lttng_event_enabler_destroy(&event_enabler->parent.parent);
-		if (IS_ERR(event[1])) {
-			ret = PTR_ERR(event[1]);
-			goto event_error;
-		}
-		priv = event[0];
 		break;
 	}
 
@@ -2319,11 +2280,11 @@ int lttng_abi_create_event_counter_enabler(struct file *channel_file,
 	case LTTNG_KERNEL_ABI_SYSCALL:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_KPROBE:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KRETPROBE:
 		fops = &lttng_event_session_enabler_fops;
 		break;
 
-	case LTTNG_KERNEL_ABI_KRETPROBE:
-		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
 		fops = &lttng_event_session_fops;
 		break;
@@ -2384,6 +2345,8 @@ int lttng_abi_create_event_counter_enabler(struct file *channel_file,
 	}
 
 	case LTTNG_KERNEL_ABI_KPROBE:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KRETPROBE:
 	{
 		struct lttng_event_counter_enabler *event_enabler;
 
@@ -2417,48 +2380,6 @@ int lttng_abi_create_event_counter_enabler(struct file *channel_file,
 			goto event_error;
 		}
 		priv = event;
-		break;
-	}
-
-	case LTTNG_KERNEL_ABI_KRETPROBE:
-	{
-		struct lttng_kernel_event_common *event[2];
-		struct lttng_event_counter_enabler *event_enabler;
-		struct lttng_kernel_event_pair event_pair;
-
-		if (strlen(event_param->name) + strlen("_entry") >= LTTNG_KERNEL_ABI_SYM_NAME_LEN)
-			return -EINVAL;
-
-		memset(&event_pair, 0, sizeof(event_pair));
-		event_enabler = lttng_event_counter_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
-				event_param, key_param, NULL, channel);
-		if (!event_enabler) {
-			ret = -ENOMEM;
-			goto event_error;
-		}
-
-		strcpy(event_pair.name, event_param->name);
-		strcat(event_pair.name, "_entry");
-		/*
-		 * We tolerate no failure path after event creation. It
-		 * will stay invariant for the rest of the session.
-		 */
-		event[0] = lttng_kernel_event_create(&event_enabler->parent.parent, NULL, &event_pair);
-		if (IS_ERR(event[0])) {
-			lttng_event_enabler_destroy(&event_enabler->parent.parent);
-			ret = PTR_ERR(event[0]);
-			goto event_error;
-		}
-
-		strcpy(event_pair.name, event_param->name);
-		strcat(event_pair.name, "_exit");
-		event[1] = lttng_kernel_event_create(&event_enabler->parent.parent, NULL, &event_pair);
-		lttng_event_enabler_destroy(&event_enabler->parent.parent);
-		if (IS_ERR(event[1])) {
-			ret = PTR_ERR(event[1]);
-			goto event_error;
-		}
-		priv = event[0];
 		break;
 	}
 
@@ -2596,11 +2517,11 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 	case LTTNG_KERNEL_ABI_SYSCALL:
 		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_KPROBE:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KRETPROBE:
 		fops = &lttng_event_notifier_enabler_fops;
 		break;
 
-	case LTTNG_KERNEL_ABI_KRETPROBE:
-		lttng_fallthrough;
 	case LTTNG_KERNEL_ABI_UPROBE:
 		fops = &lttng_event_notifier_event_fops;
 		break;
@@ -2681,6 +2602,8 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 	}
 
 	case LTTNG_KERNEL_ABI_KPROBE:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_KRETPROBE:
 	{
 		struct lttng_event_notifier_enabler *enabler;
 
@@ -2710,48 +2633,6 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 			goto event_notifier_error;
 		}
 		priv = event;
-		break;
-	}
-
-	case LTTNG_KERNEL_ABI_KRETPROBE:
-	{
-		struct lttng_kernel_event_common *event[2];
-		struct lttng_event_notifier_enabler *event_enabler;
-		struct lttng_kernel_event_pair event_pair;
-
-		if (strlen(event_notifier_param->event.name) + strlen("_entry") >= LTTNG_KERNEL_ABI_SYM_NAME_LEN)
-			return -EINVAL;
-
-		memset(&event_pair, 0, sizeof(event_pair));
-		event_enabler = lttng_event_notifier_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
-				event_notifier_param, event_notifier_group);
-		if (!event_enabler) {
-			ret = -ENOMEM;
-			goto event_notifier_error;
-		}
-
-		strcpy(event_pair.name, event_notifier_param->event.name);
-		strcat(event_pair.name, "_entry");
-		/*
-		 * We tolerate no failure path after event creation. It
-		 * will stay invariant for the rest of the session.
-		 */
-		event[0] = lttng_kernel_event_create(&event_enabler->parent, NULL, &event_pair);
-		if (IS_ERR(event[0])) {
-			lttng_event_enabler_destroy(&event_enabler->parent);
-			ret = PTR_ERR(event[0]);
-			goto event_notifier_error;
-		}
-
-		strcpy(event_pair.name, event_notifier_param->event.name);
-		strcat(event_pair.name, "_exit");
-		event[1] = lttng_kernel_event_create(&event_enabler->parent, NULL, &event_pair);
-		lttng_event_enabler_destroy(&event_enabler->parent);
-		if (IS_ERR(event[1])) {
-			ret = PTR_ERR(event[1]);
-			goto event_notifier_error;
-		}
-		priv = event[0];
 		break;
 	}
 
