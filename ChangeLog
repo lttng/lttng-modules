@@ -1,3 +1,14 @@
+2022-03-07 (National Cereal Day) LTTng modules 2.13.2
+	* Fix: incorrect in/out direction for syscall exit
+	* fix: net: socket: rename SKB_DROP_REASON_SOCKET_FILTER (v5.17)
+	* fix: net: skb: introduce kfree_skb_reason() (v5.17)
+	* fix: random: rather than entropy_store abstraction, use global (v5.17)
+	* fix: btrfs: pass fs_info to trace_btrfs_transaction_commit (v5.17)
+	* fix: mm: compaction: fix the migration stats in trace_mm_compaction_migratepages() (v5.17)
+	* fix: block: remove the ->rq_disk field in struct request (v5.17)
+	* fix: block: remove GENHD_FL_SUPPRESS_PARTITION_INFO (v5.17)
+	* Copyright ownership transfer
+
 2022-01-05 (National Bird Day) LTTng modules 2.13.1
 	* fix: mm: move kvmalloc-related functions to slab.h (v5.16)
 	* fix: block: don't call blk_status_to_errno in blk_update_request (v5.16)
