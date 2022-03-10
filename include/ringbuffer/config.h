@@ -184,7 +184,7 @@ struct lttng_kernel_ring_buffer_ctx_private {
 	u64 tsc;				/* time-stamp counter value */
 	unsigned int rflags;			/* reservation flags */
 
-	struct lttng_kernel_ring_buffer *buf;		/*
+	struct lttng_kernel_ring_buffer *buf;	/*
 						 * buffer corresponding to processor id
 						 * for this channel
 						 */
