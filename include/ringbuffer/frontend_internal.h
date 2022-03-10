@@ -148,7 +148,7 @@ void lib_ring_buffer_check_deliver_slow(const struct lttng_kernel_ring_buffer_co
 			           unsigned long offset,
 				   unsigned long commit_count,
 			           unsigned long idx,
-				   u64 tsc);
+				   const struct lttng_kernel_ring_buffer_ctx *ctx);
 
 extern
 void lib_ring_buffer_switch_remote(struct lttng_kernel_ring_buffer *buf);
@@ -277,7 +277,7 @@ void lib_ring_buffer_check_deliver(const struct lttng_kernel_ring_buffer_config 
 			           unsigned long offset,
 				   unsigned long commit_count,
 			           unsigned long idx,
-				   u64 tsc)
+				   const struct lttng_kernel_ring_buffer_ctx *ctx)
 {
 	unsigned long old_commit_count = commit_count
 					 - chan->backend.subbuf_size;
@@ -286,7 +286,7 @@ void lib_ring_buffer_check_deliver(const struct lttng_kernel_ring_buffer_config 
 	if (unlikely((buf_trunc(offset, chan) >> chan->backend.num_subbuf_order)
 		     - (old_commit_count & chan->commit_count_mask) == 0))
 		lib_ring_buffer_check_deliver_slow(config, buf, chan, offset,
-			commit_count, idx, tsc);
+			commit_count, idx, ctx);
 }
 
 /*

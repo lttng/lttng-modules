@@ -96,7 +96,8 @@ static void client_buffer_begin(struct lttng_kernel_ring_buffer *buf, u64 tsc,
  * subbuffer. data_size is between 1 and subbuf_size.
  */
 static void client_buffer_end(struct lttng_kernel_ring_buffer *buf, u64 tsc,
-			      unsigned int subbuf_idx, unsigned long data_size)
+			      unsigned int subbuf_idx, unsigned long data_size,
+			      const struct lttng_kernel_ring_buffer_ctx *ctx)
 {
 }
 
