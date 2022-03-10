@@ -377,7 +377,8 @@ static void client_buffer_begin(struct lttng_kernel_ring_buffer *buf, u64 tsc,
  * subbuffer. data_size is between 1 and subbuf_size.
  */
 static void client_buffer_end(struct lttng_kernel_ring_buffer *buf, u64 tsc,
-			      unsigned int subbuf_idx, unsigned long data_size)
+			      unsigned int subbuf_idx, unsigned long data_size,
+			      const struct lttng_kernel_ring_buffer_ctx *ctx)
 {
 	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	struct packet_header *header =
@@ -391,9 +392,9 @@ static void client_buffer_end(struct lttng_kernel_ring_buffer *buf, u64 tsc,
 		(uint64_t) data_size * CHAR_BIT;		/* in bits */
 	header->ctx.packet_size =
 		(uint64_t) PAGE_ALIGN(data_size) * CHAR_BIT;	/* in bits */
-	records_lost += lib_ring_buffer_get_records_lost_full(&client_config, buf);
-	records_lost += lib_ring_buffer_get_records_lost_wrap(&client_config, buf);
-	records_lost += lib_ring_buffer_get_records_lost_big(&client_config, buf);
+	records_lost += lib_ring_buffer_get_records_lost_full(&client_config, ctx);
+	records_lost += lib_ring_buffer_get_records_lost_wrap(&client_config, ctx);
+	records_lost += lib_ring_buffer_get_records_lost_big(&client_config, ctx);
 	header->ctx.events_discarded = records_lost;
 }
 

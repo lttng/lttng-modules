@@ -1582,14 +1582,14 @@ static
 void lib_ring_buffer_switch_old_start(struct lttng_kernel_ring_buffer *buf,
 				      struct lttng_kernel_ring_buffer_channel *chan,
 				      struct switch_offsets *offsets,
-				      u64 tsc)
+				      const struct lttng_kernel_ring_buffer_ctx *ctx)
 {
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 	unsigned long oldidx = subbuf_index(offsets->old, chan);
 	unsigned long commit_count;
 	struct commit_counters_hot *cc_hot;
 
-	config->cb.buffer_begin(buf, tsc, oldidx);
+	config->cb.buffer_begin(buf, ctx->priv.tsc, oldidx);
 
 	/*
 	 * Order all writes to buffer before the commit count update that will
@@ -1609,7 +1609,7 @@ void lib_ring_buffer_switch_old_start(struct lttng_kernel_ring_buffer *buf,
 	commit_count = v_read(config, &cc_hot->cc);
 	/* Check if the written buffer has to be delivered */
 	lib_ring_buffer_check_deliver(config, buf, chan, offsets->old,
-				      commit_count, oldidx, tsc);
+				      commit_count, oldidx, ctx);
 	lib_ring_buffer_write_commit_counter(config, buf, chan,
 			offsets->old + config->cb.subbuffer_header_size(),
 			commit_count, cc_hot);
@@ -1627,7 +1627,7 @@ static
 void lib_ring_buffer_switch_old_end(struct lttng_kernel_ring_buffer *buf,
 				    struct lttng_kernel_ring_buffer_channel *chan,
 				    struct switch_offsets *offsets,
-				    u64 tsc)
+				    const struct lttng_kernel_ring_buffer_ctx *ctx)
 {
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 	unsigned long oldidx = subbuf_index(offsets->old - 1, chan);
@@ -1648,7 +1648,7 @@ void lib_ring_buffer_switch_old_end(struct lttng_kernel_ring_buffer *buf,
 	 * postponed until the commit counter is incremented for the
 	 * current space reservation.
 	 */
-	*ts_end = tsc;
+	*ts_end = ctx->priv.tsc;
 
 	/*
 	 * Order all writes to buffer and store to ts_end before the commit
@@ -1667,7 +1667,7 @@ void lib_ring_buffer_switch_old_end(struct lttng_kernel_ring_buffer *buf,
 	v_add(config, padding_size, &cc_hot->cc);
 	commit_count = v_read(config, &cc_hot->cc);
 	lib_ring_buffer_check_deliver(config, buf, chan, offsets->old - 1,
-				      commit_count, oldidx, tsc);
+				      commit_count, oldidx, ctx);
 	lib_ring_buffer_write_commit_counter(config, buf, chan,
 			offsets->old + padding_size, commit_count,
 			cc_hot);
@@ -1684,14 +1684,14 @@ static
 void lib_ring_buffer_switch_new_start(struct lttng_kernel_ring_buffer *buf,
 				      struct lttng_kernel_ring_buffer_channel *chan,
 				      struct switch_offsets *offsets,
-				      u64 tsc)
+				      const struct lttng_kernel_ring_buffer_ctx *ctx)
 {
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 	unsigned long beginidx = subbuf_index(offsets->begin, chan);
 	unsigned long commit_count;
 	struct commit_counters_hot *cc_hot;
 
-	config->cb.buffer_begin(buf, tsc, beginidx);
+	config->cb.buffer_begin(buf, ctx->priv.tsc, beginidx);
 
 	/*
 	 * Order all writes to buffer before the commit count update that will
@@ -1711,7 +1711,7 @@ void lib_ring_buffer_switch_new_start(struct lttng_kernel_ring_buffer *buf,
 	commit_count = v_read(config, &cc_hot->cc);
 	/* Check if the written buffer has to be delivered */
 	lib_ring_buffer_check_deliver(config, buf, chan, offsets->begin,
-				      commit_count, beginidx, tsc);
+				      commit_count, beginidx, ctx);
 	lib_ring_buffer_write_commit_counter(config, buf, chan,
 			offsets->begin + config->cb.subbuffer_header_size(),
 			commit_count, cc_hot);
@@ -1729,7 +1729,7 @@ static
 void lib_ring_buffer_switch_new_end(struct lttng_kernel_ring_buffer *buf,
 					    struct lttng_kernel_ring_buffer_channel *chan,
 					    struct switch_offsets *offsets,
-					    u64 tsc)
+					    const struct lttng_kernel_ring_buffer_ctx *ctx)
 {
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 	unsigned long endidx, data_size;
@@ -1747,7 +1747,7 @@ void lib_ring_buffer_switch_new_end(struct lttng_kernel_ring_buffer *buf,
 	 * postponed until the commit counter is incremented for the
 	 * current space reservation.
 	 */
-	*ts_end = tsc;
+	*ts_end = ctx->priv.tsc;
 }
 
 /*
@@ -1760,7 +1760,7 @@ int lib_ring_buffer_try_switch_slow(enum switch_mode mode,
 				    struct lttng_kernel_ring_buffer *buf,
 				    struct lttng_kernel_ring_buffer_channel *chan,
 				    struct switch_offsets *offsets,
-				    u64 *tsc)
+				    struct lttng_kernel_ring_buffer_ctx *ctx)
 {
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 	unsigned long off, reserve_commit_diff;
@@ -1770,7 +1770,7 @@ int lib_ring_buffer_try_switch_slow(enum switch_mode mode,
 	offsets->switch_old_start = 0;
 	off = subbuf_offset(offsets->begin, chan);
 
-	*tsc = config->cb.ring_buffer_clock_read(chan);
+	ctx->priv.tsc = config->cb.ring_buffer_clock_read(chan);
 
 	/*
 	 * Ensure we flush the header of an empty subbuffer when doing the
@@ -1852,6 +1852,13 @@ int lib_ring_buffer_try_switch_slow(enum switch_mode mode,
 	offsets->begin = subbuf_align(offsets->begin, chan);
 	/* Note: old points to the next subbuf at offset 0 */
 	offsets->end = offsets->begin;
+	/*
+	 * Populate the records lost counters prior to performing a
+	 * sub-buffer switch.
+	 */
+	ctx->priv.records_lost_full = v_read(config, &buf->records_lost_full);
+	ctx->priv.records_lost_wrap = v_read(config, &buf->records_lost_wrap);
+	ctx->priv.records_lost_big = v_read(config, &buf->records_lost_big);
 	return 0;
 }
 
@@ -1867,9 +1874,9 @@ void lib_ring_buffer_switch_slow(struct lttng_kernel_ring_buffer *buf, enum swit
 {
 	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
+	struct lttng_kernel_ring_buffer_ctx ctx;
 	struct switch_offsets offsets;
 	unsigned long oldidx;
-	u64 tsc;
 
 	offsets.size = 0;
 
@@ -1878,7 +1885,7 @@ void lib_ring_buffer_switch_slow(struct lttng_kernel_ring_buffer *buf, enum swit
 	 */
 	do {
 		if (lib_ring_buffer_try_switch_slow(mode, buf, chan, &offsets,
-						    &tsc))
+						    &ctx))
 			return;	/* Switch not needed */
 	} while (v_cmpxchg(config, &buf->offset, offsets.old, offsets.end)
 		 != offsets.old);
@@ -1889,7 +1896,7 @@ void lib_ring_buffer_switch_slow(struct lttng_kernel_ring_buffer *buf, enum swit
 	 * records, never the opposite (missing a full TSC record when it would
 	 * be needed).
 	 */
-	save_last_tsc(config, buf, tsc);
+	save_last_tsc(config, buf, ctx.priv.tsc);
 
 	/*
 	 * Push the reader if necessary
@@ -1903,14 +1910,14 @@ void lib_ring_buffer_switch_slow(struct lttng_kernel_ring_buffer *buf, enum swit
 	 * May need to populate header start on SWITCH_FLUSH.
 	 */
 	if (offsets.switch_old_start) {
-		lib_ring_buffer_switch_old_start(buf, chan, &offsets, tsc);
+		lib_ring_buffer_switch_old_start(buf, chan, &offsets, &ctx);
 		offsets.old += config->cb.subbuffer_header_size();
 	}
 
 	/*
 	 * Switch old subbuffer.
 	 */
-	lib_ring_buffer_switch_old_end(buf, chan, &offsets, tsc);
+	lib_ring_buffer_switch_old_end(buf, chan, &offsets, &ctx);
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_switch_slow);
 
@@ -2143,6 +2150,15 @@ retry:
 		 */
 		offsets->switch_new_end = 1;	/* For offsets->begin */
 	}
+	/*
+	 * Populate the records lost counters when the space reservation
+	 * may cause a sub-buffer switch.
+	 */
+	if (offsets->switch_new_end || offsets->switch_old_end) {
+		ctx->priv.records_lost_full = v_read(config, &buf->records_lost_full);
+		ctx->priv.records_lost_wrap = v_read(config, &buf->records_lost_wrap);
+		ctx->priv.records_lost_big = v_read(config, &buf->records_lost_big);
+	}
 	return 0;
 }
 
@@ -2219,17 +2235,17 @@ int lib_ring_buffer_reserve_slow(struct lttng_kernel_ring_buffer_ctx *ctx,
 	if (unlikely(offsets.switch_old_end)) {
 		lib_ring_buffer_clear_noref(config, &buf->backend,
 					    subbuf_index(offsets.old - 1, chan));
-		lib_ring_buffer_switch_old_end(buf, chan, &offsets, ctx->priv.tsc);
+		lib_ring_buffer_switch_old_end(buf, chan, &offsets, ctx);
 	}
 
 	/*
 	 * Populate new subbuffer.
 	 */
 	if (unlikely(offsets.switch_new_start))
-		lib_ring_buffer_switch_new_start(buf, chan, &offsets, ctx->priv.tsc);
+		lib_ring_buffer_switch_new_start(buf, chan, &offsets, ctx);
 
 	if (unlikely(offsets.switch_new_end))
-		lib_ring_buffer_switch_new_end(buf, chan, &offsets, ctx->priv.tsc);
+		lib_ring_buffer_switch_new_end(buf, chan, &offsets, ctx);
 
 	ctx->priv.slot_size = offsets.size;
 	ctx->priv.pre_offset = offsets.begin;
@@ -2281,7 +2297,7 @@ void lib_ring_buffer_check_deliver_slow(const struct lttng_kernel_ring_buffer_co
 			           unsigned long offset,
 				   unsigned long commit_count,
 			           unsigned long idx,
-				   u64 tsc)
+				   const struct lttng_kernel_ring_buffer_ctx *ctx)
 {
 	unsigned long old_commit_count = commit_count
 					 - chan->backend.subbuf_size;
@@ -2341,7 +2357,7 @@ void lib_ring_buffer_check_deliver_slow(const struct lttng_kernel_ring_buffer_co
 		config->cb.buffer_end(buf, *ts_end, idx,
 				      lib_ring_buffer_get_data_size(config,
 								buf,
-								idx));
+								idx), ctx);
 
 		/*
 		 * Increment the packet counter while we have exclusive

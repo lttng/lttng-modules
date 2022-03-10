@@ -201,26 +201,26 @@ unsigned long lib_ring_buffer_get_records_overrun(
 
 static inline
 unsigned long lib_ring_buffer_get_records_lost_full(
-				const struct lttng_kernel_ring_buffer_config *config,
-				struct lttng_kernel_ring_buffer *buf)
+				const struct lttng_kernel_ring_buffer_config *config __attribute__((unused)),
+				const struct lttng_kernel_ring_buffer_ctx *ctx)
 {
-	return v_read(config, &buf->records_lost_full);
+	return ctx->priv.records_lost_full;
 }
 
 static inline
 unsigned long lib_ring_buffer_get_records_lost_wrap(
-				const struct lttng_kernel_ring_buffer_config *config,
-				struct lttng_kernel_ring_buffer *buf)
+				const struct lttng_kernel_ring_buffer_config *config __attribute__((unused)),
+				const struct lttng_kernel_ring_buffer_ctx *ctx)
 {
-	return v_read(config, &buf->records_lost_wrap);
+	return ctx->priv.records_lost_wrap;
 }
 
 static inline
 unsigned long lib_ring_buffer_get_records_lost_big(
-				const struct lttng_kernel_ring_buffer_config *config,
-				struct lttng_kernel_ring_buffer *buf)
+				const struct lttng_kernel_ring_buffer_config *config __attribute__((unused)),
+				const struct lttng_kernel_ring_buffer_ctx *ctx)
 {
-	return v_read(config, &buf->records_lost_big);
+	return ctx->priv.records_lost_big;
 }
 
 static inline

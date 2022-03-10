@@ -44,7 +44,8 @@ struct lttng_kernel_ring_buffer_client_cb {
 	void (*buffer_begin) (struct lttng_kernel_ring_buffer *buf, u64 tsc,
 			      unsigned int subbuf_idx);
 	void (*buffer_end) (struct lttng_kernel_ring_buffer *buf, u64 tsc,
-			    unsigned int subbuf_idx, unsigned long data_size);
+			    unsigned int subbuf_idx, unsigned long data_size,
+			    const struct lttng_kernel_ring_buffer_ctx *ctx);
 
 	/* Optional callbacks (can be set to NULL) */
 
@@ -189,6 +190,14 @@ struct lttng_kernel_ring_buffer_ctx_private {
 						 * for this channel
 						 */
 	struct lttng_kernel_ring_buffer_backend_pages *backend_pages;
+
+	/*
+	 * Records lost counts are only loaded into these fields before
+	 * reserving the last bytes from the ring buffer.
+	 */
+	unsigned long records_lost_full;
+	unsigned long records_lost_wrap;
+	unsigned long records_lost_big;
 };
 
 /*
