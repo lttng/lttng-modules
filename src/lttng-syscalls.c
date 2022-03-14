@@ -975,7 +975,7 @@ int lttng_syscall_filter_enable_event(struct lttng_kernel_event_common *event)
 	struct lttng_kernel_syscall_table *syscall_table = get_syscall_table_from_event(event);
 	unsigned int syscall_id = event->priv->u.syscall.syscall_id;
 	struct hlist_head *dispatch_list;
-	int ret;
+	int ret = 0;
 
 	WARN_ON_ONCE(event->priv->instrumentation != LTTNG_KERNEL_ABI_SYSCALL);
 
