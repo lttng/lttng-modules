@@ -840,7 +840,7 @@ int lttng_event_enabler_create_syscall_events_if_missing(struct lttng_event_enab
 
 	lttng_syscall_event_enabler_create_matching_events(syscall_event_enabler);
 
-	return ret;
+	return 0;
 }
 
 int lttng_syscalls_unregister_syscall_table(struct lttng_kernel_syscall_table *syscall_table)
