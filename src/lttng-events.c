@@ -1270,10 +1270,6 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 		WARN_ON_ONCE(!ret);
 		break;
 
-	case LTTNG_KERNEL_ABI_FUNCTION:
-		lttng_fallthrough;
-	case LTTNG_KERNEL_ABI_NOOP:
-		lttng_fallthrough;
 	default:
 		WARN_ON_ONCE(1);
 		ret = -EINVAL;
