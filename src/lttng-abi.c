@@ -650,6 +650,8 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		if (validate_zeroed_padding(local_counter_read.padding,
 				sizeof(local_counter_read.padding)))
 			return -EINVAL;
+		if (local_counter_read.index.number_dimensions > LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX)
+			return -EINVAL;
 
 		/* Cast all indexes into size_t. */
 		for (i = 0; i < local_counter_read.index.number_dimensions; i++)
@@ -685,6 +687,8 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		if (validate_zeroed_padding(local_counter_aggregate.padding,
 				sizeof(local_counter_aggregate.padding)))
 			return -EINVAL;
+		if (local_counter_aggregate.index.number_dimensions > LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX)
+			return -EINVAL;
 
 		/* Cast all indexes into size_t. */
 		for (i = 0; i < local_counter_aggregate.index.number_dimensions; i++)
@@ -715,6 +719,8 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			return -EFAULT;
 		if (validate_zeroed_padding(local_counter_clear.padding,
 				sizeof(local_counter_clear.padding)))
+			return -EINVAL;
+		if (local_counter_clear.index.number_dimensions > LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX)
 			return -EINVAL;
 
 		/* Cast all indexes into size_t. */
