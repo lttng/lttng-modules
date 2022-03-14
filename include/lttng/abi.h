@@ -22,6 +22,13 @@
 
 #define LTTNG_KERNEL_ABI_SYM_NAME_LEN		256
 #define LTTNG_KERNEL_ABI_SESSION_NAME_LEN	256
+
+/*
+ * The expected iso8601 time formats are either:
+ *
+ * - YYYYmmddTHHMMSS+HHMM           (20 characters + \0)
+ * - YYYY-mm-ddTHH:MM:SS+HH:MM      (25 characters + \0)
+ */
 #define LTTNG_KERNEL_ABI_SESSION_CREATION_TIME_ISO8601_LEN	26
 
 enum lttng_kernel_abi_instrumentation {
