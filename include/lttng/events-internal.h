@@ -1211,9 +1211,6 @@ int lttng_kernel_counter_get_nr_dimensions(struct lttng_kernel_channel_counter *
 int lttng_kernel_counter_get_max_nr_elem(struct lttng_kernel_channel_counter *counter,
 		size_t *max_nr_elem);
 struct lttng_event_notifier_group *lttng_event_notifier_group_create(void);
-int lttng_event_notifier_group_create_error_counter(
-		struct file *event_notifier_group_file,
-		const struct lttng_kernel_abi_counter_conf *error_counter_conf);
 void lttng_event_notifier_group_destroy(
 		struct lttng_event_notifier_group *event_notifier_group);
 

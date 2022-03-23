@@ -187,7 +187,6 @@ struct lttng_kernel_abi_event_notifier {
 	char padding[LTTNG_KERNEL_ABI_EVENT_NOTIFIER_PADDING];
 } __attribute__((packed));
 
-#define LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX	4
 #define LTTNG_KERNEL_ABI_EVENT_NOTIFIER_NOTIFICATION_PADDING 32
 struct lttng_kernel_abi_event_notifier_notification {
 	uint64_t token;
@@ -201,34 +200,6 @@ enum lttng_kernel_abi_key_token_type {
 	LTTNG_KERNEL_ABI_KEY_TOKEN_PROVIDER_NAME = 2,	/* no arg. */
 };
 
-#define LTTNG_KERNEL_ABI_KEY_ARG_PADDING1		60
-#define LTTNG_KERNEL_ABI_KEY_TOKEN_STRING_LEN_MAX	256
-struct lttng_kernel_abi_key_token {
-	uint32_t type;	/* enum lttng_kernel_abi_key_token_type */
-	union {
-		uint64_t string_ptr;
-		char padding[LTTNG_KERNEL_ABI_KEY_ARG_PADDING1];
-	} arg;
-} __attribute__((packed));
-
-#define LTTNG_KERNEL_ABI_NR_KEY_TOKEN 4
-struct lttng_kernel_abi_counter_key_dimension {
-	uint32_t nr_key_tokens;
-	struct lttng_kernel_abi_key_token key_tokens[LTTNG_KERNEL_ABI_NR_KEY_TOKEN];
-} __attribute__((packed));
-
-struct lttng_kernel_abi_counter_key {
-	uint32_t nr_dimensions;
-	struct lttng_kernel_abi_counter_key_dimension key_dimensions[LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX];
-} __attribute__((packed));
-
-#define LTTNG_KERNEL_ABI_COUNTER_EVENT_PADDING1	16
-struct lttng_kernel_abi_counter_event {
-	struct lttng_kernel_abi_event event;
-	struct lttng_kernel_abi_counter_key key;
-	char padding[LTTNG_KERNEL_ABI_COUNTER_EVENT_PADDING1];
-} __attribute__((packed));
-
 enum lttng_kernel_abi_counter_arithmetic {
 	LTTNG_KERNEL_ABI_COUNTER_ARITHMETIC_MODULAR = 0,
 };
@@ -238,57 +209,10 @@ enum lttng_kernel_abi_counter_bitness {
 	LTTNG_KERNEL_ABI_COUNTER_BITNESS_64 = 1,
 };
 
-struct lttng_kernel_abi_counter_dimension {
-	uint64_t size;
-	uint64_t underflow_index;
-	uint64_t overflow_index;
-	uint8_t has_underflow;
-	uint8_t has_overflow;
-} __attribute__((packed));
+//TODO: remove this define.
+#define LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX	4
 
-#define LTTNG_KERNEL_ABI_COUNTER_CONF_PADDING1	67
-struct lttng_kernel_abi_counter_conf {
-	uint32_t arithmetic;	/* enum lttng_kernel_abi_counter_arithmetic */
-	uint32_t bitness;	/* enum lttng_kernel_abi_counter_bitness */
-	uint32_t number_dimensions;
-	int64_t global_sum_step;
-	struct lttng_kernel_abi_counter_dimension dimensions[LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX];
-	uint8_t coalesce_hits;
-	char padding[LTTNG_KERNEL_ABI_COUNTER_CONF_PADDING1];
-} __attribute__((packed));
-
-struct lttng_kernel_abi_counter_index {
-	uint32_t number_dimensions;
-	uint64_t dimension_indexes[LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX];
-} __attribute__((packed));
-
-struct lttng_kernel_abi_counter_value {
-	int64_t value;
-	uint8_t underflow;
-	uint8_t overflow;
-} __attribute__((packed));
-
-#define LTTNG_KERNEL_ABI_COUNTER_READ_PADDING 32
-struct lttng_kernel_abi_counter_read {
-	struct lttng_kernel_abi_counter_index index;
-	int32_t cpu;	/* -1 for global counter, >= 0 for specific cpu. */
-	struct lttng_kernel_abi_counter_value value;	/* output */
-	char padding[LTTNG_KERNEL_ABI_COUNTER_READ_PADDING];
-} __attribute__((packed));
-
-#define LTTNG_KERNEL_ABI_COUNTER_AGGREGATE_PADDING 32
-struct lttng_kernel_abi_counter_aggregate {
-	struct lttng_kernel_abi_counter_index index;
-	struct lttng_kernel_abi_counter_value value;	/* output */
-	char padding[LTTNG_KERNEL_ABI_COUNTER_AGGREGATE_PADDING];
-} __attribute__((packed));
-
-#define LTTNG_KERNEL_ABI_COUNTER_CLEAR_PADDING 32
-struct lttng_kernel_abi_counter_clear {
-	struct lttng_kernel_abi_counter_index index;
-	char padding[LTTNG_KERNEL_ABI_COUNTER_CLEAR_PADDING];
-} __attribute__((packed));
-
+//TODO: new in 2.14, update.
 #define LTTNG_KERNEL_ABI_COUNTER_KEY_LEN 256
 #define LTTNG_KERNEL_ABI_COUNTER_MAP_DESCRIPTOR_PADDING 32
 struct lttng_kernel_abi_counter_map_descriptor {
@@ -300,6 +224,38 @@ struct lttng_kernel_abi_counter_map_descriptor {
 	char key[LTTNG_KERNEL_ABI_COUNTER_KEY_LEN];
 
 	char padding[LTTNG_KERNEL_ABI_COUNTER_MAP_DESCRIPTOR_PADDING];
+} __attribute__((packed));
+
+//TODO: new in 2.14, update.
+#define LTTNG_KERNEL_ABI_KEY_ARG_PADDING1		60
+#define LTTNG_KERNEL_ABI_KEY_TOKEN_STRING_LEN_MAX	256
+struct lttng_kernel_abi_key_token {
+	uint32_t type;	/* enum lttng_kernel_abi_key_token_type */
+	union {
+		uint64_t string_ptr;
+		char padding[LTTNG_KERNEL_ABI_KEY_ARG_PADDING1];
+	} arg;
+} __attribute__((packed));
+
+//TODO: new in 2.14, update.
+#define LTTNG_KERNEL_ABI_NR_KEY_TOKEN 4
+struct lttng_kernel_abi_counter_key_dimension {
+	uint32_t nr_key_tokens;
+	struct lttng_kernel_abi_key_token key_tokens[LTTNG_KERNEL_ABI_NR_KEY_TOKEN];
+} __attribute__((packed));
+
+//TODO: new in 2.14, update.
+struct lttng_kernel_abi_counter_key {
+	uint32_t nr_dimensions;
+	struct lttng_kernel_abi_counter_key_dimension key_dimensions[LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX];
+} __attribute__((packed));
+
+//TODO: new in 2.14, update.
+#define LTTNG_KERNEL_ABI_COUNTER_EVENT_PADDING1	16
+struct lttng_kernel_abi_counter_event {
+	struct lttng_kernel_abi_event event;
+	struct lttng_kernel_abi_counter_key key;
+	char padding[LTTNG_KERNEL_ABI_COUNTER_EVENT_PADDING1];
 } __attribute__((packed));
 
 struct lttng_kernel_abi_tracer_version {
@@ -487,8 +443,13 @@ struct lttng_kernel_abi_tracker_args {
 #define LTTNG_KERNEL_ABI_DISABLE			_IO(0xF6, 0x83)
 
 /* Trigger group and session ioctl */
+
+/* (0xF6, 0x84) is reserved for old ABI. */
+//TODO: new in 2.14, replace old (2.13) ioctl with extensible struct.
+#if 0
 #define LTTNG_KERNEL_ABI_COUNTER \
-	_IOW(0xF6, 0x84, struct lttng_kernel_abi_counter_conf)
+	_IOW(0xF6, 0x85, struct lttng_kernel_abi_counter_conf)
+#endif
 
 /* Event and Event notifier FD ioctl */
 #define LTTNG_KERNEL_ABI_FILTER			_IO(0xF6, 0x90)
@@ -511,19 +472,25 @@ struct lttng_kernel_abi_tracker_args {
 /* Event notifier file descriptor ioctl */
 #define LTTNG_KERNEL_ABI_CAPTURE			_IO(0xF6, 0xB8)
 
+/* (0xF6, {0xC0, 0xC1, 0xC2}) are reserved for old ABI. */
+
 /* Counter file descriptor ioctl */
-#define LTTNG_KERNEL_ABI_COUNTER_READ \
-	_IOWR(0xF6, 0xC0, struct lttng_kernel_abi_counter_read)
-#define LTTNG_KERNEL_ABI_COUNTER_AGGREGATE \
-	_IOWR(0xF6, 0xC1, struct lttng_kernel_abi_counter_aggregate)
-#define LTTNG_KERNEL_ABI_COUNTER_CLEAR \
-	_IOW(0xF6, 0xC2, struct lttng_kernel_abi_counter_clear)
 #define LTTNG_KERNEL_ABI_COUNTER_MAP_NR_DESCRIPTORS \
 	_IOR(0xF6, 0xC3, uint64_t)
 #define LTTNG_KERNEL_ABI_COUNTER_MAP_DESCRIPTOR \
 	_IOWR(0xF6, 0xC4, struct lttng_kernel_abi_counter_map_descriptor)
 #define LTTNG_KERNEL_ABI_COUNTER_EVENT \
 	_IOW(0xF6, 0xC5, struct lttng_kernel_abi_counter_event)
+
+//TODO: new in 2.14, replace old (2.13) ioctls with variable length arrays.
+#if 0
+#define LTTNG_KERNEL_ABI_COUNTER_READ \
+	_IOWR(0xF6, 0xC6, struct lttng_kernel_abi_counter_read)
+#define LTTNG_KERNEL_ABI_COUNTER_AGGREGATE \
+	_IOWR(0xF6, 0xC7, struct lttng_kernel_abi_counter_aggregate)
+#define LTTNG_KERNEL_ABI_COUNTER_CLEAR \
+	_IOW(0xF6, 0xC8, struct lttng_kernel_abi_counter_clear)
+#endif
 
 /*
  * LTTng-specific ioctls for the lib ringbuffer.

@@ -81,7 +81,7 @@ int lttng_abi_create_event_counter_enabler(struct file *channel_file,
 static
 long lttng_abi_session_create_counter(
 		struct lttng_kernel_session *session,
-		const struct lttng_kernel_abi_counter_conf *counter_conf);
+		const struct lttng_kernel_abi_old_counter_conf *counter_conf);
 
 static int validate_zeroed_padding(char *p, size_t len)
 {
@@ -701,15 +701,15 @@ static
 long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	struct lttng_kernel_channel_counter *counter = file->private_data;
-	size_t indexes[LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX] = { 0 };
+	size_t indexes[LTTNG_KERNEL_ABI_OLD_COUNTER_DIMENSION_MAX] = { 0 };
 	int i;
 
 	switch (cmd) {
-	case LTTNG_KERNEL_ABI_COUNTER_READ:
+	case LTTNG_KERNEL_ABI_OLD_COUNTER_READ:
 	{
-		struct lttng_kernel_abi_counter_read local_counter_read;
-		struct lttng_kernel_abi_counter_read __user *ucounter_read =
-				(struct lttng_kernel_abi_counter_read __user *) arg;
+		struct lttng_kernel_abi_old_counter_read local_counter_read;
+		struct lttng_kernel_abi_old_counter_read __user *ucounter_read =
+				(struct lttng_kernel_abi_old_counter_read __user *) arg;
 		bool overflow, underflow;
 		int64_t value;
 		int32_t cpu;
@@ -741,11 +741,11 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
 		return 0;
 	}
-	case LTTNG_KERNEL_ABI_COUNTER_AGGREGATE:
+	case LTTNG_KERNEL_ABI_OLD_COUNTER_AGGREGATE:
 	{
-		struct lttng_kernel_abi_counter_aggregate local_counter_aggregate;
-		struct lttng_kernel_abi_counter_aggregate __user *ucounter_aggregate =
-				(struct lttng_kernel_abi_counter_aggregate __user *) arg;
+		struct lttng_kernel_abi_old_counter_aggregate local_counter_aggregate;
+		struct lttng_kernel_abi_old_counter_aggregate __user *ucounter_aggregate =
+				(struct lttng_kernel_abi_old_counter_aggregate __user *) arg;
 		bool overflow, underflow;
 		int64_t value;
 		int ret;
@@ -775,11 +775,11 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
 		return 0;
 	}
-	case LTTNG_KERNEL_ABI_COUNTER_CLEAR:
+	case LTTNG_KERNEL_ABI_OLD_COUNTER_CLEAR:
 	{
-		struct lttng_kernel_abi_counter_clear local_counter_clear;
-		struct lttng_kernel_abi_counter_clear __user *ucounter_clear =
-				(struct lttng_kernel_abi_counter_clear __user *) arg;
+		struct lttng_kernel_abi_old_counter_clear local_counter_clear;
+		struct lttng_kernel_abi_old_counter_clear __user *ucounter_clear =
+				(struct lttng_kernel_abi_old_counter_clear __user *) arg;
 
 		if (copy_from_user(&local_counter_clear, ucounter_clear,
 					sizeof(local_counter_clear)))
@@ -794,7 +794,10 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			indexes[i] = local_counter_clear.index.dimension_indexes[i];
 		return lttng_kernel_counter_clear(counter, indexes);
 	}
-	case LTTNG_KERNEL_ABI_COUNTER_EVENT:
+	//TODO: implement LTTNG_KERNEL_ABI_COUNTER_READ
+	//TODO: implement LTTNG_KERNEL_ABI_COUNTER_AGGREGATE
+	//TODO: implement LTTNG_KERNEL_ABI_COUNTER_CLEAR
+	case LTTNG_KERNEL_ABI_COUNTER_EVENT:	//TODO: update to 2.14 ABI.
 	{
 		struct lttng_kernel_abi_counter_event *counter_event_param;
 		struct lttng_kernel_abi_counter_event __user *ucounter_event_param =
@@ -1110,16 +1113,18 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			return -EFAULT;
 		return lttng_abi_session_set_creation_time(session, &time);
 	}
-	case LTTNG_KERNEL_ABI_COUNTER:
+	//TODO: remove implementation of LTTNG_KERNEL_ABI_OLD_COUNTER which has never been exposed.
+	case LTTNG_KERNEL_ABI_OLD_COUNTER:
 	{
-		struct lttng_kernel_abi_counter_conf counter_conf;
+		struct lttng_kernel_abi_old_counter_conf counter_conf;
 
 		if (copy_from_user(&counter_conf,
-				(struct lttng_kernel_abi_counter_conf __user *) arg,
-				sizeof(struct lttng_kernel_abi_counter_conf)))
+				(struct lttng_kernel_abi_old_counter_conf __user *) arg,
+				sizeof(struct lttng_kernel_abi_old_counter_conf)))
 			return -EFAULT;
 		return lttng_abi_session_create_counter(session, &counter_conf);
 	}
+	//TODO: implement LTTNG_KERNEL_ABI_COUNTER
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -2659,10 +2664,11 @@ inval_instr:
 	return ret;
 }
 
+//TODO: update to 2.14 struct lttng_kernel_abi_counter_conf
 static
 long lttng_abi_session_create_counter(
 		struct lttng_kernel_session *session,
-		const struct lttng_kernel_abi_counter_conf *counter_conf)
+		const struct lttng_kernel_abi_old_counter_conf *counter_conf)
 {
 	int counter_fd, ret;
 	char *counter_transport_name;
@@ -2749,10 +2755,11 @@ fd_error:
 	return ret;
 }
 
+//TODO: update to expect struct struct lttng_kernel_abi_counter_conf
 static
 long lttng_abi_event_notifier_group_create_error_counter(
 		struct file *event_notifier_group_file,
-		const struct lttng_kernel_abi_counter_conf *error_counter_conf)
+		const struct lttng_kernel_abi_old_counter_conf *error_counter_conf)
 {
 	int counter_fd, ret;
 	char *counter_transport_name;
@@ -2881,9 +2888,9 @@ long lttng_event_notifier_group_ioctl(struct file *file, unsigned int cmd,
 			return ret;
 		return lttng_abi_create_event_notifier(file, &uevent_notifier_param, &uevent_param_ext);
 	}
-	case LTTNG_KERNEL_ABI_COUNTER:
+	case LTTNG_KERNEL_ABI_OLD_COUNTER:
 	{
-		struct lttng_kernel_abi_counter_conf uerror_counter_conf;
+		struct lttng_kernel_abi_old_counter_conf uerror_counter_conf;
 
 		if (copy_from_user(&uerror_counter_conf,
 				(struct lttng_kernel_abi_counter_conf __user *) arg,
@@ -2892,6 +2899,7 @@ long lttng_event_notifier_group_ioctl(struct file *file, unsigned int cmd,
 		return lttng_abi_event_notifier_group_create_error_counter(file,
 				&uerror_counter_conf);
 	}
+	//TODO: implement LTTNG_KERNEL_ABI_COUNTER
 	default:
 		return -ENOIOCTLCMD;
 	}
