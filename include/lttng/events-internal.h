@@ -261,10 +261,11 @@ struct lttng_kernel_channel_counter_ops_private {
 			size_t *max_nr_elem);	/* array of size nr_dimensions */
 };
 
+#define LTTNG_KERNEL_COUNTER_KEY_LEN		256
 struct lttng_counter_map_descriptor {
 	uint64_t user_token;
 	size_t array_index;
-	char key[LTTNG_KERNEL_ABI_COUNTER_KEY_LEN];
+	char key[LTTNG_KERNEL_COUNTER_KEY_LEN];
 };
 
 struct lttng_counter_map {

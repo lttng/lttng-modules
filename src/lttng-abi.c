@@ -965,34 +965,53 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	}
 	case LTTNG_KERNEL_ABI_COUNTER_MAP_DESCRIPTOR:
 	{
-		struct lttng_kernel_abi_counter_map_descriptor __user *user_descriptor =
+		struct lttng_kernel_abi_counter_map_descriptor __user *udescriptor =
 			(struct lttng_kernel_abi_counter_map_descriptor __user *) arg;
-		struct lttng_kernel_abi_counter_map_descriptor local_descriptor;
-		struct lttng_counter_map_descriptor *kernel_descriptor;
+		struct lttng_kernel_abi_counter_key_string __user *ukey_ptr;
+		struct lttng_kernel_abi_counter_map_descriptor kdescriptor = {};
+		struct lttng_counter_map_descriptor *descriptor;
+		char key[LTTNG_KERNEL_COUNTER_KEY_LEN] = {};
+		size_t key_strlen;
+		uint32_t len, ukey_string_len;
 		int ret;
 
-		if (copy_from_user(&local_descriptor, user_descriptor,
-					sizeof(local_descriptor)))
-			return -EFAULT;
-		if (validate_zeroed_padding(local_descriptor.padding,
-				sizeof(local_descriptor.padding)))
+		ret = get_user(len, &udescriptor->len);
+		if (ret)
+			return ret;
+		if (len > PAGE_SIZE)
+			return -E2BIG;
+		if (!len || len < offsetofend(struct lttng_kernel_abi_counter_map_descriptor, key_ptr))
+			return -EINVAL;
+		ret = lttng_copy_struct_from_user(&kdescriptor, sizeof(kdescriptor), udescriptor, len);
+		if (ret)
+			return ret;
+		ukey_ptr = (struct lttng_kernel_abi_counter_key_string __user *)(unsigned long)kdescriptor.key_ptr;
+		ret = get_user(ukey_string_len, &ukey_ptr->string_len);
+		if (ret)
+			return ret;
+		if (ukey_string_len > PAGE_SIZE)
+			return -E2BIG;
+		if (!ukey_string_len)
 			return -EINVAL;
 
 		mutex_lock(&counter->priv->map.lock);
-		if (local_descriptor.descriptor_index >= counter->priv->map.nr_descriptors) {
+		if (kdescriptor.descriptor_index >= counter->priv->map.nr_descriptors) {
 			ret = -EOVERFLOW;
 			goto map_descriptor_error_unlock;
 		}
-		kernel_descriptor = &counter->priv->map.descriptors[local_descriptor.descriptor_index];
-		local_descriptor.user_token = kernel_descriptor->user_token;
-		local_descriptor.array_index = kernel_descriptor->array_index;
-		memcpy(local_descriptor.key, kernel_descriptor->key, LTTNG_KERNEL_ABI_COUNTER_KEY_LEN);
+		descriptor = &counter->priv->map.descriptors[kdescriptor.descriptor_index];
+		kdescriptor.user_token = descriptor->user_token;
+		kdescriptor.array_index = descriptor->array_index;
+		memcpy(&key, descriptor->key, LTTNG_KERNEL_COUNTER_KEY_LEN);
 		mutex_unlock(&counter->priv->map.lock);
 
-		if (copy_to_user(user_descriptor, &local_descriptor,
-					sizeof(local_descriptor)))
+		key_strlen = strlen(key);
+		if (key_strlen >= ukey_string_len)
+			return -ENOSPC;
+		if (copy_to_user(udescriptor, &kdescriptor, min(sizeof(kdescriptor), (size_t)len)))
 			return -EFAULT;
-
+		if (copy_to_user(ukey_ptr->str, key, key_strlen + 1))
+			return -EFAULT;
 		return 0;
 
 	map_descriptor_error_unlock:

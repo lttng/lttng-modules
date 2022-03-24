@@ -212,18 +212,19 @@ enum lttng_kernel_abi_counter_bitness {
 //TODO: remove this define.
 #define LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX	4
 
-//TODO: new in 2.14, update.
-#define LTTNG_KERNEL_ABI_COUNTER_KEY_LEN 256
-#define LTTNG_KERNEL_ABI_COUNTER_MAP_DESCRIPTOR_PADDING 32
-struct lttng_kernel_abi_counter_map_descriptor {
-	uint64_t descriptor_index;	/* input. [ 0 .. nr_descriptors - 1 ] */
+struct lttng_kernel_abi_counter_key_string {
+	uint32_t string_len;
+	char str[];	/* Null-terminated string. */
+} __attribute__((packed));
 
+struct lttng_kernel_abi_counter_map_descriptor {
+	uint32_t len;			/* length of this structure */
+
+	uint64_t descriptor_index;	/* input. [ 0 .. nr_descriptors - 1 ] */
 	uint32_t dimension;		/* outputs */
 	uint64_t array_index;
 	uint64_t user_token;
-	char key[LTTNG_KERNEL_ABI_COUNTER_KEY_LEN];
-
-	char padding[LTTNG_KERNEL_ABI_COUNTER_MAP_DESCRIPTOR_PADDING];
+	uint64_t key_ptr;		/* pointer to struct lttng_kernel_abi_counter_key_string */
 } __attribute__((packed));
 
 //TODO: new in 2.14, update.
@@ -506,7 +507,7 @@ struct lttng_kernel_abi_tracker_args {
 #define LTTNG_KERNEL_ABI_ENABLE			_IO(0xF6, 0x82)
 #define LTTNG_KERNEL_ABI_DISABLE			_IO(0xF6, 0x83)
 
-/* Trigger group and session ioctl */
+/* Event notifier group and session ioctl */
 
 /* (0xF6, 0x84) is reserved for old ABI. */
 

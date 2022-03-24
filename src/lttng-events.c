@@ -1316,7 +1316,7 @@ int lttng_counter_append_descriptor(struct lttng_kernel_channel_counter *counter
 	struct lttng_counter_map_descriptor *last;
 	int ret = 0;
 
-	if (strlen(key) >= LTTNG_KERNEL_ABI_COUNTER_KEY_LEN) {
+	if (strlen(key) >= LTTNG_KERNEL_COUNTER_KEY_LEN) {
 		WARN_ON_ONCE(1);
 		return -EOVERFLOW;
 	}
