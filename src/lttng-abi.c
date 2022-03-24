@@ -75,9 +75,7 @@ static int put_u32(uint32_t val, unsigned long arg);
 
 static
 int lttng_abi_create_event_counter_enabler(struct file *channel_file,
-			   struct lttng_kernel_abi_event *event_param,
-			   struct lttng_kernel_abi_event_ext *event_param_ext,
-			   const struct lttng_kernel_abi_counter_key *key_param);
+			struct lttng_kernel_counter_event *counter_event);
 static
 long lttng_abi_session_create_counter(
 		struct lttng_kernel_session *session,
@@ -689,6 +687,199 @@ end:
 }
 
 static
+int create_counter_key_from_abi_key(struct lttng_kernel_counter_key **_counter_key,
+		struct lttng_kernel_abi_counter_key *abi_key)
+{
+	struct lttng_kernel_counter_key *counter_key;
+	uint32_t i, dimension_len, nr_dimensions;
+	struct lttng_kernel_abi_counter_key_dimension __user *udimension;
+	struct lttng_kernel_abi_counter_key_dimension kdimension = {};
+	struct lttng_kernel_abi_key_token __user *utoken;
+	struct lttng_key_token *token_array;
+	uint32_t token_len, nr_tokens;
+	int ret = 0;
+
+	nr_dimensions = abi_key->number_dimensions;
+	if (!nr_dimensions || nr_dimensions > LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS)
+		return -EINVAL;
+	counter_key = kzalloc(sizeof(*counter_key), GFP_KERNEL);
+	if (!counter_key)
+		return -ENOMEM;
+	counter_key->nr_dimensions = nr_dimensions;
+	dimension_len = abi_key->elem_len;
+	if (dimension_len > PAGE_SIZE) {
+		ret = -E2BIG;
+		goto error;
+	}
+	if (dimension_len < offsetofend(struct lttng_kernel_abi_counter_key_dimension, ptr)) {
+		ret = -EINVAL;
+		goto error;
+	}
+	/* Only a single dimension is supported. */
+	WARN_ON_ONCE(nr_dimensions != 1);
+	udimension = (struct lttng_kernel_abi_counter_key_dimension __user *)(unsigned long)abi_key->ptr;
+	ret = lttng_copy_struct_from_user(&kdimension, sizeof(kdimension), udimension, dimension_len);
+	if (ret)
+		goto error;
+	nr_tokens = kdimension.nr_key_tokens;
+	if (nr_tokens > LTTNG_KERNEL_COUNTER_MAX_TOKENS) {
+		ret = -EINVAL;
+		goto error;
+	}
+	token_len = kdimension.elem_len;
+	if (token_len > PAGE_SIZE) {
+		ret = -E2BIG;
+		goto error;
+	}
+	token_array = kzalloc(nr_tokens * sizeof(*token_array), GFP_KERNEL);
+	if (!token_array) {
+		ret = -ENOMEM;
+		goto error;
+	}
+	counter_key->dimension_array[0].token_array = token_array;
+	counter_key->dimension_array[0].nr_key_tokens = nr_tokens;
+	utoken = (struct lttng_kernel_abi_key_token __user *)(unsigned long)kdimension.ptr;
+	for (i = 0; i < nr_tokens; i++) {
+		struct lttng_kernel_abi_key_token ktoken = {};
+		struct lttng_key_token *key_token = &token_array[i];
+
+		ret = lttng_copy_struct_from_user(&ktoken, sizeof(ktoken), utoken, token_len);
+		if (ret)
+			goto error;
+		switch (ktoken.type) {
+		case LTTNG_KERNEL_ABI_KEY_TOKEN_STRING:
+		{
+			char __user *string_ptr = (char __user *)(unsigned long)ktoken.arg.string_ptr;
+			size_t string_len;
+
+			key_token->type = LTTNG_KEY_TOKEN_STRING;
+
+			string_len = strnlen_user(string_ptr, PAGE_SIZE);
+			if (!string_len || string_len > PAGE_SIZE) {
+				ret = -EINVAL;
+				goto error;
+			}
+			key_token->str = kzalloc(string_len, GFP_KERNEL);
+			if (!key_token->str) {
+				ret = -ENOMEM;
+				goto error;
+			}
+			ret = copy_from_user(key_token->str, string_ptr, string_len);
+			if (ret)
+				goto error;
+			if (key_token->str[string_len - 1] != '\0') {
+				ret = -EINVAL;
+				goto error;
+			}
+			break;
+		}
+		case LTTNG_KERNEL_ABI_KEY_TOKEN_EVENT_NAME:
+			key_token->type = LTTNG_KEY_TOKEN_EVENT_NAME;
+			break;
+
+		case LTTNG_KERNEL_ABI_KEY_TOKEN_PROVIDER_NAME:
+			lttng_fallthrough;
+		default:
+			ret = -EINVAL;
+			goto error;
+		}
+		utoken = (struct lttng_kernel_abi_key_token __user *)((unsigned long)utoken + token_len);
+	}
+	*_counter_key = counter_key;
+	return 0;
+
+error:
+	destroy_counter_key(counter_key);
+	return ret;
+}
+
+int create_counter_key_from_kernel(struct lttng_kernel_counter_key **_new_key,
+		const struct lttng_kernel_counter_key *src_key)
+{
+	struct lttng_kernel_counter_key *new_key;
+	int i, ret = 0;
+
+	new_key = kzalloc(sizeof(*new_key), GFP_KERNEL);
+	if (!new_key)
+		return -ENOMEM;
+	new_key->nr_dimensions = src_key->nr_dimensions;
+	for (i = 0; i < src_key->nr_dimensions; i++) {
+		struct lttng_kernel_counter_key_dimension *new_dimension = &new_key->dimension_array[i];
+		const struct lttng_kernel_counter_key_dimension *src_dimension = &src_key->dimension_array[i];
+		uint32_t nr_tokens = src_dimension->nr_key_tokens;
+		int j;
+
+		new_dimension->nr_key_tokens = nr_tokens;
+		new_dimension->token_array = kzalloc(nr_tokens * sizeof(*new_dimension->token_array), GFP_KERNEL);
+		if (!new_dimension->token_array) {
+			ret = -ENOMEM;
+			goto error;
+		}
+		for (j = 0; j < nr_tokens; j++) {
+			struct lttng_key_token *new_key_token = &new_dimension->token_array[j];
+			struct lttng_key_token *src_key_token = &src_dimension->token_array[j];
+
+			switch (src_key_token->type) {
+			case LTTNG_KEY_TOKEN_STRING:
+				new_key_token->type = LTTNG_KEY_TOKEN_STRING;
+				new_key_token->str = kstrdup(src_key_token->str, GFP_KERNEL);
+				if (!new_key_token->str) {
+					ret = -ENOMEM;
+					goto error;
+				}
+				break;
+			case LTTNG_KEY_TOKEN_EVENT_NAME:
+				new_key_token->type = LTTNG_KEY_TOKEN_EVENT_NAME;
+				break;
+
+			default:
+				ret = -EINVAL;
+				goto error;
+			}
+		}
+	}
+	*_new_key = new_key;
+	return 0;
+
+error:
+	destroy_counter_key(new_key);
+	return ret;
+}
+
+void destroy_counter_key(struct lttng_kernel_counter_key *counter_key)
+{
+	int i;
+
+	if (!counter_key)
+		return;
+	for (i = 0; i < counter_key->nr_dimensions; i++) {
+		struct lttng_kernel_counter_key_dimension *dimension = &counter_key->dimension_array[i];
+		uint32_t nr_tokens = dimension->nr_key_tokens;
+		int j;
+
+		for (j = 0; j < nr_tokens; j++) {
+			struct lttng_key_token *key_token = &dimension->token_array[j];
+
+			switch (key_token->type) {
+			case LTTNG_KEY_TOKEN_STRING:
+				kfree(key_token->str);
+				break;
+
+			case LTTNG_KEY_TOKEN_EVENT_NAME:
+				lttng_fallthrough;
+			case LTTNG_KEY_TOKEN_UNKNOWN:
+				break;
+
+			default:
+				WARN_ON_ONCE(1);
+			}
+		}
+		kfree(dimension->token_array);
+	}
+	kfree(counter_key);
+}
+
+static
 long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	struct lttng_kernel_channel_counter *counter = file->private_data;
@@ -918,32 +1109,41 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		}
 		return lttng_kernel_counter_clear(counter, indexes);
 	}
-	case LTTNG_KERNEL_ABI_COUNTER_EVENT:	//TODO: update to 2.14 ABI.
+	case LTTNG_KERNEL_ABI_COUNTER_EVENT:
 	{
-		struct lttng_kernel_abi_counter_event *counter_event_param;
-		struct lttng_kernel_abi_counter_event __user *ucounter_event_param =
+		struct lttng_kernel_abi_counter_event __user *ucounter_event =
 				(struct lttng_kernel_abi_counter_event __user *) arg;
-		struct lttng_kernel_abi_event *event_param;
-		struct lttng_kernel_abi_counter_key *key_param;
-		struct lttng_kernel_abi_event_ext event_param_ext = {};
-		long ret;
+		struct lttng_kernel_abi_counter_event kcounter_event = {};
+		struct lttng_kernel_counter_event *counter_event;
+		uint32_t len;
+		int ret;
 
-		counter_event_param = kzalloc(sizeof(*counter_event_param), GFP_KERNEL);
-		if (!counter_event_param)
-			return -ENOMEM;
-		if (copy_from_user(counter_event_param, ucounter_event_param,
-				sizeof(*counter_event_param)))
-			return -EFAULT;
-		if (validate_zeroed_padding(counter_event_param->padding,
-				sizeof(counter_event_param->padding)))
-			return -EINVAL;
-		event_param = &counter_event_param->event;
-		key_param = &counter_event_param->key;
-		ret = copy_user_event_param_ext(&event_param_ext, event_param);
+		ret = get_user(len, &ucounter_event->len);
 		if (ret)
 			return ret;
-		ret = lttng_abi_create_event_counter_enabler(file, event_param, &event_param_ext, key_param);
-		kfree(counter_event_param);
+		if (len > PAGE_SIZE)
+			return -E2BIG;
+		if (len < offsetofend(struct lttng_kernel_abi_counter_event, key))
+			return -EINVAL;
+		counter_event = kzalloc(sizeof(*counter_event), GFP_KERNEL);
+		if (!counter_event) {
+			return -ENOMEM;
+		}
+		ret = lttng_copy_struct_from_user(&kcounter_event, sizeof(kcounter_event),
+				ucounter_event, len);
+		if (ret)
+			goto end_counter_event;
+		memcpy(&counter_event->event_param, &kcounter_event.event, sizeof(counter_event->event_param));
+		ret = copy_user_event_param_ext(&counter_event->event_param_ext, &kcounter_event.event);
+		if (ret)
+			goto end_counter_event;
+		ret = create_counter_key_from_abi_key(&counter_event->counter_key, &kcounter_event.key);
+		if (ret)
+			goto end_counter_event;
+		ret = lttng_abi_create_event_counter_enabler(file, counter_event);
+		destroy_counter_key(counter_event->counter_key);
+	end_counter_event:
+		kfree(counter_event);
 		return ret;
 	}
 	case LTTNG_KERNEL_ABI_ENABLE:
@@ -2514,12 +2714,13 @@ fd_error:
 
 static
 int lttng_abi_create_event_counter_enabler(struct file *channel_file,
-			   struct lttng_kernel_abi_event *event_param,
-			   struct lttng_kernel_abi_event_ext *event_param_ext,
-			   const struct lttng_kernel_abi_counter_key *key_param)
+			struct lttng_kernel_counter_event *counter_event)
 {
 	const struct file_operations *fops;
 	struct lttng_kernel_channel_counter *channel = channel_file->private_data;
+	struct lttng_kernel_abi_event *event_param = &counter_event->event_param;
+	struct lttng_kernel_abi_event_ext *event_param_ext = &counter_event->event_param_ext;
+	struct lttng_kernel_counter_key *counter_key = counter_event->counter_key;
 	int event_fd, ret;
 	struct file *event_file;
 	void *priv;
@@ -2599,10 +2800,10 @@ int lttng_abi_create_event_counter_enabler(struct file *channel_file,
 			 * we create the special star globbing enabler.
 			 */
 			event_enabler = lttng_event_counter_enabler_create(LTTNG_ENABLER_FORMAT_STAR_GLOB,
-				event_param, key_param, NULL, channel);
+				event_param, counter_key, channel);
 		} else {
 			event_enabler = lttng_event_counter_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
-				event_param, key_param, NULL, channel);
+				event_param, counter_key, channel);
 		}
 		if (event_enabler)
 			lttng_event_enabler_session_add(channel->parent.session, &event_enabler->parent);
@@ -2617,7 +2818,7 @@ int lttng_abi_create_event_counter_enabler(struct file *channel_file,
 		struct lttng_event_counter_enabler *event_enabler;
 
 		event_enabler = lttng_event_counter_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
-				event_param, key_param, NULL, channel);
+				event_param, counter_key, channel);
 		if (event_enabler)
 			lttng_event_enabler_session_add(channel->parent.session, &event_enabler->parent);
 		priv = event_enabler;
@@ -2630,7 +2831,7 @@ int lttng_abi_create_event_counter_enabler(struct file *channel_file,
 		struct lttng_event_counter_enabler *event_enabler;
 
 		event_enabler = lttng_event_counter_enabler_create(LTTNG_ENABLER_FORMAT_NAME,
-				event_param, key_param, NULL, channel);
+				event_param, counter_key, channel);
 		if (!event_enabler) {
 			ret = -ENOMEM;
 			goto event_error;

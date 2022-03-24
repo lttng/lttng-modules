@@ -280,8 +280,8 @@ void lttng_kernel_counter_destroy(struct lttng_kernel_channel_counter *counter)
 {
 	struct lttng_counter_transport *counter_transport = counter->priv->transport;
 
-	counter->ops->priv->counter_destroy(counter);
 	lttng_kvfree(counter->priv->map.descriptors);
+	counter->ops->priv->counter_destroy(counter);
 	module_put(counter_transport->owner);
 }
 
@@ -1184,29 +1184,28 @@ int format_event_key(struct lttng_event_enabler_common *event_enabler, char *key
 		     const char *event_name)
 {
 	struct lttng_event_counter_enabler *event_counter_enabler;
-	const struct lttng_counter_key_dimension *dim;
-	size_t i, left = LTTNG_KEY_TOKEN_STRING_LEN_MAX;
-	const struct lttng_counter_key *key;
+	const struct lttng_kernel_counter_key_dimension *dim;
+	size_t i, left = LTTNG_KERNEL_COUNTER_KEY_LEN;
+	const struct lttng_kernel_counter_key *key;
 
-	if (event_enabler->enabler_type != LTTNG_EVENT_ENABLER_TYPE_COUNTER) {
+	if (event_enabler->enabler_type != LTTNG_EVENT_ENABLER_TYPE_COUNTER)
 		return 0;
-	}
 	event_counter_enabler = container_of(event_enabler, struct lttng_event_counter_enabler, parent.parent);
-	key = &event_counter_enabler->key;
+	key = event_counter_enabler->key;
 	if (!key->nr_dimensions)
 		return 0;
 	/* Currently event keys can only be specified on a single dimension. */
 	if (key->nr_dimensions != 1)
 		return -EINVAL;
-	dim = &key->key_dimensions[0];
+	dim = &key->dimension_array[0];
 	for (i = 0; i < dim->nr_key_tokens; i++) {
-		const struct lttng_key_token *token = &dim->key_tokens[i];
+		const struct lttng_key_token *token = &dim->token_array[i];
 		size_t token_len;
 		const char *str;
 
 		switch (token->type) {
 		case LTTNG_KEY_TOKEN_STRING:
-			str = token->arg.string;
+			str = token->str;
 			break;
 		case LTTNG_KEY_TOKEN_EVENT_NAME:
 			str = event_name;
@@ -1381,7 +1380,7 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 				const struct lttng_kernel_event_desc *event_desc,
 				struct lttng_kernel_event_pair *event_pair)
 {
-	char key_string[LTTNG_KEY_TOKEN_STRING_LEN_MAX] = { 0 };
+	char key_string[LTTNG_KERNEL_COUNTER_KEY_LEN] = { 0 };
 	struct lttng_event_ht *events_name_ht = lttng_get_events_name_ht_from_enabler(event_enabler);
 	struct lttng_event_ht *events_key_ht = lttng_get_events_key_ht_from_enabler(event_enabler);
 	struct list_head *event_list_head = lttng_get_event_list_head_from_enabler(event_enabler);
@@ -2609,62 +2608,6 @@ int lttng_fix_pending_event_notifiers(void)
 	return 0;
 }
 
-static
-int copy_abi_counter_key(struct lttng_counter_key *key,
-		     const struct lttng_kernel_abi_counter_key *key_param)
-{
-	size_t i, j, nr_dimensions;
-
-	nr_dimensions = key_param->nr_dimensions;
-	if (nr_dimensions > LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX)
-		return -EINVAL;
-	key->nr_dimensions = nr_dimensions;
-	for (i = 0; i < nr_dimensions; i++) {
-		const struct lttng_kernel_abi_counter_key_dimension *udim =
-			&key_param->key_dimensions[i];
-		struct lttng_counter_key_dimension *dim =
-			&key->key_dimensions[i];
-		size_t nr_key_tokens;
-
-		nr_key_tokens = udim->nr_key_tokens;
-		if (!nr_key_tokens || nr_key_tokens > LTTNG_KERNEL_ABI_NR_KEY_TOKEN)
-			return -EINVAL;
-		dim->nr_key_tokens = nr_key_tokens;
-		for (j = 0; j < nr_key_tokens; j++) {
-			const struct lttng_kernel_abi_key_token *utoken =
-				&udim->key_tokens[j];
-			struct lttng_key_token *token =
-				&dim->key_tokens[j];
-
-			switch (utoken->type) {
-			case LTTNG_KERNEL_ABI_KEY_TOKEN_STRING:
-			{
-				long ret;
-
-				token->type = LTTNG_KERNEL_ABI_KEY_TOKEN_STRING;
-				ret = strncpy_from_user(token->arg.string,
-					(char __user *)(unsigned long)utoken->arg.string_ptr,
-					LTTNG_KERNEL_ABI_KEY_TOKEN_STRING_LEN_MAX);
-				if (ret < 0)
-					return -EFAULT;
-				if (!ret || ret == LTTNG_KERNEL_ABI_KEY_TOKEN_STRING_LEN_MAX)
-					return -EINVAL;
-				break;
-			}
-			case LTTNG_KERNEL_ABI_KEY_TOKEN_EVENT_NAME:
-				token->type = LTTNG_KERNEL_ABI_KEY_TOKEN_EVENT_NAME;
-				break;
-			case LTTNG_KERNEL_ABI_KEY_TOKEN_PROVIDER_NAME:
-				printk(KERN_ERR "LTTng: Provider name token not supported.\n");
-				lttng_fallthrough;
-			default:
-				return -EINVAL;
-			}
-		}
-	}
-	return 0;
-}
-
 struct lttng_event_recorder_enabler *lttng_event_recorder_enabler_create(
 		enum lttng_enabler_format_type format_type,
 		struct lttng_kernel_abi_event *event_param,
@@ -2691,8 +2634,7 @@ struct lttng_event_recorder_enabler *lttng_event_recorder_enabler_create(
 struct lttng_event_counter_enabler *lttng_event_counter_enabler_create(
 		enum lttng_enabler_format_type format_type,
 		struct lttng_kernel_abi_event *event_param,
-		const struct lttng_kernel_abi_counter_key *abi_key,
-		const struct lttng_counter_key *kernel_key,
+		struct lttng_kernel_counter_key *counter_key,
 		struct lttng_kernel_channel_counter *chan)
 {
 	struct lttng_event_counter_enabler *event_enabler;
@@ -2707,13 +2649,9 @@ struct lttng_event_counter_enabler *lttng_event_counter_enabler_create(
 		sizeof(event_enabler->parent.parent.event_param));
 	event_enabler->chan = chan;
 	event_enabler->parent.chan = &chan->parent;
-	if (abi_key) {
-		if (copy_abi_counter_key(&event_enabler->key, abi_key)) {
-			kfree(event_enabler);
-			return NULL;
-		}
-	} else {
-		memcpy(&event_enabler->key, kernel_key, sizeof(*kernel_key));
+	if (create_counter_key_from_kernel(&event_enabler->key, counter_key)) {
+		kfree(event_enabler);
+		return NULL;
 	}
 
 	/* ctx left NULL */
@@ -2849,6 +2787,7 @@ void lttng_event_enabler_destroy(struct lttng_event_enabler_common *event_enable
 		struct lttng_event_counter_enabler *event_counter_enabler =
 			container_of(event_enabler, struct lttng_event_counter_enabler, parent.parent);
 
+		destroy_counter_key(event_counter_enabler->key);
 		kfree(event_counter_enabler);
 		break;
 	}

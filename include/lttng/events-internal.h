@@ -25,32 +25,6 @@ enum lttng_enabler_format_type {
 	LTTNG_ENABLER_FORMAT_NAME,
 };
 
-#define LTTNG_KEY_TOKEN_STRING_LEN_MAX LTTNG_KERNEL_ABI_KEY_TOKEN_STRING_LEN_MAX
-
-enum lttng_key_token_type {
-	LTTNG_KEY_TOKEN_STRING = 0,
-	LTTNG_KEY_TOKEN_EVENT_NAME = 1,
-};
-
-struct lttng_key_token {
-	enum lttng_key_token_type type;
-	union {
-		char string[LTTNG_KEY_TOKEN_STRING_LEN_MAX];
-	} arg;
-};
-
-#define LTTNG_NR_KEY_TOKEN LTTNG_KERNEL_ABI_NR_KEY_TOKEN
-struct lttng_counter_key_dimension {
-	size_t nr_key_tokens;
-	struct lttng_key_token key_tokens[LTTNG_NR_KEY_TOKEN];
-};
-
-#define LTTNG_COUNTER_DIMENSION_MAX LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX
-struct lttng_counter_key {
-	size_t nr_dimensions;
-	struct lttng_counter_key_dimension key_dimensions[LTTNG_COUNTER_DIMENSION_MAX];
-};
-
 enum lttng_kernel_event_enabler_type {
 	LTTNG_EVENT_ENABLER_TYPE_RECORDER,
 	LTTNG_EVENT_ENABLER_TYPE_NOTIFIER,
@@ -158,12 +132,14 @@ struct lttng_kernel_event_recorder_private {
 	unsigned int metadata_dumped:1;
 };
 
+#define LTTNG_KERNEL_COUNTER_KEY_LEN		256
+
 struct lttng_kernel_event_counter_private {
 	struct lttng_kernel_event_session_common_private parent;
 
 	struct lttng_kernel_event_counter *pub;		/* Public event interface */
 	struct hlist_node hlist_key_node;		/* node in events key hash table */
-	char key[LTTNG_KEY_TOKEN_STRING_LEN_MAX];
+	char key[LTTNG_KERNEL_COUNTER_KEY_LEN];
 };
 
 struct lttng_kernel_event_notifier_private {
@@ -261,7 +237,6 @@ struct lttng_kernel_channel_counter_ops_private {
 			size_t *max_nr_elem);	/* array of size nr_dimensions */
 };
 
-#define LTTNG_KERNEL_COUNTER_KEY_LEN		256
 struct lttng_counter_map_descriptor {
 	uint64_t user_token;
 	size_t array_index;
@@ -376,7 +351,7 @@ struct lttng_event_recorder_enabler {
 struct lttng_event_counter_enabler {
 	struct lttng_event_enabler_session_common parent;
 	struct lttng_kernel_channel_counter *chan;
-	struct lttng_counter_key key;
+	struct lttng_kernel_counter_key *key;
 };
 
 struct lttng_event_notifier_enabler {
@@ -627,6 +602,8 @@ enum lttng_kernel_counter_bitness {
 
 /* Internally, only 1 dimension is supported fow now. */
 #define LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS	1
+/* Internally, only 16 tokens are supported for now. */
+#define LTTNG_KERNEL_COUNTER_MAX_TOKENS		16
 
 struct lttng_kernel_counter_dimension {
 	uint32_t flags;			/* enum lttng_kernel_counter_dimension_flags */
@@ -641,6 +618,35 @@ struct lttng_kernel_counter_conf {
 	uint32_t bitness;               /* enum lttng_kernel_counter_bitness */
 	int64_t global_sum_step;
 	struct lttng_kernel_counter_dimension dimension_array[LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS];
+};
+
+enum lttng_key_token_type {
+	LTTNG_KEY_TOKEN_UNKNOWN = 0,	/* Uninitialized. */
+
+	LTTNG_KEY_TOKEN_STRING = 1,
+	LTTNG_KEY_TOKEN_EVENT_NAME = 2,
+};
+
+struct lttng_key_token {
+	enum lttng_key_token_type type;
+	char *str;
+};
+
+struct lttng_kernel_counter_key_dimension {
+	size_t nr_key_tokens;
+	struct lttng_key_token *token_array;
+};
+
+struct lttng_kernel_counter_key {
+	size_t nr_dimensions;
+	struct lttng_kernel_counter_key_dimension dimension_array[LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS];
+};
+
+struct lttng_kernel_counter_event {
+	struct lttng_kernel_abi_event event_param;
+	struct lttng_kernel_abi_event_ext event_param_ext;
+
+	struct lttng_kernel_counter_key *counter_key;
 };
 
 extern struct lttng_kernel_ctx *lttng_static_ctx;
@@ -1336,9 +1342,12 @@ bool lttng_event_enabler_event_name_key_match_event(struct lttng_event_enabler_c
 struct lttng_event_counter_enabler *lttng_event_counter_enabler_create(
 		enum lttng_enabler_format_type format_type,
 		struct lttng_kernel_abi_event *event_param,
-		const struct lttng_kernel_abi_counter_key *abi_key,
-		const struct lttng_counter_key *kernel_key,
+		struct lttng_kernel_counter_key *counter_key,
 		struct lttng_kernel_channel_counter *chan);
+
+int create_counter_key_from_kernel(struct lttng_kernel_counter_key **counter_key,
+		const struct lttng_kernel_counter_key *key);
+void destroy_counter_key(struct lttng_kernel_counter_key *counter_key);
 
 #define lttng_kernel_static_ctx_field(_event_field, _get_size, _record, _get_value, _destroy, _priv)	\
 	__LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_ctx_field, {					\

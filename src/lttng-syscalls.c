@@ -665,7 +665,7 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 		ev.token = syscall_event_enabler->user_token;
 		event_counter_enabler = lttng_event_counter_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev,
-				NULL, &syscall_event_counter_enabler->key, syscall_event_counter_enabler->chan);
+				syscall_event_counter_enabler->key, syscall_event_counter_enabler->chan);
 		WARN_ON_ONCE(!event_counter_enabler);
 		if (!event_counter_enabler)
 			return;
@@ -700,7 +700,7 @@ void lttng_syscall_event_enabler_create_matching_syscall_table_events(struct ltt
 #endif
 	/* iterate over all syscall and create event that match */
 	for (i = 0; i < table_len; i++) {
-		char key_string[LTTNG_KEY_TOKEN_STRING_LEN_MAX] = { 0 };
+		char key_string[LTTNG_KERNEL_COUNTER_KEY_LEN] = { 0 };
 		struct lttng_kernel_event_common_private *event_priv;
 		struct hlist_head *head;
 		bool found = false;
@@ -751,7 +751,7 @@ bool lttng_syscall_event_enabler_is_wildcard_all(struct lttng_event_enabler_comm
 static
 void create_unknown_syscall_event(struct lttng_event_enabler_common *event_enabler, enum sc_type type)
 {
-	char key_string[LTTNG_KEY_TOKEN_STRING_LEN_MAX] = { 0 };
+	char key_string[LTTNG_KERNEL_COUNTER_KEY_LEN] = { 0 };
 	struct lttng_event_ht *events_name_ht = lttng_get_events_name_ht_from_enabler(event_enabler);
 	struct lttng_kernel_event_common_private *event_priv;
 	const struct lttng_kernel_event_desc *desc;

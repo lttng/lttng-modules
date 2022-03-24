@@ -209,9 +209,6 @@ enum lttng_kernel_abi_counter_bitness {
 	LTTNG_KERNEL_ABI_COUNTER_BITNESS_64 = 1,
 };
 
-//TODO: remove this define.
-#define LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX	4
-
 struct lttng_kernel_abi_counter_key_string {
 	uint32_t string_len;
 	char str[];	/* Null-terminated string. */
@@ -227,36 +224,30 @@ struct lttng_kernel_abi_counter_map_descriptor {
 	uint64_t key_ptr;		/* pointer to struct lttng_kernel_abi_counter_key_string */
 } __attribute__((packed));
 
-//TODO: new in 2.14, update.
-#define LTTNG_KERNEL_ABI_KEY_ARG_PADDING1		60
-#define LTTNG_KERNEL_ABI_KEY_TOKEN_STRING_LEN_MAX	256
 struct lttng_kernel_abi_key_token {
-	uint32_t type;	/* enum lttng_kernel_abi_key_token_type */
+	uint32_t type;			/* enum lttng_kernel_abi_key_token_type */
 	union {
 		uint64_t string_ptr;
-		char padding[LTTNG_KERNEL_ABI_KEY_ARG_PADDING1];
 	} arg;
 } __attribute__((packed));
 
-//TODO: new in 2.14, update.
-#define LTTNG_KERNEL_ABI_NR_KEY_TOKEN 4
 struct lttng_kernel_abi_counter_key_dimension {
 	uint32_t nr_key_tokens;
-	struct lttng_kernel_abi_key_token key_tokens[LTTNG_KERNEL_ABI_NR_KEY_TOKEN];
+	uint32_t elem_len;		/* array stride (size of struct lttng_kernel_abi_key_token) */
+	uint64_t ptr;			/* pointer to array of struct lttng_kernel_abi_key_token */
 } __attribute__((packed));
 
-//TODO: new in 2.14, update.
 struct lttng_kernel_abi_counter_key {
-	uint32_t nr_dimensions;
-	struct lttng_kernel_abi_counter_key_dimension key_dimensions[LTTNG_KERNEL_ABI_COUNTER_DIMENSION_MAX];
+	uint32_t number_dimensions;
+	uint32_t elem_len;		/* array stride (size of struct lttng_kernel_abi_counter_key_dimension) */
+	uint64_t ptr;			/* pointer to array of struct lttng_kernel_abi_counter_key_dimension */
 } __attribute__((packed));
 
-//TODO: new in 2.14, update.
-#define LTTNG_KERNEL_ABI_COUNTER_EVENT_PADDING1	16
 struct lttng_kernel_abi_counter_event {
+	uint32_t len;			/* length of this structure */
+
 	struct lttng_kernel_abi_event event;
 	struct lttng_kernel_abi_counter_key key;
-	char padding[LTTNG_KERNEL_ABI_COUNTER_EVENT_PADDING1];
 } __attribute__((packed));
 
 enum lttng_kernel_abi_counter_dimension_flags {
