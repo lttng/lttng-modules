@@ -646,32 +646,31 @@ int copy_user_event_param_ext(struct lttng_kernel_abi_event_ext *event_param_ext
 	uint32_t len;
 	int ret;
 
-	memset(event_param_ext, 0, sizeof(*event_param_ext));
 	/* Use zeroed defaults if extension parameters are not set. */
 	if (!uevent_ext)
 		return 0;
 	ret = get_user(len, &uevent_ext->len);
 	if (ret)
 		return ret;
-	if (len > sizeof(struct lttng_kernel_abi_event_ext)) {
-		size_t zeroes_len = len - sizeof(struct lttng_kernel_abi_event_ext);
-		char __user *zeroes_begin = (char __user *)uevent_ext +
-						sizeof(struct lttng_kernel_abi_event_ext);
-
-		/*
-		 * Userspace exposes unknown features. Make sure those are
-		 * zeroed (default).
-		 */
-		ret = check_zeroed_user(zeroes_begin, zeroes_len);
-		if (ret < 0)
-			return ret;
-		if (!ret)
-			return -E2BIG;
-	}
-	if (copy_from_user(event_param_ext, uevent_ext, len))
-		return -EFAULT;
+	if (len > PAGE_SIZE)
+		return -E2BIG;
+	ret = lttng_copy_struct_from_user(event_param_ext, sizeof(*event_param_ext), uevent_ext, len);
+	if (ret)
+		return ret;
 	/* Ensure that len is consistent with the initial get_user(). */
 	event_param_ext->len = len;
+
+	/* Validate that we know of all flags and enum values used. */
+	switch (event_param_ext->match_check) {
+	case LTTNG_KERNEL_ABI_MATCH_DEFAULT:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_MATCH_IMMEDIATE:
+		lttng_fallthrough;
+	case LTTNG_KERNEL_ABI_MATCH_LAZY:
+		break;
+	default:
+		return -EINVAL;
+	}
 	return 0;
 }
 
@@ -684,14 +683,6 @@ int user_event_param_ext_get_match_check(const struct lttng_kernel_abi_event_ext
 	if (event_param_ext->len < offsetofend(struct lttng_kernel_abi_event_ext, match_check))
 		goto end;
 	match_check = event_param_ext->match_check;
-	switch (match_check) {
-	case LTTNG_KERNEL_ABI_MATCH_DEFAULT:
-	case LTTNG_KERNEL_ABI_MATCH_IMMEDIATE:
-	case LTTNG_KERNEL_ABI_MATCH_LAZY:
-		break;
-	default:
-		return -EINVAL;
-	}
 end:
 	*_match_check = match_check;
 	return 0;
@@ -804,7 +795,7 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 				(struct lttng_kernel_abi_counter_event __user *) arg;
 		struct lttng_kernel_abi_event *event_param;
 		struct lttng_kernel_abi_counter_key *key_param;
-		struct lttng_kernel_abi_event_ext event_param_ext;
+		struct lttng_kernel_abi_event_ext event_param_ext = {};
 		long ret;
 
 		counter_event_param = kzalloc(sizeof(*counter_event_param), GFP_KERNEL);
@@ -2876,7 +2867,7 @@ long lttng_event_notifier_group_ioctl(struct file *file, unsigned int cmd,
 	case LTTNG_KERNEL_ABI_EVENT_NOTIFIER_CREATE:
 	{
 		struct lttng_kernel_abi_event_notifier uevent_notifier_param;
-		struct lttng_kernel_abi_event_ext uevent_param_ext;
+		struct lttng_kernel_abi_event_ext uevent_param_ext = {};
 		int ret;
 
 		if (copy_from_user(&uevent_notifier_param,
@@ -3026,7 +3017,7 @@ old_event_end:
 	case LTTNG_KERNEL_ABI_EVENT:
 	{
 		struct lttng_kernel_abi_event uevent_param;
-		struct lttng_kernel_abi_event_ext uevent_param_ext;
+		struct lttng_kernel_abi_event_ext uevent_param_ext = {};
 		int ret;
 
 		if (copy_from_user(&uevent_param,
