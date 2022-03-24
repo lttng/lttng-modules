@@ -18,6 +18,7 @@ struct lttng_metadata_cache;
 struct perf_event;
 struct perf_event_attr;
 struct lttng_kernel_ring_buffer_config;
+struct lttng_kernel_counter_dimension;
 
 enum lttng_enabler_format_type {
 	LTTNG_ENABLER_FORMAT_STAR_GLOB,
@@ -48,14 +49,6 @@ struct lttng_counter_key_dimension {
 struct lttng_counter_key {
 	size_t nr_dimensions;
 	struct lttng_counter_key_dimension key_dimensions[LTTNG_COUNTER_DIMENSION_MAX];
-};
-
-struct lttng_counter_dimension {
-	uint64_t size;
-	uint64_t underflow_index;
-	uint64_t overflow_index;
-	uint8_t has_underflow;
-	uint8_t has_overflow;
 };
 
 enum lttng_kernel_event_enabler_type {
@@ -241,7 +234,7 @@ struct lttng_kernel_channel_counter_ops_private {
 	struct lttng_kernel_channel_counter_ops *pub;	/* Public channel counter ops interface */
 
 	struct lttng_kernel_channel_counter *(*counter_create)(size_t nr_dimensions,
-			const struct lttng_counter_dimension *dimensions,
+			const struct lttng_kernel_counter_dimension *dimensions,
 			int64_t global_sum_step);
 	void (*counter_destroy)(struct lttng_kernel_channel_counter *counter);
 	int (*counter_add)(struct lttng_kernel_channel_counter *counter,
@@ -611,6 +604,42 @@ struct lttng_kernel_id_tracker_private {
 
 	struct lttng_kernel_session *session;
 	enum tracker_type tracker_type;
+};
+
+enum lttng_kernel_counter_dimension_flags {
+	LTTNG_KERNEL_COUNTER_DIMENSION_FLAG_UNDERFLOW = (1 << 0),
+	LTTNG_KERNEL_COUNTER_DIMENSION_FLAG_OVERFLOW = (1 << 1),
+};
+
+enum lttng_kernel_counter_conf_flags {
+	LTTNG_KERNEL_COUNTER_CONF_FLAG_COALESCE_HITS = (1 << 0),
+};
+
+enum lttng_kernel_counter_arithmetic {
+	LTTNG_KERNEL_COUNTER_ARITHMETIC_MODULAR = 0,
+};
+
+enum lttng_kernel_counter_bitness {
+	LTTNG_KERNEL_COUNTER_BITNESS_32 = 0,
+	LTTNG_KERNEL_COUNTER_BITNESS_64 = 1,
+};
+
+/* Internally, only 1 dimension is supported fow now. */
+#define LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS	1
+
+struct lttng_kernel_counter_dimension {
+	uint32_t flags;			/* enum lttng_kernel_counter_dimension_flags */
+	uint64_t size;			/* dimension size */
+	uint64_t underflow_index;
+	uint64_t overflow_index;
+};
+
+struct lttng_kernel_counter_conf {
+	uint32_t flags;                 /* enum lttng_kernel_counter_conf_flags */
+	uint32_t arithmetic;            /* enum lttng_kernel_counter_arithmetic */
+	uint32_t bitness;               /* enum lttng_kernel_counter_bitness */
+	int64_t global_sum_step;
+	struct lttng_kernel_counter_dimension dimension_array[LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS];
 };
 
 extern struct lttng_kernel_ctx *lttng_static_ctx;
@@ -1195,7 +1224,7 @@ void metadata_cache_destroy(struct kref *kref);
 struct lttng_kernel_channel_counter *lttng_kernel_counter_create(
 		const char *counter_transport_name,
 		size_t number_dimensions,
-		const struct lttng_counter_dimension *dimensions,
+		const struct lttng_kernel_counter_dimension *dimensions,
 		int64_t global_sum_step,
 		bool coalesce_hits);
 int lttng_kernel_counter_read(struct lttng_kernel_channel_counter *counter,

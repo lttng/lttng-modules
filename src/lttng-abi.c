@@ -81,7 +81,7 @@ int lttng_abi_create_event_counter_enabler(struct file *channel_file,
 static
 long lttng_abi_session_create_counter(
 		struct lttng_kernel_session *session,
-		const struct lttng_kernel_abi_old_counter_conf *counter_conf);
+		const struct lttng_kernel_counter_conf *counter_conf);
 
 static int validate_zeroed_padding(char *p, size_t len)
 {
@@ -905,6 +905,128 @@ enum tracker_type get_tracker_type(struct lttng_kernel_abi_tracker_args *tracker
 	}
 }
 
+static
+int lttng_abi_copy_user_old_counter_conf(struct lttng_kernel_counter_conf *counter_conf,
+		struct lttng_kernel_abi_old_counter_conf __user *old_ucounter_conf)
+{
+	struct lttng_kernel_abi_old_counter_conf old_kcounter_conf;
+	struct lttng_kernel_counter_dimension *dimension;
+	int ret;
+
+	ret = copy_from_user(&old_kcounter_conf, old_ucounter_conf,
+			sizeof(old_kcounter_conf));
+	if (ret)
+		return ret;
+	if (!old_kcounter_conf.number_dimensions ||
+			old_kcounter_conf.number_dimensions > LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS)
+		return -EINVAL;
+	switch (old_kcounter_conf.arithmetic) {
+	case LTTNG_KERNEL_ABI_COUNTER_ARITHMETIC_MODULAR:
+		counter_conf->arithmetic = LTTNG_KERNEL_COUNTER_ARITHMETIC_MODULAR;
+		break;
+	default:
+		return -EINVAL;
+	}
+	switch (old_kcounter_conf.bitness) {
+	case LTTNG_KERNEL_ABI_COUNTER_BITNESS_32:
+		counter_conf->bitness = LTTNG_KERNEL_COUNTER_BITNESS_32;
+		break;
+	case LTTNG_KERNEL_ABI_COUNTER_BITNESS_64:
+		counter_conf->bitness = LTTNG_KERNEL_COUNTER_BITNESS_64;
+		break;
+	default:
+		return -EINVAL;
+	}
+	counter_conf->global_sum_step = old_kcounter_conf.global_sum_step;
+	counter_conf->flags |= old_kcounter_conf.coalesce_hits ?
+					LTTNG_KERNEL_COUNTER_CONF_FLAG_COALESCE_HITS : 0;
+	dimension = &counter_conf->dimension_array[0];
+	dimension->flags |= old_kcounter_conf.dimensions[0].has_underflow ?
+					LTTNG_KERNEL_COUNTER_DIMENSION_FLAG_UNDERFLOW : 0;
+	dimension->flags |= old_kcounter_conf.dimensions[0].has_overflow ?
+					LTTNG_KERNEL_COUNTER_DIMENSION_FLAG_OVERFLOW : 0;
+	dimension->size = old_kcounter_conf.dimensions[0].size;
+	dimension->underflow_index = old_kcounter_conf.dimensions[0].underflow_index;
+	dimension->overflow_index = old_kcounter_conf.dimensions[0].overflow_index;
+	return 0;
+}
+
+static
+int lttng_abi_copy_user_counter_conf(struct lttng_kernel_counter_conf *counter_conf,
+		struct lttng_kernel_abi_counter_conf __user *ucounter_conf)
+{
+	uint32_t len, number_dimensions;
+	struct lttng_kernel_abi_counter_conf kcounter_conf = {};
+	struct lttng_kernel_counter_dimension *dimension;
+	struct lttng_kernel_abi_counter_dimension kdimension = {};
+	struct lttng_kernel_abi_counter_dimension __user *udimension;
+	int ret;
+
+	ret = get_user(len, &ucounter_conf->len);
+	if (ret)
+		return ret;
+	if (len < offsetofend(struct lttng_kernel_abi_counter_conf, dimension_array))
+		return -EINVAL;
+	if (len > PAGE_SIZE)
+		return -EINVAL;
+
+	ret = lttng_copy_struct_from_user(&kcounter_conf, sizeof(kcounter_conf), ucounter_conf, len);
+	if (ret)
+		return ret;
+
+	/* Validate flags and enumerations */
+	switch (kcounter_conf.arithmetic) {
+	case LTTNG_KERNEL_ABI_COUNTER_ARITHMETIC_MODULAR:
+		counter_conf->arithmetic = LTTNG_KERNEL_COUNTER_ARITHMETIC_MODULAR;
+		break;
+	default:
+		return -EINVAL;
+	}
+	switch (kcounter_conf.bitness) {
+	case LTTNG_KERNEL_ABI_COUNTER_BITNESS_32:
+		counter_conf->bitness = LTTNG_KERNEL_COUNTER_BITNESS_32;
+		break;
+	case LTTNG_KERNEL_ABI_COUNTER_BITNESS_64:
+		counter_conf->bitness = LTTNG_KERNEL_COUNTER_BITNESS_64;
+		break;
+	default:
+		return -EINVAL;
+	}
+	if (kcounter_conf.flags & ~LTTNG_KERNEL_ABI_COUNTER_CONF_FLAG_COALESCE_HITS)
+		return -EINVAL;
+	counter_conf->global_sum_step = kcounter_conf.global_sum_step;
+	counter_conf->flags |= (kcounter_conf.flags & LTTNG_KERNEL_ABI_COUNTER_CONF_FLAG_COALESCE_HITS) ?
+					LTTNG_KERNEL_COUNTER_CONF_FLAG_COALESCE_HITS : 0;
+
+	number_dimensions = kcounter_conf.dimension_array.number_dimensions;
+	if (!number_dimensions || number_dimensions > LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS)
+		return -EINVAL;
+	dimension = &counter_conf->dimension_array[0];
+	len = kcounter_conf.dimension_array.elem_len;
+	if (len > PAGE_SIZE)
+		return -E2BIG;
+	if (len < offsetofend(struct lttng_kernel_abi_counter_dimension, overflow_index))
+		return -EINVAL;
+	udimension = (struct lttng_kernel_abi_counter_dimension __user *)(unsigned long)kcounter_conf.dimension_array.ptr;
+	ret = lttng_copy_struct_from_user(&kdimension, sizeof(kdimension), udimension, len);
+	if (ret)
+		return ret;
+
+	/* Validate flags */
+	if (kdimension.flags & ~(LTTNG_KERNEL_ABI_COUNTER_DIMENSION_FLAG_UNDERFLOW |
+					LTTNG_KERNEL_ABI_COUNTER_DIMENSION_FLAG_OVERFLOW))
+		return -EINVAL;
+
+	dimension->flags |= (kdimension.flags & LTTNG_KERNEL_ABI_COUNTER_DIMENSION_FLAG_UNDERFLOW) ?
+					LTTNG_KERNEL_COUNTER_DIMENSION_FLAG_UNDERFLOW : 0;
+	dimension->flags |= (kdimension.flags & LTTNG_KERNEL_ABI_COUNTER_DIMENSION_FLAG_OVERFLOW) ?
+					LTTNG_KERNEL_COUNTER_DIMENSION_FLAG_OVERFLOW : 0;
+	dimension->size = kdimension.size;
+	dimension->underflow_index = kdimension.underflow_index;
+	dimension->overflow_index = kdimension.overflow_index;
+	return 0;
+}
+
 /**
  *	lttng_session_ioctl - lttng session fd ioctl
  *
@@ -938,6 +1060,7 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	struct lttng_kernel_session *session = file->private_data;
 	struct lttng_kernel_abi_channel chan_param;
 	struct lttng_kernel_abi_old_channel old_chan_param;
+	int ret;
 
 	/*
 	 * Handle backward compatibility. OLD commands have wrong
@@ -1104,18 +1227,16 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			return -EFAULT;
 		return lttng_abi_session_set_creation_time(session, &time);
 	}
-	//TODO: remove implementation of LTTNG_KERNEL_ABI_OLD_COUNTER which has never been exposed.
-	case LTTNG_KERNEL_ABI_OLD_COUNTER:
+	case LTTNG_KERNEL_ABI_COUNTER:
 	{
-		struct lttng_kernel_abi_old_counter_conf counter_conf;
+		struct lttng_kernel_counter_conf counter_conf;
 
-		if (copy_from_user(&counter_conf,
-				(struct lttng_kernel_abi_old_counter_conf __user *) arg,
-				sizeof(struct lttng_kernel_abi_old_counter_conf)))
-			return -EFAULT;
+		ret = lttng_abi_copy_user_counter_conf(&counter_conf,
+				(struct lttng_kernel_abi_counter_conf __user *) arg);
+		if (ret)
+			return ret;
 		return lttng_abi_session_create_counter(session, &counter_conf);
 	}
-	//TODO: implement LTTNG_KERNEL_ABI_COUNTER
 	default:
 		return -ENOIOCTLCMD;
 	}
@@ -2655,34 +2776,26 @@ inval_instr:
 	return ret;
 }
 
-//TODO: update to 2.14 struct lttng_kernel_abi_counter_conf
 static
 long lttng_abi_session_create_counter(
 		struct lttng_kernel_session *session,
-		const struct lttng_kernel_abi_old_counter_conf *counter_conf)
+		const struct lttng_kernel_counter_conf *counter_conf)
 {
 	int counter_fd, ret;
 	char *counter_transport_name;
 	struct lttng_kernel_channel_counter *chan_counter = NULL;
 	struct file *counter_file;
-	struct lttng_counter_dimension dimensions[1];
-	size_t counter_len;
 
-	if (counter_conf->arithmetic != LTTNG_KERNEL_ABI_COUNTER_ARITHMETIC_MODULAR) {
+	if (counter_conf->arithmetic != LTTNG_KERNEL_COUNTER_ARITHMETIC_MODULAR) {
 		printk(KERN_ERR "LTTng: Maps: Counter of the wrong arithmetic type.\n");
 		return -EINVAL;
 	}
 
-	if (counter_conf->number_dimensions != 1) {
-		printk(KERN_ERR "LTTng: Maps: Counter has more than one dimension.\n");
-		return -EINVAL;
-	}
-
 	switch (counter_conf->bitness) {
-	case LTTNG_KERNEL_ABI_COUNTER_BITNESS_64:
+	case LTTNG_KERNEL_COUNTER_BITNESS_64:
 		counter_transport_name = "counter-per-cpu-64-modular";
 		break;
-	case LTTNG_KERNEL_ABI_COUNTER_BITNESS_32:
+	case LTTNG_KERNEL_COUNTER_BITNESS_32:
 		counter_transport_name = "counter-per-cpu-32-modular";
 		break;
 	default:
@@ -2705,20 +2818,13 @@ long lttng_abi_session_create_counter(
 		goto file_error;
 	}
 
-	counter_len = counter_conf->dimensions[0].size;
-	dimensions[0].size = counter_len;
-	dimensions[0].underflow_index = 0;
-	dimensions[0].overflow_index = 0;
-	dimensions[0].has_underflow = 0;
-	dimensions[0].has_overflow = 0;
-
 	if (!atomic_long_add_unless(&session->priv->file->f_count, 1, LONG_MAX)) {
 		ret = -EOVERFLOW;
 		goto refcount_error;
 	}
 
-	chan_counter = lttng_kernel_counter_create(counter_transport_name, 1, dimensions, 0,
-				counter_conf->coalesce_hits);
+	chan_counter = lttng_kernel_counter_create(counter_transport_name, 1, counter_conf->dimension_array, 0,
+				counter_conf->flags & LTTNG_KERNEL_COUNTER_CONF_FLAG_COALESCE_HITS);
 	if (!chan_counter) {
 		ret = -EINVAL;
 		goto create_error;
@@ -2746,11 +2852,10 @@ fd_error:
 	return ret;
 }
 
-//TODO: update to expect struct struct lttng_kernel_abi_counter_conf
 static
 long lttng_abi_event_notifier_group_create_error_counter(
 		struct file *event_notifier_group_file,
-		const struct lttng_kernel_abi_old_counter_conf *error_counter_conf)
+		const struct lttng_kernel_counter_conf *counter_conf)
 {
 	int counter_fd, ret;
 	char *counter_transport_name;
@@ -2758,24 +2863,18 @@ long lttng_abi_event_notifier_group_create_error_counter(
 	struct file *counter_file;
 	struct lttng_event_notifier_group *event_notifier_group =
 			(struct lttng_event_notifier_group *) event_notifier_group_file->private_data;
-	struct lttng_counter_dimension dimensions[1];
 	size_t counter_len;
 
-	if (error_counter_conf->arithmetic != LTTNG_KERNEL_ABI_COUNTER_ARITHMETIC_MODULAR) {
+	if (counter_conf->arithmetic != LTTNG_KERNEL_COUNTER_ARITHMETIC_MODULAR) {
 		printk(KERN_ERR "LTTng: event_notifier: Error counter of the wrong arithmetic type.\n");
 		return -EINVAL;
 	}
 
-	if (error_counter_conf->number_dimensions != 1) {
-		printk(KERN_ERR "LTTng: event_notifier: Error counter has more than one dimension.\n");
-		return -EINVAL;
-	}
-
-	switch (error_counter_conf->bitness) {
-	case LTTNG_KERNEL_ABI_COUNTER_BITNESS_64:
+	switch (counter_conf->bitness) {
+	case LTTNG_KERNEL_COUNTER_BITNESS_64:
 		counter_transport_name = "counter-per-cpu-64-modular";
 		break;
-	case LTTNG_KERNEL_ABI_COUNTER_BITNESS_32:
+	case LTTNG_KERNEL_COUNTER_BITNESS_32:
 		counter_transport_name = "counter-per-cpu-32-modular";
 		break;
 	default:
@@ -2809,19 +2908,13 @@ long lttng_abi_event_notifier_group_create_error_counter(
 		goto file_error;
 	}
 
-	counter_len = error_counter_conf->dimensions[0].size;
-	dimensions[0].size = counter_len;
-	dimensions[0].underflow_index = 0;
-	dimensions[0].overflow_index = 0;
-	dimensions[0].has_underflow = 0;
-	dimensions[0].has_overflow = 0;
-
 	if (!atomic_long_add_unless(&event_notifier_group_file->f_count, 1, LONG_MAX)) {
 		ret = -EOVERFLOW;
 		goto refcount_error;
 	}
 
-	chan_counter = lttng_kernel_counter_create(counter_transport_name, 1, dimensions, 0, false);
+	counter_len = counter_conf->dimension_array[0].size;
+	chan_counter = lttng_kernel_counter_create(counter_transport_name, 1, counter_conf->dimension_array, 0, false);
 	if (!chan_counter) {
 		ret = -EINVAL;
 		goto create_error;
@@ -2859,6 +2952,8 @@ static
 long lttng_event_notifier_group_ioctl(struct file *file, unsigned int cmd,
 		unsigned long arg)
 {
+	int ret;
+
 	switch (cmd) {
 	case LTTNG_KERNEL_ABI_EVENT_NOTIFIER_GROUP_NOTIFICATION_FD:
 	{
@@ -2881,16 +2976,24 @@ long lttng_event_notifier_group_ioctl(struct file *file, unsigned int cmd,
 	}
 	case LTTNG_KERNEL_ABI_OLD_COUNTER:
 	{
-		struct lttng_kernel_abi_old_counter_conf uerror_counter_conf;
+		struct lttng_kernel_counter_conf counter_conf = {};
 
-		if (copy_from_user(&uerror_counter_conf,
-				(struct lttng_kernel_abi_counter_conf __user *) arg,
-				sizeof(uerror_counter_conf)))
-			return -EFAULT;
-		return lttng_abi_event_notifier_group_create_error_counter(file,
-				&uerror_counter_conf);
+		ret = lttng_abi_copy_user_old_counter_conf(&counter_conf,
+				(struct lttng_kernel_abi_old_counter_conf __user *) arg);
+		if (ret)
+			return ret;
+		return lttng_abi_event_notifier_group_create_error_counter(file, &counter_conf);
 	}
-	//TODO: implement LTTNG_KERNEL_ABI_COUNTER
+	case LTTNG_KERNEL_ABI_COUNTER:
+	{
+		struct lttng_kernel_counter_conf counter_conf = {};
+
+		ret = lttng_abi_copy_user_counter_conf(&counter_conf,
+				(struct lttng_kernel_abi_counter_conf __user *) arg);
+		if (ret)
+			return ret;
+		return lttng_abi_event_notifier_group_create_error_counter(file, &counter_conf);
+	}
 	default:
 		return -ENOIOCTLCMD;
 	}

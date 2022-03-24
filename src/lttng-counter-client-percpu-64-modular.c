@@ -23,7 +23,7 @@ static const struct lib_counter_config client_config = {
 };
 
 static struct lttng_kernel_channel_counter *counter_create(size_t nr_dimensions,
-					  const struct lttng_counter_dimension *dimensions,
+					  const struct lttng_kernel_counter_dimension *dimensions,
 					  int64_t global_sum_step)
 {
 	size_t max_nr_elem[LTTNG_COUNTER_DIMENSION_MAX], i;
@@ -33,7 +33,8 @@ static struct lttng_kernel_channel_counter *counter_create(size_t nr_dimensions,
 	if (nr_dimensions > LTTNG_COUNTER_DIMENSION_MAX)
 		return NULL;
 	for (i = 0; i < nr_dimensions; i++) {
-		if (dimensions[i].has_underflow || dimensions[i].has_overflow)
+		if ((dimensions[i].flags & LTTNG_KERNEL_COUNTER_DIMENSION_FLAG_UNDERFLOW)
+				|| (dimensions[i].flags & LTTNG_KERNEL_COUNTER_DIMENSION_FLAG_OVERFLOW))
 			return NULL;
 		max_nr_elem[i] = dimensions[i].size;
 	}

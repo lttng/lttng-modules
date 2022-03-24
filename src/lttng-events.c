@@ -237,7 +237,7 @@ struct lttng_counter_transport *lttng_counter_transport_find(const char *name)
 struct lttng_kernel_channel_counter *lttng_kernel_counter_create(
 		const char *counter_transport_name,
 		size_t number_dimensions,
-		const struct lttng_counter_dimension *dimensions,
+		const struct lttng_kernel_counter_dimension *dimensions,
 		int64_t global_sum_step,
 		bool coalesce_hits)
 {
