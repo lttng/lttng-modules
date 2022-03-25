@@ -1,3 +1,9 @@
+2022-03-25 (National Waffle Day) LTTng modules 2.13.3
+	* Document expected ISO8601 time formats in ABI header
+	* Fix: lttng ABI: lttng_counter_ioctl() tainted scalar
+	* Fix: sample discarded events count before reserve
+	* Cleanup: comment alignment in ring buffer config.h
+
 2022-03-07 (National Cereal Day) LTTng modules 2.13.2
 	* Fix: incorrect in/out direction for syscall exit
 	* fix: net: socket: rename SKB_DROP_REASON_SOCKET_FILTER (v5.17)
