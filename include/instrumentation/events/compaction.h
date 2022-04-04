@@ -97,7 +97,22 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(compaction_isolate_template,
 
 #endif /* #else #if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,0,0) */
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0))
+LTTNG_TRACEPOINT_EVENT_MAP(mm_compaction_migratepages,
+
+	compaction_migratepages,
+
+	TP_PROTO(struct compact_control *cc,
+		unsigned int nr_succeeded),
+
+	TP_ARGS(cc, nr_succeeded),
+
+	TP_FIELDS(
+		ctf_integer(unsigned long, nr_migrated, nr_succeeded)
+		ctf_integer(unsigned long, nr_failed, cc->nr_migratepages - nr_succeeded)
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
 LTTNG_TRACEPOINT_EVENT_MAP(mm_compaction_migratepages,
 
 	compaction_migratepages,

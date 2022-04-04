@@ -167,7 +167,22 @@ ifneq ($(CONFIG_BTRFS_FS),)
   endif # $(wildcard $(btrfs_dep))
 endif # CONFIG_BTRFS_FS
 
-obj-$(CONFIG_LTTNG) += lttng-probe-compaction.o
+# A dependency on internal header 'mm/internal.h' was introduced in v5.18
+compaction_dep = $(srctree)/mm/internal.h
+compaction_dep_wildcard = $(wildcard $(compaction_dep))
+compaction_dep_check = $(shell \
+if [ \( $(VERSION) -ge 6 \
+   -o \( $(VERSION) -eq 5 -a $(PATCHLEVEL) -ge 18 \) \) -a \
+   -z "$(compaction_dep_wildcard)" ] ; then \
+  echo "warn" ; \
+else \
+  echo "ok" ; \
+fi ;)
+ifeq ($(compaction_dep_check),ok)
+  obj-$(CONFIG_LTTNG) += lttng-probe-compaction.o
+else
+  $(warning Files $(compaction_dep) not found. Probe "compaction" is disabled. Use full kernel source tree to enable it.)
+endif # $(wildcard $(compaction_dep))
 
 ifneq ($(CONFIG_EXT4_FS),)
   ext4_dep = $(srctree)/fs/ext4/*.h

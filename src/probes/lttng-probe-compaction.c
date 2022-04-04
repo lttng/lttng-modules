@@ -10,6 +10,11 @@
 
 #include <linux/module.h>
 #include <lttng/tracer.h>
+#include <lttng/kernel-version.h>
+
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0))
+#include "../mm/internal.h"
+#endif
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our
