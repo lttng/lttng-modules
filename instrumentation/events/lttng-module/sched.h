@@ -20,7 +20,37 @@
 #ifndef _TRACE_SCHED_DEF_
 #define _TRACE_SCHED_DEF_
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0))
+
+static inline long __trace_sched_switch_state(bool preempt,
+		unsigned int prev_state,
+		struct task_struct *p)
+{
+        unsigned int state;
+
+#ifdef CONFIG_SCHED_DEBUG
+        BUG_ON(p != current);
+#endif /* CONFIG_SCHED_DEBUG */
+
+        /*
+         * Preemption ignores task state, therefore preempted tasks are always
+         * RUNNING (we will not have dequeued if state != RUNNING).
+         */
+        if (preempt)
+                return TASK_REPORT_MAX;
+
+        /*
+         * task_state_index() uses fls() and returns a value from 0-8 range.
+         * Decrement it by 1 (except TASK_RUNNING state i.e 0) before using
+         * it for left shift operation to get the correct task->state
+         * mapping.
+         */
+	state = __task_state_index(prev_state, p->exit_state);
+
+        return state ? (1 << (state - 1)) : state;
+}
+
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0))
 
 static inline long __trace_sched_switch_state(bool preempt, struct task_struct *p)
 {
@@ -321,43 +351,81 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_wakeup_template, sched_wakeup_new,
 /*
  * Tracepoint for task switches, performed by the scheduler:
  */
+
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0))
 LTTNG_TRACEPOINT_EVENT(sched_switch,
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,4,0))
 	TP_PROTO(bool preempt,
-		 struct task_struct *prev,
-		 struct task_struct *next),
+		unsigned int prev_state,
+		struct task_struct *prev,
+		struct task_struct *next),
 
-	TP_ARGS(preempt, prev, next),
-#else
-	TP_PROTO(struct task_struct *prev,
-		 struct task_struct *next),
-
-	TP_ARGS(prev, next),
-#endif /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,4,0)) */
+	TP_ARGS(preempt, prev_state, prev, next),
 
 	TP_FIELDS(
 		ctf_array_text(char, prev_comm,	prev->comm, TASK_COMM_LEN)
 		ctf_integer(pid_t, prev_tid, prev->pid)
 		ctf_integer(int, prev_prio, prev->prio - MAX_RT_PRIO)
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,4,0))
 #ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
-		ctf_enum(task_state, long, prev_state, __trace_sched_switch_state(preempt, prev))
+		ctf_enum(task_state, long, prev_state, __trace_sched_switch_state(preempt, prev_state, prev))
 #else
-		ctf_integer(long, prev_state, __trace_sched_switch_state(preempt, prev))
-#endif
-#else
-#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
-		ctf_enum(task_state, long, prev_state, __trace_sched_switch_state(prev))
-#else
-		ctf_integer(long, prev_state, __trace_sched_switch_state(prev))
-#endif
+		ctf_integer(long, prev_state, __trace_sched_switch_state(preempt, prev_state, prev))
 #endif
 		ctf_array_text(char, next_comm, next->comm, TASK_COMM_LEN)
 		ctf_integer(pid_t, next_tid, next->pid)
 		ctf_integer(int, next_prio, next->prio - MAX_RT_PRIO)
 	)
 )
+
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,4,0))
+
+LTTNG_TRACEPOINT_EVENT(sched_switch,
+
+	TP_PROTO(bool preempt,
+		 struct task_struct *prev,
+		 struct task_struct *next),
+
+	TP_ARGS(preempt, prev, next),
+
+	TP_FIELDS(
+		ctf_array_text(char, prev_comm,	prev->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, prev_tid, prev->pid)
+		ctf_integer(int, prev_prio, prev->prio - MAX_RT_PRIO)
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
+		ctf_enum(task_state, long, prev_state, __trace_sched_switch_state(preempt, prev))
+#else
+		ctf_integer(long, prev_state, __trace_sched_switch_state(preempt, prev))
+#endif
+		ctf_array_text(char, next_comm, next->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, next_tid, next->pid)
+		ctf_integer(int, next_prio, next->prio - MAX_RT_PRIO)
+	)
+)
+
+#else
+
+LTTNG_TRACEPOINT_EVENT(sched_switch,
+
+	TP_PROTO(struct task_struct *prev,
+		 struct task_struct *next),
+
+	TP_ARGS(prev, next),
+
+	TP_FIELDS(
+		ctf_array_text(char, prev_comm,	prev->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, prev_tid, prev->pid)
+		ctf_integer(int, prev_prio, prev->prio - MAX_RT_PRIO)
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
+		ctf_enum(task_state, long, prev_state, __trace_sched_switch_state(prev))
+#else
+		ctf_integer(long, prev_state, __trace_sched_switch_state(prev))
+#endif
+		ctf_array_text(char, next_comm, next->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, next_tid, next->pid)
+		ctf_integer(int, next_prio, next->prio - MAX_RT_PRIO)
+	)
+)
+#endif
 
 /*
  * Tracepoint for a task being migrated:
