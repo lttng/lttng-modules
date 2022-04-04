@@ -1255,7 +1255,7 @@ static const struct lttng_kernel_event_desc __event_desc___##_map = {	\
 #define TP_ID1(_token, _system)	_token##_system
 #define TP_ID(_token, _system)	TP_ID1(_token, _system)
 
-static const struct lttng_kernel_event_desc * const TP_ID(__event_desc___, TRACE_SYSTEM)[] = {
+static const struct lttng_kernel_event_desc * const TP_ID(__provider_event_desc___, TRACE_SYSTEM)[] = {
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 };
 
@@ -1274,8 +1274,8 @@ static const struct lttng_kernel_event_desc * const TP_ID(__event_desc___, TRACE
 /* non-const because list head will be modified when registered. */
 static __used struct lttng_kernel_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM) = {
 	.provider_name = __stringify(TRACE_SYSTEM),
-	.event_desc = TP_ID(__event_desc___, TRACE_SYSTEM),
-	.nr_events = ARRAY_SIZE(TP_ID(__event_desc___, TRACE_SYSTEM)),
+	.event_desc = TP_ID(__provider_event_desc___, TRACE_SYSTEM),
+	.nr_events = ARRAY_SIZE(TP_ID(__provider_event_desc___, TRACE_SYSTEM)),
 	.head = { NULL, NULL },
 	.lazy_init_head = { NULL, NULL },
 	.lazy = 0,
