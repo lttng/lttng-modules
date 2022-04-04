@@ -187,8 +187,11 @@ ifneq ($(CONFIG_FRAME_WARN),0)
   CFLAGS_lttng-probe-printk.o += -Wframe-larger-than=2200
 endif
 
+# Introduced in v3.6, remove in v5.18
 obj-$(CONFIG_LTTNG) +=  $(shell \
-    if [ $(VERSION) -ge 4 \
+    if [ \( ! \( $(VERSION) -ge 6 -o \( $(VERSION) -eq 5 -a $(PATCHLEVEL) -ge 18 \) \) \) \
+      -a \
+      $(VERSION) -ge 4 \
       -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 6 \) \
       -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 5 -a $(SUBLEVEL) -ge 2 \) \
       -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 4 -a $(SUBLEVEL) -ge 9 \) \
