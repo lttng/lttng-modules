@@ -11,9 +11,9 @@
 #include <linux/trace_seq.h>
 #include <lttng/kernel-version.h>
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0))
+#if LTTNG_KERNEL_RANGE(4,11,0, 5,18,0)
 #include <scsi/scsi_request.h>
-#endif /* (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0)) */
+#endif /* LTTNG_KERNEL_RANGE(4,11,0, 5,18,0) */
 
 #ifndef _TRACE_BLOCK_DEF_
 #define _TRACE_BLOCK_DEF_
