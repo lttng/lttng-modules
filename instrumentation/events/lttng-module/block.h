@@ -66,6 +66,37 @@ LTTNG_TRACEPOINT_ENUM(block_rq_type,
 #define lttng_bio_op(bio)	bio_op(bio)
 #define lttng_bio_rw(bio)	((bio)->bi_opf)
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0))
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
+#define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
+		ctf_enum(block_rq_type, type, rwbs,					      \
+			( (op) == REQ_OP_WRITE ? RWBS_FLAG_WRITE : \
+			( (op) == REQ_OP_DISCARD ? RWBS_FLAG_DISCARD :	      \
+			( (op) == REQ_OP_SECURE_ERASE ? (RWBS_FLAG_DISCARD | RWBS_FLAG_SECURE) : \
+			( (op) == REQ_OP_FLUSH ? RWBS_FLAG_FLUSH :	      \
+			( (op) == REQ_OP_READ ? RWBS_FLAG_READ :	      \
+			( 0 ))))))					      \
+			| ((rw) & REQ_RAHEAD ? RWBS_FLAG_RAHEAD : 0)	      \
+			| ((rw) & REQ_SYNC ? RWBS_FLAG_SYNC : 0)	      \
+			| ((rw) & REQ_META ? RWBS_FLAG_META : 0)	      \
+			| ((rw) & REQ_PREFLUSH ? RWBS_FLAG_PREFLUSH : 0)      \
+			| ((rw) & REQ_FUA ? RWBS_FLAG_FUA : 0))
+#else
+#define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
+		ctf_integer(type, rwbs,					      \
+			( (op) == REQ_OP_WRITE ? RWBS_FLAG_WRITE : \
+			( (op) == REQ_OP_DISCARD ? RWBS_FLAG_DISCARD :	      \
+			( (op) == REQ_OP_SECURE_ERASE ? (RWBS_FLAG_DISCARD | RWBS_FLAG_SECURE) : \
+			( (op) == REQ_OP_FLUSH ? RWBS_FLAG_FLUSH :	      \
+			( (op) == REQ_OP_READ ? RWBS_FLAG_READ :	      \
+			( 0 ))))))					      \
+			| ((rw) & REQ_RAHEAD ? RWBS_FLAG_RAHEAD : 0)	      \
+			| ((rw) & REQ_SYNC ? RWBS_FLAG_SYNC : 0)	      \
+			| ((rw) & REQ_META ? RWBS_FLAG_META : 0)	      \
+			| ((rw) & REQ_PREFLUSH ? RWBS_FLAG_PREFLUSH : 0)      \
+			| ((rw) & REQ_FUA ? RWBS_FLAG_FUA : 0))
+#endif /* CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM */
+#else
 #ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 #define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
 		ctf_enum(block_rq_type, type, rwbs,					      \
@@ -95,6 +126,7 @@ LTTNG_TRACEPOINT_ENUM(block_rq_type,
 			| ((rw) & REQ_PREFLUSH ? RWBS_FLAG_PREFLUSH : 0)      \
 			| ((rw) & REQ_FUA ? RWBS_FLAG_FUA : 0))
 #endif /* CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM */
+#endif
 
 #elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0))
 
