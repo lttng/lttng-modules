@@ -12,7 +12,11 @@
 #ifndef _LTTNG_WRAPPER_GENHD_H
 #define _LTTNG_WRAPPER_GENHD_H
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0))
+#include <linux/blkdev.h>
+#else
 #include <linux/genhd.h>
+#endif
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
 #define LTTNG_GENHD_FL_HIDDEN GENHD_FL_HIDDEN
