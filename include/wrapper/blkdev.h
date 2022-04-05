@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
  *
- * wrapper/genhd.h
+ * wrapper/blkdev.h
  *
  * wrapper around block layer functions and data structures. Using
  * KALLSYMS to get its address when available, else we need to have a
@@ -9,8 +9,8 @@
  * Copyright (C) 2011-2014 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */
 
-#ifndef _LTTNG_WRAPPER_GENHD_H
-#define _LTTNG_WRAPPER_GENHD_H
+#ifndef _LTTNG_WRAPPER_BLKDEV_H
+#define _LTTNG_WRAPPER_BLKDEV_H
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0))
 #include <linux/blkdev.h>
@@ -45,7 +45,7 @@ struct class *wrapper_get_block_class(void)
 /*
  * Canary function to check for 'block_class' at compile time.
  *
- * From 'include/linux/genhd.h':
+ * From 'include/linux/blkdev.h':
  *
  *   extern struct class block_class;
  */
@@ -104,4 +104,4 @@ struct device_type *wrapper_get_disk_type(void)
 
 #endif
 
-#endif /* _LTTNG_WRAPPER_GENHD_H */
+#endif /* _LTTNG_WRAPPER_BLKDEV_H */

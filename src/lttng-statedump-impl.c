@@ -41,7 +41,7 @@
 #include <wrapper/namespace.h>
 #include <wrapper/irq.h>
 #include <wrapper/tracepoint.h>
-#include <wrapper/genhd.h>
+#include <wrapper/blkdev.h>
 #include <wrapper/file.h>
 #include <wrapper/fdtable.h>
 #include <wrapper/sched.h>
