@@ -1345,6 +1345,7 @@ static const struct lttng_event_desc __event_desc___##_map = {		\
 #define TP_ID(_token, _system)	TP_ID1(_token, _system)
 
 static const struct lttng_event_desc *TP_ID(__provider_event_desc___, TRACE_SYSTEM)[] = {
+#include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
 };
 
 #undef TP_ID1
