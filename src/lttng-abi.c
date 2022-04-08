@@ -1172,7 +1172,7 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		struct lttng_counter_map_descriptor *descriptor;
 		char key[LTTNG_KERNEL_COUNTER_KEY_LEN] = {};
 		size_t key_strlen;
-		uint32_t len, ukey_string_len;
+		uint32_t len;
 		int ret;
 
 		ret = get_user(len, &udescriptor->len);
@@ -1185,14 +1185,6 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		ret = lttng_copy_struct_from_user(&kdescriptor, sizeof(kdescriptor), udescriptor, len);
 		if (ret)
 			return ret;
-		ukey_ptr = (struct lttng_kernel_abi_counter_key_string __user *)(unsigned long)kdescriptor.key_ptr;
-		ret = get_user(ukey_string_len, &ukey_ptr->string_len);
-		if (ret)
-			return ret;
-		if (ukey_string_len > PAGE_SIZE)
-			return -E2BIG;
-		if (!ukey_string_len)
-			return -EINVAL;
 
 		mutex_lock(&counter->priv->map.lock);
 		if (kdescriptor.descriptor_index >= counter->priv->map.nr_descriptors) {
@@ -1205,13 +1197,24 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		memcpy(&key, descriptor->key, LTTNG_KERNEL_COUNTER_KEY_LEN);
 		mutex_unlock(&counter->priv->map.lock);
 
-		key_strlen = strlen(key);
-		if (key_strlen >= ukey_string_len)
-			return -ENOSPC;
+		key_strlen = strlen(key) + 1;
+		kdescriptor.key_string_len = key_strlen;
 		if (copy_to_user(udescriptor, &kdescriptor, min(sizeof(kdescriptor), (size_t)len)))
 			return -EFAULT;
-		if (copy_to_user(ukey_ptr->str, key, key_strlen + 1))
-			return -EFAULT;
+		ukey_ptr = (struct lttng_kernel_abi_counter_key_string __user *)(unsigned long)kdescriptor.key_ptr;
+		if (ukey_ptr) {
+			uint32_t ukey_string_len;
+
+			ret = get_user(ukey_string_len, &ukey_ptr->string_len);
+			if (ret)
+				return ret;
+			if (ukey_string_len > PAGE_SIZE)
+				return -E2BIG;
+			if (key_strlen > ukey_string_len)
+				return -ENOSPC;
+			if (copy_to_user(ukey_ptr->str, key, key_strlen))
+				return -EFAULT;
+		}
 		return 0;
 
 	map_descriptor_error_unlock:

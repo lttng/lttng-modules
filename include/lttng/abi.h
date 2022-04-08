@@ -210,18 +210,20 @@ enum lttng_kernel_abi_counter_bitness {
 };
 
 struct lttng_kernel_abi_counter_key_string {
-	uint32_t string_len;
-	char str[];	/* Null-terminated string. */
+	uint32_t string_len;		/* string length allocated by user-space (input) (includes \0) */
+	char str[];			/* Null-terminated string. */
 } __attribute__((packed));
 
 struct lttng_kernel_abi_counter_map_descriptor {
 	uint32_t len;			/* length of this structure */
 
 	uint64_t descriptor_index;	/* input. [ 0 .. nr_descriptors - 1 ] */
+
 	uint32_t dimension;		/* outputs */
 	uint64_t array_index;
 	uint64_t user_token;
 	uint64_t key_ptr;		/* pointer to struct lttng_kernel_abi_counter_key_string */
+	uint32_t key_string_len;	/* key string length (includes \0) */
 } __attribute__((packed));
 
 struct lttng_kernel_abi_key_token {
