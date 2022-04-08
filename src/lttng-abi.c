@@ -730,7 +730,6 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return lttng_kernel_counter_clear(counter, indexes);
 	}
 	default:
-		WARN_ON_ONCE(1);
 		return -ENOSYS;
 	}
 }
