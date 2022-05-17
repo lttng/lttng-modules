@@ -356,11 +356,11 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_wakeup_template, sched_wakeup_new,
 LTTNG_TRACEPOINT_EVENT(sched_switch,
 
 	TP_PROTO(bool preempt,
-		unsigned int prev_state,
 		struct task_struct *prev,
-		struct task_struct *next),
+		struct task_struct *next,
+		unsigned int prev_state),
 
-	TP_ARGS(preempt, prev_state, prev, next),
+	TP_ARGS(preempt, prev, next, prev_state),
 
 	TP_FIELDS(
 		ctf_array_text(char, prev_comm,	prev->comm, TASK_COMM_LEN)
