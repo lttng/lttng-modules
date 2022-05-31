@@ -203,18 +203,10 @@ ifneq ($(CONFIG_FRAME_WARN),0)
 endif
 
 # Introduced in v3.6, remove in v5.18
-obj-$(CONFIG_LTTNG) +=  $(shell \
-    if [ \( ! \( $(VERSION) -ge 6 \
-      -o \( $(VERSION) -eq 5 -a $(PATCHLEVEL) -ge 18 \) \
-      -o \( $(VERSION) -eq 5 -a $(PATCHLEVEL) -eq 15 -a $(SUBLEVEL) -ge 44 \) \
-      -o \( $(VERSION) -eq 5 -a $(PATCHLEVEL) -eq 10 -a $(SUBLEVEL) -ge 119\) \) \) \
-      -a \
-      $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 6 \) \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 5 -a $(SUBLEVEL) -ge 2 \) \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 4 -a $(SUBLEVEL) -ge 9 \) \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 0 -a $(SUBLEVEL) -ge 41 \) ] ; then \
-      echo "lttng-probe-random.o" ; fi;)
+random_dep = $(srctree)/include/trace/events/random.h
+ifneq ($(wildcard $(random_dep)),)
+  obj-$(CONFIG_LTTNG) += lttng-probe-random.o
+endif
 
 obj-$(CONFIG_LTTNG) +=  $(shell \
   if [ $(VERSION) -ge 4 \
