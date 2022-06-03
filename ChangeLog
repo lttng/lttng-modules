@@ -1,3 +1,21 @@
+2022-06-03 (National Repeat Day) (National Repeat Day) LTTng modules 2.13.4
+	* Fix: event notifier: racy use of last subbuffer record
+	* Fix: bytecode interpreter context_get_index() leaves byte order uninitialized
+	* fix: 'random' tracepoints removed in stable kernels
+	* fix: random: remove unused tracepoints (v5.10, v5.15)
+	* fix: sched/tracing: Append prev_state to tp args instead (v5.18)
+	* fix: mm: compaction: cleanup the compaction trace events (v5.18)
+	* fix: scsi: core: Remove <scsi/scsi_request.h> (v5.18)
+	* fix: kprobes: Use rethook for kretprobe if possible (v5.18)
+	* fix: random: remove unused tracepoints (v5.18)
+	* fix: scsi: block: Remove REQ_OP_WRITE_SAME support (v5.18)
+	* fix: block: remove genhd.h (v5.18)
+	* fix: sched/tracing: Don't re-read p->state when emitting sched_switch event (v5.18)
+	* fix: KVM: x86: Unexport kvm_x86_ops (v5.18)
+	* Fix: do not warn on unknown counter ioctl
+	* Fix: tracepoint event: allow same provider and event name
+	* Fix: compaction migratepages event name
+
 2022-03-25 (National Waffle Day) LTTng modules 2.13.3
 	* Document expected ISO8601 time formats in ABI header
 	* Fix: lttng ABI: lttng_counter_ioctl() tainted scalar
