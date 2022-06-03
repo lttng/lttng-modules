@@ -1,3 +1,12 @@
+2022-06-03 (National Repeat Day) (National Repeat Day) LTTng modules 2.12.9
+	* fix: 'random' tracepoints removed in stable kernels
+	* fix: random: remove unused tracepoints (v5.10, v5.15)
+	* fix: random: remove unused tracepoints (v5.18)
+	* Document supported kernel versions for stable-2.12 branch
+	* Fix: include erroneously removed by backport
+	* Fix: tracepoint event: allow same provider and event name
+	* Fix: compaction migratepages event name
+
 2022-03-25 (National Waffle Day) LTTng modules 2.12.8
 	* Document expected ISO8601 time formats in ABI header
 	* fix: net: socket: rename SKB_DROP_REASON_SOCKET_FILTER (v5.17)
