@@ -122,6 +122,35 @@ LTTNG_TRACEPOINT_EVENT(ext4_begin_ordered_truncate,
 	)
 )
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,19,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(ext4__write_begin,
+
+	TP_PROTO(struct inode *inode, loff_t pos, unsigned int len),
+
+	TP_ARGS(inode, pos, len),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
+		ctf_integer(ino_t, ino, inode->i_ino)
+		ctf_integer(loff_t, pos, pos)
+		ctf_integer(unsigned int, len, len)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__write_begin, ext4_write_begin,
+
+	TP_PROTO(struct inode *inode, loff_t pos, unsigned int len),
+
+	TP_ARGS(inode, pos, len)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__write_begin, ext4_da_write_begin,
+
+	TP_PROTO(struct inode *inode, loff_t pos, unsigned int len),
+
+	TP_ARGS(inode, pos, len)
+)
+#else
 LTTNG_TRACEPOINT_EVENT_CLASS(ext4__write_begin,
 
 	TP_PROTO(struct inode *inode, loff_t pos, unsigned int len,
@@ -153,6 +182,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__write_begin, ext4_da_write_begin,
 
 	TP_ARGS(inode, pos, len, flags)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT_CLASS(ext4__write_end,
 	TP_PROTO(struct inode *inode, loff_t pos, unsigned int len,
