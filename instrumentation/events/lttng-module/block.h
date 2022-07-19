@@ -423,7 +423,8 @@ LTTNG_TRACEPOINT_EVENT(block_rq_complete,
 			lttng_req_op(rq), lttng_req_rw(rq), nr_bytes)
 	)
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,16,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,16,0) \
+	|| LTTNG_RHEL_KERNEL_RANGE(5,14,0,70,0,0, 5,15,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT(block_rq_complete,
 
 	TP_PROTO(struct request *rq, blk_status_t error, unsigned int nr_bytes),
