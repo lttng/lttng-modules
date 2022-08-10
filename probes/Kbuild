@@ -167,7 +167,9 @@ ifneq ($(CONFIG_BTRFS_FS),)
   endif # $(wildcard $(btrfs_dep))
 endif # CONFIG_BTRFS_FS
 
-obj-$(CONFIG_LTTNG) += lttng-probe-compaction.o
+ifneq ($(CONFIG_COMPACTION),)
+  obj-$(CONFIG_LTTNG) += lttng-probe-compaction.o
+endif # CONFIG_COMPACTION
 
 ifneq ($(CONFIG_EXT4_FS),)
   ext4_dep = $(srctree)/fs/ext4/*.h
