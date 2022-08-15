@@ -197,7 +197,29 @@ enum lttng_process_status {
 };
 
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,0,0))
+
+#define LTTNG_PART_STRUCT_TYPE struct block_device
+
+static
+int lttng_get_part_name(struct gendisk *disk, struct block_device *part, char *name_buf)
+{
+	int ret;
+
+	ret = snprintf(name_buf, BDEVNAME_SIZE, "%pg", part);
+	if (ret < 0 || ret >= BDEVNAME_SIZE)
+		return -ENOSYS;
+
+	return 0;
+}
+
+static
+dev_t lttng_get_part_devt(struct block_device *part)
+{
+	return part->bd_dev;
+}
+
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
 
 #define LTTNG_PART_STRUCT_TYPE struct block_device
 
