@@ -157,7 +157,46 @@ LTTNG_TRACEPOINT_EVENT(jbd2_cleanup_journal_tail,
 	)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,0,0))
+
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
+LTTNG_TRACEPOINT_ENUM(req_op,
+	TP_ENUM_VALUES(
+		ctf_enum_value("REQ_OP_READ",		REQ_OP_READ)
+		ctf_enum_value("REQ_OP_WRITE",		REQ_OP_WRITE)
+		ctf_enum_value("REQ_OP_FLUSH",		REQ_OP_FLUSH)
+		ctf_enum_value("REQ_OP_DISCARD",	REQ_OP_DISCARD)
+		ctf_enum_value("REQ_OP_SECURE_ERASE",	REQ_OP_SECURE_ERASE)
+		ctf_enum_value("REQ_OP_WRITE_ZEROES",	REQ_OP_WRITE_ZEROES)
+		ctf_enum_value("REQ_OP_ZONE_OPEN",	REQ_OP_ZONE_OPEN)
+		ctf_enum_value("REQ_OP_ZONE_CLOSE",	REQ_OP_ZONE_CLOSE)
+		ctf_enum_value("REQ_OP_ZONE_FINISH",	REQ_OP_ZONE_FINISH)
+		ctf_enum_value("REQ_OP_ZONE_APPEND",	REQ_OP_ZONE_APPEND)
+		ctf_enum_value("REQ_OP_ZONE_RESET",	REQ_OP_ZONE_RESET)
+		ctf_enum_value("REQ_OP_ZONE_RESET_ALL",	REQ_OP_ZONE_RESET_ALL)
+		ctf_enum_value("REQ_OP_DRV_IN",		REQ_OP_DRV_IN)
+		ctf_enum_value("REQ_OP_DRV_OUT",	REQ_OP_DRV_OUT)
+		ctf_enum_value("REQ_OP_LAST",		REQ_OP_LAST)
+	)
+)
+#endif /* CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM */
+
+LTTNG_TRACEPOINT_EVENT(jbd2_write_superblock,
+
+	TP_PROTO(journal_t *journal, blk_opf_t write_flags),
+
+	TP_ARGS(journal, write_flags),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
+		ctf_enum(req_op, blk_opf_t, write_flags, write_flags)
+#else
+		ctf_integer_hex(blk_opf_t, write_flags, write_flags)
+#endif
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0))
 LTTNG_TRACEPOINT_EVENT(jbd2_write_superblock,
 
 	TP_PROTO(journal_t *journal, int write_op),
