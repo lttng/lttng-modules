@@ -1,3 +1,14 @@
+2022-08-19 (National Potato Day) LTTng modules 2.13.5
+	* Fix: incorrect stub prototypes when CONFIG_HAVE_SYSCALL_TRACEPOINTS=n
+	* fix: mm/tracing: add 'accounted' entry into output of allocation tracepoints (v6.0)
+	* fix: block: remove bdevname (v6.0)
+	* fix: fs/jbd2: Fix the documentation of the jbd2_write_superblock() callers (v6.0)
+	* fix: tie compaction probe build to CONFIG_COMPACTION
+	* fix: net: skb: introduce kfree_skb_reason() (v5.15.58..v5.16)
+	* fix: workqueue: Fix type of cpu in trace event (v5.19)
+	* fix: fs: Remove flags parameter from aops->write_begin (v5.19)
+	* fix: mm/page_alloc: fix tracepoint mm_page_alloc_zone_locked() (v5.19)
+
 2022-06-03 (National Repeat Day) (National Repeat Day) LTTng modules 2.13.4
 	* Fix: event notifier: racy use of last subbuffer record
 	* Fix: bytecode interpreter context_get_index() leaves byte order uninitialized
