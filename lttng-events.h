@@ -693,13 +693,13 @@ static inline int lttng_syscalls_destroy(struct lttng_channel *chan)
 }
 
 static inline int lttng_syscall_filter_enable(struct lttng_channel *chan,
-		struct lttng_event *event);
+		struct lttng_event *event)
 {
 	return -ENOSYS;
 }
 
 static inline int lttng_syscall_filter_disable(struct lttng_channel *chan,
-		struct lttng_event *event);
+		struct lttng_event *event)
 {
 	return -ENOSYS;
 }
