@@ -848,25 +848,34 @@ static inline int lttng_syscalls_destroy(struct lttng_kernel_channel_buffer *cha
 }
 
 static inline int lttng_syscall_filter_enable_event(struct lttng_kernel_channel_buffer *chan,
-		struct lttng_kernel_event_recorder *event);
+		struct lttng_kernel_event_recorder *event)
 {
 	return -ENOSYS;
 }
 
 static inline int lttng_syscall_filter_disable_event(struct lttng_kernel_channel_buffer *chan,
-		struct lttng_kernel_event_recorder *event);
+		struct lttng_kernel_event_recorder *event)
+{
+	return -ENOSYS;
+}
+
+static inline int lttng_syscalls_destroy_event(struct lttng_kernel_channel_buffer *chan)
+{
+	return 0;
+}
+
+static inline int lttng_syscalls_create_matching_event_notifiers(struct lttng_event_notifier_enabler *event_notifier_enabler)
 {
 	return -ENOSYS;
 }
 
 static inline long lttng_channel_syscall_mask(struct lttng_kernel_channel_buffer *channel,
-		struct lttng_kernel_syscall_mask __user *usyscall_mask)
+		struct lttng_kernel_abi_syscall_mask __user *usyscall_mask)
 {
 	return -ENOSYS;
 }
 
-static inline int lttng_syscalls_register_event_notifier(
-		struct lttng_event_notifier_group *group)
+static inline int lttng_syscalls_register_event_notifier(struct lttng_event_notifier_enabler *event_notifier_enabler)
 {
 	return -ENOSYS;
 }
@@ -877,16 +886,12 @@ static inline int lttng_syscalls_unregister_event_notifier_group(
 	return 0;
 }
 
-static inline int lttng_syscall_filter_enable_event_notifier(
-		struct lttng_event_notifier_group *group,
-		const char *name)
+static inline int lttng_syscall_filter_enable_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
 {
 	return -ENOSYS;
 }
 
-static inline int lttng_syscall_filter_disable_event_notifier(
-		struct lttng_event_notifier_group *group,
-		const char *name)
+static inline int lttng_syscall_filter_disable_event_notifier(struct lttng_kernel_event_notifier *event_notifier)
 {
 	return -ENOSYS;
 }
