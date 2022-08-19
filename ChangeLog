@@ -1,3 +1,8 @@
+2022-08-19 (National Potato Day) LTTng modules 2.12.10
+	* Fix: stub prototypes with extra semicolons when CONFIG_HAVE_SYSCALL_TRACEPOINTS=n
+	* fix: tie compaction probe build to CONFIG_COMPACTION
+	* fix: net: skb: introduce kfree_skb_reason() (v5.15.58..v5.16)
+
 2022-06-03 (National Repeat Day) (National Repeat Day) LTTng modules 2.12.9
 	* fix: 'random' tracepoints removed in stable kernels
 	* fix: random: remove unused tracepoints (v5.10, v5.15)
