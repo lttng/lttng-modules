@@ -880,272 +880,369 @@ void destroy_counter_key(struct lttng_kernel_counter_key *counter_key)
 }
 
 static
+long lttng_counter_ioctl_abi_old_counter_read(struct lttng_kernel_channel_counter *counter,
+		unsigned int cmd, unsigned long arg)
+{
+	size_t indexes[LTTNG_KERNEL_ABI_OLD_COUNTER_DIMENSION_MAX] = {};
+	struct lttng_kernel_abi_old_counter_read local_counter_read;
+	struct lttng_kernel_abi_old_counter_read __user *ucounter_read =
+			(struct lttng_kernel_abi_old_counter_read __user *) arg;
+	bool overflow, underflow;
+	int64_t value;
+	int32_t cpu;
+	int ret, i;
+
+	if (copy_from_user(&local_counter_read, ucounter_read,
+				sizeof(local_counter_read)))
+		return -EFAULT;
+	if (validate_zeroed_padding(local_counter_read.padding,
+			sizeof(local_counter_read.padding)))
+		return -EINVAL;
+	if (local_counter_read.index.number_dimensions > LTTNG_KERNEL_ABI_OLD_COUNTER_DIMENSION_MAX)
+		return -EINVAL;
+	/* Cast all indexes into size_t. */
+	for (i = 0; i < local_counter_read.index.number_dimensions; i++)
+		indexes[i] = local_counter_read.index.dimension_indexes[i];
+	cpu = local_counter_read.cpu;
+
+	ret = lttng_kernel_counter_read(counter, indexes, cpu, &value, &overflow, &underflow);
+	if (ret)
+		return ret;
+	local_counter_read.value.value = value;
+	local_counter_read.value.overflow = overflow;
+	local_counter_read.value.underflow = underflow;
+
+	if (copy_to_user(&ucounter_read->value, &local_counter_read.value,
+				sizeof(local_counter_read.value)))
+		return -EFAULT;
+
+	return 0;
+}
+
+static
+long lttng_counter_ioctl_abi_old_counter_aggregate(struct lttng_kernel_channel_counter *counter,
+		unsigned int cmd, unsigned long arg)
+{
+	size_t indexes[LTTNG_KERNEL_ABI_OLD_COUNTER_DIMENSION_MAX] = {};
+	struct lttng_kernel_abi_old_counter_aggregate local_counter_aggregate;
+	struct lttng_kernel_abi_old_counter_aggregate __user *ucounter_aggregate =
+			(struct lttng_kernel_abi_old_counter_aggregate __user *) arg;
+	bool overflow, underflow;
+	int64_t value;
+	int ret, i;
+
+	if (copy_from_user(&local_counter_aggregate, ucounter_aggregate,
+				sizeof(local_counter_aggregate)))
+		return -EFAULT;
+	if (validate_zeroed_padding(local_counter_aggregate.padding,
+			sizeof(local_counter_aggregate.padding)))
+		return -EINVAL;
+	if (local_counter_aggregate.index.number_dimensions > LTTNG_KERNEL_ABI_OLD_COUNTER_DIMENSION_MAX)
+		return -EINVAL;
+	/* Cast all indexes into size_t. */
+	for (i = 0; i < local_counter_aggregate.index.number_dimensions; i++)
+		indexes[i] = local_counter_aggregate.index.dimension_indexes[i];
+
+	ret = lttng_kernel_counter_aggregate(counter, indexes, &value, &overflow, &underflow);
+	if (ret)
+		return ret;
+	local_counter_aggregate.value.value = value;
+	local_counter_aggregate.value.overflow = overflow;
+	local_counter_aggregate.value.underflow = underflow;
+
+	if (copy_to_user(&ucounter_aggregate->value, &local_counter_aggregate.value,
+				sizeof(local_counter_aggregate.value)))
+		return -EFAULT;
+
+	return 0;
+}
+
+static
+long lttng_counter_ioctl_abi_old_counter_clear(struct lttng_kernel_channel_counter *counter,
+		unsigned int cmd, unsigned long arg)
+{
+	size_t indexes[LTTNG_KERNEL_ABI_OLD_COUNTER_DIMENSION_MAX] = {};
+	struct lttng_kernel_abi_old_counter_clear local_counter_clear;
+	struct lttng_kernel_abi_old_counter_clear __user *ucounter_clear =
+			(struct lttng_kernel_abi_old_counter_clear __user *) arg;
+	int i;
+
+	if (copy_from_user(&local_counter_clear, ucounter_clear,
+				sizeof(local_counter_clear)))
+		return -EFAULT;
+	if (validate_zeroed_padding(local_counter_clear.padding,
+			sizeof(local_counter_clear.padding)))
+		return -EINVAL;
+	if (local_counter_clear.index.number_dimensions > LTTNG_KERNEL_ABI_OLD_COUNTER_DIMENSION_MAX)
+		return -EINVAL;
+	/* Cast all indexes into size_t. */
+	for (i = 0; i < local_counter_clear.index.number_dimensions; i++)
+		indexes[i] = local_counter_clear.index.dimension_indexes[i];
+	return lttng_kernel_counter_clear(counter, indexes);
+}
+
+static
+long lttng_counter_ioctl_abi_counter_read(struct lttng_kernel_channel_counter *counter,
+		unsigned int cmd, unsigned long arg)
+{
+	size_t indexes[LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS] = {};
+	struct lttng_kernel_abi_counter_read kcounter_read = {};
+	struct lttng_kernel_abi_counter_read __user *ucounter_read =
+			(struct lttng_kernel_abi_counter_read __user *) arg;
+	uint32_t len, number_dimensions;
+	bool overflow, underflow;
+	int64_t value;
+	int32_t cpu;
+	int ret, i;
+
+	ret = get_user(len, &ucounter_read->len);
+	if (ret)
+		return ret;
+	if (len > PAGE_SIZE)
+		return -E2BIG;
+	if (len < offsetofend(struct lttng_kernel_abi_counter_read, value))
+		return -EINVAL;
+	ret = lttng_copy_struct_from_user(&kcounter_read, sizeof(kcounter_read),
+			ucounter_read, len);
+	if (ret)
+		return ret;
+	number_dimensions = kcounter_read.index.number_dimensions;
+	if (!number_dimensions || number_dimensions > LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS)
+		return -EINVAL;
+	/* Cast all indexes into size_t. */
+	for (i = 0; i < number_dimensions; i++) {
+		uint64_t __user *ptr = ((uint64_t __user *)(unsigned long)kcounter_read.index.ptr) + i;
+		uint64_t index;
+
+		ret = get_user(index, ptr);
+		if (ret)
+			return ret;
+		indexes[i] = index;
+	}
+	cpu = kcounter_read.cpu;
+	ret = lttng_kernel_counter_read(counter, indexes, cpu, &value, &overflow, &underflow);
+	if (ret)
+		return ret;
+	kcounter_read.value.value = value;
+	kcounter_read.value.flags |= underflow ? LTTNG_KERNEL_ABI_COUNTER_VALUE_FLAG_UNDERFLOW : 0;
+	kcounter_read.value.flags |= overflow ? LTTNG_KERNEL_ABI_COUNTER_VALUE_FLAG_OVERFLOW : 0;
+
+	if (copy_to_user(&ucounter_read->value, &kcounter_read.value, sizeof(kcounter_read.value)))
+		return -EFAULT;
+
+	return 0;
+}
+
+static
+long lttng_counter_ioctl_abi_counter_aggregate(struct lttng_kernel_channel_counter *counter,
+		unsigned int cmd, unsigned long arg)
+{
+	size_t indexes[LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS] = {};
+	struct lttng_kernel_abi_counter_aggregate kcounter_aggregate = {};
+	struct lttng_kernel_abi_counter_aggregate __user *ucounter_aggregate =
+			(struct lttng_kernel_abi_counter_aggregate __user *) arg;
+	uint32_t len, number_dimensions;
+	bool overflow, underflow;
+	int64_t value;
+	int ret, i;
+
+	ret = get_user(len, &ucounter_aggregate->len);
+	if (ret)
+		return ret;
+	if (len > PAGE_SIZE)
+		return -E2BIG;
+	if (len < offsetofend(struct lttng_kernel_abi_counter_aggregate, value))
+		return -EINVAL;
+	ret = lttng_copy_struct_from_user(&kcounter_aggregate, sizeof(kcounter_aggregate),
+			ucounter_aggregate, len);
+	if (ret)
+		return ret;
+	number_dimensions = kcounter_aggregate.index.number_dimensions;
+	if (!number_dimensions || number_dimensions > LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS)
+		return -EINVAL;
+	/* Cast all indexes into size_t. */
+	for (i = 0; i < number_dimensions; i++) {
+		uint64_t __user *ptr = ((uint64_t __user *)(unsigned long)kcounter_aggregate.index.ptr) + i;
+		uint64_t index;
+
+		ret = get_user(index, ptr);
+		if (ret)
+			return ret;
+		indexes[i] = index;
+	}
+	ret = lttng_kernel_counter_aggregate(counter, indexes, &value, &overflow, &underflow);
+	if (ret)
+		return ret;
+	kcounter_aggregate.value.value = value;
+	kcounter_aggregate.value.flags |= underflow ? LTTNG_KERNEL_ABI_COUNTER_VALUE_FLAG_UNDERFLOW : 0;
+	kcounter_aggregate.value.flags |= overflow ? LTTNG_KERNEL_ABI_COUNTER_VALUE_FLAG_OVERFLOW : 0;
+
+	if (copy_to_user(&ucounter_aggregate->value, &kcounter_aggregate.value, sizeof(kcounter_aggregate.value)))
+		return -EFAULT;
+
+	return 0;
+}
+
+static
+long lttng_counter_ioctl_abi_counter_clear(struct lttng_kernel_channel_counter *counter,
+		unsigned int cmd, unsigned long arg)
+{
+	size_t indexes[LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS] = {};
+	struct lttng_kernel_abi_counter_clear kcounter_clear = {};
+	struct lttng_kernel_abi_counter_clear __user *ucounter_clear =
+			(struct lttng_kernel_abi_counter_clear __user *) arg;
+	uint32_t len, number_dimensions;
+	int ret, i;
+
+	ret = get_user(len, &ucounter_clear->len);
+	if (ret)
+		return ret;
+	if (len > PAGE_SIZE)
+		return -E2BIG;
+	if (len < offsetofend(struct lttng_kernel_abi_counter_clear, index))
+		return -EINVAL;
+	ret = lttng_copy_struct_from_user(&kcounter_clear, sizeof(kcounter_clear),
+			ucounter_clear, len);
+	if (ret)
+		return ret;
+	number_dimensions = kcounter_clear.index.number_dimensions;
+	if (!number_dimensions || number_dimensions > LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS)
+		return -EINVAL;
+	/* Cast all indexes into size_t. */
+	for (i = 0; i < number_dimensions; i++) {
+		uint64_t __user *ptr = ((uint64_t __user *)(unsigned long)kcounter_clear.index.ptr) + i;
+		uint64_t index;
+
+		ret = get_user(index, ptr);
+		if (ret)
+			return ret;
+		indexes[i] = index;
+	}
+	return lttng_kernel_counter_clear(counter, indexes);
+}
+
+static
+long lttng_counter_ioctl_abi_counter_event(struct file *file,
+		struct lttng_kernel_channel_counter *counter,
+		unsigned int cmd, unsigned long arg)
+{
+	struct lttng_kernel_abi_counter_event __user *ucounter_event =
+			(struct lttng_kernel_abi_counter_event __user *) arg;
+	struct lttng_kernel_abi_counter_event kcounter_event = {};
+	struct lttng_kernel_counter_event *counter_event;
+	uint32_t len;
+	int ret;
+
+	ret = get_user(len, &ucounter_event->len);
+	if (ret)
+		return ret;
+	if (len > PAGE_SIZE)
+		return -E2BIG;
+	if (len < offsetofend(struct lttng_kernel_abi_counter_event, key))
+		return -EINVAL;
+	counter_event = kzalloc(sizeof(*counter_event), GFP_KERNEL);
+	if (!counter_event) {
+		return -ENOMEM;
+	}
+	ret = lttng_copy_struct_from_user(&kcounter_event, sizeof(kcounter_event),
+			ucounter_event, len);
+	if (ret)
+		goto end_counter_event;
+	memcpy(&counter_event->event_param, &kcounter_event.event, sizeof(counter_event->event_param));
+	ret = copy_user_event_param_ext(&counter_event->event_param_ext, &kcounter_event.event);
+	if (ret)
+		goto end_counter_event;
+	ret = create_counter_key_from_abi_key(&counter_event->counter_key, &kcounter_event.key);
+	if (ret)
+		goto end_counter_event;
+	ret = lttng_abi_create_event_counter_enabler(file, counter_event);
+	destroy_counter_key(counter_event->counter_key);
+end_counter_event:
+	kfree(counter_event);
+	return ret;
+}
+
+static
+long lttng_counter_ioctl_abi_counter_map_descriptor(struct lttng_kernel_channel_counter *counter,
+		unsigned int cmd, unsigned long arg)
+{
+	struct lttng_kernel_abi_counter_map_descriptor __user *udescriptor =
+		(struct lttng_kernel_abi_counter_map_descriptor __user *) arg;
+	struct lttng_kernel_abi_counter_key_string __user *ukey_ptr;
+	struct lttng_kernel_abi_counter_map_descriptor kdescriptor = {};
+	struct lttng_counter_map_descriptor *descriptor;
+	char key[LTTNG_KERNEL_COUNTER_KEY_LEN] = {};
+	size_t key_strlen;
+	uint32_t len;
+	int ret;
+
+	ret = get_user(len, &udescriptor->len);
+	if (ret)
+		return ret;
+	if (len > PAGE_SIZE)
+		return -E2BIG;
+	if (!len || len < offsetofend(struct lttng_kernel_abi_counter_map_descriptor, key_ptr))
+		return -EINVAL;
+	ret = lttng_copy_struct_from_user(&kdescriptor, sizeof(kdescriptor), udescriptor, len);
+	if (ret)
+		return ret;
+
+	mutex_lock(&counter->priv->map.lock);
+	if (kdescriptor.descriptor_index >= counter->priv->map.nr_descriptors) {
+		ret = -EOVERFLOW;
+		goto map_descriptor_error_unlock;
+	}
+	descriptor = &counter->priv->map.descriptors[kdescriptor.descriptor_index];
+	kdescriptor.user_token = descriptor->user_token;
+	kdescriptor.array_index = descriptor->array_index;
+	memcpy(&key, descriptor->key, LTTNG_KERNEL_COUNTER_KEY_LEN);
+	mutex_unlock(&counter->priv->map.lock);
+
+	key_strlen = strlen(key) + 1;
+	kdescriptor.key_string_len = key_strlen;
+	if (copy_to_user(udescriptor, &kdescriptor, min(sizeof(kdescriptor), (size_t)len)))
+		return -EFAULT;
+	ukey_ptr = (struct lttng_kernel_abi_counter_key_string __user *)(unsigned long)kdescriptor.key_ptr;
+	if (ukey_ptr) {
+		uint32_t ukey_string_len;
+
+		ret = get_user(ukey_string_len, &ukey_ptr->string_len);
+		if (ret)
+			return ret;
+		if (ukey_string_len > PAGE_SIZE)
+			return -E2BIG;
+		if (key_strlen > ukey_string_len)
+			return -ENOSPC;
+		if (copy_to_user(ukey_ptr->str, key, key_strlen))
+			return -EFAULT;
+	}
+	return 0;
+
+map_descriptor_error_unlock:
+	mutex_unlock(&counter->priv->map.lock);
+	return ret;
+}
+
+static
 long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	struct lttng_kernel_channel_counter *counter = file->private_data;
-	int i;
 
 	switch (cmd) {
 	case LTTNG_KERNEL_ABI_OLD_COUNTER_READ:
-	{
-		size_t indexes[LTTNG_KERNEL_ABI_OLD_COUNTER_DIMENSION_MAX] = {};
-		struct lttng_kernel_abi_old_counter_read local_counter_read;
-		struct lttng_kernel_abi_old_counter_read __user *ucounter_read =
-				(struct lttng_kernel_abi_old_counter_read __user *) arg;
-		bool overflow, underflow;
-		int64_t value;
-		int32_t cpu;
-		int ret;
-
-		if (copy_from_user(&local_counter_read, ucounter_read,
-					sizeof(local_counter_read)))
-			return -EFAULT;
-		if (validate_zeroed_padding(local_counter_read.padding,
-				sizeof(local_counter_read.padding)))
-			return -EINVAL;
-		if (local_counter_read.index.number_dimensions > LTTNG_KERNEL_ABI_OLD_COUNTER_DIMENSION_MAX)
-			return -EINVAL;
-		/* Cast all indexes into size_t. */
-		for (i = 0; i < local_counter_read.index.number_dimensions; i++)
-			indexes[i] = local_counter_read.index.dimension_indexes[i];
-		cpu = local_counter_read.cpu;
-
-		ret = lttng_kernel_counter_read(counter, indexes, cpu, &value, &overflow, &underflow);
-		if (ret)
-			return ret;
-		local_counter_read.value.value = value;
-		local_counter_read.value.overflow = overflow;
-		local_counter_read.value.underflow = underflow;
-
-		if (copy_to_user(&ucounter_read->value, &local_counter_read.value,
-					sizeof(local_counter_read.value)))
-			return -EFAULT;
-
-		return 0;
-	}
+		return lttng_counter_ioctl_abi_old_counter_read(counter, cmd, arg);
 	case LTTNG_KERNEL_ABI_OLD_COUNTER_AGGREGATE:
-	{
-		size_t indexes[LTTNG_KERNEL_ABI_OLD_COUNTER_DIMENSION_MAX] = {};
-		struct lttng_kernel_abi_old_counter_aggregate local_counter_aggregate;
-		struct lttng_kernel_abi_old_counter_aggregate __user *ucounter_aggregate =
-				(struct lttng_kernel_abi_old_counter_aggregate __user *) arg;
-		bool overflow, underflow;
-		int64_t value;
-		int ret;
-
-		if (copy_from_user(&local_counter_aggregate, ucounter_aggregate,
-					sizeof(local_counter_aggregate)))
-			return -EFAULT;
-		if (validate_zeroed_padding(local_counter_aggregate.padding,
-				sizeof(local_counter_aggregate.padding)))
-			return -EINVAL;
-		if (local_counter_aggregate.index.number_dimensions > LTTNG_KERNEL_ABI_OLD_COUNTER_DIMENSION_MAX)
-			return -EINVAL;
-		/* Cast all indexes into size_t. */
-		for (i = 0; i < local_counter_aggregate.index.number_dimensions; i++)
-			indexes[i] = local_counter_aggregate.index.dimension_indexes[i];
-
-		ret = lttng_kernel_counter_aggregate(counter, indexes, &value, &overflow, &underflow);
-		if (ret)
-			return ret;
-		local_counter_aggregate.value.value = value;
-		local_counter_aggregate.value.overflow = overflow;
-		local_counter_aggregate.value.underflow = underflow;
-
-		if (copy_to_user(&ucounter_aggregate->value, &local_counter_aggregate.value,
-					sizeof(local_counter_aggregate.value)))
-			return -EFAULT;
-
-		return 0;
-	}
+		return lttng_counter_ioctl_abi_old_counter_aggregate(counter, cmd, arg);
 	case LTTNG_KERNEL_ABI_OLD_COUNTER_CLEAR:
-	{
-		size_t indexes[LTTNG_KERNEL_ABI_OLD_COUNTER_DIMENSION_MAX] = {};
-		struct lttng_kernel_abi_old_counter_clear local_counter_clear;
-		struct lttng_kernel_abi_old_counter_clear __user *ucounter_clear =
-				(struct lttng_kernel_abi_old_counter_clear __user *) arg;
-
-		if (copy_from_user(&local_counter_clear, ucounter_clear,
-					sizeof(local_counter_clear)))
-			return -EFAULT;
-		if (validate_zeroed_padding(local_counter_clear.padding,
-				sizeof(local_counter_clear.padding)))
-			return -EINVAL;
-		if (local_counter_clear.index.number_dimensions > LTTNG_KERNEL_ABI_OLD_COUNTER_DIMENSION_MAX)
-			return -EINVAL;
-		/* Cast all indexes into size_t. */
-		for (i = 0; i < local_counter_clear.index.number_dimensions; i++)
-			indexes[i] = local_counter_clear.index.dimension_indexes[i];
-		return lttng_kernel_counter_clear(counter, indexes);
-	}
+		return lttng_counter_ioctl_abi_old_counter_clear(counter, cmd, arg);
 	case LTTNG_KERNEL_ABI_COUNTER_READ:
-	{
-		size_t indexes[LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS] = {};
-		struct lttng_kernel_abi_counter_read kcounter_read = {};
-		struct lttng_kernel_abi_counter_read __user *ucounter_read =
-				(struct lttng_kernel_abi_counter_read __user *) arg;
-		uint32_t len, number_dimensions;
-		bool overflow, underflow;
-		int64_t value;
-		int32_t cpu;
-		int ret;
-
-		ret = get_user(len, &ucounter_read->len);
-		if (ret)
-			return ret;
-		if (len > PAGE_SIZE)
-			return -E2BIG;
-		if (len < offsetofend(struct lttng_kernel_abi_counter_read, value))
-			return -EINVAL;
-		ret = lttng_copy_struct_from_user(&kcounter_read, sizeof(kcounter_read),
-				ucounter_read, len);
-		if (ret)
-			return ret;
-		number_dimensions = kcounter_read.index.number_dimensions;
-		if (!number_dimensions || number_dimensions > LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS)
-			return -EINVAL;
-		/* Cast all indexes into size_t. */
-		for (i = 0; i < number_dimensions; i++) {
-			uint64_t __user *ptr = ((uint64_t __user *)(unsigned long)kcounter_read.index.ptr) + i;
-			uint64_t index;
-
-			ret = get_user(index, ptr);
-			if (ret)
-				return ret;
-			indexes[i] = index;
-		}
-		cpu = kcounter_read.cpu;
-		ret = lttng_kernel_counter_read(counter, indexes, cpu, &value, &overflow, &underflow);
-		if (ret)
-			return ret;
-		kcounter_read.value.value = value;
-		kcounter_read.value.flags |= underflow ? LTTNG_KERNEL_ABI_COUNTER_VALUE_FLAG_UNDERFLOW : 0;
-		kcounter_read.value.flags |= overflow ? LTTNG_KERNEL_ABI_COUNTER_VALUE_FLAG_OVERFLOW : 0;
-
-		if (copy_to_user(&ucounter_read->value, &kcounter_read.value, sizeof(kcounter_read.value)))
-			return -EFAULT;
-
-		return 0;
-	}
+		return lttng_counter_ioctl_abi_counter_read(counter, cmd, arg);
 	case LTTNG_KERNEL_ABI_COUNTER_AGGREGATE:
-	{
-		size_t indexes[LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS] = {};
-		struct lttng_kernel_abi_counter_aggregate kcounter_aggregate = {};
-		struct lttng_kernel_abi_counter_aggregate __user *ucounter_aggregate =
-				(struct lttng_kernel_abi_counter_aggregate __user *) arg;
-		uint32_t len, number_dimensions;
-		bool overflow, underflow;
-		int64_t value;
-		int ret;
-
-		ret = get_user(len, &ucounter_aggregate->len);
-		if (ret)
-			return ret;
-		if (len > PAGE_SIZE)
-			return -E2BIG;
-		if (len < offsetofend(struct lttng_kernel_abi_counter_aggregate, value))
-			return -EINVAL;
-		ret = lttng_copy_struct_from_user(&kcounter_aggregate, sizeof(kcounter_aggregate),
-				ucounter_aggregate, len);
-		if (ret)
-			return ret;
-		number_dimensions = kcounter_aggregate.index.number_dimensions;
-		if (!number_dimensions || number_dimensions > LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS)
-			return -EINVAL;
-		/* Cast all indexes into size_t. */
-		for (i = 0; i < number_dimensions; i++) {
-			uint64_t __user *ptr = ((uint64_t __user *)(unsigned long)kcounter_aggregate.index.ptr) + i;
-			uint64_t index;
-
-			ret = get_user(index, ptr);
-			if (ret)
-				return ret;
-			indexes[i] = index;
-		}
-		ret = lttng_kernel_counter_aggregate(counter, indexes, &value, &overflow, &underflow);
-		if (ret)
-			return ret;
-		kcounter_aggregate.value.value = value;
-		kcounter_aggregate.value.flags |= underflow ? LTTNG_KERNEL_ABI_COUNTER_VALUE_FLAG_UNDERFLOW : 0;
-		kcounter_aggregate.value.flags |= overflow ? LTTNG_KERNEL_ABI_COUNTER_VALUE_FLAG_OVERFLOW : 0;
-
-		if (copy_to_user(&ucounter_aggregate->value, &kcounter_aggregate.value, sizeof(kcounter_aggregate.value)))
-			return -EFAULT;
-
-		return 0;
-	}
+		return lttng_counter_ioctl_abi_counter_aggregate(counter, cmd, arg);
 	case LTTNG_KERNEL_ABI_COUNTER_CLEAR:
-	{
-		size_t indexes[LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS] = {};
-		struct lttng_kernel_abi_counter_clear kcounter_clear = {};
-		struct lttng_kernel_abi_counter_clear __user *ucounter_clear =
-				(struct lttng_kernel_abi_counter_clear __user *) arg;
-		uint32_t len, number_dimensions;
-		int ret;
-
-		ret = get_user(len, &ucounter_clear->len);
-		if (ret)
-			return ret;
-		if (len > PAGE_SIZE)
-			return -E2BIG;
-		if (len < offsetofend(struct lttng_kernel_abi_counter_clear, index))
-			return -EINVAL;
-		ret = lttng_copy_struct_from_user(&kcounter_clear, sizeof(kcounter_clear),
-				ucounter_clear, len);
-		if (ret)
-			return ret;
-		number_dimensions = kcounter_clear.index.number_dimensions;
-		if (!number_dimensions || number_dimensions > LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS)
-			return -EINVAL;
-		/* Cast all indexes into size_t. */
-		for (i = 0; i < number_dimensions; i++) {
-			uint64_t __user *ptr = ((uint64_t __user *)(unsigned long)kcounter_clear.index.ptr) + i;
-			uint64_t index;
-
-			ret = get_user(index, ptr);
-			if (ret)
-				return ret;
-			indexes[i] = index;
-		}
-		return lttng_kernel_counter_clear(counter, indexes);
-	}
+		return lttng_counter_ioctl_abi_counter_clear(counter, cmd, arg);
 	case LTTNG_KERNEL_ABI_COUNTER_EVENT:
-	{
-		struct lttng_kernel_abi_counter_event __user *ucounter_event =
-				(struct lttng_kernel_abi_counter_event __user *) arg;
-		struct lttng_kernel_abi_counter_event kcounter_event = {};
-		struct lttng_kernel_counter_event *counter_event;
-		uint32_t len;
-		int ret;
-
-		ret = get_user(len, &ucounter_event->len);
-		if (ret)
-			return ret;
-		if (len > PAGE_SIZE)
-			return -E2BIG;
-		if (len < offsetofend(struct lttng_kernel_abi_counter_event, key))
-			return -EINVAL;
-		counter_event = kzalloc(sizeof(*counter_event), GFP_KERNEL);
-		if (!counter_event) {
-			return -ENOMEM;
-		}
-		ret = lttng_copy_struct_from_user(&kcounter_event, sizeof(kcounter_event),
-				ucounter_event, len);
-		if (ret)
-			goto end_counter_event;
-		memcpy(&counter_event->event_param, &kcounter_event.event, sizeof(counter_event->event_param));
-		ret = copy_user_event_param_ext(&counter_event->event_param_ext, &kcounter_event.event);
-		if (ret)
-			goto end_counter_event;
-		ret = create_counter_key_from_abi_key(&counter_event->counter_key, &kcounter_event.key);
-		if (ret)
-			goto end_counter_event;
-		ret = lttng_abi_create_event_counter_enabler(file, counter_event);
-		destroy_counter_key(counter_event->counter_key);
-	end_counter_event:
-		kfree(counter_event);
-		return ret;
-	}
+		return lttng_counter_ioctl_abi_counter_event(file, counter, cmd, arg);
 	case LTTNG_KERNEL_ABI_ENABLE:
 		return lttng_channel_enable(&counter->parent);
 	case LTTNG_KERNEL_ABI_DISABLE:
@@ -1164,63 +1261,7 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return put_user(nr_descriptors, user_nr_descriptors);
 	}
 	case LTTNG_KERNEL_ABI_COUNTER_MAP_DESCRIPTOR:
-	{
-		struct lttng_kernel_abi_counter_map_descriptor __user *udescriptor =
-			(struct lttng_kernel_abi_counter_map_descriptor __user *) arg;
-		struct lttng_kernel_abi_counter_key_string __user *ukey_ptr;
-		struct lttng_kernel_abi_counter_map_descriptor kdescriptor = {};
-		struct lttng_counter_map_descriptor *descriptor;
-		char key[LTTNG_KERNEL_COUNTER_KEY_LEN] = {};
-		size_t key_strlen;
-		uint32_t len;
-		int ret;
-
-		ret = get_user(len, &udescriptor->len);
-		if (ret)
-			return ret;
-		if (len > PAGE_SIZE)
-			return -E2BIG;
-		if (!len || len < offsetofend(struct lttng_kernel_abi_counter_map_descriptor, key_ptr))
-			return -EINVAL;
-		ret = lttng_copy_struct_from_user(&kdescriptor, sizeof(kdescriptor), udescriptor, len);
-		if (ret)
-			return ret;
-
-		mutex_lock(&counter->priv->map.lock);
-		if (kdescriptor.descriptor_index >= counter->priv->map.nr_descriptors) {
-			ret = -EOVERFLOW;
-			goto map_descriptor_error_unlock;
-		}
-		descriptor = &counter->priv->map.descriptors[kdescriptor.descriptor_index];
-		kdescriptor.user_token = descriptor->user_token;
-		kdescriptor.array_index = descriptor->array_index;
-		memcpy(&key, descriptor->key, LTTNG_KERNEL_COUNTER_KEY_LEN);
-		mutex_unlock(&counter->priv->map.lock);
-
-		key_strlen = strlen(key) + 1;
-		kdescriptor.key_string_len = key_strlen;
-		if (copy_to_user(udescriptor, &kdescriptor, min(sizeof(kdescriptor), (size_t)len)))
-			return -EFAULT;
-		ukey_ptr = (struct lttng_kernel_abi_counter_key_string __user *)(unsigned long)kdescriptor.key_ptr;
-		if (ukey_ptr) {
-			uint32_t ukey_string_len;
-
-			ret = get_user(ukey_string_len, &ukey_ptr->string_len);
-			if (ret)
-				return ret;
-			if (ukey_string_len > PAGE_SIZE)
-				return -E2BIG;
-			if (key_strlen > ukey_string_len)
-				return -ENOSPC;
-			if (copy_to_user(ukey_ptr->str, key, key_strlen))
-				return -EFAULT;
-		}
-		return 0;
-
-	map_descriptor_error_unlock:
-		mutex_unlock(&counter->priv->map.lock);
-		return ret;
-	}
+		return lttng_counter_ioctl_abi_counter_map_descriptor(counter, cmd, arg);
 	default:
 		return -ENOSYS;
 	}
