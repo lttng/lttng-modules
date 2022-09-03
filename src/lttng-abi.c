@@ -1306,6 +1306,7 @@ int lttng_abi_copy_user_old_counter_conf(struct lttng_kernel_counter_conf *count
 	struct lttng_kernel_counter_dimension *dimension;
 	int ret;
 
+	memset(counter_conf, 0, sizeof(*counter_conf));
 	ret = copy_from_user(&old_kcounter_conf, old_ucounter_conf,
 			sizeof(old_kcounter_conf));
 	if (ret)
@@ -1355,6 +1356,7 @@ int lttng_abi_copy_user_counter_conf(struct lttng_kernel_counter_conf *counter_c
 	struct lttng_kernel_abi_counter_dimension __user *udimension;
 	int ret;
 
+	memset(counter_conf, 0, sizeof(*counter_conf));
 	ret = get_user(len, &ucounter_conf->len);
 	if (ret)
 		return ret;
@@ -3370,7 +3372,7 @@ long lttng_event_notifier_group_ioctl(struct file *file, unsigned int cmd,
 	}
 	case LTTNG_KERNEL_ABI_OLD_COUNTER:
 	{
-		struct lttng_kernel_counter_conf counter_conf = {};
+		struct lttng_kernel_counter_conf counter_conf;
 
 		ret = lttng_abi_copy_user_old_counter_conf(&counter_conf,
 				(struct lttng_kernel_abi_old_counter_conf __user *) arg);
@@ -3380,7 +3382,7 @@ long lttng_event_notifier_group_ioctl(struct file *file, unsigned int cmd,
 	}
 	case LTTNG_KERNEL_ABI_COUNTER:
 	{
-		struct lttng_kernel_counter_conf counter_conf = {};
+		struct lttng_kernel_counter_conf counter_conf;
 
 		ret = lttng_abi_copy_user_counter_conf(&counter_conf,
 				(struct lttng_kernel_abi_counter_conf __user *) arg);
