@@ -63,7 +63,7 @@ void vpid_get_value(void *priv,
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
 	lttng_kernel_static_event_field("vpid",
 		lttng_kernel_static_type_integer_from_type(pid_t, __BYTE_ORDER, 10),
-		false, false, false),
+		false, false),
 	vpid_get_size,
 	vpid_record,
 	vpid_get_value,

@@ -79,7 +79,7 @@ void hostname_get_value(void *priv,
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
 	lttng_kernel_static_event_field("hostname",
 		lttng_kernel_static_type_array_text(LTTNG_HOSTNAME_CTX_LEN),
-		false, false, false),
+		false, false),
 	hostname_get_size,
 	hostname_record,
 	hostname_get_value,

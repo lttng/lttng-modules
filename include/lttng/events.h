@@ -75,13 +75,15 @@ struct lttng_kernel_type_integer {
 	unsigned int size;		/* in bits */
 	unsigned short alignment;	/* in bits */
 	unsigned int signedness:1,
-		reverse_byte_order:1;
+		reverse_byte_order:1,
+		user:1;			/* fetch from user-space */
 	unsigned int base;		/* 2, 8, 10, 16, for pretty print */
 };
 
 struct lttng_kernel_type_string {
 	struct lttng_kernel_type_common parent;
 	enum lttng_kernel_string_encoding encoding;
+	unsigned int user:1;		/* fetch from user-space */
 };
 
 struct lttng_kernel_type_enum {
@@ -134,7 +136,6 @@ struct lttng_kernel_event_field {
 	const char *name;
 	const struct lttng_kernel_type_common *type;
 	unsigned int nowrite:1,		/* do not write into trace */
-			user:1,		/* fetch from user-space */
 			nofilter:1;	/* do not consider for filter */
 };
 
@@ -142,7 +143,7 @@ struct lttng_kernel_event_field {
 #define PARAMS(args...)	args
 #endif
 
-#define lttng_kernel_static_type_integer(_size, _alignment, _signedness, _byte_order, _base)		\
+#define _lttng_kernel_static_type_integer(_size, _alignment, _signedness, _byte_order, _user, _base)	\
 	((const struct lttng_kernel_type_common *) __LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_type_integer, { \
 		.parent = {										\
 			.type = lttng_kernel_type_integer,							\
@@ -151,15 +152,28 @@ struct lttng_kernel_event_field {
 		.alignment = (_alignment),								\
 		.signedness = (_signedness),								\
 		.reverse_byte_order = (_byte_order) != __BYTE_ORDER,					\
+		.user = (_user),									\
 		.base = (_base),									\
 	}))
 
-#define lttng_kernel_static_type_integer_from_type(_type, _byte_order, _base)				\
+#define lttng_kernel_static_type_integer(_size, _alignment, _signedness, _byte_order, _base)		\
+	_lttng_kernel_static_type_integer(_size, _alignment, _signedness, _byte_order, 0, _base)
+
+#define lttng_kernel_static_type_user_integer(_size, _alignment, _signedness, _byte_order, _base)	\
+	_lttng_kernel_static_type_integer(_size, _alignment, _signedness, _byte_order, 1, _base)
+
+#define _lttng_kernel_static_type_integer_from_type(_type, _byte_order, _user, _base)			\
 	lttng_kernel_static_type_integer(sizeof(_type) * CHAR_BIT,					\
 			lttng_alignof(_type) * CHAR_BIT,						\
 			lttng_is_signed_type(_type),							\
 			_byte_order,									\
 			_base)
+
+#define lttng_kernel_static_type_integer_from_type(_type, _byte_order, _base)				\
+	_lttng_kernel_static_type_integer_from_type(_type, _byte_order, 0, _base)
+
+#define lttng_kernel_static_type_user_integer_from_type(_type, _byte_order, _base)			\
+	_lttng_kernel_static_type_integer_from_type(_type, _byte_order, 1, _base)
 
 #define lttng_kernel_static_type_enum(_desc, _container_type)						\
 	((const struct lttng_kernel_type_common *) __LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_type_enum, { \
@@ -199,12 +213,13 @@ struct lttng_kernel_event_field {
 		.elem_type = (_elem_type),								\
 	}))
 
-#define lttng_kernel_static_type_string(_encoding)							\
+#define lttng_kernel_static_type_string(_encoding, _user)						\
 	((const struct lttng_kernel_type_common *) __LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_type_string, { \
 		.parent = {										\
 			.type = lttng_kernel_type_string,						\
 		},											\
 		.encoding = lttng_kernel_string_encoding_##_encoding,					\
+		.user = (_user),									\
 	}))
 
 #define lttng_kernel_static_type_struct_init(_nr_fields, _fields, _alignment)				\
@@ -233,12 +248,11 @@ struct lttng_kernel_event_field {
 		.alignment = (_alignment),								\
 	}))
 
-#define lttng_kernel_static_event_field(_name, _type, _nowrite, _user, _nofilter)			\
+#define lttng_kernel_static_event_field(_name, _type, _nowrite, _nofilter)				\
 	__LTTNG_COMPOUND_LITERAL(const struct lttng_kernel_event_field, {				\
 		.name = (_name),									\
 		.type = (_type),									\
 		.nowrite = (_nowrite),									\
-		.user = (_user),									\
 		.nofilter = (_nofilter),								\
 	})
 

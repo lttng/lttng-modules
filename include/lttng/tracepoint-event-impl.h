@@ -259,27 +259,27 @@ static __used struct lttng_kernel_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM
 #undef _ctf_integer_ext
 #define _ctf_integer_ext(_type, _item, _src, _byte_order, _base, _user, _nowrite)	\
 	lttng_kernel_static_event_field(#_item,						\
-		lttng_kernel_static_type_integer_from_type(_type, _byte_order, _base),	\
-		_nowrite, _user, 0),
+		_lttng_kernel_static_type_integer_from_type(_type, _byte_order, _user, _base),	\
+		_nowrite, 0),
 
 #undef _ctf_array_encoded
 #define _ctf_array_encoded(_type, _item, _src, _length,		\
 		_encoding, _byte_order, _elem_type_base, _user, _nowrite) \
 	lttng_kernel_static_event_field(#_item,			\
 		lttng_kernel_static_type_array(_length,		\
-			lttng_kernel_static_type_integer_from_type(_type, _byte_order, _elem_type_base), \
+			_lttng_kernel_static_type_integer_from_type(_type, _byte_order, _user, _elem_type_base), \
 			0,					\
 			_encoding),				\
-		_nowrite, _user, 0),
+		_nowrite, 0),
 
 #undef _ctf_array_bitfield
 #define _ctf_array_bitfield(_type, _item, _src, _length, _user, _nowrite) \
 	lttng_kernel_static_event_field(#_item,			\
 		lttng_kernel_static_type_array((_length) * sizeof(_type) * CHAR_BIT, \
-			lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10), \
+			_lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, _user, 10), \
 			lttng_alignof(_type),			\
 			none),					\
-		_nowrite, _user, 0),
+		_nowrite, 0),
 
 #undef _ctf_sequence_encoded
 #define _ctf_sequence_encoded(_type, _item, _src,		\
@@ -287,13 +287,13 @@ static __used struct lttng_kernel_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM
 			_byte_order, _elem_type_base, _user, _nowrite) \
 	lttng_kernel_static_event_field("_" #_item "_length",	\
 		lttng_kernel_static_type_integer_from_type(_length_type, __BYTE_ORDER, 10), \
-		_nowrite, 0, 1),				\
+		_nowrite, 1),					\
 	lttng_kernel_static_event_field(#_item,			\
 		lttng_kernel_static_type_sequence(NULL,	/* Use previous field. */ \
-			lttng_kernel_static_type_integer_from_type(_type, _byte_order, _elem_type_base), \
+			_lttng_kernel_static_type_integer_from_type(_type, _byte_order, _user, _elem_type_base), \
 			0,					\
 			_encoding),				\
-		_nowrite, _user, 0),
+		_nowrite, 0),
 
 #undef _ctf_sequence_bitfield
 #define _ctf_sequence_bitfield(_type, _item, _src,		\
@@ -301,19 +301,19 @@ static __used struct lttng_kernel_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM
 			_user, _nowrite)			\
 	lttng_kernel_static_event_field("_" #_item "_length",	\
 		lttng_kernel_static_type_integer_from_type(_length_type, __BYTE_ORDER, 10), \
-		_nowrite, 0, 1),				\
+		_nowrite, 1),					\
 	lttng_kernel_static_event_field(#_item,			\
 		lttng_kernel_static_type_sequence(NULL,	/* Use previous field. */ \
-			lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10), \
+			_lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, _user, 10), \
 			lttng_alignof(_type),			\
 			none),					\
-		_nowrite, _user, 0),
+		_nowrite, 0),
 
 #undef _ctf_string
 #define _ctf_string(_item, _src, _user, _nowrite)		\
 	lttng_kernel_static_event_field(#_item,			\
-		lttng_kernel_static_type_string(UTF8),		\
-		_nowrite, _user, 0),
+		lttng_kernel_static_type_string(UTF8, _user),	\
+		_nowrite, 0),
 
 #undef _ctf_unused
 #define _ctf_unused(_src)
@@ -322,12 +322,12 @@ static __used struct lttng_kernel_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM
 #define _ctf_enum(_name, _type, _item, _src, _user, _nowrite)	\
 	lttng_kernel_static_event_field(#_item,			\
 		lttng_kernel_static_type_enum(&__enum_##_name,	\
-			lttng_kernel_static_type_integer_from_type(_type, __BYTE_ORDER, 10)), \
-		_nowrite, _user, 0),
+			_lttng_kernel_static_type_integer_from_type(_type, __BYTE_ORDER, _user, 10)), \
+		_nowrite, 0),
 
 #undef ctf_custom_field
 #define ctf_custom_field(_type, _item, _code)			\
-	lttng_kernel_static_event_field(#_item, PARAMS(_type), 0, 0, 1),
+	lttng_kernel_static_event_field(#_item, PARAMS(_type), 0, 1),
 
 #undef ctf_custom_type
 #define ctf_custom_type(...)	__VA_ARGS__

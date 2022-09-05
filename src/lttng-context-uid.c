@@ -50,7 +50,7 @@ void uid_get_value(void *priv,
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
 	lttng_kernel_static_event_field("uid",
 		lttng_kernel_static_type_integer_from_type(uid_t, __BYTE_ORDER, 10),
-		false, false, false),
+		false, false),
 	uid_get_size,
 	uid_record,
 	uid_get_value,
