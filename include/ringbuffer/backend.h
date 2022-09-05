@@ -22,6 +22,7 @@
 #include <linux/fs.h>
 #include <linux/mm.h>
 #include <wrapper/uaccess.h>
+#include <lttng/probe-user.h>
 
 /* Internal helpers */
 #include <ringbuffer/backend_internal.h>
@@ -580,14 +581,7 @@ unsigned long lib_ring_buffer_copy_from_user_check_nofault(void *dest,
 						const void __user *src,
 						unsigned long len)
 {
-	unsigned long ret;
-
-	if (!lttng_access_ok(VERIFY_READ, src, len))
-		return 1;
-	pagefault_disable();
-	ret = __copy_from_user_inatomic(dest, src, len);
-	pagefault_enable();
-	return ret;
+	return lttng_copy_from_user_check_nofault(dest, src, len);
 }
 
 #endif /* _LIB_RING_BUFFER_BACKEND_H */
