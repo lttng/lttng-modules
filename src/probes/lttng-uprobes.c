@@ -101,7 +101,7 @@ int lttng_uprobes_event_handler_pre(struct uprobe_consumer *uc, struct pt_regs *
 static const struct lttng_kernel_event_field *event_fields[] = {
 	lttng_kernel_static_event_field("ip",
 		lttng_kernel_static_type_integer_from_type(unsigned long, __BYTE_ORDER, 16),
-		false, false, false),
+		false, false),
 };
 
 static const struct lttng_kernel_tracepoint_class tp_class = {

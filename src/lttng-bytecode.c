@@ -248,10 +248,12 @@ int apply_field_reloc(const struct lttng_kernel_event_desc *event_desc,
 		{
 			const struct lttng_kernel_type_array *array_type = lttng_kernel_get_type_array(field->type);
 			const struct lttng_kernel_type_common *elem_type = array_type->elem_type;
+			const struct lttng_kernel_type_integer *elem_integer_type;
 
 			if (!lttng_kernel_type_is_bytewise_integer(elem_type) || array_type->encoding == lttng_kernel_string_encoding_none)
 				return -EINVAL;
-			if (field->user)
+			elem_integer_type = container_of(elem_type, const struct lttng_kernel_type_integer, parent);
+			if (elem_integer_type->user)
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_USER_SEQUENCE;
 			else
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_SEQUENCE;
@@ -261,21 +263,27 @@ int apply_field_reloc(const struct lttng_kernel_event_desc *event_desc,
 		{
 			const struct lttng_kernel_type_sequence *sequence_type = lttng_kernel_get_type_sequence(field->type);
 			const struct lttng_kernel_type_common *elem_type = sequence_type->elem_type;
+			const struct lttng_kernel_type_integer *elem_integer_type;
 
 			if (!lttng_kernel_type_is_bytewise_integer(elem_type) || sequence_type->encoding == lttng_kernel_string_encoding_none)
 				return -EINVAL;
-			if (field->user)
+			elem_integer_type = container_of(elem_type, const struct lttng_kernel_type_integer, parent);
+			if (elem_integer_type->user)
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_USER_SEQUENCE;
 			else
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_SEQUENCE;
 			break;
 		}
 		case lttng_kernel_type_string:
-			if (field->user)
+		{
+			const struct lttng_kernel_type_string *string_type = lttng_kernel_get_type_string(field->type);
+
+			if (string_type->user)
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_USER_STRING;
 			else
 				op->op = BYTECODE_OP_LOAD_FIELD_REF_STRING;
 			break;
+		}
 		case lttng_kernel_type_struct:	/* Unsupported. */
 		case lttng_kernel_type_variant:	/* Unsupported. */
 		default:
@@ -330,17 +338,23 @@ int apply_context_reloc(struct bytecode_runtime *runtime,
 			break;
 			/* Sequence and array supported as string */
 		case lttng_kernel_type_string:
-			BUG_ON(ctx_field->event_field->user);
+		{
+			const struct lttng_kernel_type_string *string_type = lttng_kernel_get_type_string(ctx_field->event_field->type);
+
+			BUG_ON(string_type->user);
 			op->op = BYTECODE_OP_GET_CONTEXT_REF_STRING;
 			break;
+		}
 		case lttng_kernel_type_array:
 		{
 			const struct lttng_kernel_type_array *array_type = lttng_kernel_get_type_array(ctx_field->event_field->type);
 			const struct lttng_kernel_type_common *elem_type = array_type->elem_type;
+			const struct lttng_kernel_type_integer *elem_integer_type;
 
 			if (!lttng_kernel_type_is_bytewise_integer(elem_type) || array_type->encoding == lttng_kernel_string_encoding_none)
 				return -EINVAL;
-			BUG_ON(ctx_field->event_field->user);
+			elem_integer_type = container_of(elem_type, const struct lttng_kernel_type_integer, parent);
+			BUG_ON(elem_integer_type->user);
 			op->op = BYTECODE_OP_GET_CONTEXT_REF_STRING;
 			break;
 		}
@@ -348,10 +362,12 @@ int apply_context_reloc(struct bytecode_runtime *runtime,
 		{
 			const struct lttng_kernel_type_sequence *sequence_type = lttng_kernel_get_type_sequence(ctx_field->event_field->type);
 			const struct lttng_kernel_type_common *elem_type = sequence_type->elem_type;
+			const struct lttng_kernel_type_integer *elem_integer_type;
 
 			if (!lttng_kernel_type_is_bytewise_integer(elem_type) || sequence_type->encoding == lttng_kernel_string_encoding_none)
 				return -EINVAL;
-			BUG_ON(ctx_field->event_field->user);
+			elem_integer_type = container_of(elem_type, const struct lttng_kernel_type_integer, parent);
+			BUG_ON(elem_integer_type->user);
 			op->op = BYTECODE_OP_GET_CONTEXT_REF_STRING;
 			break;
 		}

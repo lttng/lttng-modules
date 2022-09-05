@@ -66,7 +66,7 @@ void preemptible_get_value(void *priv,
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
 	lttng_kernel_static_event_field("preemptible",
 		lttng_kernel_static_type_integer_from_type(uint8_t, __BYTE_ORDER, 10),
-		false, false, false),
+		false, false),
 	preemptible_get_size,
 	preemptible_record,
 	preemptible_get_value,

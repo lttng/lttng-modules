@@ -51,7 +51,7 @@ void procname_get_value(void *priv,
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
 	lttng_kernel_static_event_field("procname",
 		lttng_kernel_static_type_array_text(sizeof(current->comm)),
-		false, false, false),
+		false, false),
 	procname_get_size,
 	procname_record,
 	procname_get_value,

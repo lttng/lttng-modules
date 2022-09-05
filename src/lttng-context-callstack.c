@@ -101,23 +101,23 @@ void lttng_callstack_sequence_destroy(void *priv)
 static const struct lttng_kernel_event_field *event_fields_kernel[NR_FIELDS] = {
 	lttng_kernel_static_event_field("_callstack_kernel_length",
 		lttng_kernel_static_type_integer_from_type(unsigned int, __BYTE_ORDER, 10),
-		false, false, false),
+		false, false),
 	lttng_kernel_static_event_field("callstack_kernel",
 		lttng_kernel_static_type_sequence(NULL,
 			lttng_kernel_static_type_integer_from_type(unsigned long, __BYTE_ORDER, 16),
 			0, none),
-		false, false, false),
+		false, false),
 };
 
 static const struct lttng_kernel_event_field *event_fields_user[NR_FIELDS] = {
 	lttng_kernel_static_event_field("_callstack_user_length",
 		lttng_kernel_static_type_integer_from_type(unsigned int, __BYTE_ORDER, 10),
-		false, false, false),
+		false, false),
 	lttng_kernel_static_event_field("callstack_user",
 		lttng_kernel_static_type_sequence(NULL,
 			lttng_kernel_static_type_integer_from_type(unsigned long, __BYTE_ORDER, 16),
 			0, none),
-		false, false, false),
+		false, false),
 };
 
 const struct lttng_kernel_event_field **lttng_cs_event_fields(enum lttng_cs_ctx_modes mode)

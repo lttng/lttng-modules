@@ -93,13 +93,13 @@ SC_LTTNG_TRACEPOINT_ENUM(lttng_mmap_flags_options,
 	lttng_kernel_static_event_field("type",				\
 		lttng_kernel_static_type_enum(&__enum_lttng_mmap_flags_mapping_type, \
 				lttng_kernel_static_type_integer(4, 1, 0, __BYTE_ORDER, 16)), \
-		false, false, false)
+		false, false)
 
 #define LTTNG_MMAP_FLAGS_OPTIONS					\
 	lttng_kernel_static_event_field("options",			\
 		lttng_kernel_static_type_enum(&__enum_lttng_mmap_flags_options, \
 				lttng_kernel_static_type_integer(28, 1, 0, __BYTE_ORDER, 16)), \
-		false, false, false)
+		false, false)
 
 #if (__BYTE_ORDER == __LITTLE_ENDIAN)
 #define LTTNG_MMAP_FLAGS			\

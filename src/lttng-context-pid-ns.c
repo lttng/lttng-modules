@@ -78,7 +78,7 @@ void pid_ns_get_value(void *priv,
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
 	lttng_kernel_static_event_field("pid_ns",
 		lttng_kernel_static_type_integer_from_type(unsigned int, __BYTE_ORDER, 10),
-		false, false, false),
+		false, false),
 	pid_ns_get_size,
 	pid_ns_record,
 	pid_ns_get_value,
