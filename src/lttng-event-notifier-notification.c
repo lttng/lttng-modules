@@ -12,6 +12,7 @@
 #include <lttng/msgpack.h>
 #include <lttng/event-notifier-notification.h>
 #include <lttng/events-internal.h>
+#include <lttng/probe-user.h>
 #include <wrapper/barrier.h>
 
 /*
@@ -100,39 +101,65 @@ int64_t capture_sequence_element_signed(uint8_t *ptr,
 {
 	int64_t value = 0;
 	unsigned int size = type->size;
+	bool user = type->user;
 	bool byte_order_reversed = type->reverse_byte_order;
 
 	switch (size) {
 	case 8:
-		value = *ptr;
+	{
+		int8_t tmp;
+
+		if (user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, ptr, sizeof(int8_t)))
+				tmp = 0;
+		} else {
+			tmp = *ptr;
+		}
+		value = tmp;
 		break;
+	}
 	case 16:
 	{
 		int16_t tmp;
-		tmp = *(int16_t *) ptr;
+
+		if (user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, ptr, sizeof(int16_t)))
+				tmp = 0;
+		} else {
+			tmp = *(int16_t *) ptr;
+		}
 		if (byte_order_reversed)
 			__swab16s(&tmp);
-
 		value = tmp;
 		break;
 	}
 	case 32:
 	{
 		int32_t tmp;
-		tmp = *(int32_t *) ptr;
+
+		if (user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, ptr, sizeof(int32_t)))
+				tmp = 0;
+		} else {
+			tmp = *(int32_t *) ptr;
+		}
 		if (byte_order_reversed)
 			__swab32s(&tmp);
-
 		value = tmp;
 		break;
 	}
 	case 64:
 	{
 		int64_t tmp;
-		tmp = *(int64_t *) ptr;
+
+		if (user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, ptr, sizeof(int64_t)))
+				tmp = 0;
+		} else {
+			tmp = *(int64_t *) ptr;
+		}
 		if (byte_order_reversed)
 			__swab64s(&tmp);
-
 		value = tmp;
 		break;
 	}
@@ -149,39 +176,65 @@ uint64_t capture_sequence_element_unsigned(uint8_t *ptr,
 {
 	uint64_t value = 0;
 	unsigned int size = type->size;
+	bool user = type->user;
 	bool byte_order_reversed = type->reverse_byte_order;
 
 	switch (size) {
 	case 8:
-		value = *ptr;
+	{
+		uint8_t tmp;
+
+		if (user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, ptr, sizeof(uint8_t)))
+				tmp = 0;
+		} else {
+			tmp = *ptr;
+		}
+		value = tmp;
 		break;
+	}
 	case 16:
 	{
 		uint16_t tmp;
-		tmp = *(uint16_t *) ptr;
+
+		if (user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, ptr, sizeof(uint16_t)))
+				tmp = 0;
+		} else {
+			tmp = *(uint16_t *) ptr;
+		}
 		if (byte_order_reversed)
 			__swab16s(&tmp);
-
 		value = tmp;
 		break;
 	}
 	case 32:
 	{
 		uint32_t tmp;
-		tmp = *(uint32_t *) ptr;
+
+		if (user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, ptr, sizeof(uint32_t)))
+				tmp = 0;
+		} else {
+			tmp = *(uint32_t *) ptr;
+		}
 		if (byte_order_reversed)
 			__swab32s(&tmp);
-
 		value = tmp;
 		break;
 	}
 	case 64:
 	{
 		uint64_t tmp;
-		tmp = *(uint64_t *) ptr;
+
+		if (user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, ptr, sizeof(uint64_t)))
+				tmp = 0;
+		} else {
+			tmp = *(uint64_t *) ptr;
+		}
 		if (byte_order_reversed)
 			__swab64s(&tmp);
-
 		value = tmp;
 		break;
 	}
