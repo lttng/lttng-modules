@@ -16,6 +16,7 @@
 #include <lttng/lttng-bytecode.h>
 #include <lttng/string-utils.h>
 #include <lttng/events-internal.h>
+#include <lttng/probe-user.h>
 
 /*
  * get_char should be called with page fault handler disabled if it is expected
@@ -284,6 +285,9 @@ static int context_get_index(struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 
 	switch (field->type->type) {
 	case lttng_kernel_type_integer:
+	{
+		const struct lttng_kernel_type_integer *integer_type = lttng_kernel_get_type_integer(field->type);
+
 		ctx_field->get_value(ctx_field->priv, lttng_probe_ctx, &v);
 		if (lttng_kernel_get_type_integer(field->type)->signedness) {
 			ptr->object_type = OBJECT_TYPE_S64;
@@ -294,8 +298,10 @@ static int context_get_index(struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 			ptr->u.u64 = v.u.s64;	/* Cast. */
 			ptr->ptr = &ptr->u.u64;
 		}
-		ptr->rev_bo = lttng_kernel_get_type_integer(field->type)->reverse_byte_order;
+		ptr->rev_bo = integer_type->reverse_byte_order;
+		ptr->user = integer_type->user;
 		break;
+	}
 	case lttng_kernel_type_enum:
 	{
 		const struct lttng_kernel_type_enum *enum_type = lttng_kernel_get_type_enum(field->type);
@@ -312,11 +318,13 @@ static int context_get_index(struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 			ptr->ptr = &ptr->u.u64;
 		}
 		ptr->rev_bo = integer_type->reverse_byte_order;
+		ptr->user = integer_type->user;
 		break;
 	}
 	case lttng_kernel_type_array:
 	{
 		const struct lttng_kernel_type_array *array_type = lttng_kernel_get_type_array(field->type);
+		const struct lttng_kernel_type_integer *integer_type;
 
 		if (!lttng_kernel_type_is_bytewise_integer(array_type->elem_type)) {
 			printk(KERN_WARNING "LTTng: bytecode: Array nesting only supports integer types.\n");
@@ -326,7 +334,9 @@ static int context_get_index(struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 			printk(KERN_WARNING "LTTng: bytecode: Only string arrays are supported for contexts.\n");
 			return -EINVAL;
 		}
+		integer_type = lttng_kernel_get_type_integer(array_type->elem_type);
 		ptr->object_type = OBJECT_TYPE_STRING;
+		ptr->user = integer_type->user;
 		ctx_field->get_value(ctx_field->priv, lttng_probe_ctx, &v);
 		ptr->ptr = v.u.str;
 		break;
@@ -334,6 +344,7 @@ static int context_get_index(struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 	case lttng_kernel_type_sequence:
 	{
 		const struct lttng_kernel_type_sequence *sequence_type = lttng_kernel_get_type_sequence(field->type);
+		const struct lttng_kernel_type_integer *integer_type;
 
 		if (!lttng_kernel_type_is_bytewise_integer(sequence_type->elem_type)) {
 			printk(KERN_WARNING "LTTng: bytecode: Sequence nesting only supports integer types.\n");
@@ -343,16 +354,23 @@ static int context_get_index(struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 			printk(KERN_WARNING "LTTng: bytecode: Only string sequences are supported for contexts.\n");
 			return -EINVAL;
 		}
+		integer_type = lttng_kernel_get_type_integer(sequence_type->elem_type);
 		ptr->object_type = OBJECT_TYPE_STRING;
+		ptr->user = integer_type->user;
 		ctx_field->get_value(ctx_field->priv, lttng_probe_ctx, &v);
 		ptr->ptr = v.u.str;
 		break;
 	}
 	case lttng_kernel_type_string:
+	{
+		const struct lttng_kernel_type_string *string_type = lttng_kernel_get_type_string(field->type);
+
 		ptr->object_type = OBJECT_TYPE_STRING;
+		ptr->user = string_type->user;
 		ctx_field->get_value(ctx_field->priv, lttng_probe_ctx, &v);
 		ptr->ptr = v.u.str;
 		break;
+	}
 	case lttng_kernel_type_struct:
 		printk(KERN_WARNING "LTTng: bytecode: Structure type cannot be loaded.\n");
 		return -EINVAL;
@@ -388,6 +406,7 @@ static int dynamic_get_index(struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 			stack_top->u.ptr.ptr = ptr;
 			stack_top->u.ptr.object_type = gid->elem.type;
 			stack_top->u.ptr.rev_bo = gid->elem.rev_bo;
+			stack_top->u.ptr.user = gid->elem.user;
 			BUG_ON(stack_top->u.ptr.field->type->type != lttng_kernel_type_array);
 			stack_top->u.ptr.field = NULL;
 			break;
@@ -407,6 +426,7 @@ static int dynamic_get_index(struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 			stack_top->u.ptr.ptr = ptr;
 			stack_top->u.ptr.object_type = gid->elem.type;
 			stack_top->u.ptr.rev_bo = gid->elem.rev_bo;
+			stack_top->u.ptr.user = gid->elem.user;
 			BUG_ON(stack_top->u.ptr.field->type->type != lttng_kernel_type_sequence);
 			stack_top->u.ptr.field = NULL;
 			break;
@@ -443,6 +463,7 @@ static int dynamic_get_index(struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 		stack_top->u.ptr.type = LOAD_OBJECT;
 		stack_top->u.ptr.field = gid->field;
 		stack_top->u.ptr.rev_bo = gid->elem.rev_bo;
+		stack_top->u.ptr.user = gid->elem.user;
 		break;
 	}
 
@@ -472,7 +493,12 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 	switch (stack_top->u.ptr.object_type) {
 	case OBJECT_TYPE_S8:
 		dbg_printk("op load field s8\n");
-		stack_top->u.v = *(int8_t *) stack_top->u.ptr.ptr;
+		if (stack_top->u.ptr.user) {
+			if (lttng_copy_from_user_check_nofault(&stack_top->u.v, (int8_t __user *) stack_top->u.ptr.ptr, sizeof(int8_t)))
+				stack_top->u.v = 0;
+		} else {
+			stack_top->u.v = *(int8_t *) stack_top->u.ptr.ptr;
+		}
 		stack_top->type = REG_S64;
 		break;
 	case OBJECT_TYPE_S16:
@@ -480,7 +506,12 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 		int16_t tmp;
 
 		dbg_printk("op load field s16\n");
-		tmp = *(int16_t *) stack_top->u.ptr.ptr;
+		if (stack_top->u.ptr.user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, (int16_t __user *) stack_top->u.ptr.ptr, sizeof(int16_t)))
+				tmp = 0;
+		} else {
+			tmp = *(int16_t *) stack_top->u.ptr.ptr;
+		}
 		if (stack_top->u.ptr.rev_bo)
 			__swab16s(&tmp);
 		stack_top->u.v = tmp;
@@ -492,7 +523,12 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 		int32_t tmp;
 
 		dbg_printk("op load field s32\n");
-		tmp = *(int32_t *) stack_top->u.ptr.ptr;
+		if (stack_top->u.ptr.user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, (int32_t __user *) stack_top->u.ptr.ptr, sizeof(int32_t)))
+				tmp = 0;
+		} else {
+			tmp = *(int32_t *) stack_top->u.ptr.ptr;
+		}
 		if (stack_top->u.ptr.rev_bo)
 			__swab32s(&tmp);
 		stack_top->u.v = tmp;
@@ -504,7 +540,12 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 		int64_t tmp;
 
 		dbg_printk("op load field s64\n");
-		tmp = *(int64_t *) stack_top->u.ptr.ptr;
+		if (stack_top->u.ptr.user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, (int64_t __user *) stack_top->u.ptr.ptr, sizeof(int64_t)))
+				tmp = 0;
+		} else {
+			tmp = *(int64_t *) stack_top->u.ptr.ptr;
+		}
 		if (stack_top->u.ptr.rev_bo)
 			__swab64s(&tmp);
 		stack_top->u.v = tmp;
@@ -516,6 +557,11 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 		int64_t tmp;
 
 		dbg_printk("op load field signed enumeration\n");
+		if (stack_top->u.ptr.user) {
+			dbg_printk("Bytecode warning: user enum unsupported.\n");
+			ret = -EINVAL;
+			goto end;
+		}
 		tmp = *(int64_t *) stack_top->u.ptr.ptr;
 		if (stack_top->u.ptr.rev_bo)
 			__swab64s(&tmp);
@@ -525,7 +571,12 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 	}
 	case OBJECT_TYPE_U8:
 		dbg_printk("op load field u8\n");
-		stack_top->u.v = *(uint8_t *) stack_top->u.ptr.ptr;
+		if (stack_top->u.ptr.user) {
+			if (lttng_copy_from_user_check_nofault(&stack_top->u.v, (uint8_t __user *) stack_top->u.ptr.ptr, sizeof(uint8_t)))
+				stack_top->u.v = 0;
+		} else {
+			stack_top->u.v = *(uint8_t *) stack_top->u.ptr.ptr;
+		}
 		stack_top->type = REG_U64;
 		break;
 	case OBJECT_TYPE_U16:
@@ -533,7 +584,12 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 		uint16_t tmp;
 
 		dbg_printk("op load field u16\n");
-		tmp = *(uint16_t *) stack_top->u.ptr.ptr;
+		if (stack_top->u.ptr.user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, (uint16_t __user *) stack_top->u.ptr.ptr, sizeof(uint16_t)))
+				tmp = 0;
+		} else {
+			tmp = *(uint16_t *) stack_top->u.ptr.ptr;
+		}
 		if (stack_top->u.ptr.rev_bo)
 			__swab16s(&tmp);
 		stack_top->u.v = tmp;
@@ -545,7 +601,12 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 		uint32_t tmp;
 
 		dbg_printk("op load field u32\n");
-		tmp = *(uint32_t *) stack_top->u.ptr.ptr;
+		if (stack_top->u.ptr.user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, (uint32_t __user *) stack_top->u.ptr.ptr, sizeof(uint32_t)))
+				tmp = 0;
+		} else {
+			tmp = *(uint32_t *) stack_top->u.ptr.ptr;
+		}
 		if (stack_top->u.ptr.rev_bo)
 			__swab32s(&tmp);
 		stack_top->u.v = tmp;
@@ -557,7 +618,12 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 		uint64_t tmp;
 
 		dbg_printk("op load field u64\n");
-		tmp = *(uint64_t *) stack_top->u.ptr.ptr;
+		if (stack_top->u.ptr.user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, (uint64_t __user *) stack_top->u.ptr.ptr, sizeof(uint64_t)))
+				tmp = 0;
+		} else {
+			tmp = *(uint64_t *) stack_top->u.ptr.ptr;
+		}
 		if (stack_top->u.ptr.rev_bo)
 			__swab64s(&tmp);
 		stack_top->u.v = tmp;
@@ -569,6 +635,11 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 		uint64_t tmp;
 
 		dbg_printk("op load field unsigned enumeration\n");
+		if (stack_top->u.ptr.user) {
+			dbg_printk("Bytecode warning: user enum unsupported.\n");
+			ret = -EINVAL;
+			goto end;
+		}
 		tmp = *(uint64_t *) stack_top->u.ptr.ptr;
 		if (stack_top->u.ptr.rev_bo)
 			__swab64s(&tmp);
@@ -578,19 +649,30 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 	}
 	case OBJECT_TYPE_STRING:
 	{
-		const char *str;
+		dbg_printk("op load field string: user=%d\n", stack_top->u.ptr.user);
+		if (stack_top->u.ptr.user) {
+			const char __user *user_str = (const char __user *) stack_top->u.ptr.ptr;
 
-		dbg_printk("op load field string\n");
-		str = (const char *) stack_top->u.ptr.ptr;
-		stack_top->u.s.str = str;
-		if (unlikely(!stack_top->u.s.str)) {
-			dbg_printk("Bytecode warning: loading a NULL string.\n");
-			ret = -EINVAL;
-			goto end;
+			stack_top->u.s.user_str = user_str;
+			if (unlikely(!stack_top->u.s.user_str)) {
+				dbg_printk("Bytecode warning: loading a NULL user string.\n");
+				ret = -EINVAL;
+				goto end;
+			}
+			stack_top->u.s.user = 1;
+		} else {
+			const char *str = (const char *) stack_top->u.ptr.ptr;
+
+			stack_top->u.s.str = str;
+			if (unlikely(!stack_top->u.s.str)) {
+				dbg_printk("Bytecode warning: loading a NULL string.\n");
+				ret = -EINVAL;
+				goto end;
+			}
+			stack_top->u.s.user = 0;
 		}
 		stack_top->u.s.seq_len = LTTNG_SIZE_MAX;
-		stack_top->u.s.literal_type =
-			ESTACK_STRING_LITERAL_TYPE_NONE;
+		stack_top->u.s.literal_type = ESTACK_STRING_LITERAL_TYPE_NONE;
 		stack_top->type = REG_STRING;
 		break;
 	}
@@ -598,17 +680,27 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 	{
 		const char *ptr;
 
-		dbg_printk("op load field string sequence\n");
+		dbg_printk("op load field string sequence: user=%d\n", stack_top->u.ptr.user);
 		ptr = stack_top->u.ptr.ptr;
 		stack_top->u.s.seq_len = *(unsigned long *) ptr;
-		stack_top->u.s.str = *(const char **) (ptr + sizeof(unsigned long));
-		if (unlikely(!stack_top->u.s.str)) {
-			dbg_printk("Bytecode warning: loading a NULL sequence.\n");
-			ret = -EINVAL;
-			goto end;
+		if (stack_top->u.ptr.user) {
+			stack_top->u.s.user_str = *(const char __user **) (ptr + sizeof(unsigned long));
+			if (unlikely(!stack_top->u.s.user_str)) {
+				dbg_printk("Bytecode warning: loading a NULL user sequence.\n");
+				ret = -EINVAL;
+				goto end;
+			}
+			stack_top->u.s.user = 1;
+		} else {
+			stack_top->u.s.str = *(const char **) (ptr + sizeof(unsigned long));
+			if (unlikely(!stack_top->u.s.str)) {
+				dbg_printk("Bytecode warning: loading a NULL sequence.\n");
+				ret = -EINVAL;
+				goto end;
+			}
+			stack_top->u.s.user = 0;
 		}
-		stack_top->u.s.literal_type =
-			ESTACK_STRING_LITERAL_TYPE_NONE;
+		stack_top->u.s.literal_type = ESTACK_STRING_LITERAL_TYPE_NONE;
 		stack_top->type = REG_STRING;
 		break;
 	}
@@ -654,8 +746,13 @@ again:
 		break;
 	case REG_STRING:
 		output->type = LTTNG_INTERPRETER_TYPE_STRING;
-		output->u.str.str = ax->u.s.str;
 		output->u.str.len = ax->u.s.seq_len;
+		output->u.str.user = ax->u.s.user;
+		if (ax->u.s.user) {
+			output->u.str.user_str = ax->u.s.user_str;
+		} else {
+			output->u.str.str = ax->u.s.str;
+		}
 		break;
 	case REG_PTR:
 		switch (ax->u.ptr.object_type) {
@@ -1791,6 +1888,7 @@ int lttng_bytecode_interpret(struct lttng_kernel_bytecode_runtime *kernel_byteco
 			estack_ax(stack, top)->u.s.literal_type =
 				ESTACK_STRING_LITERAL_TYPE_NONE;
 			estack_ax(stack, top)->type = REG_STRING;
+			estack_ax(stack, top)->u.s.user = 0;
 			next_pc += sizeof(struct load_op);
 			PO;
 		}
@@ -1811,6 +1909,7 @@ int lttng_bytecode_interpret(struct lttng_kernel_bytecode_runtime *kernel_byteco
 			estack_ax(stack, top)->u.s.literal_type =
 				ESTACK_STRING_LITERAL_TYPE_NONE;
 			estack_ax(stack, top)->type = REG_STRING;
+			estack_ax(stack, top)->u.s.user = 0;
 			next_pc += sizeof(struct load_op);
 			PO;
 		}
