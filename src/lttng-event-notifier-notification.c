@@ -283,7 +283,11 @@ int notification_append_capture(
 		}
 		break;
 	case LTTNG_INTERPRETER_TYPE_STRING:
-		ret = lttng_msgpack_write_str(writer, output->u.str.str);
+		if (output->u.str.user) {
+			ret = lttng_msgpack_write_user_str(writer, output->u.str.user_str);
+		} else {
+			ret = lttng_msgpack_write_str(writer, output->u.str.str);
+		}
 		if (ret) {
 			WARN_ON_ONCE(1);
 			goto end;
