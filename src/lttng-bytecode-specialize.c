@@ -77,57 +77,68 @@ static int specialize_load_field(struct vstack_entry *stack_top,
 	case OBJECT_TYPE_S8:
 		dbg_printk("op load field s8\n");
 		stack_top->type = REG_S64;
-		if (!stack_top->load.rev_bo)
+		if (!stack_top->load.user)
 			insn->op = BYTECODE_OP_LOAD_FIELD_S8;
 		break;
 	case OBJECT_TYPE_S16:
 		dbg_printk("op load field s16\n");
 		stack_top->type = REG_S64;
-		if (!stack_top->load.rev_bo)
+		if (!stack_top->load.rev_bo && !stack_top->load.user)
 			insn->op = BYTECODE_OP_LOAD_FIELD_S16;
 		break;
 	case OBJECT_TYPE_S32:
 		dbg_printk("op load field s32\n");
 		stack_top->type = REG_S64;
-		if (!stack_top->load.rev_bo)
+		if (!stack_top->load.rev_bo && !stack_top->load.user)
 			insn->op = BYTECODE_OP_LOAD_FIELD_S32;
 		break;
 	case OBJECT_TYPE_S64:
 		dbg_printk("op load field s64\n");
 		stack_top->type = REG_S64;
-		if (!stack_top->load.rev_bo)
+		if (!stack_top->load.rev_bo && !stack_top->load.user)
 			insn->op = BYTECODE_OP_LOAD_FIELD_S64;
 		break;
 	case OBJECT_TYPE_SIGNED_ENUM:
 		dbg_printk("op load field signed enumeration\n");
-		stack_top->type = REG_PTR;
+		if (stack_top->load.user) {
+			printk(KERN_WARNING "LTTng: bytecode: user enum unsupported\n");
+			ret = -EINVAL;
+			goto end;
+		}
+		stack_top->type = REG_S64;
 		break;
 	case OBJECT_TYPE_U8:
 		dbg_printk("op load field u8\n");
 		stack_top->type = REG_S64;
-		insn->op = BYTECODE_OP_LOAD_FIELD_U8;
+		if (!stack_top->load.user)
+			insn->op = BYTECODE_OP_LOAD_FIELD_U8;
 		break;
 	case OBJECT_TYPE_U16:
 		dbg_printk("op load field u16\n");
 		stack_top->type = REG_S64;
-		if (!stack_top->load.rev_bo)
+		if (!stack_top->load.rev_bo && !stack_top->load.user)
 			insn->op = BYTECODE_OP_LOAD_FIELD_U16;
 		break;
 	case OBJECT_TYPE_U32:
 		dbg_printk("op load field u32\n");
 		stack_top->type = REG_S64;
-		if (!stack_top->load.rev_bo)
+		if (!stack_top->load.rev_bo && !stack_top->load.user)
 			insn->op = BYTECODE_OP_LOAD_FIELD_U32;
 		break;
 	case OBJECT_TYPE_U64:
 		dbg_printk("op load field u64\n");
 		stack_top->type = REG_S64;
-		if (!stack_top->load.rev_bo)
+		if (!stack_top->load.rev_bo && !stack_top->load.user)
 			insn->op = BYTECODE_OP_LOAD_FIELD_U64;
 		break;
 	case OBJECT_TYPE_UNSIGNED_ENUM:
 		dbg_printk("op load field unsigned enumeration\n");
-		stack_top->type = REG_PTR;
+		if (stack_top->load.user) {
+			printk(KERN_WARNING "LTTng: bytecode: user enum unsupported\n");
+			ret = -EINVAL;
+			goto end;
+		}
+		stack_top->type = REG_U64;
 		break;
 	case OBJECT_TYPE_DOUBLE:
 		printk(KERN_WARNING "LTTng: bytecode: Double type unsupported\n\n");
@@ -136,12 +147,14 @@ static int specialize_load_field(struct vstack_entry *stack_top,
 	case OBJECT_TYPE_STRING:
 		dbg_printk("op load field string\n");
 		stack_top->type = REG_STRING;
-		insn->op = BYTECODE_OP_LOAD_FIELD_STRING;
+		if (!stack_top->load.user)
+			insn->op = BYTECODE_OP_LOAD_FIELD_STRING;
 		break;
 	case OBJECT_TYPE_STRING_SEQUENCE:
 		dbg_printk("op load field string sequence\n");
 		stack_top->type = REG_STRING;
-		insn->op = BYTECODE_OP_LOAD_FIELD_SEQUENCE;
+		if (!stack_top->load.user)
+			insn->op = BYTECODE_OP_LOAD_FIELD_SEQUENCE;
 		break;
 	case OBJECT_TYPE_DYNAMIC:
 		ret = -EINVAL;
@@ -237,9 +250,8 @@ static int specialize_get_index(struct bytecode_runtime *runtime,
 			gid.array_len = num_elems * (elem_len / CHAR_BIT);
 			gid.elem.type = stack_top->load.object_type;
 			gid.elem.len = elem_len;
-			if (integer_type->reverse_byte_order)
-				gid.elem.rev_bo = true;
-			stack_top->load.rev_bo = gid.elem.rev_bo;
+			stack_top->load.rev_bo = gid.elem.rev_bo = integer_type->reverse_byte_order;
+			stack_top->load.user = gid.elem.user = integer_type->user;
 			break;
 		}
 		case OBJECT_TYPE_SEQUENCE:
@@ -266,9 +278,8 @@ static int specialize_get_index(struct bytecode_runtime *runtime,
 			gid.offset = index * (elem_len / CHAR_BIT);
 			gid.elem.type = stack_top->load.object_type;
 			gid.elem.len = elem_len;
-			if (integer_type->reverse_byte_order)
-				gid.elem.rev_bo = true;
-			stack_top->load.rev_bo = gid.elem.rev_bo;
+			stack_top->load.rev_bo = gid.elem.rev_bo = integer_type->reverse_byte_order;
+			stack_top->load.user = gid.elem.user = integer_type->user;
 			break;
 		}
 		case OBJECT_TYPE_STRUCT:
@@ -332,12 +343,17 @@ static int specialize_load_object(const struct lttng_kernel_event_field *field,
 
 	switch (field->type->type) {
 	case lttng_kernel_type_integer:
-		if (lttng_kernel_get_type_integer(field->type)->signedness)
+	{
+		const struct lttng_kernel_type_integer *integer_type = lttng_kernel_get_type_integer(field->type);
+
+		if (integer_type->signedness)
 			load->object_type = OBJECT_TYPE_S64;
 		else
 			load->object_type = OBJECT_TYPE_U64;
-		load->rev_bo = false;
+		load->rev_bo = integer_type->reverse_byte_order;
+		load->user = integer_type->user;
 		break;
+	}
 	case lttng_kernel_type_enum:
 	{
 		const struct lttng_kernel_type_enum *enum_type = lttng_kernel_get_type_enum(field->type);
@@ -347,25 +363,30 @@ static int specialize_load_object(const struct lttng_kernel_event_field *field,
 			load->object_type = OBJECT_TYPE_SIGNED_ENUM;
 		else
 			load->object_type = OBJECT_TYPE_UNSIGNED_ENUM;
-		load->rev_bo = false;
+		load->rev_bo = integer_type->reverse_byte_order;
+		load->user = integer_type->user;
 		break;
 	}
 	case lttng_kernel_type_array:
 	{
 		const struct lttng_kernel_type_array *array_type = lttng_kernel_get_type_array(field->type);
+		const struct lttng_kernel_type_integer *integer_type;
 
 		if (!lttng_kernel_type_is_bytewise_integer(array_type->elem_type)) {
 			printk(KERN_WARNING "LTTng: bytecode: Array nesting only supports integer types.\n");
 			return -EINVAL;
 		}
+		integer_type = lttng_kernel_get_type_integer(array_type->elem_type);
 		if (is_context) {
 			load->object_type = OBJECT_TYPE_STRING;
+			load->user = integer_type->user;
 		} else {
 			if (array_type->encoding == lttng_kernel_string_encoding_none) {
 				load->object_type = OBJECT_TYPE_ARRAY;
 				load->field = field;
 			} else {
 				load->object_type = OBJECT_TYPE_STRING_SEQUENCE;
+				load->user = integer_type->user;
 			}
 		}
 		break;
@@ -373,26 +394,35 @@ static int specialize_load_object(const struct lttng_kernel_event_field *field,
 	case lttng_kernel_type_sequence:
 	{
 		const struct lttng_kernel_type_sequence *sequence_type = lttng_kernel_get_type_sequence(field->type);
+		const struct lttng_kernel_type_integer *integer_type;
 
 		if (!lttng_kernel_type_is_bytewise_integer(sequence_type->elem_type)) {
 			printk(KERN_WARNING "LTTng: bytecode: Sequence nesting only supports integer types.\n");
 			return -EINVAL;
 		}
+		integer_type = lttng_kernel_get_type_integer(sequence_type->elem_type);
 		if (is_context) {
 			load->object_type = OBJECT_TYPE_STRING;
+			load->user = integer_type->user;
 		} else {
 			if (sequence_type->encoding == lttng_kernel_string_encoding_none) {
 				load->object_type = OBJECT_TYPE_SEQUENCE;
 				load->field = field;
 			} else {
 				load->object_type = OBJECT_TYPE_STRING_SEQUENCE;
+				load->user = integer_type->user;
 			}
 		}
 		break;
 	}
 	case lttng_kernel_type_string:
+	{
+		const struct lttng_kernel_type_string *string_type = lttng_kernel_get_type_string(field->type);
+
 		load->object_type = OBJECT_TYPE_STRING;
+		load->user = string_type->user;
 		break;
+	}
 	case lttng_kernel_type_struct:
 		printk(KERN_WARNING "LTTng: bytecode: Structure type cannot be loaded.\n");
 		return -EINVAL;
@@ -432,6 +462,7 @@ static int specialize_context_lookup(struct lttng_kernel_ctx *ctx,
 	gid.ctx_index = idx;
 	gid.elem.type = load->object_type;
 	gid.elem.rev_bo = load->rev_bo;
+	gid.elem.user = load->user;
 	gid.field = field;
 	data_offset = bytecode_push_data(runtime, &gid,
 		__alignof__(gid), sizeof(gid));
@@ -503,6 +534,7 @@ static int specialize_payload_lookup(const struct lttng_kernel_event_desc *event
 	gid.offset = field_offset;
 	gid.elem.type = load->object_type;
 	gid.elem.rev_bo = load->rev_bo;
+	gid.elem.user = load->user;
 	gid.field = field;
 	data_offset = bytecode_push_data(runtime, &gid,
 		__alignof__(gid), sizeof(gid));
