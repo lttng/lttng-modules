@@ -58,4 +58,7 @@ int lttng_msgpack_begin_array(
 		struct lttng_msgpack_writer *writer, size_t count);
 int lttng_msgpack_end_array(struct lttng_msgpack_writer *writer);
 
+int lttng_msgpack_save_writer_pos(struct lttng_msgpack_writer *writer, uint8_t **pos);
+int lttng_msgpack_restore_writer_pos(struct lttng_msgpack_writer *writer, uint8_t *pos);
+
 #endif /* _LTTNG_KERNEL_MSGPACK_H */

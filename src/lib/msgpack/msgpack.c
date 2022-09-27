@@ -567,6 +567,18 @@ end:
 	return ret;
 }
 
+int lttng_msgpack_save_writer_pos(struct lttng_msgpack_writer *writer, uint8_t **pos)
+{
+	*pos = writer->write_pos;
+	return 0;
+}
+
+int lttng_msgpack_restore_writer_pos(struct lttng_msgpack_writer *writer, uint8_t *pos)
+{
+	writer->write_pos = pos;
+	return 0;
+}
+
 void lttng_msgpack_writer_init(struct lttng_msgpack_writer *writer,
 		uint8_t *buffer, size_t size)
 {

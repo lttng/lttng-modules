@@ -46,25 +46,21 @@ int capture_enum(struct lttng_msgpack_writer *writer,
 	 */
 	ret = lttng_msgpack_begin_map(writer, 2);
 	if (ret) {
-		WARN_ON_ONCE(1);
 		goto end;
 	}
 
 	ret = lttng_msgpack_write_str(writer, "type");
 	if (ret) {
-		WARN_ON_ONCE(1);
 		goto end;
 	}
 
 	ret = lttng_msgpack_write_str(writer, "enum");
 	if (ret) {
-		WARN_ON_ONCE(1);
 		goto end;
 	}
 
 	ret = lttng_msgpack_write_str(writer, "value");
 	if (ret) {
-		WARN_ON_ONCE(1);
 		goto end;
 	}
 
@@ -72,25 +68,20 @@ int capture_enum(struct lttng_msgpack_writer *writer,
 	case LTTNG_INTERPRETER_TYPE_SIGNED_ENUM:
 		ret = lttng_msgpack_write_signed_integer(writer, output->u.s);
 		if (ret) {
-			WARN_ON_ONCE(1);
 			goto end;
 		}
 		break;
 	case LTTNG_INTERPRETER_TYPE_UNSIGNED_ENUM:
 		ret = lttng_msgpack_write_signed_integer(writer, output->u.u);
 		if (ret) {
-			WARN_ON_ONCE(1);
 			goto end;
 		}
 		break;
 	default:
-		WARN_ON(1);
+		WARN_ON_ONCE(1);
 	}
 
 	ret = lttng_msgpack_end_map(writer);
-	if (ret)
-		WARN_ON_ONCE(1);
-
 end:
 	return ret;
 }
@@ -164,7 +155,7 @@ int64_t capture_sequence_element_signed(uint8_t *ptr,
 		break;
 	}
 	default:
-		WARN_ON(1);
+		WARN_ON_ONCE(1);
 	}
 
 	return value;
@@ -239,7 +230,7 @@ uint64_t capture_sequence_element_unsigned(uint8_t *ptr,
 		break;
 	}
 	default:
-		WARN_ON(1);
+		WARN_ON_ONCE(1);
 	}
 
 	return value;
@@ -256,7 +247,6 @@ int capture_sequence(struct lttng_msgpack_writer *writer,
 
 	ret = lttng_msgpack_begin_array(writer, output->u.sequence.nr_elem);
 	if (ret) {
-		WARN_ON_ONCE(1);
 		goto end;
 	}
 
@@ -272,7 +262,9 @@ int capture_sequence(struct lttng_msgpack_writer *writer,
 		break;
 	default:
 		/* Capture of array of non-integer are not supported. */
-		WARN_ON(1);
+		WARN_ON_ONCE(1);
+		ret = -1;
+		goto end;
 	}
 	signedness = integer_type->signedness;
 	for (i = 0; i < output->u.sequence.nr_elem; i++) {
@@ -280,14 +272,12 @@ int capture_sequence(struct lttng_msgpack_writer *writer,
 			ret = lttng_msgpack_write_signed_integer(writer,
 				capture_sequence_element_signed(ptr, integer_type));
 			if (ret) {
-				WARN_ON_ONCE(1);
 				goto end;
 			}
 		} else {
 			ret = lttng_msgpack_write_unsigned_integer(writer,
 				capture_sequence_element_unsigned(ptr, integer_type));
 			if (ret) {
-				WARN_ON_ONCE(1);
 				goto end;
 			}
 		}
@@ -299,15 +289,13 @@ int capture_sequence(struct lttng_msgpack_writer *writer,
 		 * take into account that the next element might be further
 		 * away.
 		 */
-		WARN_ON(integer_type->alignment > integer_type->size);
+		WARN_ON_ONCE(integer_type->alignment > integer_type->size);
 
 		/* Size is in number of bits. */
 		ptr += (integer_type->size / CHAR_BIT) ;
 	}
 
 	ret = lttng_msgpack_end_array(writer);
-	if (ret)
-		WARN_ON_ONCE(1);
 end:
 	return ret;
 }
@@ -323,17 +311,9 @@ int notification_append_capture(
 	switch (output->type) {
 	case LTTNG_INTERPRETER_TYPE_S64:
 		ret = lttng_msgpack_write_signed_integer(writer, output->u.s);
-		if (ret) {
-			WARN_ON_ONCE(1);
-			goto end;
-		}
 		break;
 	case LTTNG_INTERPRETER_TYPE_U64:
 		ret = lttng_msgpack_write_unsigned_integer(writer, output->u.u);
-		if (ret) {
-			WARN_ON_ONCE(1);
-			goto end;
-		}
 		break;
 	case LTTNG_INTERPRETER_TYPE_STRING:
 		if (output->u.str.user) {
@@ -341,31 +321,18 @@ int notification_append_capture(
 		} else {
 			ret = lttng_msgpack_write_str(writer, output->u.str.str);
 		}
-		if (ret) {
-			WARN_ON_ONCE(1);
-			goto end;
-		}
 		break;
 	case LTTNG_INTERPRETER_TYPE_SEQUENCE:
 		ret = capture_sequence(writer, output);
-		if (ret) {
-			WARN_ON_ONCE(1);
-			goto end;
-		}
 		break;
 	case LTTNG_INTERPRETER_TYPE_SIGNED_ENUM:
 	case LTTNG_INTERPRETER_TYPE_UNSIGNED_ENUM:
 		ret = capture_enum(writer, output);
-		if (ret) {
-			WARN_ON_ONCE(1);
-			goto end;
-		}
 		break;
 	default:
 		ret = -1;
-		WARN_ON(1);
+		WARN_ON_ONCE(1);
 	}
-end:
 	return ret;
 }
 
@@ -373,11 +340,7 @@ static
 int notification_append_empty_capture(
 		struct lttng_event_notifier_notification *notif)
 {
-	int ret = lttng_msgpack_write_nil(&notif->writer);
-	if (ret)
-		WARN_ON_ONCE(1);
-
-	return ret;
+	return lttng_msgpack_write_nil(&notif->writer);
 }
 
 static
@@ -395,7 +358,6 @@ int notification_init(struct lttng_event_notifier_notification *notif,
 
 		ret = lttng_msgpack_begin_array(writer, event_notifier->priv->num_captures);
 		if (ret) {
-			WARN_ON_ONCE(1);
 			goto end;
 		}
 
@@ -486,14 +448,12 @@ void lttng_event_notifier_notification_send(struct lttng_kernel_event_notifier *
 		struct lttng_kernel_notification_ctx *notif_ctx)
 {
 	struct lttng_event_notifier_notification notif = { 0 };
-	int ret;
 
 	if (unlikely(!READ_ONCE(event_notifier->parent.enabled)))
 		return;
 
-	ret = notification_init(&notif, event_notifier);
-	if (ret) {
-		WARN_ON_ONCE(1);
+	if (notification_init(&notif, event_notifier)) {
+		record_error(event_notifier);
 		goto end;
 	}
 
@@ -509,15 +469,23 @@ void lttng_event_notifier_notification_send(struct lttng_kernel_event_notifier *
 		list_for_each_entry_rcu(capture_bc_runtime,
 				&event_notifier->priv->capture_bytecode_runtime_head, node) {
 			struct lttng_interpreter_output output;
+			uint8_t *save_pos;
+			int ret;
 
+			lttng_msgpack_save_writer_pos(&notif.writer, &save_pos);
 			if (capture_bc_runtime->interpreter_func(capture_bc_runtime,
 					stack_data, probe_ctx, &output) == LTTNG_KERNEL_BYTECODE_INTERPRETER_OK)
 				ret = notification_append_capture(&notif, &output);
 			else
 				ret = notification_append_empty_capture(&notif);
-
-			if (ret)
-				printk(KERN_WARNING "Error appending capture to notification");
+			if (ret) {
+				/*
+				 * On append capture error, skip the field
+				 * capture by restoring the msgpack writer
+				 * position.
+				 */
+				lttng_msgpack_restore_writer_pos(&notif.writer, save_pos);
+			}
 		}
 	}
 
