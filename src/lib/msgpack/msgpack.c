@@ -130,10 +130,7 @@ static inline int lttng_msgpack_append_user_buffer(
 	}
 
 	if (lttng_copy_from_user_check_nofault(writer->write_pos, ubuf, length)) {
-		/*
-		 * After a successful strlen user, a page fault on copy is handled by
-		 * considering the string as empty, returning a success.
-		 */
+		ret = -1;
 		goto end;
 	}
 	writer->write_pos += length;
@@ -443,12 +440,6 @@ int lttng_msgpack_write_user_str(struct lttng_msgpack_writer *writer,
 		ret = -1;
 		goto end;
 	}
-
-	/*
-	 * Handle empty string and strlen user page fault as empty string.
-	 */
-	if (length == 1)
-		return lttng_msgpack_write_str(writer, "");
 
 	if (length <= MSGPACK_FIXSTR_MAX_LENGTH)
 		ret = lttng_msgpack_encode_user_fixstr(writer, ustr, length);
