@@ -463,9 +463,6 @@ void lttng_event_notifier_notification_send(struct lttng_kernel_event_notifier *
 	struct lttng_event_notifier_notification notif = { 0 };
 	size_t captures_left;
 
-	if (unlikely(!READ_ONCE(event_notifier->parent.enabled)))
-		return;
-
 	if (notification_init(&notif, event_notifier))
 		goto error;
 
