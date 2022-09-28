@@ -100,7 +100,7 @@ obj-$(CONFIG_LTTNG) += lttng-probe-signal.o
 ifneq ($(CONFIG_DMA_SHARED_BUFFER),)
   obj-$(CONFIG_LTTNG) += $(shell \
     if [ $(VERSION) -ge 5 \
-       -o \( $(VERSION) -eq 4 -a $(PATCHLEVEL) -ge 9 \) ] ; then \
+       -o \( $(VERSION) -eq 4 -a $(PATCHLEVEL) -ge 10 \) ] ; then \
       echo "lttng-probe-dma-fence.o" ; fi;)
 endif # CONFIG_DMA_SHARED_BUFFER
 
