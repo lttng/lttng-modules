@@ -441,6 +441,7 @@ static int dynamic_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		stack_top->u.ptr.type = LOAD_OBJECT;
 		/* field is only used for types nested within variants. */
 		stack_top->u.ptr.field = NULL;
+		stack_top->u.ptr.rev_bo = gid->elem.rev_bo;
 		break;
 	}
 	return 0;
