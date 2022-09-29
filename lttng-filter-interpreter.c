@@ -290,6 +290,7 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			ptr->u.u64 = v.s64;	/* Cast. */
 			ptr->ptr = &ptr->u.u64;
 		}
+		ptr->rev_bo = field->type.u.basic.integer.reverse_byte_order;
 		break;
 	case atype_enum:
 	{
@@ -306,6 +307,7 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			ptr->u.u64 = v.s64;	/* Cast. */
 			ptr->ptr = &ptr->u.u64;
 		}
+		ptr->rev_bo = itype->reverse_byte_order;
 		break;
 	}
 	case atype_array:
