@@ -76,48 +76,49 @@ static int specialize_load_field(struct vstack_entry *stack_top,
 	case OBJECT_TYPE_S8:
 		dbg_printk("op load field s8\n");
 		stack_top->type = REG_S64;
-		if (!stack_top->load.rev_bo)
+		if (!stack_top->load.user)
 			insn->op = FILTER_OP_LOAD_FIELD_S8;
 		break;
 	case OBJECT_TYPE_S16:
 		dbg_printk("op load field s16\n");
 		stack_top->type = REG_S64;
-		if (!stack_top->load.rev_bo)
+		if (!stack_top->load.rev_bo && !stack_top->load.user)
 			insn->op = FILTER_OP_LOAD_FIELD_S16;
 		break;
 	case OBJECT_TYPE_S32:
 		dbg_printk("op load field s32\n");
 		stack_top->type = REG_S64;
-		if (!stack_top->load.rev_bo)
+		if (!stack_top->load.rev_bo && !stack_top->load.user)
 			insn->op = FILTER_OP_LOAD_FIELD_S32;
 		break;
 	case OBJECT_TYPE_S64:
 		dbg_printk("op load field s64\n");
 		stack_top->type = REG_S64;
-		if (!stack_top->load.rev_bo)
+		if (!stack_top->load.rev_bo && !stack_top->load.user)
 			insn->op = FILTER_OP_LOAD_FIELD_S64;
 		break;
 	case OBJECT_TYPE_U8:
 		dbg_printk("op load field u8\n");
 		stack_top->type = REG_S64;
-		insn->op = FILTER_OP_LOAD_FIELD_U8;
+		if (!stack_top->load.user)
+			insn->op = FILTER_OP_LOAD_FIELD_U8;
 		break;
 	case OBJECT_TYPE_U16:
 		dbg_printk("op load field u16\n");
 		stack_top->type = REG_S64;
-		if (!stack_top->load.rev_bo)
+		if (!stack_top->load.rev_bo && !stack_top->load.user)
 			insn->op = FILTER_OP_LOAD_FIELD_U16;
 		break;
 	case OBJECT_TYPE_U32:
 		dbg_printk("op load field u32\n");
 		stack_top->type = REG_S64;
-		if (!stack_top->load.rev_bo)
+		if (!stack_top->load.rev_bo && !stack_top->load.user)
 			insn->op = FILTER_OP_LOAD_FIELD_U32;
 		break;
 	case OBJECT_TYPE_U64:
 		dbg_printk("op load field u64\n");
 		stack_top->type = REG_S64;
-		if (!stack_top->load.rev_bo)
+		if (!stack_top->load.rev_bo && !stack_top->load.user)
 			insn->op = FILTER_OP_LOAD_FIELD_U64;
 		break;
 	case OBJECT_TYPE_DOUBLE:
@@ -127,12 +128,14 @@ static int specialize_load_field(struct vstack_entry *stack_top,
 	case OBJECT_TYPE_STRING:
 		dbg_printk("op load field string\n");
 		stack_top->type = REG_STRING;
-		insn->op = FILTER_OP_LOAD_FIELD_STRING;
+		if (!stack_top->load.user)
+			insn->op = FILTER_OP_LOAD_FIELD_STRING;
 		break;
 	case OBJECT_TYPE_STRING_SEQUENCE:
 		dbg_printk("op load field string sequence\n");
 		stack_top->type = REG_STRING;
-		insn->op = FILTER_OP_LOAD_FIELD_SEQUENCE;
+		if (!stack_top->load.user)
+			insn->op = FILTER_OP_LOAD_FIELD_SEQUENCE;
 		break;
 	case OBJECT_TYPE_DYNAMIC:
 		ret = -EINVAL;
@@ -220,9 +223,8 @@ static int specialize_get_index(struct bytecode_runtime *runtime,
 			gid.array_len = num_elems * (elem_len / CHAR_BIT);
 			gid.elem.type = stack_top->load.object_type;
 			gid.elem.len = elem_len;
-			if (field->type.u.array.elem_type.u.basic.integer.reverse_byte_order)
-				gid.elem.rev_bo = true;
-			stack_top->load.rev_bo = gid.elem.rev_bo;
+			stack_top->load.rev_bo = gid.elem.rev_bo = field->type.u.array.elem_type.u.basic.integer.reverse_byte_order;
+			stack_top->load.user = gid.elem.user = field->type.u.array.elem_type.u.basic.integer.user;
 			break;
 		}
 		case OBJECT_TYPE_SEQUENCE:
@@ -241,9 +243,8 @@ static int specialize_get_index(struct bytecode_runtime *runtime,
 			gid.offset = index * (elem_len / CHAR_BIT);
 			gid.elem.type = stack_top->load.object_type;
 			gid.elem.len = elem_len;
-			if (field->type.u.sequence.elem_type.u.basic.integer.reverse_byte_order)
-				gid.elem.rev_bo = true;
-			stack_top->load.rev_bo = gid.elem.rev_bo;
+			stack_top->load.rev_bo = gid.elem.rev_bo = field->type.u.sequence.elem_type.u.basic.integer.reverse_byte_order;
+			stack_top->load.user = gid.elem.user = field->type.u.sequence.elem_type.u.basic.integer.user;
 			break;
 		}
 		case OBJECT_TYPE_STRUCT:
@@ -312,7 +313,8 @@ static int specialize_load_object(const struct lttng_event_field *field,
 			load->object_type = OBJECT_TYPE_S64;
 		else
 			load->object_type = OBJECT_TYPE_U64;
-		load->rev_bo = false;
+		load->rev_bo = field->type.u.basic.integer.reverse_byte_order;
+		load->user = field->type.u.basic.integer.user;
 		break;
 	case atype_enum:
 	{
@@ -323,7 +325,8 @@ static int specialize_load_object(const struct lttng_event_field *field,
 			load->object_type = OBJECT_TYPE_S64;
 		else
 			load->object_type = OBJECT_TYPE_U64;
-		load->rev_bo = false;
+		load->rev_bo = itype->reverse_byte_order;
+		load->user = itype->user;
 		break;
 	}
 	case atype_array:
@@ -333,12 +336,14 @@ static int specialize_load_object(const struct lttng_event_field *field,
 		}
 		if (is_context) {
 			load->object_type = OBJECT_TYPE_STRING;
+			load->user = field->type.u.array.elem_type.u.basic.integer.user;
 		} else {
 			if (field->type.u.array.elem_type.u.basic.integer.encoding == lttng_encode_none) {
 				load->object_type = OBJECT_TYPE_ARRAY;
 				load->field = field;
 			} else {
 				load->object_type = OBJECT_TYPE_STRING_SEQUENCE;
+				load->user = field->type.u.array.elem_type.u.basic.integer.user;
 			}
 		}
 		break;
@@ -349,12 +354,14 @@ static int specialize_load_object(const struct lttng_event_field *field,
 		}
 		if (is_context) {
 			load->object_type = OBJECT_TYPE_STRING;
+			load->user = field->type.u.sequence.elem_type.u.basic.integer.user;
 		} else {
 			if (field->type.u.sequence.elem_type.u.basic.integer.encoding == lttng_encode_none) {
 				load->object_type = OBJECT_TYPE_SEQUENCE;
 				load->field = field;
 			} else {
 				load->object_type = OBJECT_TYPE_STRING_SEQUENCE;
+				load->user = field->type.u.sequence.elem_type.u.basic.integer.user;
 			}
 		}
 		break;
@@ -366,6 +373,7 @@ static int specialize_load_object(const struct lttng_event_field *field,
 		return -EINVAL;
 	case atype_string:
 		load->object_type = OBJECT_TYPE_STRING;
+		load->user = field->type.u.basic.string.user;
 		break;
 	case atype_struct:
 		printk(KERN_WARNING "Structure type cannot be loaded.\n");
@@ -402,6 +410,7 @@ static int specialize_context_lookup(struct bytecode_runtime *runtime,
 	gid.ctx_index = idx;
 	gid.elem.type = load->object_type;
 	gid.elem.rev_bo = load->rev_bo;
+	gid.elem.user = load->user;
 	data_offset = bytecode_push_data(runtime, &gid,
 		__alignof__(gid), sizeof(gid));
 	if (data_offset < 0) {
@@ -472,6 +481,7 @@ static int specialize_event_payload_lookup(struct lttng_event *event,
 	gid.offset = field_offset;
 	gid.elem.type = load->object_type;
 	gid.elem.rev_bo = load->rev_bo;
+	gid.elem.user = load->user;
 	data_offset = bytecode_push_data(runtime, &gid,
 		__alignof__(gid), sizeof(gid));
 	if (data_offset < 0) {

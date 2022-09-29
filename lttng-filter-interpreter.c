@@ -15,6 +15,7 @@
 
 #include <lttng-filter.h>
 #include <lttng-string-utils.h>
+#include <probes/lttng-probe-user.h>
 
 LTTNG_STACK_FRAME_NON_STANDARD(lttng_filter_interpret_bytecode);
 
@@ -291,6 +292,7 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			ptr->ptr = &ptr->u.u64;
 		}
 		ptr->rev_bo = field->type.u.basic.integer.reverse_byte_order;
+		ptr->user = field->type.u.basic.integer.user;
 		break;
 	case atype_enum:
 	{
@@ -308,6 +310,7 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			ptr->ptr = &ptr->u.u64;
 		}
 		ptr->rev_bo = itype->reverse_byte_order;
+		ptr->user = itype->user;
 		break;
 	}
 	case atype_array:
@@ -322,6 +325,7 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		ptr->object_type = OBJECT_TYPE_STRING;
 		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
 		ptr->ptr = v.str;
+		ptr->user = field->type.u.array.elem_type.u.basic.integer.user;
 		break;
 	case atype_sequence:
 		if (field->type.u.sequence.elem_type.atype != atype_integer) {
@@ -335,6 +339,7 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		ptr->object_type = OBJECT_TYPE_STRING;
 		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
 		ptr->ptr = v.str;
+		ptr->user = field->type.u.sequence.elem_type.u.basic.integer.user;
 		break;
 	case atype_array_bitfield:
 		printk(KERN_WARNING "Bitfield array type is not supported.\n");
@@ -346,6 +351,7 @@ static int context_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		ptr->object_type = OBJECT_TYPE_STRING;
 		ctx_field->get_value(ctx_field, lttng_probe_ctx, &v);
 		ptr->ptr = v.str;
+		ptr->user = field->type.u.basic.string.user;
 		break;
 	case atype_struct:
 		printk(KERN_WARNING "Structure type cannot be loaded.\n");
@@ -386,6 +392,7 @@ static int dynamic_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			stack_top->u.ptr.ptr = ptr;
 			stack_top->u.ptr.object_type = gid->elem.type;
 			stack_top->u.ptr.rev_bo = gid->elem.rev_bo;
+			stack_top->u.ptr.user = gid->elem.user;
 			/* field is only used for types nested within variants. */
 			stack_top->u.ptr.field = NULL;
 			break;
@@ -405,6 +412,7 @@ static int dynamic_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 			stack_top->u.ptr.ptr = ptr;
 			stack_top->u.ptr.object_type = gid->elem.type;
 			stack_top->u.ptr.rev_bo = gid->elem.rev_bo;
+			stack_top->u.ptr.user = gid->elem.user;
 			/* field is only used for types nested within variants. */
 			stack_top->u.ptr.field = NULL;
 			break;
@@ -442,6 +450,7 @@ static int dynamic_get_index(struct lttng_probe_ctx *lttng_probe_ctx,
 		/* field is only used for types nested within variants. */
 		stack_top->u.ptr.field = NULL;
 		stack_top->u.ptr.rev_bo = gid->elem.rev_bo;
+		stack_top->u.ptr.user = gid->elem.user;
 		break;
 	}
 	return 0;
@@ -468,14 +477,24 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 	switch (stack_top->u.ptr.object_type) {
 	case OBJECT_TYPE_S8:
 		dbg_printk("op load field s8\n");
-		stack_top->u.v = *(int8_t *) stack_top->u.ptr.ptr;
+		if (stack_top->u.ptr.user) {
+			if (lttng_copy_from_user_check_nofault(&stack_top->u.v, (int8_t __user *) stack_top->u.ptr.ptr, sizeof(int8_t)))
+				stack_top->u.v = 0;
+		} else {
+			stack_top->u.v = *(int8_t *) stack_top->u.ptr.ptr;
+		}
 		break;
 	case OBJECT_TYPE_S16:
 	{
 		int16_t tmp;
 
 		dbg_printk("op load field s16\n");
-		tmp = *(int16_t *) stack_top->u.ptr.ptr;
+		if (stack_top->u.ptr.user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, (int16_t __user *) stack_top->u.ptr.ptr, sizeof(int16_t)))
+				tmp = 0;
+		} else {
+			tmp = *(int16_t *) stack_top->u.ptr.ptr;
+		}
 		if (stack_top->u.ptr.rev_bo)
 			__swab16s(&tmp);
 		stack_top->u.v = tmp;
@@ -486,7 +505,12 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 		int32_t tmp;
 
 		dbg_printk("op load field s32\n");
-		tmp = *(int32_t *) stack_top->u.ptr.ptr;
+		if (stack_top->u.ptr.user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, (int32_t __user *) stack_top->u.ptr.ptr, sizeof(int32_t)))
+				tmp = 0;
+		} else {
+			tmp = *(int32_t *) stack_top->u.ptr.ptr;
+		}
 		if (stack_top->u.ptr.rev_bo)
 			__swab32s(&tmp);
 		stack_top->u.v = tmp;
@@ -497,7 +521,12 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 		int64_t tmp;
 
 		dbg_printk("op load field s64\n");
-		tmp = *(int64_t *) stack_top->u.ptr.ptr;
+		if (stack_top->u.ptr.user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, (int64_t __user *) stack_top->u.ptr.ptr, sizeof(int64_t)))
+				tmp = 0;
+		} else {
+			tmp = *(int64_t *) stack_top->u.ptr.ptr;
+		}
 		if (stack_top->u.ptr.rev_bo)
 			__swab64s(&tmp);
 		stack_top->u.v = tmp;
@@ -505,14 +534,24 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 	}
 	case OBJECT_TYPE_U8:
 		dbg_printk("op load field u8\n");
-		stack_top->u.v = *(uint8_t *) stack_top->u.ptr.ptr;
+		if (stack_top->u.ptr.user) {
+			if (lttng_copy_from_user_check_nofault(&stack_top->u.v, (uint8_t __user *) stack_top->u.ptr.ptr, sizeof(uint8_t)))
+				stack_top->u.v = 0;
+		} else {
+			stack_top->u.v = *(uint8_t *) stack_top->u.ptr.ptr;
+		}
 		break;
 	case OBJECT_TYPE_U16:
 	{
 		uint16_t tmp;
 
 		dbg_printk("op load field s16\n");
-		tmp = *(uint16_t *) stack_top->u.ptr.ptr;
+		if (stack_top->u.ptr.user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, (uint16_t __user *) stack_top->u.ptr.ptr, sizeof(uint16_t)))
+				tmp = 0;
+		} else {
+			tmp = *(uint16_t *) stack_top->u.ptr.ptr;
+		}
 		if (stack_top->u.ptr.rev_bo)
 			__swab16s(&tmp);
 		stack_top->u.v = tmp;
@@ -523,7 +562,12 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 		uint32_t tmp;
 
 		dbg_printk("op load field u32\n");
-		tmp = *(uint32_t *) stack_top->u.ptr.ptr;
+		if (stack_top->u.ptr.user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, (uint32_t __user *) stack_top->u.ptr.ptr, sizeof(uint32_t)))
+				tmp = 0;
+		} else {
+			tmp = *(uint32_t *) stack_top->u.ptr.ptr;
+		}
 		if (stack_top->u.ptr.rev_bo)
 			__swab32s(&tmp);
 		stack_top->u.v = tmp;
@@ -534,7 +578,12 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 		uint64_t tmp;
 
 		dbg_printk("op load field u64\n");
-		tmp = *(uint64_t *) stack_top->u.ptr.ptr;
+		if (stack_top->u.ptr.user) {
+			if (lttng_copy_from_user_check_nofault(&tmp, (uint64_t __user *) stack_top->u.ptr.ptr, sizeof(uint64_t)))
+				tmp = 0;
+		} else {
+			tmp = *(uint64_t *) stack_top->u.ptr.ptr;
+		}
 		if (stack_top->u.ptr.rev_bo)
 			__swab64s(&tmp);
 		stack_top->u.v = tmp;
@@ -542,19 +591,30 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 	}
 	case OBJECT_TYPE_STRING:
 	{
-		const char *str;
+		dbg_printk("op load field string: user=%d\n", stack_top->u.ptr.user);
+		if (stack_top->u.ptr.user) {
+			const char __user *user_str = (const char __user *) stack_top->u.ptr.ptr;
 
-		dbg_printk("op load field string\n");
-		str = (const char *) stack_top->u.ptr.ptr;
-		stack_top->u.s.str = str;
-		if (unlikely(!stack_top->u.s.str)) {
-			dbg_printk("Filter warning: loading a NULL string.\n");
-			ret = -EINVAL;
-			goto end;
+			stack_top->u.s.user_str = user_str;
+			if (unlikely(!stack_top->u.s.user_str)) {
+				dbg_printk("Bytecode warning: loading a NULL user string.\n");
+				ret = -EINVAL;
+				goto end;
+			}
+			stack_top->u.s.user = 1;
+		} else {
+			const char *str = (const char *) stack_top->u.ptr.ptr;
+
+			stack_top->u.s.str = str;
+			if (unlikely(!stack_top->u.s.str)) {
+				dbg_printk("Bytecode warning: loading a NULL string.\n");
+				ret = -EINVAL;
+				goto end;
+			}
+			stack_top->u.s.user = 0;
 		}
 		stack_top->u.s.seq_len = LTTNG_SIZE_MAX;
-		stack_top->u.s.literal_type =
-			ESTACK_STRING_LITERAL_TYPE_NONE;
+		stack_top->u.s.literal_type = ESTACK_STRING_LITERAL_TYPE_NONE;
 		break;
 	}
 	case OBJECT_TYPE_STRING_SEQUENCE:
@@ -564,14 +624,24 @@ static int dynamic_load_field(struct estack_entry *stack_top)
 		dbg_printk("op load field string sequence\n");
 		ptr = stack_top->u.ptr.ptr;
 		stack_top->u.s.seq_len = *(unsigned long *) ptr;
-		stack_top->u.s.str = *(const char **) (ptr + sizeof(unsigned long));
-		if (unlikely(!stack_top->u.s.str)) {
-			dbg_printk("Filter warning: loading a NULL sequence.\n");
-			ret = -EINVAL;
-			goto end;
+		if (stack_top->u.ptr.user) {
+			stack_top->u.s.user_str = *(const char __user **) (ptr + sizeof(unsigned long));
+			if (unlikely(!stack_top->u.s.user_str)) {
+				dbg_printk("Bytecode warning: loading a NULL user sequence.\n");
+				ret = -EINVAL;
+				goto end;
+			}
+			stack_top->u.s.user = 1;
+		} else {
+			stack_top->u.s.str = *(const char **) (ptr + sizeof(unsigned long));
+			if (unlikely(!stack_top->u.s.str)) {
+				dbg_printk("Bytecode warning: loading a NULL sequence.\n");
+				ret = -EINVAL;
+				goto end;
+			}
+			stack_top->u.s.user = 0;
 		}
-		stack_top->u.s.literal_type =
-			ESTACK_STRING_LITERAL_TYPE_NONE;
+		stack_top->u.s.literal_type = ESTACK_STRING_LITERAL_TYPE_NONE;
 		break;
 	}
 	case OBJECT_TYPE_DYNAMIC:
@@ -1575,6 +1645,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 			estack_ax(stack, top)->u.s.seq_len = LTTNG_SIZE_MAX;
 			estack_ax(stack, top)->u.s.literal_type =
 				ESTACK_STRING_LITERAL_TYPE_NONE;
+			estack_ax(stack, top)->u.s.user = 0;
 			next_pc += sizeof(struct load_op);
 			PO;
 		}
@@ -1594,6 +1665,7 @@ uint64_t lttng_filter_interpret_bytecode(void *filter_data,
 			}
 			estack_ax(stack, top)->u.s.literal_type =
 				ESTACK_STRING_LITERAL_TYPE_NONE;
+			estack_ax(stack, top)->u.s.user = 0;
 			next_pc += sizeof(struct load_op);
 			PO;
 		}

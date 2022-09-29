@@ -91,6 +91,7 @@ struct filter_get_index_data {
 		size_t len;
 		enum object_type type;
 		bool rev_bo;	/* reverse byte order */
+		bool user;	/* from userspace */
 	} elem;
 };
 
@@ -100,6 +101,7 @@ struct vstack_load {
 	enum object_type object_type;
 	const struct lttng_event_field *field;
 	bool rev_bo;	/* reverse byte order */
+	bool user;	/* from userspace */
 };
 
 struct vstack_entry {
@@ -168,6 +170,7 @@ struct load_ptr {
 	enum object_type object_type;
 	const void *ptr;
 	bool rev_bo;
+	bool user;	/* from userspace */
 	/* Temporary place-holders for contexts. */
 	union {
 		int64_t s64;
@@ -190,7 +193,7 @@ struct estack_entry {
 			const char __user *user_str;
 			size_t seq_len;
 			enum estack_string_literal_type literal_type;
-			int user;		/* is string from userspace ? */
+			bool user;		/* is string from userspace ? */
 		} s;
 		struct load_ptr ptr;
 	} u;
