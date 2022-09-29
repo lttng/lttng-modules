@@ -163,11 +163,10 @@ struct lttng_kernel_event_field {
 	_lttng_kernel_static_type_integer(_size, _alignment, _signedness, _byte_order, 1, _base)
 
 #define _lttng_kernel_static_type_integer_from_type(_type, _byte_order, _user, _base)			\
-	lttng_kernel_static_type_integer(sizeof(_type) * CHAR_BIT,					\
+	_lttng_kernel_static_type_integer(sizeof(_type) * CHAR_BIT,					\
 			lttng_alignof(_type) * CHAR_BIT,						\
 			lttng_is_signed_type(_type),							\
-			_byte_order,									\
-			_base)
+			_byte_order, _user, _base)
 
 #define lttng_kernel_static_type_integer_from_type(_type, _byte_order, _base)				\
 	_lttng_kernel_static_type_integer_from_type(_type, _byte_order, 0, _base)
