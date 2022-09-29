@@ -36,52 +36,52 @@ static struct lttng_event_field tcpfields[] = {
 	[0] = {
 		.name = "source_port",
 		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 	[1] = {
 		.name = "dest_port",
 		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 	[2] = {
 		.name = "seq",
 		.type = __type_integer(uint32_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 	[3] = {
 		.name = "ack_seq",
 		.type = __type_integer(uint32_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 	[4] = {
 		.name = "data_offset",
 		.type = __type_integer(uint8_t, 4, 4, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 	[5] = {
 		.name = "reserved",
 		.type = __type_integer(uint8_t, 3, 1, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 	[6] = {
 		.name = "flags",
 		.type = __type_integer(uint8_t, 9, 1, 0,
-				__BIG_ENDIAN, 16, none),
+				__BIG_ENDIAN, 0, 16, none),
 	},
 	[7] = {
 		.name = "window_size",
 		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 	[8] = {
 		.name = "checksum",
 		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 16, none),
+				__BIG_ENDIAN, 0, 16, none),
 	},
 	[9] = {
 		.name = "urg_ptr",
 		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 };
 
@@ -183,37 +183,37 @@ static struct lttng_event_field ipv4fields[] = {
 	[0] = {
 		.name = "version",
 		.type = __type_integer(uint8_t, 4, 4, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 	[1] = {
 		.name = "ihl",
 		.type = __type_integer(uint8_t, 4, 4, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 	[2] = {
 		.name = "tos",
 		.type = __type_integer(uint8_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 	[3] = {
 		.name = "tot_len",
 		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 	[4] = {
 		.name = "id",
 		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 16, none),
+				__BIG_ENDIAN, 0, 16, none),
 	},
 	[5] = {
 		.name = "frag_off",
 		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 	[6] = {
 		.name = "ttl",
 		.type = __type_integer(uint8_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 	[7] = {
 		.name = "protocol",
@@ -228,6 +228,7 @@ static struct lttng_event_field ipv4fields[] = {
 				.reverse_byte_order =
 					__BIG_ENDIAN != __BYTE_ORDER,
 				.base = 10,
+				.user = 0,
 				.encoding = lttng_encode_none,
 			},
 		},
@@ -235,7 +236,7 @@ static struct lttng_event_field ipv4fields[] = {
 	[8] = {
 		.name = "checksum",
 		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 16, none),
+				__BIG_ENDIAN, 0, 16, none),
 	},
 	[9] = {
 		.name = "saddr",
@@ -243,7 +244,7 @@ static struct lttng_event_field ipv4fields[] = {
 			.atype = atype_array,
 			.u.array.elem_type =
 				__type_integer(uint8_t, 0, 0, 0,
-					__BIG_ENDIAN, 10, none),
+					__BIG_ENDIAN, 0, 10, none),
 			.u.array.length = 4,
 			.u.array.elem_alignment = lttng_alignof(uint8_t),
 		},
@@ -254,7 +255,7 @@ static struct lttng_event_field ipv4fields[] = {
 			.atype = atype_array,
 			.u.array.elem_type =
 				__type_integer(uint8_t, 0, 0, 0,
-					__BIG_ENDIAN, 10, none),
+					__BIG_ENDIAN, 0, 10, none),
 			.u.array.length = 4,
 			.u.array.elem_alignment = lttng_alignof(uint8_t),
 		},
@@ -270,6 +271,7 @@ static struct lttng_event_field ipv4fields[] = {
 				.signedness = 0,
 				.reverse_byte_order = 0,
 				.base = 10,
+				.user = 0,
 				.encoding = lttng_encode_none,
 			},
 		},
@@ -289,12 +291,12 @@ static struct lttng_event_field ipv6fields[] = {
 	[0] = {
 		.name = "version",
 		.type = __type_integer(uint8_t, 4, 4, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 	[1] = {
 		.name = "prio",
 		.type = __type_integer(uint8_t, 4, 4, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 	[2] = {
 		.name = "flow_lbl",
@@ -302,7 +304,7 @@ static struct lttng_event_field ipv6fields[] = {
 			.atype = atype_array,
 			.u.array.elem_type =
 				__type_integer(uint8_t, 0, 0, 0,
-					__BIG_ENDIAN, 16, none),
+					__BIG_ENDIAN, 0, 16, none),
 			.u.array.length = 3,
 			.u.array.elem_alignment = lttng_alignof(uint8_t),
 		},
@@ -310,7 +312,7 @@ static struct lttng_event_field ipv6fields[] = {
 	[3] = {
 		.name = "payload_len",
 		.type = __type_integer(uint16_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 	[4] = {
 		.name = "nexthdr",
@@ -325,6 +327,7 @@ static struct lttng_event_field ipv6fields[] = {
 				.reverse_byte_order =
 					__BIG_ENDIAN != __BYTE_ORDER,
 				.base = 10,
+				.user = 0,
 				.encoding = lttng_encode_none,
 			},
 		},
@@ -332,7 +335,7 @@ static struct lttng_event_field ipv6fields[] = {
 	[5] = {
 		.name = "hop_limit",
 		.type = __type_integer(uint8_t, 0, 0, 0,
-				__BIG_ENDIAN, 10, none),
+				__BIG_ENDIAN, 0, 10, none),
 	},
 	[6] = {
 		.name = "saddr",
@@ -340,7 +343,7 @@ static struct lttng_event_field ipv6fields[] = {
 			.atype = atype_array,
 			.u.array.elem_type =
 				__type_integer(uint16_t, 0, 0, 0,
-					__BIG_ENDIAN, 16, none),
+					__BIG_ENDIAN, 0, 16, none),
 			.u.array.length = 8,
 			.u.array.elem_alignment = lttng_alignof(uint16_t),
 		},
@@ -351,7 +354,7 @@ static struct lttng_event_field ipv6fields[] = {
 			.atype = atype_array,
 			.u.array.elem_type =
 				__type_integer(uint16_t, 0, 0, 0,
-					__BIG_ENDIAN, 16, none),
+					__BIG_ENDIAN, 0, 16, none),
 			.u.array.length = 8,
 			.u.array.elem_alignment = lttng_alignof(uint16_t),
 		},
@@ -367,6 +370,7 @@ static struct lttng_event_field ipv6fields[] = {
 				.signedness = 0,
 				.reverse_byte_order = 0,
 				.base = 10,
+				.user = 0,
 				.encoding = lttng_encode_none,
 			},
 		},

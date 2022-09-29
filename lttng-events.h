@@ -75,7 +75,7 @@ struct lttng_enum_entry {
 };
 
 #define __type_integer(_type, _size, _alignment, _signedness,	\
-		_byte_order, _base, _encoding)	\
+		_byte_order, _user, _base, _encoding)		\
 	{							\
 	    .atype = atype_integer,				\
 	    .u.basic.integer =					\
@@ -83,8 +83,9 @@ struct lttng_enum_entry {
 		  .size = (_size) ? : sizeof(_type) * CHAR_BIT,	\
 		  .alignment = (_alignment) ? : lttng_alignof(_type) * CHAR_BIT, \
 		  .signedness = (_signedness) >= 0 ? (_signedness) : lttng_is_signed_type(_type), \
-		  .reverse_byte_order = _byte_order != __BYTE_ORDER, \
-		  .base = _base,				\
+		  .reverse_byte_order = (_byte_order) != __BYTE_ORDER, \
+		  .base = (_base),				\
+		  .user = (_user),				\
 		  .encoding = lttng_encode_##_encoding,		\
 		},						\
 	}							\
@@ -93,7 +94,8 @@ struct lttng_integer_type {
 	unsigned int size;		/* in bits */
 	unsigned short alignment;	/* in bits */
 	unsigned int signedness:1,
-		reverse_byte_order:1;
+		reverse_byte_order:1,
+		user:1;			/* fetch from user-space */
 	unsigned int base;		/* 2, 8, 10, 16, for pretty print */
 	enum lttng_string_encodings encoding;
 };
@@ -106,6 +108,7 @@ union _lttng_basic_type {
 	} enumeration;
 	struct {
 		enum lttng_string_encodings encoding;
+		unsigned int user:1;			/* fetch from user-space */
 	} string;
 };
 
@@ -161,8 +164,7 @@ struct lttng_enum_desc {
 struct lttng_event_field {
 	const char *name;
 	struct lttng_type type;
-	unsigned int nowrite:1,		/* do not write into trace */
-			user:1;		/* fetch from user-space */
+	unsigned int nowrite:1;		/* do not write into trace */
 };
 
 union lttng_ctx_value {

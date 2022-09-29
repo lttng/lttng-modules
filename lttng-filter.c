@@ -246,7 +246,7 @@ int apply_field_reloc(struct lttng_event *event,
 
 			if (elem_type->atype != atype_integer || elem_type->u.basic.integer.encoding == lttng_encode_none)
 				return -EINVAL;
-			if (field->user)
+			if (elem_type->u.basic.integer.user)
 				op->op = FILTER_OP_LOAD_FIELD_REF_USER_SEQUENCE;
 			else
 				op->op = FILTER_OP_LOAD_FIELD_REF_SEQUENCE;
@@ -258,14 +258,14 @@ int apply_field_reloc(struct lttng_event *event,
 
 			if (elem_type->atype != atype_integer || elem_type->u.basic.integer.encoding == lttng_encode_none)
 				return -EINVAL;
-			if (field->user)
+			if (elem_type->u.basic.integer.user)
 				op->op = FILTER_OP_LOAD_FIELD_REF_USER_SEQUENCE;
 			else
 				op->op = FILTER_OP_LOAD_FIELD_REF_SEQUENCE;
 			break;
 		}
 		case atype_string:
-			if (field->user)
+			if (field->type.u.basic.string.user)
 				op->op = FILTER_OP_LOAD_FIELD_REF_USER_STRING;
 			else
 				op->op = FILTER_OP_LOAD_FIELD_REF_STRING;
@@ -334,7 +334,7 @@ int apply_context_reloc(struct lttng_event *event,
 
 			if (elem_type->atype != atype_integer || elem_type->u.basic.integer.encoding == lttng_encode_none)
 				return -EINVAL;
-			BUG_ON(ctx_field->event_field.user);
+			BUG_ON(elem_type->u.basic.integer.user);
 			op->op = FILTER_OP_GET_CONTEXT_REF_STRING;
 			break;
 		}
@@ -344,12 +344,12 @@ int apply_context_reloc(struct lttng_event *event,
 
 			if (elem_type->atype != atype_integer || elem_type->u.basic.integer.encoding == lttng_encode_none)
 				return -EINVAL;
-			BUG_ON(ctx_field->event_field.user);
+			BUG_ON(elem_type->u.basic.integer.user);
 			op->op = FILTER_OP_GET_CONTEXT_REF_STRING;
 			break;
 		}
 		case atype_string:
-			BUG_ON(ctx_field->event_field.user);
+			BUG_ON(ctx_field->event_field.type.u.basic.string.user);
 			op->op = FILTER_OP_GET_CONTEXT_REF_STRING;
 			break;
 		case atype_struct:	/* Unsupported. */

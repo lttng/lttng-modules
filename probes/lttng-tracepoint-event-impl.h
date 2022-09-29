@@ -257,9 +257,8 @@ void __event_template_proto___##_name(void);
 #define _ctf_integer_ext(_type, _item, _src, _byte_order, _base, _user, _nowrite) \
 	{							\
 	  .name = #_item,					\
-	  .type = __type_integer(_type, 0, 0, -1, _byte_order, _base, none),\
+	  .type = __type_integer(_type, 0, 0, -1, _byte_order, _user, _base, none),\
 	  .nowrite = _nowrite,					\
-	  .user = _user,					\
 	},
 
 #undef _ctf_array_encoded
@@ -273,13 +272,12 @@ void __event_template_proto___##_name(void);
 			{					\
 			  .array =				\
 				{				\
-				  .elem_type = __type_integer(_type, 0, 0, 0, _byte_order, _base, _encoding), \
+				  .elem_type = __type_integer(_type, 0, 0, 0, _byte_order, _user, _base, _encoding), \
 				  .length = _length,		\
 				}				\
 			}					\
 		},						\
 	  .nowrite = _nowrite,					\
-	  .user = _user,					\
 	},
 
 #undef _ctf_array_bitfield
@@ -293,14 +291,13 @@ void __event_template_proto___##_name(void);
 			{					\
 			  .array =				\
 				{				\
-				  .elem_type = __type_integer(_type, 1, 1, 0, __LITTLE_ENDIAN, 10, none), \
+				  .elem_type = __type_integer(_type, 1, 1, 0, __LITTLE_ENDIAN, _user, 10, none), \
 				  .length = (_length) * sizeof(_type) * CHAR_BIT, \
 				  .elem_alignment = lttng_alignof(_type), \
 				}				\
 			}					\
 		},						\
 	  .nowrite = _nowrite,					\
-	  .user = _user,					\
 	},
 
 
@@ -317,13 +314,12 @@ void __event_template_proto___##_name(void);
 			{					\
 			  .sequence =				\
 				{				\
-				  .length_type = __type_integer(_length_type, 0, 0, 0, __BYTE_ORDER, 10, none), \
-				  .elem_type = __type_integer(_type, 0, 0, -1, _byte_order, _base, _encoding), \
+				  .length_type = __type_integer(_length_type, 0, 0, 0, __BYTE_ORDER, 0, 10, none), \
+				  .elem_type = __type_integer(_type, 0, 0, -1, _byte_order, _user, _base, _encoding), \
 				},				\
 			},					\
 		},						\
 	  .nowrite = _nowrite,					\
-	  .user = _user,					\
 	},
 
 #undef _ctf_sequence_bitfield
@@ -339,14 +335,13 @@ void __event_template_proto___##_name(void);
 			{					\
 			  .sequence =				\
 				{				\
-				  .length_type = __type_integer(_length_type, 0, 0, 0, __BYTE_ORDER, 10, none), \
-				  .elem_type = __type_integer(_type, 1, 1, 0, __LITTLE_ENDIAN, 10, none), \
+				  .length_type = __type_integer(_length_type, 0, 0, 0, __BYTE_ORDER, 0, 10, none), \
+				  .elem_type = __type_integer(_type, 1, 1, 0, __LITTLE_ENDIAN, _user, 10, none), \
 				  .elem_alignment = lttng_alignof(_type), \
 				},				\
 			},					\
 		},						\
 	  .nowrite = _nowrite,					\
-	  .user = _user,					\
 	},
 
 #undef _ctf_string
@@ -358,11 +353,10 @@ void __event_template_proto___##_name(void);
 		  .atype = atype_string,			\
 		  .u =						\
 			{					\
-			  .basic = { .string = { .encoding = lttng_encode_UTF8 } } \
+			  .basic = { .string = { .encoding = lttng_encode_UTF8, .user = (_user), } } \
 			},					\
 		},						\
 	  .nowrite = _nowrite,					\
-	  .user = _user,					\
 	},
 
 #undef _ctf_enum
@@ -380,6 +374,7 @@ void __event_template_proto___##_name(void);
 							.alignment = lttng_alignof(_type) * CHAR_BIT, \
 							.signedness = lttng_is_signed_type(_type), \
 							.reverse_byte_order = 0, \
+							.user = (_user), \
 							.base = 10, \
 							.encoding = lttng_encode_none, \
 						},		\
@@ -388,7 +383,6 @@ void __event_template_proto___##_name(void);
 			},					\
 		},						\
 		.nowrite = _nowrite,				\
-		.user = _user,					\
 	},
 
 #undef ctf_custom_field
@@ -397,7 +391,6 @@ void __event_template_proto___##_name(void);
 		.name = #_item,					\
 		.type = { _type },				\
 		.nowrite = 0,					\
-		.user = 0,					\
 	},
 
 #undef ctf_custom_type

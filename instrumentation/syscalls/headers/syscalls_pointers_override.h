@@ -149,9 +149,9 @@ end:	; /* Label at end of compound statement. */					\
 		ctf_custom_type(									\
 			.atype = atype_sequence,							\
 			.u.sequence.length_type = __type_integer(					\
-				uint8_t, 0, 0, 0, __BYTE_ORDER, 10, none),				\
+				uint8_t, 0, 0, 0, __BYTE_ORDER, 0, 10, none),				\
 			.u.sequence.elem_type = __type_integer(uint8_t, 0, 0, 0,			\
-				__BYTE_ORDER, 16, none),						\
+				__BYTE_ORDER, 0, 16, none),						\
 		),											\
 		name,											\
 		ctf_custom_code(									\
@@ -186,9 +186,9 @@ end:	; /* Label at end of compound statement. */					\
 		ctf_custom_type(									\
 			.atype = atype_sequence,							\
 			.u.sequence.length_type = __type_integer(					\
-				uint8_t, 0, 0, 0, __BYTE_ORDER, 10, none),				\
+				uint8_t, 0, 0, 0, __BYTE_ORDER, 0, 10, none),				\
 			.u.sequence.elem_type = __type_integer(uint8_t, 0, 0, 0,			\
-				__BYTE_ORDER, 16, none),						\
+				__BYTE_ORDER, 0, 16, none),						\
 		),											\
 		name,											\
 		ctf_custom_code(									\
@@ -310,43 +310,43 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(pselect6,
 static struct lttng_event_field lttng_pollfd_flag_fields[] = {
 	[ilog2(POLLIN)] = {
 		.name = "POLLIN",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
+		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 0, 10, none),
 	},
 	[ilog2(POLLPRI)] = {
 		.name = "POLLPRI",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
+		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 0, 10, none),
 	},
 	[ilog2(POLLOUT)] = {
 		.name = "POLLOUT",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
+		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 0, 10, none),
 	},
 	[ilog2(POLLERR)] = {
 		.name = "POLLERR",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
+		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 0, 10, none),
 	},
 	[ilog2(POLLHUP)] = {
 		.name = "POLLHUP",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
+		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 0, 10, none),
 	},
 	[ilog2(POLLNVAL)] = {
 		.name = "POLLNVAL",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
+		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 0, 10, none),
 	},
 	[ilog2(LTTNG_POLL_NRFLAGS)] = {
 		.name = "padding",
 		.type = __type_integer(int, POLL_FLAGS_PADDING_SIZE, 1, 0,
-				__LITTLE_ENDIAN, 10, none),
+				__LITTLE_ENDIAN, 0, 10, none),
 	},
 };
 
 static struct lttng_event_field lttng_pollfd_fields[] = {
 	[0] = {
 		.name = "fd",
-		.type = __type_integer(int, 0, 0, 0, __BYTE_ORDER, 10, none),
+		.type = __type_integer(int, 0, 0, 0, __BYTE_ORDER, 0, 10, none),
 	},
 	[1] = {
 		.name = "raw_events",
-		.type = __type_integer(short, 0, 0, 0, __BYTE_ORDER, 16, none),
+		.type = __type_integer(short, 0, 0, 0, __BYTE_ORDER, 0, 16, none),
 	},
 	[2] = {
 		.name = "events",
@@ -572,32 +572,32 @@ static struct lttng_event_field lttng_epoll_ctl_events_fields[] = {
 	/* 0x0001 */
 	[ilog2(POLLIN)] = {
 		.name = "EPOLLIN",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
+		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 0, 10, none),
 	},
 	/* 0x0002 */
 	[ilog2(POLLPRI)] = {
 		.name = "EPOLLPRI",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
+		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 0, 10, none),
 	},
 	/* 0x0004 */
 	[ilog2(POLLOUT)] = {
 		.name = "EPOLLOUT",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
+		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 0, 10, none),
 	},
 	/* 0x0008 */
 	[ilog2(POLLERR)] = {
 		.name = "EPOLLERR",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
+		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 0, 10, none),
 	},
 	/* 0x0010 */
 	[ilog2(POLLHUP)] = {
 		.name = "EPOLLHUP",
-		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 10, none),
+		.type = __type_integer(int, 1, 1, 0, __LITTLE_ENDIAN, 0, 10, none),
 	},
 	[ilog2(LTTNG_EPOLL_NRFLAGS)] = {
 		.name = "padding",
 		.type = __type_integer(int, EPOLL_FLAGS_PADDING_SIZE, 1, 0,
-				__LITTLE_ENDIAN, 10, none),
+				__LITTLE_ENDIAN, 0, 10, none),
 	},
 
 };
@@ -605,11 +605,11 @@ static struct lttng_event_field lttng_epoll_ctl_events_fields[] = {
 static struct lttng_event_field lttng_epoll_data_fields[] = {
 	[0] = {
 		.name = "u64",
-		.type = __type_integer(uint64_t, 0, 0, 0, __BYTE_ORDER, 16, none),
+		.type = __type_integer(uint64_t, 0, 0, 0, __BYTE_ORDER, 0, 16, none),
 	},
 	[1] = {
 		.name = "fd",
-		.type = __type_integer(int, 0, 0, 0, __BYTE_ORDER, 10, none),
+		.type = __type_integer(int, 0, 0, 0, __BYTE_ORDER, 0, 10, none),
 	},
 };
 
@@ -624,7 +624,7 @@ static struct lttng_event_field epoll_ctl_fields[] = {
 	},
 	[1] = {
 		.name = "raw_events",
-		.type = __type_integer(uint32_t, 0, 0, 0, __BYTE_ORDER, 16, none),
+		.type = __type_integer(uint32_t, 0, 0, 0, __BYTE_ORDER, 0, 16, none),
 	},
 	[2] = {
 		.name = "events",
@@ -702,7 +702,7 @@ static struct lttng_event_field lttng_epoll_wait_fields[] = {
 	},
 	[1] = {
 		.name = "raw_events",
-		.type = __type_integer(uint32_t, 0, 0, 0, __BYTE_ORDER, 16, none),
+		.type = __type_integer(uint32_t, 0, 0, 0, __BYTE_ORDER, 0, 16, none),
 	},
 	[2] = {
 		.name = "events",
