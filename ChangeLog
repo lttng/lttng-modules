@@ -1,3 +1,20 @@
+2022-09-30 (National Day for Truth and Reconciliation) LTTng modules 2.13.6
+	* Fix: bytecode validator: reject specialized load field/context ref instructions
+	* Fix: bytecode validator: reject specialized load instructions
+	* Fix: honor "user" attribute for array/sequence of user integers
+	* wrapper: powerpc64: fix kernel crash caused by do_get_kallsyms
+	* Fix: event notification: Remove duplicate event enabled check
+	* Fix: event notification capture: validate buffer length
+	* Fix: handle capture page faults as skip field
+	* Fix: event notification capture error handling
+	* Fix: capture_sequence_element_{un,}signed: handle user-space input
+	* Fix: notification capture: handle userspace strings
+	* Implement lttng_msgpack_write_user_str
+	* Fix: bytecode interpreter: LOAD_FIELD: handle user fields
+	* Fix: move "user" attribute from field to type
+	* Introduce lttng_copy_from_user_check_nofault
+	* fix: adjust range v5.10.137 in block probe
+
 2022-08-19 (National Potato Day) LTTng modules 2.13.5
 	* Fix: incorrect stub prototypes when CONFIG_HAVE_SYSCALL_TRACEPOINTS=n
 	* fix: mm/tracing: add 'accounted' entry into output of allocation tracepoints (v6.0)
