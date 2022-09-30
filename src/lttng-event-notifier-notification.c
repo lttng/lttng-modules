@@ -81,6 +81,8 @@ int capture_enum(struct lttng_msgpack_writer *writer,
 		break;
 	default:
 		WARN_ON_ONCE(1);
+		ret = -1;
+		goto end;
 	}
 
 	ret = lttng_msgpack_end_map(writer);
@@ -89,8 +91,9 @@ end:
 }
 
 static
-int64_t capture_sequence_element_signed(uint8_t *ptr,
-		const struct lttng_kernel_type_integer *type)
+int capture_sequence_element_signed(uint8_t *ptr,
+		const struct lttng_kernel_type_integer *type,
+		int64_t *_value)
 {
 	int64_t value = 0;
 	unsigned int size = type->size;
@@ -104,7 +107,7 @@ int64_t capture_sequence_element_signed(uint8_t *ptr,
 
 		if (user) {
 			if (lttng_copy_from_user_check_nofault(&tmp, ptr, sizeof(int8_t)))
-				tmp = 0;
+				return -1;
 		} else {
 			tmp = *ptr;
 		}
@@ -117,7 +120,7 @@ int64_t capture_sequence_element_signed(uint8_t *ptr,
 
 		if (user) {
 			if (lttng_copy_from_user_check_nofault(&tmp, ptr, sizeof(int16_t)))
-				tmp = 0;
+				return -1;
 		} else {
 			tmp = *(int16_t *) ptr;
 		}
@@ -132,7 +135,7 @@ int64_t capture_sequence_element_signed(uint8_t *ptr,
 
 		if (user) {
 			if (lttng_copy_from_user_check_nofault(&tmp, ptr, sizeof(int32_t)))
-				tmp = 0;
+				return -1;
 		} else {
 			tmp = *(int32_t *) ptr;
 		}
@@ -147,7 +150,7 @@ int64_t capture_sequence_element_signed(uint8_t *ptr,
 
 		if (user) {
 			if (lttng_copy_from_user_check_nofault(&tmp, ptr, sizeof(int64_t)))
-				tmp = 0;
+				return -1;
 		} else {
 			tmp = *(int64_t *) ptr;
 		}
@@ -158,14 +161,17 @@ int64_t capture_sequence_element_signed(uint8_t *ptr,
 	}
 	default:
 		WARN_ON_ONCE(1);
+		return -1;
 	}
 
-	return value;
+	*_value = value;
+	return 0;
 }
 
 static
-uint64_t capture_sequence_element_unsigned(uint8_t *ptr,
-		const struct lttng_kernel_type_integer *type)
+int capture_sequence_element_unsigned(uint8_t *ptr,
+		const struct lttng_kernel_type_integer *type,
+		uint64_t *_value)
 {
 	uint64_t value = 0;
 	unsigned int size = type->size;
@@ -179,7 +185,7 @@ uint64_t capture_sequence_element_unsigned(uint8_t *ptr,
 
 		if (user) {
 			if (lttng_copy_from_user_check_nofault(&tmp, ptr, sizeof(uint8_t)))
-				tmp = 0;
+				return -1;
 		} else {
 			tmp = *ptr;
 		}
@@ -192,7 +198,7 @@ uint64_t capture_sequence_element_unsigned(uint8_t *ptr,
 
 		if (user) {
 			if (lttng_copy_from_user_check_nofault(&tmp, ptr, sizeof(uint16_t)))
-				tmp = 0;
+				return -1;
 		} else {
 			tmp = *(uint16_t *) ptr;
 		}
@@ -207,7 +213,7 @@ uint64_t capture_sequence_element_unsigned(uint8_t *ptr,
 
 		if (user) {
 			if (lttng_copy_from_user_check_nofault(&tmp, ptr, sizeof(uint32_t)))
-				tmp = 0;
+				return -1;
 		} else {
 			tmp = *(uint32_t *) ptr;
 		}
@@ -222,7 +228,7 @@ uint64_t capture_sequence_element_unsigned(uint8_t *ptr,
 
 		if (user) {
 			if (lttng_copy_from_user_check_nofault(&tmp, ptr, sizeof(uint64_t)))
-				tmp = 0;
+				return -1;
 		} else {
 			tmp = *(uint64_t *) ptr;
 		}
@@ -233,9 +239,11 @@ uint64_t capture_sequence_element_unsigned(uint8_t *ptr,
 	}
 	default:
 		WARN_ON_ONCE(1);
+		return -1;
 	}
 
-	return value;
+	*_value = value;
+	return 0;
 }
 
 int capture_sequence(struct lttng_msgpack_writer *writer,
@@ -271,14 +279,24 @@ int capture_sequence(struct lttng_msgpack_writer *writer,
 	signedness = integer_type->signedness;
 	for (i = 0; i < output->u.sequence.nr_elem; i++) {
 		if (signedness) {
-			ret = lttng_msgpack_write_signed_integer(writer,
-				capture_sequence_element_signed(ptr, integer_type));
+			int64_t v;
+
+			ret = capture_sequence_element_signed(ptr, integer_type, &v);
+			if (ret) {
+				goto end;
+			}
+			ret = lttng_msgpack_write_signed_integer(writer, v);
 			if (ret) {
 				goto end;
 			}
 		} else {
-			ret = lttng_msgpack_write_unsigned_integer(writer,
-				capture_sequence_element_unsigned(ptr, integer_type));
+			uint64_t v;
+
+			ret = capture_sequence_element_unsigned(ptr, integer_type, &v);
+			if (ret) {
+				goto end;
+			}
+			ret = lttng_msgpack_write_unsigned_integer(writer, v);
 			if (ret) {
 				goto end;
 			}
