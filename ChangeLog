@@ -1,3 +1,14 @@
+2022-09-30 (National Day for Truth and Reconciliation) LTTng modules 2.12.11
+	* Fix: bytecode validator: reject specialized load field/context ref instructions
+	* Fix: bytecode validator: reject specialized load instructions
+	* Fix: bytecode interpreter: LOAD_FIELD: handle user fields
+	* bytecode: propagate `rev_bo` of element
+	* Fix: bytecode interpreter context_get_index() leaves byte order uninitialized
+	* Fix: move "user" attribute from field to type
+	* Introduce lttng_copy_from_user_check_nofault
+	* wrapper: powerpc64: fix kernel crash caused by do_get_kallsyms
+	* fix: adjust range v5.10.137 in block probe
+
 2022-08-19 (National Potato Day) LTTng modules 2.12.10
 	* Fix: stub prototypes with extra semicolons when CONFIG_HAVE_SYSCALL_TRACEPOINTS=n
 	* fix: tie compaction probe build to CONFIG_COMPACTION
