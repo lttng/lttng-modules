@@ -1,3 +1,6 @@
+2022-09-30 (National Day for Truth and Reconciliation) LTTng modules 2.13.7
+	* Fix: handle integer capture page faults as skip field
+
 2022-09-30 (National Day for Truth and Reconciliation) LTTng modules 2.13.6
 	* Fix: bytecode validator: reject specialized load field/context ref instructions
 	* Fix: bytecode validator: reject specialized load instructions
