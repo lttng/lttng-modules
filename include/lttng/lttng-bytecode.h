@@ -292,6 +292,7 @@ const char *lttng_bytecode_print_op(enum bytecode_op op);
 
 void lttng_bytecode_sync_state(struct lttng_kernel_bytecode_runtime *runtime);
 int lttng_bytecode_validate(struct bytecode_runtime *bytecode);
+int lttng_bytecode_validate_load(struct bytecode_runtime *bytecode);
 int lttng_bytecode_specialize(const struct lttng_kernel_event_desc *event_desc,
 		struct bytecode_runtime *bytecode);
 
