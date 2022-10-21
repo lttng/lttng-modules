@@ -22,13 +22,6 @@
 	DEFINE_TRACE(name)
 #endif
 
-#ifndef HAVE_KABI_2635_TRACEPOINT
-
-#define kabi_2635_tracepoint_probe_register tracepoint_probe_register
-#define kabi_2635_tracepoint_probe_unregister tracepoint_probe_unregister
-
-#endif /* HAVE_KABI_2635_TRACEPOINT */
-
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,15,0))
 
 #include <lttng/tracepoint.h>
@@ -38,8 +31,8 @@
 
 #else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,15,0)) */
 
-#define lttng_wrapper_tracepoint_probe_register kabi_2635_tracepoint_probe_register
-#define lttng_wrapper_tracepoint_probe_unregister kabi_2635_tracepoint_probe_unregister
+#define lttng_wrapper_tracepoint_probe_register tracepoint_probe_register
+#define lttng_wrapper_tracepoint_probe_unregister tracepoint_probe_unregister
 
 static inline
 int lttng_tracepoint_init(void)
