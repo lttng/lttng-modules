@@ -17,8 +17,10 @@
 #include <linux/kallsyms.h>
 #include <linux/dcache.h>
 #include <linux/trace_events.h>
+#include <linux/kprobes.h>
 #include <trace/syscall.h>
 #include <asm/syscall.h>
+#include <wrapper/kallsyms.h>
 
 #ifndef CONFIG_FTRACE_SYSCALLS
 #error "You need to set CONFIG_FTRACE_SYSCALLS=y"
@@ -56,8 +58,8 @@ int init_module(void)
 	struct syscall_metadata *meta;
 	int i;
 
-	__start_syscalls_metadata = (void *) kallsyms_lookup_name("__start_syscalls_metadata");
-	__stop_syscalls_metadata = (void *) kallsyms_lookup_name("__stop_syscalls_metadata");
+	__start_syscalls_metadata = (void *) wrapper_kallsyms_lookup_name("__start_syscalls_metadata");
+	__stop_syscalls_metadata = (void *) wrapper_kallsyms_lookup_name("__stop_syscalls_metadata");
 
 	printk("%s---START---\n", ident);
 	for (i = 0; i < NR_syscalls; i++) {

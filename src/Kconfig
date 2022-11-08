@@ -25,4 +25,13 @@ config LTTNG_EXPERIMENTAL_BITWISE_ENUM
 
 	  If unsure, say N.
 
+config LTTNG_SYSCALLS_EXTRACTOR
+	bool "LTTng syscalls extraction helper"
+	default n
+	depends on LTTNG
+	help
+	  Enable the LTTng system call extraction helper which prints the list
+	  of enabled system calls, along with their signature, to dmesg. This
+	  is not meant for mainline; it is a development helper.
+
 source "lttng/src/tests/Kconfig"

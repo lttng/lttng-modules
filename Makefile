@@ -33,6 +33,13 @@ modules:
 		KCPPFLAGS='$(LKCPPFLAGS)' \
 		modules
 
+syscalls_extractor:
+	$(MAKE) -C $(KERNELDIR) M=$(PWD)/src \
+		CONFIG_LTTNG_SYSCALLS_EXTRACTOR=m \
+		CONFIG_LTTNG=m CONFIG_LTTNG_CLOCK_PLUGIN_TEST=m \
+		KCPPFLAGS='$(LKCPPFLAGS)' \
+		modules
+
 modules_install:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD)/src \
 		CONFIG_LTTNG=m CONFIG_LTTNG_CLOCK_PLUGIN_TEST=m \
