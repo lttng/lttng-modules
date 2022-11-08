@@ -29,38 +29,42 @@ endif
 ifneq ($(CONFIG_KVM),)
   obj-$(CONFIG_LTTNG) += lttng-probe-kvm.o
   ifneq ($(CONFIG_X86),)
-    kvm_dep_lapic = $(srctree)/arch/x86/kvm/lapic.h
-    kvm_dep_lapic_check = $(wildcard $(kvm_dep_lapic))
-    ifneq ($(kvm_dep_lapic_check),)
-      # search for iodev.h in any of its known locations
-      kvm_dep_iodev = $(srctree)/virt/kvm/iodev.h $(srctree)/include/kvm/iodev.h
-      kvm_dep_iodev_check = $(wildcard $(kvm_dep_iodev))
-      ifneq ($(kvm_dep_iodev_check),)
-        kvm_dep_emulate = $(srctree)/arch/x86/kvm/kvm_emulate.h
-        kvm_dep_emulate_wildcard = $(wildcard $(kvm_dep_emulate))
-        kvm_dep_emulate_check = $(shell \
-        if [ \( $(VERSION) -ge 6 \
-           -o \( $(VERSION) -eq 5 -a $(PATCHLEVEL) -eq 7 \) \) -a \
-           -z "$(kvm_dep_emulate_wildcard)" ] ; then \
-          echo "warn" ; \
-        else \
-          echo "ok" ; \
-        fi ;)
-        ifeq ($(kvm_dep_emulate_check),ok)
-          CFLAGS_lttng-probe-kvm-x86.o += -I$(srctree)/virt/kvm \
-                     -I$(srctree)/arch/x86/kvm
-          CFLAGS_lttng-probe-kvm-x86-mmu.o += -I$(srctree)/virt/kvm
-          obj-$(CONFIG_LTTNG) += lttng-probe-kvm-x86.o
-          obj-$(CONFIG_LTTNG) += lttng-probe-kvm-x86-mmu.o
-        else # ($(kvm_dep_emulate_check),ok)
-          $(warning File $(kvm_dep_emulate) not found. Probe "kvm" x86-specific is disabled. Use full kernel source tree to enable it.)
-        endif # ($(kvm_dep_emulate_check),ok)
-      else # $(kvm_dep_iodev_check)
-        $(warning File $(kvm_dep_iodev) not found. Probe "kvm" x86-specific is disabled. Use full kernel source tree to enable it.)
-      endif # $(kvm_dep_iodev_check)
-    else # $(kvm_dep_lapic_check)
-      $(warning File $(kvm_dep_lapic) not found. Probe "kvm" x86-specific is disabled. Use full kernel source tree to enable it.)
-    endif # $(kvm_dep_lapic_check)
+    ifneq ($(CONFIG_KALLSYMS_ALL),)
+      kvm_dep_lapic = $(srctree)/arch/x86/kvm/lapic.h
+      kvm_dep_lapic_check = $(wildcard $(kvm_dep_lapic))
+      ifneq ($(kvm_dep_lapic_check),)
+        # search for iodev.h in any of its known locations
+        kvm_dep_iodev = $(srctree)/virt/kvm/iodev.h $(srctree)/include/kvm/iodev.h
+        kvm_dep_iodev_check = $(wildcard $(kvm_dep_iodev))
+        ifneq ($(kvm_dep_iodev_check),)
+          kvm_dep_emulate = $(srctree)/arch/x86/kvm/kvm_emulate.h
+          kvm_dep_emulate_wildcard = $(wildcard $(kvm_dep_emulate))
+          kvm_dep_emulate_check = $(shell \
+          if [ \( $(VERSION) -ge 6 \
+             -o \( $(VERSION) -eq 5 -a $(PATCHLEVEL) -eq 7 \) \) -a \
+             -z "$(kvm_dep_emulate_wildcard)" ] ; then \
+            echo "warn" ; \
+          else \
+            echo "ok" ; \
+          fi ;)
+          ifeq ($(kvm_dep_emulate_check),ok)
+            CFLAGS_lttng-probe-kvm-x86.o += -I$(srctree)/virt/kvm \
+                       -I$(srctree)/arch/x86/kvm
+            CFLAGS_lttng-probe-kvm-x86-mmu.o += -I$(srctree)/virt/kvm
+            obj-$(CONFIG_LTTNG) += lttng-probe-kvm-x86.o
+            obj-$(CONFIG_LTTNG) += lttng-probe-kvm-x86-mmu.o
+          else # ($(kvm_dep_emulate_check),ok)
+            $(warning File $(kvm_dep_emulate) not found. Probe "kvm" x86-specific is disabled. Use full kernel source tree to enable it.)
+          endif # ($(kvm_dep_emulate_check),ok)
+        else # $(kvm_dep_iodev_check)
+          $(warning File $(kvm_dep_iodev) not found. Probe "kvm" x86-specific is disabled. Use full kernel source tree to enable it.)
+        endif # $(kvm_dep_iodev_check)
+      else # $(kvm_dep_lapic_check)
+        $(warning File $(kvm_dep_lapic) not found. Probe "kvm" x86-specific is disabled. Use full kernel source tree to enable it.)
+      endif # $(kvm_dep_lapic_check)
+    else
+      $(warning CONFIG_KALLSYMS_ALL is disabled. Probe "kvm" x86-specific is disabled. Rebuild your kernel with this configuration option enabled in order to trace this subsystem.)
+    endif # CONFIG_KALLSYMS_ALL
   endif # CONFIG_X86
 endif # CONFIG_KVM
 
