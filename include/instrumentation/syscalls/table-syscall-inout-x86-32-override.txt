@@ -1,0 +1,1 @@
+syscall fanotify_mark nbargs 6 rw: (r, r, r, r, r, r)
