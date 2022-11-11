@@ -367,7 +367,8 @@ LTTNG_TRACEPOINT_EVENT(block_rq_requeue,
 	)
 )
 #elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0) \
-	|| LTTNG_KERNEL_RANGE(5,10,137, 5,11,0))
+	|| LTTNG_KERNEL_RANGE(5,10,137, 5,11,0) \
+	|| LTTNG_RHEL_KERNEL_RANGE(4,18,0,372,0,0, 4,19,0,0,0,0))
 /**
  * block_rq_requeue - place block IO request back on a queue
  * @rq: block IO operation request
@@ -613,7 +614,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(block_rq,
 	)
 )
 #elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0) \
-	|| LTTNG_KERNEL_RANGE(5,10,137, 5,11,0))
+	|| LTTNG_KERNEL_RANGE(5,10,137, 5,11,0) \
+	|| LTTNG_RHEL_KERNEL_RANGE(4,18,0,372,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(block_rq,
 
 	TP_PROTO(struct request *rq),
@@ -749,7 +751,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS_CODE(block_rq,
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0)) */
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0) \
-	|| LTTNG_KERNEL_RANGE(5,10,137, 5,11,0))
+	|| LTTNG_KERNEL_RANGE(5,10,137, 5,11,0) \
+	|| LTTNG_RHEL_KERNEL_RANGE(4,18,0,372,0,0, 4,19,0,0,0,0))
 /**
  * block_rq_insert - insert block operation request into queue
  * @rq: block IO operation request
@@ -785,7 +788,8 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq, block_rq_insert,
 #endif
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0) \
-	|| LTTNG_KERNEL_RANGE(5,10,137, 5,11,0))
+	|| LTTNG_KERNEL_RANGE(5,10,137, 5,11,0) \
+	|| LTTNG_RHEL_KERNEL_RANGE(4,18,0,372,0,0, 4,19,0,0,0,0))
 /**
  * block_rq_issue - issue pending block IO request operation to device driver
  * @rq: block IO operation operation request
@@ -1638,7 +1642,8 @@ LTTNG_TRACEPOINT_EVENT(block_rq_remap,
 	)
 )
 #elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0) \
-	|| LTTNG_KERNEL_RANGE(5,10,137, 5,11,0))
+	|| LTTNG_KERNEL_RANGE(5,10,137, 5,11,0) \
+	|| LTTNG_RHEL_KERNEL_RANGE(4,18,0,372,0,0, 4,19,0,0,0,0))
 /**
  * block_rq_remap - map request for a block operation request
  * @rq: block IO operation request
