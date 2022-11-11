@@ -10,7 +10,8 @@
 
 #include <lttng/kernel-version.h>
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,372,0,0, 4,19,0,0,0,0))
 #include <linux/objtool.h>
 #elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,6,0))
 #include <linux/frame.h>
