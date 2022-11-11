@@ -11,7 +11,8 @@
 #include <linux/sched.h>
 #include <lttng-kernel-version.h>
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,14,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,14,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,372,0,0, 4,19,0,0,0,0))
 
 #define lttng_get_task_state(task)	READ_ONCE((task)->__state)
 #define lttng_task_is_running(task)	task_is_running(task)
