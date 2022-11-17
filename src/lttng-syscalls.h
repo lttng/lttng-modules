@@ -16,37 +16,62 @@
 #include <linux/in.h>
 #include <linux/in6.h>
 #include <linux/mman.h>
+#include <linux/posix_types.h>
 
 #include <lttng/events.h>
 #include <lttng/kernel-version.h>
 
-
 /*
- * Forward declarations for old kernels.
+ * Forward declarations allowing LTTng to build its system call instrumentation
+ * against old kernels which do not declare the more recent system call
+ * argument structure types.
  */
+struct clone_args;
+struct file_handle;
+struct futex_waitv;
+struct io_uring_params;
+struct mmap_arg_struct;
 struct mmsghdr;
-struct rlimit64;
+struct mount_attr;
 struct oldold_utsname;
 struct old_utsname;
-struct sel_arg_struct;
-struct mmap_arg_struct;
-struct file_handle;
-struct user_msghdr;
-struct __kernel_old_itimerval;
+struct old_itimerspec32;
+struct old_timespec32;
+struct old_timeval32;
+struct old_timex32;
+struct old_utimbuf32;
 struct open_how;
-struct mount_attr;
-struct futex_waitv;
+struct rlimit64;
+struct rseq;
+struct sel_arg_struct;
+struct statx;
+struct user_msghdr;
 
-/*
- * Forward declaration for kernels >= 5.6
- */
-struct timex;
-struct timeval;
-struct itimerval;
-struct itimerspec;
+struct __aio_sigset;
+struct __kernel_old_itimerval;
+struct __kernel_timespec;
+struct __kernel_timex;
+struct __kernel_old_timeval;
+struct __kernel_itimerspec;
+
+typedef __kernel_long_t __kernel_old_time_t;
+typedef int __bitwise __kernel_rwf_t;
+typedef __kernel_rwf_t rwf_t;
+typedef s32 old_time32_t;
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
+/*
+ * Forward declaration and typedef for old types expected by MIPS and POWER
+ * system call instrumentation when building against kernel >= 5.6.0. To be
+ * removed after those system call instrumentation headers are regenerated
+ * against a recent kernel.
+ */
 typedef __kernel_old_time_t time_t;
+
+struct itimerspec;
+struct itimerval;
+struct timeval;
+struct timex;
 #endif
 
 struct trace_syscall_entry {
