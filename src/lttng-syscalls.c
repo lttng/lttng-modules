@@ -79,34 +79,6 @@ void syscall_entry_event_notifier_probe(void *__data, struct pt_regs *regs,
 void syscall_exit_event_notifier_probe(void *__data, struct pt_regs *regs,
 		long ret);
 
-/*
- * Forward declarations for old kernels.
- */
-struct mmsghdr;
-struct rlimit64;
-struct oldold_utsname;
-struct old_utsname;
-struct sel_arg_struct;
-struct mmap_arg_struct;
-struct file_handle;
-struct user_msghdr;
-struct __kernel_old_itimerval;
-struct open_how;
-struct mount_attr;
-struct futex_waitv;
-
-/*
- * Forward declaration for kernels >= 5.6
- */
-struct timex;
-struct timeval;
-struct itimerval;
-struct itimerspec;
-
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
-typedef __kernel_old_time_t time_t;
-#endif
-
 #ifdef IA32_NR_syscalls
 #define NR_compat_syscalls IA32_NR_syscalls
 #else
