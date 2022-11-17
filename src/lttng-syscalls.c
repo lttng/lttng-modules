@@ -90,6 +90,10 @@ struct sel_arg_struct;
 struct mmap_arg_struct;
 struct file_handle;
 struct user_msghdr;
+struct __kernel_old_itimerval;
+struct open_how;
+struct mount_attr;
+struct futex_waitv;
 
 /*
  * Forward declaration for kernels >= 5.6
