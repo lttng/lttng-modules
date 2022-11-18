@@ -43,6 +43,7 @@ struct old_utimbuf32;
 struct open_how;
 struct rlimit64;
 struct rseq;
+struct sched_attr;
 struct sel_arg_struct;
 struct statx;
 struct user_msghdr;
@@ -53,6 +54,12 @@ struct __kernel_timespec;
 struct __kernel_timex;
 struct __kernel_old_timeval;
 struct __kernel_itimerspec;
+
+union bpf_attr;
+
+#ifndef __kernel_long_t
+typedef long __kernel_long_t;
+#endif
 
 typedef __kernel_long_t __kernel_old_time_t;
 typedef int __bitwise __kernel_rwf_t;
