@@ -1345,7 +1345,7 @@ void register_event(struct lttng_kernel_event_common *event)
 	desc = event->priv->desc;
 	switch (event->priv->instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
-		ret = lttng_wrapper_tracepoint_probe_register(desc->event_kname,
+		ret = lttng_tracepoint_probe_register(desc->event_kname,
 						  desc->tp_class->probe_callback,
 						  event);
 		break;
@@ -1395,7 +1395,7 @@ void unregister_event(struct lttng_kernel_event_common *event)
 	desc = event_priv->desc;
 	switch (event_priv->instrumentation) {
 	case LTTNG_KERNEL_ABI_TRACEPOINT:
-		ret = lttng_wrapper_tracepoint_probe_unregister(event_priv->desc->event_kname,
+		ret = lttng_tracepoint_probe_unregister(event_priv->desc->event_kname,
 						  event_priv->desc->tp_class->probe_callback,
 						  event);
 		break;
@@ -4152,9 +4152,6 @@ static int __init lttng_events_init(void)
 {
 	int ret;
 
-	ret = wrapper_lttng_fixup_sig(THIS_MODULE);
-	if (ret)
-		return ret;
 	ret = wrapper_get_pfnblock_flags_mask_init();
 	if (ret)
 		return ret;

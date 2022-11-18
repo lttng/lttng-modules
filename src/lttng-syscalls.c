@@ -796,17 +796,17 @@ int lttng_event_enabler_create_syscall_events_if_missing(struct lttng_event_enab
 	}
 
 	if (!syscall_table->sys_enter_registered) {
-		ret = lttng_wrapper_tracepoint_probe_register("sys_enter",
+		ret = lttng_tracepoint_probe_register("sys_enter",
 				(void *) syscall_entry_event_probe, syscall_table);
 		if (ret)
 			return ret;
 		syscall_table->sys_enter_registered = 1;
 	}
 	if (!syscall_table->sys_exit_registered) {
-		ret = lttng_wrapper_tracepoint_probe_register("sys_exit",
+		ret = lttng_tracepoint_probe_register("sys_exit",
 				(void *) syscall_exit_event_probe, syscall_table);
 		if (ret) {
-			WARN_ON_ONCE(lttng_wrapper_tracepoint_probe_unregister("sys_enter",
+			WARN_ON_ONCE(lttng_tracepoint_probe_unregister("sys_enter",
 				(void *) syscall_entry_event_probe, syscall_table));
 			return ret;
 		}
@@ -825,14 +825,14 @@ int lttng_syscalls_unregister_syscall_table(struct lttng_kernel_syscall_table *s
 	if (!syscall_table->syscall_dispatch)
 		return 0;
 	if (syscall_table->sys_enter_registered) {
-		ret = lttng_wrapper_tracepoint_probe_unregister("sys_enter",
+		ret = lttng_tracepoint_probe_unregister("sys_enter",
 				(void *) syscall_entry_event_probe, syscall_table);
 		if (ret)
 			return ret;
 		syscall_table->sys_enter_registered = 0;
 	}
 	if (syscall_table->sys_exit_registered) {
-		ret = lttng_wrapper_tracepoint_probe_unregister("sys_exit",
+		ret = lttng_tracepoint_probe_unregister("sys_exit",
 				(void *) syscall_exit_event_probe, syscall_table);
 		if (ret)
 			return ret;
