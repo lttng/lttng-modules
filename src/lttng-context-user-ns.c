@@ -17,7 +17,6 @@
 #include <lttng/events-internal.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
-#include <wrapper/namespace.h>
 #include <lttng/tracer.h>
 
 #if defined(CONFIG_USER_NS) && \
@@ -41,7 +40,7 @@ void user_ns_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	unsigned int user_ns_inum = 0;
 
 	if (current_user_ns())
-		user_ns_inum = current_user_ns()->lttng_ns_inum;
+		user_ns_inum = current_user_ns()->ns.inum;
 
 	chan->ops->event_write(ctx, &user_ns_inum, sizeof(user_ns_inum), lttng_alignof(user_ns_inum));
 }
@@ -54,7 +53,7 @@ void user_ns_get_value(void *priv,
 	unsigned int user_ns_inum = 0;
 
 	if (current_user_ns())
-		user_ns_inum = current_user_ns()->lttng_ns_inum;
+		user_ns_inum = current_user_ns()->ns.inum;
 
 	value->u.s64 = user_ns_inum;
 }

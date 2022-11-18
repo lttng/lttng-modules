@@ -17,7 +17,6 @@
 #include <lttng/events-internal.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
-#include <wrapper/namespace.h>
 #include <lttng/tracer.h>
 
 #if defined(CONFIG_CGROUPS) && \
@@ -49,7 +48,7 @@ void cgroup_ns_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	 * namespaces, just dereference the pointers.
 	 */
 	if (current->nsproxy)
-		cgroup_ns_inum = current->nsproxy->cgroup_ns->lttng_ns_inum;
+		cgroup_ns_inum = current->nsproxy->cgroup_ns->ns.inum;
 
 	chan->ops->event_write(ctx, &cgroup_ns_inum, sizeof(cgroup_ns_inum), lttng_alignof(cgroup_ns_inum));
 }
@@ -69,7 +68,7 @@ void cgroup_ns_get_value(void *priv,
 	 * namespaces, just dereference the pointers.
 	 */
 	if (current->nsproxy)
-		cgroup_ns_inum = current->nsproxy->cgroup_ns->lttng_ns_inum;
+		cgroup_ns_inum = current->nsproxy->cgroup_ns->ns.inum;
 
 	value->u.s64 = cgroup_ns_inum;
 }

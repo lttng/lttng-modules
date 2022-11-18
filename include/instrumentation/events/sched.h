@@ -13,7 +13,6 @@
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,9,0))
 #include <linux/sched/rt.h>
 #endif
-#include <wrapper/namespace.h>
 
 #define LTTNG_MAX_PID_NS_LEVEL 32
 
@@ -544,7 +543,7 @@ LTTNG_TRACEPOINT_EVENT_CODE(sched_process_fork,
 					pid_ns = task_active_pid_ns(parent);
 					if (pid_ns)
 						parent_ns_inum =
-							pid_ns->lttng_ns_inum;
+							pid_ns->ns.inum;
 				}
 				parent_ns_inum;
 			}))
@@ -564,7 +563,7 @@ LTTNG_TRACEPOINT_EVENT_CODE(sched_process_fork,
 					pid_ns = task_active_pid_ns(child);
 					if (pid_ns)
 						child_ns_inum =
-							pid_ns->lttng_ns_inum;
+							pid_ns->ns.inum;
 				}
 				child_ns_inum;
 			}))

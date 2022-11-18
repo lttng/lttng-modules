@@ -39,7 +39,6 @@
 #include <wrapper/cpu.h>
 #include <wrapper/irqdesc.h>
 #include <wrapper/fdtable.h>
-#include <wrapper/namespace.h>
 #include <wrapper/tracepoint.h>
 #include <wrapper/blkdev.h>
 #include <wrapper/fdtable.h>
@@ -599,7 +598,7 @@ void lttng_statedump_process_ns(struct lttng_kernel_session *session,
 		 * paranoid behavior of
 		 * trace_lttng_statedump_process_user_ns().
 		 */
-		user_ns = user_ns ? user_ns->lttng_user_ns_parent : NULL;
+		user_ns = user_ns ? user_ns->parent : NULL;
 	} while (user_ns);
 
 	/*

@@ -18,7 +18,6 @@
 #include <lttng/events-internal.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
-#include <wrapper/namespace.h>
 #include <lttng/tracer.h>
 
 #if defined(CONFIG_TIME_NS)
@@ -48,7 +47,7 @@ void time_ns_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	 * namespaces, just dereference the pointers.
 	 */
 	if (current->nsproxy)
-		time_ns_inum = current->nsproxy->time_ns->lttng_ns_inum;
+		time_ns_inum = current->nsproxy->time_ns->ns.inum;
 
 	chan->ops->event_write(ctx, &time_ns_inum, sizeof(time_ns_inum), lttng_alignof(time_ns_inum));
 }
@@ -68,7 +67,7 @@ void time_ns_get_value(void *priv,
 	 * namespaces, just dereference the pointers.
 	 */
 	if (current->nsproxy)
-		time_ns_inum = current->nsproxy->time_ns->lttng_ns_inum;
+		time_ns_inum = current->nsproxy->time_ns->ns.inum;
 
 	value->u.s64 = time_ns_inum;
 }

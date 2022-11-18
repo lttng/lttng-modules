@@ -17,7 +17,6 @@
 #include <lttng/events-internal.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
-#include <wrapper/namespace.h>
 #include <lttng/tracer.h>
 
 #if defined(CONFIG_UTS_NS) && \
@@ -48,7 +47,7 @@ void uts_ns_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	 * namespaces, just dereference the pointers.
 	 */
 	if (current->nsproxy)
-		uts_ns_inum = current->nsproxy->uts_ns->lttng_ns_inum;
+		uts_ns_inum = current->nsproxy->uts_ns->ns.inum;
 
 	chan->ops->event_write(ctx, &uts_ns_inum, sizeof(uts_ns_inum), lttng_alignof(uts_ns_inum));
 }
@@ -68,7 +67,7 @@ void uts_ns_get_value(void *priv,
 	 * namespaces, just dereference the pointers.
 	 */
 	if (current->nsproxy)
-		uts_ns_inum = current->nsproxy->uts_ns->lttng_ns_inum;
+		uts_ns_inum = current->nsproxy->uts_ns->ns.inum;
 
 	value->u.s64 = uts_ns_inum;
 }
