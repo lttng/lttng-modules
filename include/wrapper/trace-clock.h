@@ -28,7 +28,6 @@
 #include <lttng/clock.h>
 #include <wrapper/compiler.h>
 #include <wrapper/random.h>
-#include <blacklist/timekeeping.h>
 
 extern struct lttng_trace_clock *lttng_trace_clock;
 
@@ -39,8 +38,7 @@ extern struct lttng_trace_clock *lttng_trace_clock;
  */
 #if (LTTNG_KERNEL_RANGE(4,8,0, 4,8,2) \
 	|| LTTNG_KERNEL_RANGE(4,7,4, 4,7,8) \
-	|| LTTNG_KERNEL_RANGE(4,4,20, 4,4,25) \
-	|| LTTNG_KERNEL_RANGE(4,1,32, 4,1,35))
+	|| LTTNG_KERNEL_RANGE(4,4,20, 4,4,25))
 #define LTTNG_CLOCK_NMI_SAFE_BROKEN
 #endif
 
@@ -52,9 +50,7 @@ extern struct lttng_trace_clock *lttng_trace_clock;
  * this feature on 64-bit architectures.
  */
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,17,0) \
-	&& BITS_PER_LONG == 64 \
-	&& !defined(LTTNG_CLOCK_NMI_SAFE_BROKEN))
+#if (BITS_PER_LONG == 64 && !defined(LTTNG_CLOCK_NMI_SAFE_BROKEN))
 #define LTTNG_USE_NMI_SAFE_CLOCK
 #endif
 
