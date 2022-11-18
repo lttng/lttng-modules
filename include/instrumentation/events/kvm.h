@@ -18,14 +18,7 @@ LTTNG_TRACEPOINT_EVENT(kvm_userspace_exit,
 	)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,6,0))
 #if defined(__KVM_HAVE_IOAPIC)
-#undef __KVM_HAVE_IRQ_LINE
-#define __KVM_HAVE_IRQ_LINE
-#endif
-#endif
-
-#if defined(__KVM_HAVE_IRQ_LINE)
 LTTNG_TRACEPOINT_EVENT(kvm_set_irq,
 	TP_PROTO(unsigned int gsi, int level, int irq_source_id),
 	TP_ARGS(gsi, level, irq_source_id),
@@ -36,9 +29,6 @@ LTTNG_TRACEPOINT_EVENT(kvm_set_irq,
 		ctf_integer(int, irq_source_id, irq_source_id)
 	)
 )
-#endif
-
-#if defined(__KVM_HAVE_IOAPIC)
 
 LTTNG_TRACEPOINT_EVENT(kvm_ioapic_set_irq,
 	    TP_PROTO(__u64 e, int pin, bool coalesced),
@@ -103,10 +93,6 @@ LTTNG_TRACEPOINT_EVENT(kvm_mmio,
 	|| LTTNG_DEBIAN_KERNEL_RANGE(4,14,13,0,1,0, 4,15,0,0,0,0) \
 	|| LTTNG_KERNEL_RANGE(4,9,77, 4,10,0) \
 	|| LTTNG_KERNEL_RANGE(4,4,112, 4,5,0) \
-	|| LTTNG_KERNEL_RANGE(4,1,50, 4,2,0) \
-	|| LTTNG_KERNEL_RANGE(3,16,52, 3,17,0) \
-	|| LTTNG_UBUNTU_KERNEL_RANGE(3,13,11,144, 3,14,0,0) \
-	|| LTTNG_KERNEL_RANGE(3,2,97, 3,3,0) \
 	|| LTTNG_UBUNTU_KERNEL_RANGE(4,13,16,38, 4,14,0,0) \
 	|| LTTNG_DEBIAN_KERNEL_RANGE(4,9,65,0,3,0, 4,10,0,0,0,0) \
 	|| LTTNG_FEDORA_KERNEL_RANGE(4,14,13,300, 4,15,0,0))
@@ -152,9 +138,6 @@ LTTNG_TRACEPOINT_EVENT(kvm_fpu,
 	)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,18,0) \
-	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,327,0,0, 3,11,0,0,0,0))
-
 LTTNG_TRACEPOINT_EVENT(kvm_age_page,
 	TP_PROTO(ulong gfn, int level, struct kvm_memory_slot *slot, int ref),
 	TP_ARGS(gfn, level, slot, ref),
@@ -167,21 +150,6 @@ LTTNG_TRACEPOINT_EVENT(kvm_age_page,
 		ctf_integer(u8, referenced, ref)
 	)
 )
-
-#else
-
-LTTNG_TRACEPOINT_EVENT(kvm_age_page,
-	TP_PROTO(ulong hva, struct kvm_memory_slot *slot, int ref),
-	TP_ARGS(hva, slot, ref),
-
-	TP_FIELDS(
-		ctf_integer(u64, hva, hva)
-		ctf_integer(u64, gfn,
-			slot->base_gfn + ((hva - slot->userspace_addr) >> PAGE_SHIFT))
-		ctf_integer(u8, referenced, ref)
-	)
-)
-#endif
 
 #ifdef CONFIG_KVM_ASYNC_PF
 LTTNG_TRACEPOINT_EVENT_CLASS(kvm_async_get_page_class,
@@ -236,9 +204,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(kvm_async_pf_nopresent_ready, kvm_async_pf_ready
 	TP_ARGS(token, gva)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,13,0) \
-	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,229,0,0, 3,11,0,0,0,0))
-
 LTTNG_TRACEPOINT_EVENT(
 	kvm_async_pf_completed,
 	TP_PROTO(unsigned long address, u64 gva),
@@ -249,22 +214,6 @@ LTTNG_TRACEPOINT_EVENT(
 		ctf_integer(u64, gva, gva)
 	)
 )
-
-#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,13,0)) */
-
-LTTNG_TRACEPOINT_EVENT(
-	kvm_async_pf_completed,
-	TP_PROTO(unsigned long address, struct page *page, u64 gva),
-	TP_ARGS(address, page, gva),
-
-	TP_FIELDS(
-		ctf_integer_hex(unsigned long, address, address)
-		ctf_integer(pfn_t, pfn, page ? page_to_pfn(page) : 0)
-		ctf_integer(u64, gva, gva)
-	)
-)
-
-#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,13,0)) */
 
 #endif
 
