@@ -16,11 +16,7 @@
 #include <kvm_emulate.h>
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,1,0))
 #include <kvm/iodev.h>
-#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,1,0)) */
-#include <../../virt/kvm/iodev.h>
-#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,1,0)) */
 
 /*
  * Create the tracepoint static inlines from the kernel to validate that our

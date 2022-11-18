@@ -32,10 +32,7 @@ obj-$(CONFIG_LTTNG) += lttng-probe-power.o
 obj-$(CONFIG_LTTNG) += lttng-probe-statedump.o
 
 ifneq ($(CONFIG_NET_9P),)
-  obj-$(CONFIG_LTTNG) +=  $(shell \
-    if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 10 \) ] ; then \
-      echo "lttng-probe-9p.o" ; fi;)
+  obj-$(CONFIG_LTTNG) += lttng-probe-9p.o
 endif # CONFIG_NET_9P
 
 i2c_dep = $(srctree)/include/trace/events/i2c.h
@@ -50,8 +47,7 @@ ifneq ($(CONFIG_KVM),)
       kvm_dep_lapic = $(srctree)/arch/x86/kvm/lapic.h
       kvm_dep_lapic_check = $(wildcard $(kvm_dep_lapic))
       ifneq ($(kvm_dep_lapic_check),)
-        # search for iodev.h in any of its known locations
-        kvm_dep_iodev = $(srctree)/virt/kvm/iodev.h $(srctree)/include/kvm/iodev.h
+        kvm_dep_iodev = $(srctree)/include/kvm/iodev.h
         kvm_dep_iodev_check = $(wildcard $(kvm_dep_iodev))
         ifneq ($(kvm_dep_iodev_check),)
           kvm_dep_emulate = $(srctree)/arch/x86/kvm/kvm_emulate.h
@@ -119,45 +115,16 @@ ifneq ($(CONFIG_NET),)
   obj-$(CONFIG_LTTNG) += lttng-probe-napi.o
   obj-$(CONFIG_LTTNG) += lttng-probe-skb.o
   obj-$(CONFIG_LTTNG) += lttng-probe-net.o
-  obj-$(CONFIG_LTTNG) +=  $(shell \
-    if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 1 \) ] ; then \
-      echo "lttng-probe-sock.o" ; fi;)
-  obj-$(CONFIG_LTTNG) +=  $(shell \
-    if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 1 \) ] ; then \
-      echo "lttng-probe-udp.o" ; fi;)
+  obj-$(CONFIG_LTTNG) += lttng-probe-sock.o
+  obj-$(CONFIG_LTTNG) += lttng-probe-udp.o
 endif # CONFIG_NET
 
 ifneq ($(CONFIG_SND_SOC),)
   obj-$(CONFIG_LTTNG) += lttng-probe-asoc.o
 endif # CONFIG_SND_SOC
 
-ifneq ($(CONFIG_EXT3_FS),)
-  ext3_dep = $(srctree)/fs/ext3/*.h
-  ext3_dep_check = $(wildcard $(ext3_dep))
-  ext3 = $(shell \
-    if [ $(VERSION) -lt 4 -o \( $(VERSION) -eq 4 -a $(PATCHLEVEL) -lt 3 \) ] ; then \
-      if [ $(VERSION) -ge 4 -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 1 \) ] ; then \
-        if [ \( $(VERSION) -ge 4 -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 4 \) \) -a \
-          -z "$(ext3_dep_check)" ] ; then \
-          echo "warn" ; \
-          exit ; \
-        fi; \
-        echo "lttng-probe-ext3.o" ; \
-      fi; \
-    fi;)
-  ifeq ($(ext3),warn)
-    $(warning Files $(ext3_dep) not found. Probe "ext3" is disabled. Use full kernel source tree to enable it.)
-    ext3 =
-  endif # $(ext3),warn
-  obj-$(CONFIG_LTTNG) += $(ext3)
-endif # CONFIG_EXT3_FS
-
 ifneq ($(CONFIG_GPIOLIB),)
-  obj-$(CONFIG_LTTNG) +=  $(shell \
-    if [ $(VERSION) -ge 3 ] ; then \
-      echo "lttng-probe-gpio.o" ; fi;)
+  obj-$(CONFIG_LTTNG) += lttng-probe-gpio.o
 endif # CONFIG_GPIOLIB
 
 ifneq ($(CONFIG_JBD2),)
@@ -165,10 +132,7 @@ ifneq ($(CONFIG_JBD2),)
 endif # CONFIG_JBD2
 
 ifneq ($(CONFIG_JBD),)
-  obj-$(CONFIG_LTTNG) +=  $(shell \
-    if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 1 \) ] ; then \
-      echo "lttng-probe-jbd.o" ; fi;)
+  obj-$(CONFIG_LTTNG) += lttng-probe-jbd.o
 endif # CONFIG_JBD
 
 ifneq ($(CONFIG_REGULATOR),)
@@ -223,10 +187,7 @@ ifneq ($(CONFIG_EXT4_FS),)
   endif # $(wildcard $(ext4_dep))
 endif # CONFIG_EXT4_FS
 
-obj-$(CONFIG_LTTNG) +=  $(shell \
-  if [ $(VERSION) -ge 4 \
-    -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 4 \) ] ; then \
-    echo "lttng-probe-printk.o" ; fi;)
+obj-$(CONFIG_LTTNG) += lttng-probe-printk.o
 
 ifneq ($(CONFIG_FRAME_WARN),0)
   CFLAGS_lttng-probe-printk.o += -Wframe-larger-than=2200
@@ -238,39 +199,27 @@ ifneq ($(wildcard $(random_dep)),)
   obj-$(CONFIG_LTTNG) += lttng-probe-random.o
 endif
 
-obj-$(CONFIG_LTTNG) +=  $(shell \
-  if [ $(VERSION) -ge 4 \
-    -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 2 \) ] ; then \
-    echo "lttng-probe-rcu.o" ; fi;)
+obj-$(CONFIG_LTTNG) += lttng-probe-rcu.o
 
 ifneq ($(CONFIG_REGMAP),)
-  regmap_dep_4_1 = $(srctree)/drivers/base/regmap/trace.h
-  ifneq ($(wildcard $(regmap_dep_4_1)),)
+  regmap_dep = $(srctree)/drivers/base/regmap/trace.h
+  ifneq ($(wildcard $(regmap_dep)),)
     obj-$(CONFIG_LTTNG) += lttng-probe-regmap.o
   else
-    $(warning File $(regmap_dep_4_1) not found. Probe "regmap" is disabled. Need Linux 4.1+ kernel source tree to enable it.)
-  endif # $(wildcard $(regmap_dep_4_1)),
+    $(warning File $(regmap_dep) not found. Probe "regmap" is disabled. Use full kernel source tree to enable it.)
+  endif # $(wildcard $(regmap_dep)),
 endif # CONFIG_REGMAP
 
 ifneq ($(CONFIG_PM_RUNTIME),)
-  obj-$(CONFIG_LTTNG) +=  $(shell \
-    if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 2 \) ] ; then \
-      echo "lttng-probe-rpm.o" ; fi;)
+  obj-$(CONFIG_LTTNG) += lttng-probe-rpm.o
 endif # CONFIG_PM_RUNTIME
 
 ifneq ($(CONFIG_SUNRPC),)
-  obj-$(CONFIG_LTTNG) +=  $(shell \
-    if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 4 \) ] ; then \
-      echo "lttng-probe-sunrpc.o" ; fi;)
+  obj-$(CONFIG_LTTNG) += lttng-probe-sunrpc.o
 endif # CONFIG_SUNRPC
 
 ifneq ($(CONFIG_VIDEO_V4L2),)
-  obj-$(CONFIG_LTTNG) += $(shell \
-    if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 14 \) ] ; then \
-      echo "lttng-probe-v4l2.o" ; fi;)
+  obj-$(CONFIG_LTTNG) += lttng-probe-v4l2.o
 endif # CONFIG_VIDEO_V4L2
 
 obj-$(CONFIG_LTTNG) += lttng-probe-workqueue.o
