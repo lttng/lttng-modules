@@ -159,7 +159,7 @@ void wrapper_vmalloc_sync_mappings(void)
 
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0)) */
 
-#endif
+#endif /* CONFIG_KALLSYMS */
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,12,0))
 static inline
@@ -202,7 +202,7 @@ void lttng_kvfree(const void *addr)
 	kvfree(addr);
 }
 
-#else
+#else /* >= LTTNG_KERNEL_VERSION(4,12,0) */
 
 #include <linux/slab.h>
 
@@ -213,8 +213,6 @@ void print_vmalloc_node_range_warning(void)
 	printk_once(KERN_WARNING "LTTng: Tracer performance will be degraded on NUMA systems.\n");
 	printk_once(KERN_WARNING "LTTng: Please rebuild your kernel with CONFIG_KALLSYMS enabled.\n");
 }
-
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,0,0))
 
 /*
  * kallsyms wrapper of __vmalloc_node with a fallback to kmalloc_node.
@@ -263,104 +261,6 @@ void *__canary____lttng_vmalloc_node_range(unsigned long size, unsigned long ali
 	return __vmalloc_node_range(size, align, start, end, gfp_mask, prot,
 			vm_flags, node, caller);
 }
-
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,6,0))
-
-/*
- * kallsyms wrapper of __vmalloc_node with a fallback to kmalloc_node.
- */
-static inline
-void *__lttng_vmalloc_node_range(unsigned long size, unsigned long align,
-			unsigned long start, unsigned long end, gfp_t gfp_mask,
-			pgprot_t prot, unsigned long vm_flags, int node,
-			const void *caller)
-{
-#ifdef CONFIG_KALLSYMS
-	/*
-	 * If we have KALLSYMS, get * __vmalloc_node_range which is not exported.
-	 */
-	void *(*lttng__vmalloc_node_range)(unsigned long size, unsigned long align,
-			unsigned long start, unsigned long end, gfp_t gfp_mask,
-			pgprot_t prot, int node, const void *caller);
-
-	lttng__vmalloc_node_range = (void *) kallsyms_lookup_funcptr("__vmalloc_node_range");
-	if (lttng__vmalloc_node_range)
-		return lttng__vmalloc_node_range(size, align, start, end, gfp_mask, prot,
-				node, caller);
-#endif
-	if (node != NUMA_NO_NODE)
-		print_vmalloc_node_range_warning();
-	return __vmalloc(size, gfp_mask, prot);
-}
-
-/*
- * Canary function to check for '__vmalloc_node_range()' at compile time.
- *
- * From 'include/linux/vmalloc.h':
- *
- *   extern void *__vmalloc_node_range(unsigned long size, unsigned long align,
- *                           unsigned long start, unsigned long end, gfp_t gfp_mask,
- *                           pgprot_t prot, unsigned long vm_flags, int node,
- *                           const void *caller);
- */
-static inline
-void *__canary____lttng_vmalloc_node_range(unsigned long size, unsigned long align,
-			unsigned long start, unsigned long end, gfp_t gfp_mask,
-			pgprot_t prot, int node, const void *caller)
-{
-	return __vmalloc_node_range(size, align, start, end, gfp_mask, prot,
-			node, caller);
-}
-
-#else /* (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,6,0)) */
-
-/*
- * kallsyms wrapper of __vmalloc_node with a fallback to kmalloc_node.
- */
-static inline
-void *__lttng_vmalloc_node_range(unsigned long size, unsigned long align,
-			unsigned long start, unsigned long end, gfp_t gfp_mask,
-			pgprot_t prot, unsigned long vm_flags, int node,
-			void *caller)
-{
-#ifdef CONFIG_KALLSYMS
-	/*
-	 * If we have KALLSYMS, get * __vmalloc_node_range which is not exported.
-	 */
-	void *(*lttng__vmalloc_node_range)(unsigned long size, unsigned long align,
-			unsigned long start, unsigned long end, gfp_t gfp_mask,
-			pgprot_t prot, int node, void *caller);
-
-	lttng__vmalloc_node_range = (void *) kallsyms_lookup_funcptr("__vmalloc_node_range");
-	if (lttng__vmalloc_node_range)
-		return lttng__vmalloc_node_range(size, align, start, end, gfp_mask, prot,
-				node, caller);
-#endif
-	if (node != NUMA_NO_NODE)
-		print_vmalloc_node_range_warning();
-	return __vmalloc(size, gfp_mask, prot);
-}
-
-/*
- * Canary function to check for '__vmalloc_node_range()' at compile time.
- *
- * From 'include/linux/vmalloc.h':
- *
- *   extern void *__vmalloc_node_range(unsigned long size, unsigned long align,
- *                           unsigned long start, unsigned long end, gfp_t gfp_mask,
- *                           pgprot_t prot, unsigned long vm_flags, int node,
- *                           void *caller);
- */
-static inline
-void *__canary____lttng_vmalloc_node_range(unsigned long size, unsigned long align,
-			unsigned long start, unsigned long end, gfp_t gfp_mask,
-			pgprot_t prot, int node, void *caller)
-{
-	return __vmalloc_node_range(size, align, start, end, gfp_mask, prot,
-			node, caller);
-}
-
-#endif
 
 /**
  * lttng_kvmalloc_node - attempt to allocate physically contiguous memory, but upon
@@ -437,6 +337,6 @@ void lttng_kvfree(const void *addr)
 		kfree(addr);
 	}
 }
-#endif
+#endif /* >= LTTNG_KERNEL_VERSION(4,12,0) */
 
 #endif /* _LTTNG_WRAPPER_VMALLOC_H */
