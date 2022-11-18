@@ -40,31 +40,4 @@ bool wrapper_check_enough_free_pages(unsigned long num_pages)
 }
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
-static inline
-void wrapper_set_current_oom_origin(void)
-{
-	return set_current_oom_origin();
-}
-
-static inline
-void wrapper_clear_current_oom_origin(void)
-{
-	return clear_current_oom_origin();
-}
-
-#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0)) */
-
-static inline
-void wrapper_set_current_oom_origin(void)
-{
-	return;
-}
-
-static inline
-void wrapper_clear_current_oom_origin(void)
-{
-	return;
-}
-#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0)) */
 #endif /* _LTTNG_WRAPPER_MM_H */

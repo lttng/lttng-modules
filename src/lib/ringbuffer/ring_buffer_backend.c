@@ -61,7 +61,7 @@ int lib_ring_buffer_backend_allocate(const struct lttng_kernel_ring_buffer_confi
 	 * end up running out of memory because of this buffer allocation, we
 	 * want to kill the offending app first.
 	 */
-	wrapper_set_current_oom_origin();
+	set_current_oom_origin();
 
 	num_pages_per_subbuf = num_pages >> get_count_order(num_subbuf);
 	subbuf_size = chanb->subbuf_size;
@@ -157,7 +157,7 @@ int lib_ring_buffer_backend_allocate(const struct lttng_kernel_ring_buffer_confi
 	 * will not fault.
 	 */
 	wrapper_vmalloc_sync_mappings();
-	wrapper_clear_current_oom_origin();
+	clear_current_oom_origin();
 	vfree(pages);
 	return 0;
 
@@ -174,7 +174,7 @@ depopulate:
 array_error:
 	vfree(pages);
 pages_error:
-	wrapper_clear_current_oom_origin();
+	clear_current_oom_origin();
 not_enough_pages:
 	return -ENOMEM;
 }
