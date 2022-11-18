@@ -11,8 +11,7 @@
 
 #include <lttng/kernel-version.h>
 
-#if (defined(CONFIG_KALLSYMS) \
-	&& (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(4,2,0)))
+#ifdef CONFIG_KALLSYMS
 
 #include <linux/kallsyms.h>
 #include <linux/fs.h>
