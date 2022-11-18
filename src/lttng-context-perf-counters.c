@@ -60,7 +60,7 @@ void perf_counter_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 	chan->ops->event_write(ctx, &value, sizeof(value), lttng_alignof(value));
 }
 
-#if defined(CONFIG_PERF_EVENTS) && (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0))
+#ifdef CONFIG_PERF_EVENTS
 static
 void overflow_callback(struct perf_event *event,
 		       struct perf_sample_data *data,
