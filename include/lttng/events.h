@@ -16,7 +16,8 @@
 #include <linux/kref.h>
 #include <linux/uuid.h>
 #include <linux/irq_work.h>
-#include <wrapper/uprobes.h>
+#include <linux/uprobes.h>
+
 #include <lttng/cpuhotplug.h>
 #include <lttng/tracer.h>
 #include <lttng/abi.h>
