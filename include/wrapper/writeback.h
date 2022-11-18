@@ -12,15 +12,10 @@
 #ifndef _LTTNG_WRAPPER_WRITEBACK_H
 #define _LTTNG_WRAPPER_WRITEBACK_H
 
-#include <lttng/kernel-version.h>
-
 #ifdef CONFIG_KALLSYMS_ALL
+
 #include <linux/kallsyms.h>
 #include <wrapper/kallsyms.h>
-
-
-
-#if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0)
 
 static struct wb_domain *global_wb_domain_sym;
 
@@ -51,51 +46,16 @@ unsigned long __canary__global_wb_domain(void)
 	return global_wb_domain.dirty_limit;
 }
 
-#elif LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0)
-
-static unsigned long *global_dirty_limit_sym;
-
-static inline
-unsigned long wrapper_global_dirty_limit(void)
-{
-	if (!global_dirty_limit_sym)
-		global_dirty_limit_sym =
-			(void *) kallsyms_lookup_dataptr("global_dirty_limit");
-	if (global_dirty_limit_sym) {
-		return *global_dirty_limit_sym;
-	} else {
-		printk_once(KERN_WARNING "LTTng: global_dirty_limit symbol lookup failed.\n");
-		return 0;
-	}
-}
-
-/*
- * Canary function to check for 'global_dirty_limit' at compile time.
- *
- * From 'include/linux/writeback.h':
- *
- *   extern unsigned long global_dirty_limit;
- */
-static inline
-unsigned long __canary__global_dirty_limit(void)
-{
-	return global_dirty_limit;
-}
-
-#endif
-
 #else /* CONFIG_KALLSYMS_ALL */
 
 #include <linux/writeback.h>
 
-#if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0)
 static inline
 unsigned long wrapper_global_dirty_limit(void)
 {
 	return global_dirty_limit;
 }
-#endif
 
-#endif
+#endif /* CONFIG_KALLSYMS_ALL */
 
 #endif /* _LTTNG_WRAPPER_WRITEBACK_H */
