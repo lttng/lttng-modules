@@ -14,7 +14,7 @@
 #define _LIB_RING_BUFFER_FRONTEND_API_H
 
 #include <ringbuffer/frontend.h>
-#include <wrapper/percpu-defs.h>
+#include <linux/percpu-defs.h>
 #include <linux/errno.h>
 #include <linux/prefetch.h>
 
@@ -58,7 +58,7 @@ static inline
 void lib_ring_buffer_put_cpu(const struct lttng_kernel_ring_buffer_config *config)
 {
 	barrier();
-	(*lttng_this_cpu_ptr(&lib_ring_buffer_nesting))--;
+	(*this_cpu_ptr(&lib_ring_buffer_nesting))--;
 	rcu_read_unlock_sched_notrace();
 }
 

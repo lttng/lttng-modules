@@ -20,12 +20,13 @@
 #include <linux/time.h>
 #include <linux/hrtimer.h>
 #include <linux/percpu.h>
+#include <linux/percpu-defs.h>
+
 #include <lttng/kernel-version.h>
 #include <asm/local.h>
 #include <lttng/kernel-version.h>
 #include <lttng/clock.h>
 #include <wrapper/compiler.h>
-#include <wrapper/percpu-defs.h>
 #include <wrapper/random.h>
 #include <blacklist/timekeeping.h>
 
@@ -71,7 +72,7 @@ static inline u64 trace_clock_monotonic_wrapper(void)
 
 	/* Use fast nmi-safe monotonic clock provided by the Linux kernel. */
 	preempt_disable();
-	last_tsc_ptr = lttng_this_cpu_ptr(&lttng_last_tsc);
+	last_tsc_ptr = this_cpu_ptr(&lttng_last_tsc);
 	last = *last_tsc_ptr;
 	/*
 	 * Read "last" before "now". It is not strictly required, but it ensures
