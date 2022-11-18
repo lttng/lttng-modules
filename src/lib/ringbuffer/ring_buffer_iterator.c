@@ -11,7 +11,7 @@
 
 #include <ringbuffer/iterator.h>
 #include <wrapper/cpu.h>
-#include <wrapper/file.h>
+#include <linux/file.h>
 #include <wrapper/uaccess.h>
 #include <linux/jiffies.h>
 #include <linux/delay.h>
@@ -743,7 +743,7 @@ ssize_t lib_ring_buffer_file_read(struct file *filp,
 			          size_t count,
 			          loff_t *ppos)
 {
-	struct inode *inode = filp->lttng_f_dentry->d_inode;
+	struct inode *inode = filp->f_path.dentry->d_inode;
 	struct lttng_kernel_ring_buffer *buf = inode->i_private;
 	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 
@@ -768,7 +768,7 @@ ssize_t channel_file_read(struct file *filp,
 			  size_t count,
 			  loff_t *ppos)
 {
-	struct inode *inode = filp->lttng_f_dentry->d_inode;
+	struct inode *inode = filp->f_path.dentry->d_inode;
 	struct lttng_kernel_ring_buffer_channel *chan = inode->i_private;
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 

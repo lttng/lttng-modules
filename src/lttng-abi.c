@@ -37,7 +37,6 @@
 #include <ringbuffer/frontend.h>
 #include <wrapper/compiler_attributes.h>
 #include <wrapper/poll.h>
-#include <wrapper/file.h>
 #include <wrapper/kref.h>
 #include <lttng/string-utils.h>
 #include <lttng/abi.h>
@@ -99,7 +98,7 @@ int lttng_abi_create_session(void)
 	session = lttng_session_create();
 	if (!session)
 		return -ENOMEM;
-	session_fd = lttng_get_unused_fd();
+	session_fd = get_unused_fd_flags(0);
 	if (session_fd < 0) {
 		ret = session_fd;
 		goto fd_error;
@@ -141,7 +140,7 @@ int lttng_abi_create_event_notifier_group(void)
 	if (!event_notifier_group)
 		return -ENOMEM;
 
-	event_notifier_group_fd = lttng_get_unused_fd();
+	event_notifier_group_fd = get_unused_fd_flags(0);
 	if (event_notifier_group_fd < 0) {
 		ret = event_notifier_group_fd;
 		goto fd_error;
@@ -174,7 +173,7 @@ int lttng_abi_tracepoint_list(void)
 	struct file *tracepoint_list_file;
 	int file_fd, ret;
 
-	file_fd = lttng_get_unused_fd();
+	file_fd = get_unused_fd_flags(0);
 	if (file_fd < 0) {
 		ret = file_fd;
 		goto fd_error;
@@ -214,7 +213,7 @@ int lttng_abi_syscall_list(void)
 	struct file *syscall_list_file;
 	int file_fd, ret;
 
-	file_fd = lttng_get_unused_fd();
+	file_fd = get_unused_fd_flags(0);
 	if (file_fd < 0) {
 		ret = file_fd;
 		goto fd_error;
@@ -497,7 +496,7 @@ int lttng_abi_create_channel(struct file *session_file,
 	int chan_fd;
 	int ret = 0;
 
-	chan_fd = lttng_get_unused_fd();
+	chan_fd = get_unused_fd_flags(0);
 	if (chan_fd < 0) {
 		ret = chan_fd;
 		goto fd_error;
@@ -1603,7 +1602,7 @@ int lttng_abi_create_stream_fd(struct file *channel_file, void *stream_priv,
 	int stream_fd, ret;
 	struct file *stream_file;
 
-	stream_fd = lttng_get_unused_fd();
+	stream_fd = get_unused_fd_flags(0);
 	if (stream_fd < 0) {
 		ret = stream_fd;
 		goto fd_error;
@@ -1868,7 +1867,7 @@ int lttng_abi_create_event(struct file *channel_file,
 		return -EINVAL;
 	}
 
-	event_fd = lttng_get_unused_fd();
+	event_fd = get_unused_fd_flags(0);
 	if (event_fd < 0) {
 		ret = event_fd;
 		goto fd_error;
@@ -2102,7 +2101,7 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 
 	event_notifier_param->event.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
 
-	event_notifier_fd = lttng_get_unused_fd();
+	event_notifier_fd = get_unused_fd_flags(0);
 	if (event_notifier_fd < 0) {
 		ret = event_notifier_fd;
 		goto fd_error;
@@ -2249,7 +2248,7 @@ long lttng_abi_event_notifier_group_create_error_counter(
 		goto fd_error;
 	}
 
-	counter_fd = lttng_get_unused_fd();
+	counter_fd = get_unused_fd_flags(0);
 	if (counter_fd < 0) {
 		ret = counter_fd;
 		goto fd_error;

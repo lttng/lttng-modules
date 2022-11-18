@@ -42,7 +42,6 @@
 #include <wrapper/irq.h>
 #include <wrapper/tracepoint.h>
 #include <wrapper/blkdev.h>
-#include <wrapper/file.h>
 #include <wrapper/fdtable.h>
 #include <wrapper/sched.h>
 
@@ -510,7 +509,7 @@ void lttng_enumerate_task_vm_maps(struct lttng_kernel_session *session,
 		down_read(&mm->mmap_sem);
 		while (map) {
 			if (map->vm_file)
-				ino = map->vm_file->lttng_f_dentry->d_inode->i_ino;
+				ino = map->vm_file->f_path.dentry->d_inode->i_ino;
 			else
 				ino = 0;
 			trace_lttng_statedump_vm_map(session, p, map, ino);
