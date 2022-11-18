@@ -12,7 +12,7 @@
 # endif
 
 #ifdef CONFIG_X86_64
-#if CONFIG_COMPAT_OLD_SIGACTION
+#ifdef CONFIG_COMPAT_OLD_SIGACTION
 /*
  * From the point of view of the 64-bit ABI, old_sigaction
  * becomes compat_old_sigaction.
