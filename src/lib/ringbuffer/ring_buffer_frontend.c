@@ -37,6 +37,7 @@
  *   - put_subbuf
  */
 
+#include <linux/atomic.h>
 #include <linux/delay.h>
 #include <linux/module.h>
 #include <linux/percpu.h>
@@ -47,7 +48,6 @@
 #include <ringbuffer/frontend.h>
 #include <ringbuffer/iterator.h>
 #include <ringbuffer/nohz.h>
-#include <wrapper/atomic.h>
 #include <wrapper/cpu.h>
 #include <wrapper/kref.h>
 #include <wrapper/percpu-defs.h>
@@ -1047,7 +1047,7 @@ int lib_ring_buffer_open_read(struct lttng_kernel_ring_buffer *buf)
 		atomic_long_dec(&buf->active_readers);
 		return -EOVERFLOW;
 	}
-	lttng_smp_mb__after_atomic();
+	smp_mb__after_atomic();
 	return 0;
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_open_read);
@@ -1057,7 +1057,7 @@ void lib_ring_buffer_release_read(struct lttng_kernel_ring_buffer *buf)
 	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 
 	CHAN_WARN_ON(chan, atomic_long_read(&buf->active_readers) != 1);
-	lttng_smp_mb__before_atomic();
+	smp_mb__before_atomic();
 	atomic_long_dec(&buf->active_readers);
 	kref_put(&chan->ref, channel_release);
 }
