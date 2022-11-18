@@ -11,12 +11,13 @@
 
 #include <linux/module.h>
 #include <linux/sched.h>
+#include <linux/user_namespace.h>
+
 #include <lttng/events.h>
 #include <lttng/events-internal.h>
 #include <lttng/tracer.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
-#include <wrapper/user_namespace.h>
 
 static
 size_t vgid_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, size_t offset)
@@ -35,7 +36,7 @@ void vgid_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 {
 	gid_t vgid;
 
-	vgid = lttng_current_vgid();
+	vgid = from_kgid_munged(current_user_ns(), current_gid());
 	chan->ops->event_write(ctx, &vgid, sizeof(vgid), lttng_alignof(vgid));
 }
 
@@ -44,7 +45,7 @@ void vgid_get_value(void *priv,
 		struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 		struct lttng_ctx_value *value)
 {
-	value->u.s64 = lttng_current_vgid();
+	value->u.s64 = from_kgid_munged(current_user_ns(), current_gid());
 }
 
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(

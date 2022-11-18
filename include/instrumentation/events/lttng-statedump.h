@@ -14,8 +14,10 @@
 #include <linux/user_namespace.h>
 #include <linux/utsname.h>
 #include <linux/types.h>
+#include <linux/user_namespace.h>
+
 #include <lttng/kernel-version.h>
-#include <wrapper/user_namespace.h>
+
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0) || \
 	LTTNG_RHEL_KERNEL_RANGE(4,18,0,305,0,0, 4,19,0,0,0,0))
 #include <linux/time_namespace.h>
@@ -158,8 +160,8 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_user_ns,
 	TP_ARGS(session, p, user_ns),
 	TP_FIELDS(
 		ctf_integer(pid_t, tid, p->pid)
-		ctf_integer(uid_t, vuid, user_ns ? lttng_task_vuid(p, user_ns) : 0)
-		ctf_integer(gid_t, vgid, user_ns ? lttng_task_vgid(p, user_ns) : 0)
+		ctf_integer(uid_t, vuid, user_ns ? from_kuid_munged(user_ns, task_cred_xxx(p, uid)) : 0)
+		ctf_integer(gid_t, vgid, user_ns ? from_kgid_munged(user_ns, task_cred_xxx(p, gid)) : 0)
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,11,0))
 		ctf_integer(int, ns_level, user_ns ? user_ns->level : 0)
 #endif

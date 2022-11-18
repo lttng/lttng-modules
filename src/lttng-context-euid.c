@@ -11,12 +11,13 @@
 
 #include <linux/module.h>
 #include <linux/sched.h>
+#include <linux/user_namespace.h>
+
 #include <lttng/events.h>
 #include <lttng/events-internal.h>
 #include <lttng/tracer.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
-#include <wrapper/user_namespace.h>
 
 static
 size_t euid_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, size_t offset)
@@ -35,7 +36,7 @@ void euid_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 {
 	uid_t euid;
 
-	euid = lttng_current_euid();
+	euid = from_kuid_munged(&init_user_ns, current_euid());
 	chan->ops->event_write(ctx, &euid, sizeof(euid), lttng_alignof(euid));
 }
 
@@ -44,7 +45,7 @@ void euid_get_value(void *priv,
 		struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 		struct lttng_ctx_value *value)
 {
-	value->u.s64 = lttng_current_euid();
+	value->u.s64 = from_kuid_munged(&init_user_ns, current_euid());
 }
 
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(

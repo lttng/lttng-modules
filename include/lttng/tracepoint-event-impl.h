@@ -11,12 +11,12 @@
 #include <linux/rculist.h>
 #include <asm/byteorder.h>
 #include <linux/swab.h>
+#include <linux/user_namespace.h>
 
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
 #include <ringbuffer/frontend_types.h>
 #include <ringbuffer/backend.h>
 #include <wrapper/rcu.h>
-#include <wrapper/user_namespace.h>
 #include <lttng/types.h>
 #include <lttng/probe-user.h>
 #include <lttng/events.h>
@@ -1102,19 +1102,19 @@ static void __event_probe__##_name(_data_proto)						\
 			return;								\
 		__lf = lttng_rcu_dereference(__session->uid_tracker.p);			\
 		if (__lf && likely(!lttng_id_tracker_lookup(__lf,			\
-				lttng_current_uid())))					\
+				from_kuid_munged(&init_user_ns, current_uid()))))	\
 			return;								\
 		__lf = lttng_rcu_dereference(__session->vuid_tracker.p);		\
 		if (__lf && likely(!lttng_id_tracker_lookup(__lf,			\
-				lttng_current_vuid())))					\
+				from_kuid_munged(current_user_ns(), current_uid()))))	\
 			return;								\
 		__lf = lttng_rcu_dereference(__session->gid_tracker.p);			\
 		if (__lf && likely(!lttng_id_tracker_lookup(__lf,			\
-				lttng_current_gid())))					\
+				from_kgid_munged(&init_user_ns, current_gid()))))	\
 			return;								\
 		__lf = lttng_rcu_dereference(__session->vgid_tracker.p);		\
 		if (__lf && likely(!lttng_id_tracker_lookup(__lf,			\
-				lttng_current_vgid())))					\
+				from_kgid_munged(current_user_ns(), current_gid()))))	\
 			return;								\
 		break;									\
 	}										\
