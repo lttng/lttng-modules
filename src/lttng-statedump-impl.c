@@ -22,6 +22,7 @@
 #include <linux/proc_fs.h>
 #include <linux/file.h>
 #include <linux/interrupt.h>
+#include <linux/irq.h>
 #include <linux/irqnr.h>
 #include <linux/netdevice.h>
 #include <linux/inetdevice.h>
@@ -39,15 +40,10 @@
 #include <wrapper/irqdesc.h>
 #include <wrapper/fdtable.h>
 #include <wrapper/namespace.h>
-#include <wrapper/irq.h>
 #include <wrapper/tracepoint.h>
 #include <wrapper/blkdev.h>
 #include <wrapper/fdtable.h>
 #include <wrapper/sched.h>
-
-#ifdef CONFIG_LTTNG_HAS_LIST_IRQ
-#include <linux/irq.h>
-#endif
 
 /* Define the tracepoints, but do not build the probes */
 #define CREATE_TRACE_POINTS
@@ -533,8 +529,6 @@ int lttng_enumerate_vm_maps(struct lttng_kernel_session *session)
 }
 #endif
 
-#ifdef CONFIG_LTTNG_HAS_LIST_IRQ
-
 static
 int lttng_list_interrupts(struct lttng_kernel_session *session)
 {
@@ -561,13 +555,6 @@ int lttng_list_interrupts(struct lttng_kernel_session *session)
 	return 0;
 #undef irq_to_desc
 }
-#else
-static inline
-int lttng_list_interrupts(struct lttng_kernel_session *session)
-{
-	return 0;
-}
-#endif
 
 /*
  * Statedump the task's namespaces using the proc filesystem inode number as
