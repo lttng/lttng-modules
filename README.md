@@ -136,7 +136,7 @@ to print traces as a human-readable text log.
 Support
 -------
 
-Linux kernels >= 3.0 are supported.
+Linux kernels >= 4.4 are supported.
 
 
 Notes
