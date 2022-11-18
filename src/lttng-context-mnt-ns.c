@@ -9,6 +9,8 @@
  *
  */
 
+#ifndef LTTNG_MNT_NS_MISSING_HEADER
+
 #include <linux/module.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
@@ -18,9 +20,6 @@
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 #include <lttng/tracer.h>
-
-#if !defined(LTTNG_MNT_NS_MISSING_HEADER) && \
-	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 
 #include <../fs/mount.h>
 

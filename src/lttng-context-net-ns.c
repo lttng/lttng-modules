@@ -9,6 +9,8 @@
  *
  */
 
+#ifdef CONFIG_NET_NS
+
 #include <linux/module.h>
 #include <linux/slab.h>
 #include <linux/sched.h>
@@ -19,9 +21,6 @@
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 #include <lttng/tracer.h>
-
-#if defined(CONFIG_NET_NS) && \
-	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 
 static
 size_t net_ns_get_size(void *priv, struct lttng_kernel_probe_ctx *probe_ctx, size_t offset)
