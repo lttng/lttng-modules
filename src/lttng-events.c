@@ -46,7 +46,6 @@
 #include <lttng/utils.h>
 #include <ringbuffer/backend.h>
 #include <ringbuffer/frontend.h>
-#include <wrapper/time.h>
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,16,0))
 #include <linux/stdarg.h>
@@ -3688,20 +3687,12 @@ int64_t measure_clock_offset(void)
 	uint64_t tcf = trace_clock_freq();
 	int64_t offset;
 	unsigned long flags;
-#ifdef LTTNG_KERNEL_HAS_TIMESPEC64
 	struct timespec64 rts = { 0, 0 };
-#else
-	struct timespec rts = { 0, 0 };
-#endif
 
 	/* Disable interrupts to increase correlation precision. */
 	local_irq_save(flags);
 	monotonic[0] = trace_clock_read64();
-#ifdef LTTNG_KERNEL_HAS_TIMESPEC64
 	ktime_get_real_ts64(&rts);
-#else
-	getnstimeofday(&rts);
-#endif
 	monotonic[1] = trace_clock_read64();
 	local_irq_restore(flags);
 
