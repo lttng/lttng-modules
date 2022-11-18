@@ -14,109 +14,9 @@
 #ifndef _TRACE_ASOC_DEF
 #define _TRACE_ASOC_DEF
 struct snd_soc_jack;
-#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,19,0))
-struct snd_soc_codec;
-#endif
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0) && \
-	LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,16,0))
-struct snd_soc_platform;
-#endif
 struct snd_soc_card;
 struct snd_soc_dapm_widget;
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 struct snd_soc_dapm_path;
-#endif
-#endif
-
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,16,0) \
-	|| LTTNG_RHEL_KERNEL_RANGE(3,10,0,514,0,0, 3,11,0,0,0,0))
-#define CODEC_NAME_FIELD component.name
-#define CODEC_ID_FIELD component.id
-#else
-#define CODEC_NAME_FIELD name
-#define CODEC_ID_FIELD id
-#endif
-
-#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,16,0))
-/*
- * Log register events
- */
-LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_reg,
-
-	TP_PROTO(struct snd_soc_codec *codec, unsigned int reg,
-		 unsigned int val),
-
-	TP_ARGS(codec, reg, val),
-
-	TP_FIELDS(
-		ctf_string(name, codec->CODEC_NAME_FIELD)
-		ctf_integer(int, id, codec->CODEC_ID_FIELD)
-		ctf_integer(unsigned int, reg, reg)
-		ctf_integer(unsigned int, val, val)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_reg, snd_soc_reg_write,
-
-	asoc_snd_soc_reg_write,
-
-	TP_PROTO(struct snd_soc_codec *codec, unsigned int reg,
-		 unsigned int val),
-
-	TP_ARGS(codec, reg, val)
-
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_reg, snd_soc_reg_read,
-
-	asoc_snd_soc_reg_read,
-
-	TP_PROTO(struct snd_soc_codec *codec, unsigned int reg,
-		 unsigned int val),
-
-	TP_ARGS(codec, reg, val)
-
-)
-#endif
-
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0) && \
-	LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,16,0))
-LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_preg,
-
-	TP_PROTO(struct snd_soc_platform *platform, unsigned int reg,
-		 unsigned int val),
-
-	TP_ARGS(platform, reg, val),
-
-	TP_FIELDS(
-		ctf_string(name, platform->CODEC_NAME_FIELD)
-		ctf_integer(int, id, platform->CODEC_ID_FIELD)
-		ctf_integer(unsigned int, reg, reg)
-		ctf_integer(unsigned int, val, val)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_preg, snd_soc_preg_write,
-
-	asoc_snd_soc_preg_write,
-
-	TP_PROTO(struct snd_soc_platform *platform, unsigned int reg,
-		 unsigned int val),
-
-	TP_ARGS(platform, reg, val)
-
-)
-
-LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_preg, snd_soc_preg_read,
-
-	asoc_snd_soc_preg_read,
-
-	TP_PROTO(struct snd_soc_platform *platform, unsigned int reg,
-		 unsigned int val),
-
-	TP_ARGS(platform, reg, val)
-
-)
 #endif
 
 LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_card,
@@ -224,7 +124,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_dapm_widget, snd_soc_dapm_widge
 
 )
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,2,0))
 LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_walk_done,
 
 	asoc_snd_soc_dapm_walk_done,
@@ -240,9 +139,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_walk_done,
 		ctf_integer(int, neighbour_checks, card->dapm_stats.neighbour_checks)
 	)
 )
-#endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0))
 LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_path,
 
 	asoc_snd_soc_dapm_path,
@@ -262,45 +159,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_path,
 		ctf_integer(int, path_dir, dir)
 	)
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
-LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_output_path,
 
-	asoc_snd_soc_dapm_output_path,
-
-	TP_PROTO(struct snd_soc_dapm_widget *widget,
-		struct snd_soc_dapm_path *path),
-
-	TP_ARGS(widget, path),
-
-	TP_FIELDS(
-		ctf_string(wname, widget->name)
-		ctf_string(pname, path->name ? path->name : DAPM_DIRECT)
-		ctf_string(psname, path->sink->name)
-		ctf_integer(int, path_sink, (long) path->sink)
-		ctf_integer(int, path_connect, path->connect)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_input_path,
-
-	asoc_snd_soc_dapm_input_path,
-
-	TP_PROTO(struct snd_soc_dapm_widget *widget,
-		struct snd_soc_dapm_path *path),
-
-	TP_ARGS(widget, path),
-
-	TP_FIELDS(
-		ctf_string(wname, widget->name)
-		ctf_string(pname,path->name ? path->name : DAPM_DIRECT)
-		ctf_string(psname, path->source->name)
-		ctf_integer(int, path_source, (long) path->source)
-		ctf_integer(int, path_connect, path->connect)
-	)
-)
-#endif
-
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_connected,
 
 	asoc_snd_soc_dapm_connected,
@@ -314,7 +173,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_dapm_connected,
 		ctf_integer(int, stream, stream)
 	)
 )
-#endif
 
 LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_irq,
 
@@ -329,7 +187,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_irq,
 	)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_report,
 
 	asoc_snd_soc_jack_report,
@@ -358,55 +215,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_notify,
 		ctf_integer(int, val, val)
 	)
 )
-#else
-LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_report,
-
-	asoc_snd_soc_jack_report,
-
-	TP_PROTO(struct snd_soc_jack *jack, int mask, int val),
-
-	TP_ARGS(jack, mask, val),
-
-	TP_FIELDS(
-		ctf_string(name, jack->jack->name)
-		ctf_integer(int, mask, mask)
-		ctf_integer(int, val, val)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_jack_notify,
-
-	asoc_snd_soc_jack_notify,
-
-	TP_PROTO(struct snd_soc_jack *jack, int val),
-
-	TP_ARGS(jack, val),
-
-	TP_FIELDS(
-		ctf_string(name, jack->jack->name)
-		ctf_integer(int, val, val)
-	)
-)
-#endif
-
-#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,19,0))
-LTTNG_TRACEPOINT_EVENT_MAP(snd_soc_cache_sync,
-
-	asoc_snd_soc_cache_sync,
-
-	TP_PROTO(struct snd_soc_codec *codec, const char *type,
-		 const char *status),
-
-	TP_ARGS(codec, type, status),
-
-	TP_FIELDS(
-		ctf_string(name, codec->CODEC_NAME_FIELD)
-		ctf_string(status, status)
-		ctf_string(type, type)
-		ctf_integer(int, id, codec->CODEC_ID_FIELD)
-	)
-)
-#endif
 
 #endif /* LTTNG_TRACE_ASOC_H */
 
