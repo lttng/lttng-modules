@@ -60,19 +60,9 @@ static const struct pipe_buf_operations ring_buffer_pipe_buf_ops = {
 	.steal = generic_pipe_buf_steal,
 	.get = generic_pipe_buf_get
 };
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,15,0))
-static const struct pipe_buf_operations ring_buffer_pipe_buf_ops = {
-	.can_merge = 0,
-	.confirm = generic_pipe_buf_confirm,
-	.release = lib_ring_buffer_pipe_buf_release,
-	.steal = generic_pipe_buf_steal,
-	.get = generic_pipe_buf_get
-};
 #else
 static const struct pipe_buf_operations ring_buffer_pipe_buf_ops = {
 	.can_merge = 0,
-	.map = generic_pipe_buf_map,
-	.unmap = generic_pipe_buf_unmap,
 	.confirm = generic_pipe_buf_confirm,
 	.release = lib_ring_buffer_pipe_buf_release,
 	.steal = generic_pipe_buf_steal,

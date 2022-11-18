@@ -101,15 +101,9 @@ void synchronize_trace(void)
 	synchronize_sched();
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0))
 #ifdef CONFIG_PREEMPT_RT_FULL
 	synchronize_rcu();
 #endif
-#else /* (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0)) */
-#ifdef CONFIG_PREEMPT_RT
-	synchronize_rcu();
-#endif
-#endif /* (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0)) */
 }
 
 void lttng_lock_sessions(void)

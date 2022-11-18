@@ -601,21 +601,8 @@ void lttng_statedump_process_ns(struct lttng_kernel_session *session,
 		user_ns = user_ns ? user_ns->parent : NULL;
 	} while (user_ns);
 
-	/*
-	 * Back and forth on locking strategy within Linux upstream for nsproxy.
-	 * See Linux upstream commit 728dba3a39c66b3d8ac889ddbe38b5b1c264aec3
-	 * "namespaces: Use task_lock and not rcu to protect nsproxy"
-	 * for details.
-	 */
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,17,0) || \
-		LTTNG_UBUNTU_KERNEL_RANGE(3,13,11,36, 3,14,0,0) || \
-		LTTNG_UBUNTU_KERNEL_RANGE(3,16,1,11, 3,17,0,0) || \
-		LTTNG_RHEL_KERNEL_RANGE(3,10,0,229,13,0, 3,11,0,0,0,0))
 	proxy = p->nsproxy;
-#else
-	rcu_read_lock();
-	proxy = task_nsproxy(p);
-#endif
+
 	if (proxy) {
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,6,0))
 		trace_lttng_statedump_process_cgroup_ns(session, p, proxy->cgroup_ns);
@@ -631,14 +618,6 @@ void lttng_statedump_process_ns(struct lttng_kernel_session *session,
 		trace_lttng_statedump_process_time_ns(session, p, proxy->time_ns);
 #endif
 	}
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,17,0) || \
-		LTTNG_UBUNTU_KERNEL_RANGE(3,13,11,36, 3,14,0,0) || \
-		LTTNG_UBUNTU_KERNEL_RANGE(3,16,1,11, 3,17,0,0) || \
-		LTTNG_RHEL_KERNEL_RANGE(3,10,0,229,13,0, 3,11,0,0,0,0))
-	/* (nothing) */
-#else
-	rcu_read_unlock();
-#endif
 }
 
 static
