@@ -8,8 +8,6 @@
 #include <lttng/tracepoint-event.h>
 #include <lttng/kernel-version.h>
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,10,0))
-
 LTTNG_TRACEPOINT_EVENT_MAP(console,
 
 	printk_console,
@@ -22,53 +20,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(console,
 		ctf_sequence_text(char, msg, text, size_t, len)
 	)
 )
-
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
-
-LTTNG_TRACEPOINT_EVENT_MAP(console,
-
-	printk_console,
-
-	TP_PROTO(const char *log_buf, unsigned start, unsigned end,
-		 unsigned log_buf_len),
-
-	TP_ARGS(log_buf, start, end, log_buf_len),
-
-	TP_FIELDS(
-		ctf_sequence_text(char, msg, log_buf + start,
-			size_t, end - start)
-	)
-)
-
-#else /* (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0)) */
-
-LTTNG_TRACEPOINT_EVENT_MAP(console,
-
-	printk_console,
-
-	TP_PROTO(const char *log_buf, unsigned start, unsigned end,
-		 unsigned log_buf_len),
-
-	TP_ARGS(log_buf, start, end, log_buf_len),
-
-	TP_FIELDS(
-		/*
-		 * printk buffer is gathered from two segments on older kernels.
-		 */
-		ctf_sequence_text(char, msg1,
-			log_buf + (start & (log_buf_len - 1)),
-			size_t, (start & (log_buf_len - 1)) > (end & (log_buf_len - 1))
-				? log_buf_len - (start & (log_buf_len - 1))
-				: end - start)
-		ctf_sequence_text(char, msg2,
-			log_buf,
-			size_t, (start & (log_buf_len - 1)) > (end & (log_buf_len - 1))
-				? end & (log_buf_len - 1)
-				: 0)
-	)
-)
-
-#endif
 
 #endif /* LTTNG_TRACE_PRINTK_H */
 
