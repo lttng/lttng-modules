@@ -59,7 +59,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(machine_suspend,
 	)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(power_wakeup_source,
 
 	TP_PROTO(const char *name, unsigned int state),
@@ -89,7 +88,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(power_wakeup_source, wakeup_source_deactivat
 
 	TP_ARGS(name, state)
 )
-#endif
 
 #ifdef CONFIG_EVENT_POWER_TRACING_DEPRECATED
 
@@ -160,10 +158,8 @@ enum {
    events get removed */
 static inline void trace_power_start(u64 type, u64 state, u64 cpuid) {};
 static inline void trace_power_end(u64 cpuid) {};
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0))
 static inline void trace_power_start_rcuidle(u64 type, u64 state, u64 cpuid) {};
 static inline void trace_power_end_rcuidle(u64 cpuid) {};
-#endif
 static inline void trace_power_frequency(u64 type, u64 state, u64 cpuid) {};
 #endif /* _PWR_EVENT_AVOID_DOUBLE_DEFINING_DEPRECATED */
 
