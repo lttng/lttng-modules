@@ -22,17 +22,13 @@ struct btrfs_delayed_data_ref;
 struct btrfs_delayed_ref_head;
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,5,0))
 struct btrfs_block_group;
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,3,0))
+#else
 struct btrfs_block_group_cache;
 #endif
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,3,0))
 struct btrfs_free_cluster;
-#endif
 struct map_lookup;
 struct extent_buffer;
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0))
 struct extent_state;
-#endif
 #endif
 
 #define BTRFS_UUID_SIZE 16
@@ -725,9 +721,6 @@ LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__writepage,
 		ctf_integer(long, pages_skipped, wbc->pages_skipped)
 		ctf_integer(loff_t, range_start, wbc->range_start)
 		ctf_integer(loff_t, range_end, wbc->range_end)
-#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,1,0))
-		ctf_integer(char, nonblocking, wbc->nonblocking)
-#endif
 		ctf_integer(char, for_kupdate, wbc->for_kupdate)
 		ctf_integer(char, for_reclaim, wbc->for_reclaim)
 		ctf_integer(char, range_cyclic, wbc->range_cyclic)
@@ -1021,7 +1014,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_tree_ref,
 
 	TP_ARGS(ref, full_ref, action)
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,0))
+#else
 LTTNG_TRACEPOINT_EVENT_CLASS(btrfs_delayed_tree_ref,
 
 	TP_PROTO(struct btrfs_delayed_ref_node *ref,
@@ -1066,45 +1059,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_tree_ref,
 		 int action),
 
 	TP_ARGS(ref, full_ref, action)
-)
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,7,0))
-LTTNG_TRACEPOINT_EVENT(btrfs_delayed_tree_ref,
-
-	TP_PROTO(struct btrfs_delayed_ref_node *ref,
-		 struct btrfs_delayed_tree_ref *full_ref,
-		 int action),
-
-	TP_ARGS(ref, full_ref, action),
-
-	TP_FIELDS(
-		ctf_integer(u64, bytenr, ref->bytenr)
-		ctf_integer(u64, num_bytes, ref->num_bytes)
-		ctf_integer(int, action, action)
-		ctf_integer(u64, parent, full_ref->parent)
-		ctf_integer(u64, ref_root, full_ref->root)
-		ctf_integer(int, level, full_ref->level)
-		ctf_integer(int, type, ref->type)
-		ctf_integer(u64, seq, ref->seq)
-	)
-)
-#else
-LTTNG_TRACEPOINT_EVENT(btrfs_delayed_tree_ref,
-
-	TP_PROTO(struct btrfs_delayed_ref_node *ref,
-		 struct btrfs_delayed_tree_ref *full_ref,
-		 int action),
-
-	TP_ARGS(ref, full_ref, action),
-
-	TP_FIELDS(
-		ctf_integer(u64, bytenr, ref->bytenr)
-		ctf_integer(u64, num_bytes, ref->num_bytes)
-		ctf_integer(int, action, action)
-		ctf_integer(u64, parent, full_ref->parent)
-		ctf_integer(u64, ref_root, full_ref->root)
-		ctf_integer(int, level, full_ref->level)
-		ctf_integer(int, type, ref->type)
-	)
 )
 #endif
 
@@ -1264,7 +1218,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_data_ref,
 
 	TP_ARGS(fs_info, ref, full_ref, action)
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,0))
+#else
 LTTNG_TRACEPOINT_EVENT_CLASS(btrfs_delayed_data_ref,
 
 	TP_PROTO(struct btrfs_delayed_ref_node *ref,
@@ -1310,47 +1264,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_data_ref,
 		 int action),
 
 	TP_ARGS(fs_info, ref, full_ref, action)
-)
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,7,0))
-LTTNG_TRACEPOINT_EVENT(btrfs_delayed_data_ref,
-
-	TP_PROTO(struct btrfs_delayed_ref_node *ref,
-		 struct btrfs_delayed_data_ref *full_ref,
-		 int action),
-
-	TP_ARGS(ref, full_ref, action),
-
-	TP_FIELDS(
-		ctf_integer(u64, bytenr, ref->bytenr)
-		ctf_integer(u64, num_bytes, ref->num_bytes)
-		ctf_integer(int, action, action)
-		ctf_integer(u64, parent, full_ref->parent)
-		ctf_integer(u64, ref_root, full_ref->root)
-		ctf_integer(u64, owner, full_ref->objectid)
-		ctf_integer(u64, offset, full_ref->offset)
-		ctf_integer(int, type, ref->type)
-		ctf_integer(u64, seq, ref->seq)
-	)
-)
-#else
-LTTNG_TRACEPOINT_EVENT(btrfs_delayed_data_ref,
-
-	TP_PROTO(struct btrfs_delayed_ref_node *ref,
-		 struct btrfs_delayed_data_ref *full_ref,
-		 int action),
-
-	TP_ARGS(ref, full_ref, action),
-
-	TP_FIELDS(
-		ctf_integer(u64, bytenr, ref->bytenr)
-		ctf_integer(u64, num_bytes, ref->num_bytes)
-		ctf_integer(int, action, action)
-		ctf_integer(u64, parent, full_ref->parent)
-		ctf_integer(u64, ref_root, full_ref->root)
-		ctf_integer(u64, owner, full_ref->objectid)
-		ctf_integer(u64, offset, full_ref->offset)
-		ctf_integer(int, type, ref->type)
-	)
 )
 #endif
 
@@ -1540,7 +1453,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_ref_head,
 	TP_ARGS(ref, head_ref, action)
 )
 
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,0))
+#else
 LTTNG_TRACEPOINT_EVENT_CLASS(btrfs_delayed_ref_head,
 
 	TP_PROTO(struct btrfs_delayed_ref_node *ref,
@@ -1581,23 +1494,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_ref_head,
 		 int action),
 
 	TP_ARGS(ref, head_ref, action)
-)
-
-#else
-LTTNG_TRACEPOINT_EVENT(btrfs_delayed_ref_head,
-
-	TP_PROTO(struct btrfs_delayed_ref_node *ref,
-		 struct btrfs_delayed_ref_head *head_ref,
-		 int action),
-
-	TP_ARGS(ref, head_ref, action),
-
-	TP_FIELDS(
-		ctf_integer(u64, bytenr, ref->bytenr)
-		ctf_integer(u64, num_bytes, ref->num_bytes)
-		ctf_integer(int, action, action)
-		ctf_integer(int, is_data, head_ref->is_data)
-	)
 )
 #endif
 
@@ -1822,7 +1718,7 @@ LTTNG_TRACEPOINT_EVENT(btrfs_space_reservation,
 		ctf_integer(int, reserve, reserve)
 	)
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,3,0))
+#else
 LTTNG_TRACEPOINT_EVENT(btrfs_space_reservation,
 
 	TP_PROTO(struct btrfs_fs_info *fs_info, char *type, u64 val,
@@ -2078,7 +1974,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(find_free_extent,
 		ctf_integer(u64, data, data)
 	)
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,3,0))
+#else
 
 LTTNG_TRACEPOINT_EVENT_MAP(find_free_extent,
 
@@ -2277,7 +2173,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__reserve_extent, btrfs_reserve_extent_clus
 	TP_ARGS(root, block_group, start, len)
 )
 
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,3,0))
+#else
 
 LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__reserve_extent,
 
@@ -2410,7 +2306,7 @@ LTTNG_TRACEPOINT_EVENT(btrfs_setup_cluster,
 		ctf_integer(int, bitmap, bitmap)
 	)
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,3,0))
+#else
 LTTNG_TRACEPOINT_EVENT(btrfs_find_cluster,
 
 	TP_PROTO(struct btrfs_block_group_cache *block_group, u64 start,
@@ -2490,7 +2386,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(free_extent_state,
 		ctf_integer_hex(unsigned long, ip, IP)
 	)
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0))
+#else
 LTTNG_TRACEPOINT_EVENT_MAP(alloc_extent_state,
 
 	btrfs_alloc_extent_state,
