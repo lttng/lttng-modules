@@ -52,7 +52,7 @@ LTTNG_TRACEPOINT_EVENT(workqueue_queue_work,
 		ctf_integer(int, req_cpu, req_cpu)
 	)
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,9,0))
+#else
 /**
  * workqueue_queue_work - called when a work gets queued
  * @req_cpu:	the requested cpu
@@ -69,30 +69,6 @@ LTTNG_TRACEPOINT_EVENT(workqueue_queue_work,
 		 struct work_struct *work),
 
 	TP_ARGS(req_cpu, pwq, work),
-
-	TP_FIELDS(
-		ctf_integer_hex(void *, work, work)
-		ctf_integer_hex(void *, function, work->func)
-		ctf_integer(unsigned int, req_cpu, req_cpu)
-	)
-)
-#else
-/**
- * workqueue_queue_work - called when a work gets queued
- * @req_cpu:	the requested cpu
- * @cwq:	pointer to struct cpu_workqueue_struct
- * @work:	pointer to struct work_struct
- *
- * This event occurs when a work is queued immediately or once a
- * delayed work is actually queued on a workqueue (ie: once the delay
- * has been reached).
- */
-LTTNG_TRACEPOINT_EVENT(workqueue_queue_work,
-
-	TP_PROTO(unsigned int req_cpu, struct cpu_workqueue_struct *cwq,
-		 struct work_struct *work),
-
-	TP_ARGS(req_cpu, cwq, work),
 
 	TP_FIELDS(
 		ctf_integer_hex(void *, work, work)
