@@ -29,9 +29,6 @@ LTTNG_TRACEPOINT_EVENT_CLASS(jbd_commit,
 
 	TP_FIELDS(
 		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
-#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
-		ctf_integer(char, sync_commit, commit_transaction->t_synchronous_commit)
-#endif
 		ctf_integer(int, transaction, commit_transaction->t_tid)
 	)
 )
@@ -72,9 +69,6 @@ LTTNG_TRACEPOINT_EVENT(jbd_drop_transaction,
 
 	TP_FIELDS(
 		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
-#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
-		ctf_integer(char, sync_commit, commit_transaction->t_synchronous_commit)
-#endif
 		ctf_integer(int, transaction, commit_transaction->t_tid)
 	)
 )
@@ -86,9 +80,6 @@ LTTNG_TRACEPOINT_EVENT(jbd_end_commit,
 
 	TP_FIELDS(
 		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
-#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
-		ctf_integer(char, sync_commit, commit_transaction->t_synchronous_commit)
-#endif
 		ctf_integer(int, transaction, commit_transaction->t_tid)
 		ctf_integer(int, head, journal->j_tail_sequence)
 	)
@@ -101,9 +92,6 @@ LTTNG_TRACEPOINT_EVENT(jbd_do_submit_data,
 
 	TP_FIELDS(
 		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
-#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
-		ctf_integer(char, sync_commit, commit_transaction->t_synchronous_commit)
-#endif
 		ctf_integer(int, transaction, commit_transaction->t_tid)
 	)
 )
@@ -124,7 +112,6 @@ LTTNG_TRACEPOINT_EVENT(jbd_cleanup_journal_tail,
 	)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT_MAP(journal_write_superblock,
 
 	jbd_journal_write_superblock,
@@ -138,18 +125,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(journal_write_superblock,
 		ctf_integer(int, write_op, write_op)
 	)
 )
-#else
-LTTNG_TRACEPOINT_EVENT(jbd_update_superblock_end,
-	TP_PROTO(journal_t *journal, int wait),
-
-	TP_ARGS(journal, wait),
-
-	TP_FIELDS(
-		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
-		ctf_integer(int, wait, wait)
-	)
-)
-#endif
 
 #endif /* LTTNG_TRACE_JBD_H */
 
