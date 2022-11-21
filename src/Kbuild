@@ -35,7 +35,7 @@ obj-$(CONFIG_LTTNG) += lttng-ring-buffer-metadata-mmap-client.o
 obj-$(CONFIG_LTTNG) += lttng-ring-buffer-event-notifier-client.o
 
 obj-$(CONFIG_LTTNG) += lttng-counter-client-percpu-32-modular.o
-ifneq ($CONFIG_64BIT),)
+ifneq ($(CONFIG_64BIT),)
 	obj-$(CONFIG_LTTNG) += lttng-counter-client-percpu-64-modular.o
 endif # CONFIG_64BIT
 
