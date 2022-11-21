@@ -8,7 +8,6 @@
 #include <lttng/tracepoint-event.h>
 #include <linux/writeback.h>
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,13,0))
 LTTNG_TRACEPOINT_EVENT_MAP(add_device_randomness,
 
 	random_add_device_randomness,
@@ -22,7 +21,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(add_device_randomness,
 		ctf_integer_hex(unsigned long, IP, IP)
 	)
 )
-#endif
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(random__mix_pool_bytes,
@@ -137,7 +135,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(credit_entropy_bits,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,13,0))
 LTTNG_TRACEPOINT_EVENT_MAP(push_to_pool,
 
 	random_push_to_pool,
@@ -152,7 +149,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(push_to_pool,
 		ctf_integer(int, input_bits, input_bits)
 	)
 )
-#endif
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
 LTTNG_TRACEPOINT_EVENT_MAP(debit_entropy,
@@ -167,7 +163,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(debit_entropy,
 		ctf_integer(int, debit_bits, debit_bits)
 	)
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,13,0))
+#else
 LTTNG_TRACEPOINT_EVENT_MAP(debit_entropy,
 
 	random_debit_entropy,
@@ -183,7 +179,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(debit_entropy,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,13,0))
 LTTNG_TRACEPOINT_EVENT_MAP(add_input_randomness,
 
 	random_add_input_randomness,
@@ -229,9 +224,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(xfer_secondary_pool,
 		ctf_integer(int, input_entropy, input_entropy)
 	)
 )
-#endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,13,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(random__get_random_bytes,
 
 	TP_PROTO(int nbytes, unsigned long IP),
@@ -261,21 +254,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(random__get_random_bytes, get_random_bytes_a
 
 	TP_ARGS(nbytes, IP)
 )
-#else
-LTTNG_TRACEPOINT_EVENT_MAP(get_random_bytes,
-
-	random_get_random_bytes,
-
-	TP_PROTO(int nbytes, unsigned long IP),
-
-	TP_ARGS(nbytes, IP),
-
-	TP_FIELDS(
-		ctf_integer(int, nbytes, nbytes)
-		ctf_integer_hex(unsigned long, IP, IP)
-	)
-)
-#endif
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(random__extract_entropy,
@@ -345,7 +323,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(random__extract_entropy, extract_entropy_use
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,13,0))
 LTTNG_TRACEPOINT_EVENT_MAP(random_read,
 
 	random_random_read,
@@ -376,7 +353,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(urandom_read,
 		ctf_integer(int, input_left, input_left)
 	)
 )
-#endif
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0))
 LTTNG_TRACEPOINT_EVENT_MAP(prandom_u32,
