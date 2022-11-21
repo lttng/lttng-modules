@@ -137,12 +137,7 @@ LTTNG_TRACEPOINT_EVENT(jbd2_checkpoint_stats,
 	)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0))
 LTTNG_TRACEPOINT_EVENT(jbd2_update_log_tail,
-#else
-LTTNG_TRACEPOINT_EVENT(jbd2_cleanup_journal_tail,
-#endif
-
 	TP_PROTO(journal_t *journal, tid_t first_tid,
 		 unsigned long block_nr, unsigned long freed),
 
@@ -196,7 +191,7 @@ LTTNG_TRACEPOINT_EVENT(jbd2_write_superblock,
 #endif
 	)
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0))
+#else
 LTTNG_TRACEPOINT_EVENT(jbd2_write_superblock,
 
 	TP_PROTO(journal_t *journal, int write_op),
