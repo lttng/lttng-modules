@@ -302,11 +302,7 @@ LTTNG_TRACEPOINT_EVENT(kmem_cache_free,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,3,0))
 LTTNG_TRACEPOINT_EVENT_MAP(mm_page_free, kmem_mm_page_free,
-#else
-LTTNG_TRACEPOINT_EVENT_MAP(mm_page_free_direct, kmem_mm_page_free_direct,
-#endif
 
 	TP_PROTO(struct page *page, unsigned int order),
 
@@ -331,21 +327,8 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_free_batched, kmem_mm_page_free_batched,
 		ctf_integer(unsigned long, pfn, page_to_pfn(page))
 	)
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,3,0))
-LTTNG_TRACEPOINT_EVENT_MAP(mm_page_free_batched, kmem_mm_page_free_batched,
-
-	TP_PROTO(struct page *page, int cold),
-
-	TP_ARGS(page, cold),
-
-	TP_FIELDS(
-		ctf_integer_hex(struct page *, page, page)
-		ctf_integer(unsigned long, pfn, page_to_pfn(page))
-		ctf_integer(int, cold, cold)
-	)
-)
 #else
-LTTNG_TRACEPOINT_EVENT_MAP(mm_pagevec_free, kmem_pagevec_free,
+LTTNG_TRACEPOINT_EVENT_MAP(mm_page_free_batched, kmem_mm_page_free_batched,
 
 	TP_PROTO(struct page *page, int cold),
 
@@ -454,14 +437,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(kmem_mm_page, mm_page_pcpu_drain,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,19,2)	\
-	|| LTTNG_KERNEL_RANGE(3,14,36, 3,15,0)		\
-	|| LTTNG_KERNEL_RANGE(3,16,35, 3,17,0)		\
-	|| LTTNG_KERNEL_RANGE(3,18,10, 3,19,0)		\
-	|| LTTNG_DEBIAN_KERNEL_RANGE(3,16,7,9,0,0, 3,17,0,0,0,0)	\
-	|| LTTNG_UBUNTU_KERNEL_RANGE(3,13,11,50, 3,14,0,0)	\
-	|| LTTNG_UBUNTU_KERNEL_RANGE(3,16,7,34, 3,17,0,0))
-
 LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
 
 	kmem_mm_page_alloc_extfrag,
@@ -485,84 +460,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
 			(alloc_migratetype == get_pageblock_migratetype(page)))
 	)
 )
-
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,30))
-
-LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
-
-	kmem_mm_page_alloc_extfrag,
-
-	TP_PROTO(struct page *page,
-		int alloc_order, int fallback_order,
-		int alloc_migratetype, int fallback_migratetype, int new_migratetype),
-
-	TP_ARGS(page,
-		alloc_order, fallback_order,
-		alloc_migratetype, fallback_migratetype, new_migratetype),
-
-	TP_FIELDS(
-		ctf_integer_hex(struct page *, page, page)
-		ctf_integer(unsigned long, pfn, page_to_pfn(page))
-		ctf_integer(int, alloc_order, alloc_order)
-		ctf_integer(int, fallback_order, fallback_order)
-		ctf_integer(int, alloc_migratetype, alloc_migratetype)
-		ctf_integer(int, fallback_migratetype, fallback_migratetype)
-		ctf_integer(int, change_ownership, (new_migratetype == alloc_migratetype))
-	)
-)
-
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,0))
-
-LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
-
-	kmem_mm_page_alloc_extfrag,
-
-	TP_PROTO(struct page *page,
-			int alloc_order, int fallback_order,
-			int alloc_migratetype, int fallback_migratetype,
-			int change_ownership),
-
-	TP_ARGS(page,
-		alloc_order, fallback_order,
-		alloc_migratetype, fallback_migratetype,
-		change_ownership),
-
-	TP_FIELDS(
-		ctf_integer_hex(struct page *, page, page)
-		ctf_integer(unsigned long, pfn, page_to_pfn(page))
-		ctf_integer(int, alloc_order, alloc_order)
-		ctf_integer(int, fallback_order, fallback_order)
-		ctf_integer(int, alloc_migratetype, alloc_migratetype)
-		ctf_integer(int, fallback_migratetype, fallback_migratetype)
-		ctf_integer(int, change_ownership, change_ownership)
-	)
-)
-
-#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,0)) */
-
-LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
-
-	kmem_mm_page_alloc_extfrag,
-
-	TP_PROTO(struct page *page,
-			int alloc_order, int fallback_order,
-			int alloc_migratetype, int fallback_migratetype),
-
-	TP_ARGS(page,
-		alloc_order, fallback_order,
-		alloc_migratetype, fallback_migratetype),
-
-	TP_FIELDS(
-		ctf_integer_hex(struct page *, page, page)
-		ctf_integer(unsigned long, pfn, page_to_pfn(page))
-		ctf_integer(int, alloc_order, alloc_order)
-		ctf_integer(int, fallback_order, fallback_order)
-		ctf_integer(int, alloc_migratetype, alloc_migratetype)
-		ctf_integer(int, fallback_migratetype, fallback_migratetype)
-	)
-)
-
-#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,0)) */
 
 #endif /* LTTNG_TRACE_KMEM_H */
 
