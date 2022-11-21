@@ -13,10 +13,10 @@ details), except for files identified by the following sections.
 These files are licensed exclusively under the GPL-2.0 license. See
 LICENSES/GPL-2.0 for details.
 
-lib/ringbuffer/ring_buffer_splice.c
-lib/ringbuffer/ring_buffer_mmap.c
-instrumentation/events/lttng-module/*.h
-wrapper/list.h
+src/lib/ringbuffer/ring_buffer_splice.c
+src/lib/ringbuffer/ring_buffer_mmap.c
+include/instrumentation/events/*.h
+include/wrapper/list.h
 
 * MIT-style license
 
@@ -25,10 +25,10 @@ for details.
 
 include/lttng/prio_heap.h
 include/lttng/bitfield.h
-include/lttng/filter-bytecode.h
-include/filter.h
-lib/prio_heap/lttng_prio_heap.c
-lttng-filter-interpreter.c
-lttng-filter-specialize.c
-lttng-filter-validator.c
-lttng-filter.c
+include/lttng/bytecode.h
+include/lttng/lttng-bytecode.h
+src/lib/prio_heap/lttng_prio_heap.c
+src/lttng-bytecode-interpreter.c
+src/lttng-bytecode-specialize.c
+src/lttng-bytecode-validator.c
+src/lttng-bytecode.c
