@@ -32,37 +32,6 @@ static inline const char *lttng_bdi_dev_name(struct backing_dev_info *bdi)
 	return dev_name(bdi->dev);
 }
 #endif
-
-/*
- * Vanilla kernels before 4.0 do not implement inode_to_bdi
- * RHEL kernels before 3.10.0-327.10.1 do not implement inode_to_bdi
- * RHEL kernel 3.10.0-327.10.1 has inode_to_bdi
- * RHEL kernel 3.10.0-327.13.1 includes a partial merge of upstream
- *  commit a212b105b07d75b48b1a166378282e8a77fbf53d which inlines
- *  inode_to_bdi but not sb_is_blkdev_sb making it unusable by modules.
- */
-#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(4,0,0))
-static inline struct backing_dev_info *lttng_inode_to_bdi(struct inode *inode)
-{
-	struct super_block *sb;
-
-	if (!inode)
-		return &noop_backing_dev_info;
-
-	sb = inode->i_sb;
-
-	if (strcmp(sb->s_type->name, "bdev") == 0)
-		return inode->i_mapping->backing_dev_info;
-
-	return sb->s_bdi;
-}
-#else
-static inline struct backing_dev_info *lttng_inode_to_bdi(struct inode *inode)
-{
-	return inode_to_bdi(inode);
-}
-#endif /* #if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(4,0,0)) */
-
 #endif
 
 /*
@@ -90,7 +59,7 @@ static inline struct backing_dev_info *lttng_inode_to_bdi(struct inode *inode)
 		{I_DIRTY_TIME,		"I_DIRTY_TIME"},	\
 		{I_REFERENCED,		"I_REFERENCED"}		\
 	)
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,0,0))
+#else
 #define show_inode_state(state)					\
 	__print_flags(state, "|",				\
 		{I_DIRTY_SYNC,		"I_DIRTY_SYNC"},	\
@@ -105,28 +74,13 @@ static inline struct backing_dev_info *lttng_inode_to_bdi(struct inode *inode)
 		{I_DIRTY_TIME_EXPIRED,	"I_DIRTY_TIME_EXPIRED"}, \
 		{I_REFERENCED,		"I_REFERENCED"}		\
 	)
-#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,0,0)) */
-#define show_inode_state(state)					\
-	__print_flags(state, "|",				\
-		{I_DIRTY_SYNC,		"I_DIRTY_SYNC"},	\
-		{I_DIRTY_DATASYNC,	"I_DIRTY_DATASYNC"},	\
-		{I_DIRTY_PAGES,		"I_DIRTY_PAGES"},	\
-		{I_NEW,			"I_NEW"},		\
-		{I_WILL_FREE,		"I_WILL_FREE"},		\
-		{I_FREEING,		"I_FREEING"},		\
-		{I_CLEAR,		"I_CLEAR"},		\
-		{I_SYNC,		"I_SYNC"},		\
-		{I_REFERENCED,		"I_REFERENCED"}		\
-	)
-#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,0,0)) */
-
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,0,0))
+#endif /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0)) */
 
 LTTNG_TRACEPOINT_EVENT(writeback_dirty_page,
 	TP_PROTO(struct page *page, struct address_space *mapping),
 	TP_ARGS(page, mapping),
 	TP_FIELDS(
-		ctf_string(name, lttng_bdi_dev_name(mapping ? lttng_inode_to_bdi(mapping->host) : NULL))
+		ctf_string(name, lttng_bdi_dev_name(mapping ? inode_to_bdi(mapping->host) : NULL))
 		ctf_integer(unsigned long, ino, mapping ? mapping->host->i_ino : 0)
 		ctf_integer(pgoff_t, index, page->index)
 	)
@@ -137,7 +91,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_dirty_inode_template,
 	TP_ARGS(inode, flags),
 	TP_FIELDS(
 		/* may be called for files on pseudo FSes w/ unregistered bdi */
-		ctf_string(name, lttng_bdi_dev_name(lttng_inode_to_bdi(inode)))
+		ctf_string(name, lttng_bdi_dev_name(inode_to_bdi(inode)))
 		ctf_integer(unsigned long, ino, inode->i_ino)
 		ctf_integer(unsigned long, state, inode->i_state)
 		ctf_integer(unsigned long, flags, flags)
@@ -155,7 +109,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_write_inode_template,
 	TP_PROTO(struct inode *inode, struct writeback_control *wbc),
 	TP_ARGS(inode, wbc),
 	TP_FIELDS(
-		ctf_string(name, lttng_bdi_dev_name(lttng_inode_to_bdi(inode)))
+		ctf_string(name, lttng_bdi_dev_name(inode_to_bdi(inode)))
 		ctf_integer(unsigned long, ino, inode->i_ino)
 		ctf_integer(int, sync_mode, wbc->sync_mode)
 	)
@@ -168,55 +122,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_write_inode_template, name, \
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WRITE_INODE(writeback_write_inode_start)
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WRITE_INODE(writeback_write_inode)
 
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,9,0))
-
-LTTNG_TRACEPOINT_EVENT(writeback_dirty_page,
-	TP_PROTO(struct page *page, struct address_space *mapping),
-	TP_ARGS(page, mapping),
-	TP_FIELDS(
-		ctf_string(name, lttng_bdi_dev_name(mapping ? mapping->backing_dev_info : NULL))
-		ctf_integer(unsigned long, ino, mapping ? mapping->host->i_ino : 0)
-		ctf_integer(pgoff_t, index, page->index)
-	)
-)
-
-LTTNG_TRACEPOINT_EVENT_CLASS(writeback_dirty_inode_template,
-	TP_PROTO(struct inode *inode, int flags),
-	TP_ARGS(inode, flags),
-	TP_FIELDS(
-		/* may be called for files on pseudo FSes w/ unregistered bdi */
-		ctf_string(name, lttng_bdi_dev_name(inode->i_mapping->backing_dev_info))
-		ctf_integer(unsigned long, ino, inode->i_ino)
-		ctf_integer(unsigned long, flags, flags)
-	)
-)
-#define LTTNG_TRACEPOINT_EVENT_WRITEBACK_DIRTY_INODE_TEMPLATE(name) \
-LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_dirty_inode_template, name, \
-	TP_PROTO(struct inode *inode, int flags), \
-	TP_ARGS(inode, flags))
-LTTNG_TRACEPOINT_EVENT_WRITEBACK_DIRTY_INODE_TEMPLATE(writeback_dirty_inode_start)
-LTTNG_TRACEPOINT_EVENT_WRITEBACK_DIRTY_INODE_TEMPLATE(writeback_dirty_inode)
-
-LTTNG_TRACEPOINT_EVENT_CLASS(writeback_write_inode_template,
-	TP_PROTO(struct inode *inode, struct writeback_control *wbc),
-	TP_ARGS(inode, wbc),
-	TP_FIELDS(
-		ctf_string(name, lttng_bdi_dev_name(inode->i_mapping->backing_dev_info))
-		ctf_integer(unsigned long, ino, inode->i_ino)
-		ctf_integer(int, sync_mode, wbc->sync_mode)
-	)
-)
-
-#define LTTNG_TRACEPOINT_EVENT_WRITEBACK_WRITE_INODE(name) \
-LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_write_inode_template, name, \
-	TP_PROTO(struct inode *inode, struct writeback_control *wbc), \
-	TP_ARGS(inode, wbc))
-LTTNG_TRACEPOINT_EVENT_WRITEBACK_WRITE_INODE(writeback_write_inode_start)
-LTTNG_TRACEPOINT_EVENT_WRITEBACK_WRITE_INODE(writeback_write_inode)
-
-#endif /* (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,9,0)) */
-
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0))
 
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
 	TP_PROTO(struct bdi_writeback *wb, struct wb_writeback_work *work),
@@ -226,42 +131,17 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
 	)
 )
 
-#else
-
-LTTNG_TRACEPOINT_EVENT_CLASS(writeback_work_class,
-	TP_PROTO(struct backing_dev_info *bdi, struct wb_writeback_work *work),
-	TP_ARGS(bdi, work),
-	TP_FIELDS(
-		ctf_string(name, lttng_bdi_dev_name(bdi))
-	)
-)
-
-#endif /* #else if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0)) */
-
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0))
-
 #define LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(name) \
 LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_work_class, name, \
 	TP_PROTO(struct bdi_writeback *wb, struct wb_writeback_work *work), \
 	TP_ARGS(wb, work))
 
-#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0)) */
-
-#define LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(name) \
-LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_work_class, name, \
-	TP_PROTO(struct backing_dev_info *bdi, struct wb_writeback_work *work), \
-	TP_ARGS(bdi, work))
-
-#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0)) */
-
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_nothread)
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_queue)
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_exec)
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0))
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_start)
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_written)
 LTTNG_TRACEPOINT_EVENT_WRITEBACK_WORK_INSTANCE(writeback_wait)
-#endif
 
 LTTNG_TRACEPOINT_EVENT(writeback_pages_written,
 	TP_PROTO(long pages_written),
@@ -270,8 +150,6 @@ LTTNG_TRACEPOINT_EVENT(writeback_pages_written,
 		ctf_integer(long, pages, pages_written)
 	)
 )
-
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0))
 
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_class,
 	TP_PROTO(struct bdi_writeback *wb),
@@ -300,31 +178,6 @@ LTTNG_TRACEPOINT_EVENT(writeback_bdi_register,
 	)
 )
 
-#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0)) */
-
-LTTNG_TRACEPOINT_EVENT_CLASS(writeback_class,
-	TP_PROTO(struct backing_dev_info *bdi),
-	TP_ARGS(bdi),
-	TP_FIELDS(
-		ctf_string(name, lttng_bdi_dev_name(bdi))
-	)
-)
-
-#undef DEFINE_WRITEBACK_EVENT
-#define DEFINE_WRITEBACK_EVENT(name) \
-LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_class, name, \
-	TP_PROTO(struct backing_dev_info *bdi), \
-	TP_ARGS(bdi))
-
-#define DEFINE_WRITEBACK_EVENT_MAP(name, map) \
-LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(writeback_class, name, map, \
-	TP_PROTO(struct backing_dev_info *bdi), \
-	TP_ARGS(bdi))
-
-DEFINE_WRITEBACK_EVENT(writeback_bdi_register)
-
-#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0)) */
-
 DEFINE_WRITEBACK_EVENT(writeback_nowork)
 DEFINE_WRITEBACK_EVENT(writeback_wake_background)
 DEFINE_WRITEBACK_EVENT(writeback_wake_thread)
@@ -332,24 +185,6 @@ DEFINE_WRITEBACK_EVENT(writeback_wake_forker_thread)
 DEFINE_WRITEBACK_EVENT(writeback_bdi_unregister)
 DEFINE_WRITEBACK_EVENT(writeback_thread_start)
 DEFINE_WRITEBACK_EVENT(writeback_thread_stop)
-#if (LTTNG_KERNEL_RANGE(3,1,0, 3,2,0))
-DEFINE_WRITEBACK_EVENT_MAP(balance_dirty_start, writeback_balance_dirty_start)
-DEFINE_WRITEBACK_EVENT_MAP(balance_dirty_wait, writeback_balance_dirty_wait)
-
-LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_written,
-
-	writeback_balance_dirty_written,
-
-	TP_PROTO(struct backing_dev_info *bdi, int written),
-
-	TP_ARGS(bdi, written),
-
-	TP_FIELDS(
-		ctf_string(name, lttng_bdi_dev_name(bdi))
-		ctf_integer(int, written, written)
-	)
-)
-#endif
 
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_wbc_class,
 	TP_PROTO(struct writeback_control *wbc, struct backing_dev_info *bdi),
@@ -363,11 +198,6 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_wbc_class,
 		ctf_integer(int, for_background, wbc->for_background)
 		ctf_integer(int, for_reclaim, wbc->for_reclaim)
 		ctf_integer(int, range_cyclic, wbc->range_cyclic)
-#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,1,0))
-		ctf_integer(int, more_io, wbc->more_io)
-		ctf_integer(unsigned long, older_than_this,
-			wbc->older_than_this ? *wbc->older_than_this : 0)
-#endif
 		ctf_integer(long, range_start, (long) wbc->range_start)
 		ctf_integer(long, range_end, (long) wbc->range_end)
 	)
@@ -378,14 +208,6 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_wbc_class,
 LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(writeback_wbc_class, name, map, \
 	TP_PROTO(struct writeback_control *wbc, struct backing_dev_info *bdi), \
 	TP_ARGS(wbc, bdi))
-#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,1,0))
-LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_writeback_start, writeback_wbc_writeback_start)
-LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_writeback_written, writeback_wbc_writeback_written)
-LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_writeback_wait, writeback_wbc_writeback_wait)
-LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_balance_dirty_start, writeback_wbc_balance_dirty_start)
-LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_balance_dirty_written, writeback_wbc_balance_dirty_written)
-LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_balance_dirty_wait, writeback_wbc_balance_dirty_wait)
-#endif
 LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(wbc_writepage, writeback_wbc_writepage)
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0) || \
@@ -409,7 +231,7 @@ LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 		ctf_integer(int, moved, moved)
 	)
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,2,0))
+#else
 LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 	TP_PROTO(struct bdi_writeback *wb,
 		 struct wb_writeback_work *work,
@@ -417,23 +239,6 @@ LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 	TP_ARGS(wb, work, moved),
 	TP_FIELDS(
 		ctf_string(name, lttng_bdi_dev_name(wb->bdi))
-		ctf_integer(int, moved, moved)
-	)
-)
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0))
-LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
-	TP_PROTO(struct bdi_writeback *wb,
-		 unsigned long *older_than_this,
-		 int moved),
-	TP_ARGS(wb, older_than_this, moved),
-	TP_FIELDS(
-		ctf_string(name, lttng_bdi_dev_name(wb->bdi))
-		ctf_integer(unsigned long, older,
-			older_than_this ? *older_than_this : 0)
-		ctf_integer(long, age,
-			older_than_this ?
-				(jiffies - *older_than_this) * 1000 / HZ
-				: -1)
 		ctf_integer(int, moved, moved)
 	)
 )
@@ -487,7 +292,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 		ctf_integer(unsigned long, dirty_limit, global_dirty_limit)
 	)
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0))
+#else
 LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 
 	writeback_global_dirty_state,
@@ -513,11 +318,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,2,0))
-
 #define KBps(x)			((x) << (PAGE_SHIFT - 10))
-
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0))
 
 LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 
@@ -540,58 +341,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 					KBps(wb->bdi->wb.balanced_dirty_ratelimit))
 	)
 )
-
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0))
-
-LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
-
-	writeback_bdi_dirty_ratelimit,
-
-	TP_PROTO(struct backing_dev_info *bdi,
-		 unsigned long dirty_rate,
-		 unsigned long task_ratelimit),
-
-	TP_ARGS(bdi, dirty_rate, task_ratelimit),
-
-	TP_FIELDS(
-		ctf_string(bdi, lttng_bdi_dev_name(bdi))
-		ctf_integer(unsigned long, write_bw, KBps(bdi->wb.write_bandwidth))
-		ctf_integer(unsigned long, avg_write_bw, KBps(bdi->wb.avg_write_bandwidth))
-		ctf_integer(unsigned long, dirty_rate, KBps(dirty_rate))
-		ctf_integer(unsigned long, dirty_ratelimit, KBps(bdi->wb.dirty_ratelimit))
-		ctf_integer(unsigned long, task_ratelimit, KBps(task_ratelimit))
-		ctf_integer(unsigned long, balanced_dirty_ratelimit,
-					KBps(bdi->wb.balanced_dirty_ratelimit))
-	)
-)
-
-#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0)) */
-
-LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
-
-	writeback_bdi_dirty_ratelimit,
-
-	TP_PROTO(struct backing_dev_info *bdi,
-		 unsigned long dirty_rate,
-		 unsigned long task_ratelimit),
-
-	TP_ARGS(bdi, dirty_rate, task_ratelimit),
-
-	TP_FIELDS(
-		ctf_string(bdi, lttng_bdi_dev_name(bdi))
-		ctf_integer(unsigned long, write_bw, KBps(bdi->write_bandwidth))
-		ctf_integer(unsigned long, avg_write_bw, KBps(bdi->avg_write_bandwidth))
-		ctf_integer(unsigned long, dirty_rate, KBps(dirty_rate))
-		ctf_integer(unsigned long, dirty_ratelimit, KBps(bdi->dirty_ratelimit))
-		ctf_integer(unsigned long, task_ratelimit, KBps(task_ratelimit))
-		ctf_integer(unsigned long, balanced_dirty_ratelimit,
-					KBps(bdi->balanced_dirty_ratelimit))
-	)
-)
-
-#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0)) */
-
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0))
 
 LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 
@@ -643,83 +392,18 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 	)
 )
 
-#else /* #if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0)) */
-
-LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
-
-	writeback_balance_dirty_pages,
-
-	TP_PROTO(struct backing_dev_info *bdi,
-		 unsigned long thresh,
-		 unsigned long bg_thresh,
-		 unsigned long dirty,
-		 unsigned long bdi_thresh,
-		 unsigned long bdi_dirty,
-		 unsigned long dirty_ratelimit,
-		 unsigned long task_ratelimit,
-		 unsigned long dirtied,
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,3,0))
-		 unsigned long period,
-#endif
-		 long pause,
-		 unsigned long start_time),
-
-	TP_ARGS(bdi, thresh, bg_thresh, dirty, bdi_thresh, bdi_dirty,
-		dirty_ratelimit, task_ratelimit,
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,3,0))
-		dirtied, period, pause, start_time
-#else
-		dirtied, pause, start_time
-#endif
-	),
-
-	TP_FIELDS(
-		ctf_string(bdi, lttng_bdi_dev_name(bdi))
-		ctf_integer(unsigned long, limit, global_dirty_limit)
-		ctf_integer(unsigned long, setpoint,
-			(global_dirty_limit + (thresh + bg_thresh) / 2) / 2)
-		ctf_integer(unsigned long, dirty, dirty)
-		ctf_integer(unsigned long, bdi_setpoint,
-			((global_dirty_limit + (thresh + bg_thresh) / 2) / 2) *
-				bdi_thresh / (thresh + 1))
-		ctf_integer(unsigned long, bdi_dirty, bdi_dirty)
-		ctf_integer(unsigned long, dirty_ratelimit,
-			KBps(dirty_ratelimit))
-		ctf_integer(unsigned long, task_ratelimit,
-			KBps(task_ratelimit))
-		ctf_integer(unsigned int, dirtied, dirtied)
-		ctf_integer(unsigned int, dirtied_pause,
-			current->nr_dirtied_pause)
-		ctf_integer(unsigned long, paused,
-			(jiffies - start_time) * 1000 / HZ)
-		ctf_integer(long, pause, pause * 1000 / HZ)
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,3,0))
-		ctf_integer(unsigned long, period,
-			period * 1000 / HZ)
-		ctf_integer(long, think,
-			current->dirty_paused_when == 0 ? 0 :
-				(long)(jiffies - current->dirty_paused_when) * 1000/HZ)
-#endif
-	)
-)
-#endif /* #else #if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,3,0)) */
-
-#endif /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,2,0)) */
-
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT(writeback_sb_inodes_requeue,
 
 	TP_PROTO(struct inode *inode),
 	TP_ARGS(inode),
 
 	TP_FIELDS(
-		ctf_string(name, lttng_bdi_dev_name(lttng_inode_to_bdi(inode)))
+		ctf_string(name, lttng_bdi_dev_name(inode_to_bdi(inode)))
 		ctf_integer(unsigned long, ino, inode->i_ino)
 		ctf_integer(unsigned long, state, inode->i_state)
 		ctf_integer(unsigned long, dirtied_when, inode->dirtied_when)
 	)
 )
-#endif
 
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_congest_waited_template,
 
@@ -747,7 +431,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_congest_waited_template, writeback_wai
 	TP_ARGS(usec_timeout, usec_delayed)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,1,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_single_inode_template,
 
 	TP_PROTO(struct inode *inode,
@@ -758,7 +441,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_single_inode_template,
 	TP_ARGS(inode, wbc, nr_to_write),
 
 	TP_FIELDS(
-		ctf_string(name, lttng_bdi_dev_name(lttng_inode_to_bdi(inode)))
+		ctf_string(name, lttng_bdi_dev_name(inode_to_bdi(inode)))
 		ctf_integer(unsigned long, ino, inode->i_ino)
 		ctf_integer(unsigned long, state, inode->i_state)
 		ctf_integer(unsigned long, dirtied_when, inode->dirtied_when)
@@ -770,22 +453,12 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_single_inode_template,
 	)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
-LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_single_inode_template, writeback_single_inode_requeue,
-	TP_PROTO(struct inode *inode,
-		struct writeback_control *wbc,
-		unsigned long nr_to_write),
-	TP_ARGS(inode, wbc, nr_to_write)
-)
-#endif
-
 LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_single_inode_template, writeback_single_inode,
 	TP_PROTO(struct inode *inode,
 		 struct writeback_control *wbc,
 		 unsigned long nr_to_write),
 	TP_ARGS(inode, wbc, nr_to_write)
 )
-#endif
 
 #endif /* LTTNG_TRACE_WRITEBACK_H */
 
