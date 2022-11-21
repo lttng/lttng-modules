@@ -457,8 +457,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_template,
 	TP_ARGS(skb)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,14,0))
-
 /* Trace events for the receive entry points */
 LTTNG_TRACEPOINT_EVENT_CLASS(net_dev_receive_entry_template,
 
@@ -525,8 +523,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(net_dev_receive_entry_template,
 
 	TP_ARGS(skb)
 )
-
-#endif /* kernel > 3.14 */
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,19,0))
 
