@@ -600,6 +600,72 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__ordered_extent, btrfs_ordered_extent_put,
 )
 #endif
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,0,0))
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__ordered_extent, btrfs_ordered_extent_lookup,
+
+	TP_PROTO(const struct btrfs_inode *inode,
+		const struct btrfs_ordered_extent *ordered),
+
+	TP_ARGS(inode, ordered)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__ordered_extent, btrfs_ordered_extent_lookup_range,
+
+	TP_PROTO(const struct btrfs_inode *inode,
+		const struct btrfs_ordered_extent *ordered),
+
+	TP_ARGS(inode, ordered)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__ordered_extent, btrfs_ordered_extent_lookup_first_range,
+
+	TP_PROTO(const struct btrfs_inode *inode,
+		const struct btrfs_ordered_extent *ordered),
+
+	TP_ARGS(inode, ordered)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__ordered_extent, btrfs_ordered_extent_lookup_for_logging,
+
+	TP_PROTO(const struct btrfs_inode *inode,
+		const struct btrfs_ordered_extent *ordered),
+
+	TP_ARGS(inode, ordered)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__ordered_extent, btrfs_ordered_extent_lookup_first,
+
+	TP_PROTO(const struct btrfs_inode *inode,
+		const struct btrfs_ordered_extent *ordered),
+
+	TP_ARGS(inode, ordered)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__ordered_extent, btrfs_ordered_extent_split,
+
+	TP_PROTO(const struct btrfs_inode *inode,
+		const struct btrfs_ordered_extent *ordered),
+
+	TP_ARGS(inode, ordered)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__ordered_extent, btrfs_ordered_extent_dec_test_pending,
+
+	TP_PROTO(const struct btrfs_inode *inode,
+		const struct btrfs_ordered_extent *ordered),
+
+	TP_ARGS(inode, ordered)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__ordered_extent, btrfs_ordered_extent_mark_finished,
+
+	TP_PROTO(const struct btrfs_inode *inode,
+		const struct btrfs_ordered_extent *ordered),
+
+	TP_ARGS(inode, ordered)
+)
+#endif
+
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,14,0))
 LTTNG_TRACEPOINT_EVENT(btrfs_writepage_end_io_hook,
 
