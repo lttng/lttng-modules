@@ -90,9 +90,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_ipc_ns,
 	TP_ARGS(session, p, ipc_ns),
 	TP_FIELDS(
 		ctf_integer(pid_t, tid, p->pid)
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 		ctf_integer(unsigned int, ns_inum, ipc_ns ? ipc_ns->ns.inum : 0)
-#endif
 	)
 )
 
@@ -104,9 +102,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_mnt_ns,
 	TP_ARGS(session, p, mnt_ns),
 	TP_FIELDS(
 		ctf_integer(pid_t, tid, p->pid)
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 		ctf_integer(unsigned int, ns_inum, mnt_ns ? mnt_ns->ns.inum : 0)
-#endif
 	)
 )
 #endif
@@ -118,9 +114,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_net_ns,
 	TP_ARGS(session, p, net_ns),
 	TP_FIELDS(
 		ctf_integer(pid_t, tid, p->pid)
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 		ctf_integer(unsigned int, ns_inum, net_ns ? net_ns->ns.inum : 0)
-#endif
 	)
 )
 
@@ -147,9 +141,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_pid_ns,
 				ret;
 			}))
 		ctf_integer(int, ns_level, pid_ns ? pid_ns->level : 0)
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 		ctf_integer(unsigned int, ns_inum, pid_ns ? pid_ns->ns.inum : 0)
-#endif
 	)
 )
 
@@ -162,12 +154,8 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_user_ns,
 		ctf_integer(pid_t, tid, p->pid)
 		ctf_integer(uid_t, vuid, user_ns ? from_kuid_munged(user_ns, task_cred_xxx(p, uid)) : 0)
 		ctf_integer(gid_t, vgid, user_ns ? from_kgid_munged(user_ns, task_cred_xxx(p, gid)) : 0)
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,11,0))
 		ctf_integer(int, ns_level, user_ns ? user_ns->level : 0)
-#endif
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 		ctf_integer(unsigned int, ns_inum, user_ns ? user_ns->ns.inum : 0)
-#endif
 	)
 )
 
@@ -178,9 +166,7 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_process_uts_ns,
 	TP_ARGS(session, p, uts_ns),
 	TP_FIELDS(
 		ctf_integer(pid_t, tid, p->pid)
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 		ctf_integer(unsigned int, ns_inum, uts_ns ? uts_ns->ns.inum : 0)
-#endif
 	)
 )
 
