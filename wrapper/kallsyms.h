@@ -16,11 +16,19 @@
 #include <linux/kallsyms.h>
 #include <lttng-kernel-version.h>
 
+/* CONFIG_PPC64_ELF_ABI_V1/V2 were introduced in v5.19 */
+#if defined(CONFIG_PPC64_ELF_ABI_V2) || (defined(CONFIG_PPC64) && defined(CONFIG_CPU_LITTLE_ENDIAN))
+#define LTTNG_CONFIG_PPC64_ELF_ABI_V2
+#endif
+#if defined(CONFIG_PPC64_ELF_ABI_V1) || (defined(CONFIG_PPC64) && defined(CONFIG_CPU_BIG_ENDIAN))
+#define LTTNG_CONFIG_PPC64_ELF_ABI_V1
+#endif
+
 /*
  * PowerPC ABIv1 needs KALLSYMS_ALL to get the function descriptor,
  * which is needed to perform the function call.
  */
-#if defined(CONFIG_PPC64) && (!defined(_CALL_ELF) || _CALL_ELF < 2)
+#ifdef LTTNG_CONFIG_PPC64_ELF_ABI_V1
 # ifndef CONFIG_KALLSYMS_ALL
 #  error "LTTng-modules requires CONFIG_KALLSYMS_ALL on PowerPC ABIv1"
 # endif
