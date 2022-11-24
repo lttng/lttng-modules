@@ -39,7 +39,7 @@ unsigned long do_get_kallsyms(void)
 	memset(&probe, 0, sizeof(probe));
 	probe.pre_handler = dummy_kprobe_handler;
 	probe.symbol_name = "kallsyms_lookup_name";
-#ifdef PPC64_ELF_ABI_v2
+#ifdef LTTNG_CONFIG_PPC64_ELF_ABI_V2
 	/*
 	 * With powerpc64 ABIv2, we need the global entry point of
 	 * kallsyms_lookup_name to call it later, while kprobe_register would
@@ -53,7 +53,7 @@ unsigned long do_get_kallsyms(void)
 	ret = register_kprobe(&probe);
 	if (ret)
 		return 0;
-#ifdef PPC64_ELF_ABI_v2
+#ifdef LTTNG_CONFIG_PPC64_ELF_ABI_V2
 	/* Substract 4 bytes to get what we originally want */
 	addr = (unsigned long)(((char *)probe.addr) - 4);
 #else
