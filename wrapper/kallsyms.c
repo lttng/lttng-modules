@@ -20,6 +20,25 @@
 # error "LTTng-modules requires CONFIG_KPROBES on kernels >= 5.7.0"
 #endif
 
+#ifdef LTTNG_CONFIG_PPC64_ELF_ABI_V1
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0))
+#include <asm/elf.h>
+
+#define LTTNG_FUNC_DESC_TYPE struct func_desc
+#define LTTNG_FUNC_DESC_ADDR_NAME addr
+
+#else
+
+#include <asm/types.h>
+
+#define LTTNG_FUNC_DESC_TYPE func_descr_t
+#define LTTNG_FUNC_DESC_ADDR_NAME entry
+#endif
+
+static
+LTTNG_FUNC_DESC_TYPE kallsyms_lookup_name_func_desc;
+#endif
+
 static
 unsigned long (*kallsyms_lookup_name_sym)(const char *name);
 
@@ -56,6 +75,16 @@ unsigned long do_get_kallsyms(void)
 #ifdef LTTNG_CONFIG_PPC64_ELF_ABI_V2
 	/* Substract 4 bytes to get what we originally want */
 	addr = (unsigned long)(((char *)probe.addr) - 4);
+#elif defined(LTTNG_CONFIG_PPC64_ELF_ABI_V1)
+	/*
+	 * Build a function descriptor from the address of
+	 * 'kallsyms_lookup_name' returned by kprobe and the toc of
+	 * 'sprint_symbol' which is in the same compile unit and exported. I
+	 * hate this on so many levels but it works.
+	 */
+	kallsyms_lookup_name_func_desc.LTTNG_FUNC_DESC_ADDR_NAME = (unsigned long) probe.addr;
+	kallsyms_lookup_name_func_desc.toc = ((LTTNG_FUNC_DESC_TYPE *) &sprint_symbol)->toc;
+	addr = (unsigned long) &kallsyms_lookup_name_func_desc;
 #else
 	addr = (unsigned long)probe.addr;
 #endif
