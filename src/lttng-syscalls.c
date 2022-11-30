@@ -241,6 +241,12 @@ void syscall_entry_event_probe(void *__data, struct pt_regs *regs, long id)
 	const struct trace_syscall_entry *table, *entry;
 	size_t table_len;
 
+#ifdef CONFIG_X86_X32_ABI
+	if (in_x32_syscall()) {
+		/* x32 system calls are not supported. */
+		return;
+	}
+#endif
 	if (unlikely(in_compat_syscall())) {
 		struct lttng_syscall_filter *filter = syscall_table->sc_filter;
 
@@ -419,6 +425,12 @@ void syscall_exit_event_probe(void *__data, struct pt_regs *regs, long ret)
 	size_t table_len;
 	long id;
 
+#ifdef CONFIG_X86_X32_ABI
+	if (in_x32_syscall()) {
+		/* x32 system calls are not supported. */
+		return;
+	}
+#endif
 	id = syscall_get_nr(current, regs);
 
 	if (unlikely(in_compat_syscall())) {
