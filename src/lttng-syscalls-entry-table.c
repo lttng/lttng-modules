@@ -25,7 +25,7 @@
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
 #define TP_MODULE_NOINIT
-#define TRACE_INCLUDE_PATH instrumentation/syscalls/headers
+#define TRACE_INCLUDE_PATH instrumentation/syscalls
 
 #define PARAMS(args...)	args
 
@@ -64,12 +64,12 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM syscall_entry_integers
 #define TRACE_INCLUDE_FILE syscalls_integers
-#include <instrumentation/syscalls/headers/syscalls_integers.h>
+#include <instrumentation/syscalls/syscalls_integers.h>
 #undef TRACE_INCLUDE_FILE
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM syscall_entry_pointers
 #define TRACE_INCLUDE_FILE syscalls_pointers
-#include <instrumentation/syscalls/headers/syscalls_pointers.h>
+#include <instrumentation/syscalls/syscalls_pointers.h>
 #undef TRACE_INCLUDE_FILE
 #undef TRACE_SYSTEM
 #undef SC_LTTNG_TRACEPOINT_ENUM
@@ -97,8 +97,8 @@
 
 /* Event syscall enter tracing table */
 static const struct trace_syscall_entry _sc_table[] = {
-#include <instrumentation/syscalls/headers/syscalls_integers.h>
-#include <instrumentation/syscalls/headers/syscalls_pointers.h>
+#include <instrumentation/syscalls/syscalls_integers.h>
+#include <instrumentation/syscalls/syscalls_pointers.h>
 };
 
 const struct trace_syscall_table sc_table = {

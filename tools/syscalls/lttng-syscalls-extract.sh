@@ -5,19 +5,22 @@ set -eu
 
 outfile="${1:-}"
 
-if [ "x$outfile" = "x" ]; then
+if [ "$outfile" = "" ]; then
 	echo "Specify an output file as first argument, it will be overwritten."
 	exit 1
 fi
 
-cd lttng-syscalls-extractor || exit 1
-make
-cd - || exit 1
-
 # Generate a random string to use as an identifier
 ident=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 8 | head -n1)
 
-sudo insmod ./lttng-syscalls-extractor/lttng-syscalls-extractor.ko ident="$ident" || true
+cd ../.. || exit 1
+make syscalls_extractor
+
+sudo insmod ./src/lttng-wrapper.ko
+sudo insmod ./src/lttng-syscalls-extractor.ko ident="$ident" || true
+sudo rmmod lttng-wrapper
+
+cd - || exit 1
 
 sudo dmesg | sed -n -e 's/\(\[.*\] \)\?'"$ident"'//p' > "$outfile"
 

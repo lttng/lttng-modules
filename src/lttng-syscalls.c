@@ -85,14 +85,14 @@ void syscall_exit_event_probe(void *__data, struct pt_regs *regs, long ret);
 #define LTTNG_PACKAGE_BUILD
 #define CREATE_TRACE_POINTS
 #define TP_MODULE_NOINIT
-#define TRACE_INCLUDE_PATH instrumentation/syscalls/headers
+#define TRACE_INCLUDE_PATH instrumentation/syscalls
 
 #define PARAMS(args...)	args
 
 /* Handle unknown syscalls */
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM syscalls_unknown
-#include <instrumentation/syscalls/headers/syscalls_unknown.h>
+#include <instrumentation/syscalls/syscalls_unknown.h>
 #undef TRACE_SYSTEM
 
 #undef TP_PROBE_CB

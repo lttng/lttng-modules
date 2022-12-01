@@ -15,31 +15,38 @@ VERSIONDIR=$2
 INPUTFILE=$3
 ARCH_NAME=$4
 BITNESS=$5
-INPUT=${VERSIONDIR}/${INPUTFILE}
-HEADER=headers/${INPUTFILE}_${CLASS}.h
+OUTPUTDIR=$6
 
-if [ x"$VERSIONDIR" = x"" ]; then
+if [ "$VERSIONDIR" = "" ]; then
 	echo "Error: Please specify input directory as second argument" >&2
 	exit 1
 fi
 
-if [ x"$INPUTFILE" = x"" ]; then
+if [ "$INPUTFILE" = "" ]; then
 	echo "Error: Please specify input file as third argument" >&2
 	exit 1
 fi
 
-if [ x"$BITNESS" != x"32" ] && [ x"$BITNESS" != x"64" ]; then
+if [ "$BITNESS" != "32" ] && [ "$BITNESS" != "64" ]; then
 	echo "Error: Please specify bitness as fourth argument (\"32\" or \"64\")" >&2
 	exit 1
 fi
 
-if [ x"$ARCH_NAME" = x"" ]; then
+if [ "$ARCH_NAME" = "" ]; then
 	echo "Error: Please specify the architecture name as fourth argument" >&2
+	exit 1
+fi
+
+if [ "$OUTPUTDIR" = "" ]; then
+	echo "Error: Please specify output directory as fifth argument" >&2
 	exit 1
 fi
 
 # Abort on error and undefined variable
 set -eu
+
+INPUT=${VERSIONDIR}/${INPUTFILE}
+HEADER="${OUTPUTDIR}/${INPUTFILE}_${CLASS}.h"
 
 # Create temp files
 SRCFILE=$(mktemp)
@@ -77,6 +84,7 @@ fi
 
 
 echo "/* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only) */
+/* SPDX-FileCopyrightText: $(date +%Y) EfficiOS Inc. */
 
 /* THIS FILE IS AUTO-GENERATED. DO NOT EDIT */
 
