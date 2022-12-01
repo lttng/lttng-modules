@@ -27,6 +27,7 @@
 #include <wrapper/rcu.h>
 #include <wrapper/syscall.h>
 #include <lttng-events.h>
+#include <lttng-kernel-version.h>
 
 #ifndef CONFIG_COMPAT
 # ifndef is_compat_task
@@ -36,7 +37,14 @@
 
 /* in_compat_syscall appears in kernel 4.6. */
 #ifndef in_compat_syscall
- #define in_compat_syscall()	is_compat_task()
+# define in_compat_syscall()	is_compat_task()
+#endif
+
+/* in_x32_syscall appears in kernel 4.7. */
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(4,7,0))
+# ifdef CONFIG_X86_X32_ABI
+#  define in_x32_syscall()     is_x32_task()
+# endif
 #endif
 
 enum sc_type {
