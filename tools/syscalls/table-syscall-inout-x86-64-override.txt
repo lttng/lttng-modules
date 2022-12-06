@@ -1,0 +1,2 @@
+# "Regular" clone
+syscall clone nbargs 5 rw: (r, r, w, w, r)

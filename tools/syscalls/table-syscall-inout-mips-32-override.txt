@@ -1,0 +1,4 @@
+# OLD_SIGSUSPEND: 1 arg variant
+syscall sigsuspend nbargs 1 rw: (r)
+# CLONE_BACKWARDS: tls passed as the 4th argument of clone(2), not the 5th one.
+syscall clone nbargs 5 rw: (r, r, w, r, w)
