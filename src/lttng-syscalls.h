@@ -21,6 +21,16 @@
 #include <lttng/events.h>
 #include <lttng/kernel-version.h>
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,13,0))
+#include <linux/landlock.h>
+#else
+struct landlock_ruleset_attr;
+
+enum landlock_rule_type {
+	LANDLOCK_RULE_PATH_BENEATH = 1,
+};
+#endif
+
 /*
  * Forward declarations allowing LTTng to build its system call instrumentation
  * against old kernels which do not declare the more recent system call
