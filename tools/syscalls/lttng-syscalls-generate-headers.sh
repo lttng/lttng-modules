@@ -6,16 +6,17 @@
 #
 # example usage:
 #
-# lttng-syscalls-generate-headers.sh <type> <input_dir> <input_filename_in_dir> <arch_name> <bitness>
-# lttng-syscalls-generate-headers.sh integers 3.0.4 x86-64-syscalls x86-64 64
-# lttng-syscalls-generate-headers.sh pointers 3.0.4 x86-64-syscalls x86-64 64
+# lttng-syscalls-generate-headers.sh <type> <input_dir> <arch_name> <bitness> <output_dir>
+# lttng-syscalls-generate-headers.sh integers 3.0.4 x86 64 ../../include/instrumentation/syscalls/
+# lttng-syscalls-generate-headers.sh pointers 3.0.4 x86 64 ../../include/instrumentation/syscalls/
 
 CLASS=$1
 VERSIONDIR=$2
-INPUTFILE=$3
-ARCH_NAME=$4
-BITNESS=$5
-OUTPUTDIR=$6
+ARCH=$3
+BITNESS=$4
+OUTPUTDIR=$5
+ARCH_NAME="$ARCH-$BITNESS"
+INPUTFILE="$ARCH_NAME-syscalls"
 
 if [ "$VERSIONDIR" = "" ]; then
 	echo "Error: Please specify input directory as second argument" >&2
@@ -148,7 +149,7 @@ fi
 NRARGS=1
 grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " "${SRCFILE}" | while read -r LINE; do
 	SC_NAME=$(echo "${LINE}" | perl -p -e 's/^syscall ([^ ]*) .*/$1/g')
-	ARG1=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 1)
+	ARG1=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 1)
 
 	echo Syscall: "${SC_NAME}" "${ARG1}"
 
@@ -171,8 +172,8 @@ done
 NRARGS=2
 grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " "${SRCFILE}" | while read -r LINE; do
 	SC_NAME=$(echo "${LINE}" | perl -p -e 's/^syscall ([^ ]*) .*/$1/g')
-	ARG1=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 1)
-	ARG2=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 2)
+	ARG1=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 1)
+	ARG2=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 2)
 
 	echo Syscall: "${SC_NAME}" "${ARG1}" "${ARG2}"
 
@@ -195,9 +196,9 @@ done
 NRARGS=3
 grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " "${SRCFILE}" | while read -r LINE; do
 	SC_NAME=$(echo "${LINE}" | perl -p -e 's/^syscall ([^ ]*) .*/$1/g')
-	ARG1=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 1)
-	ARG2=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 2)
-	ARG3=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 3)
+	ARG1=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 1)
+	ARG2=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 2)
+	ARG3=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 3)
 
 	echo Syscall: "${SC_NAME}" "${ARG1}" "${ARG2}" "${ARG3}"
 
@@ -221,10 +222,10 @@ done
 NRARGS=4
 grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " "${SRCFILE}" | while read -r LINE; do
 	SC_NAME=$(echo "${LINE}" | perl -p -e 's/^syscall ([^ ]*) .*/$1/g')
-	ARG1=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 1)
-	ARG2=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 2)
-	ARG3=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 3)
-	ARG4=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 4)
+	ARG1=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 1)
+	ARG2=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 2)
+	ARG3=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 3)
+	ARG4=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 4)
 
 	echo Syscall: "${SC_NAME}" "${ARG1}" "${ARG2}" "${ARG3}" "${ARG4}"
 
@@ -247,11 +248,11 @@ done
 NRARGS=5
 grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " "${SRCFILE}" | while read -r LINE; do
 	SC_NAME=$(echo "${LINE}" | perl -p -e 's/^syscall ([^ ]*) .*/$1/g')
-	ARG1=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 1)
-	ARG2=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 2)
-	ARG3=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 3)
-	ARG4=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 4)
-	ARG5=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 5)
+	ARG1=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 1)
+	ARG2=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 2)
+	ARG3=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 3)
+	ARG4=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 4)
+	ARG5=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 5)
 
 	echo Syscall: "${SC_NAME}" "${ARG1}" "${ARG2}" "${ARG3}" "${ARG4}" "${ARG5}"
 
@@ -275,12 +276,12 @@ done
 NRARGS=6
 grep "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " "${SRCFILE}" | while read -r LINE; do
 	SC_NAME=$(echo "${LINE}" | perl -p -e 's/^syscall ([^ ]*) .*/$1/g')
-	ARG1=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 1)
-	ARG2=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 2)
-	ARG3=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 3)
-	ARG4=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 4)
-	ARG5=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 5)
-	ARG6=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" 6)
+	ARG1=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 1)
+	ARG2=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 2)
+	ARG3=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 3)
+	ARG4=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 4)
+	ARG5=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 5)
+	ARG6=$(./lttng-get-syscall-inout.sh "${ARCH_NAME}" "${SC_NAME}" "$NRARGS" 6)
 
 	echo Syscall: "${SC_NAME}" "${ARG1}" "${ARG2}" "${ARG3}" "${ARG4}" "${ARG5}" "${ARG6}"
 

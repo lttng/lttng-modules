@@ -6,7 +6,8 @@
 
 ARCH_NAME=$1
 SYSCALL_NAME=$2
-ARG_NR=$3
+NB_ARGS=$3
+ARG_NR=$4
 TMPFILE=$(mktemp)
 GENERIC_INOUT_DESCRIPTION_FILE="$(dirname "$0")/table-syscall-inout.txt"
 
@@ -37,7 +38,8 @@ function write_inout_description ()
 {
 	local arch_name=$1
 	local syscall_name=$2
-	local output_file=$3
+	local nb_args=$3
+	local output_file=$4
 	local description_files=("$(dirname "$0")/table-syscall-inout-${arch_name}-override.txt" "$GENERIC_INOUT_DESCRIPTION_FILE")
 	local match_count
 
@@ -56,6 +58,10 @@ function write_inout_description ()
 			echo "Error: more than one system call match for ${SYSCALL_NAME}" >&2
 			exit 1
 		elif [ "${match_count}" -eq 1 ]; then
+			if ! grep -q "^syscall ${syscall_name} nbargs ${nb_args}" "${output_file}"; then
+				echo "Error: number of arguments doesn't match for ${SYSCALL_NAME}" >&2
+				exit 1
+			fi
 			# Description found
 			return 0
 		fi
@@ -69,7 +75,7 @@ set -eu
 
 
 # Default to sc_inout for unknown syscalls
-if ! write_inout_description "$ARCH_NAME" "$SYSCALL_NAME" "$TMPFILE"; then
+if ! write_inout_description "$ARCH_NAME" "$SYSCALL_NAME" "$NB_ARGS" "$TMPFILE"; then
 	echo "Warning: no match for syscall '${SYSCALL_NAME}', set to 'inout'" >&2
 	# no match, default to inout
 	echo "sc_inout"
