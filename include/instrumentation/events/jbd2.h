@@ -27,6 +27,23 @@ LTTNG_TRACEPOINT_EVENT(jbd2_checkpoint,
 	)
 )
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,2,0) \
+	|| LTTNG_KERNEL_RANGE(5,15,87, 5,16,0) \
+	|| LTTNG_KERNEL_RANGE(6,0,18, 6,1,0) \
+	|| LTTNG_KERNEL_RANGE(6,1,4, 6,2,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(jbd2_commit,
+
+	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
+
+	TP_ARGS(journal, commit_transaction),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
+		ctf_integer(char, sync_commit, commit_transaction->t_synchronous_commit)
+		ctf_integer(tid_t, transaction, commit_transaction->t_tid)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT_CLASS(jbd2_commit,
 
 	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
@@ -39,6 +56,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(jbd2_commit,
 		ctf_integer(int, transaction, commit_transaction->t_tid)
 	)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(jbd2_commit, jbd2_start_commit,
 
@@ -77,6 +95,23 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(jbd2_commit, jbd2_drop_transaction,
 )
 #endif
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,2,0) \
+	|| LTTNG_KERNEL_RANGE(5,15,87, 5,16,0) \
+	|| LTTNG_KERNEL_RANGE(6,0,18, 6,1,0) \
+	|| LTTNG_KERNEL_RANGE(6,1,4, 6,2,0))
+LTTNG_TRACEPOINT_EVENT(jbd2_end_commit,
+	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
+
+	TP_ARGS(journal, commit_transaction),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, journal->j_fs_dev->bd_dev)
+		ctf_integer(char, sync_commit, commit_transaction->t_synchronous_commit)
+		ctf_integer(tid_t, transaction, commit_transaction->t_tid)
+		ctf_integer(tid_t, head, journal->j_tail_sequence)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT(jbd2_end_commit,
 	TP_PROTO(journal_t *journal, transaction_t *commit_transaction),
 
@@ -89,6 +124,7 @@ LTTNG_TRACEPOINT_EVENT(jbd2_end_commit,
 		ctf_integer(int, head, journal->j_tail_sequence)
 	)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT(jbd2_submit_inode_data,
 	TP_PROTO(struct inode *inode),
@@ -101,6 +137,46 @@ LTTNG_TRACEPOINT_EVENT(jbd2_submit_inode_data,
 	)
 )
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,2,0) \
+	|| LTTNG_KERNEL_RANGE(5,15,87, 5,16,0) \
+	|| LTTNG_KERNEL_RANGE(6,0,18, 6,1,0) \
+	|| LTTNG_KERNEL_RANGE(6,1,4, 6,2,0))
+LTTNG_TRACEPOINT_EVENT(jbd2_run_stats,
+	TP_PROTO(dev_t dev, tid_t tid,
+		 struct transaction_run_stats_s *stats),
+
+	TP_ARGS(dev, tid, stats),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, dev)
+		ctf_integer(tid_t, tid, tid)
+		ctf_integer(unsigned long, wait, stats->rs_wait)
+		ctf_integer(unsigned long, running, stats->rs_running)
+		ctf_integer(unsigned long, locked, stats->rs_locked)
+		ctf_integer(unsigned long, flushing, stats->rs_flushing)
+		ctf_integer(unsigned long, logging, stats->rs_logging)
+		ctf_integer(__u32, handle_count, stats->rs_handle_count)
+		ctf_integer(__u32, blocks, stats->rs_blocks)
+		ctf_integer(__u32, blocks_logged, stats->rs_blocks_logged)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT(jbd2_checkpoint_stats,
+	TP_PROTO(dev_t dev, tid_t tid,
+		 struct transaction_chp_stats_s *stats),
+
+	TP_ARGS(dev, tid, stats),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, dev)
+		ctf_integer(tid_t, tid, tid)
+		ctf_integer(unsigned long, chp_time, stats->cs_chp_time)
+		ctf_integer(__u32, forced_to_close, stats->cs_forced_to_close)
+		ctf_integer(__u32, written, stats->cs_written)
+		ctf_integer(__u32, dropped, stats->cs_dropped)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT(jbd2_run_stats,
 	TP_PROTO(dev_t dev, unsigned long tid,
 		 struct transaction_run_stats_s *stats),
@@ -136,6 +212,7 @@ LTTNG_TRACEPOINT_EVENT(jbd2_checkpoint_stats,
 		ctf_integer(__u32, dropped, stats->cs_dropped)
 	)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT(jbd2_update_log_tail,
 	TP_PROTO(journal_t *journal, tid_t first_tid,
