@@ -1,3 +1,11 @@
+2023-01-13 (National Sticker Day) LTTng modules 2.12.12
+	* fix: jbd2: use the correct print format
+	* Fix: in_x32_syscall was introduced in v4.7.0
+	* Explicitly skip tracing x32 system calls
+	* fix: kallsyms wrapper on ppc64el
+	* fix: Adjust ranges for RHEL 8.6 kernels
+	* fix: kvm-x86 requires CONFIG_KALLSYMS_ALL
+
 2022-09-30 (National Day for Truth and Reconciliation) LTTng modules 2.12.11
 	* Fix: bytecode validator: reject specialized load field/context ref instructions
 	* Fix: bytecode validator: reject specialized load instructions
