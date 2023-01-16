@@ -9,6 +9,10 @@
 #include <linux/writeback.h>
 #include <lttng/kernel-version.h>
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,2,0))
+#include <../fs/btrfs/accessors.h>
+#endif
+
 #ifndef _TRACE_BTRFS_DEF_
 #define _TRACE_BTRFS_DEF_
 struct btrfs_root;
