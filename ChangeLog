@@ -1,3 +1,9 @@
+2023-03-03 (Canadian Bacon Day) LTTng modules 2.13.9
+	* fix: jbd2: use the correct print format (v5.4.229)
+	* fix: jbd2 upper bound for v5.10.163
+	* fix: jbd2: use the correct print format (v5.10.163)
+	* fix: btrfs: move accessor helpers into accessors.h (v6.2)
+
 2023-01-13 (National Sticker Day) LTTng modules 2.13.8
 	* fix: jbd2: use the correct print format
 	* Fix: in_x32_syscall was introduced in v4.7.0
