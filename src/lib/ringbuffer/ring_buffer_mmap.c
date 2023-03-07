@@ -17,6 +17,8 @@
 #include <ringbuffer/frontend.h>
 #include <ringbuffer/vfs.h>
 
+#include <wrapper/mm.h>
+
 /*
  * fault() vm_op implementation for ring buffer file mapping.
  */
@@ -113,7 +115,7 @@ static int lib_ring_buffer_mmap_buf(struct lttng_kernel_ring_buffer *buf,
 		return -EINVAL;
 
 	vma->vm_ops = &lib_ring_buffer_mmap_ops;
-	vma->vm_flags |= VM_DONTEXPAND;
+	wrapper_vm_flags_set(vma, VM_DONTEXPAND);
 	vma->vm_private_data = buf;
 
 	return 0;
