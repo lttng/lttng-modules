@@ -13,6 +13,22 @@
 
 #include <lttng/kernel-version.h>
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,3,0))
+static inline
+void wrapper_vm_flags_set(struct vm_area_struct *vma,
+		vm_flags_t flags)
+{
+	vm_flags_set(vma, flags);
+}
+#else
+static inline
+void wrapper_vm_flags_set(struct vm_area_struct *vma,
+		vm_flags_t flags)
+{
+	vma->vm_flags |= flags;
+}
+#endif
+
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,6,0) \
 		|| LTTNG_UBUNTU_KERNEL_RANGE(4,4,25,44, 4,5,0,0))
 
