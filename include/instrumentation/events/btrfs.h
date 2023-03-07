@@ -13,6 +13,10 @@
 #include <../fs/btrfs/accessors.h>
 #endif
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,3,0))
+#include <../fs/btrfs/extent-tree.h>
+#endif
+
 #ifndef _TRACE_BTRFS_DEF_
 #define _TRACE_BTRFS_DEF_
 struct btrfs_root;
@@ -1859,7 +1863,26 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__reserved_extent,  btrfs_reserved_extent_f
 
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,3,0))
+LTTNG_TRACEPOINT_EVENT_MAP(find_free_extent,
+
+	btrfs_find_free_extent,
+
+	TP_PROTO(const struct btrfs_root *root,
+		const struct find_free_extent_ctl *ffe_ctl),
+
+	TP_ARGS(root, ffe_ctl),
+
+	TP_FIELDS(
+		ctf_array(u8, fsid, root->lttng_fs_info_fsid, BTRFS_UUID_SIZE)
+		ctf_integer(u64, root_objectid, root->root_key.objectid)
+		ctf_integer(u64, num_bytes, ffe_ctl->num_bytes)
+		ctf_integer(u64, empty_size, ffe_ctl->empty_size)
+		ctf_integer(u64, flags, ffe_ctl->flags)
+	)
+)
+
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0) || \
 	LTTNG_KERNEL_RANGE(5,9,5, 5,10,0) || \
 	LTTNG_KERNEL_RANGE(5,4,78, 5,5,0) || \
 	LTTNG_UBUNTU_KERNEL_RANGE(5,8,18,44, 5,9,0,0))
@@ -1998,7 +2021,40 @@ LTTNG_TRACEPOINT_EVENT_MAP(find_free_extent,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,5,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,3,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__reserve_extent,
+
+	TP_PROTO(const struct btrfs_block_group *block_group,
+		const struct find_free_extent_ctl *ffe_ctl),
+
+	TP_ARGS(block_group, ffe_ctl),
+
+	TP_FIELDS(
+		ctf_array(u8, fsid, block_group->lttng_fs_info_fsid, BTRFS_UUID_SIZE)
+		ctf_integer(u64, bg_objectid, block_group->start)
+		ctf_integer(u64, flags, block_group->flags)
+		ctf_integer(u64, start, ffe_ctl->search_start)
+		ctf_integer(u64, len, ffe_ctl->num_bytes)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__reserve_extent, btrfs_reserve_extent,
+
+	TP_PROTO(const struct btrfs_block_group *block_group,
+		const struct find_free_extent_ctl *ffe_ctl),
+
+	TP_ARGS(block_group, ffe_ctl)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__reserve_extent, btrfs_reserve_extent_cluster,
+
+	TP_PROTO(const struct btrfs_block_group *block_group,
+		const struct find_free_extent_ctl *ffe_ctl),
+
+	TP_ARGS(block_group, ffe_ctl)
+)
+
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,5,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__reserve_extent,
 
 	TP_PROTO(const struct btrfs_block_group *block_group, u64 start,
