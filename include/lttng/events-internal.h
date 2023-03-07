@@ -9,6 +9,7 @@
 #define _LTTNG_EVENTS_INTERNAL_H
 
 #include <wrapper/compiler_attributes.h>
+#include <wrapper/uuid.h>
 
 #include <lttng/events.h>
 
@@ -289,7 +290,7 @@ struct lttng_metadata_cache {
 	atomic_t producing;		/* Metadata being produced (incomplete) */
 	struct kref refcount;		/* Metadata cache usage */
 	struct list_head metadata_stream;	/* Metadata stream list */
-	uuid_le uuid;			/* Trace session unique ID (copy) */
+	guid_t uuid;			/* Trace session unique ID (copy) */
 	struct mutex lock;		/* Produce/consume lock */
 	uint64_t version;		/* Current version of the metadata */
 };
@@ -463,7 +464,7 @@ struct lttng_kernel_session_private {
 	struct list_head events;		/* Event list head */
 	struct list_head list;			/* Session list */
 	unsigned int free_chan_id;		/* Next chan ID to allocate */
-	uuid_le uuid;				/* Trace session unique ID */
+	guid_t uuid;				/* Trace session unique ID */
 	struct lttng_metadata_cache *metadata_cache;
 	unsigned int metadata_dumped:1,
 		tstate:1;			/* Transient enable state */
