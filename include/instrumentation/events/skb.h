@@ -61,6 +61,21 @@ LTTNG_TRACEPOINT_EVENT_MAP(kfree_skb,
 )
 #endif
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,3,0))
+LTTNG_TRACEPOINT_EVENT_MAP(consume_skb,
+
+	skb_consume,
+
+	TP_PROTO(struct sk_buff *skb, void *location),
+
+	TP_ARGS(skb, location),
+
+	TP_FIELDS(
+		ctf_integer_hex(void *, skbaddr, skb)
+		ctf_integer_hex(void *, location, location)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT_MAP(consume_skb,
 
 	skb_consume,
@@ -73,6 +88,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(consume_skb,
 		ctf_integer_hex(void *, skbaddr, skb)
 	)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT(skb_copy_datagram_iovec,
 
