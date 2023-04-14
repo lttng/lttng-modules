@@ -49,7 +49,8 @@
 #include <ringbuffer/frontend.h>
 #include <wrapper/time.h>
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,16,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,16,0) \
+	|| LTTNG_RHEL_KERNEL_RANGE(5,14,0,162,0,0, 5,15,0,0,0,0))
 #include <linux/stdarg.h>
 #else
 #include <stdarg.h>

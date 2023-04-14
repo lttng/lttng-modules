@@ -66,7 +66,8 @@ LTTNG_TRACEPOINT_ENUM(block_rq_type,
 #define lttng_bio_op(bio)	bio_op(bio)
 #define lttng_bio_rw(bio)	((bio)->bi_opf)
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0) \
+	|| LTTNG_RHEL_KERNEL_RANGE(5,14,0,162,0,0, 5,15,0,0,0,0))
 #ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 #define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
 		ctf_enum(block_rq_type, type, rwbs,					      \
@@ -342,7 +343,8 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_abort,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0) \
+	|| LTTNG_RHEL_KERNEL_RANGE(5,14,0,162,0,0, 5,15,0,0,0,0))
 /**
  * block_rq_requeue - place block IO request back on a queue
  * @rq: block IO operation request
@@ -438,7 +440,8 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_requeue,
  * do for the request. If @rq->bio is non-NULL then there is
  * additional work required to complete the request.
  */
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0) \
+	|| LTTNG_RHEL_KERNEL_RANGE(5,14,0,162,0,0, 5,15,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT(block_rq_complete,
 
 	TP_PROTO(struct request *rq, blk_status_t error, unsigned int nr_bytes),
@@ -595,7 +598,8 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(block_rq_with_error, block_rq_complete,
 
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,15,0)) */
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0) \
+	|| LTTNG_RHEL_KERNEL_RANGE(5,14,0,162,0,0, 5,15,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(block_rq,
 
 	TP_PROTO(struct request *rq),
@@ -1615,7 +1619,8 @@ LTTNG_TRACEPOINT_EVENT(block_bio_remap,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0) \
+	|| LTTNG_RHEL_KERNEL_RANGE(5,14,0,162,0,0, 5,15,0,0,0,0))
 /**
  * block_rq_remap - map request for a block operation request
  * @rq: block IO operation request
