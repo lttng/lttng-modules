@@ -1,3 +1,13 @@
+2023-06-07 (National VCR Day) 2.12.14
+	* Add support for RHEL 9.1
+	* fix: sched/tracing: Append prev_state to tp args instead (v5.18)
+	* fix: sched/tracing: Don't re-read p->state when emitting sched_switch event (v5.18)
+	* fix: scsi: core: Remove <scsi/scsi_request.h> (v5.18)
+	* fix: scsi: block: Remove REQ_OP_WRITE_SAME support (v5.18)
+	* fix: block: remove genhd.h (v5.18)
+	* Add support for RHEL 9.0
+	* fix: kallsyms wrapper on CONFIG_PPC64_ELF_ABI_V1
+
 2023-03-03 (Canadian Bacon Day) 2.12.13
 	* fix: jbd2: use the correct print format (v5.4.229)
 	* fix: jbd2 upper bound for v5.10.163
