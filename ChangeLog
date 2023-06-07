@@ -1,3 +1,12 @@
+2023-06-07 (National VCR Day) LTTng modules 2.13.10
+	* Add support for RHEL 9.1
+	* Add support for RHEL 9.0
+	* fix: kallsyms wrapper on CONFIG_PPC64_ELF_ABI_V1
+	* fix: net: add location to trace_consume_skb() (v6.3)
+	* fix: btrfs: pass find_free_extent_ctl to allocator tracepoints (v6.3)
+	* fix: uuid: Decouple guid_t and uuid_le types and respective macros (v6.3)
+	* fix: mm: introduce vma->vm_flags wrapper functions (v6.3)
+
 2023-03-03 (Canadian Bacon Day) LTTng modules 2.13.9
 	* fix: jbd2: use the correct print format (v5.4.229)
 	* fix: jbd2 upper bound for v5.10.163
