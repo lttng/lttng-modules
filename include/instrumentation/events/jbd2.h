@@ -146,7 +146,9 @@ LTTNG_TRACEPOINT_EVENT(jbd2_submit_inode_data,
 	|| LTTNG_KERNEL_RANGE(5,10,163, 5,11,0) \
 	|| LTTNG_KERNEL_RANGE(5,15,87, 5,16,0) \
 	|| LTTNG_KERNEL_RANGE(6,0,18, 6,1,0) \
-	|| LTTNG_KERNEL_RANGE(6,1,4, 6,2,0))
+	|| LTTNG_KERNEL_RANGE(6,1,4, 6,2,0) \
+	|| LTTNG_UBUNTU_KERNEL_RANGE(5,19,17,42, 5,19,18,0) \
+	|| LTTNG_UBUNTU_KERNEL_RANGE(5,19,7,1024, 5,19,8,0))
 LTTNG_TRACEPOINT_EVENT(jbd2_run_stats,
 	TP_PROTO(dev_t dev, tid_t tid,
 		 struct transaction_run_stats_s *stats),
