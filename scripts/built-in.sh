@@ -14,9 +14,19 @@ KERNEL_DIR="$(readlink --canonicalize-existing "$1")"
 # Symlink the lttng-modules directory in the kernel source
 ln -sf "$(pwd)" "${KERNEL_DIR}/lttng"
 
+# Get kernel version from Makefile
+version=$(grep -m 1 VERSION ${KERNEL_DIR}/Makefile | sed 's/^.*= //g')
+patchlevel=$(grep -m 1 PATCHLEVEL ${KERNEL_DIR}/Makefile | sed 's/^.*= //g')
+kernel_version=${version}.${patchlevel}
+
 # Graft ourself to the kernel build system
 echo 'source "lttng/src/Kconfig"' >> "${KERNEL_DIR}/Kconfig"
-sed -i 's#+= kernel/#+= kernel/ lttng/#' "${KERNEL_DIR}/Makefile"
+
+if awk "BEGIN {exit !(${kernel_version} >= 6.1)}"; then
+	echo 'obj-y += lttng/' >> "${KERNEL_DIR}/Kbuild"
+else
+	sed -i 's#+= kernel/#+= kernel/ lttng/#' "${KERNEL_DIR}/Makefile"
+fi
 
 echo >&2
 echo "    $0: done." >&2
