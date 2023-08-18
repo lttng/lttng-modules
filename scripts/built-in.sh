@@ -16,7 +16,13 @@ ln -sf "$(pwd)" "${KERNEL_DIR}/lttng"
 
 # Graft ourself to the kernel build system
 echo 'source "lttng/src/Kconfig"' >> "${KERNEL_DIR}/Kconfig"
-sed -i 's#+= kernel/#+= kernel/ lttng/#' "${KERNEL_DIR}/Makefile"
+
+# In kernel v6.1, subdirectories were moved to Kbuild
+if grep -qE '^obj-y[[:space:]]+\+= kernel/' "${KERNEL_DIR}/Kbuild"; then
+	echo 'obj-y += lttng/' >> "${KERNEL_DIR}/Kbuild"
+else
+	sed -i 's#+= kernel/#+= kernel/ lttng/#' "${KERNEL_DIR}/Makefile"
+fi
 
 echo >&2
 echo "    $0: done." >&2
