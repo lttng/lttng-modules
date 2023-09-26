@@ -67,7 +67,8 @@ ifneq ($(CONFIG_KVM),)
           ifeq ($(kvm_dep_emulate_check),ok)
             CFLAGS_lttng-probe-kvm-x86.o += -I$(srctree)/virt/kvm \
                        -I$(srctree)/arch/x86/kvm
-            CFLAGS_lttng-probe-kvm-x86-mmu.o += -I$(srctree)/virt/kvm
+            CFLAGS_lttng-probe-kvm-x86-mmu.o += -I$(srctree)/virt/kvm \
+                       -I$(srctree)/arch/x86/kvm
             obj-$(CONFIG_LTTNG) += lttng-probe-kvm-x86.o
             obj-$(CONFIG_LTTNG) += lttng-probe-kvm-x86-mmu.o
           else # ($(kvm_dep_emulate_check),ok)
