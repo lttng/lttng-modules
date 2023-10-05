@@ -238,7 +238,7 @@ struct lttng_kernel_filter_bytecode {
 	uint32_t len;
 	uint32_t reloc_offset;
 	uint64_t seqnum;
-	char data[0];
+	char data[];
 } __attribute__((packed));
 
 enum lttng_kernel_tracker_type {

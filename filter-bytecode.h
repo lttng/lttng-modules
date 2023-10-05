@@ -40,10 +40,6 @@ struct literal_double {
 	double v;
 } __attribute__((packed));
 
-struct literal_string {
-	char string[0];
-} __attribute__((packed));
-
 enum filter_op {
 	FILTER_OP_UNKNOWN			= 0,
 
@@ -196,7 +192,7 @@ typedef uint8_t filter_opcode_t;
 
 struct load_op {
 	filter_opcode_t op;
-	char data[0];
+	char data[];
 	/* data to load. Size known by enum filter_opcode and null-term char. */
 } __attribute__((packed));
 

@@ -42,7 +42,7 @@ struct bytecode_runtime {
 	size_t data_alloc_len;
 	char *data;
 	uint16_t len;
-	char code[0];
+	char code[];
 };
 
 enum entry_type {
