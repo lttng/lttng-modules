@@ -325,7 +325,7 @@ struct lttng_kernel_abi_filter_bytecode {
 	uint32_t len;
 	uint32_t reloc_offset;
 	uint64_t seqnum;
-	char data[0];
+	char data[];
 } __attribute__((packed));
 
 #define LTTNG_KERNEL_ABI_CAPTURE_BYTECODE_MAX_LEN		65536
@@ -333,7 +333,7 @@ struct lttng_kernel_abi_capture_bytecode {
 	uint32_t len;
 	uint32_t reloc_offset;
 	uint64_t seqnum;
-	char data[0];
+	char data[];
 } __attribute__((packed));
 
 enum lttng_kernel_abi_tracker_type {
