@@ -253,6 +253,23 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_interrupt,
 
 #define LTTNG_HAVE_STATEDUMP_CPU_TOPOLOGY
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,7,0))
+LTTNG_TRACEPOINT_EVENT(lttng_statedump_cpu_topology,
+	TP_PROTO(struct lttng_kernel_session *session, struct cpuinfo_x86 *c),
+	TP_ARGS(session, c),
+	TP_FIELDS(
+		ctf_string(architecture, "x86")
+		ctf_integer(uint16_t, cpu_id, c->cpu_index)
+		ctf_string(vendor, c->x86_vendor_id[0] ? c->x86_vendor_id : "unknown")
+		ctf_integer(uint8_t, family, c->x86)
+		ctf_integer(uint8_t, model, c->x86_model)
+		ctf_string(model_name, c->x86_model_id[0] ? c->x86_model_id : "unknown")
+		ctf_integer(uint16_t, physical_id, c->topo.pkg_id)
+		ctf_integer(uint16_t, core_id, c->topo.core_id)
+		ctf_integer(uint16_t, cores, c->booted_cores)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_cpu_topology,
 	TP_PROTO(struct lttng_kernel_session *session, struct cpuinfo_x86 *c),
 	TP_ARGS(session, c),
@@ -268,6 +285,8 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_cpu_topology,
 		ctf_integer(uint16_t, cores, c->booted_cores)
 	)
 )
+#endif /* LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,7,0) */
+
 #endif /* CONFIG_X86_32 || CONFIG_X86_64 */
 
 #endif /*  LTTNG_TRACE_LTTNG_STATEDUMP_H */
