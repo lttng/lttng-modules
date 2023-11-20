@@ -10,6 +10,7 @@
  */
 
 #include <wrapper/fdtable.h>
+#include <linux/file.h>
 #include <linux/list.h>
 #include <linux/module.h>
 #include <linux/namei.h>
@@ -153,7 +154,7 @@ static struct inode *get_inode_from_fd(int fd)
 	 * Returns the file backing the given fd. Needs to be done inside an RCU
 	 * critical section.
 	 */
-	file = lttng_lookup_fd_rcu(fd);
+	file = lttng_lookup_fdget_rcu(fd);
 	if (file == NULL) {
 		printk(KERN_WARNING "LTTng: Cannot access file backing the fd(%d)\n", fd);
 		inode = NULL;
@@ -164,8 +165,11 @@ static struct inode *get_inode_from_fd(int fd)
 	inode = igrab(file->f_path.dentry->d_inode);
 	if (inode == NULL)
 		printk(KERN_WARNING "LTTng: Cannot grab a reference on the inode.\n");
+
 error:
 	rcu_read_unlock();
+	if (file)
+		fput(file);
 	return inode;
 }
 

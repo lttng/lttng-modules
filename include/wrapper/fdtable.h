@@ -12,17 +12,32 @@
 #include <linux/fdtable.h>
 #include <linux/sched.h>
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,7,0))
 static inline
-struct file *lttng_lookup_fd_rcu(unsigned int fd)
+struct file *lttng_lookup_fdget_rcu(unsigned int fd)
 {
-	return lookup_fd_rcu(fd);
+	return lookup_fdget_rcu(fd);
+}
+
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
+static inline
+struct file *lttng_lookup_fdget_rcu(unsigned int fd)
+{
+	struct file* file = lookup_fd_rcu(fd);
+
+	if (unlikely(!file || !get_file_rcu(file)))
+		return NULL;
+	return file;
 }
 #else
 static inline
-struct file *lttng_lookup_fd_rcu(unsigned int fd)
+struct file *lttng_lookup_fdget_rcu(unsigned int fd)
 {
-	return fcheck(fd);
+	struct file* file = fcheck(fd);
+
+	if (unlikely(!file || !get_file_rcu(file)))
+		return NULL;
+	return file;
 }
 #endif
 
