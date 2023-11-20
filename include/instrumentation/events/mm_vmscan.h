@@ -369,7 +369,33 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_shrink_slab_end,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,7,0))
+LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_isolate,
+
+	TP_PROTO(int classzone_idx,
+		int order,
+		unsigned long nr_requested,
+		unsigned long nr_scanned,
+		unsigned long nr_skipped,
+		unsigned long nr_taken,
+		int lru
+	),
+
+	TP_ARGS(classzone_idx, order, nr_requested, nr_scanned, nr_skipped,
+		nr_taken, lru
+	),
+
+	TP_FIELDS(
+		ctf_integer(int, classzone_idx, classzone_idx)
+		ctf_integer(int, order, order)
+		ctf_integer(unsigned long, nr_requested, nr_requested)
+		ctf_integer(unsigned long, nr_scanned, nr_scanned)
+		ctf_integer(unsigned long, nr_skipped, nr_skipped)
+		ctf_integer(unsigned long, nr_taken, nr_taken)
+		ctf_integer(int, lru, lru)
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,11,0))
 LTTNG_TRACEPOINT_EVENT(mm_vmscan_lru_isolate,
 
 	TP_PROTO(int classzone_idx,
