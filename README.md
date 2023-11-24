@@ -148,3 +148,25 @@ Each PMU counter has its zero value set when it is attached to a context with
 add-context. Therefore, it is normal that the same counters attached to both the
 stream context and event context show different values for a given event; what
 matters is that they increment at the same rate.
+
+
+Contacts
+--------
+
+You can contact the maintainers on the following mailing list:
+`lttng-dev@lists.lttng.org`.
+
+IRC channel: [#lttng](irc://irc.oftc.net/lttng) on the OFTC network
+
+Bug tracker: [LTTng-modules bug tracker](https://bugs.lttng.org/projects/lttng-modules)
+
+Code review: [_lttng-modules_ project](https://review.lttng.org/q/project:lttng-modules) on LTTng Review
+
+Continuous integration: [LTTng-modules](https://ci.lttng.org/view/LTTng-modules/) on LTTng's CI
+
+GitHub mirror: [lttng/lttng-modules](https://github.com/lttng/lttng-modules)
+
+Patches are principally submitted and reviewed on [LTTng Review](https://review.lttng.org),
+but may also be submitted to the [mailing list](mailto:lttng-dev@lists.lttng.org)
+with the subject prefix `PATCH lttng-modules` or by pull request on the
+[GitHub mirror](https://github.com/lttng/lttng-modules).
