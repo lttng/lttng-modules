@@ -29,13 +29,23 @@ struct file *lttng_lookup_fdget_rcu(unsigned int fd)
 		return NULL;
 	return file;
 }
-#else
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,1,0))
 static inline
 struct file *lttng_lookup_fdget_rcu(unsigned int fd)
 {
 	struct file* file = fcheck(fd);
 
 	if (unlikely(!file || !get_file_rcu(file)))
+		return NULL;
+	return file;
+}
+#else
+static inline
+struct file *lttng_lookup_fdget_rcu(unsigned int fd)
+{
+	struct file* file = fcheck(fd);
+
+	if (unlikely(!file || !atomic_long_inc_not_zero(&file->f_count)))
 		return NULL;
 	return file;
 }
