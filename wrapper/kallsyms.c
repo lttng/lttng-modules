@@ -114,6 +114,6 @@ EXPORT_SYMBOL_GPL(wrapper_kallsyms_lookup_name);
 
 #endif
 
-#ifdef CONFIG_ANDROID
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,4,0) && defined(CONFIG_ANDROID))
 MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);
 #endif
