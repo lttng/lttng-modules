@@ -54,11 +54,9 @@ unsigned long kallsyms_lookup_funcptr(const char *name)
 	unsigned long addr;
 
 	addr = wrapper_kallsyms_lookup_name(name);
-#ifdef CONFIG_ARM
-#ifdef CONFIG_THUMB2_KERNEL
+#if defined(CONFIG_ARM) && defined(CONFIG_THUMB2_KERNEL)
 	if (addr)
 		addr |= 1; /* set bit 0 in address for thumb mode */
-#endif
 #endif
 	return addr;
 }
