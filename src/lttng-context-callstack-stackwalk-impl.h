@@ -152,6 +152,7 @@ size_t lttng_callstack_sequence_get_size(void *priv, struct lttng_kernel_probe_c
 	struct field_data *fdata = (struct field_data *) priv;
 	size_t orig_offset = offset;
 	int cpu = smp_processor_id();
+	struct irq_ibt_state irq_ibt_state;
 
 	/* do not write data if no space is available */
 	trace = stack_trace_context(fdata, cpu);
@@ -166,14 +167,18 @@ size_t lttng_callstack_sequence_get_size(void *priv, struct lttng_kernel_probe_c
 	switch (fdata->mode) {
 	case CALLSTACK_KERNEL:
 		/* do the real work and reserve space */
+		irq_ibt_state = wrapper_irq_ibt_save();
 		trace->nr_entries = save_func_kernel(trace->entries,
 						MAX_ENTRIES, 0);
+		wrapper_irq_ibt_restore(irq_ibt_state);
 		break;
 	case CALLSTACK_USER:
 		++per_cpu(callstack_user_nesting, cpu);
 		/* do the real work and reserve space */
+		irq_ibt_state = wrapper_irq_ibt_save();
 		trace->nr_entries = save_func_user(trace->entries,
 						MAX_ENTRIES);
+		wrapper_irq_ibt_restore(irq_ibt_state);
 		per_cpu(callstack_user_nesting, cpu)--;
 		break;
 	default:
