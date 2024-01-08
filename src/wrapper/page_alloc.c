@@ -30,7 +30,13 @@ unsigned long wrapper_get_pfnblock_flags_mask(struct page *page,
 {
 	WARN_ON_ONCE(!get_pfnblock_flags_mask_sym);
 	if (get_pfnblock_flags_mask_sym) {
-		return get_pfnblock_flags_mask_sym(page, pfn, end_bitidx, mask);
+		struct irq_ibt_state irq_ibt_state;
+		unsigned long ret;
+
+		irq_ibt_state = wrapper_irq_ibt_save();
+		ret = get_pfnblock_flags_mask_sym(page, pfn, end_bitidx, mask);
+		wrapper_irq_ibt_restore(irq_ibt_state);
+		return ret;
 	} else {
 		return -ENOSYS;
 	}

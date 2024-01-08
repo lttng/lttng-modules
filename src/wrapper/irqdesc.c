@@ -29,7 +29,13 @@ struct irq_desc *wrapper_irq_to_desc(unsigned int irq)
 	if (!irq_to_desc_sym)
 		irq_to_desc_sym = (void *) kallsyms_lookup_funcptr("irq_to_desc");
 	if (irq_to_desc_sym) {
-		return irq_to_desc_sym(irq);
+		struct irq_ibt_state irq_ibt_state;
+		struct irq_desc *ret;
+
+		irq_ibt_state = wrapper_irq_ibt_save();
+		ret = irq_to_desc_sym(irq);
+		wrapper_irq_ibt_restore(irq_ibt_state);
+		return ret;
 	} else {
 		printk_once(KERN_WARNING "LTTng: irq_to_desc symbol lookup failed.\n");
 		return NULL;

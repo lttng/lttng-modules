@@ -127,9 +127,15 @@ unsigned long wrapper_kallsyms_lookup_name(const char *name)
 	if (!kallsyms_lookup_name_sym) {
 		kallsyms_lookup_name_sym = (void *)do_get_kallsyms();
 	}
-	if (kallsyms_lookup_name_sym)
-		return kallsyms_lookup_name_sym(name);
-	else {
+	if (kallsyms_lookup_name_sym) {
+		struct irq_ibt_state irq_ibt_state;
+		unsigned long ret;
+
+		irq_ibt_state = wrapper_irq_ibt_save();
+		ret = kallsyms_lookup_name_sym(name);
+		wrapper_irq_ibt_restore(irq_ibt_state);
+		return ret;
+	} else {
 		printk_once(KERN_WARNING "LTTng: requires kallsyms_lookup_name\n");
 		return 0;
 	}

@@ -16,6 +16,8 @@
 #include <linux/kallsyms.h>
 #include <lttng/kernel-version.h>
 
+#include <wrapper/ibt.h>
+
 /* CONFIG_PPC64_ELF_ABI_V1/V2 were introduced in v5.19 */
 #if defined(CONFIG_PPC64_ELF_ABI_V2) || (defined(CONFIG_PPC64) && defined(CONFIG_CPU_LITTLE_ENDIAN))
 #define LTTNG_CONFIG_PPC64_ELF_ABI_V2
