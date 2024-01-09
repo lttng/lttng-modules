@@ -14,34 +14,16 @@
 #include <lttng/events-internal.h>
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
-#include <wrapper/kallsyms.h>
 #include <lttng/tracer.h>
 
-static
-int (*wrapper_task_prio_sym)(struct task_struct *t);
-
-int wrapper_task_prio_init(void)
-{
-	wrapper_task_prio_sym = (void *) kallsyms_lookup_funcptr("task_prio");
-	if (!wrapper_task_prio_sym) {
-		printk(KERN_WARNING "LTTng: task_prio symbol lookup failed.\n");
-		return -EINVAL;
-	}
-	return 0;
-}
-EXPORT_SYMBOL_GPL(wrapper_task_prio_init);
-
 /*
- * Canary function to check for 'task_prio()' at compile time.
- *
- * From 'include/linux/sched.h':
- *
- *   extern int task_prio(const struct task_struct *p);
+ * task_prio() has been implemented as p->prio - MAX_RT_PRIO since at
+ * least kernel v3.0.
  */
-__attribute__((unused)) static
-int __canary__task_prio(const struct task_struct *p)
+static
+int wrapper_task_prio(struct task_struct *p)
 {
-	return task_prio(p);
+	return p->prio - MAX_RT_PRIO;
 }
 
 static
@@ -61,7 +43,7 @@ void prio_record(void *priv, struct lttng_kernel_probe_ctx *probe_ctx,
 {
 	int prio;
 
-	prio = wrapper_task_prio_sym(current);
+	prio = wrapper_task_prio(current);
 	chan->ops->event_write(ctx, &prio, sizeof(prio), lttng_alignof(prio));
 }
 
@@ -70,7 +52,7 @@ void prio_get_value(void *priv,
 		struct lttng_kernel_probe_ctx *lttng_probe_ctx,
 		struct lttng_ctx_value *value)
 {
-	value->u.s64 = wrapper_task_prio_sym(current);
+	value->u.s64 = wrapper_task_prio(current);
 }
 
 static const struct lttng_kernel_ctx_field *ctx_field = lttng_kernel_static_ctx_field(
