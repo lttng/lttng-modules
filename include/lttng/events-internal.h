@@ -611,7 +611,6 @@ int lttng_add_pid_to_ctx(struct lttng_kernel_ctx **ctx);
 int lttng_add_cpu_id_to_ctx(struct lttng_kernel_ctx **ctx);
 int lttng_add_procname_to_ctx(struct lttng_kernel_ctx **ctx);
 int lttng_add_prio_to_ctx(struct lttng_kernel_ctx **ctx);
-int wrapper_task_prio_init(void);
 int lttng_add_nice_to_ctx(struct lttng_kernel_ctx **ctx);
 int lttng_add_vpid_to_ctx(struct lttng_kernel_ctx **ctx);
 int lttng_add_tid_to_ctx(struct lttng_kernel_ctx **ctx);
