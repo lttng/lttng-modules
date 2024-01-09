@@ -29,6 +29,7 @@ int wrapper_task_prio_init(void)
 	}
 	return 0;
 }
+EXPORT_SYMBOL_GPL(wrapper_task_prio_init);
 
 /*
  * Canary function to check for 'task_prio()' at compile time.
