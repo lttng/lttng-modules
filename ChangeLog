@@ -1,3 +1,20 @@
+2024-01-10 (National Houseplant Appreciation Day) LTTng modules 2.13.11
+	* Fix: Include linux/sched/rt.h for kernels v3.9 to v3.14
+	* Fix: Disable IBT around indirect function calls
+	* Inline implementation of task_prio()
+	* Fix: prio context NULL pointer exception
+	* Fix: MODULE_IMPORT_NS is introduced in kernel 5.4
+	* Android: Import VFS namespace for android common kernel
+	* Fix: get_file_rcu is missing in kernels < 4.1
+	* fix: lookup_fd_rcu replaced by lookup_fdget_rcu in linux 6.7.0-rc1
+	* fix: mm, vmscan signatures changed in linux 6.7.0-rc1
+	* fix: phys_proc_id and cpu_core_id moved in linux 6.7.0-rc1
+	* Fix build for RHEL 8.8 with linux 4.18.0-477.10.1+
+	* Fix: bytecode validator: oops during validation of immediate string
+	* fix: lttng-probe-kvm-x86-mmu build with linux 6.6
+	* fix: built-in lttng with kernel >= v6.1
+	* fix: ubuntu kinetic kernel range for jdb2
+
 2023-06-07 (National VCR Day) LTTng modules 2.13.10
 	* Add support for RHEL 9.1
 	* Add support for RHEL 9.0
