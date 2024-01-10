@@ -15,6 +15,18 @@
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 #include <lttng/tracer.h>
+#include <lttng/kernel-version.h>
+
+/*
+ * From kernel v3.0 to v3.8, MAX_RT_PRIO is defined in linux/sched.h.
+ * From kernel v3.9 to v3.14, MAX_RT_PRIO is defined in linux/sched/rt.h,
+ * which is not included by linux/sched.h (hence this work-around).
+ * From kernel v3.15 onwards, MAX_RT_PRIO is defined in linux/sched/prio.h,
+ * which is included by linux/sched.h.
+ */
+#if LTTNG_KERNEL_RANGE(3,9,0, 3,15,0)
+# include <linux/sched/rt.h>
+#endif
 
 /*
  * task_prio() has been implemented as p->prio - MAX_RT_PRIO since at
