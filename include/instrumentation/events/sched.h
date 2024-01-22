@@ -646,6 +646,24 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_stat_template, sched_stat_blocked,
 	     TP_ARGS(tsk, delay))
 #endif
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,8,0))
+/*
+ * Tracepoint for accounting runtime (time the task is executing
+ * on a CPU).
+ */
+LTTNG_TRACEPOINT_EVENT(sched_stat_runtime,
+
+	TP_PROTO(struct task_struct *tsk, u64 runtime),
+
+	TP_ARGS(tsk, runtime),
+
+	TP_FIELDS(
+		ctf_array_text(char, comm, tsk->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, tid, tsk->pid)
+		ctf_integer(u64, runtime, runtime)
+	)
+)
+#else
 /*
  * Tracepoint for accounting runtime (time the task is executing
  * on a CPU).
@@ -663,6 +681,7 @@ LTTNG_TRACEPOINT_EVENT(sched_stat_runtime,
 		ctf_integer(u64, vruntime, vruntime)
 	)
 )
+#endif
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,12,0) || \
 	LTTNG_RT_KERNEL_RANGE(4,9,27,18, 4,10,0,0) || \
