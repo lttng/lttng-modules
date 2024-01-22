@@ -45,7 +45,29 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(timer_class, timer_init,
 	TP_ARGS(timer)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,8,0))
+/**
+ * timer_start - called when the timer is started
+ * @timer:	pointer to struct timer_list
+ * @expires:	the timers expiry time
+ * @flags:	the timers expiry time
+ */
+LTTNG_TRACEPOINT_EVENT(timer_start,
+
+	TP_PROTO(struct timer_list *timer, unsigned long bucket_expiry),
+
+	TP_ARGS(timer, bucket_expiry),
+
+	TP_FIELDS(
+		ctf_integer_hex(void *, timer, timer)
+		ctf_integer_hex(void *, function, timer->function)
+		ctf_integer(unsigned long, expires, timer->expires)
+		ctf_integer(unsigned long, bucket_expiry, bucket_expiry)
+		ctf_integer(unsigned long, now, jiffies)
+		ctf_integer(unsigned int, flags, timer->flags)
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0) || \
 	LTTNG_RHEL_KERNEL_RANGE(3,10,0,957,0,0, 3,11,0,0,0,0))
 /**
  * timer_start - called when the timer is started
@@ -68,7 +90,7 @@ LTTNG_TRACEPOINT_EVENT(timer_start,
 		ctf_integer(unsigned int, flags, flags)
 	)
 )
-#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0)) */
+#else
 /**
  * timer_start - called when the timer is started
  * @timer:	pointer to struct timer_list
@@ -87,7 +109,7 @@ LTTNG_TRACEPOINT_EVENT(timer_start,
 		ctf_integer(unsigned long, now, jiffies)
 	)
 )
-#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0)) */
+#endif
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,2,0) || \
 	LTTNG_RHEL_KERNEL_RANGE(4,18,0,193,0,0, 4,19,0,0,0,0))
