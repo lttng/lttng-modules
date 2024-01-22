@@ -405,7 +405,11 @@ int channel_backend_init(struct channel_backend *chanb,
 	chanb->extra_reader_sb =
 			(config->mode == RING_BUFFER_OVERWRITE) ? 1 : 0;
 	chanb->num_subbuf = num_subbuf;
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,8,0))
+	strscpy(chanb->name, name, NAME_MAX);
+#else
 	strlcpy(chanb->name, name, NAME_MAX);
+#endif
 	memcpy(&chanb->config, config, sizeof(chanb->config));
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
