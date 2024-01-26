@@ -30,7 +30,8 @@ struct kretprobe *lttng_get_kretprobe(struct kretprobe_instance *ri)
 #endif /* LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0) */
 
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0) || \
+    LTTNG_RHEL_KERNEL_RANGE(5,14,0,163,0,0, 5,15,0,0,0,0))
 static inline
 unsigned long lttng_get_kretprobe_retaddr(struct kretprobe_instance *ri)
 {

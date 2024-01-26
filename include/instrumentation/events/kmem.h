@@ -61,7 +61,9 @@ LTTNG_TRACEPOINT_EVENT(kmem_cache_alloc,
 			(s->flags & SLAB_ACCOUNT)) : false)
 	)
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,0,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,0,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(5,14,0,163,0,0, 5,15,0,0,0,0))
+
 LTTNG_TRACEPOINT_EVENT_CLASS(kmem_alloc,
 
 	TP_PROTO(unsigned long call_site,
@@ -141,7 +143,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(kmem_alloc, kmem_cache_alloc,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,0,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,0,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(5,14,0,163,0,0, 5,15,0,0,0,0))
+
 LTTNG_TRACEPOINT_EVENT_CLASS(kmem_alloc_node,
 
 	TP_PROTO(unsigned long call_site,
@@ -376,7 +380,9 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc, kmem_mm_page_alloc,
 	)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,19,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,19,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(5,14,0,163,0,0, 5,15,0,0,0,0))
+
 LTTNG_TRACEPOINT_EVENT_CLASS(kmem_mm_page,
 
 	TP_PROTO(struct page *page, unsigned int order, int migratetype,
