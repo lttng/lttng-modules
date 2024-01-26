@@ -54,7 +54,8 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(compaction_isolate_template,
 	TP_ARGS(start_pfn, end_pfn, nr_scanned, nr_taken)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0) || \
+    LTTNG_RHEL_KERNEL_RANGE(5,14,0,163,0,0, 5,15,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT_MAP(mm_compaction_migratepages,
 
 	compaction_migratepages,

@@ -191,7 +191,8 @@ enum lttng_process_status {
 };
 
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,0,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,0,0) || \
+    LTTNG_RHEL_KERNEL_RANGE(5,14,0,163,0,0, 5,15,0,0,0,0))
 
 #define LTTNG_PART_STRUCT_TYPE struct block_device
 

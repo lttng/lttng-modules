@@ -15,7 +15,8 @@ kmem_dep = $(srctree)/mm/slab.h
 kmem_dep_wildcard = $(wildcard $(kmem_dep))
 kmem_dep_check = $(shell \
 if [ \( $(VERSION) -ge 7 \
-   -o \( $(VERSION) -eq 6 -a $(PATCHLEVEL) -ge 0 \) \) -a \
+   -o \( $(VERSION) -eq 6 -a $(PATCHLEVEL) -ge 0 \) \
+   -o \( $(VERSION) -eq 5 -a $(PATCHLEVEL) -ge 14 -a $(RHEL_API_VERSION) -gt 1622301 \) \) -a \
    -z "$(kmem_dep_wildcard)" ] ; then \
   echo "warn" ; \
 else \
@@ -166,7 +167,8 @@ ifneq ($(CONFIG_COMPACTION),)
   compaction_dep_wildcard = $(wildcard $(compaction_dep))
   compaction_dep_check = $(shell \
   if [ \( $(VERSION) -ge 6 \
-     -o \( $(VERSION) -eq 5 -a $(PATCHLEVEL) -ge 18 \) \) -a \
+     -o \( $(VERSION) -eq 5 -a $(PATCHLEVEL) -ge 18 \) \
+     -o \( $(VERSION) -eq 5 -a $(PATCHLEVEL) -ge 14 -a $(RHEL_API_VERSION) -gt 1622301 \) \) -a \
      -z "$(compaction_dep_wildcard)" ] ; then \
     echo "warn" ; \
   else \
