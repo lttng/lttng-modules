@@ -116,7 +116,6 @@ static inline
 void lib_ring_buffer_memset(const struct lttng_kernel_ring_buffer_config *config,
 			    struct lttng_kernel_ring_buffer_ctx *ctx, int c, size_t len)
 {
-
 	struct lttng_kernel_ring_buffer_backend *bufb = &ctx->priv.buf->backend;
 	struct channel_backend *chanb = &ctx->priv.chan->backend;
 	size_t index, bytes_left_in_page;
