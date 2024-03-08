@@ -25,7 +25,9 @@ endif
 SLE_API_VERSION:=$(shell $(TOP_LTTNG_MODULES_DIR)/scripts/abi-sle-version.sh $(CURDIR))
 
 ifneq ($(SLE_API_VERSION), 0)
-  ccflags-y += -DSLE_API_VERSION=$(SLE_API_VERSION)
+  ccflags-y += -DSLE_API_VERSION_MAJOR=$(word 1, $(SLE_API_VERSION))
+  ccflags-y += -DSLE_API_VERSION_MINOR=$(word 2, $(SLE_API_VERSION))
+  ccflags-y += -DSLE_API_VERSION_PATCH=$(word 3, $(SLE_API_VERSION))
 endif
 
 FEDORA_REVISION_VERSION:=$(shell $(TOP_LTTNG_MODULES_DIR)/scripts/abi-fedora-version.sh $(CURDIR))
