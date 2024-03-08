@@ -126,22 +126,48 @@
 
 /* SUSE Linux enterprise */
 
-#define LTTNG_SLE_KERNEL_VERSION(a, b, c, d, e, f) \
-	(((LTTNG_KERNEL_VERSION(a, b, c)) * 100000000ULL) + ((d) * 100000) + ((e) * 100) + (f))
+/*
+ * SLE major version codes may be large, eg. 150400, and require more than
+ * 32 bits to store. Multiplying `a` by `1ULL` avoids compiler warnings, eg:
+ *
+ * `warning: result of ‘150400 << 16’ requires 35 bits to represent, but ‘int’ only has 32 bits`
+ *
+ */
+#define LTTNG_SLE_VERSION(a, b, c) \
+   ((((a * 1ULL) << 16) + (b << 8) + c) * 1ULL)
 
-#ifdef SLE_API_VERSION
+#if defined(SLE_API_VERSION_MAJOR) && defined(SLE_API_VERSION_MINOR) && defined(SLE_API_VERSION_PATCH)
 #define LTTNG_SLE_VERSION_CODE \
-	((LTTNG_LINUX_VERSION_CODE * 100000000ULL) + SLE_API_VERSION)
+	(LTTNG_SLE_VERSION(SLE_API_VERSION_MAJOR, SLE_API_VERSION_MINOR, SLE_API_VERSION_PATCH))
 #else
-#define LTTNG_SLE_VERSION_CODE 	0
+#define LTTNG_SLE_VERSION_CODE	0
 #endif
 
 #define LTTNG_SLE_KERNEL_RANGE(a_low, b_low, c_low, d_low, e_low, f_low, \
 		a_high, b_high, c_high, d_high, e_high, f_high) \
-	(LTTNG_SLE_VERSION_CODE >= \
-		LTTNG_SLE_KERNEL_VERSION(a_low, b_low, c_low, d_low, e_low, f_low) && \
-		LTTNG_SLE_VERSION_CODE < \
-		LTTNG_SLE_KERNEL_VERSION(a_high, b_high, c_high, d_high, e_high, f_high))
+	( \
+		LTTNG_SLE_VERSION_CODE != 0 && \
+		( \
+			/* Linux kernel version code exclusive inside range */ \
+			(LTTNG_LINUX_VERSION_CODE > LTTNG_KERNEL_VERSION(a_low, b_low, c_low) && \
+			LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(a_high, b_high, c_high)) || \
+			\
+			/* Linux kernel version code is at lower and upper limit */ \
+			(LTTNG_LINUX_VERSION_CODE == LTTNG_KERNEL_VERSION(a_low, b_low, c_low) && \
+			LTTNG_LINUX_VERSION_CODE == LTTNG_KERNEL_VERSION(a_high, b_high, c_high) && \
+			LTTNG_SLE_VERSION_CODE >= LTTNG_SLE_VERSION(d_low, e_low, f_low) && \
+			LTTNG_SLE_VERSION_CODE < LTTNG_SLE_VERSION(d_high, e_high, f_high)) || \
+			\
+			/* Linux kernel version code is at lower limit */ \
+			(LTTNG_LINUX_VERSION_CODE == LTTNG_KERNEL_VERSION(a_low, b_low, c_low) && \
+			LTTNG_KERNEL_VERSION(a_low, b_low, c_low) != LTTNG_KERNEL_VERSION(a_high, b_high, c_high) && \
+			LTTNG_SLE_VERSION_CODE >= LTTNG_SLE_VERSION(d_low, e_low, f_low)) || \
+			\
+			/* Linux kernel version code is at upper limit */ \
+			(LTTNG_LINUX_VERSION_CODE == LTTNG_KERNEL_VERSION(a_high, b_high, c_high) && \
+			LTTNG_KERNEL_VERSION(a_low, b_low, c_low) != LTTNG_KERNEL_VERSION(a_high, b_high, c_high) && \
+			LTTNG_SLE_VERSION_CODE < LTTNG_SLE_VERSION(d_high, e_high, f_high)) \
+		))
 
 /* Fedora */
 
