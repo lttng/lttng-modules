@@ -150,6 +150,26 @@ stream context and event context show different values for a given event; what
 matters is that they increment at the same rate.
 
 
+Supported versions
+------------------
+
+The LTTng project supports the last two released stable versions
+(e.g. stable-2.13 and stable-2.12).
+
+Fixes are backported from the master branch to the last stable version
+unless those fixes would break the ABI or API. Those fixes may be backported
+to the second-last stable version, depending on complexity and ABI/API
+compatibility.
+
+Security fixes are backported from the master branch to both of the last stable
+version and the the second-last stable version.
+
+New kernel version enablement commits are integrated into the master branch and
+backported to the last stable version.
+
+New features are integrated into the master branch and not backported to the
+last stable branch.
+
 Contacts
 --------
 
