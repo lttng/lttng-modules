@@ -1,3 +1,17 @@
+2024-03-21 (National Common Courtesy Day) LTTng modules 2.13.12
+	* docs: Add supported versions and fix-backport policy
+	* docs: Add links to project resources
+	* Fix: Correct minimum version in jbd2 SLE kernel range
+	* Fix: Handle recent SLE major version codes
+	* Fix: build on sles15sp4
+	* Compile fixes for RHEL 9.3 kernels
+	* Fix: ext4_discard_preallocations changed in linux 6.8.0-rc3
+	* Fix: btrfs_get_extent flags and compress_type changed in linux 6.8.0-rc1
+	* Fix: btrfs_chunk tracepoints changed in linux 6.8.0-rc1
+	* Fix: strlcpy removed in linux 6.8.0-rc1
+	* Fix: timer_start changed in linux 6.8.0-rc1
+	* Fix: sched_stat_runtime changed in linux 6.8.0-rc1
+
 2024-01-10 (National Houseplant Appreciation Day) LTTng modules 2.13.11
 	* Fix: Include linux/sched/rt.h for kernels v3.9 to v3.14
 	* Fix: Disable IBT around indirect function calls
