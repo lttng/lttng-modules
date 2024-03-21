@@ -1,3 +1,11 @@
+2024-03-21 (National Common Courtesy Day) 2.12.16
+	* fix: lttng-probe-kvm-x86-mmu build with linux 6.6
+	* docs: Add supported versions and fix-backport policy
+	* docs: Add links to project resources
+	* Fix: Correct minimum version in jbd2 SLE kernel range
+	* Fix: Handle recent SLE major version codes
+	* Fix: build on sles15sp4
+
 2024-01-10 (National Houseplant Appreciation Day) 2.12.15
 	* Fix: MODULE_IMPORT_NS is introduced in kernel 5.4
 	* Android: Import VFS namespace for android common kernel
