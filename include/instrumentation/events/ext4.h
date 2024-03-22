@@ -1123,7 +1123,8 @@ LTTNG_TRACEPOINT_EVENT(ext4_load_inode,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,5,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,5,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,240,15,1, 4,19,0,0,0,0))
 
 LTTNG_TRACEPOINT_EVENT(ext4_journal_start,
 	TP_PROTO(struct super_block *sb, int blocks, int rsv_blocks,
