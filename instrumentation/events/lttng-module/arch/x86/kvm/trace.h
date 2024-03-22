@@ -8,6 +8,11 @@
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
 #include <asm/clocksource.h>
 #endif
+#include <linux/kvm_host.h>
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,7,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,305,0,0, 4,19,0,0,0,0))
+#include <kvm_emulate.h>
+#endif
 #include <lttng-kernel-version.h>
 #include <../arch/x86/kvm/lapic.h>
 #include <../arch/x86/kvm/kvm_cache_regs.h>
@@ -147,7 +152,8 @@ LTTNG_TRACEPOINT_EVENT_CODE_MAP(kvm_exit, kvm_x86_exit,
 
 	TP_code_post()
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,240,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT_CODE_MAP(kvm_exit, kvm_x86_exit,
 	TP_PROTO(unsigned int exit_reason, struct kvm_vcpu *vcpu, u32 isa),
 	TP_ARGS(exit_reason, vcpu, isa),
@@ -526,7 +532,8 @@ LTTNG_TRACEPOINT_EVENT_MAP(kvm_emulate_insn, kvm_x86_emulate_insn,
 				- vcpu->arch.emulate_ctxt.fetch.start)
 		ctf_array(__u8, insn, vcpu->arch.emulate_ctxt.fetch.data, 15)
 		ctf_integer(__u8, flags, kei_decode_mode(vcpu->arch.emulate_ctxt.mode))
-#elif (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(5,7,0))
+#elif (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(5,7,0) && \
+	!LTTNG_RHEL_KERNEL_RANGE(4,18,0,305,0,0, 4,19,0,0,0,0))
 		ctf_integer(__u64, rip, vcpu->arch.emulate_ctxt._eip -
 				(vcpu->arch.emulate_ctxt.fetch.ptr -
 					vcpu->arch.emulate_ctxt.fetch.data))
@@ -535,6 +542,16 @@ LTTNG_TRACEPOINT_EVENT_MAP(kvm_emulate_insn, kvm_x86_emulate_insn,
 				vcpu->arch.emulate_ctxt.fetch.data)
 		ctf_array(__u8, insn, vcpu->arch.emulate_ctxt.fetch.data, 15)
 		ctf_integer(__u8, flags, kei_decode_mode(vcpu->arch.emulate_ctxt.mode))
+#elif (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(5,18,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,305,0,0, 4,19,0,0,0,0))
+		ctf_integer(__u64, rip, vcpu->arch.emulate_ctxt->_eip -
+				(vcpu->arch.emulate_ctxt->fetch.ptr -
+					vcpu->arch.emulate_ctxt->fetch.data))
+		ctf_integer(__u32, csbase, kvm_x86_ops.get_segment_base(vcpu, VCPU_SREG_CS))
+		ctf_integer(__u8, len, vcpu->arch.emulate_ctxt->fetch.ptr -
+				vcpu->arch.emulate_ctxt->fetch.data)
+		ctf_array(__u8, insn, vcpu->arch.emulate_ctxt->fetch.data, 15)
+		ctf_integer(__u8, flags, kei_decode_mode(vcpu->arch.emulate_ctxt->mode))
 #else
 		ctf_integer(__u64, rip, vcpu->arch.emulate_ctxt->_eip -
 				(vcpu->arch.emulate_ctxt->fetch.ptr -
