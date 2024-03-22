@@ -20,14 +20,16 @@
  */
 #include <wrapper/tracepoint.h>
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,305,0,0, 4,19,0,0,0,0))
 #include <../../arch/x86/kvm/mmu/mmu_internal.h>
 #include <../../arch/x86/kvm/mmu/mmutrace.h>
 #else
 #include <../../arch/x86/kvm/mmutrace.h>
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,305,0,0, 4,19,0,0,0,0))
 #include <../arch/x86/kvm/mmu.h>
 #include <../arch/x86/kvm/mmu/spte.h>
 #endif

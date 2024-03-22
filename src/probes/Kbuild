@@ -55,7 +55,8 @@ ifneq ($(CONFIG_KVM),)
           kvm_dep_emulate_wildcard = $(wildcard $(kvm_dep_emulate))
           kvm_dep_emulate_check = $(shell \
           if [ \( $(VERSION) -ge 6 \
-             -o \( $(VERSION) -eq 5 -a $(PATCHLEVEL) -eq 7 \) \) -a \
+             -o \( $(VERSION) -eq 5 -a $(PATCHLEVEL) -eq 7 \) \
+             -o \( $(VERSION) -eq 4 -a $(PATCHLEVEL) -eq 18 -a $(RHEL_API_VERSION) -ge 2400000 \) \) -a \
              -z "$(kvm_dep_emulate_wildcard)" ] ; then \
             echo "warn" ; \
           else \
