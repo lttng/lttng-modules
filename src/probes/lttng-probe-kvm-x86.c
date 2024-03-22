@@ -12,7 +12,8 @@
 #include <lttng/tracer.h>
 #include <lttng/kernel-version.h>
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,7,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,7,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,240,15,1, 4,19,0,0,0,0))
 #include <kvm_emulate.h>
 #endif
 
