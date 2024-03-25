@@ -10,6 +10,7 @@
 #include <lttng/kernel-version.h>
 
 #define DAPM_DIRECT "(direct)"
+#define DAPM_COMPONENT_NONE "(none)"
 
 #ifndef _TRACE_ASOC_DEF
 #define _TRACE_ASOC_DEF
@@ -119,6 +120,40 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_preg, snd_soc_preg_read,
 )
 #endif
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,9,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_dapm_context,
+
+	TP_PROTO(struct snd_soc_dapm_context *dapm, int val),
+
+	TP_ARGS(dapm, val),
+
+	TP_FIELDS(
+		ctf_string(name, dapm->card->name)
+		ctf_string(component, dapm->component ? dapm->component->name : DAPM_COMPONENT_NONE)
+		ctf_integer(int, val, val)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_dapm_context, snd_soc_bias_level_start,
+
+	asoc_snd_soc_bias_level_start,
+
+	TP_PROTO(struct snd_soc_dapm_context *dapm, int val),
+
+	TP_ARGS(dapm, val)
+
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_dapm_context, snd_soc_bias_level_done,
+
+	asoc_snd_soc_bias_level_done,
+
+	TP_PROTO(struct snd_soc_dapm_context *dapm, int val),
+
+	TP_ARGS(dapm, val)
+
+)
+#else
 LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_card,
 
 	TP_PROTO(struct snd_soc_card *card, int val),
@@ -150,6 +185,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_card, snd_soc_bias_level_done,
 	TP_ARGS(card, val)
 
 )
+#endif
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,9,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_dapm_basic,
