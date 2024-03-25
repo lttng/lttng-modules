@@ -151,6 +151,38 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_card, snd_soc_bias_level_done,
 
 )
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,9,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_dapm_basic,
+
+	TP_PROTO(struct snd_soc_card *card, int event),
+
+	TP_ARGS(card, event),
+
+	TP_FIELDS(
+		ctf_string(name, card->name)
+		ctf_integer(int, event, event)
+	)
+)
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_dapm_basic, snd_soc_dapm_start,
+
+	asoc_snd_soc_dapm_start,
+
+	TP_PROTO(struct snd_soc_card *card, int event),
+
+	TP_ARGS(card, event)
+
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_dapm_basic, snd_soc_dapm_done,
+
+	asoc_snd_soc_dapm_done,
+
+	TP_PROTO(struct snd_soc_card *card, int event),
+
+	TP_ARGS(card, event)
+
+)
+#else
 LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_dapm_basic,
 
 	TP_PROTO(struct snd_soc_card *card),
@@ -181,6 +213,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_dapm_basic, snd_soc_dapm_done,
 	TP_ARGS(card)
 
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_dapm_widget,
 
