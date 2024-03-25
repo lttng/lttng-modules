@@ -392,6 +392,20 @@ void lttng_enumerate_device(struct lttng_kernel_session *session,
 	}
 }
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,9,0))
+static
+int lttng_enumerate_network_ip_interface(struct lttng_kernel_session *session)
+{
+	struct net_device *dev;
+
+	rtnl_lock();
+	for_each_netdev(&init_net, dev)
+		lttng_enumerate_device(session, dev);
+	rtnl_unlock();
+
+	return 0;
+}
+#else
 static
 int lttng_enumerate_network_ip_interface(struct lttng_kernel_session *session)
 {
@@ -404,6 +418,7 @@ int lttng_enumerate_network_ip_interface(struct lttng_kernel_session *session)
 
 	return 0;
 }
+#endif /* (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,9,0)) */
 #else /* CONFIG_INET */
 static inline
 int lttng_enumerate_network_ip_interface(struct lttng_kernel_session *session)
