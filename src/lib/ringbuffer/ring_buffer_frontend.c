@@ -1210,6 +1210,16 @@ static void lib_ring_buffer_flush_read_subbuf_dcache(
 	if (config->output != RING_BUFFER_MMAP)
 		return;
 
+#ifdef cpu_dcache_is_aliasing
+	/*
+	 * Some architectures implement flush_dcache_page() but don't
+	 * actually have aliasing dcache. cpu_dcache_is_aliasing() was
+	 * introduced in kernel v6.9 to query this more precisely.
+	 */
+	if (!cpu_dcache_is_aliasing())
+		return;
+#endif
+
 	/*
 	 * Architectures with caches aliased on virtual addresses may
 	 * use different cache lines for the linear mapping vs
