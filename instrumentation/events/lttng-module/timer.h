@@ -90,6 +90,7 @@ LTTNG_TRACEPOINT_EVENT(timer_start,
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0)) */
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,2,0) || \
+	LTTNG_KERNEL_RANGE(4,19,312, 4,20,0) || \
 	LTTNG_RHEL_KERNEL_RANGE(4,18,0,193,0,0, 4,19,0,0,0,0))
 /**
  * timer_expire_entry - called immediately before the timer callback
