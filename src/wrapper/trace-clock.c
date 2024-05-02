@@ -11,8 +11,8 @@
 #include <wrapper/trace-clock.h>
 
 #ifdef LTTNG_USE_NMI_SAFE_CLOCK
-DEFINE_PER_CPU(u64, lttng_last_tsc);
-EXPORT_PER_CPU_SYMBOL(lttng_last_tsc);
+DEFINE_PER_CPU(u64, lttng_last_timestamp);
+EXPORT_PER_CPU_SYMBOL(lttng_last_timestamp);
 #endif /* #ifdef LTTNG_USE_NMI_SAFE_CLOCK */
 
 #ifdef LTTNG_CLOCK_NMI_SAFE_BROKEN

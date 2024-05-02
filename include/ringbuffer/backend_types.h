@@ -82,7 +82,7 @@ struct channel_backend {
 	struct lttng_kernel_ring_buffer *buf;	/* Channel per-cpu buffers */
 
 	unsigned long num_subbuf;	/* Number of sub-buffers for writer */
-	u64 start_tsc;			/* Channel creation TSC value */
+	u64 start_timestamp;		/* Channel creation timestamp value */
 	void *priv;			/* Client-specific information */
 	void *priv_ops;			/* Client-specific ops pointer */
 	void (*release_priv_ops)(void *priv_ops);

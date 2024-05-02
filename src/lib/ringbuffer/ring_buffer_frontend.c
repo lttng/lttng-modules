@@ -173,7 +173,7 @@ void lib_ring_buffer_reset(struct lttng_kernel_ring_buffer *buf)
 	}
 	atomic_long_set(&buf->consumed, 0);
 	atomic_set(&buf->record_disabled, 0);
-	v_set(config, &buf->last_tsc, 0);
+	v_set(config, &buf->last_timestamp, 0);
 	lib_ring_buffer_backend_reset(&buf->backend);
 	/* Don't reset number of active readers */
 	v_set(config, &buf->records_lost_full, 0);
@@ -232,7 +232,7 @@ int lib_ring_buffer_create(struct lttng_kernel_ring_buffer *buf,
 	struct lttng_kernel_ring_buffer_channel *chan = container_of(chanb, struct lttng_kernel_ring_buffer_channel, backend);
 	void *priv = chanb->priv;
 	size_t subbuf_header_size;
-	u64 tsc;
+	u64 timestamp;
 	int ret;
 
 	/* Test for cpu hotplug */
@@ -294,8 +294,8 @@ int lib_ring_buffer_create(struct lttng_kernel_ring_buffer *buf,
 	subbuf_header_size = config->cb.subbuffer_header_size();
 	v_set(config, &buf->offset, subbuf_header_size);
 	subbuffer_id_clear_noref(config, &buf->backend.buf_wsb[0].id);
-	tsc = config->cb.ring_buffer_clock_read(buf->backend.chan);
-	config->cb.buffer_begin(buf, tsc, 0);
+	timestamp = config->cb.ring_buffer_clock_read(buf->backend.chan);
+	config->cb.buffer_begin(buf, timestamp, 0);
 	v_add(config, subbuf_header_size, &buf->commit_hot[0].cc);
 
 	if (config->cb.buffer_create) {
@@ -1599,7 +1599,7 @@ void lib_ring_buffer_switch_old_start(struct lttng_kernel_ring_buffer *buf,
 	unsigned long commit_count;
 	struct commit_counters_hot *cc_hot;
 
-	config->cb.buffer_begin(buf, ctx->priv.tsc, oldidx);
+	config->cb.buffer_begin(buf, ctx->priv.timestamp, oldidx);
 
 	/*
 	 * Order all writes to buffer before the commit count update that will
@@ -1658,7 +1658,7 @@ void lib_ring_buffer_switch_old_end(struct lttng_kernel_ring_buffer *buf,
 	 * postponed until the commit counter is incremented for the
 	 * current space reservation.
 	 */
-	*ts_end = ctx->priv.tsc;
+	*ts_end = ctx->priv.timestamp;
 
 	/*
 	 * Order all writes to buffer and store to ts_end before the commit
@@ -1701,7 +1701,7 @@ void lib_ring_buffer_switch_new_start(struct lttng_kernel_ring_buffer *buf,
 	unsigned long commit_count;
 	struct commit_counters_hot *cc_hot;
 
-	config->cb.buffer_begin(buf, ctx->priv.tsc, beginidx);
+	config->cb.buffer_begin(buf, ctx->priv.timestamp, beginidx);
 
 	/*
 	 * Order all writes to buffer before the commit count update that will
@@ -1757,7 +1757,7 @@ void lib_ring_buffer_switch_new_end(struct lttng_kernel_ring_buffer *buf,
 	 * postponed until the commit counter is incremented for the
 	 * current space reservation.
 	 */
-	*ts_end = ctx->priv.tsc;
+	*ts_end = ctx->priv.timestamp;
 }
 
 /*
@@ -1780,7 +1780,7 @@ int lib_ring_buffer_try_switch_slow(enum switch_mode mode,
 	offsets->switch_old_start = 0;
 	off = subbuf_offset(offsets->begin, chan);
 
-	ctx->priv.tsc = config->cb.ring_buffer_clock_read(chan);
+	ctx->priv.timestamp = config->cb.ring_buffer_clock_read(chan);
 
 	/*
 	 * Ensure we flush the header of an empty subbuffer when doing the
@@ -1901,12 +1901,12 @@ void lib_ring_buffer_switch_slow(struct lttng_kernel_ring_buffer *buf, enum swit
 		 != offsets.old);
 
 	/*
-	 * Atomically update last_tsc. This update races against concurrent
-	 * atomic updates, but the race will always cause supplementary full TSC
-	 * records, never the opposite (missing a full TSC record when it would
-	 * be needed).
+	 * Atomically update last_timestamp. This update races against concurrent
+	 * atomic updates, but the race will always cause supplementary
+	 * full timestamp records, never the opposite (missing a full
+	 * timestamp record when it would be needed).
 	 */
-	save_last_tsc(config, buf, ctx.priv.tsc);
+	save_last_timestamp(config, buf, ctx.priv.timestamp);
 
 	/*
 	 * Push the reader if necessary
@@ -2029,12 +2029,12 @@ retry:
 	offsets->switch_old_end = 0;
 	offsets->pre_header_padding = 0;
 
-	ctx->priv.tsc = config->cb.ring_buffer_clock_read(chan);
-	if ((int64_t) ctx->priv.tsc == -EIO)
+	ctx->priv.timestamp = config->cb.ring_buffer_clock_read(chan);
+	if ((int64_t) ctx->priv.timestamp == -EIO)
 		return -EIO;
 
-	if (last_tsc_overflow(config, buf, ctx->priv.tsc))
-		ctx->priv.rflags |= RING_BUFFER_RFLAG_FULL_TSC;
+	if (last_timestamp_overflow(config, buf, ctx->priv.timestamp))
+		ctx->priv.rflags |= RING_BUFFER_RFLAG_FULL_TIMESTAMP;
 
 	if (unlikely(subbuf_offset(offsets->begin, ctx->priv.chan) == 0)) {
 		offsets->switch_new_start = 1;		/* For offsets->begin */
@@ -2221,12 +2221,12 @@ int lib_ring_buffer_reserve_slow(struct lttng_kernel_ring_buffer_ctx *ctx,
 			  != offsets.old));
 
 	/*
-	 * Atomically update last_tsc. This update races against concurrent
-	 * atomic updates, but the race will always cause supplementary full TSC
-	 * records, never the opposite (missing a full TSC record when it would
-	 * be needed).
+	 * Atomically update last_timestamp. This update races against concurrent
+	 * atomic updates, but the race will always cause supplementary
+	 * full timestamp records, never the opposite (missing a full
+	 * timestamp record when it would be needed).
 	 */
-	save_last_tsc(config, buf, ctx->priv.tsc);
+	save_last_timestamp(config, buf, ctx->priv.timestamp);
 
 	/*
 	 * Push the reader if necessary

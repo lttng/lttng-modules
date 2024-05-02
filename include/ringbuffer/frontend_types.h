@@ -114,7 +114,7 @@ struct lttng_kernel_ring_buffer {
 					 */
 	atomic_t record_disabled;
 	/* End of first 32 bytes cacheline */
-	union v_atomic last_tsc;	/*
+	union v_atomic last_timestamp;	/*
 					 * Last timestamp written in the buffer.
 					 */
 

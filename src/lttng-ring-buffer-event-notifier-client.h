@@ -86,7 +86,7 @@ static size_t client_packet_header_size(void)
 	return offsetof(struct event_notifier_packet_header, header_end);
 }
 
-static void client_buffer_begin(struct lttng_kernel_ring_buffer *buf, u64 tsc,
+static void client_buffer_begin(struct lttng_kernel_ring_buffer *buf, u64 timestamp,
 				unsigned int subbuf_idx)
 {
 }
@@ -95,7 +95,7 @@ static void client_buffer_begin(struct lttng_kernel_ring_buffer *buf, u64 tsc,
  * offset is assumed to never be 0 here : never deliver a completely empty
  * subbuffer. data_size is between 1 and subbuf_size.
  */
-static void client_buffer_end(struct lttng_kernel_ring_buffer *buf, u64 tsc,
+static void client_buffer_end(struct lttng_kernel_ring_buffer *buf, u64 timestamp,
 			      unsigned int subbuf_idx, unsigned long data_size,
 			      const struct lttng_kernel_ring_buffer_ctx *ctx)
 {
@@ -200,7 +200,7 @@ static const struct lttng_kernel_ring_buffer_config client_config = {
 	.cb.buffer_finalize = client_buffer_finalize,
 	.cb.record_get = client_record_get,
 
-	.tsc_bits = 0,
+	.timestamp_bits = 0,
 	.alloc = RING_BUFFER_ALLOC_GLOBAL,
 	.sync = RING_BUFFER_SYNC_GLOBAL,
 	.mode = RING_BUFFER_MODE_TEMPLATE,

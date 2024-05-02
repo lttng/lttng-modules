@@ -56,7 +56,7 @@ extern struct lttng_trace_clock *lttng_trace_clock;
 
 #ifdef LTTNG_USE_NMI_SAFE_CLOCK
 
-DECLARE_PER_CPU(u64, lttng_last_tsc);
+DECLARE_PER_CPU(u64, lttng_last_timestamp);
 
 /*
  * Sometimes called with preemption enabled. Can be interrupted.
@@ -64,12 +64,12 @@ DECLARE_PER_CPU(u64, lttng_last_tsc);
 static inline u64 trace_clock_monotonic_wrapper(void)
 {
 	u64 now, last, result;
-	u64 *last_tsc_ptr;
+	u64 *last_timestamp_ptr;
 
 	/* Use fast nmi-safe monotonic clock provided by the Linux kernel. */
 	preempt_disable();
-	last_tsc_ptr = this_cpu_ptr(&lttng_last_tsc);
-	last = *last_tsc_ptr;
+	last_timestamp_ptr = this_cpu_ptr(&lttng_last_timestamp);
+	last = *last_timestamp_ptr;
 	/*
 	 * Read "last" before "now". It is not strictly required, but it ensures
 	 * that an interrupt coming in won't artificially trigger a case where
@@ -80,7 +80,7 @@ static inline u64 trace_clock_monotonic_wrapper(void)
 	now = ktime_get_mono_fast_ns();
 	if (U64_MAX / 2 < now - last)
 		now = last;
-	result = cmpxchg64_local(last_tsc_ptr, last, now);
+	result = cmpxchg64_local(last_timestamp_ptr, last, now);
 	preempt_enable();
 	if (result == last) {
 		/* Update done. */
