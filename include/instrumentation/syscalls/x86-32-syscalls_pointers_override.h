@@ -29,6 +29,10 @@
 #endif /* CONFIG_COMPAT_OLD_SIGACTION */
 #endif
 
+/*
+ * Override 'pipe' to set the output field 'fildes' to an array of 2 integers
+ * instead of the default integer pointer.
+ */
 #define OVERRIDE_32_pipe
 #define OVERRIDE_64_pipe
 SC_LTTNG_TRACEPOINT_EVENT(pipe,

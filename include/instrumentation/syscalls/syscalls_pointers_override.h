@@ -193,6 +193,10 @@ SC_LTTNG_TRACEPOINT_EVENT(getcpu,
 	)
 )
 
+/*
+ * Override 'pipe2' to set the output field 'fildes' to an array of 2 integers
+ * instead of the default integer pointer.
+ */
 #define OVERRIDE_32_pipe2
 #define OVERRIDE_64_pipe2
 SC_LTTNG_TRACEPOINT_EVENT(pipe2,

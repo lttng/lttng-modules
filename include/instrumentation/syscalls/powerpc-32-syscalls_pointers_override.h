@@ -4,6 +4,10 @@
 
 #ifndef CREATE_SYSCALL_TABLE
 
+/*
+ * Override 'pipe' to set the output field 'fildes' to an array of 2 integers
+ * instead of the default integer pointer.
+ */
 #define OVERRIDE_32_pipe
 SC_LTTNG_TRACEPOINT_EVENT(pipe,
 	TP_PROTO(sc_exit(long ret,) int * fildes),
