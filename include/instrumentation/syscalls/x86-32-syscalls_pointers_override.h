@@ -38,9 +38,6 @@ SC_LTTNG_TRACEPOINT_EVENT(pipe,
 #  define OVERRIDE_TABLE_32_chown16
 # endif
 
-#define OVERRIDE_TABLE_32_getcpu
-TRACE_SYSCALL_TABLE(getcpu, getcpu, 318, 3)
-
 #endif /* CREATE_SYSCALL_TABLE */
 
 

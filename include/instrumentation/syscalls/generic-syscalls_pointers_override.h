@@ -169,20 +169,6 @@ SC_LTTNG_TRACEPOINT_EVENT(clone,
 	)
 )
 
-/* present in 32, missing in 64 due to old kernel headers */
-#define OVERRIDE_32_getcpu
-#define OVERRIDE_64_getcpu
-SC_LTTNG_TRACEPOINT_EVENT(getcpu,
-	TP_PROTO(sc_exit(long ret,) unsigned __user *cpup, unsigned __user *nodep, void *tcache),
-	TP_ARGS(sc_exit(ret,) cpup, nodep, tcache),
-	TP_FIELDS(
-		sc_exit(ctf_integer(long, ret, ret))
-		sc_out(ctf_integer_hex(unsigned *, cpup, cpup))
-		sc_out(ctf_integer_hex(unsigned *, nodep, nodep))
-		sc_inout(ctf_integer_hex(void *, tcache, tcache))
-	)
-)
-
 /*
  * Override 'pipe2' to set the output field 'fildes' to an array of 2 integers
  * instead of the default integer pointer.
