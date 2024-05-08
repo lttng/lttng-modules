@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
 
 # example usage:
-# lttng-get-syscall-inout.sh table-syscall-inout.txt select 1
+# lttng-get-syscall-inout.sh arm-64 select 5 1
 
 ARCH_NAME=$1
 SYSCALL_NAME=$2
@@ -14,18 +14,23 @@ GENERIC_INOUT_DESCRIPTION_FILE="$(dirname "$0")/table-syscall-inout.txt"
 # Delete temp file on exit
 trap 'rm -f "$TMPFILE"' EXIT
 
-if [ "${GENERIC_INOUT_DESCRIPTION_FILE}" = "" ]; then
-	echo "Error: Please specify input file name as first argument" >&2
+if [ "${ARCH_NAME}" = "" ]; then
+	echo "Error: Please specify the arch name as first argument" >&2
 	exit 1
 fi
 
 if [ "${SYSCALL_NAME}" = "" ]; then
-	echo "Error: Please specify system call name as second argument" >&2
+	echo "Error: Please specify the system call name as second argument" >&2
+	exit 1
+fi
+
+if [[ "${NB_ARGS}" = "" ]]; then
+	echo "Error: Please specify a number of arguments as third argument" >&2
 	exit 1
 fi
 
 if [[ "${ARG_NR}" = "" || ${ARG_NR} == 0 ]]; then
-	echo "Error: Please specify argument number larger than 0 as third argument" >&2
+	echo "Error: Please specify an argument number larger than 0 as fourth argument" >&2
 	exit 1
 fi
 
