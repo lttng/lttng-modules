@@ -4,18 +4,6 @@
 
 #ifndef CREATE_SYSCALL_TABLE
 
-#define OVERRIDE_32_execve
-#define OVERRIDE_64_execve
-SC_LTTNG_TRACEPOINT_EVENT(execve,
-	TP_PROTO(sc_exit(long ret,) const char *filename, char *const *argv, char *const *envp),
-	TP_ARGS(sc_exit(ret,) filename, argv, envp),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret))
-		sc_in(ctf_user_string(filename, filename))
-		sc_in(ctf_integer_hex(char *const *, argv, argv))
-		sc_in(ctf_integer_hex(char *const *, envp, envp))
-	)
-)
-
 #ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 
 /*

@@ -21,8 +21,6 @@ SC_LTTNG_TRACEPOINT_EVENT(pipe,
 
 #else	/* CREATE_SYSCALL_TABLE */
 
-#define OVERRIDE_TABLE_32_execve
-TRACE_SYSCALL_TABLE(execve, execve, 11, 3)
 #define OVERRIDE_TABLE_32_clone
 TRACE_SYSCALL_TABLE(clone, clone, 120, 5)
 
