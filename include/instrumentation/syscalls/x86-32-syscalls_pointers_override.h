@@ -4,15 +4,6 @@
 
 #ifndef CREATE_SYSCALL_TABLE
 
-# ifndef CONFIG_UID16
-#  define OVERRIDE_32_getgroups16
-#  define OVERRIDE_32_setgroups16
-#  define OVERRIDE_32_lchown16
-#  define OVERRIDE_32_getresuid16
-#  define OVERRIDE_32_getresgid16
-#  define OVERRIDE_32_chown16
-# endif
-
 /*
  * Override 'pipe' to set the output field 'fildes' to an array of 2 integers
  * instead of the default integer pointer.
@@ -29,15 +20,4 @@ SC_LTTNG_TRACEPOINT_EVENT(pipe,
 
 #else	/* CREATE_SYSCALL_TABLE */
 
-# ifndef CONFIG_UID16
-#  define OVERRIDE_TABLE_32_getgroups16
-#  define OVERRIDE_TABLE_32_setgroups16
-#  define OVERRIDE_TABLE_32_lchown16
-#  define OVERRIDE_TABLE_32_getresuid16
-#  define OVERRIDE_TABLE_32_getresgid16
-#  define OVERRIDE_TABLE_32_chown16
-# endif
-
 #endif /* CREATE_SYSCALL_TABLE */
-
-
