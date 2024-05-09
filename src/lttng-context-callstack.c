@@ -120,6 +120,7 @@ static const struct lttng_kernel_event_field *event_fields_user[NR_FIELDS] = {
 		false, false),
 };
 
+static
 const struct lttng_kernel_event_field **lttng_cs_event_fields(enum lttng_cs_ctx_modes mode)
 {
 	switch (mode) {
