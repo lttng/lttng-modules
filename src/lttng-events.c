@@ -1547,6 +1547,7 @@ void _lttng_event_destroy(struct lttng_kernel_event_common *event)
 	}
 }
 
+static
 struct lttng_kernel_id_tracker *get_tracker(struct lttng_kernel_session *session,
 		enum tracker_type tracker_type)
 {
@@ -2818,6 +2819,7 @@ void lttng_metadata_end(struct lttng_kernel_session *session)
  * The content of the printf is printed as a single atomic metadata
  * transaction.
  */
+static
 int lttng_metadata_printf(struct lttng_kernel_session *session,
 			  const char *fmt, ...)
 {
