@@ -13,6 +13,7 @@
 #define _LTTNG_WRAPPER_SPLICE_H
 
 #include <linux/splice.h>
+#include <linux/fs.h>
 
 ssize_t wrapper_splice_to_pipe(struct pipe_inode_info *pipe,
 			       struct splice_pipe_desc *spd);

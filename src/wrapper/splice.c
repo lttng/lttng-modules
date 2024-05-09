@@ -10,13 +10,14 @@
  */
 
 #include <lttng/kernel-version.h>
+#include <linux/fs.h>
+#include <linux/splice.h>
+#include <wrapper/splice.h>
 
 #if (defined(CONFIG_KALLSYMS) \
 	&& (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(4,2,0)))
 
 #include <linux/kallsyms.h>
-#include <linux/fs.h>
-#include <linux/splice.h>
 #include <wrapper/kallsyms.h>
 
 static
@@ -52,9 +53,6 @@ ssize_t __canary__splice_to_pipe(struct pipe_inode_info *pipe,
 }
 
 #else
-
-#include <linux/fs.h>
-#include <linux/splice.h>
 
 ssize_t wrapper_splice_to_pipe(struct pipe_inode_info *pipe,
 			       struct splice_pipe_desc *spd)
