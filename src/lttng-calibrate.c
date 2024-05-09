@@ -9,8 +9,9 @@
 
 #include <lttng/abi.h>
 #include <lttng/events.h>
+#include <lttng/events-internal.h>
 
-noinline
+static noinline
 void lttng_calibrate_kretprobe(void)
 {
 	asm volatile ("");
