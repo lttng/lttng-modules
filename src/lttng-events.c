@@ -2448,26 +2448,6 @@ void lttng_event_notifier_enabler_group_add(struct lttng_event_notifier_group *e
 	mutex_unlock(&sessions_mutex);
 }
 
-int lttng_event_notifier_enabler_enable(
-		struct lttng_event_notifier_enabler *event_notifier_enabler)
-{
-	mutex_lock(&sessions_mutex);
-	lttng_event_notifier_enabler_as_enabler(event_notifier_enabler)->enabled = 1;
-	lttng_event_notifier_group_sync_enablers(event_notifier_enabler->group);
-	mutex_unlock(&sessions_mutex);
-	return 0;
-}
-
-int lttng_event_notifier_enabler_disable(
-		struct lttng_event_notifier_enabler *event_notifier_enabler)
-{
-	mutex_lock(&sessions_mutex);
-	lttng_event_notifier_enabler_as_enabler(event_notifier_enabler)->enabled = 0;
-	lttng_event_notifier_group_sync_enablers(event_notifier_enabler->group);
-	mutex_unlock(&sessions_mutex);
-	return 0;
-}
-
 int lttng_event_notifier_enabler_attach_capture_bytecode(
 		struct lttng_event_notifier_enabler *event_notifier_enabler,
 		struct lttng_kernel_abi_capture_bytecode __user *bytecode)
