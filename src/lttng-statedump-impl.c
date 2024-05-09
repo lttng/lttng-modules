@@ -36,6 +36,7 @@
 
 #include <lttng/events.h>
 #include <lttng/tracer.h>
+#include <lttng/events-internal.h>
 #include <wrapper/cpu.h>
 #include <wrapper/irqdesc.h>
 #include <wrapper/fdtable.h>
