@@ -246,6 +246,7 @@ int capture_sequence_element_unsigned(uint8_t *ptr,
 	return 0;
 }
 
+static
 int capture_sequence(struct lttng_msgpack_writer *writer,
 		struct lttng_interpreter_output *output)
 {
