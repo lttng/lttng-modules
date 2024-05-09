@@ -18,12 +18,51 @@
 		|| LTTNG_DEBIAN_KERNEL_RANGE(3,16,7,9,0,0, 3,17,0,0,0,0) \
 		|| LTTNG_UBUNTU_KERNEL_RANGE(3,16,7,34, 3,17,0,0)))
 
+/* Include page_alloc wrapper before pageblock-flags.h. */
+#include <wrapper/page_alloc.h>
+
+#include <linux/pageblock-flags.h>
 #include <linux/kallsyms.h>
 #include <linux/mm_types.h>
 #include <linux/module.h>
 #include <wrapper/kallsyms.h>
-#include <wrapper/page_alloc.h>
+#include <lttng-kernel-version.h>
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,14,0))
+static
+unsigned long (*get_pfnblock_flags_mask_sym)(const struct page *page,
+		unsigned long pfn,
+		unsigned long mask);
+
+unsigned long wrapper_get_pfnblock_flags_mask(const struct page *page,
+		unsigned long pfn,
+		unsigned long mask)
+{
+	WARN_ON_ONCE(!get_pfnblock_flags_mask_sym);
+	if (get_pfnblock_flags_mask_sym) {
+		return get_pfnblock_flags_mask_sym(page, pfn, mask);
+	} else {
+		return -ENOSYS;
+	}
+}
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0))
+static
+unsigned long (*get_pfnblock_flags_mask_sym)(struct page *page,
+		unsigned long pfn,
+		unsigned long mask);
+
+unsigned long wrapper_get_pfnblock_flags_mask(struct page *page,
+		unsigned long pfn,
+		unsigned long mask)
+{
+	WARN_ON_ONCE(!get_pfnblock_flags_mask_sym);
+	if (get_pfnblock_flags_mask_sym) {
+		return get_pfnblock_flags_mask_sym(page, pfn, mask);
+	} else {
+		return -ENOSYS;
+	}
+}
+#else	/* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0)) */
 static
 unsigned long (*get_pfnblock_flags_mask_sym)(struct page *page,
 		unsigned long pfn,
@@ -42,6 +81,8 @@ unsigned long wrapper_get_pfnblock_flags_mask(struct page *page,
 		return -ENOSYS;
 	}
 }
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0)) */
+
 EXPORT_SYMBOL_GPL(wrapper_get_pfnblock_flags_mask);
 
 int wrapper_get_pfnblock_flags_mask_init(void)
@@ -53,25 +94,6 @@ int wrapper_get_pfnblock_flags_mask_init(void)
 	return 0;
 }
 EXPORT_SYMBOL_GPL(wrapper_get_pfnblock_flags_mask_init);
-
-/*
- * Canary function to check for 'get_pfnblock_flags_mask()' at compile time.
- *
- * From 'include/linux/pageblock-flags.h':
- *
- *   unsigned long get_pfnblock_flags_mask(struct page *page,
- *                                         unsigned long pfn,
- *                                         unsigned long end_bitidx,
- *                                         unsigned long mask);
- */
-__attribute__((unused)) static
-unsigned long __canary__get_pfnblock_flags_mask(struct page *page,
-						unsigned long pfn,
-						unsigned long end_bitidx,
-						unsigned long mask)
-{
-	return get_pfnblock_flags_mask(page, pfn, end_bitidx, mask);
-}
 
 #else
 
