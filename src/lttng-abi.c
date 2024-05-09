@@ -122,6 +122,7 @@ fd_error:
 	return ret;
 }
 
+static
 void event_notifier_send_notification_work_wakeup(struct irq_work *entry)
 {
 	struct lttng_event_notifier_group *event_notifier_group =
@@ -2568,6 +2569,7 @@ long lttng_metadata_ioctl(struct file *file, unsigned int cmd, unsigned long arg
  *	@file: the file
  *	@wait: poll table
  */
+static
 unsigned int lttng_channel_poll(struct file *file, poll_table *wait)
 {
 	struct lttng_kernel_channel_buffer *channel = file->private_data;
