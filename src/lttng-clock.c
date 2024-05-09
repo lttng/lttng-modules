@@ -12,6 +12,7 @@
 #include <wrapper/trace-clock.h>
 #include <lttng/events.h>
 #include <lttng/tracer.h>
+#include <lttng/events-internal.h>
 
 struct lttng_trace_clock *lttng_trace_clock;
 EXPORT_SYMBOL_GPL(lttng_trace_clock);
