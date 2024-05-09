@@ -596,26 +596,6 @@ void lttng_enabler_link_bytecode(const struct lttng_kernel_event_desc *event_des
 	}
 }
 
-/*
- * We own the filter_bytecode if we return success.
- */
-int lttng_filter_enabler_attach_bytecode(struct lttng_enabler *enabler,
-		struct lttng_kernel_bytecode_node *filter_bytecode)
-{
-	list_add(&filter_bytecode->node, &enabler->filter_bytecode_head);
-	return 0;
-}
-
-void lttng_free_enabler_filter_bytecode(struct lttng_enabler *enabler)
-{
-	struct lttng_kernel_bytecode_node *filter_bytecode, *tmp;
-
-	list_for_each_entry_safe(filter_bytecode, tmp,
-			&enabler->filter_bytecode_head, node) {
-		kfree(filter_bytecode);
-	}
-}
-
 void lttng_free_event_filter_runtime(struct lttng_kernel_event_common *event)
 {
 	struct bytecode_runtime *runtime, *tmp;
