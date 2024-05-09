@@ -52,7 +52,7 @@ struct class *wrapper_get_block_class(void)
  *   extern struct class block_class;
  */
 static inline
-struct class *__canary__get_block_class(void)
+const struct class *__canary__get_block_class(void)
 {
 	return &block_class;
 }
