@@ -2416,6 +2416,7 @@ void lib_ring_buffer_check_deliver_slow(const struct lttng_kernel_ring_buffer_co
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_check_deliver_slow);
 
+static
 int __init init_lib_ring_buffer_frontend(void)
 {
 	int cpu;
@@ -2427,6 +2428,7 @@ int __init init_lib_ring_buffer_frontend(void)
 
 module_init(init_lib_ring_buffer_frontend);
 
+static
 void __exit exit_lib_ring_buffer_frontend(void)
 {
 }
