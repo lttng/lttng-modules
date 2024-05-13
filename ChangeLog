@@ -1,3 +1,10 @@
+2024-05-13 (National Leprechaun Day) 2.12.17
+	* page alloc wrapper: Fix get_pfnblock_flags_mask prototype
+	* Fix: timer_expire_entry changed in 4.19.312
+	* Fix: build kvm probe on EL 8.4+
+	* Fix: support ext4_journal_start on EL 8.4+
+	* Fix: correct RHEL range for kmem_cache_free define
+
 2024-03-21 (National Common Courtesy Day) 2.12.16
 	* fix: lttng-probe-kvm-x86-mmu build with linux 6.6
 	* docs: Add supported versions and fix-backport policy
