@@ -1,3 +1,27 @@
+2024-05-13 (National Leprechaun Day) LTTng modules 2.13.13
+	* splice wrapper: Fix missing declaration
+	* page alloc wrapper: Fix get_pfnblock_flags_mask prototype
+	* lttng probe: include events-internal.h
+	* syscalls: Remove unused duplicated code
+	* statedump: Add missing events-internal.h include
+	* lttng-events: Add missing static
+	* event notifier: Add missing static
+	* context callstack: Add missing static
+	* lttng-clock: Add missing lttng/events-internal.h include
+	* lttng-calibrate: Add missing static and include
+	* lttng-bytecode: Remove dead code
+	* lttng-abi: Add missing static to function definitions
+	* ring buffer: Add missing static to function definitions
+	* blkdev wrapper: Fix constness warning
+	* Fix: timer_expire_entry changed in 4.19.312
+	* Fix: dev_base_lock removed in linux 6.9-rc1
+	* Fix: mm_compaction_migratepages changed in linux 6.9-rc1
+	* Fix: ASoC add component to set_bias_level events in linux 6.9-rc1
+	* Fix: ASoC snd_doc_dapm on linux 6.9-rc1
+	* Fix: build kvm probe on EL 8.4+
+	* Fix: support ext4_journal_start on EL 8.4+
+	* Fix: correct RHEL range for kmem_cache_free define
+
 2024-03-21 (National Common Courtesy Day) LTTng modules 2.13.12
 	* docs: Add supported versions and fix-backport policy
 	* docs: Add links to project resources
