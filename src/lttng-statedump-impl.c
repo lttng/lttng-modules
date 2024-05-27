@@ -42,7 +42,6 @@
 #include <wrapper/fdtable.h>
 #include <wrapper/tracepoint.h>
 #include <wrapper/blkdev.h>
-#include <wrapper/fdtable.h>
 #include <wrapper/sched.h>
 
 /* Define the tracepoints, but do not build the probes */
@@ -445,7 +444,7 @@ int lttng_dump_one_fd(const void *p, struct file *file, unsigned int fd)
 	 * the lock is taken, but we are not aware whether this is
 	 * guaranteed or not, so play safe.
 	 */
-	if (fd < fdt->max_fds && close_on_exec(fd, fdt))
+	if (fd < fdt->max_fds && lttng_close_on_exec(fd, ctx->files))
 		flags |= O_CLOEXEC;
 	if (IS_ERR(s)) {
 		struct dentry *dentry = file->f_path.dentry;

@@ -41,4 +41,18 @@ struct file *lttng_lookup_fdget_rcu(unsigned int fd)
 }
 #endif
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,10,0))
+static inline
+bool lttng_close_on_exec(unsigned int fd, const struct files_struct *files)
+{
+	return close_on_exec(fd, files);
+}
+#else
+static inline
+bool lttng_close_on_exec(unsigned int fd, const struct files_struct *files)
+{
+	return close_on_exec(fd, files_fdtable(files));
+}
+#endif
+
 #endif /* _LTTNG_WRAPPER_FDTABLE_H */
