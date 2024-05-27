@@ -69,18 +69,27 @@ int lttng_iterate_fd(struct files_struct *files,
 
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0))
-
-static inline bool lttng_close_on_exec(int fd, const struct fdtable *fdt)
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,10,0))
+static inline
+bool lttng_close_on_exec(unsigned int fd, const struct files_struct *files)
 {
-	return close_on_exec(fd, fdt);
+	return close_on_exec(fd, files);
+}
+
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0))
+
+static inline
+bool lttng_close_on_exec(unsigned int fd, const struct files_struct *files)
+{
+	return close_on_exec(fd, files_fdtable(files));
 }
 
 #else
 
-static inline bool lttng_close_on_exec(int fd, const struct fdtable *fdt)
+static inline
+bool lttng_close_on_exec(unsigned int fd, const struct files_struct *files)
 {
-	return FD_ISSET(fd, fdt->close_on_exec);
+	return FD_ISSET(fd, files_fdtable(files)->close_on_exec);
 }
 
 #endif
