@@ -958,7 +958,51 @@ LTTNG_TRACEPOINT_EVENT(btrfs_add_block_group,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,10,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(btrfs_delayed_tree_ref,
+
+	TP_PROTO(const struct btrfs_fs_info *fs_info,
+		 const struct btrfs_delayed_ref_node *ref),
+
+	TP_ARGS(fs_info, ref),
+
+	TP_FIELDS(
+		ctf_array(u8, fsid, lttng_fs_info_fsid, BTRFS_UUID_SIZE)
+		ctf_integer(u64, bytenr, ref->bytenr)
+		ctf_integer(u64, num_bytes, ref->num_bytes)
+		ctf_integer(int, action, ref->action)
+		ctf_integer(u64, parent, ref->tree_ref.parent)
+		ctf_integer(u64, ref_root, ref->tree_ref.root)
+		ctf_integer(int, level, ref->tree_ref.level)
+		ctf_integer(int, type, ref->type)
+		ctf_integer(u64, seq, ref->seq)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_tree_ref,
+
+	add_delayed_tree_ref,
+
+	btrfs_add_delayed_tree_ref,
+
+	TP_PROTO(const struct btrfs_fs_info *fs_info,
+		 const struct btrfs_delayed_ref_node *ref),
+
+	TP_ARGS(fs_info, ref)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_tree_ref,
+
+	run_delayed_tree_ref,
+
+	btrfs_run_delayed_tree_ref,
+
+	TP_PROTO(const struct btrfs_fs_info *fs_info,
+		 const struct btrfs_delayed_ref_node *ref),
+
+	TP_ARGS(fs_info, ref)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,73,5,0,0, 4,4,73,6,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,82,6,0,0, 4,4,82,7,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,92,6,0,0, 4,4,92,7,0,0) || \
@@ -1159,7 +1203,53 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_tree_ref,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,10,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(btrfs_delayed_data_ref,
+
+	TP_PROTO(const struct btrfs_fs_info *fs_info,
+		 const struct btrfs_delayed_ref_node *ref),
+
+	TP_ARGS(fs_info, ref),
+
+	TP_FIELDS(
+		ctf_array(u8, fsid, lttng_fs_info_fsid, BTRFS_UUID_SIZE)
+		ctf_integer(u64, bytenr, ref->bytenr)
+		ctf_integer(u64, num_bytes, ref->num_bytes)
+		ctf_integer(int, action, ref->action)
+		ctf_integer(u64, parent, ref->data_ref.parent)
+		ctf_integer(u64, ref_root, ref->data_ref.root)
+		ctf_integer(u64, owner, ref->data_ref.objectid)
+		ctf_integer(u64, offset, ref->data_ref.offset)
+		ctf_integer(int, type, ref->type)
+		ctf_integer(u64, seq, ref->seq)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_data_ref,
+
+	add_delayed_data_ref,
+
+	btrfs_add_delayed_data_ref,
+
+	TP_PROTO(const struct btrfs_fs_info *fs_info,
+		 const struct btrfs_delayed_ref_node *ref),
+
+	TP_ARGS(fs_info, ref)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs_delayed_data_ref,
+
+	run_delayed_data_ref,
+
+	btrfs_run_delayed_data_ref,
+
+	TP_PROTO(const struct btrfs_fs_info *fs_info,
+		 const struct btrfs_delayed_ref_node *ref),
+
+	TP_ARGS(fs_info, ref)
+)
+
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,73,5,0,0, 4,4,73,6,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,82,6,0,0, 4,4,82,7,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,92,6,0,0, 4,4,92,7,0,0) || \
