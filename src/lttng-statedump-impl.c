@@ -435,17 +435,22 @@ int lttng_dump_one_fd(const void *p, struct file *file, unsigned int fd)
 	 */
 	flags &= ~FMODE_NONOTIFY;
 	fdt = files_fdtable(ctx->files);
+
 	/*
-	 * We need to check here again whether fd is within the fdt
-	 * max_fds range, because we might be seeing a different
-	 * files_fdtable() than iterate_fd(), assuming only RCU is
-	 * protecting the read. In reality, iterate_fd() holds
-	 * file_lock, which should ensure the fdt does not change while
-	 * the lock is taken, but we are not aware whether this is
-	 * guaranteed or not, so play safe.
+	 * The fdt should only grow and iterate_fd() holds file_lock, which
+	 * should ensure the fdt does not change while the lock is taken but be
+	 * cautious and check anyway.
 	 */
-	if (fd < fdt->max_fds && lttng_close_on_exec(fd, ctx->files))
+	if (WARN_ON_ONCE(fd >= fdt->max_fds))
+		return 0;
+
+	if (lttng_close_on_exec(fd, ctx->files))
 		flags |= O_CLOEXEC;
+
+	/*
+	 * If d_path() failed to get a full path for the file, use the dentry
+	 * name instead to at least get a filename.
+	 */
 	if (IS_ERR(s)) {
 		struct dentry *dentry = file->f_path.dentry;
 
