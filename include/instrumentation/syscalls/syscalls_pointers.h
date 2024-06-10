@@ -10,14 +10,18 @@
 #include "x86-32-syscalls_pointers.h"
 #endif
 
+#ifdef CONFIG_ARM64
+#include "arm-64-syscalls_pointers.h"
+#endif
+
 #ifdef CONFIG_ARM
 #include "arm-32-syscalls_pointers.h"
 #endif
 
-#ifdef CONFIG_PPC
-#include "powerpc-32-syscalls_pointers.h"
+#ifdef CONFIG_PPC64
+#include "powerpc-64-syscalls_pointers.h"
 #endif
 
-#ifdef CONFIG_ARM64
-#include "arm-64-syscalls_pointers.h"
+#ifdef CONFIG_PPC32
+#include "powerpc-32-syscalls_pointers.h"
 #endif
