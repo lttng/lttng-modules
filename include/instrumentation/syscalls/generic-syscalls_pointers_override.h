@@ -371,7 +371,10 @@ end:	; /* Label at end of compound statement. */					\
 	lttng_tp_mempool_free(tp_locvar->fds_out);	\
 	lttng_tp_mempool_free(tp_locvar->fds_ex);
 
-#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM)
+/*
+ * The 'select' syscall is only available on x86 32/64, ppc 32/64 and arm-32.
+ */
+#if defined(CONFIG_X86) || defined(CONFIG_PPC) || defined(CONFIG_ARM)
 /*
  * Instead of extracting the user-space pointers of the 3 fd_set,
  * extract the bitmask of the FDs in the sets (in, out, ex) in the form
@@ -411,7 +414,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(select,
 		LTTNG_SYSCALL_SELECT_code_post
 	)
 )
-#endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM) */
+#endif /* defined(CONFIG_X86) || defined(CONFIG_PPC) || defined(CONFIG_ARM) */
 
 /*
  * This is the new 'pselect6_time64' syscall, for the old 'pselect6' now
@@ -457,7 +460,10 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(pselect6,
 	)
 )
 
-#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM)
+/*
+ * The 'poll' syscall is only available on x86 32/64, ppc 32/64 and arm-32.
+ */
+#if defined(CONFIG_X86) || defined(CONFIG_PPC) || defined(CONFIG_ARM)
 /*
  * Instead of printing the pointer address of the poll set, extract all the FDs
  * and flags from the poll set. For now, only output the standardized
@@ -489,7 +495,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(poll,
 		LTTNG_SYSCALL_POLL_code_post
 	)
 )
-#endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM) */
+#endif /* defined(CONFIG_X86) || defined(CONFIG_PPC) || defined(CONFIG_ARM) */
 
 /*
  * This is the new 'ppoll_time64' syscall, for the old 'ppoll' now
@@ -615,7 +621,14 @@ LTTNG_TRACEPOINT_TYPE(PARAMS(const struct lttng_kernel_type_struct epoll_ctl_fie
 #endif /* ONCE_LTTNG_TRACE_EPOLL_CTL_H */
 #endif /* LTTNG_CREATE_FIELD_METADATA */
 
-#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM)
+/*
+ * Extract the payload for epoll_ctl
+ *
+ * Map the operation to its name (EPOLL_CTL_*), extract the standard event
+ * flags (EPOLL*) and output the data in two different formats: FD as an int in
+ * decimal, and u64 in hex. The less standard event flags are not extracted
+ * yet, but we extract the raw value in hex for more advanced analyses.
+ */
 #define OVERRIDE_32_epoll_ctl
 #define OVERRIDE_64_epoll_ctl
 SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_ctl,
@@ -662,7 +675,6 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_ctl,
 	),
 	TP_code_post()
 )
-#endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM) */
 
 #ifdef LTTNG_CREATE_FIELD_METADATA
 #ifndef ONCE_LTTNG_TRACE_EPOLL_H
@@ -768,7 +780,10 @@ LTTNG_TRACEPOINT_TYPE(PARAMS(const struct lttng_kernel_type_struct lttng_epoll_w
 	)
 
 
-#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM)
+/*
+ * The 'epoll_wait' syscall is only available on x86 32/64, ppc 32/64 and arm-32.
+ */
+#if defined(CONFIG_X86) || defined(CONFIG_PPC) || defined(CONFIG_ARM)
 #define OVERRIDE_32_epoll_wait
 #define OVERRIDE_64_epoll_wait
 SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_wait,
@@ -796,9 +811,8 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_wait,
 		LTTNG_SYSCALL_EPOLL_WAIT_code_post
 	)
 )
-#endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM) */
+#endif /* defined(CONFIG_X86) || defined(CONFIG_PPC) || defined(CONFIG_ARM) */
 
-#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM)
 #define OVERRIDE_32_epoll_pwait
 #define OVERRIDE_64_epoll_pwait
 SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_pwait,
@@ -828,7 +842,6 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_pwait,
 		LTTNG_SYSCALL_EPOLL_WAIT_code_post
 	)
 )
-#endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM) */
 
 /*
  * Override 'socketpair' to set the output field 'usockvec' to an array of 2
@@ -904,6 +917,9 @@ SC_LTTNG_TRACEPOINT_ENUM(lttng_file_mode,
 	)
 )
 
+/*
+ * Override 'openat' to set the output fields 'flags' and 'mode' to flag enumerations.
+ */
 #define OVERRIDE_32_openat
 #define OVERRIDE_64_openat
 SC_LTTNG_TRACEPOINT_EVENT(openat,
@@ -918,6 +934,9 @@ SC_LTTNG_TRACEPOINT_EVENT(openat,
 	)
 )
 
+/*
+ * Override 'open' to set the output fields 'flags' and 'mode' to flag enumerations.
+ */
 #define OVERRIDE_32_open
 #define OVERRIDE_64_open
 SC_LTTNG_TRACEPOINT_EVENT(open,
