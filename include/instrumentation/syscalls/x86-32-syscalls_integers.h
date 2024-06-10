@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2022 EfficiOS Inc.
+// SPDX-FileCopyrightText: 2026 EfficiOS Inc.
 //
 // SPDX-License-Identifier: GPL-2.0-only OR LGPL-2.1-only
 
@@ -290,7 +290,7 @@ SC_LTTNG_TRACEPOINT_EVENT(close,
 SC_LTTNG_TRACEPOINT_EVENT(setuid16,
 	TP_PROTO(sc_exit(long ret,) old_uid_t uid),
 	TP_ARGS(sc_exit(ret,) uid),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(old_uid_t, uid, uid)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(old_uid_t, uid, uid)))
 )
 #endif
 #ifndef OVERRIDE_32_alarm
@@ -304,7 +304,7 @@ SC_LTTNG_TRACEPOINT_EVENT(alarm,
 SC_LTTNG_TRACEPOINT_EVENT(nice,
 	TP_PROTO(sc_exit(long ret,) int increment),
 	TP_ARGS(sc_exit(ret,) increment),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(int, increment, increment)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(int, increment, increment)))
 )
 #endif
 #ifndef OVERRIDE_32_dup
@@ -325,7 +325,7 @@ SC_LTTNG_TRACEPOINT_EVENT(brk,
 SC_LTTNG_TRACEPOINT_EVENT(setgid16,
 	TP_PROTO(sc_exit(long ret,) old_gid_t gid),
 	TP_ARGS(sc_exit(ret,) gid),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(old_gid_t, gid, gid)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(old_gid_t, gid, gid)))
 )
 #endif
 #ifndef OVERRIDE_32_umask
@@ -339,14 +339,14 @@ SC_LTTNG_TRACEPOINT_EVENT(umask,
 SC_LTTNG_TRACEPOINT_EVENT(ssetmask,
 	TP_PROTO(sc_exit(long ret,) int newmask),
 	TP_ARGS(sc_exit(ret,) newmask),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(int, newmask, newmask)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(int, newmask, newmask)))
 )
 #endif
 #ifndef OVERRIDE_32_iopl
 SC_LTTNG_TRACEPOINT_EVENT(iopl,
 	TP_PROTO(sc_exit(long ret,) unsigned int level),
 	TP_ARGS(sc_exit(ret,) level),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(unsigned int, level, level)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(unsigned int, level, level)))
 )
 #endif
 #ifndef OVERRIDE_32_fsync
@@ -381,14 +381,14 @@ SC_LTTNG_TRACEPOINT_EVENT(personality,
 SC_LTTNG_TRACEPOINT_EVENT(setfsuid16,
 	TP_PROTO(sc_exit(long ret,) old_uid_t uid),
 	TP_ARGS(sc_exit(ret,) uid),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(old_uid_t, uid, uid)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(old_uid_t, uid, uid)))
 )
 #endif
 #ifndef OVERRIDE_32_setfsgid16
 SC_LTTNG_TRACEPOINT_EVENT(setfsgid16,
 	TP_PROTO(sc_exit(long ret,) old_gid_t gid),
 	TP_ARGS(sc_exit(ret,) gid),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(old_gid_t, gid, gid)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(old_gid_t, gid, gid)))
 )
 #endif
 #ifndef OVERRIDE_32_getsid
@@ -535,14 +535,14 @@ SC_LTTNG_TRACEPOINT_EVENT(syncfs,
 SC_LTTNG_TRACEPOINT_EVENT(userfaultfd,
 	TP_PROTO(sc_exit(long ret,) int flags),
 	TP_ARGS(sc_exit(ret,) flags),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(int, flags, flags)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(int, flags, flags)))
 )
 #endif
 #ifndef OVERRIDE_32_memfd_secret
 SC_LTTNG_TRACEPOINT_EVENT(memfd_secret,
 	TP_PROTO(sc_exit(long ret,) unsigned int flags),
 	TP_ARGS(sc_exit(ret,) flags),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(unsigned int, flags, flags)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(unsigned int, flags, flags)))
 )
 #endif
 #ifndef OVERRIDE_32_kill
@@ -556,7 +556,7 @@ SC_LTTNG_TRACEPOINT_EVENT(kill,
 SC_LTTNG_TRACEPOINT_EVENT(signal,
 	TP_PROTO(sc_exit(long ret,) int sig, __sighandler_t handler),
 	TP_ARGS(sc_exit(ret,) sig, handler),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(int, sig, sig)) sc_inout(ctf_integer(__sighandler_t, handler, handler)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(int, sig, sig)) sc_in(ctf_integer(__sighandler_t, handler, handler)))
 )
 #endif
 #ifndef OVERRIDE_32_setpgid
@@ -577,14 +577,14 @@ SC_LTTNG_TRACEPOINT_EVENT(dup2,
 SC_LTTNG_TRACEPOINT_EVENT(setreuid16,
 	TP_PROTO(sc_exit(long ret,) old_uid_t ruid, old_uid_t euid),
 	TP_ARGS(sc_exit(ret,) ruid, euid),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(old_uid_t, ruid, ruid)) sc_inout(ctf_integer(old_uid_t, euid, euid)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(old_uid_t, ruid, ruid)) sc_in(ctf_integer(old_uid_t, euid, euid)))
 )
 #endif
 #ifndef OVERRIDE_32_setregid16
 SC_LTTNG_TRACEPOINT_EVENT(setregid16,
 	TP_PROTO(sc_exit(long ret,) old_gid_t rgid, old_gid_t egid),
 	TP_ARGS(sc_exit(ret,) rgid, egid),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(old_gid_t, rgid, rgid)) sc_inout(ctf_integer(old_gid_t, egid, egid)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(old_gid_t, rgid, rgid)) sc_in(ctf_integer(old_gid_t, egid, egid)))
 )
 #endif
 #ifndef OVERRIDE_32_munmap
@@ -717,7 +717,7 @@ SC_LTTNG_TRACEPOINT_EVENT(shutdown,
 SC_LTTNG_TRACEPOINT_EVENT(arch_prctl,
 	TP_PROTO(sc_exit(long ret,) int option, unsigned long arg2),
 	TP_ARGS(sc_exit(ret,) option, arg2),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(int, option, option)) sc_inout(ctf_integer(unsigned long, arg2, arg2)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(int, option, option)) sc_inout(ctf_integer(unsigned long, arg2, arg2)))
 )
 #endif
 #ifndef OVERRIDE_32_msgget
@@ -731,14 +731,14 @@ SC_LTTNG_TRACEPOINT_EVENT(msgget,
 SC_LTTNG_TRACEPOINT_EVENT(pidfd_open,
 	TP_PROTO(sc_exit(long ret,) pid_t pid, unsigned int flags),
 	TP_ARGS(sc_exit(ret,) pid, flags),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(pid_t, pid, pid)) sc_inout(ctf_integer(unsigned int, flags, flags)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(pid_t, pid, pid)) sc_in(ctf_integer(unsigned int, flags, flags)))
 )
 #endif
 #ifndef OVERRIDE_32_process_mrelease
 SC_LTTNG_TRACEPOINT_EVENT(process_mrelease,
 	TP_PROTO(sc_exit(long ret,) int pidfd, unsigned int flags),
 	TP_ARGS(sc_exit(ret,) pidfd, flags),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(int, pidfd, pidfd)) sc_inout(ctf_integer(unsigned int, flags, flags)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(int, pidfd, pidfd)) sc_in(ctf_integer(unsigned int, flags, flags)))
 )
 #endif
 #ifndef OVERRIDE_32_lseek
@@ -766,14 +766,14 @@ SC_LTTNG_TRACEPOINT_EVENT(fcntl,
 SC_LTTNG_TRACEPOINT_EVENT(sigsuspend,
 	TP_PROTO(sc_exit(long ret,) int unused1, int unused2, old_sigset_t mask),
 	TP_ARGS(sc_exit(ret,) unused1, unused2, mask),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(int, unused1, unused1)) sc_inout(ctf_integer(int, unused2, unused2)) sc_inout(ctf_integer(old_sigset_t, mask, mask)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(int, unused1, unused1)) sc_in(ctf_integer(int, unused2, unused2)) sc_in(ctf_integer(old_sigset_t, mask, mask)))
 )
 #endif
 #ifndef OVERRIDE_32_fchown16
 SC_LTTNG_TRACEPOINT_EVENT(fchown16,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, old_uid_t user, old_gid_t group),
 	TP_ARGS(sc_exit(ret,) fd, user, group),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(unsigned int, fd, fd)) sc_inout(ctf_integer(old_uid_t, user, user)) sc_inout(ctf_integer(old_gid_t, group, group)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(unsigned int, fd, fd)) sc_in(ctf_integer(old_uid_t, user, user)) sc_in(ctf_integer(old_gid_t, group, group)))
 )
 #endif
 #ifndef OVERRIDE_32_setpriority
@@ -787,7 +787,7 @@ SC_LTTNG_TRACEPOINT_EVENT(setpriority,
 SC_LTTNG_TRACEPOINT_EVENT(ioperm,
 	TP_PROTO(sc_exit(long ret,) unsigned long from, unsigned long num, int turn_on),
 	TP_ARGS(sc_exit(ret,) from, num, turn_on),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(unsigned long, from, from)) sc_inout(ctf_integer(unsigned long, num, num)) sc_inout(ctf_integer(int, turn_on, turn_on)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(unsigned long, from, from)) sc_in(ctf_integer(unsigned long, num, num)) sc_in(ctf_integer(int, turn_on, turn_on)))
 )
 #endif
 #ifndef OVERRIDE_32_mprotect
@@ -815,21 +815,21 @@ SC_LTTNG_TRACEPOINT_EVENT(msync,
 SC_LTTNG_TRACEPOINT_EVENT(setresuid16,
 	TP_PROTO(sc_exit(long ret,) old_uid_t ruid, old_uid_t euid, old_uid_t suid),
 	TP_ARGS(sc_exit(ret,) ruid, euid, suid),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(old_uid_t, ruid, ruid)) sc_inout(ctf_integer(old_uid_t, euid, euid)) sc_inout(ctf_integer(old_uid_t, suid, suid)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(old_uid_t, ruid, ruid)) sc_in(ctf_integer(old_uid_t, euid, euid)) sc_in(ctf_integer(old_uid_t, suid, suid)))
 )
 #endif
 #ifndef OVERRIDE_32_setresgid16
 SC_LTTNG_TRACEPOINT_EVENT(setresgid16,
 	TP_PROTO(sc_exit(long ret,) old_gid_t rgid, old_gid_t egid, old_gid_t sgid),
 	TP_ARGS(sc_exit(ret,) rgid, egid, sgid),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(old_gid_t, rgid, rgid)) sc_inout(ctf_integer(old_gid_t, egid, egid)) sc_inout(ctf_integer(old_gid_t, sgid, sgid)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(old_gid_t, rgid, rgid)) sc_in(ctf_integer(old_gid_t, egid, egid)) sc_in(ctf_integer(old_gid_t, sgid, sgid)))
 )
 #endif
 #ifndef OVERRIDE_32_ia32_ftruncate64
 SC_LTTNG_TRACEPOINT_EVENT(ia32_ftruncate64,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, unsigned long offset_low, unsigned long offset_high),
 	TP_ARGS(sc_exit(ret,) fd, offset_low, offset_high),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(unsigned int, fd, fd)) sc_inout(ctf_integer(unsigned long, offset_low, offset_low)) sc_inout(ctf_integer(unsigned long, offset_high, offset_high)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(unsigned int, fd, fd)) sc_in(ctf_integer(unsigned long, offset_low, offset_low)) sc_in(ctf_integer(unsigned long, offset_high, offset_high)))
 )
 #endif
 #ifndef OVERRIDE_32_fchown
@@ -864,7 +864,7 @@ SC_LTTNG_TRACEPOINT_EVENT(madvise,
 SC_LTTNG_TRACEPOINT_EVENT(fcntl64,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, unsigned int cmd, unsigned long arg),
 	TP_ARGS(sc_exit(ret,) fd, cmd, arg),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(unsigned int, fd, fd)) sc_inout(ctf_integer(unsigned int, cmd, cmd)) sc_inout(ctf_integer(unsigned long, arg, arg)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(unsigned int, fd, fd)) sc_in(ctf_integer(unsigned int, cmd, cmd)) sc_inout(ctf_integer(unsigned long, arg, arg)))
 )
 #endif
 #ifndef OVERRIDE_32_tgkill
@@ -899,14 +899,14 @@ SC_LTTNG_TRACEPOINT_EVENT(socket,
 SC_LTTNG_TRACEPOINT_EVENT(membarrier,
 	TP_PROTO(sc_exit(long ret,) int cmd, unsigned int flags, int cpu_id),
 	TP_ARGS(sc_exit(ret,) cmd, flags, cpu_id),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(int, cmd, cmd)) sc_inout(ctf_integer(unsigned int, flags, flags)) sc_inout(ctf_integer(int, cpu_id, cpu_id)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(int, cmd, cmd)) sc_in(ctf_integer(unsigned int, flags, flags)) sc_in(ctf_integer(int, cpu_id, cpu_id)))
 )
 #endif
 #ifndef OVERRIDE_32_mlock2
 SC_LTTNG_TRACEPOINT_EVENT(mlock2,
 	TP_PROTO(sc_exit(long ret,) unsigned long start, size_t len, int flags),
 	TP_ARGS(sc_exit(ret,) start, len, flags),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(unsigned long, start, start)) sc_inout(ctf_integer(size_t, len, len)) sc_inout(ctf_integer(int, flags, flags)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(unsigned long, start, start)) sc_in(ctf_integer(size_t, len, len)) sc_in(ctf_integer(int, flags, flags)))
 )
 #endif
 #ifndef OVERRIDE_32_semget
@@ -927,21 +927,21 @@ SC_LTTNG_TRACEPOINT_EVENT(shmget,
 SC_LTTNG_TRACEPOINT_EVENT(fsmount,
 	TP_PROTO(sc_exit(long ret,) int fs_fd, unsigned int flags, unsigned int attr_flags),
 	TP_ARGS(sc_exit(ret,) fs_fd, flags, attr_flags),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(int, fs_fd, fs_fd)) sc_inout(ctf_integer(unsigned int, flags, flags)) sc_inout(ctf_integer(unsigned int, attr_flags, attr_flags)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(int, fs_fd, fs_fd)) sc_in(ctf_integer(unsigned int, flags, flags)) sc_in(ctf_integer(unsigned int, attr_flags, attr_flags)))
 )
 #endif
 #ifndef OVERRIDE_32_close_range
 SC_LTTNG_TRACEPOINT_EVENT(close_range,
 	TP_PROTO(sc_exit(long ret,) unsigned int fd, unsigned int max_fd, unsigned int flags),
 	TP_ARGS(sc_exit(ret,) fd, max_fd, flags),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(unsigned int, fd, fd)) sc_inout(ctf_integer(unsigned int, max_fd, max_fd)) sc_inout(ctf_integer(unsigned int, flags, flags)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(unsigned int, fd, fd)) sc_in(ctf_integer(unsigned int, max_fd, max_fd)) sc_in(ctf_integer(unsigned int, flags, flags)))
 )
 #endif
 #ifndef OVERRIDE_32_pidfd_getfd
 SC_LTTNG_TRACEPOINT_EVENT(pidfd_getfd,
 	TP_PROTO(sc_exit(long ret,) int pidfd, int fd, unsigned int flags),
 	TP_ARGS(sc_exit(ret,) pidfd, fd, flags),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(int, pidfd, pidfd)) sc_inout(ctf_integer(int, fd, fd)) sc_inout(ctf_integer(unsigned int, flags, flags)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(int, pidfd, pidfd)) sc_in(ctf_integer(int, fd, fd)) sc_in(ctf_integer(unsigned int, flags, flags)))
 )
 #endif
 #ifndef OVERRIDE_32_ptrace
@@ -955,7 +955,7 @@ SC_LTTNG_TRACEPOINT_EVENT(ptrace,
 SC_LTTNG_TRACEPOINT_EVENT(ia32_readahead,
 	TP_PROTO(sc_exit(long ret,) int fd, unsigned int off_lo, unsigned int off_hi, size_t count),
 	TP_ARGS(sc_exit(ret,) fd, off_lo, off_hi, count),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(int, fd, fd)) sc_inout(ctf_integer(unsigned int, off_lo, off_lo)) sc_inout(ctf_integer(unsigned int, off_hi, off_hi)) sc_inout(ctf_integer(size_t, count, count)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(int, fd, fd)) sc_in(ctf_integer(unsigned int, off_lo, off_lo)) sc_in(ctf_integer(unsigned int, off_hi, off_hi)) sc_in(ctf_integer(size_t, count, count)))
 )
 #endif
 #ifndef OVERRIDE_32_tee
@@ -990,7 +990,7 @@ SC_LTTNG_TRACEPOINT_EVENT(prctl,
 SC_LTTNG_TRACEPOINT_EVENT(ia32_fadvise64,
 	TP_PROTO(sc_exit(long ret,) int fd, unsigned int offset_lo, unsigned int offset_hi, size_t len, int advice),
 	TP_ARGS(sc_exit(ret,) fd, offset_lo, offset_hi, len, advice),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(int, fd, fd)) sc_inout(ctf_integer(unsigned int, offset_lo, offset_lo)) sc_inout(ctf_integer(unsigned int, offset_hi, offset_hi)) sc_inout(ctf_integer(size_t, len, len)) sc_inout(ctf_integer(int, advice, advice)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(int, fd, fd)) sc_in(ctf_integer(unsigned int, offset_lo, offset_lo)) sc_in(ctf_integer(unsigned int, offset_hi, offset_hi)) sc_in(ctf_integer(size_t, len, len)) sc_in(ctf_integer(int, advice, advice)))
 )
 #endif
 #ifndef OVERRIDE_32_remap_file_pages
@@ -1011,35 +1011,35 @@ SC_LTTNG_TRACEPOINT_EVENT(keyctl,
 SC_LTTNG_TRACEPOINT_EVENT(kcmp,
 	TP_PROTO(sc_exit(long ret,) pid_t pid1, pid_t pid2, int type, unsigned long idx1, unsigned long idx2),
 	TP_ARGS(sc_exit(ret,) pid1, pid2, type, idx1, idx2),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(pid_t, pid1, pid1)) sc_inout(ctf_integer(pid_t, pid2, pid2)) sc_inout(ctf_integer(int, type, type)) sc_inout(ctf_integer(unsigned long, idx1, idx1)) sc_inout(ctf_integer(unsigned long, idx2, idx2)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(pid_t, pid1, pid1)) sc_in(ctf_integer(pid_t, pid2, pid2)) sc_in(ctf_integer(int, type, type)) sc_in(ctf_integer(unsigned long, idx1, idx1)) sc_in(ctf_integer(unsigned long, idx2, idx2)))
 )
 #endif
 #ifndef OVERRIDE_32_mmap_pgoff
 SC_LTTNG_TRACEPOINT_EVENT(mmap_pgoff,
 	TP_PROTO(sc_exit(long ret,) unsigned long addr, unsigned long len, unsigned long prot, unsigned long flags, unsigned long fd, unsigned long pgoff),
 	TP_ARGS(sc_exit(ret,) addr, len, prot, flags, fd, pgoff),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(unsigned long, addr, addr)) sc_inout(ctf_integer(unsigned long, len, len)) sc_inout(ctf_integer(unsigned long, prot, prot)) sc_inout(ctf_integer(unsigned long, flags, flags)) sc_inout(ctf_integer(unsigned long, fd, fd)) sc_inout(ctf_integer(unsigned long, pgoff, pgoff)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(unsigned long, addr, addr)) sc_in(ctf_integer(unsigned long, len, len)) sc_in(ctf_integer(unsigned long, prot, prot)) sc_in(ctf_integer(unsigned long, flags, flags)) sc_in(ctf_integer(unsigned long, fd, fd)) sc_in(ctf_integer(unsigned long, pgoff, pgoff)))
 )
 #endif
 #ifndef OVERRIDE_32_ia32_fadvise64_64
 SC_LTTNG_TRACEPOINT_EVENT(ia32_fadvise64_64,
 	TP_PROTO(sc_exit(long ret,) int fd, __u32 offset_low, __u32 offset_high, __u32 len_low, __u32 len_high, int advice),
 	TP_ARGS(sc_exit(ret,) fd, offset_low, offset_high, len_low, len_high, advice),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(int, fd, fd)) sc_inout(ctf_integer(__u32, offset_low, offset_low)) sc_inout(ctf_integer(__u32, offset_high, offset_high)) sc_inout(ctf_integer(__u32, len_low, len_low)) sc_inout(ctf_integer(__u32, len_high, len_high)) sc_inout(ctf_integer(int, advice, advice)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(int, fd, fd)) sc_in(ctf_integer(__u32, offset_low, offset_low)) sc_in(ctf_integer(__u32, offset_high, offset_high)) sc_in(ctf_integer(__u32, len_low, len_low)) sc_in(ctf_integer(__u32, len_high, len_high)) sc_in(ctf_integer(int, advice, advice)))
 )
 #endif
 #ifndef OVERRIDE_32_ia32_sync_file_range
 SC_LTTNG_TRACEPOINT_EVENT(ia32_sync_file_range,
 	TP_PROTO(sc_exit(long ret,) int fd, unsigned int off_low, unsigned int off_hi, unsigned int n_low, unsigned int n_hi, int flags),
 	TP_ARGS(sc_exit(ret,) fd, off_low, off_hi, n_low, n_hi, flags),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(int, fd, fd)) sc_inout(ctf_integer(unsigned int, off_low, off_low)) sc_inout(ctf_integer(unsigned int, off_hi, off_hi)) sc_inout(ctf_integer(unsigned int, n_low, n_low)) sc_inout(ctf_integer(unsigned int, n_hi, n_hi)) sc_inout(ctf_integer(int, flags, flags)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(int, fd, fd)) sc_in(ctf_integer(unsigned int, off_low, off_low)) sc_in(ctf_integer(unsigned int, off_hi, off_hi)) sc_in(ctf_integer(unsigned int, n_low, n_low)) sc_in(ctf_integer(unsigned int, n_hi, n_hi)) sc_in(ctf_integer(int, flags, flags)))
 )
 #endif
 #ifndef OVERRIDE_32_ia32_fallocate
 SC_LTTNG_TRACEPOINT_EVENT(ia32_fallocate,
 	TP_PROTO(sc_exit(long ret,) int fd, int mode, unsigned int offset_lo, unsigned int offset_hi, unsigned int len_lo, unsigned int len_hi),
 	TP_ARGS(sc_exit(ret,) fd, mode, offset_lo, offset_hi, len_lo, len_hi),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_inout(ctf_integer(int, fd, fd)) sc_inout(ctf_integer(int, mode, mode)) sc_inout(ctf_integer(unsigned int, offset_lo, offset_lo)) sc_inout(ctf_integer(unsigned int, offset_hi, offset_hi)) sc_inout(ctf_integer(unsigned int, len_lo, len_lo)) sc_inout(ctf_integer(unsigned int, len_hi, len_hi)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(int, fd, fd)) sc_in(ctf_integer(int, mode, mode)) sc_in(ctf_integer(unsigned int, offset_lo, offset_lo)) sc_in(ctf_integer(unsigned int, offset_hi, offset_hi)) sc_in(ctf_integer(unsigned int, len_lo, len_lo)) sc_in(ctf_integer(unsigned int, len_hi, len_hi)))
 )
 #endif
 
@@ -1206,6 +1206,7 @@ TRACE_SYSCALL_TABLE(gettid, gettid, 224, 0)
 TRACE_SYSCALL_TABLE(inotify_init, inotify_init, 291, 0)
 #endif
 #endif /* else #ifdef SC_ENTER */
+
 #ifndef OVERRIDE_TABLE_32_exit
 TRACE_SYSCALL_TABLE(exit, exit, 1, 1)
 #endif
