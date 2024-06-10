@@ -25,3 +25,11 @@
 #ifdef CONFIG_PPC32
 #include "powerpc-32-syscalls_pointers.h"
 #endif
+
+#if defined(CONFIG_RISCV) && defined(CONFIG_64BIT)
+#include "riscv-64-syscalls_pointers.h"
+#endif
+
+#if defined(CONFIG_RISCV) && defined(CONFIG_32BIT)
+#include "riscv-32-syscalls_pointers.h"
+#endif

@@ -13,3 +13,7 @@
 #ifdef CONFIG_PPC64
 #include "powerpc-32-syscalls_integers.h"
 #endif
+
+#if defined(CONFIG_RISCV) && defined(CONFIG_64BIT)
+#include "riscv-32-syscalls_integers.h"
+#endif
