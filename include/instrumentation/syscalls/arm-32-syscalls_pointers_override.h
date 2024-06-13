@@ -2,8 +2,6 @@
 //
 // SPDX-License-Identifier: GPL-2.0-only OR LGPL-2.1-only
 
-#define OVERRIDE_TABLE_32_mmap2
-
 #ifndef CREATE_SYSCALL_TABLE
 
 /*
