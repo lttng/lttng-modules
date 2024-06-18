@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2014-2022 EfficiOS Inc.
+#
+# SPDX-License-Identifier: CC0-1.0
+
 syscall read nbargs 3 rw: (r, w, r)
 syscall write nbargs 3 rw: (r, r, r)
 syscall open nbargs 3 rw: (r, r, r)

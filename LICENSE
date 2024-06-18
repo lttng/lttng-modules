@@ -4,14 +4,14 @@ June 2, 2011
 
 * LGPL-2.1 / GPL-2.0 dual-license
 
-The files contained within this package are licensed under
-LGPL-2.1 / GPL-2.0 dual-license (see LICENSES/LGPL-2.1 and LICENSES/GPL-2.0 for
+The files contained within this package are licensed under LGPL-2.1 / GPL-2.0
+dual-license (see LICENSES/LGPL-2.1-only.txt and LICENSES/GPL-2.0-only.txt for
 details), except for files identified by the following sections.
 
 * GPL-2.0 license
 
 These files are licensed exclusively under the GPL-2.0 license. See
-LICENSES/GPL-2.0 for details.
+LICENSES/GPL-2.0-only.txt for details.
 
 src/lib/ringbuffer/ring_buffer_splice.c
 src/lib/ringbuffer/ring_buffer_mmap.c
@@ -20,7 +20,7 @@ include/wrapper/list.h
 
 * MIT-style license
 
-These files are licensed under an MIT-style license. See LICENSES/MIT
+These files are licensed under an MIT-style license. See LICENSES/MIT.txt
 for details.
 
 include/lttng/prio_heap.h

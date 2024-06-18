@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2013 Jan Glauber <jan.glauber@gmail.com>
+#
+# SPDX-License-Identifier: CC0-1.0
+
 syscall sys_restart_syscall nr 0 nbargs 0 types: () args: ()
 syscall sys_exit nr 1 nbargs 1 types: (int) args: (error_code)
 syscall sys_read nr 3 nbargs 3 types: (unsigned int, char *, size_t) args: (fd, buf, count)

@@ -1,4 +1,6 @@
-/* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only) */
+// SPDX-FileCopyrightText: 2012 Ralf Baechle <ralf@linux-mips.org>
+//
+// SPDX-License-Identifier: GPL-2.0-only OR LGPL-2.1-only
 
 /* THIS FILE IS AUTO-GENERATED. DO NOT EDIT */
 

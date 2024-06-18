@@ -1,4 +1,6 @@
 #!/bin/bash
+# SPDX-License-Identifier: (GPL-2.0-only OR LGPL-2.1-only)
+# SPDX-FileCopyrightText: 2011-2024 EfficiOS Inc.
 
 # Generate system call probe description macros from syscall metadata dump file.
 # The resulting header will be written in the headers subdirectory, in a file name
@@ -84,8 +86,9 @@ else
 fi
 
 
-echo "/* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only) */
-/* SPDX-FileCopyrightText: $(date +%Y) EfficiOS Inc. */
+echo "// SPDX-FileCopyrightText: $(date +%Y) EfficiOS Inc.
+//
+// SPDX-License-Identifier: GPL-2.0-only OR LGPL-2.1-only */
 
 /* THIS FILE IS AUTO-GENERATED. DO NOT EDIT */
 

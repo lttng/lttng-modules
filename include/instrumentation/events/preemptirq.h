@@ -1,4 +1,7 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
+// SPDX-FileCopyrightText: 2017 Michael Jeanson <mjeanson@efficios.com>
+//
+// SPDX-License-Identifier: GPL-2.0-only
+
 #ifdef CONFIG_PREEMPTIRQ_EVENTS
 
 #undef TRACE_SYSTEM

@@ -1,4 +1,7 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
+// SPDX-FileCopyrightText: 2012 Andrew Gabbasov <andrew_gabbasov@mentor.com>
+//
+// SPDX-License-Identifier: GPL-2.0-only
+
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM writeback
 

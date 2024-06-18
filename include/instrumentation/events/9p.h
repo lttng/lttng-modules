@@ -1,4 +1,7 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
+// SPDX-FileCopyrightText: 2018 Michael Jeanson <mjeanson@efficios.com>
+//
+// SPDX-License-Identifier: GPL-2.0-only
+
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM 9p
 

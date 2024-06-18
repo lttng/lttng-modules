@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2011-2021 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+#
+# SPDX-License-Identifier: CC-BY-SA-4.0
+
 2021-04-23 (National Take a Chance (on me ?) Day) LTTng modules 2.13.0-rc1
 	* Set the 2.13 release codename and description
 	* Fix: LTTng-modules ABI ioctl wrong direction

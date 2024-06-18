@@ -1,4 +1,6 @@
-/* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only) */
+// SPDX-FileCopyrightText: 2013 Paul Woegerer <paul_woegerer@mentor.com>
+//
+// SPDX-License-Identifier: GPL-2.0-only OR LGPL-2.1-only
 
 /* THIS FILE IS AUTO-GENERATED. DO NOT EDIT */
 

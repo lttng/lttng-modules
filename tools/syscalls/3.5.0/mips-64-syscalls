@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2012 Ralf Baechle <ralf@linux-mips.org>
+#
+# SPDX-License-Identifier: CC0-1.0
+
 syscall sys_waitpid nr 4007 nbargs 3 types: (pid_t, int *, int) args: (pid, stat_addr, options)
 syscall sys_oldumount nr 4022 nbargs 1 types: (char *) args: (name)
 syscall sys_nice nr 4034 nbargs 1 types: (int) args: (increment)

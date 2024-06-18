@@ -1,4 +1,7 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
+// SPDX-FileCopyrightText: 2011 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+//
+// SPDX-License-Identifier: GPL-2.0-only
+
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM irq
 

@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2022 EfficiOS Inc.
+#
+# SPDX-License-Identifier: CC0-1.0
+
 # OLD_SIGSUSPEND: 1 arg variant
 syscall sigsuspend nbargs 1 rw: (r)
 # CLONE_BACKWARDS: tls passed as the 4th argument of clone(2), not the 5th one.

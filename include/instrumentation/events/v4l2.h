@@ -1,4 +1,7 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
+// SPDX-FileCopyrightText: 2014 Wade Farnsworth <wade_farnsworth@mentor.com>
+//
+// SPDX-License-Identifier: GPL-2.0-only
+
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM v4l2
 

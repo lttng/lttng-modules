@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
+# SPDX-FileCopyrightText: 2010-2024 EfficiOS Inc.
 
 ifneq ($(KERNELRELEASE),)
 

@@ -1,4 +1,7 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
+// SPDX-FileCopyrightText: 2013 Mohamad Gebai <mohamad.gebai@polymtl.ca>
+//
+// SPDX-License-Identifier: GPL-2.0-only
+
 #if !defined(LTTNG_TRACE_KVM_MMU_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_KVM_MMU_H
 

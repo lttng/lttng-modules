@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2015 Lars Persson <lars.persson@axis.com>
+#
+# SPDX-License-Identifier: CC0-1.0
+
 syscall sys_exit nr 4001 nbargs 1 types: (int) args: (error_code)
 syscall sys_read nr 4003 nbargs 3 types: (unsigned int, char *, size_t) args: (fd, buf, count)
 syscall sys_write nr 4004 nbargs 3 types: (unsigned int, const char *, size_t) args: (fd, buf, count)

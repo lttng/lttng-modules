@@ -1,5 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: (GPL-2.0-only OR LGPL-2.1-only)
+# SPDX-FileCopyrightText: 2018-2019 EfficiOS Inc.
 
 # First argument is the path to the lttng modules sources.
 TOP_LTTNG_MODULES_DIR="$1"

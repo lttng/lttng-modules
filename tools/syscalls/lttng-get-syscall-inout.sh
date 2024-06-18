@@ -1,5 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
+# SPDX-FileCopyrightText: 2014-2024 EfficiOS Inc.
 
 # example usage:
 # lttng-get-syscall-inout.sh arm-64 select 5 1

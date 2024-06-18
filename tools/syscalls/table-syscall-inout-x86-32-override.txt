@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2022 EfficiOS Inc.
+#
+# SPDX-License-Identifier: CC0-1.0
+
 # On x86-32, the 64-bit mask parameter is split into two 32-bit parts
 syscall fanotify_mark nbargs 6 rw: (r, r, r, r, r, r)
 # OLD_SIGSUSPEND3: 3 args variant

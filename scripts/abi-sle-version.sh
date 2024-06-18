@@ -1,5 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: (GPL-2.0-only OR LGPL-2.1-only)
+# SPDX-FileCopyrightText: 2016-2021 EfficiOS Inc.
 
 # First argument is the path to the kernel headers.
 KPATH=$1

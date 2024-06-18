@@ -1,5 +1,6 @@
 #!/bin/bash
 # SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only)
+# SPDX-FileCopyrightText: 2020 EfficiOS Inc.
 
 set -eu
 

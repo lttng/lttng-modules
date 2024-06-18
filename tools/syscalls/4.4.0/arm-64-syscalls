@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2016 Jan Willeke <jan.willeke@harman.com>
+#
+# SPDX-License-Identifier: CC0-1.0
+
 syscall sys_io_setup nr 0 nbargs 2 types: (unsigned, aio_context_t *) args: (nr_events, ctxp)
 syscall sys_io_destroy nr 1 nbargs 1 types: (aio_context_t) args: (ctx)
 syscall sys_io_submit nr 2 nbargs 3 types: (aio_context_t, long, struct iocb * *) args: (ctx_id, nr, iocbpp)

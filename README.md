@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2011-2024 EfficiOS Inc.
+
+SPDX-License-Identifier: CC-BY-SA-4.0
+-->
+
 LTTng-modules
 =============
 

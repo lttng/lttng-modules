@@ -1,4 +1,6 @@
-/* SPDX-License-Identifier: (GPL-2.0-only or LGPL-2.1-only) */
+// SPDX-FileCopyrightText: 2011 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+//
+// SPDX-License-Identifier: GPL-2.0-only OR LGPL-2.1-only
 
 #ifndef CREATE_SYSCALL_TABLE
 

@@ -1,4 +1,7 @@
-/* SPDX-License-Identifier: GPL-2.0-only */
+// SPDX-FileCopyrightText: 2022 Rouven Czerwinski <r.czerwinski@pengutronix.de>
+//
+// SPDX-License-Identifier: GPL-2.0-only
+
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM dma_fence
 
