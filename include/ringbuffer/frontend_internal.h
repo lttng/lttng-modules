@@ -15,6 +15,7 @@
 #include <ringbuffer/config.h>
 #include <ringbuffer/backend_types.h>
 #include <ringbuffer/frontend_types.h>
+#include <lttng/abi.h>
 #include <lttng/prio_heap.h>	/* For per-CPU read-side iterator */
 
 /* Buffer offset macros */
@@ -155,6 +156,14 @@ extern
 void lib_ring_buffer_switch_remote(struct lttng_kernel_ring_buffer *buf);
 extern
 void lib_ring_buffer_switch_remote_empty(struct lttng_kernel_ring_buffer *buf);
+extern
+int lib_ring_buffer_switch_remote_or_populate_packet(const struct lttng_kernel_ring_buffer_config *config,
+		struct lttng_kernel_ring_buffer *buf,
+		void __user *packet,
+		u64 *packet_length,
+		u64 *packet_length_padded,
+		bool *flush_done,
+		bool *packet_populated);
 extern
 void lib_ring_buffer_clear(struct lttng_kernel_ring_buffer *buf);
 
@@ -328,6 +337,15 @@ void lib_ring_buffer_write_commit_counter(const struct lttng_kernel_ring_buffer_
 extern int lib_ring_buffer_create(struct lttng_kernel_ring_buffer *buf,
 				  struct channel_backend *chanb, int cpu);
 extern void lib_ring_buffer_free(struct lttng_kernel_ring_buffer *buf);
+
+extern int lib_ring_buffer_packet_initialize(const struct lttng_kernel_ring_buffer_config *config,
+		struct lttng_kernel_ring_buffer *buf,
+		void __user *packet,
+		u64 begin_timestamp,
+		u64 end_timestamp,
+		u64 sequence_number,
+		u64 *packet_length,
+		u64 *packet_length_padded);
 
 /* Keep track of trap nesting inside ring buffer code */
 DECLARE_PER_CPU(unsigned int, lib_ring_buffer_nesting);

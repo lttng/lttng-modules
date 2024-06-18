@@ -501,6 +501,14 @@ struct lttng_kernel_channel_buffer_ops_private {
 	int (*instance_id) (const struct lttng_kernel_ring_buffer_config *config,
 			struct lttng_kernel_ring_buffer *bufb,
 			uint64_t *id);
+	int (*user_packet_initialize) (const struct lttng_kernel_ring_buffer_config *config,
+			struct lttng_kernel_ring_buffer *bufb,
+			void __user *packet,
+			u64 timestamp_begin,
+			u64 timestamp_end,
+			u64 sequence_number,
+			u64 *packet_length,
+			u64 *packet_length_padded);
 };
 
 #define LTTNG_EVENT_HT_BITS		12

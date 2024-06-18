@@ -14,7 +14,9 @@
 #include <ringbuffer/backend.h>
 #include <ringbuffer/frontend.h>
 #include <ringbuffer/vfs.h>
+#include <wrapper/limits.h>
 #include <wrapper/poll.h>
+#include <lttng/abi.h>
 #include <lttng/tracer.h>
 
 static int put_ulong(unsigned long val, unsigned long arg)
@@ -167,6 +169,44 @@ unsigned int vfs_lib_ring_buffer_poll(struct file *filp, poll_table *wait)
 	return lib_ring_buffer_poll(filp, wait, buf);
 }
 
+static
+long _lttng_kernel_abi_ring_buffer_flush_or_populate_packet(struct lttng_kernel_ring_buffer *buf,
+		struct lttng_kernel_ring_buffer_channel *chan,
+		const struct lttng_kernel_ring_buffer_config *config,
+		unsigned long arg)
+{
+	struct lttng_kernel_abi_ring_buffer_packet_flush_or_populate_packet_args flush_args;
+	struct channel_backend *lttng_chan = channel_get_private(buf->backend.chan);
+	u64 packet_length, packet_length_padded;
+	bool flush_done, packet_populated;
+	unsigned long subbuffer_size;
+	void __user *packet;
+	long ret;
+
+	ret = copy_from_user(&flush_args,
+		(struct lttng_kernel_abi_ring_buffer_packet_flush_or_populate_packet_args __user *)arg,
+		sizeof(struct lttng_kernel_abi_ring_buffer_packet_flush_or_populate_packet_args));
+	if (ret)
+		return -EFAULT;
+
+	packet = (void __user *)(unsigned long)flush_args.packet;
+	subbuffer_size = lttng_chan->subbuf_size;
+	if (!unlikely(lttng_access_ok(VERIFY_WRITE, packet, subbuffer_size)))
+		return -EINVAL;
+
+	ret = lib_ring_buffer_switch_remote_or_populate_packet(config, buf, packet,
+		&packet_length, &packet_length_padded, &flush_done, &packet_populated);
+	if (ret)
+		return ret;
+
+	flush_args.flush_done = flush_done;
+	flush_args.packet_populated = packet_populated;
+	flush_args.packet_length = packet_length;
+	flush_args.packet_length_padded = packet_length_padded;
+	ret = copy_to_user((void __user *)arg, &flush_args, sizeof(struct lttng_kernel_abi_ring_buffer_packet_flush_or_populate_packet_args));
+	return ret;
+}
+
 long lib_ring_buffer_ioctl(struct file *filp, unsigned int cmd,
 		unsigned long arg, struct lttng_kernel_ring_buffer *buf)
 {
@@ -263,6 +303,8 @@ long lib_ring_buffer_ioctl(struct file *filp, unsigned int cmd,
 	case LTTNG_KERNEL_ABI_RING_BUFFER_FLUSH_EMPTY:
 		lib_ring_buffer_switch_remote_empty(buf);
 		return 0;
+	case LTTNG_KERNEL_ABI_RING_BUFFER_FLUSH_OR_POPULATE_PACKET:
+		return _lttng_kernel_abi_ring_buffer_flush_or_populate_packet(buf, chan, config, arg);
 	case LTTNG_KERNEL_ABI_RING_BUFFER_CLEAR:
 		lib_ring_buffer_clear(buf);
 		return 0;
@@ -417,6 +459,8 @@ long lib_ring_buffer_compat_ioctl(struct file *filp, unsigned int cmd,
 	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_FLUSH_EMPTY:
 		lib_ring_buffer_switch_remote_empty(buf);
 		return 0;
+	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_FLUSH_OR_POPULATE_PACKET:
+		return _lttng_kernel_abi_ring_buffer_flush_or_populate_packet(buf, chan, config, arg);
 	case LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_CLEAR:
 		lib_ring_buffer_clear(buf);
 		return 0;

@@ -18,7 +18,7 @@
  * should be increased when an incompatible ABI change is done.
  */
 #define LTTNG_KERNEL_ABI_MAJOR_VERSION		2
-#define LTTNG_KERNEL_ABI_MINOR_VERSION		6
+#define LTTNG_KERNEL_ABI_MINOR_VERSION		7
 
 #define LTTNG_KERNEL_ABI_SYM_NAME_LEN		256
 #define LTTNG_KERNEL_ABI_SESSION_NAME_LEN	256
@@ -628,6 +628,17 @@ struct lttng_kernel_abi_tracker_args {
 #define LTTNG_KERNEL_ABI_RING_BUFFER_GET_SEQ_NUM		_IOR(0xF6, 0x27, uint64_t)
 /* returns the stream instance id (invariant for the stream) */
 #define LTTNG_KERNEL_ABI_RING_BUFFER_INSTANCE_ID		_IOR(0xF6, 0x28, uint64_t)
+
+struct lttng_kernel_abi_ring_buffer_packet_flush_or_populate_packet_args {
+	/* Input fields */
+	__u64 packet; /* Pointer cast to __u64 */
+
+	/* Output fields */
+	__u64 packet_length;
+	__u64 packet_length_padded;
+	__u8 flush_done;
+	__u8 packet_populated;
+} __attribute__((packed));
 
 /*
  * Those ioctl numbers use the wrong direction, but are kept for ABI backward

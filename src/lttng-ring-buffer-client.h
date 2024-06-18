@@ -506,6 +506,48 @@ int client_instance_id(const struct lttng_kernel_ring_buffer_config *config,
 	return 0;
 }
 
+
+static
+int client_user_packet_initialize(const struct lttng_kernel_ring_buffer_config *config,
+		struct lttng_kernel_ring_buffer *bufb,
+		void __user *packet,
+		u64 timestamp_begin,
+		u64 timestamp_end,
+		u64 sequence_number,
+		u64 *packet_length,
+		u64 *packet_length_padded)
+{
+	struct lttng_kernel_channel_buffer *lttng_chan = channel_get_private(bufb->backend.chan);
+	struct lttng_kernel_ring_buffer_channel *chan = bufb->backend.chan;
+	struct packet_header packet_header = {};
+	int ret;
+
+	if (!chan)
+		return -EINVAL;
+
+	/*
+	 * See client_buffer_begin()
+	 */
+	packet_header.magic = CTF_MAGIC_NUMBER;
+	packet_header.stream_id = lttng_chan->priv->id;
+	packet_header.stream_instance_id = bufb->backend.cpu;
+
+	packet_header.ctx.content_size = client_packet_header_size() * CHAR_BIT;
+	packet_header.ctx.packet_size = client_packet_header_size() * CHAR_BIT;
+	packet_header.ctx.cpu_id = bufb->backend.cpu;
+	packet_header.ctx.timestamp_begin = timestamp_begin;
+	packet_header.ctx.timestamp_end = timestamp_end;
+	packet_header.ctx.packet_seq_num = sequence_number;
+
+	ret = copy_to_user(packet, &packet_header, sizeof(struct packet_header));
+	if (ret)
+		return -EFAULT;
+
+	*packet_length = client_packet_header_size();
+	*packet_length_padded = client_packet_header_size();
+	return ret;
+}
+
 static const struct lttng_kernel_ring_buffer_config client_config = {
 	.cb.ring_buffer_clock_read = client_ring_buffer_clock_read,
 	.cb.record_header_size = client_record_header_size,
@@ -766,6 +808,7 @@ static struct lttng_transport lttng_relay_transport = {
 			.current_timestamp = client_current_timestamp,
 			.sequence_number = client_sequence_number,
 			.instance_id = client_instance_id,
+			.user_packet_initialize = client_user_packet_initialize,
 		}),
 		.event_reserve = lttng_event_reserve,
 		.event_commit = lttng_event_commit,

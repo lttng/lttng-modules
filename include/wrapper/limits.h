@@ -56,5 +56,8 @@
 #ifndef S64_MIN
 #define S64_MIN		((s64)(-S64_MAX - 1))
 #endif
+#ifndef SSIZE_MAX
+#define SSIZE_MAX	((ssize_t)(SIZE_MAX >> 1))
+#endif
 
 #endif /* _LTTNG_WRAPPER_COMPILER_H */

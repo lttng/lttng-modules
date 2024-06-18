@@ -351,7 +351,8 @@ void subbuffer_inc_packet_count(const struct lttng_kernel_ring_buffer_config *co
 				struct lttng_kernel_ring_buffer_backend *bufb,
 				unsigned long idx)
 {
-	bufb->buf_cnt[idx].seq_cnt++;
+	/* Concurrently read by _lib_ring_buffer_switch_remote_or_populate_packet(). */
+	WRITE_ONCE(bufb->buf_cnt[idx].seq_cnt, bufb->buf_cnt[idx].seq_cnt + 1);
 }
 
 /**

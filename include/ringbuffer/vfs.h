@@ -120,6 +120,16 @@ ssize_t vfs_lib_ring_buffer_splice_read(struct file *in, loff_t *ppos,
  * sub-buffer (can be parsed).
  */
 #define LTTNG_KERNEL_ABI_RING_BUFFER_GET_NEXT_SUBBUF_METADATA_CHECK	_IOR(0xF6, 0x12, uint32_t)
+/*
+ * Flush the current sub-buffer or populate a packet.
+ *
+ * Argument is a pointer to a struct lttng_kernel_abi_ring_buffer_packet_flush_or_populate_packet_args
+ * which uses the fields as input and output. The region of memory pointed
+ * at by the `packet` member should be at least large enough to fit
+ * a sub-buffer for the stream.
+ */
+#define LTTNG_KERNEL_ABI_RING_BUFFER_FLUSH_OR_POPULATE_PACKET	_IOWR(0xF6, 0x13, \
+	struct lttng_kernel_abi_ring_buffer_packet_flush_or_populate_packet_args)
 
 #ifdef CONFIG_COMPAT
 /* Get a snapshot of the current ring buffer producer and consumer positions */
@@ -174,6 +184,15 @@ ssize_t vfs_lib_ring_buffer_splice_read(struct file *in, loff_t *ppos,
  */
 #define LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_GET_NEXT_SUBBUF_METADATA_CHECK \
 	LTTNG_KERNEL_ABI_RING_BUFFER_GET_NEXT_SUBBUF_METADATA_CHECK
+/*
+ * Flush the current sub-buffer or populate a packet.
+ *
+ * Argument is a pointer to a struct lttng_kernel_abi_ring_buffer_packet_flush_or_populate_packet_args
+ * which uses the fields as input and output. The region of memory pointed
+ * at by the `packet` member should be at least large enough to fit
+ * a sub-buffer for the stream.
+ */
+#define LTTNG_KERNEL_ABI_RING_BUFFER_COMPAT_FLUSH_OR_POPULATE_PACKET	LTTNG_KERNEL_ABI_RING_BUFFER_FLUSH_OR_POPULATE_PACKET
 #endif /* CONFIG_COMPAT */
 
 #endif /* _LIB_LTTNG_KERNEL_ABI_RING_BUFFER_VFS_H */

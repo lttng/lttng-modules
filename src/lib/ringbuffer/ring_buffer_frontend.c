@@ -44,6 +44,9 @@
 #include <linux/percpu-defs.h>
 #include <asm/cacheflush.h>
 
+#include <lttng/abi.h>
+#include <lttng/events.h>
+#include <lttng/events-internal.h>
 #include <ringbuffer/config.h>
 #include <ringbuffer/backend.h>
 #include <ringbuffer/frontend.h>
@@ -52,6 +55,7 @@
 #include <wrapper/cpu.h>
 #include <wrapper/kref.h>
 #include <wrapper/timer.h>
+#include <wrapper/trace-clock.h>
 #include <wrapper/vmalloc.h>
 
 /*
@@ -85,6 +89,14 @@ void lib_ring_buffer_print_errors(struct lttng_kernel_ring_buffer_channel *chan,
 static
 void _lib_ring_buffer_switch_remote(struct lttng_kernel_ring_buffer *buf,
 		enum switch_mode mode);
+static
+int _lib_ring_buffer_switch_remote_or_populate_packet(const struct lttng_kernel_ring_buffer_config *config,
+		struct lttng_kernel_ring_buffer *buf,
+		void __user *packet,
+		u64 *packet_length,
+		u64 *packet_length_padded,
+		bool *flush_done,
+		bool *packet_populated);
 
 static
 int lib_ring_buffer_poll_deliver(const struct lttng_kernel_ring_buffer_config *config,
@@ -1986,6 +1998,59 @@ static void _lib_ring_buffer_switch_remote(struct lttng_kernel_ring_buffer *buf,
 	preempt_enable();
 }
 
+static
+int _lib_ring_buffer_switch_remote_or_populate_packet(const struct lttng_kernel_ring_buffer_config *config,
+		struct lttng_kernel_ring_buffer *buf,
+		void __user *packet,
+		u64 *_packet_length,
+		u64 *_packet_length_padded,
+		bool *_flush_done,
+		bool *_packet_populated)
+{
+	u64 sample_seq_cnt, sample_time, packet_length = 0, packet_length_padded = 0;
+	unsigned long consumed, produced, consumed_after, produced_after;
+	bool flush_done = false, packet_populated = false;
+	size_t subbuf_idx;
+	int ret = 0;
+
+	/* Sample positions and time prior to flushing */
+	ret = lib_ring_buffer_snapshot_sample_positions(buf, &consumed, &produced);
+	if (ret < 0)
+		return ret;
+
+	sample_time = trace_clock_read64();
+	subbuf_idx = subbuf_index(produced, buf->backend.chan);
+	/*
+	 * Expected to be updated concurrently by subbuffer_inc_packet_count(),
+	 * but validated by comparing the two samples of the produced position.
+	 */
+	sample_seq_cnt = READ_ONCE(buf->backend.buf_cnt[subbuf_idx].seq_cnt);
+	lib_ring_buffer_switch_remote(buf);
+	flush_done = true;
+
+	/* Re-sample positions */
+	ret = lib_ring_buffer_snapshot_sample_positions(buf, &consumed_after, &produced_after);
+	if (ret < 0)
+		goto end;
+
+	if (produced == produced_after) {
+		ret = lib_ring_buffer_packet_initialize(config, buf, packet,
+				sample_time, sample_time, sample_seq_cnt + 1,
+				&packet_length, &packet_length_padded);
+		if (ret)
+			goto end;
+
+		packet_populated = true;
+	}
+
+end:
+	*_packet_length = packet_length;
+	*_packet_length_padded = packet_length_padded;
+	*_flush_done = flush_done;
+	*_packet_populated = packet_populated;
+	return ret;
+}
+
 /* Switch sub-buffer if current sub-buffer is non-empty. */
 void lib_ring_buffer_switch_remote(struct lttng_kernel_ring_buffer *buf)
 {
@@ -1999,6 +2064,20 @@ void lib_ring_buffer_switch_remote_empty(struct lttng_kernel_ring_buffer *buf)
 	_lib_ring_buffer_switch_remote(buf, SWITCH_FLUSH);
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_switch_remote_empty);
+
+/* Switch sub-buffer if current sub-buffer is non-empty or populate a packet. */
+int lib_ring_buffer_switch_remote_or_populate_packet(const struct lttng_kernel_ring_buffer_config *config,
+		struct lttng_kernel_ring_buffer *buf,
+		void __user *packet,
+		u64 *packet_length,
+		u64 *packet_length_padded,
+		bool *flush_done,
+		bool *packet_populated)
+{
+	return _lib_ring_buffer_switch_remote_or_populate_packet(config, buf, packet,
+		packet_length, packet_length_padded, flush_done, packet_populated);
+}
+EXPORT_SYMBOL_GPL(lib_ring_buffer_switch_remote_or_populate_packet);
 
 void lib_ring_buffer_clear(struct lttng_kernel_ring_buffer *buf)
 {
@@ -2421,6 +2500,25 @@ void lib_ring_buffer_check_deliver_slow(const struct lttng_kernel_ring_buffer_co
 	}
 }
 EXPORT_SYMBOL_GPL(lib_ring_buffer_check_deliver_slow);
+
+int lib_ring_buffer_packet_initialize(const struct lttng_kernel_ring_buffer_config *config,
+		struct lttng_kernel_ring_buffer *buf,
+		void __user *packet,
+		uint64_t timestamp_begin,
+		uint64_t timestamp_end,
+		uint64_t sequence_number,
+		uint64_t *packet_length,
+		uint64_t *packet_length_padded)
+{
+	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
+	const struct lttng_kernel_channel_buffer_ops *ops = chan->backend.priv_ops;
+	const struct lttng_kernel_channel_buffer_ops_private *priv_ops = ops->priv;
+
+	return priv_ops->user_packet_initialize(config, buf, packet,
+		timestamp_begin, timestamp_end, sequence_number,
+		packet_length, packet_length_padded);
+}
+EXPORT_SYMBOL_GPL(lib_ring_buffer_packet_initialize);
 
 static
 int __init init_lib_ring_buffer_frontend(void)
