@@ -253,7 +253,8 @@ LTTNG_TRACEPOINT_EVENT(lttng_statedump_interrupt,
 
 #define LTTNG_HAVE_STATEDUMP_CPU_TOPOLOGY
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,7,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,7,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(5,14,0,452,0,0, 5,15,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT(lttng_statedump_cpu_topology,
 	TP_PROTO(struct lttng_kernel_session *session, struct cpuinfo_x86 *c),
 	TP_ARGS(session, c),

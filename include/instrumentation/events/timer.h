@@ -77,7 +77,8 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(timer_class, timer_init,
 	TP_ARGS(timer)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,8,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,8,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(5,14,0,457,0,0, 5,15,0,0,0,0))
 /**
  * timer_start - called when the timer is started
  * @timer:	pointer to struct timer_list
