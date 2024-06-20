@@ -13,7 +13,8 @@
 
 #include <lttng/kernel-version.h>
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,3,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,3,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(5,14,0,452,0,0, 5,15,0,0,0,0))
 static inline
 void wrapper_vm_flags_set(struct vm_area_struct *vma,
 		vm_flags_t flags)
