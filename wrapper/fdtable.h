@@ -12,7 +12,8 @@
 #include <linux/fdtable.h>
 #include <linux/sched.h>
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
+#if ((LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0)) || \
+	LTTNG_KERNEL_RANGE(5,10,220, 5,11,0))
 static inline
 struct file *lttng_lookup_fd_rcu(unsigned int fd)
 {
