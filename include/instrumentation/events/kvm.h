@@ -105,7 +105,8 @@ LTTNG_TRACEPOINT_EVENT(kvm_mmio,
 		ctf_integer(u32, type, type)
 		ctf_integer(u32, len, len)
 		ctf_integer(u64, gpa, gpa)
-		ctf_sequence_hex(unsigned char, val, val, u32, len)
+		ctf_sequence_hex(unsigned char, val, val, u32,
+			type == KVM_TRACE_MMIO_READ_UNSATISFIED ? 0 : len)
 	)
 )
 
