@@ -72,27 +72,13 @@ LTTNG_TRACEPOINT_EVENT(kvm_ack_irq,
 	{ KVM_TRACE_MMIO_READ, "read" }, \
 	{ KVM_TRACE_MMIO_WRITE, "write" }
 
-
-#if (LTTNG_SLE_KERNEL_RANGE(4,4,121,92,92,0, 4,4,122,0,0,0) \
-	|| LTTNG_SLE_KERNEL_RANGE(4,4,131,94,0,0, 4,5,0,0,0,0))
-
-LTTNG_TRACEPOINT_EVENT(kvm_mmio,
-	TP_PROTO(int type, int len, u64 gpa, u64 val),
-	TP_ARGS(type, len, gpa, val),
-
-	TP_FIELDS(
-		ctf_integer(u32, type, type)
-		ctf_integer(u32, len, len)
-		ctf_integer(u64, gpa, gpa)
-		ctf_integer(u64, val, val)
-	)
-)
-
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0) \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0) \
 	|| LTTNG_KERNEL_RANGE(4,14,14, 4,15,0) \
 	|| LTTNG_DEBIAN_KERNEL_RANGE(4,14,13,1,0, 4,15,0,0,0) \
 	|| LTTNG_KERNEL_RANGE(4,9,77, 4,10,0) \
-	|| LTTNG_KERNEL_RANGE(4,4,112, 4,5,0) \
+	|| (LTTNG_KERNEL_RANGE(4,4,112, 4,5,0) \
+		&& !(LTTNG_SLE_KERNEL_RANGE(4,4,121,92,92,0, 4,4,122,0,0,0) \
+			|| LTTNG_SLE_KERNEL_RANGE(4,4,131,94,0,0, 4,5,0,0,0,0))) \
 	|| LTTNG_UBUNTU_KERNEL_RANGE(4,13,16,38, 4,14,0,0) \
 	|| LTTNG_DEBIAN_KERNEL_RANGE(4,9,65,3,0, 4,10,0,0,0) \
 	|| LTTNG_FEDORA_KERNEL_RANGE(4,14,13,300, 4,15,0,0))
