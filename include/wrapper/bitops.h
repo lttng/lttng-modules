@@ -5,10 +5,11 @@
 #define _LTTNG_WRAPPER_BITOPS_H
 
 #include <linux/bitops.h>
-#include <linux/bits.h>
 #include <lttng/kernel-version.h>
 
 #if LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(5,4,0)
+
+#include <asm/byteorder.h>
 
 /* Set bits in the first 'n' bytes when loaded from memory */
 # ifdef __LITTLE_ENDIAN
