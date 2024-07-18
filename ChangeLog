@@ -1,3 +1,7 @@
+2024-07-18 (National Sour Candy Day) 2.12.18
+	* kvm instrumentation: Fix kvm_mmio event NULL pointer dereference
+	* fix: file: Rename fcheck lookup_fd_rcu (v5.10.220)
+
 2024-05-13 (National Leprechaun Day) 2.12.17
 	* page alloc wrapper: Fix get_pfnblock_flags_mask prototype
 	* Fix: timer_expire_entry changed in 4.19.312
