@@ -1,3 +1,16 @@
+2024-07-18 (National Sour Candy Day) LTTng modules 2.13.14
+	* kvm instrumentation: Fix kvm_mmio event NULL pointer dereference
+	* Fix: Build on CentOS 9 Stream 2024-06
+	* fix: file: Rename fcheck lookup_fd_rcu (v5.10.220)
+	* Cleanup: update stale file paths in LICENSE
+	* Cleanup: use SPDX v3.0 identifiers
+	* Warn and return on fd overflow fdt
+	* fix: close_on_exec(): pass files_struct instead of fdtable (v6.10)
+	* fix: net: udp: add IP/port data to the tracepoint udp/udp_fail_queue_rcv_skb (v6.10)
+	* fix: btrfs: move ->parent and ->ref_root into btrfs_delayed_ref_node (v6.10)
+	* fix: btrfs: simplify delayed ref tracepoints (v6.10)
+	* Fix mm_vmscan_lru_isolate tracepoint for RHEL 9.4 kernel
+
 2024-05-13 (National Leprechaun Day) LTTng modules 2.13.13
 	* splice wrapper: Fix missing declaration
 	* page alloc wrapper: Fix get_pfnblock_flags_mask prototype
