@@ -65,12 +65,22 @@ static int counter_add(struct lttng_kernel_channel_counter *counter,
 	return lttng_counter_add(&client_config, counter->priv->counter, dimension_indexes, v);
 }
 
-static int event_counter_add(struct lttng_kernel_event_counter *event_counter, int64_t v)
+static int counter_hit(struct lttng_kernel_event_counter *event_counter,
+		const char *stack_data __attribute__((unused)),
+		struct lttng_kernel_probe_ctx *probe_ctx __attribute__((unused)),
+		struct lttng_kernel_event_counter_ctx *event_counter_ctx __attribute__((unused)))
 {
 	struct lttng_kernel_channel_counter *counter = event_counter->chan;
-	size_t index = event_counter->priv->parent.id;
 
-	return counter_add(counter, &index, v);
+	switch (event_counter->priv->action) {
+	case LTTNG_EVENT_COUNTER_ACTION_INCREMENT:
+	{
+		size_t index = event_counter->priv->parent.id;
+		return counter_add(counter, &index, 1);
+	}
+	default:
+		return -ENOSYS;
+	}
 }
 
 static int counter_read(struct lttng_kernel_channel_counter *counter, const size_t *dimension_indexes, int cpu,
@@ -117,7 +127,7 @@ static struct lttng_counter_transport lttng_counter_transport = {
 			.counter_get_nr_dimensions = counter_get_nr_dimensions,
 			.counter_get_max_nr_elem = counter_get_max_nr_elem,
 		}),
-		.event_counter_add = event_counter_add,
+		.counter_hit = counter_hit,
 	},
 };
 

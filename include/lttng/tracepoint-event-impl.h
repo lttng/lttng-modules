@@ -1175,8 +1175,18 @@ static void __event_probe__##_name(_data_proto)						\
 	{										\
 		struct lttng_kernel_event_counter *__event_counter =			\
 			container_of(__event, struct lttng_kernel_event_counter, parent); \
+		struct lttng_kernel_event_counter_ctx __event_counter_ctx;		\
 											\
-		(void) __event_counter->chan->ops->event_counter_add(__event_counter, 1); \
+		__event_counter_ctx.args_available = LTTNG_READ_ONCE(__event_counter->use_args); \
+		if (unlikely(!__interpreter_stack_prepared && __event_counter_ctx.args_available)) \
+			__event_prepare_interpreter_stack__##_name(			\
+					__stackvar.__interpreter_stack_data,		\
+					_locvar_args);					\
+											\
+		(void) __event_counter->chan->ops->counter_hit(__event_counter,		\
+				__stackvar.__interpreter_stack_data,			\
+				&__lttng_probe_ctx,					\
+				&__event_counter_ctx);					\
 		break;									\
 	}										\
 	default:									\

@@ -209,47 +209,105 @@ enum lttng_kernel_abi_counter_bitness {
 	LTTNG_KERNEL_ABI_COUNTER_BITNESS_64 = 1,
 };
 
-struct lttng_kernel_abi_counter_key_string {
-	uint32_t string_len;		/* string length allocated by user-space (input) (includes \0) */
-	char str[];			/* Null-terminated string. */
+struct lttng_kernel_abi_key_token {
+	uint32_t len;				/* length of child structure. */
+	uint32_t type;				/* enum lttng_kernel_abi_key_token_type */
+	/*
+	 * The size of this structure is fixed because it is embedded into
+	 * children structures.
+	 */
 } __attribute__((packed));
+
+/* Length of this structure excludes the following string. */
+struct lttng_kernel_abi_key_token_string {
+	struct lttng_kernel_abi_key_token parent;
+	uint32_t string_len;		/* string length (includes \0) */
+
+	/* Null-terminated string of length @string_len follows this structure. */
+} __attribute__((packed));
+
+/*
+ * token types event_name and provider_name don't have specific fields,
+ * so they do not need to derive their own specific child structure.
+ */
 
 struct lttng_kernel_abi_counter_map_descriptor {
-	uint32_t len;			/* length of this structure */
+	uint32_t len;			/* length of this structure. */
 
-	uint64_t descriptor_index;	/* input. [ 0 .. nr_descriptors - 1 ] */
+	uint64_t descriptor_index;	/* Descriptor index (input: [ 0 .. nr_descriptors - 1 ]) */
 
-	uint32_t dimension;		/* outputs */
-	uint64_t array_index;
-	uint64_t user_token;
-	uint64_t key_ptr;		/* pointer to struct lttng_kernel_abi_counter_key_string */
-	uint32_t key_string_len;	/* key string length (includes \0) */
+	uint32_t dimension;		/* Dimension indexed (output) */
+	uint64_t user_token;		/* User-provided 64-bit token (output) */
+	uint64_t key_string;		/*
+					 * Pointer (input) to key string associated with this index
+					 * (output). If key_string_len is smaller than the required
+					 * space, the ioctl fails with -ENOSPC, storing the required
+					 * string space into @key_string_len.
+					 */
+	uint32_t key_string_len;	/* Key string length (input/output, includes \0) */
+	uint64_t array_indexes;		/*
+					 * Pointer (input) to array of indexes within each dimension
+					 * (output). There are @dimension values populated.  Each
+					 * element is of type uint64_t.  If arrays_indexes_len is
+					 * smaller than @dimension, the ioctl fails with -ENOSPC,
+					 * storing the required array index length into
+					 * @array_index_len.
+					 */
+	uint32_t array_indexes_len;	/* Array indexes length (input/output). */
 } __attribute__((packed));
 
-struct lttng_kernel_abi_key_token {
-	uint32_t type;			/* enum lttng_kernel_abi_key_token_type */
-	union {
-		uint64_t string_ptr;
-	} arg;
-} __attribute__((packed));
+/*
+ * Dimension indexing: All events should use the same key type to index
+ * a given map dimension.
+ */
+enum lttng_kernel_abi_key_type {
+	LTTNG_KERNEL_ABI_KEY_TYPE_TOKENS = 0,		/* Dimension key is a set of tokens. */
+	LTTNG_KERNEL_ABI_KEY_TYPE_INTEGER = 1,		/* Dimension key is an integer value. */
+};
 
 struct lttng_kernel_abi_counter_key_dimension {
-	uint32_t nr_key_tokens;
-	uint32_t elem_len;		/* array stride (size of struct lttng_kernel_abi_key_token) */
-	uint64_t ptr;			/* pointer to array of struct lttng_kernel_abi_key_token */
+	uint32_t len;			/* length of child structure */
+	uint32_t key_type;		/* enum lttng_kernel_abi_key_type */
+	/*
+	 * The size of this structure is fixed because it is embedded
+	 * into children structures.
+	 */
 } __attribute__((packed));
 
-struct lttng_kernel_abi_counter_key {
-	uint32_t number_dimensions;
-	uint32_t elem_len;		/* array stride (size of struct lttng_kernel_abi_counter_key_dimension) */
-	uint64_t ptr;			/* pointer to array of struct lttng_kernel_abi_counter_key_dimension */
+struct lttng_kernel_abi_counter_key_dimension_tokens {
+	struct lttng_kernel_abi_counter_key_dimension parent;
+	uint32_t nr_key_tokens;
+
+	/* Followed by an array of nr_key_tokens struct lttng_kernel_abi_key_token elements. */
 } __attribute__((packed));
+
+/*
+ * The "integer" key type is not implemented yet, but when it will be
+ * introduced in the future, its specific key dimension will allow
+ * defining the function to apply over input argument, bytecode to run
+ * and so on.
+ */
+
+enum lttng_kernel_abi_counter_action {
+	LTTNG_KERNEL_ABI_COUNTER_ACTION_INCREMENT = 0,
+
+	/*
+	 * Can be extended with additional actions, such as decrement,
+	 * set value, run bytecode, and so on.
+	 */
+};
 
 struct lttng_kernel_abi_counter_event {
 	uint32_t len;			/* length of this structure */
+	uint32_t action;		/* enum lttng_kernel_abi_counter_action */
 
 	struct lttng_kernel_abi_event event;
-	struct lttng_kernel_abi_counter_key key;
+	uint32_t number_key_dimensions;		/* array of dimensions is an array of var. len. elements. */
+
+	/*
+	 * Followed by additional data specific to the action, and by a
+	 * variable-length array of key dimensions.
+	 */
 } __attribute__((packed));
 
 enum lttng_kernel_abi_counter_dimension_flags {
@@ -258,6 +316,7 @@ enum lttng_kernel_abi_counter_dimension_flags {
 };
 
 struct lttng_kernel_abi_counter_dimension {
+	uint32_t key_type;		/* enum lttng_kernel_abi_key_type */
 	uint32_t flags;			/* enum lttng_kernel_abi_counter_dimension_flags */
 	uint64_t size;			/* dimension size */
 	uint64_t underflow_index;

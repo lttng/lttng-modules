@@ -124,8 +124,11 @@ int _lttng_kretprobes_handler(struct kretprobe_instance *krpi,
 	{
 		struct lttng_kernel_event_counter *event_counter =
 			container_of(event, struct lttng_kernel_event_counter, parent);
+		struct lttng_kernel_event_counter_ctx event_counter_ctx;
 
-		(void) event_counter->chan->ops->event_counter_add(event_counter, 1);
+		event_counter_ctx.args_available = false;
+		(void) event_counter->chan->ops->counter_hit(event_counter,
+			NULL, NULL, &event_counter_ctx);
 		break;
 	}
 	default:

@@ -134,11 +134,16 @@ struct lttng_kernel_event_recorder_private {
 
 #define LTTNG_KERNEL_COUNTER_KEY_LEN		256
 
+enum lttng_event_counter_action {
+	LTTNG_EVENT_COUNTER_ACTION_INCREMENT = 0,
+};
+
 struct lttng_kernel_event_counter_private {
 	struct lttng_kernel_event_session_common_private parent;
 
 	struct lttng_kernel_event_counter *pub;		/* Public event interface */
 	struct hlist_node hlist_key_node;		/* node in events key hash table */
+	enum lttng_event_counter_action action;
 	char key[LTTNG_KERNEL_COUNTER_KEY_LEN];
 };
 
@@ -352,6 +357,8 @@ struct lttng_event_counter_enabler {
 	struct lttng_event_enabler_session_common parent;
 	struct lttng_kernel_channel_counter *chan;
 	struct lttng_kernel_counter_key *key;
+
+	enum lttng_event_counter_action action;
 };
 
 struct lttng_event_notifier_enabler {

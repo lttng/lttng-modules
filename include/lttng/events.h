@@ -376,6 +376,10 @@ struct lttng_kernel_event_recorder {
 	struct lttng_kernel_channel_buffer *chan;
 };
 
+struct lttng_kernel_event_counter_ctx {
+	int args_available;
+};
+
 struct lttng_kernel_event_counter_private;
 
 struct lttng_kernel_event_counter {
@@ -383,6 +387,8 @@ struct lttng_kernel_event_counter {
 	struct lttng_kernel_event_counter_private *priv;	/* Private event counter interface */
 
 	struct lttng_kernel_channel_counter *chan;
+
+	int use_args;						/* Use input arguments. */
 };
 
 struct lttng_kernel_notification_ctx {
@@ -456,7 +462,10 @@ struct lttng_kernel_channel_counter_ops_private;
 struct lttng_kernel_channel_counter_ops {
 	struct lttng_kernel_channel_counter_ops_private *priv;	/* Private channel counter ops interface */
 
-	int (*event_counter_add)(struct lttng_kernel_event_counter *event_counter, int64_t v);
+	int (*counter_hit)(struct lttng_kernel_event_counter *event_counter,
+		const char *stack_data,
+		struct lttng_kernel_probe_ctx *probe_ctx,
+		struct lttng_kernel_event_counter_ctx *event_counter_ctx);
 };
 
 struct lttng_kernel_channel_counter {

@@ -687,103 +687,124 @@ end:
 }
 
 static
-int create_counter_key_from_abi_key(struct lttng_kernel_counter_key **_counter_key,
-		struct lttng_kernel_abi_counter_key *abi_key)
+int create_counter_key_from_abi_dimensions(struct lttng_kernel_counter_key **_counter_key,
+		uint32_t nr_dimensions, void __user *ptr)
 {
-	struct lttng_kernel_counter_key *counter_key;
-	uint32_t i, dimension_len, nr_dimensions;
 	struct lttng_kernel_abi_counter_key_dimension __user *udimension;
 	struct lttng_kernel_abi_counter_key_dimension kdimension = {};
-	struct lttng_kernel_abi_key_token __user *utoken;
-	struct lttng_key_token *token_array;
-	uint32_t token_len, nr_tokens;
+	struct lttng_kernel_counter_key *counter_key = NULL;
+	struct lttng_key_token *token_array = NULL;
+	uint32_t i;
 	int ret = 0;
 
-	nr_dimensions = abi_key->number_dimensions;
 	if (!nr_dimensions || nr_dimensions > LTTNG_KERNEL_COUNTER_MAX_DIMENSIONS)
 		return -EINVAL;
 	counter_key = kzalloc(sizeof(*counter_key), GFP_KERNEL);
 	if (!counter_key)
 		return -ENOMEM;
 	counter_key->nr_dimensions = nr_dimensions;
-	dimension_len = abi_key->elem_len;
-	if (dimension_len > PAGE_SIZE) {
-		ret = -E2BIG;
-		goto error;
-	}
-	if (dimension_len < offsetofend(struct lttng_kernel_abi_counter_key_dimension, ptr)) {
+	/* Only a single dimension is supported. */
+	if (WARN_ON_ONCE(nr_dimensions != 1)) {
 		ret = -EINVAL;
 		goto error;
 	}
-	/* Only a single dimension is supported. */
-	WARN_ON_ONCE(nr_dimensions != 1);
-	udimension = (struct lttng_kernel_abi_counter_key_dimension __user *)(unsigned long)abi_key->ptr;
-	ret = lttng_copy_struct_from_user(&kdimension, sizeof(kdimension), udimension, dimension_len);
+	udimension = (struct lttng_kernel_abi_counter_key_dimension __user *)ptr;
+	ret = lttng_copy_struct_from_user(&kdimension, sizeof(kdimension), udimension, sizeof(*udimension));
 	if (ret)
 		goto error;
-	nr_tokens = kdimension.nr_key_tokens;
-	if (nr_tokens > LTTNG_KERNEL_COUNTER_MAX_TOKENS) {
-		ret = -EINVAL;
-		goto error;
-	}
-	token_len = kdimension.elem_len;
-	if (token_len > PAGE_SIZE) {
+	if (kdimension.len > PAGE_SIZE) {
 		ret = -E2BIG;
 		goto error;
 	}
-	token_array = kzalloc(nr_tokens * sizeof(*token_array), GFP_KERNEL);
-	if (!token_array) {
-		ret = -ENOMEM;
-		goto error;
-	}
-	counter_key->dimension_array[0].token_array = token_array;
-	counter_key->dimension_array[0].nr_key_tokens = nr_tokens;
-	utoken = (struct lttng_kernel_abi_key_token __user *)(unsigned long)kdimension.ptr;
-	for (i = 0; i < nr_tokens; i++) {
-		struct lttng_kernel_abi_key_token ktoken = {};
-		struct lttng_key_token *key_token = &token_array[i];
+	switch (kdimension.key_type) {
+	case LTTNG_KERNEL_ABI_KEY_TYPE_TOKENS:
+	{
+		struct lttng_kernel_abi_counter_key_dimension_tokens kdimension_tokens = {};
+		struct lttng_kernel_abi_counter_key_dimension_tokens __user *udimension_tokens;
+		struct lttng_kernel_abi_key_token __user *utoken;
+		uint32_t nr_tokens;
 
-		ret = lttng_copy_struct_from_user(&ktoken, sizeof(ktoken), utoken, token_len);
+		udimension_tokens = (struct lttng_kernel_abi_counter_key_dimension_tokens __user *)ptr;
+		ret = lttng_copy_struct_from_user(&kdimension_tokens, sizeof(kdimension_tokens),
+				udimension_tokens, kdimension.len);
 		if (ret)
 			goto error;
-		switch (ktoken.type) {
-		case LTTNG_KERNEL_ABI_KEY_TOKEN_STRING:
-		{
-			char __user *string_ptr = (char __user *)(unsigned long)ktoken.arg.string_ptr;
-			size_t string_len;
-
-			key_token->type = LTTNG_KEY_TOKEN_STRING;
-
-			string_len = strnlen_user(string_ptr, PAGE_SIZE);
-			if (!string_len || string_len > PAGE_SIZE) {
-				ret = -EINVAL;
-				goto error;
-			}
-			key_token->str = kzalloc(string_len, GFP_KERNEL);
-			if (!key_token->str) {
-				ret = -ENOMEM;
-				goto error;
-			}
-			ret = copy_from_user(key_token->str, string_ptr, string_len);
-			if (ret)
-				goto error;
-			if (key_token->str[string_len - 1] != '\0') {
-				ret = -EINVAL;
-				goto error;
-			}
-			break;
-		}
-		case LTTNG_KERNEL_ABI_KEY_TOKEN_EVENT_NAME:
-			key_token->type = LTTNG_KEY_TOKEN_EVENT_NAME;
-			break;
-
-		case LTTNG_KERNEL_ABI_KEY_TOKEN_PROVIDER_NAME:
-			lttng_fallthrough;
-		default:
+		nr_tokens = kdimension_tokens.nr_key_tokens;
+		if (nr_tokens > LTTNG_KERNEL_COUNTER_MAX_TOKENS) {
 			ret = -EINVAL;
 			goto error;
 		}
-		utoken = (struct lttng_kernel_abi_key_token __user *)((unsigned long)utoken + token_len);
+		token_array = kzalloc(nr_tokens * sizeof(*token_array), GFP_KERNEL);
+		if (!token_array) {
+			ret = -ENOMEM;
+			goto error;
+		}
+		counter_key->dimension_array[0].token_array = token_array;
+		counter_key->dimension_array[0].nr_key_tokens = nr_tokens;
+		utoken = (struct lttng_kernel_abi_key_token __user *)((unsigned long)ptr + kdimension.len);
+		for (i = 0; i < nr_tokens; i++) {
+			struct lttng_kernel_abi_key_token ktoken = {};
+			struct lttng_key_token *key_token = &token_array[i];
+			uint32_t token_len = 0;
+
+			ret = lttng_copy_struct_from_user(&ktoken, sizeof(ktoken), utoken, sizeof(*utoken));
+			if (ret)
+				goto error;
+			token_len += ktoken.len;
+			switch (ktoken.type) {
+			case LTTNG_KERNEL_ABI_KEY_TOKEN_STRING:
+			{
+				struct lttng_kernel_abi_key_token_string __user *utoken_string;
+				struct lttng_kernel_abi_key_token_string *ktoken_string;
+				char __user *string_ptr;
+				size_t string_len;
+
+				utoken_string = (struct lttng_kernel_abi_key_token_string __user *) utoken;
+				ret = lttng_copy_struct_from_user(&ktoken_string, sizeof(ktoken_string),
+						utoken_string, ktoken.len);
+				if (ret)
+					goto error;
+				string_ptr = (char __user *) ((unsigned long)utoken_string + ktoken.len);
+				string_len = ktoken_string->string_len;
+				key_token->type = LTTNG_KEY_TOKEN_STRING;
+				if (!string_len || string_len > PAGE_SIZE) {
+					ret = -EINVAL;
+					goto error;
+				}
+				key_token->str = kzalloc(string_len, GFP_KERNEL);
+				if (!key_token->str) {
+					ret = -ENOMEM;
+					goto error;
+				}
+				ret = copy_from_user(key_token->str, string_ptr, string_len);
+				if (ret)
+					goto error;
+				if (key_token->str[string_len - 1] != '\0') {
+					ret = -EINVAL;
+					goto error;
+				}
+				token_len += string_len;
+				break;
+			}
+			case LTTNG_KERNEL_ABI_KEY_TOKEN_EVENT_NAME:
+				key_token->type = LTTNG_KEY_TOKEN_EVENT_NAME;
+				break;
+
+			case LTTNG_KERNEL_ABI_KEY_TOKEN_PROVIDER_NAME:
+				lttng_fallthrough;
+			default:
+				ret = -EINVAL;
+				goto error;
+			}
+			utoken = (struct lttng_kernel_abi_key_token __user *)((unsigned long)utoken + token_len);
+		}
+
+		break;
+	}
+	case LTTNG_KERNEL_ABI_KEY_TYPE_INTEGER:
+	default:
+		ret = -EINVAL;
+		goto error;
 	}
 	*_counter_key = counter_key;
 	return 0;
@@ -1138,12 +1159,11 @@ long lttng_counter_ioctl_abi_counter_event(struct file *file,
 		return ret;
 	if (len > PAGE_SIZE)
 		return -E2BIG;
-	if (len < offsetofend(struct lttng_kernel_abi_counter_event, key))
+	if (len < offsetofend(struct lttng_kernel_abi_counter_event, number_key_dimensions))
 		return -EINVAL;
 	counter_event = kzalloc(sizeof(*counter_event), GFP_KERNEL);
-	if (!counter_event) {
+	if (!counter_event)
 		return -ENOMEM;
-	}
 	ret = lttng_copy_struct_from_user(&kcounter_event, sizeof(kcounter_event),
 			ucounter_event, len);
 	if (ret)
@@ -1152,7 +1172,17 @@ long lttng_counter_ioctl_abi_counter_event(struct file *file,
 	ret = copy_user_event_param_ext(&counter_event->event_param_ext, &kcounter_event.event);
 	if (ret)
 		goto end_counter_event;
-	ret = create_counter_key_from_abi_key(&counter_event->counter_key, &kcounter_event.key);
+	switch (kcounter_event.action) {
+	case LTTNG_KERNEL_ABI_COUNTER_ACTION_INCREMENT:
+		/* No specific data for this action. */
+		break;
+	default:
+		ret = -EINVAL;
+		goto end_counter_event;
+	}
+	ret = create_counter_key_from_abi_dimensions(&counter_event->counter_key,
+			kcounter_event.number_key_dimensions,
+			(void __user *) arg + len);
 	if (ret)
 		goto end_counter_event;
 	ret = lttng_abi_create_event_counter_enabler(file, counter_event);
@@ -1168,10 +1198,10 @@ long lttng_counter_ioctl_abi_counter_map_descriptor(struct lttng_kernel_channel_
 {
 	struct lttng_kernel_abi_counter_map_descriptor __user *udescriptor =
 		(struct lttng_kernel_abi_counter_map_descriptor __user *) arg;
-	struct lttng_kernel_abi_counter_key_string __user *ukey_ptr;
 	struct lttng_kernel_abi_counter_map_descriptor kdescriptor = {};
 	struct lttng_counter_map_descriptor *descriptor;
 	char key[LTTNG_KERNEL_COUNTER_KEY_LEN] = {};
+	uint64_t array_indexes[1];
 	size_t key_strlen;
 	uint32_t len;
 	int ret;
@@ -1181,41 +1211,38 @@ long lttng_counter_ioctl_abi_counter_map_descriptor(struct lttng_kernel_channel_
 		return ret;
 	if (len > PAGE_SIZE)
 		return -E2BIG;
-	if (!len || len < offsetofend(struct lttng_kernel_abi_counter_map_descriptor, key_ptr))
+	if (len < offsetofend(struct lttng_kernel_abi_counter_map_descriptor, array_indexes_len))
 		return -EINVAL;
 	ret = lttng_copy_struct_from_user(&kdescriptor, sizeof(kdescriptor), udescriptor, len);
 	if (ret)
 		return ret;
-
 	mutex_lock(&counter->priv->map.lock);
 	if (kdescriptor.descriptor_index >= counter->priv->map.nr_descriptors) {
 		ret = -EOVERFLOW;
 		goto map_descriptor_error_unlock;
 	}
+	if (kdescriptor.array_indexes_len < 1) {
+		ret = -EINVAL;
+		goto map_descriptor_error_unlock;
+	}
+	kdescriptor.array_indexes_len = 1;
 	descriptor = &counter->priv->map.descriptors[kdescriptor.descriptor_index];
+	kdescriptor.dimension = 0;
 	kdescriptor.user_token = descriptor->user_token;
-	kdescriptor.array_index = descriptor->array_index;
 	memcpy(&key, descriptor->key, LTTNG_KERNEL_COUNTER_KEY_LEN);
+	array_indexes[0] = descriptor->array_index;
 	mutex_unlock(&counter->priv->map.lock);
 
 	key_strlen = strlen(key) + 1;
+	if (kdescriptor.key_string_len < key_strlen)
+		return -ENOSPC;
 	kdescriptor.key_string_len = key_strlen;
+	if (copy_to_user((char __user *)(unsigned long)kdescriptor.key_string, key, key_strlen))
+		return -EFAULT;
+	if (copy_to_user((uint64_t __user *)(unsigned long)kdescriptor.array_indexes, array_indexes, sizeof(uint64_t)))
+		return -EFAULT;
 	if (copy_to_user(udescriptor, &kdescriptor, min(sizeof(kdescriptor), (size_t)len)))
 		return -EFAULT;
-	ukey_ptr = (struct lttng_kernel_abi_counter_key_string __user *)(unsigned long)kdescriptor.key_ptr;
-	if (ukey_ptr) {
-		uint32_t ukey_string_len;
-
-		ret = get_user(ukey_string_len, &ukey_ptr->string_len);
-		if (ret)
-			return ret;
-		if (ukey_string_len > PAGE_SIZE)
-			return -E2BIG;
-		if (key_strlen > ukey_string_len)
-			return -ENOSPC;
-		if (copy_to_user(ukey_ptr->str, key, key_strlen))
-			return -EFAULT;
-	}
 	return 0;
 
 map_descriptor_error_unlock:
