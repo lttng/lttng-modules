@@ -78,7 +78,7 @@ int lttng_kprobes_event_handler_pre(struct kprobe *p, struct pt_regs *regs)
 			container_of(event, struct lttng_kernel_event_notifier, parent);
 		struct lttng_kernel_notification_ctx notif_ctx;
 
-		notif_ctx.eval_capture = LTTNG_READ_ONCE(event_notifier->eval_capture);
+		notif_ctx.eval_capture = false;
 		event_notifier->notification_send(event_notifier, NULL, NULL, &notif_ctx);
 		break;
 	}
