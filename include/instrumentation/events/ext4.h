@@ -730,7 +730,23 @@ LTTNG_TRACEPOINT_EVENT(ext4_da_update_reserve_space,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,13,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,11,0))
+LTTNG_TRACEPOINT_EVENT(ext4_da_reserve_space,
+	TP_PROTO(struct inode *inode, int nr_resv),
+
+	TP_ARGS(inode, nr_resv),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
+		ctf_integer(ino_t, ino, inode->i_ino)
+		ctf_integer(__u64, i_blocks, inode->i_blocks)
+		ctf_integer(__u64, nr_resv, nr_resv)
+		ctf_integer(int, reserved_data_blocks,
+				EXT4_I(inode)->i_reserved_data_blocks)
+		ctf_integer(TP_MODE_T, mode, inode->i_mode)
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,13,0))
 LTTNG_TRACEPOINT_EVENT(ext4_da_reserve_space,
 	TP_PROTO(struct inode *inode),
 
