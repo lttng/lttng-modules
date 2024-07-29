@@ -192,7 +192,6 @@ LTTNG_TRACEPOINT_EVENT(btrfs_get_extent,
 		ctf_integer(u64, start, map->start)
 		ctf_integer(u64, len, map->len)
 		ctf_integer(u64, block_start, map->block_start)
-		ctf_integer(u64, block_len, map->block_len)
 		ctf_integer(unsigned int, flags, map->flags)
 		ctf_integer(int, refs, refcount_read(&map->refs))
 		ctf_integer(unsigned int, compress_type, extent_map_compression(map))
