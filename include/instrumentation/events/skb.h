@@ -40,7 +40,25 @@ LTTNG_TRACEPOINT_ENUM(skb_drop_reason,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0) \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,11,0))
+LTTNG_TRACEPOINT_EVENT_MAP(kfree_skb,
+
+	skb_kfree,
+
+	TP_PROTO(struct sk_buff *skb, void *location,
+		enum skb_drop_reason reason, struct sock *rx_sk),
+
+	TP_ARGS(skb, location, reason, rx_sk),
+
+	TP_FIELDS(
+		ctf_integer_hex(void *, skbaddr, skb)
+		ctf_integer_hex(void *, location, location)
+		ctf_integer_network(unsigned short, protocol, skb->protocol)
+		ctf_enum(skb_drop_reason, uint8_t, reason, reason)
+		ctf_integer_hex(void *, rx_skaddr, rx_sk)
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0) \
 	|| LTTNG_KERNEL_RANGE(5,15,58, 5,16,0) \
 	|| LTTNG_RHEL_KERNEL_RANGE(5,14,0,70,0,0, 5,15,0,0,0,0) \
 	|| LTTNG_RHEL_KERNEL_RANGE(4,18,0,477,10,1, 4,19,0,0,0,0))
