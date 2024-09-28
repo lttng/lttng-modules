@@ -1,3 +1,12 @@
+2024-09-28 (Ask a Stupid Question Day) LTTng modules 2.13.15
+	* Fix: scsi: sd: Atomic write support added in 6.11-rc1
+	* Fix: block_start removed from btrfs_get_extent in 6.11-rc1
+	* Fix: block_len removed frmo btrfs_get_extent in 6.11-rc1
+	* Fix: orig_start removed from btrfs_get_extent in 6.11-rc1
+	* Fix: ext4_da_reserve_space changed in 6.11-rc1
+	* Fix: kfree_skb changed in 6.11-rc1
+	* Fix: event notifier: set eval_capture to false for kprobe and uprobe
+
 2024-07-18 (National Sour Candy Day) LTTng modules 2.13.14
 	* kvm instrumentation: Fix kvm_mmio event NULL pointer dereference
 	* Fix: Build on CentOS 9 Stream 2024-06
