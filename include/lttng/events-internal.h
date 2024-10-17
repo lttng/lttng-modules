@@ -42,6 +42,7 @@ struct lttng_krp;				/* Kretprobe handling */
 struct lttng_uprobe_handler {
 	struct lttng_kernel_event_common *event;
 	loff_t offset;
+	struct uprobe *uprobe;
 	struct uprobe_consumer up_consumer;
 	struct list_head node;
 };

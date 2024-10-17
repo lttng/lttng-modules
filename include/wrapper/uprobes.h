@@ -18,9 +18,14 @@
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,5,0))
 #include <linux/uprobes.h>
+/*
+ * No wrappers for >= 6.12, the API has changed too much, the version checks
+ * are inlined in 'src/probes/lttng-uprobes.c'.
+ */
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,12,0))
 
 /* Use kallsym lookup for version before 3.9. */
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,9,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,9,0))
 
 static inline
 int wrapper_uprobe_register(struct inode *inode, loff_t offset, struct uprobe_consumer *uc)
