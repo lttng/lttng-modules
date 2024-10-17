@@ -232,8 +232,16 @@ int lttng_uprobes_add_callsite(struct lttng_uprobe *uprobe,
 		goto register_error;
 	}
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,12,0))
+	ret = 0;
+	uprobe_handler->uprobe = uprobe_register(uprobe->inode,
+		      uprobe_handler->offset, 0, &uprobe_handler->up_consumer);
+	if (IS_ERR(uprobe_handler->uprobe))
+		ret = -1;
+#else
 	ret = uprobe_register(uprobe->inode,
 		      uprobe_handler->offset, &uprobe_handler->up_consumer);
+#endif
 	if (ret) {
 		printk(KERN_WARNING "LTTng: Error registering probe on inode %lu "
 		       "and offset 0x%llx\n", uprobe->inode->i_ino,
@@ -304,15 +312,39 @@ void lttng_uprobes_unregister(struct inode *inode, struct list_head *head)
 {
 	struct lttng_uprobe_handler *iter, *tmp;
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,12,0))
+	/*
+	 * Iterate over the list of handler, unregister each uprobe.
+	 */
+	list_for_each_entry(iter, head, node) {
+		uprobe_unregister_nosync(iter->uprobe, &iter->up_consumer);
+		iter->uprobe = NULL;
+	}
+
+	/*
+	 * Call synchronize_srcu() on uprobes_srcu.
+	 */
+	uprobe_unregister_sync();
+
 	/*
 	 * Iterate over the list of handler, remove each handler from the list
 	 * and free the struct.
+	 */
+	list_for_each_entry_safe(iter, tmp, head, node) {
+		list_del(&iter->node);
+		kfree(iter);
+	}
+#else
+	/*
+	 * Iterate over the list of handler, unregister each uprobe, remove
+	 * each handler from the list and free the struct.
 	 */
 	list_for_each_entry_safe(iter, tmp, head, node) {
 		uprobe_unregister(inode, iter->offset, &iter->up_consumer);
 		list_del(&iter->node);
 		kfree(iter);
 	}
+#endif
 }
 
 void lttng_uprobes_unregister_event(struct lttng_kernel_event_common *event)
