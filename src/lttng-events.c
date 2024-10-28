@@ -503,6 +503,8 @@ int lttng_session_enable(struct lttng_kernel_session *session)
 		chan_buf_priv = container_of(chan_priv, struct lttng_kernel_channel_buffer_private, parent);
 		if (chan_buf_priv->channel_type != METADATA_CHANNEL)
 			lib_ring_buffer_clear_quiescent_channel(chan_buf_priv->rb_chan);
+
+		WRITE_ONCE(chan_buf_priv->rb_chan->been_active, 1);
 	}
 
 	WRITE_ONCE(session->active, 1);
