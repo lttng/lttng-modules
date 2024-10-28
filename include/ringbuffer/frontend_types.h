@@ -71,6 +71,7 @@ struct lttng_kernel_ring_buffer_channel {
 	int finalized;				/* Has channel been finalized */
 	struct channel_iter iter;		/* Channel read-side iterator */
 	struct kref ref;			/* Reference count */
+	int been_active;			/* Tracing was started at least once */
 };
 
 /* Per-subbuffer commit counters used on the hot path */

@@ -1502,7 +1502,13 @@ void lib_ring_buffer_print_buffer_errors(struct lttng_kernel_ring_buffer *buf,
 	 */
 	write_offset = v_read(config, &buf->offset);
 	cons_offset = atomic_long_read(&buf->consumed);
-	if (write_offset != cons_offset)
+
+	/*
+	 * Only print errors if the session associated with the buffer has been
+	 * active, otherwise destroying an un-started session results in errors
+	 * because of the un-consumed packet header present in the buffer.
+	 */
+	if (chan->been_active && write_offset != cons_offset)
 		printk(KERN_DEBUG
 		       "LTTng: ring buffer %s, cpu %d: "
 		       "non-consumed data\n"
