@@ -1,3 +1,6 @@
+2024-11-18 (Odd Socks Day) 2.12.19
+	* fix: mm/page_alloc: fix tracepoint mm_page_alloc_zone_locked() (v5.15.171)
+
 2024-07-18 (National Sour Candy Day) 2.12.18
 	* kvm instrumentation: Fix kvm_mmio event NULL pointer dereference
 	* fix: file: Rename fcheck lookup_fd_rcu (v5.10.220)
