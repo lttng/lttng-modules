@@ -1,3 +1,9 @@
+2024-11-18 (Odd Socks Day) 2.13.16
+	* fix: mm/page_alloc: fix tracepoint mm_page_alloc_zone_locked() (v5.15.171)
+	* Fix: uprobes: make uprobe_register() return struct uprobe * (v6.12)
+	* Fix: silence 'non-consumed' message for non-started sessions
+	* fix: writeback: Refine the show_inode_state() macro definition (v6.12)
+
 2024-09-28 (Ask a Stupid Question Day) LTTng modules 2.13.15
 	* Fix: scsi: sd: Atomic write support added in 6.11-rc1
 	* Fix: block_start removed from btrfs_get_extent in 6.11-rc1
