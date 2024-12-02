@@ -9,10 +9,17 @@
 #define _LTTNG_WRAPPER_FDTABLE_H
 
 #include <lttng/kernel-version.h>
+#include <linux/file.h>
 #include <linux/fdtable.h>
 #include <linux/sched.h>
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,7,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,13,0))
+static inline
+struct file *lttng_lookup_fdget_rcu(unsigned int fd)
+{
+	return fget_raw(fd);
+}
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,7,0))
 static inline
 struct file *lttng_lookup_fdget_rcu(unsigned int fd)
 {

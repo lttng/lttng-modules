@@ -577,7 +577,9 @@ int lttng_abi_create_channel(struct file *session_file,
 	return chan_fd;
 
 chan_error:
-	lttng_file_ref_put(session_file);
+	if (!lttng_file_ref_put(session_file)) {
+		ret = -EINVAL;
+	}
 refcount_error:
 	fput(chan_file);
 file_error:
@@ -2450,7 +2452,9 @@ int lttng_abi_open_event_notifier_group_stream(struct file *notif_file)
 	return ret;
 
 fd_error:
-	lttng_file_ref_put(notif_file);
+	if (!lttng_file_ref_put(notif_file)) {
+		/* Don't change return code */
+	}
 refcount_error:
 	event_notifier_group->ops->priv->buffer_read_close(buf);
 	return ret;
@@ -2777,7 +2781,9 @@ int lttng_abi_create_event_recorder_enabler(struct file *channel_file,
 	return event_fd;
 
 event_error:
-	lttng_file_ref_put(channel_file);
+	if (!lttng_file_ref_put(channel_file)) {
+		ret = -EINVAL;
+	}
 refcount_error:
 	fput(event_file);
 file_error:
@@ -2937,7 +2943,9 @@ int lttng_abi_create_event_counter_enabler(struct file *channel_file,
 	return event_fd;
 
 event_error:
-	lttng_file_ref_put(channel_file);
+	if (!lttng_file_ref_put(channel_file)) {
+		/* Don't change return code */
+	}
 refcount_error:
 	fput(event_file);
 file_error:
@@ -3190,7 +3198,9 @@ int lttng_abi_create_event_notifier(struct file *event_notifier_group_file,
 	return event_notifier_fd;
 
 event_notifier_error:
-	lttng_file_ref_put(event_notifier_group_file);
+	if (!lttng_file_ref_put(event_notifier_group_file)) {
+		/* Don't change return code */
+	}
 refcount_error:
 	fput(event_notifier_file);
 file_error:
@@ -3266,7 +3276,9 @@ long lttng_abi_session_create_counter(
 	return counter_fd;
 
 create_error:
-	lttng_file_ref_put(session->priv->file);
+	if (!lttng_file_ref_put(session->priv->file)) {
+		/* Don't change return  code */
+	}
 refcount_error:
 	fput(counter_file);
 file_error:
@@ -3362,7 +3374,9 @@ long lttng_abi_event_notifier_group_create_error_counter(
 	return counter_fd;
 
 create_error:
-      lttng_file_ref_put(event_notifier_group_file);
+	if (!lttng_file_ref_put(event_notifier_group_file)) {
+		/* Don't change return code */
+	}
 refcount_error:
 	fput(counter_file);
 file_error:
