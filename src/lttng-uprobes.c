@@ -26,8 +26,13 @@
 #include <ringbuffer/frontend_types.h>
 #include <wrapper/vmalloc.h>
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,13,0))
+static
+int lttng_uprobes_event_handler_pre(struct uprobe_consumer *uc, struct pt_regs *regs, __u64 *data)
+#else
 static
 int lttng_uprobes_event_handler_pre(struct uprobe_consumer *uc, struct pt_regs *regs)
+#endif
 {
 	struct lttng_uprobe_handler *uprobe_handler =
 		container_of(uc, struct lttng_uprobe_handler, up_consumer);
@@ -200,11 +205,19 @@ error:
 }
 
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,13,0))
+static
+int lttng_uprobes_add_callsite(struct lttng_uprobe *uprobe,
+	struct lttng_kernel_abi_event_callsite __user *callsite,
+	int (*handler)(struct uprobe_consumer *self, struct pt_regs *regs, __u64 *data),
+	void *priv_data)
+#else
 static
 int lttng_uprobes_add_callsite(struct lttng_uprobe *uprobe,
 	struct lttng_kernel_abi_event_callsite __user *callsite,
 	int (*handler)(struct uprobe_consumer *self, struct pt_regs *regs),
 	void *priv_data)
+#endif
 {
 	int ret = 0;
 	struct lttng_uprobe_handler *uprobe_handler;
