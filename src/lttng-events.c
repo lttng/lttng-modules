@@ -28,6 +28,7 @@
 #include <linux/dmi.h>
 
 #include <wrapper/compiler_attributes.h>
+#include <wrapper/file_ref.h>
 #include <wrapper/uuid.h>
 #include <wrapper/vmalloc.h>	/* for wrapper_vmalloc_sync_mappings() */
 #include <wrapper/random.h>
@@ -2057,7 +2058,7 @@ int lttng_session_list_tracker_ids(struct lttng_kernel_session *session,
 		ret = PTR_ERR(tracker_ids_list_file);
 		goto file_error;
 	}
-	if (!atomic_long_add_unless(&session->priv->file->f_count, 1, LONG_MAX)) {
+	if (!lttng_file_ref_get(session->priv->file)) {
 		ret = -EOVERFLOW;
 		goto refcount_error;
 	}
@@ -2073,7 +2074,7 @@ int lttng_session_list_tracker_ids(struct lttng_kernel_session *session,
 	return file_fd;
 
 open_error:
-	atomic_long_dec(&session->priv->file->f_count);
+	lttng_file_ref_put(session->priv->file);
 refcount_error:
 	fput(tracker_ids_list_file);
 file_error:
