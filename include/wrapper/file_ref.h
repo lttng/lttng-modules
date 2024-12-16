@@ -7,6 +7,7 @@
 #define LTTNG_WRAPPER_FILE_REF_H
 
 #include <linux/file.h>
+#include <linux/fs.h>
 #include <lttng/kernel-version.h>
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,13,0))
