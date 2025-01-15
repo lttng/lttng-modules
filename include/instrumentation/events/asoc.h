@@ -120,7 +120,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_preg, snd_soc_preg_read,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,9,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,9,0) || \
+    LTTNG_RHEL_KERNEL_RANGE(5,14,0,503,21,1,  5,15,0,0,0,0))
+
 LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_dapm_context,
 
 	TP_PROTO(struct snd_soc_dapm_context *dapm, int val),
@@ -187,7 +189,9 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_card, snd_soc_bias_level_done,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,9,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,9,0) || \
+    LTTNG_RHEL_KERNEL_RANGE(5,14,0,503,21,1,  5,15,0,0,0,0))
+
 LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_dapm_basic,
 
 	TP_PROTO(struct snd_soc_card *card, int event),
