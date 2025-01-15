@@ -12,7 +12,9 @@
 #include <linux/udp.h>
 #include <lttng/kernel-version.h>
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,10,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,10,0) || \
+    LTTNG_RHEL_KERNEL_RANGE(5,14,0,503,21,1,  5,15,0,0,0,0))
+
 LTTNG_TRACEPOINT_ENUM(lttng_sk_family,
 	TP_ENUM_VALUES(
 		ctf_enum_value("AF_INET", AF_INET)
