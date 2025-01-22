@@ -18,10 +18,9 @@ bool lttng_file_ref_get(struct file *file)
 	return file_ref_get(&file->f_ref);
 }
 
-static inline
+static inline __must_check
 bool lttng_file_ref_put(struct file *file)
 {
-	/* This is __must_check */
 	return file_ref_put(&file->f_ref);
 }
 
@@ -33,7 +32,7 @@ bool lttng_file_ref_get(struct file *file)
 	return true;
 }
 
-static inline
+static inline __must_check
 bool lttng_file_ref_put(struct file *file)
 {
 	atomic_long_dec(&file->f_count);
