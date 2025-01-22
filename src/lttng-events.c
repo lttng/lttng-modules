@@ -1965,7 +1965,9 @@ int lttng_session_list_tracker_ids(struct lttng_kernel_session *session,
 	return file_fd;
 
 open_error:
-	lttng_file_ref_put(session->priv->file);
+	if (!lttng_file_ref_put(session->priv->file)) {
+		/* Don't change return code */
+	}
 refcount_error:
 	fput(tracker_ids_list_file);
 file_error:
