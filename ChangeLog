@@ -1,3 +1,12 @@
+2025-01-24 (Global Belly Laugh Day) 2.13.17
+	* fix: include linux/fs.h for 'struct file' definition (v4.5)
+	* fix: add missing check for __must_check 'lttng_file_ref_put()' (v6.13)
+	* Fix: uprobe consumer handler signature changed in Linux 6.13.0-rc1
+	* Fix: lookup_fdget_rcu removed in Linux 6.13.0-rc1
+	* Fix: f_count replaced with f_ref in Linux 6.13.0-rc1
+	* Fix: sched_stat_runtime changed in Linux 6.6.66
+	* lttng-modules fix for RHEL 9.5 kernels
+
 2024-11-18 (Odd Socks Day) 2.13.16
 	* fix: mm/page_alloc: fix tracepoint mm_page_alloc_zone_locked() (v5.15.171)
 	* Fix: uprobes: make uprobe_register() return struct uprobe * (v6.12)
