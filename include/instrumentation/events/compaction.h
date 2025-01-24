@@ -128,7 +128,8 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_compaction_migratepages,
 		ctf_integer(unsigned long, nr_failed, cc->nr_migratepages - nr_succeeded)
 	)
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0) \
+	|| LTTNG_SLE_VERSION_CODE >= LTTNG_SLE_VERSION(150500, 0, 0))
 LTTNG_TRACEPOINT_EVENT_MAP(mm_compaction_migratepages,
 
 	compaction_migratepages,
