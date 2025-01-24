@@ -71,7 +71,8 @@ LTTNG_TRACEPOINT_ENUM(block_rq_type,
 #define lttng_bio_rw(bio)	((bio)->bi_opf)
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0) \
-	|| LTTNG_RHEL_KERNEL_RANGE(5,14,0,162,0,0, 5,15,0,0,0,0))
+	|| LTTNG_RHEL_KERNEL_RANGE(5,14,0,162,0,0, 5,15,0,0,0,0) \
+	|| LTTNG_SLE_VERSION_CODE >= LTTNG_SLE_VERSION(150500, 0, 0))
 #ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 #define blk_rwbs_ctf_integer(type, rwbs, op, rw, bytes)			      \
 		ctf_enum(block_rq_type, type, rwbs,					      \
