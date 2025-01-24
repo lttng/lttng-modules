@@ -11,7 +11,8 @@
 #include <linux/trace_seq.h>
 #include <lttng-kernel-version.h>
 
-#if LTTNG_KERNEL_RANGE(4,11,0, 5,18,0)
+#if (LTTNG_KERNEL_RANGE(4,11,0, 5,18,0) && LTTNG_SLE_VERSION_CODE == 0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,11,0,0,0,0, 5,14,21,150500,10,0)
 #include <scsi/scsi_request.h>
 #endif /* LTTNG_KERNEL_RANGE(4,11,0, 5,18,0) */
 
