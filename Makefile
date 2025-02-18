@@ -25,18 +25,12 @@ ifeq ($(CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM),y)
 LKCPPFLAGS += -DCONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM=y
 endif
 
-# Work-around for crtsavres.o missing $(objtree) prefix on powerpc
-ifeq ($(ARCH),powerpc)
-MO ?= $(KERNELDIR)
-MO_OPT = MO=$(MO)
-endif
-
 default: modules
 
 modules:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD)/src \
 		CONFIG_LTTNG=m CONFIG_LTTNG_CLOCK_PLUGIN_TEST=m \
-		KCPPFLAGS='$(LKCPPFLAGS)' $(MO_OPT) \
+		KCPPFLAGS='$(LKCPPFLAGS)' \
 		modules
 
 modules_install:
