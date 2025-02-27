@@ -187,6 +187,7 @@ struct lttng_kernel_session *lttng_session_create(void)
 	for (i = 0; i < LTTNG_EVENT_HT_SIZE; i++)
 		INIT_HLIST_HEAD(&session_priv->events_key_ht.table[i]);
 	list_add(&session_priv->node, &sessions);
+	session_priv->output_format = LTTNG_KERNEL_ABI_SESSION_OUTPUT_FORMAT_CTF_1_8;
 
 	if (lttng_id_tracker_init(&session->pid_tracker, session, TRACKER_PID))
 		goto tracker_alloc_error;

@@ -396,6 +396,11 @@ struct lttng_kernel_abi_session_creation_time {
 	char iso8601[LTTNG_KERNEL_ABI_SESSION_CREATION_TIME_ISO8601_LEN];
 } __attribute__((packed));
 
+enum lttng_kernel_abi_session_output_format {
+	LTTNG_KERNEL_ABI_SESSION_OUTPUT_FORMAT_CTF_1_8 = 1,
+	LTTNG_KERNEL_ABI_SESSION_OUTPUT_FORMAT_CTF_2 = 2,
+};
+
 enum lttng_kernel_abi_calibrate_type {
 	LTTNG_KERNEL_ABI_CALIBRATE_KRETPROBE,
 };
@@ -541,6 +546,7 @@ struct lttng_kernel_abi_tracker_args {
 	_IOW(0xF6, 0x5D, struct lttng_kernel_abi_session_name)
 #define LTTNG_KERNEL_ABI_SESSION_SET_CREATION_TIME		\
 	_IOW(0xF6, 0x5E, struct lttng_kernel_abi_session_creation_time)
+#define LTTNG_KERNEL_ABI_SESSION_SET_OUTPUT_FORMAT _IOW(0xF6, 0x5F, uint32_t)
 
 /* Channel FD ioctl */
 /* lttng/abi-old.h reserve 0x60 and 0x61. */

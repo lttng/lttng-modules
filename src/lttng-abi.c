@@ -623,6 +623,14 @@ int lttng_abi_session_set_creation_time(struct lttng_kernel_session *session,
 }
 
 static
+int lttng_abi_session_set_output_format(struct lttng_kernel_session *session,
+		enum lttng_kernel_abi_session_output_format format)
+{
+	session->priv->output_format = format;
+	return 0;
+}
+
+static
 int lttng_counter_release(struct inode *inode, struct file *file)
 {
 	struct lttng_kernel_channel_counter *counter = file->private_data;
@@ -1655,6 +1663,11 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 				sizeof(struct lttng_kernel_abi_session_creation_time)))
 			return -EFAULT;
 		return lttng_abi_session_set_creation_time(session, &time);
+	}
+	case LTTNG_KERNEL_ABI_SESSION_SET_OUTPUT_FORMAT:
+	{
+		return lttng_abi_session_set_output_format(session,
+				(enum lttng_kernel_abi_session_output_format) arg);
 	}
 	case LTTNG_KERNEL_ABI_COUNTER:
 	{

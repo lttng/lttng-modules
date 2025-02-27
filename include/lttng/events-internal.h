@@ -573,6 +573,7 @@ struct lttng_kernel_session_private {
 
 	char name[LTTNG_KERNEL_ABI_SESSION_NAME_LEN];
 	char creation_time[LTTNG_KERNEL_ABI_SESSION_CREATION_TIME_ISO8601_LEN];
+	enum lttng_kernel_abi_session_output_format output_format;
 };
 
 struct lttng_id_hash_node {
