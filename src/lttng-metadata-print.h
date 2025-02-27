@@ -48,22 +48,10 @@ void lttng_metadata_end(struct lttng_kernel_session *session)
  * transaction.
  */
 static inline
-int lttng_metadata_printf(struct lttng_kernel_session *session,
-			  const char *fmt, ...)
+int lttng_metadata_print_len(struct lttng_kernel_session *session,
+			  const char *str, size_t len)
 {
-	char *str;
-	size_t len;
-	va_list ap;
-
 	WARN_ON_ONCE(!LTTNG_READ_ONCE(session->active));
-
-	va_start(ap, fmt);
-	str = kvasprintf(GFP_KERNEL, fmt, ap);
-	va_end(ap);
-	if (!str)
-		return -ENOMEM;
-
-	len = strlen(str);
 	WARN_ON_ONCE(!atomic_read(&session->priv->metadata_cache->producing));
 	if (session->priv->metadata_cache->metadata_written + len >
 			session->priv->metadata_cache->cache_alloc) {
@@ -90,13 +78,61 @@ int lttng_metadata_printf(struct lttng_kernel_session *session,
 			session->priv->metadata_cache->metadata_written,
 			str, len);
 	session->priv->metadata_cache->metadata_written += len;
-	kfree(str);
 
 	return 0;
 
 err:
-	kfree(str);
 	return -ENOMEM;
+}
+
+/*
+ * Like lttng_metadata_print_len(), but `str` is null-terminated and
+ * this function computes its length.
+ */
+static inline
+int lttng_metadata_print(struct lttng_kernel_session *session,
+			  const char *str)
+{
+	return lttng_metadata_print_len(session, str, strlen(str));
+}
+
+/*
+ * Like lttng_metadata_print(), but also formats.
+ */
+static inline
+int lttng_metadata_vprintf(struct lttng_kernel_session *session,
+			  const char *fmt, va_list ap)
+{
+	char *str;
+	int ret;
+
+	str = kvasprintf(GFP_KERNEL, fmt, ap);
+	if (!str) {
+		ret = -ENOMEM;
+		goto end;
+	}
+
+	ret = lttng_metadata_print(session, str);
+
+end:
+	kfree(str);
+	return ret;
+}
+
+/*
+ * lttng_metadata_vprintf() with a variable number of arguments.
+ */
+static inline
+int lttng_metadata_printf(struct lttng_kernel_session *session,
+			  const char *fmt, ...)
+{
+	int ret;
+	va_list ap;
+
+	va_start(ap, fmt);
+	ret = lttng_metadata_vprintf(session, fmt, ap);
+	va_end(ap);
+	return ret;
 }
 
 #endif /* _LTTNG_METADATA_PRINT_H */
