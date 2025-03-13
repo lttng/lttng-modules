@@ -175,6 +175,7 @@ struct lttng_kernel_session *lttng_session_create(void)
 	INIT_LIST_HEAD(&metadata_cache->metadata_stream);
 	memcpy(&metadata_cache->uuid, &session_priv->uuid,
 		sizeof(metadata_cache->uuid));
+	lttng_kernel_mj_gen_init(session);
 	INIT_LIST_HEAD(&session_priv->enablers_head);
 	for (i = 0; i < LTTNG_EVENT_HT_SIZE; i++)
 		INIT_HLIST_HEAD(&session_priv->events_name_ht.table[i]);

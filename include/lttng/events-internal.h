@@ -12,6 +12,7 @@
 #include <wrapper/uuid.h>
 
 #include <lttng/events.h>
+#include <lttng/lttng-kernel-mj-gen-internal.h>
 
 struct lttng_syscall_filter;
 struct lttng_metadata_cache;
@@ -568,6 +569,7 @@ struct lttng_kernel_session_private {
 	unsigned int free_chan_id;		/* Next chan ID to allocate */
 	guid_t uuid;				/* Trace session unique ID */
 	struct lttng_metadata_cache *metadata_cache;
+	struct lttng_kernel_mj_gen_private mj_gen;
 	unsigned int metadata_dumped:1,
 		tstate:1;			/* Transient enable state */
 
