@@ -80,7 +80,8 @@ lttng-tracer-objs := lib/msgpack/msgpack.o \
                      lttng-tp-mempool.o \
                      lttng-event-notifier-notification.o \
                      lttng-kernel-mj-gen.o \
-                     init-enum-desc-sorted-entries.o
+                     init-enum-desc-sorted-entries.o \
+                     metadata-ctf-1-8.o
 
 lttng-wrapper-objs := wrapper/page_alloc.o \
                       wrapper/random.o \
