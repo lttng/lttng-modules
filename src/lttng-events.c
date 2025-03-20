@@ -13,6 +13,7 @@
  */
 #include "wrapper/page_alloc.h"
 #include "metadata-ctf-1-8.h"
+#include "metadata-ctf-2.h"
 #include "lttng-metadata-print.h"
 
 #include <linux/module.h>
@@ -461,7 +462,18 @@ int lttng_channel_metadata_statedump(
 
 	lttng_metadata_begin(session);
 	WARN_ON_ONCE(!chan->priv->header_type);
-	ret = lttng_channel_metadata_statedump_ctf_1_8(session, chan);
+
+	switch (session->priv->output_format) {
+	case LTTNG_KERNEL_ABI_SESSION_OUTPUT_FORMAT_CTF_1_8:
+		ret = lttng_channel_metadata_statedump_ctf_1_8(session, chan);
+		break;
+	case LTTNG_KERNEL_ABI_SESSION_OUTPUT_FORMAT_CTF_2:
+		ret = lttng_channel_metadata_statedump_ctf_2(session, chan);
+		break;
+	default:
+		ret = -EINVAL;
+	}
+
 	if (ret)
 		goto end;
 
@@ -487,7 +499,17 @@ int lttng_session_metadata_statedump(struct lttng_kernel_session * const session
 	if (session->priv->metadata_dumped)
 		goto skip_session;
 
-	ret = lttng_session_metadata_statedump_ctf_1_8(session);
+	switch (session->priv->output_format) {
+	case LTTNG_KERNEL_ABI_SESSION_OUTPUT_FORMAT_CTF_1_8:
+		ret = lttng_session_metadata_statedump_ctf_1_8(session);
+		break;
+	case LTTNG_KERNEL_ABI_SESSION_OUTPUT_FORMAT_CTF_2:
+		ret = lttng_session_metadata_statedump_ctf_2(session);
+		break;
+	default:
+		ret = -EINVAL;
+	}
+
 	if (ret)
 		goto end;
 
@@ -1456,8 +1478,20 @@ int lttng_event_recorder_metadata_statedump(struct lttng_kernel_event_common * c
 		return 0;
 
 	lttng_metadata_begin(session);
-	ret = lttng_event_recorder_metadata_statedump_ctf_1_8(
-		session, event_recorder);
+
+	switch (session->priv->output_format) {
+	case LTTNG_KERNEL_ABI_SESSION_OUTPUT_FORMAT_CTF_1_8:
+		ret = lttng_event_recorder_metadata_statedump_ctf_1_8(
+			session, event_recorder);
+		break;
+	case LTTNG_KERNEL_ABI_SESSION_OUTPUT_FORMAT_CTF_2:
+		ret = lttng_event_recorder_metadata_statedump_ctf_2(
+			session, event_recorder);
+		break;
+	default:
+		ret = -EINVAL;
+	}
+
 	if (ret)
 		goto end;
 
