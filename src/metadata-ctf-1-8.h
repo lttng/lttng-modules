@@ -17,13 +17,13 @@
  * Output metadata into this session's metadata buffers.
  * Must be called with sessions_mutex held.
  */
-int lttng_session_metadata_statedump(struct lttng_kernel_session *session);
+int lttng_session_metadata_statedump_ctf_1_8(struct lttng_kernel_session *session);
 
 /*
  * Must be called with sessions_mutex held.
  * The entire event metadata is printed as a single atomic metadata
  * transaction.
  */
-int lttng_event_recorder_metadata_statedump(struct lttng_kernel_event_common *event);
+int lttng_event_recorder_metadata_statedump_ctf_1_8(struct lttng_kernel_event_common *event);
 
 #endif /* _METADATA_CTF_1_8_H */

@@ -642,7 +642,7 @@ int _lttng_fields_metadata_statedump(struct lttng_kernel_session *session,
 	return ret;
 }
 
-int lttng_event_recorder_metadata_statedump(struct lttng_kernel_event_common *event)
+int lttng_event_recorder_metadata_statedump_ctf_1_8(struct lttng_kernel_event_common *event)
 {
 	struct lttng_kernel_event_recorder *event_recorder;
 	struct lttng_kernel_channel_buffer *chan;
@@ -916,7 +916,7 @@ error:
 	return ret;
 }
 
-int lttng_session_metadata_statedump(struct lttng_kernel_session *session)
+int lttng_session_metadata_statedump_ctf_1_8(struct lttng_kernel_session *session)
 {
 	unsigned char *uuid_c = session->priv->uuid.b;
 	unsigned char uuid_s[37], clock_uuid_s[BOOT_ID_LEN];
@@ -1101,7 +1101,7 @@ skip_session:
 	}
 
 	list_for_each_entry(event_recorder_priv, &session->priv->events_head, parent.parent.node) {
-		ret = lttng_event_recorder_metadata_statedump(&event_recorder_priv->pub->parent);
+		ret = lttng_event_recorder_metadata_statedump_ctf_1_8(&event_recorder_priv->pub->parent);
 		if (ret)
 			goto end;
 	}

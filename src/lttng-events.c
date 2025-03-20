@@ -493,7 +493,7 @@ int lttng_session_enable(struct lttng_kernel_session *session)
 
 	WRITE_ONCE(session->active, 1);
 	WRITE_ONCE(session->priv->been_active, 1);
-	ret = lttng_session_metadata_statedump(session);
+	ret = lttng_session_metadata_statedump_ctf_1_8(session);
 	if (ret) {
 		WRITE_ONCE(session->active, 0);
 		goto end;
@@ -575,7 +575,7 @@ int lttng_session_metadata_regenerate(struct lttng_kernel_session *session)
 		event_recorder_priv->metadata_dumped = 0;
 	}
 
-	ret = lttng_session_metadata_statedump(session);
+	ret = lttng_session_metadata_statedump_ctf_1_8(session);
 
 end:
 	mutex_unlock(&sessions_mutex);
@@ -1553,7 +1553,7 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 		goto register_error;
 	}
 
-	ret = lttng_event_recorder_metadata_statedump(event);
+	ret = lttng_event_recorder_metadata_statedump_ctf_1_8(event);
 	WARN_ON_ONCE(ret > 0);
 	if (ret) {
 		goto statedump_error;
