@@ -16,6 +16,8 @@
 #include <lttng/events-internal.h>
 #include <lttng/tracer.h>
 
+#include "init-enum-desc-sorted-entries.h"
+
 /*
  * The filter implementation requires that two consecutive "get" for the
  * same context performed by the same thread return the same result.
@@ -174,6 +176,7 @@ int lttng_kernel_context_append(struct lttng_kernel_ctx **ctx_p,
 {
 	int ret;
 
+	init_type_enum_desc_sorted_entries(f->event_field->type);
 	ret = lttng_kernel_context_add_field(ctx_p);
 	if (ret)
 		return ret;

@@ -60,7 +60,35 @@ struct lttng_kernel_enum_entry {
 	struct lttng_kernel_enum_value start, end;	/* start and end are inclusive */
 	const char *string;
 	struct {
+		/*
+		 * If 1, then `start` and `end` above are irrelevant:
+		 * both the start and end values of this entry are
+		 * either:
+		 *
+		 * This is the first value:
+		 *     Zero.
+		 *
+		 * Otherwise:
+		 *     The effective end value of the previous entry
+		 *     plus one.
+		 *
+		 * This is only relevant when this entry is part of
+		 * `lttng_kernel_enum_desc::entries`; see
+		 * `struct lttng_kernel_enum_desc` to learn more.
+		 */
 		unsigned int is_auto:1;
+
+		/*
+		 * If 1, then this entry is the first within its entry
+		 * array to have the name `string` (field above). The
+		 * next immediate entries having the same name have
+		 * `is_first_in_group` set to 0.
+		 *
+		 * This is only relevant when this entry is part of
+		 * `lttng_kernel_enum_desc::sorted_entries`; see
+		 * `struct lttng_kernel_enum_desc` to learn more.
+		 */
+		unsigned int is_first_in_group:1;
 	} options;
 };
 
@@ -127,8 +155,39 @@ struct lttng_kernel_type_variant {
 
 struct lttng_kernel_enum_desc {
 	const char *name;
+
+	/*
+	 * `entries` below is the original array of enumeration entries,
+	 * as defined by the TP_ENUM_VALUES() user. This is left as is
+	 * to avoid changes to the TSDL output of which the enumeration
+	 * field class layout matches the LTTng-modules one.
+	 *
+	 * `sorted_entries` is a copy of the entry instances within
+	 * `entries`, but:
+	 *
+	 * • The entries are sorted by name
+	 *   (`lttng_kernel_enum_entry::string`).
+	 *
+	 * • The `options.is_auto` field of each entry is 0: the value
+	 *   range is always [`start`, `end`].
+	 *
+	 * • The `options.is_first_in_group` field of an entry E may be
+	 *   true to indicate that E is the first entry within the
+	 *   sorted entries to have its specific name.
+	 *
+	 * This helps with CTF 2 metadata stream production, where
+	 * the mappings are a map of unique names to arrays of ranges.
+	 *
+	 * `sorted_entries` is initially zero-initialized from Stage 2:
+	 * lttng_kernel_probe_register() needs to perform the copy,
+	 * automatic value resolution, and entry sorting.
+	 */
 	const struct lttng_kernel_enum_entry * const *entries;
+	struct lttng_kernel_enum_entry *sorted_entries;
+
+	/* Number of entries in `entries` and `sorted_entries` */
 	unsigned int nr_entries;
+
 	const struct lttng_kernel_probe_desc *probe_desc;
 };
 

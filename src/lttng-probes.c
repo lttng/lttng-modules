@@ -11,9 +11,13 @@
 #include <linux/list.h>
 #include <linux/mutex.h>
 #include <linux/seq_file.h>
+#include <linux/string.h>
+#include <linux/sort.h>
 
 #include <lttng/events.h>
 #include <lttng/events-internal.h>
+
+#include "init-enum-desc-sorted-entries.h"
 
 /*
  * probe list is protected by sessions lock.
@@ -79,6 +83,8 @@ void lttng_lazy_probe_register(struct lttng_kernel_probe_desc *desc)
 {
 	struct lttng_kernel_probe_desc *iter;
 	struct list_head *probe_list;
+
+	init_probe_desc_enum_desc_sorted_entries(desc);
 
 	/*
 	 * Each provider enforce that every event name begins with the
