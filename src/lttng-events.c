@@ -13,6 +13,7 @@
  */
 #include "wrapper/page_alloc.h"
 #include "metadata-ctf-1-8.h"
+#include "lttng-metadata-print.h"
 
 #include <linux/module.h>
 #include <linux/mutex.h>
@@ -77,6 +78,8 @@ static void _lttng_channel_destroy(struct lttng_kernel_channel_common *chan);
 static void _lttng_event_unregister(struct lttng_kernel_event_common *event);
 static
 void _lttng_metadata_channel_hangup(struct lttng_metadata_stream *stream);
+static
+int lttng_event_recorder_metadata_statedump(struct lttng_kernel_event_common *event);
 
 void synchronize_trace(void)
 {
@@ -443,6 +446,78 @@ int lttng_session_statedump(struct lttng_kernel_session *session)
 	return ret;
 }
 
+static
+int lttng_channel_metadata_statedump(
+		struct lttng_kernel_session * const session,
+		struct lttng_kernel_channel_buffer * const chan)
+{
+	int ret;
+
+	if (chan->priv->metadata_dumped || !LTTNG_READ_ONCE(session->active))
+		return 0;
+
+	if (chan->priv->channel_type == METADATA_CHANNEL)
+		return 0;
+
+	lttng_metadata_begin(session);
+	WARN_ON_ONCE(!chan->priv->header_type);
+	ret = lttng_channel_metadata_statedump_ctf_1_8(session, chan);
+	if (ret)
+		goto end;
+
+	chan->priv->metadata_dumped = 1;
+
+end:
+	lttng_metadata_end(session);
+	return ret;
+}
+
+static
+int lttng_session_metadata_statedump(struct lttng_kernel_session * const session)
+{
+	int ret;
+	struct lttng_kernel_channel_common_private *chan_priv;
+	struct lttng_kernel_event_recorder_private *event_recorder_priv;
+
+	if (!LTTNG_READ_ONCE(session->active))
+		return 0;
+
+	lttng_metadata_begin(session);
+
+	if (session->priv->metadata_dumped)
+		goto skip_session;
+
+	ret = lttng_session_metadata_statedump_ctf_1_8(session);
+	if (ret)
+		goto end;
+
+skip_session:
+	list_for_each_entry(chan_priv, &session->priv->chan_head, node) {
+		struct lttng_kernel_channel_buffer_private *chan_buf_priv;
+
+		if (chan_priv->pub->type != LTTNG_KERNEL_CHANNEL_TYPE_BUFFER)
+			continue;
+
+		chan_buf_priv = container_of(chan_priv,
+			struct lttng_kernel_channel_buffer_private, parent);
+		ret = lttng_channel_metadata_statedump(session, chan_buf_priv->pub);
+		if (ret)
+			goto end;
+	}
+
+	list_for_each_entry(event_recorder_priv, &session->priv->events_head, parent.parent.node) {
+		ret = lttng_event_recorder_metadata_statedump(&event_recorder_priv->pub->parent);
+		if (ret)
+			goto end;
+	}
+
+	session->priv->metadata_dumped = 1;
+
+end:
+	lttng_metadata_end(session);
+	return ret;
+}
+
 int lttng_session_enable(struct lttng_kernel_session *session)
 {
 	int ret = 0;
@@ -493,7 +568,7 @@ int lttng_session_enable(struct lttng_kernel_session *session)
 
 	WRITE_ONCE(session->active, 1);
 	WRITE_ONCE(session->priv->been_active, 1);
-	ret = lttng_session_metadata_statedump_ctf_1_8(session);
+	ret = lttng_session_metadata_statedump(session);
 	if (ret) {
 		WRITE_ONCE(session->active, 0);
 		goto end;
@@ -575,7 +650,7 @@ int lttng_session_metadata_regenerate(struct lttng_kernel_session *session)
 		event_recorder_priv->metadata_dumped = 0;
 	}
 
-	ret = lttng_session_metadata_statedump_ctf_1_8(session);
+	ret = lttng_session_metadata_statedump(session);
 
 end:
 	mutex_unlock(&sessions_mutex);
@@ -1359,6 +1434,40 @@ int lttng_append_event_to_channel_map(struct lttng_event_enabler_common *event_e
 			event_counter->priv->parent.id, name);
 }
 
+static
+int lttng_event_recorder_metadata_statedump(struct lttng_kernel_event_common * const event)
+{
+	struct lttng_kernel_event_recorder *event_recorder;
+	struct lttng_kernel_channel_buffer *chan;
+	struct lttng_kernel_session *session;
+	int ret;
+
+	if (event->type != LTTNG_KERNEL_EVENT_TYPE_RECORDER)
+		return 0;
+
+	event_recorder = container_of(event, struct lttng_kernel_event_recorder, parent);
+	chan = event_recorder->chan;
+	session = chan->parent.session;
+
+	if (event_recorder->priv->metadata_dumped || !LTTNG_READ_ONCE(session->active))
+		return 0;
+
+	if (chan->priv->channel_type == METADATA_CHANNEL)
+		return 0;
+
+	lttng_metadata_begin(session);
+	ret = lttng_event_recorder_metadata_statedump_ctf_1_8(
+		session, event_recorder);
+	if (ret)
+		goto end;
+
+	event_recorder->priv->metadata_dumped = 1;
+
+end:
+	lttng_metadata_end(session);
+	return ret;
+}
+
 /*
  * Supports event creation while tracing session is active.
  * Needs to be called with sessions mutex held.
@@ -1553,7 +1662,7 @@ struct lttng_kernel_event_common *_lttng_kernel_event_create(struct lttng_event_
 		goto register_error;
 	}
 
-	ret = lttng_event_recorder_metadata_statedump_ctf_1_8(event);
+	ret = lttng_event_recorder_metadata_statedump(event);
 	WARN_ON_ONCE(ret > 0);
 	if (ret) {
 		goto statedump_error;

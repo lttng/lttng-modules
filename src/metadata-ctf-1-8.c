@@ -18,10 +18,6 @@
 #include "metadata-ctf-1-8.h"
 
 static
-int _lttng_channel_metadata_statedump(struct lttng_kernel_session *session,
-				    struct lttng_kernel_channel_buffer *chan);
-
-static
 int _lttng_type_statedump(struct lttng_kernel_session *session,
 		const struct lttng_kernel_type_common *type,
 		enum lttng_kernel_string_encoding parent_encoding,
@@ -642,25 +638,10 @@ int _lttng_fields_metadata_statedump(struct lttng_kernel_session *session,
 	return ret;
 }
 
-int lttng_event_recorder_metadata_statedump_ctf_1_8(struct lttng_kernel_event_common *event)
+int lttng_event_recorder_metadata_statedump_ctf_1_8(struct lttng_kernel_session *session,
+		struct lttng_kernel_event_recorder *event_recorder)
 {
-	struct lttng_kernel_event_recorder *event_recorder;
-	struct lttng_kernel_channel_buffer *chan;
-	struct lttng_kernel_session *session;
-	int ret = 0;
-
-	if (event->type != LTTNG_KERNEL_EVENT_TYPE_RECORDER)
-		return 0;
-	event_recorder = container_of(event, struct lttng_kernel_event_recorder, parent);
-	chan = event_recorder->chan;
-	session = chan->parent.session;
-
-	if (event_recorder->priv->metadata_dumped || !LTTNG_READ_ONCE(session->active))
-		return 0;
-	if (chan->priv->channel_type == METADATA_CHANNEL)
-		return 0;
-
-	lttng_metadata_begin(session);
+	int ret;
 
 	ret = lttng_metadata_printf(session,
 		"event {\n"
@@ -690,12 +671,8 @@ int lttng_event_recorder_metadata_statedump_ctf_1_8(struct lttng_kernel_event_co
 	ret = lttng_metadata_printf(session,
 		"	};\n"
 		"};\n\n");
-	if (ret)
-		goto end;
 
-	event_recorder->priv->metadata_dumped = 1;
 end:
-	lttng_metadata_end(session);
 	return ret;
 
 }
@@ -705,21 +682,11 @@ end:
  * The entire channel metadata is printed as a single atomic metadata
  * transaction.
  */
-static
-int _lttng_channel_metadata_statedump(struct lttng_kernel_session *session,
+int lttng_channel_metadata_statedump_ctf_1_8(struct lttng_kernel_session *session,
 				    struct lttng_kernel_channel_buffer *chan)
 {
 	int ret = 0;
 
-	if (chan->priv->metadata_dumped || !LTTNG_READ_ONCE(session->active))
-		return 0;
-
-	if (chan->priv->channel_type == METADATA_CHANNEL)
-		return 0;
-
-	lttng_metadata_begin(session);
-
-	WARN_ON_ONCE(!chan->priv->header_type);
 	ret = lttng_metadata_printf(session,
 		"stream {\n"
 		"	id = %u;\n"
@@ -750,9 +717,7 @@ int _lttng_channel_metadata_statedump(struct lttng_kernel_session *session,
 	ret = lttng_metadata_printf(session,
 		"};\n\n");
 
-	chan->priv->metadata_dumped = 1;
 end:
-	lttng_metadata_end(session);
 	return ret;
 }
 
@@ -921,17 +886,7 @@ int lttng_session_metadata_statedump_ctf_1_8(struct lttng_kernel_session *sessio
 	unsigned char *uuid_c = session->priv->uuid.b;
 	unsigned char uuid_s[37], clock_uuid_s[BOOT_ID_LEN];
 	const char *product_uuid;
-	struct lttng_kernel_channel_common_private *chan_priv;
-	struct lttng_kernel_event_recorder_private *event_recorder_priv;
 	int ret = 0;
-
-	if (!LTTNG_READ_ONCE(session->active))
-		return 0;
-
-	lttng_metadata_begin(session);
-
-	if (session->priv->metadata_dumped)
-		goto skip_session;
 
 	snprintf(uuid_s, sizeof(uuid_s),
 		"%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
@@ -1088,25 +1043,6 @@ int lttng_session_metadata_statedump_ctf_1_8(struct lttng_kernel_session *sessio
 	if (ret)
 		goto end;
 
-skip_session:
-	list_for_each_entry(chan_priv, &session->priv->chan_head, node) {
-		struct lttng_kernel_channel_buffer_private *chan_buf_priv;
-
-		if (chan_priv->pub->type != LTTNG_KERNEL_CHANNEL_TYPE_BUFFER)
-			continue;
-		chan_buf_priv = container_of(chan_priv, struct lttng_kernel_channel_buffer_private, parent);
-		ret = _lttng_channel_metadata_statedump(session, chan_buf_priv->pub);
-		if (ret)
-			goto end;
-	}
-
-	list_for_each_entry(event_recorder_priv, &session->priv->events_head, parent.parent.node) {
-		ret = lttng_event_recorder_metadata_statedump_ctf_1_8(&event_recorder_priv->pub->parent);
-		if (ret)
-			goto end;
-	}
-	session->priv->metadata_dumped = 1;
 end:
-	lttng_metadata_end(session);
 	return ret;
 }
