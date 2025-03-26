@@ -82,17 +82,17 @@ struct lttng_kernel_ring_buffer_client_cb {
  *   with preemption disabled (lib_ring_buffer_get_cpu() and
  *   lib_ring_buffer_put_cpu()).
  *
- * RING_BUFFER_ALLOC_PER_CPU and RING_BUFFER_SYNC_GLOBAL :
- *   Per-cpu buffer with global synchronization. Tracing can be performed with
+ * RING_BUFFER_ALLOC_PER_CPU and RING_BUFFER_SYNC_PER_CHANNEL :
+ *   Per-cpu buffer with per-channel synchronization. Tracing can be performed with
  *   preemption enabled, statistically stays on the local buffers.
  *
- * RING_BUFFER_ALLOC_GLOBAL and RING_BUFFER_SYNC_PER_CPU :
+ * RING_BUFFER_ALLOC_PER_CHANNEL and RING_BUFFER_SYNC_PER_CPU :
  *   Should only be used for buffers belonging to a single thread or protected
  *   by mutual exclusion by the client. Note that periodical sub-buffer switch
  *   should be disabled in this kind of configuration.
  *
- * RING_BUFFER_ALLOC_GLOBAL and RING_BUFFER_SYNC_GLOBAL :
- *   Global shared buffer with global synchronization.
+ * RING_BUFFER_ALLOC_PER_CHANNEL and RING_BUFFER_SYNC_PER_CHANNEL :
+ *   Per-channel shared buffer with per-channel synchronization.
  *
  * wakeup:
  *
@@ -113,11 +113,11 @@ struct lttng_kernel_ring_buffer_client_cb {
 struct lttng_kernel_ring_buffer_config {
 	enum {
 		RING_BUFFER_ALLOC_PER_CPU,
-		RING_BUFFER_ALLOC_GLOBAL,
+		RING_BUFFER_ALLOC_PER_CHANNEL,
 	} alloc;
 	enum {
 		RING_BUFFER_SYNC_PER_CPU,	/* Wait-free */
-		RING_BUFFER_SYNC_GLOBAL,	/* Lock-free */
+		RING_BUFFER_SYNC_PER_CHANNEL,	/* Lock-free */
 	} sync;
 	enum {
 		RING_BUFFER_OVERWRITE,		/* Overwrite when buffer full */
@@ -319,7 +319,7 @@ int lib_ring_buffer_check_config(const struct lttng_kernel_ring_buffer_config *c
 			     unsigned int switch_timer_interval,
 			     unsigned int read_timer_interval)
 {
-	if (config->alloc == RING_BUFFER_ALLOC_GLOBAL
+	if (config->alloc == RING_BUFFER_ALLOC_PER_CHANNEL
 	    && config->sync == RING_BUFFER_SYNC_PER_CPU
 	    && switch_timer_interval)
 		return -EINVAL;

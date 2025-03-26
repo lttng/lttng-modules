@@ -277,7 +277,7 @@ int lttng_cpuhp_rb_backend_prepare(unsigned int cpu,
 	struct lttng_kernel_ring_buffer *buf;
 	int ret;
 
-	CHAN_WARN_ON(chanb, config->alloc == RING_BUFFER_ALLOC_GLOBAL);
+	CHAN_WARN_ON(chanb, config->alloc == RING_BUFFER_ALLOC_PER_CHANNEL);
 
 	buf = per_cpu_ptr(chanb->buf, cpu);
 	ret = lib_ring_buffer_create(buf, chanb, cpu);
@@ -315,7 +315,7 @@ int lib_ring_buffer_cpu_hp_callback(struct notifier_block *nb,
 	struct lttng_kernel_ring_buffer *buf;
 	int ret;
 
-	CHAN_WARN_ON(chanb, config->alloc == RING_BUFFER_ALLOC_GLOBAL);
+	CHAN_WARN_ON(chanb, config->alloc == RING_BUFFER_ALLOC_PER_CHANNEL);
 
 	switch (action) {
 	case CPU_UP_PREPARE:

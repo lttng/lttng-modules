@@ -48,9 +48,9 @@ restart:
 	case ITER_GET_SUBBUF:
 		ret = lib_ring_buffer_get_next_subbuf(buf);
 		if (ret && !LTTNG_READ_ONCE(buf->finalized)
-		    && config->alloc == RING_BUFFER_ALLOC_GLOBAL) {
+		    && config->alloc == RING_BUFFER_ALLOC_PER_CHANNEL) {
 			/*
-			 * Use "pull" scheme for global buffers. The reader
+			 * Use "pull" scheme for per-channel buffers. The reader
 			 * itself flushes the buffer to "pull" data not visible
 			 * to readers yet. Flush current subbuffer and re-try.
 			 *
@@ -247,7 +247,7 @@ ssize_t channel_get_next_record(struct lttng_kernel_ring_buffer_channel *chan,
 	struct lttng_ptr_heap *heap;
 	ssize_t len;
 
-	if (config->alloc == RING_BUFFER_ALLOC_GLOBAL) {
+	if (config->alloc == RING_BUFFER_ALLOC_PER_CHANNEL) {
 		*ret_buf = channel_get_ring_buffer(config, chan, 0);
 		return lib_ring_buffer_get_next_record(chan, *ret_buf);
 	}
@@ -364,7 +364,7 @@ int lttng_cpuhp_rb_iter_online(unsigned int cpu,
 	struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 
-	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_GLOBAL);
+	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_PER_CHANNEL);
 
 	lib_ring_buffer_iterator_init(chan, buf);
 	return 0;
@@ -388,7 +388,7 @@ int channel_iterator_cpu_hotplug(struct notifier_block *nb,
 	if (!chan->hp_iter_enable)
 		return NOTIFY_DONE;
 
-	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_GLOBAL);
+	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_PER_CHANNEL);
 
 	switch (action) {
 	case CPU_DOWN_FAILED:

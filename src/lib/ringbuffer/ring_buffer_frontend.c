@@ -495,7 +495,7 @@ int lttng_cpuhp_rb_frontend_dead(unsigned int cpu,
 	struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 
-	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_GLOBAL);
+	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_PER_CHANNEL);
 
 	/*
 	 * Performing a buffer switch on a remote CPU. Performed by
@@ -516,7 +516,7 @@ int lttng_cpuhp_rb_frontend_online(unsigned int cpu,
 	struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 
-	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_GLOBAL);
+	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_PER_CHANNEL);
 
 	wake_up_interruptible(&chan->hp_wait);
 	lib_ring_buffer_start_switch_timer(buf);
@@ -533,7 +533,7 @@ int lttng_cpuhp_rb_frontend_offline(unsigned int cpu,
 	struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 
-	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_GLOBAL);
+	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_PER_CHANNEL);
 
 	lib_ring_buffer_stop_switch_timer(buf);
 	lib_ring_buffer_stop_read_timer(buf);
@@ -567,7 +567,7 @@ int lib_ring_buffer_cpu_hp_callback(struct notifier_block *nb,
 	if (!chan->cpu_hp_enable)
 		return NOTIFY_DONE;
 
-	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_GLOBAL);
+	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_PER_CHANNEL);
 
 	switch (action) {
 	case CPU_DOWN_FAILED:
@@ -626,11 +626,11 @@ static int notrace ring_buffer_tick_nohz_callback(struct notifier_block *nb,
 
 	if (config->alloc != RING_BUFFER_ALLOC_PER_CPU) {
 		/*
-		 * We don't support keeping the system idle with global buffers
-		 * and streaming active. In order to do so, we would need to
-		 * sample a non-nohz-cpumask racelessly with the nohz updates
-		 * without adding synchronization overhead to nohz. Leave this
-		 * use-case out for now.
+		 * We don't support keeping the system idle with per-channel
+		 * buffers and streaming active. In order to do so, we would
+		 * need to sample a non-nohz-cpumask racelessly with the nohz
+		 * updates without adding synchronization overhead to
+		 * nohz. Leave this use-case out for now.
 		 */
 		return 0;
 	}
@@ -1030,7 +1030,7 @@ struct lttng_kernel_ring_buffer *channel_get_ring_buffer(
 					const struct lttng_kernel_ring_buffer_config *config,
 					struct lttng_kernel_ring_buffer_channel *chan, int cpu)
 {
-	if (config->alloc == RING_BUFFER_ALLOC_GLOBAL)
+	if (config->alloc == RING_BUFFER_ALLOC_PER_CHANNEL)
 		return chan->backend.buf;
 	else
 		return per_cpu_ptr(chan->backend.buf, cpu);
@@ -1959,9 +1959,9 @@ static void _lib_ring_buffer_switch_remote(struct lttng_kernel_ring_buffer *buf,
 	struct switch_param param;
 
 	/*
-	 * With global synchronization we don't need to use the IPI scheme.
+	 * With per-channel synchronization we don't need to use the IPI scheme.
 	 */
-	if (config->sync == RING_BUFFER_SYNC_GLOBAL) {
+	if (config->sync == RING_BUFFER_SYNC_PER_CHANNEL) {
 		lib_ring_buffer_switch_slow(buf, mode);
 		return;
 	}

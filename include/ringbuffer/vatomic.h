@@ -17,7 +17,7 @@
  * In the fast-path, the ring_buffer_config structure is constant, so the
  * compiler can statically select the appropriate branch.
  * local_t is used for per-cpu and per-thread buffers.
- * atomic_long_t is used for globally shared buffers.
+ * atomic_long_t is used for per-channel shared buffers.
  */
 union v_atomic {
 	local_t l;

@@ -201,8 +201,8 @@ static const struct lttng_kernel_ring_buffer_config client_config = {
 	.cb.record_get = client_record_get,
 
 	.timestamp_bits = 0,
-	.alloc = RING_BUFFER_ALLOC_GLOBAL,
-	.sync = RING_BUFFER_SYNC_GLOBAL,
+	.alloc = RING_BUFFER_ALLOC_PER_CHANNEL,
+	.sync = RING_BUFFER_SYNC_PER_CHANNEL,
 	.mode = RING_BUFFER_MODE_TEMPLATE,
 	.backend = RING_BUFFER_PAGE,
 	.output = RING_BUFFER_OUTPUT_TEMPLATE,

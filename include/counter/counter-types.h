@@ -59,7 +59,7 @@ struct lib_counter {
 	} global_sum_step;		/* 0 if unused */
 	struct lib_counter_config config;
 
-	struct lib_counter_layout global_counters;
+	struct lib_counter_layout channel_counters;
 	struct lib_counter_layout __percpu *percpu_counters;
 };
 
