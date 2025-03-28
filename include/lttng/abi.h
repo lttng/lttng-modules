@@ -357,6 +357,7 @@ struct lttng_kernel_abi_counter_value {
 	uint32_t flags;			/* enum lttng_kernel_abi_counter_value_flags */
 } __attribute__((packed));
 
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_COUNTER
 struct lttng_kernel_abi_counter_read {
 	uint32_t len;			/* length of this structure */
 	struct lttng_kernel_abi_counter_index index;
@@ -374,6 +375,7 @@ struct lttng_kernel_abi_counter_clear {
 	uint32_t len;			/* length of this structure */
 	struct lttng_kernel_abi_counter_index index;
 } __attribute__((packed));
+#endif	/* CONFIG_LTTNG_EXPERIMENTAL_COUNTER */
 
 struct lttng_kernel_abi_tracer_version {
 	uint32_t major;
@@ -596,12 +598,15 @@ struct lttng_kernel_abi_tracker_args {
 	_IOWR(0xF6, 0xC4, struct lttng_kernel_abi_counter_map_descriptor)
 #define LTTNG_KERNEL_ABI_COUNTER_EVENT \
 	_IOW(0xF6, 0xC5, struct lttng_kernel_abi_counter_event)
+
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_COUNTER
 #define LTTNG_KERNEL_ABI_COUNTER_READ \
 	_IOWR(0xF6, 0xC6, struct lttng_kernel_abi_counter_read)
 #define LTTNG_KERNEL_ABI_COUNTER_AGGREGATE \
 	_IOWR(0xF6, 0xC7, struct lttng_kernel_abi_counter_aggregate)
 #define LTTNG_KERNEL_ABI_COUNTER_CLEAR \
 	_IOW(0xF6, 0xC8, struct lttng_kernel_abi_counter_clear)
+#endif	/* CONFIG_LTTNG_EXPERIMENTAL_COUNTER */
 
 /*
  * LTTng-specific ioctls for the lib ringbuffer.

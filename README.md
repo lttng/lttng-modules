@@ -106,10 +106,16 @@ available from LTTng:
 The following kernel configuration options are provided by LTTng:
 
   - `CONFIG_LTTNG`: Build LTTng (Defaults to 'm').
+
   - `CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM`: Enable the experimental bitwise
     enumerations (Defaults to 'n'). This can be enabled by building with:
 
          make CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM=y
+
+  - `CONFIG_LTTNG_EXPERIMENTAL_COUNTER`: Enable the experimental trace
+    hit counters (Defaults to 'n'). This can be enabled by building with:
+
+         make CONFIG_LTTNG_EXPERIMENTAL_COUNTER=y
 
   - `CONFIG_LTTNG_CLOCK_PLUGIN_TEST`: Build the test clock plugin (Defaults to
     'm'). This plugin overrides the trace clock and should always be built as a
