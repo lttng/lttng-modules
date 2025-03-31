@@ -197,24 +197,24 @@ static const struct lttng_kernel_event_field *transport_fields[] = {
 
 #endif /* LTTNG_CREATE_FIELD_METADATA */
 
-LTTNG_TRACEPOINT_ENUM(proto_transport_header_type,
+LTTNG_TRACEPOINT_ENUM_TAG(proto_transport_header_type,
 	TP_ENUM_VALUES(
-		ctf_enum_range("_unknown", 0, IPPROTO_ICMP - 1)
-		ctf_enum_value("_icmp", IPPROTO_ICMP)
-		ctf_enum_range("_unknown", IPPROTO_ICMP + 1, IPPROTO_TCP - 1)
-		ctf_enum_value("_tcp", IPPROTO_TCP)
-		ctf_enum_range("_unknown", IPPROTO_TCP + 1, IPPROTO_UDP - 1)
-		ctf_enum_value("_udp", IPPROTO_UDP)
-		ctf_enum_range("_unknown", IPPROTO_UDP + 1, 255)
+		ctf_enum_range("unknown", 0, IPPROTO_ICMP - 1)
+		ctf_enum_value("icmp", IPPROTO_ICMP)
+		ctf_enum_range("unknown", IPPROTO_ICMP + 1, IPPROTO_TCP - 1)
+		ctf_enum_value("tcp", IPPROTO_TCP)
+		ctf_enum_range("unknown", IPPROTO_TCP + 1, IPPROTO_UDP - 1)
+		ctf_enum_value("udp", IPPROTO_UDP)
+		ctf_enum_range("unknown", IPPROTO_UDP + 1, 255)
 	)
 )
 
-LTTNG_TRACEPOINT_ENUM(transport_header_type,
+LTTNG_TRACEPOINT_ENUM_TAG(transport_header_type,
 	TP_ENUM_VALUES(
-		ctf_enum_value("_unknown", TH_NONE)
-		ctf_enum_value("_tcp", TH_TCP)
-		ctf_enum_value("_udp", TH_UDP)
-		ctf_enum_value("_icmp", TH_ICMP)
+		ctf_enum_value("unknown", TH_NONE)
+		ctf_enum_value("tcp", TH_TCP)
+		ctf_enum_value("udp", TH_UDP)
+		ctf_enum_value("icmp", TH_ICMP)
 	)
 )
 
@@ -321,11 +321,11 @@ static const struct lttng_kernel_event_field *network_fields[] = {
 
 #endif /* LTTNG_CREATE_FIELD_METADATA */
 
-LTTNG_TRACEPOINT_ENUM(net_network_header,
+LTTNG_TRACEPOINT_ENUM_TAG(net_network_header,
 	TP_ENUM_VALUES(
-		ctf_enum_value("_unknown", NH_NONE)
-		ctf_enum_value("_ipv4", NH_IPV4)
-		ctf_enum_value("_ipv6", NH_IPV6)
+		ctf_enum_value("unknown", NH_NONE)
+		ctf_enum_value("ipv4", NH_IPV4)
+		ctf_enum_value("ipv6", NH_IPV6)
 	)
 )
 
