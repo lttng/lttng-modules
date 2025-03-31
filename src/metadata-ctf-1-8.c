@@ -367,6 +367,13 @@ int _lttng_enum_type_statedump(struct lttng_kernel_session *session,
 				"\"");
 		if (ret)
 			goto end;
+
+		if (enum_desc->is_tag) {
+			ret = lttng_metadata_printf(session, "_");
+			if (ret)
+				goto end;
+		}
+
 		len = strlen(entry->string);
 		/* Escape the character '"' */
 		for (j = 0; j < len; j++) {
