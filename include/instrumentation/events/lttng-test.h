@@ -25,6 +25,19 @@ LTTNG_TRACEPOINT_ENUM(
 	)
 )
 
+LTTNG_TRACEPOINT_ENUM(
+	lttng_test_filter_event_multi_range_enum,
+	TP_ENUM_VALUES(
+		ctf_enum_range("multiple ranges", 0, 99)
+		ctf_enum_value("entry a", 100)
+		ctf_enum_range("multiple ranges", 101, 199)
+		ctf_enum_value("entry b", 200)
+		ctf_enum_range("multiple ranges", 201, 299)
+		ctf_enum_value("entry c", 300)
+		ctf_enum_range("multiple ranges", 301, 1023)
+	)
+)
+
 LTTNG_TRACEPOINT_EVENT(lttng_test_filter_event,
 	TP_PROTO(int anint, int netint, long *values,
 		char *text, size_t textlen,
@@ -55,6 +68,20 @@ LTTNG_TRACEPOINT_EVENT(lttng_test_filter_event,
 		ctf_enum(lttng_test_filter_event_enum, int, enum202, 202)
 		ctf_enum(lttng_test_filter_event_enum, int, enum304, 304)
 		ctf_enum(lttng_test_filter_event_enum, int, enumnegative, -1)
+		/* Match 'multiple ranges'. */
+		ctf_enum(lttng_test_filter_event_multi_range_enum, int, enum50, 50)
+		/* Match 'entry a'. */
+		ctf_enum(lttng_test_filter_event_multi_range_enum, int, enum100, 100)
+		/* Match 'multiple ranges'. */
+		ctf_enum(lttng_test_filter_event_multi_range_enum, int, enum150, 150)
+		/* Match 'entry b'. */
+		ctf_enum(lttng_test_filter_event_multi_range_enum, int, enum200, 200)
+		/* Match 'multiple ranges'. */
+		ctf_enum(lttng_test_filter_event_multi_range_enum, int, enum250, 250)
+		/* Match 'entry c'. */
+		ctf_enum(lttng_test_filter_event_multi_range_enum, int, enum300, 300)
+		/* Match 'multiple ranges'. */
+		ctf_enum(lttng_test_filter_event_multi_range_enum, int, enum500, 500)
 	)
 )
 
