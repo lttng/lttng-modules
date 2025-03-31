@@ -205,6 +205,13 @@ void __event_template_proto___##_name(void);
 		_values							\
 	};								\
 	static struct lttng_kernel_enum_entry __enum_values_sorted__##_name[ARRAY_SIZE(__enum_values__##_name)];
+
+# undef LTTNG_TRACEPOINT_ENUM_TAG
+# define LTTNG_TRACEPOINT_ENUM_TAG(_name, _values)			\
+	static const struct lttng_kernel_enum_entry * const __enum_values__##_name[] = { \
+		_values							\
+	};								\
+	static struct lttng_kernel_enum_entry __enum_values_sorted__##_name[ARRAY_SIZE(__enum_values__##_name)];
 #endif
 
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
@@ -381,6 +388,19 @@ static __used struct lttng_kernel_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM
                 .sorted_entries = __enum_values_sorted__##_name,                        \
                 .nr_entries = ARRAY_SIZE(__enum_values__##_name),                       \
 		.probe_desc = &TP_ID(__probe_desc___, TRACE_SYSTEM),			\
+		.is_tag = 0,								\
+        }))
+
+# undef LTTNG_TRACEPOINT_ENUM_TAG
+# define LTTNG_TRACEPOINT_ENUM_TAG(_name, _values)					\
+	LTTNG_TRACEPOINT_TYPE(PARAMS(const struct lttng_kernel_enum_desc __enum_##_name), \
+	PARAMS({									\
+                .name = #_name,                                                         \
+                .entries = __enum_values__##_name,                                      \
+                .sorted_entries = __enum_values_sorted__##_name,                        \
+                .nr_entries = ARRAY_SIZE(__enum_values__##_name),                       \
+                .probe_desc = &TP_ID(__probe_desc___, TRACE_SYSTEM),			\
+                .is_tag = 1,								\
         }))
 
 #define TP_ID1(_token, _system)	_token##_system

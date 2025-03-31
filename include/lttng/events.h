@@ -189,6 +189,9 @@ struct lttng_kernel_enum_desc {
 	unsigned int nr_entries;
 
 	const struct lttng_kernel_probe_desc *probe_desc;
+
+	/* 1 if this describes a variant type tag */
+	int is_tag;
 };
 
 /* Event field description */

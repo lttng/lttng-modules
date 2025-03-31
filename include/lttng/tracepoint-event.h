@@ -63,6 +63,9 @@
 #undef LTTNG_TRACEPOINT_ENUM
 #define LTTNG_TRACEPOINT_ENUM(_name, _values)
 
+#undef LTTNG_TRACEPOINT_ENUM_TAG
+#define LTTNG_TRACEPOINT_ENUM_TAG(_name, _values)
+
 #undef LTTNG_TRACEPOINT_TYPE
 #define LTTNG_TRACEPOINT_TYPE(_prototype, _init)
 
