@@ -11,7 +11,7 @@
 #define _LTTNG_KERNEL_MJ_GEN_INTERNAL_H
 
 #include <linux/types.h>
-#include <linux/stdarg.h>
+#include <wrapper/stdarg.h>
 
 #define LTTNG_KERNEL_MJ_GEN_STACK_DEPTH	128
 
