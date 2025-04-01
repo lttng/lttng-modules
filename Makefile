@@ -20,6 +20,9 @@ PWD := $(shell pwd)
 # Experimental bitwise enum defaults to disabled.
 CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM ?= n
 
+# Experimental Trace Hit Counters defaults to disabled.
+CONFIG_LTTNG_EXPERIMENTAL_COUNTER ?= n
+
 # Emulate Kconfig behavior of setting defines for config options.
 LKCPPFLAGS = $(KCPPFLAGS)
 ifeq ($(CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM),y)
