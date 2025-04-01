@@ -14,9 +14,10 @@
 #include <linux/list.h>
 #include <linux/percpu.h>
 
-#ifndef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+#if !defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) || \
+    defined(CONFIG_LTTNG_FORCE_ALIGNED_ACCESS)
 /* Align data on its natural alignment */
-#define RING_BUFFER_ALIGN
+# define RING_BUFFER_ALIGN
 #endif
 
 #include <ringbuffer/config.h>

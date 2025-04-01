@@ -23,6 +23,9 @@ CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM ?= n
 # Experimental Trace Hit Counters defaults to disabled.
 CONFIG_LTTNG_EXPERIMENTAL_COUNTER ?= n
 
+# Force LTTng to use aligned access defaults to disabled.
+CONFIG_LTTNG_FORCE_ALIGNED_ACCESS ?= n
+
 # Emulate Kconfig behavior of setting defines for config options.
 LKCPPFLAGS = $(KCPPFLAGS)
 ifeq ($(CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM),y)
@@ -30,6 +33,9 @@ LKCPPFLAGS += -DCONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM=y
 endif
 ifeq ($(CONFIG_LTTNG_EXPERIMENTAL_COUNTER),y)
 LKCPPFLAGS += -DCONFIG_LTTNG_EXPERIMENTAL_COUNTER=y
+endif
+ifeq ($(CONFIG_LTTNG_FORCE_ALIGNED_ACCESS),y)
+LKCPPFLAGS += -DCONFIG_LTTNG_FORCE_ALIGNED_ACCESS=y
 endif
 
 default: modules
