@@ -215,7 +215,7 @@ struct lttng_kernel_ring_buffer_ctx {
 	void *client_priv;		/* Ring buffer client private data */
 
 	size_t data_size;		/* size of payload */
-	int largest_align;		/*
+	size_t largest_align;		/*
 					 * alignment of the largest element
 					 * in the payload
 					 */
@@ -232,7 +232,7 @@ struct lttng_kernel_ring_buffer_ctx {
 static inline
 void lib_ring_buffer_ctx_init(struct lttng_kernel_ring_buffer_ctx *ctx,
 			      void *client_priv,
-			      size_t data_size, int largest_align,
+			      size_t data_size, size_t largest_align,
 			      struct lttng_kernel_probe_ctx *probe_ctx)
 {
 	ctx->client_priv = client_priv;
