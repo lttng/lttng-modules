@@ -81,6 +81,7 @@ lttng-tracer-objs := lib/msgpack/msgpack.o \
                      lttng-event-notifier-notification.o \
                      lttng-kernel-mj-gen.o \
                      init-enum-desc-sorted-entries.o \
+                     lttng-metadata-print.o \
                      metadata-ctf-1-8.o \
                      metadata-ctf-2.o
 
