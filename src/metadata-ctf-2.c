@@ -10,6 +10,7 @@
 #include <linux/types.h>
 #include <linux/utsname.h>
 #include <linux/dmi.h>
+#include <linux/math64.h>
 
 #include <lttng/events.h>
 #include <lttng/events-internal.h>
@@ -1000,10 +1001,10 @@ int write_clk_offset(struct lttng_kernel_session * const session,
 	 * • -7385 cycles is equivalent to -8 seconds + 615 cycles.
 	 */
 	{
-		const unsigned long long freq = trace_clock_freq();
-		const long long total_cycles = measure_clock_offset();
-		long long offset_secs = total_cycles / (long long) freq;
-		long long offset_cycles = total_cycles - offset_secs * freq;
+		const u64 freq = trace_clock_freq();
+		const s64 total_cycles = measure_clock_offset();
+		s64 offset_secs = div64_s64(total_cycles, (s64) freq);
+		s64 offset_cycles = total_cycles - offset_secs * freq;
 
 		if (offset_cycles < 0) {
 			offset_secs -= 1;
