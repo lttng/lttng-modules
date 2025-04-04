@@ -1241,6 +1241,28 @@ int write_trace_env(struct lttng_kernel_session * const session,
 	if (ret)
 		return ret;
 
+	ret = lttng_kernel_mj_gen_str(session, "trace_name",
+		session->priv->name);
+	if (ret)
+		return ret;
+
+	ret = lttng_kernel_mj_gen_str(session, "trace_creation_datetime",
+		session->priv->creation_time);
+	if (ret)
+		return ret;
+
+	{
+		const char * const product_uuid =
+			dmi_get_system_info(DMI_PRODUCT_UUID);
+
+		if (product_uuid) {
+			ret = lttng_kernel_mj_gen_str(session, "product_uuid",
+				product_uuid);
+			if (ret)
+				return ret;
+		}
+	}
+
 	return lttng_kernel_mj_gen_close_obj(session);
 }
 
