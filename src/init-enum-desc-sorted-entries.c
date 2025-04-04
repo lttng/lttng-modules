@@ -64,20 +64,19 @@ void init_enum_type_desc_sorted_entries(
 
 	/* Step 2 */
 	{
-		unsigned long long last_end_val = 0;
+		unsigned long long next_begin_val = 0;
 
 		for (i = 0; i < nr_entries; i++) {
 			struct lttng_kernel_enum_entry * const entry =
 				&type->desc->sorted_entries[i];
 
 			if (entry->options.is_auto) {
-				last_end_val++;
-				entry->start.value = last_end_val;
-				entry->end.value = last_end_val;
+				entry->start.value = next_begin_val;
+				entry->end.value = next_begin_val;
 				entry->options.is_auto = 0;
 			}
 
-			last_end_val = entry->end.value;
+			next_begin_val = entry->end.value + 1;
 		}
 	}
 
