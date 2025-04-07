@@ -400,7 +400,7 @@ static void lib_ring_buffer_stop_switch_timer(struct lttng_kernel_ring_buffer *b
 	if (!chan->switch_timer_interval || !buf->switch_timer_enabled)
 		return;
 
-	del_timer_sync(&buf->switch_timer);
+	lttng_timer_delete_sync(&buf->switch_timer);
 	buf->switch_timer_enabled = 0;
 }
 
@@ -470,7 +470,7 @@ static void lib_ring_buffer_stop_read_timer(struct lttng_kernel_ring_buffer *buf
 	    || !buf->read_timer_enabled)
 		return;
 
-	del_timer_sync(&buf->read_timer);
+	lttng_timer_delete_sync(&buf->read_timer);
 	/*
 	 * do one more check to catch data that has been written in the last
 	 * timer period.
