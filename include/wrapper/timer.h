@@ -25,13 +25,21 @@
  * It's replaced by timer_setup() where pinned is now part of timer flags.
  */
 
+static inline int lttng_timer_delete_sync(struct timer_list *timer)
+{
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,15,0))
+	return timer_delete_sync(timer);
+#else
+	return del_timer_sync(timer);
+#endif
+}
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0))
 
 #define LTTNG_TIMER_PINNED		TIMER_PINNED
 #define LTTNG_TIMER_FUNC_ARG_TYPE	struct timer_list *
 
-#define lttng_mod_timer_pinned(timer, expires) \
+#define lttng_mod_timer_pinned(timer, expires)  \
 	mod_timer(timer, expires)
 
 #define lttng_from_timer(var, callback_timer, timer_fieldname) \
