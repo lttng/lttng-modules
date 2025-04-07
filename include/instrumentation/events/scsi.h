@@ -16,7 +16,11 @@
 
 #define scsi_opcode_name(opcode)	{ opcode, #opcode }
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,11,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,15,0))
+
+/* Use the upstream definition from include/trace/events/scsi.h */
+
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,11,0))
 
 #define show_opcode_name(val)					\
 	__print_symbolic(val,					\
