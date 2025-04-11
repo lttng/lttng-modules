@@ -613,7 +613,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,2,0)) */
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,15,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,14,2))
 LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 
 	writeback_balance_dirty_pages,
