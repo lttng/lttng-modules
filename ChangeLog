@@ -1,3 +1,28 @@
+2025-04-14 (National Gardening Day) 2.13.18
+	* Fix: trace_balance_dirty_pages parameters changed in Linux v6.14.2
+	* Fix: trace_balance_dirty_pages parameters changed in Linux v6.15-rc1
+	* Fix: Generic `compat_sys_rt_sigaction` did not exist prior to Linux 3.9
+	* fix: Add missing 'pselect6_time32' and 'ppoll_time32' syscall overrides
+	* Build fix: arm64: incomplete landlock_rule_type type
+	* Fix: define old_sigaction as compat_old_sigaction in arm32 compat
+	* Fix: Use ifdef for CONFIG_COMPAT_OLD_SIGACTION
+	* Fix: system call instrumentation build failure on v3.0-v3.10 RT kernel
+	* Fix: add missing typedef and forward declarations for old kernels
+	* Add generated arm-32 syscall instrumentation for kernel 6.0.7
+	* Add generated x86-32 syscall instrumentation for kernel 6.0.7
+	* Fix: define old_sigaction as compat_old_sigaction in x86-32 compat
+	* Add generated arm-64 syscall instrumentation for kernel 6.0.7
+	* Add generated x86-64 syscall instrumentation for kernel 6.0.7
+	* syscall instrumentation: add missing forward declarations for old kernels
+	* Revert "Fix: powerpc builds with linux v6.13"
+	* Fix: jbd2 tid type changed in SLE15 SP5
+	* Fix: migratepages removed from compaction_migratepages in SLE15 SP5
+	* Fix: block request field `rq_disk` removed in SLE15 SP5
+	* Fix: REQ_OP_WRITE_SAME removed in SLE15 SP5
+	* Fix: genhd.h removed in SLE15 SP5
+	* Fix: Missing scsi/scsi_request.h with SLE15 SP5
+	* Fix: powerpc builds with linux v6.13
+
 2025-01-24 (Global Belly Laugh Day) 2.13.17
 	* fix: include linux/fs.h for 'struct file' definition (v4.5)
 	* fix: add missing check for __must_check 'lttng_file_ref_put()' (v6.13)
