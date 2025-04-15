@@ -35,7 +35,7 @@ obj-$(CONFIG_LTTNG) += lttng-probe-statedump.o
 ifneq ($(CONFIG_NET_9P),)
   obj-$(CONFIG_LTTNG) +=  $(shell \
     if [ $(VERSION) -ge 4 \
-      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -eq 10 \) ] ; then \
+      -o \( $(VERSION) -eq 3 -a $(PATCHLEVEL) -ge 10 \) ] ; then \
       echo "lttng-probe-9p.o" ; fi;)
 endif # CONFIG_NET_9P
 
