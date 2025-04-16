@@ -1,6 +1,522 @@
-# SPDX-FileCopyrightText: 2011-2021 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+# SPDX-FileCopyrightText: 2011-2025 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 #
 # SPDX-License-Identifier: CC-BY-SA-4.0
+
+2025-04-16 (National Wear Your Pajamas to Work Day) LTTng modules 2.14.0-rc1
+	* Fix: trace_balance_dirty_pages in Linux v6.14.2
+	* Set the 2.14 release codename and description
+	* Fix: trace_balance_dirty_pages parameters changed in Linux v6.14.2
+	* Fix: scsi: RESERVE and RELEASE renamed in Linux v6.15-rc1
+	* Fix: trace_balance_dirty_pages parameters changed in Linux v6.15-rc1
+	* Fix: del_timer[_sync] deleted in linux v6.15-rc1
+	* Test: Add an enum that uses multiple ranges for an entry
+	* Fix: src/metadata-ctf-2.c: add missing trace env. entries
+	* Fix: src/init-enum-desc-sorted-entries.c: set first `is_auto` to 0
+	* Introduce lttng-metadata-print.c
+	* Fix: Use div64_s64 for 64-bit signed integer division
+	* Fix: include wrapper/stdarg.h from lttng-kernel-mj-gen-internal.h
+	* Introduce CONFIG_LTTNG_FORCE_ALIGNED_ACCESS
+	* Write CTF 1.8 or CTF 2 metadata stream depending on output format
+	* Add CTF 2 metadata stream serialization code
+	* instrumentation/events/net.h: use LTTNG_TRACEPOINT_ENUM_TAG()
+	* src/metadata-ctf-1-8.c: prepend `_` to entry name in the tag type case
+	* Add LTTNG_TRACEPOINT_ENUM_TAG()
+	* Move common CTF metadata serialization code to `src/lttng-events.c`
+	* Add `_ctf_1_8` suffix to CTF 1.8 metadata stream functions
+	* Extract CTF 1.8 metadata stream serialization code from `lttng-events.c`
+	* `struct lttng_kernel_enum_desc`: add an array of sorted entries
+	* Add internal, minimal metadata JSON generation API
+	* Add lttng_metadata_print() utility: print without formatting
+	* Move `lttng_metadata_*()` to `src/lttng-metadata-print.h`
+	* Add `include/wrapper/stdarg.h` to wrap `stdarg.h`
+	* Set session output format (CTF 1.8 or CTF 2) from ioctl call
+	* CONFIG_LTTNG_EXPERIMENTAL_COUNTER defaults to disabled
+	* Use size_t for largest_align type
+	* Introduce CONFIG_LTTNG_EXPERIMENTAL_COUNTER
+	* Add new flush: flush events or populate packet
+	* Rename UST global buffers/counters to per channel
+	* Revert "Fix: powerpc builds with linux v6.13"
+	* src/Kbuild: use spaces to indent
+	* Fix: jbd2 tid type changed in SLE15 SP5
+	* Fix: migratepages removed from compaction_migratepages in SLE15 SP5
+	* Fix: block request field `rq_disk` removed in SLE15 SP5
+	* Fix: REQ_OP_WRITE_SAME removed in SLE15 SP5
+	* Fix: genhd.h removed in SLE15 SP5
+	* Fix: Missing scsi/scsi_request.h with SLE15 SP5
+	* Fix: powerpc builds with linux v6.13
+	* lttng-modules fix for RHEL 9.5 kernels
+	* Fix: sched_stat_runtime changed in Linux 6.6.66
+	* fix: include linux/fs.h for 'struct file' definition (v4.5)
+	* fix: add missing check for __must_check 'lttng_file_ref_put()' (v6.13)
+	* Fix: uprobe consumer handler signature changed in Linux 6.13.0-rc1
+	* Fix: lookup_fdget_rcu removed in Linux 6.13.0-rc1
+	* Fix: f_count replaced with f_ref in Linux 6.13.0-rc1
+	* fix: mm/page_alloc: fix tracepoint mm_page_alloc_zone_locked() (v5.15.171)
+	* Fix: uprobes: make uprobe_register() return struct uprobe * (v6.12)
+	* Fix: silence 'non-consumed' message for non-started sessions
+	* fix: writeback: Refine the show_inode_state() macro definition (v6.12)
+	* Fix: scsi: sd: Atomic write support added in 6.11-rc1
+	* Fix: block_start removed from btrfs_get_extent in 6.11-rc1
+	* Fix: block_len removed frmo btrfs_get_extent in 6.11-rc1
+	* Fix: orig_start removed from btrfs_get_extent in 6.11-rc1
+	* Fix: ext4_da_reserve_space changed in 6.11-rc1
+	* Fix: kfree_skb changed in 6.11-rc1
+	* Introduce extension points for trace hit counters
+	* Fix: event notifier: set eval_capture to false for kprobe, kretprobe and uprobe
+	* Implement REUSE 3.0 with SPDX identifiers
+	* fix: add 'static inline' to lttng_kretprobes_init_event()
+	* fix: copy_struct_from_user() for non-LTS branches < v4.19
+	* fix: copy_struct_from_user() wrapper
+	* Fix: lttng-abi: zero-init counter_conf
+	* counter ABI: Fix too large stack size warning
+	* __lttng_counter_add: skip effect-less code when global_sum_step=0
+	* ABI: add key_string_len output field in lttng_kernel_abi_counter_map_descriptor
+	* Implement extensible LTTNG_KERNEL_ABI_COUNTER_EVENT ABI
+	* Implement extensible LTTNG_KERNEL_ABI_COUNTER_MAP_DESCRIPTOR
+	* Implement extensible counter read, aggregate, clear ioctls
+	* Implement counter configuration/dimensions extensible ABI
+	* Implement copy_user_event_param_ext with lttng_copy_struct_from_user
+	* Introduce wrapper lttng_copy_struct_from_user
+	* Introduce event counter extensible ABI structure layout
+	* ABI refactoring: Rename event counter ABI to "old"
+	* kretprobe: Implement kretprobes with event enablers
+	* kprobe: Implement kprobes with event enablers
+	* ABI: introduce lttng_kernel_abi_match_check
+	* kretprobe: implement lttng_kretprobes_match_check
+	* kprobe: Introduce lttng_kprobes_match_check
+	* Implement event notifier kretprobe support
+	* Remove lttng_kernel_event_create warnings
+	* kretprobes: implement event counter support
+	* lttng_abi_create_event_notifier: add missing fallthrough
+	* Implement events-by-key hash table
+	* Rename lttng_event_notifier_group events_ht to events_name_ht
+	* Rename lttng_get_event_ht_from_enabler to lttng_get_events_name_ht_from_enabler
+	* Implement counter maps (for listing)
+	* Implement channel counter creation/destroy
+	* Cleanup: remove kprobes/kretprobes/uprobes unused exports
+	* Fix: circular dependency on symbol lttng_id_tracker_lookup
+	* Fix: circular dependency between lttng-events and lib counter
+	* Implement event counter creation
+	* Rename lttng_abi_create_event to lttng_abi_create_event_recorder_enabler
+	* uprobe: implement counter support
+	* kretprobes: implement counter support
+	* kprobe: implement counter support
+	* Add missing counter handling
+	* abi: introduce session common
+	* Implement event counter probe
+	* Remove unused lttng_event_enabler_event_name_match_event
+	* Match event keys for syscall events
+	* Skip sync of disabled enablers
+	* Remove duplicate lookup in lttng_event_enabler_create_tracepoint_events_if_missing
+	* Implement _lttng_kernel_event_create counter event support
+	* lttng_kernel_event_alloc: handler counters
+	* Refactor notification error counters
+	* Add counter case in lttng_kernel_event_id_available
+	* Implement event counters
+	* Add channel counter structures to internal header
+	* Wire up LTTNG_KERNEL_EVENT_TYPE_COUNTER
+	* Refactor _lttng_event_destroy duplicated code
+	* struct lttng_kernel_event_session_common_private: remove unused ctx field
+	* Rename struct lttng_kernel_session_private events_ht field to events_name_ht
+	* Rename struct lttng_metadata_stream list field to node
+	* Rename struct lttng_kernel_session_private list field to node
+	* Reorder struct lttng_kernel_session_private fields
+	* Rename session events field to events_head
+	* Rename session chan field to chan_head
+	* Introduce struct lttng_event_counter_enabler
+	* Introduce struct lttng_kernel_event_counter_private
+	* Move counter key structures to beginning of events-internal.h
+	* Introduce struct lttng_kernel_channel_counter and struct lttng_kernel_channel_counter_ops
+	* Introduce struct lttng_kernel_event_counter
+	* Introduce struct lttng_kernel_event_session_common_private
+	* Introduce struct lttng_event_enabler_session_common
+	* Trace hit counters: introduce counter private data structures
+	* Trace hit counters: ABI
+	* Fix: libcounter: __lttng_counter_add global sum step alloc vs sync mixup
+	* Fix: lttng_abi_validate_event_param: use kretprobe enum
+	* kvm instrumentation: Fix kvm_mmio event NULL pointer dereference
+	* kvm instrumentation: Cleanup: Eliminate code duplication
+	* Fix: Build on CentOS 9 Stream 2024-06
+	* fix: file: Rename fcheck lookup_fd_rcu (v5.10.220)
+	* Cleanup: update stale file paths in LICENSE
+	* Cleanup: use SPDX v3.0 identifiers
+	* Warn and return on fd overflow fdt
+	* cleanup: add correct error messages to lttng-get-syscall-inout.sh
+	* cleanup: document 'pipe' syscall override
+	* fix: net: udp: add IP/port data to the tracepoint udp/udp_fail_queue_rcv_skb (v6.10)
+	* fix: close_on_exec(): pass files_struct instead of fdtable (v6.10)
+	* fix: btrfs: move ->parent and ->ref_root into btrfs_delayed_ref_node (v6.10)
+	* fix: btrfs: simplify delayed ref tracepoints (v6.10)
+	* Fix mm_vmscan_lru_isolate tracepoint for RHEL 9.4 kernel
+	* fix: Add missing 'pselect6_time32' and 'ppoll_time32' syscall overrides
+	* page alloc wrapper: Fix get_pfnblock_flags_mask prototype
+	* lttng probe: include events-internal.h
+	* uprobes: Remove dead code
+	* syscalls: Remove unused duplicated code
+	* statedump: Add missing events-internal.h include
+	* lttng-events: Remove dead code
+	* lttng-events: Add missing static
+	* event notifier: Add missing static
+	* context callstack: Add missing static
+	* lttng-clock: Add missing lttng/events-internal.h include
+	* lttng-calibrate: Add missing static and include
+	* lttng-bytecode: Remove dead code
+	* lttng-abi: Add missing static to function definitions
+	* ring buffer: Add missing static to function definitions
+	* blkdev wrapper: Fix constness warning
+	* Rename "tsc" to "timestamp"
+	* Fix: timer_expire_entry changed in 4.19.312
+	* ring buffer: Use cpu_dcache_is_aliasing()
+	* Fix: dev_base_lock removed in linux 6.9-rc1
+	* Fix: mm_compaction_migratepages changed in linux 6.9-rc1
+	* Fix: ASoC add component to set_bias_level events in linux 6.9-rc1
+	* Fix: ASoC snd_doc_dapm on linux 6.9-rc1
+	* Fix: support ext4_journal_start on EL 8.4+
+	* Fix: build kvm probe on EL 8.4+
+	* Fix: correct RHEL range for kmem_cache_free define
+	* docs: Add supported versions and fix-backport policy
+	* Fix: Correct minimum version in jbd2 SLE kernel range
+	* Fix: Handle recent SLE major version codes
+	* Fix: build on sles15sp4
+	* Compile fixes for RHEL 9.3 kernels
+	* Fix: ext4_discard_preallocations changed in linux 6.8.0-rc3
+	* Clean-up: rb: backend.h: remove extra newline
+	* Remove strlcpy usage
+	* Fix: btrfs_get_extent flags and compress_type changed in linux 6.8.0-rc1
+	* Fix: btrfs_chunk tracepoints changed in linux 6.8.0-rc1
+	* Fix: strlcpy removed in linux 6.8.0-rc1
+	* Fix: timer_start changed in linux 6.8.0-rc1
+	* Fix: sched_stat_runtime changed in linux 6.8.0-rc1
+	* docs: Add links to project resources
+	* Fix: Disable IBT around indirect function calls
+	* Remove splice_to_pipe kallsyms wrapper
+	* Inline implementation of task_prio()
+	* Fix: prio context NULL pointer exception
+	* Set version to 2.14-pre
+	* Cleanup: combine ifdefs for arm thumb2
+	* Cleanup: kallsyms wrapper refactoring
+	* Fix: MODULE_IMPORT_NS is introduced in kernel 5.4
+	* Android: Import VFS namespace for android common kernel
+	* fix: lookup_fd_rcu replaced by lookup_fdget_rcu in linux 6.7.0-rc1
+	* fix: mm, vmscan signatures changed in linux 6.7.0-rc1
+	* fix: phys_proc_id and cpu_core_id moved in linux 6.7.0-rc1
+	* Fix build for RHEL 8.8 with linux 4.18.0-477.10.1+
+	* Fix: bytecode validator: oops during validation of immediate string
+	* fix: lttng-probe-kvm-x86-mmu build with linux 6.6
+	* fix: built-in lttng with kernel >= v6.1
+	* fix: ubuntu kinetic kernel range for jdb2
+	* Add ordered extents tracepoints to btrfs probe
+	* Add support for RHEL 9.1
+	* Add support for RHEL 9.0
+	* fix: kallsyms wrapper on CONFIG_PPC64_ELF_ABI_V1
+	* fix: net: add location to trace_consume_skb() (v6.3)
+	* fix: btrfs: pass find_free_extent_ctl to allocator tracepoints (v6.3)
+	* fix: uuid: Decouple guid_t and uuid_le types and respective macros (v6.3)
+	* fix: mm: introduce vma->vm_flags wrapper functions (v6.3)
+	* fix: jbd2: use the correct print format (v5.4.229)
+	* fix: jbd2 upper bound for v5.10.163
+	* fix: jbd2: use the correct print format (v5.10.163)
+	* fix: btrfs: move accessor helpers into accessors.h (v6.2)
+	* fix: jbd2: use the correct print format
+	* syscall inout table: fix old_select and old_mmap
+	* Fix syscall generator scripts
+	* Update syscall inout table
+	* Split syscalls headers and tools
+	* Cleanup unused Makefile
+	* Build fix: arm64: incomplete landlock_rule_type type
+	* Fix: define old_sigaction as compat_old_sigaction in arm32 compat
+	* Fix: in_x32_syscall was introduced in v4.7.0
+	* Explicitly skip tracing x32 system calls
+	* fix: kallsyms wrapper on ppc64el
+	* Fix: don't build 64-bit counter client on 32-bit arch
+	* Remove obsolete -ckt debian kernel version support
+	* Cleanup duplicated include in wrapper/timer.h
+	* Drop support for kernels < 4.4 from writeback instrumentation
+	* Drop support for kernels < 4.4 from workqueue instrumentation
+	* Drop support for kernels < 4.4 from timer instrumentation
+	* Drop support for kernels < 4.4 from scsi instrumentation
+	* Drop support for kernels < 4.4 from sched instrumentation
+	* Drop support for kernels < 4.4 from rpc instrumentation
+	* Drop support for kernels < 4.4 from rcu instrumentation
+	* Drop support for kernels < 4.4 from random instrumentation
+	* Drop support for kernels < 4.4 from printk instrumentation
+	* Drop support for kernels < 4.4 from power instrumentation
+	* Drop support for kernels < 4.4 from net instrumentation
+	* Drop support for kernels < 4.4 from module instrumentation
+	* Drop support for kernels < 4.4 from mm_vmscan instrumentation
+	* Drop support for kernels < 4.4 from lttng-statedump instrumentation
+	* Drop support for kernels < 4.4 from kmem instrumentation
+	* Drop support for kernels < 4.4 from jbd instrumentation
+	* Drop support for kernels < 4.4 from jbd2 instrumentation
+	* Drop support for kernels < 4.4 from ext4 instrumentation
+	* Drop support for kernels < 4.4 from compaction instrumentation
+	* Drop support for kernels < 4.4 from btrfs instrumentation
+	* Drop support for kernels < 4.4 from block instrumentation
+	* Drop support for kernels < 4.4 from asoc instrumentation
+	* Drop support for kernels < 4.4 from kvm instrumentation
+	* Drop support for kernels < 4.4 from LTTng tracer core
+	* Drop support for kernels < 4.4 from ext3 and kvm probes
+	* Drop support for kernels < 4.4 from perf counters context
+	* Drop support for kernels < 4.4 from ns contexts
+	* Drop support for kernels < 4.4 from 'wrapper/splice.h'
+	* Drop support for kernels < 4.4 from 'wrapper/irqdesc.h'
+	* Drop support for kernels < 4.4 from 'wrapper/writeback.h'
+	* Drop support for kernels < 4.4 from 'wrapper/vmalloc.h'
+	* Drop support for kernels < 4.4 from 'wrapper/tracepoint.h'
+	* Drop support for kernels < 4.4 from 'wrapper/trace-clock.h'
+	* Drop support for kernels < 4.4 from 'wrapper/page_alloc.h'
+	* Drop support for kernels < 4.4 from 'wrapper/mm.h'
+	* Drop support for kernels < 4.4 from 'wrapper/fdtable.h'
+	* Drop 'linux/user_namespace.h' wrapper
+	* Drop 'linux/uprobes.h' wrapper
+	* Drop 'wrapper/time.h' wrapper
+	* Drop 'linux/perf_events.h' wrapper
+	* Drop 'linux/percpu-defs.h' wrapper
+	* Drop 'wrapper/namespace.h' wrapper
+	* Drop 'linux/irq.h' wrapper
+	* Drop 'linux/file.h' wrapper
+	* Drop 'asm/barrier.h' wrapper
+	* Drop 'linux/atomic.h' wrapper
+	* Set kernel baseline to v4.4
+	* Fix: Use ifdef for CONFIG_COMPAT_OLD_SIGACTION
+	* Fix: system call instrumentation build failure on v3.0-v3.10 RT kernel
+	* Fix: add missing typedef and forward declarations for old kernels
+	* Add generated arm-32 syscall instrumentation for kernel 6.0.7
+	* Add generated x86-32 syscall instrumentation for kernel 6.0.7
+	* Fix: define old_sigaction as compat_old_sigaction in x86-32 compat
+	* Add generated arm-64 syscall instrumentation for kernel 6.0.7
+	* Add generated x86-64 syscall instrumentation for kernel 6.0.7
+	* syscall instrumentation: add missing forward declarations for old kernels
+	* Add arm-32 syscall list for kernel 6.0.7
+	* Add arm-64 syscall list for kernel 6.0.7
+	* Add x86-64 syscall list for kernel 6.0.7
+	* Support per-architecture syscall in/out parameter descriptions
+	* Add "_time32" suffixed variants of syscalls to table-syscall-inout.txt
+	* Add x86-32 syscall list for kernel 6.0.7
+	* Fix: syscalls-extractor: kallsyms_lookup_name no longer available
+	* fix: Adjust ranges for RHEL 8.6 kernels
+	* fix: kvm-x86 requires CONFIG_KALLSYMS_ALL
+	* Cleanup: remove 2.6.35 compat code
+	* fix: mm/slab_common: drop kmem_alloc & avoid dereferencing fields when not using (v6.1)
+	* Fix: handle integer capture page faults as skip field
+	* Fix: bytecode validator: reject specialized load field/context ref instructions
+	* Fix: bytecode validator: reject specialized load instructions
+	* Fix: honor "user" attribute for array/sequence of user integers
+	* Fix: dma-fence.h appears in Linux 4.10, not 4.9
+	* wrapper: powerpc64: fix kernel crash caused by do_get_kallsyms
+	* Fix: event notification: Remove duplicate event enabled check
+	* Fix: event notification capture: validate buffer length
+	* Fix: handle capture page faults as skip field
+	* Fix: event notification capture error handling
+	* Fix: dma_fence tracepoint Kbuild typo
+	* Add new tracepoints for dma_fence
+	* Fix: capture_sequence_element_{un,}signed: handle user-space input
+	* Fix: notification capture: handle userspace strings
+	* Implement lttng_msgpack_write_user_str
+	* Fix: bytecode interpreter: LOAD_FIELD: handle user fields
+	* Fix: move "user" attribute from field to type
+	* Introduce lttng_copy_from_user_check_nofault
+	* fix: adjust range v5.10.137 in block probe
+	* fix: mm/tracing: add 'accounted' entry into output of allocation tracepoints (v6.0)
+	* fix: block: remove bdevname (v6.0)
+	* fix: fs/jbd2: Fix the documentation of the jbd2_write_superblock() callers (v6.0)
+	* fix: tie compaction probe build to CONFIG_COMPACTION
+	* fix: net: skb: introduce kfree_skb_reason() (v5.15.58..v5.16)
+	* fix: workqueue: Fix type of cpu in trace event (v5.19)
+	* fix: fs: Remove flags parameter from aops->write_begin (v5.19)
+	* fix: mm/page_alloc: fix tracepoint mm_page_alloc_zone_locked() (v5.19)
+	* Fix: event notifier: racy use of last subbuffer record
+	* Fix: bytecode interpreter context_get_index() leaves byte order uninitialized
+	* fix: 'random' tracepoints removed in stable kernels
+	* fix: random: remove unused tracepoints (v5.10, v5.15)
+	* fix: sched/tracing: Append prev_state to tp args instead (v5.18)
+	* fix: KVM: x86: Unexport kvm_x86_ops (v5.18)
+	* Fix: do not warn on unknown counter ioctl
+	* fix: mm: compaction: cleanup the compaction trace events (v5.18)
+	* Rename genhd wrapper to blkdev
+	* fix: scsi: core: Remove <scsi/scsi_request.h> (v5.18)
+	* fix: kprobes: Use rethook for kretprobe if possible (v5.18)
+	* fix: random: remove unused tracepoints (v5.18)
+	* fix: scsi: block: Remove REQ_OP_WRITE_SAME support (v5.18)
+	* fix: block: remove genhd.h (v5.18)
+	* fix: sched/tracing: Don't re-read p->state when emitting sched_switch event (v5.18)
+	* Fix: tracepoint event: allow same provider and event name
+	* Fix: compaction migratepages event name
+	* Document expected ISO8601 time formats in ABI header
+	* Fix: lttng ABI: lttng_counter_ioctl() tainted scalar
+	* Cleanup: Remove dead code in _lttng_kernel_event_create()
+	* Fix: lttng_event_enabler_create_syscall_events_if_missing() uninitialized ret variable
+	* Fix: lttng_syscall_filter_enable_event(): uninitialized ret variable
+	* Fix: sample discarded events count before reserve
+	* Cleanup: comment alignment in ring buffer config.h
+	* fix: net: socket: rename SKB_DROP_REASON_SOCKET_FILTER (v5.17)
+	* Add missing 'random' tracepoints
+	* fix: net: skb: introduce kfree_skb_reason() (v5.17)
+	* Introduce hrtimer_mode enumeration
+	* fix: random: rather than entropy_store abstraction, use global (v5.17)
+	* fix: btrfs: pass fs_info to trace_btrfs_transaction_commit (v5.17)
+	* fix: mm: compaction: fix the migration stats in trace_mm_compaction_migratepages() (v5.17)
+	* fix: block: remove the ->rq_disk field in struct request (v5.17)
+	* fix: block: remove GENHD_FL_SUPPRESS_PARTITION_INFO (v5.17)
+	* Cleanup: events.h: add alignment comments and fix whitespace
+	* Copyright ownership transfer
+	* fix: mm: move kvmalloc-related functions to slab.h (v5.16)
+	* fix: block: don't call blk_status_to_errno in blk_update_request (v5.16)
+	* fix: KVM: MMU: change tracepoints arguments to kvm_page_fault (v5.16)
+	* fix: KVM: x86: Get exit_reason as part of kvm_x86_ops.get_exit_info (v5.16)
+	* fix: isystem: delete global -isystem compile option (v5.16)
+	* fix: block: move block-related definitions out of fs.h (v5.16)
+	* syscalls: syscall id lookup and dispatch table improvements
+	* Fix: syscall tracing: missing trigger actions
+	* Warn on event registration/unregistration failure
+	* Fix: kernels 3.0.x do not implement IS_ENABLED macro
+	* Refactoring: lttng_event_enabler_create_tracepoint_events_if_missing: break loop if found
+	* Refactoring: syscall: break loops when found
+	* Fix: _lttng_kernel_event_create never returns NULL
+	* Refactoring: move lttng_syscall_event_enabler_create_matching_events after probe registration
+	* Refactoring: combine common code into lttng_syscall_event_enabler_create_matching_events
+	* Refactoring: introduce lttng_syscall_event_enabler_create_matching_syscall_table_events
+	* Refactoring: remove unused argument from lttng_syscall_event_enabler_create_matching_events
+	* Refactoring: add/remove to/from dispatch list on enable/disable event for event recorder
+	* Refactoring: syscall tracing: config compat
+	* Fix: event notifier unknown syscall match only wildcard all
+	* Refactoring: introduce create_unknown_syscall_event
+	* Refactoring: introduce lttng_syscall_event_enabler_create_matching_events
+	* Fix: add unknown event to dispatch list
+	* Fix: RCU-aware add event recorder to RCU dispatch list
+	* Refactoring: introduce lttng_syscall_event_enabler_create_event
+	* Refactoring: syscall: move matching event creation before tracepoint registration
+	* syscalls: remove vmalloc sync mappings
+	* Refactoring: introduce lttng_event_enabler_create_{syscall,tracepoint}_events_if_missing
+	* Refactoring: combine common code into _lttng_kernel_event_create
+	* Fix: clear error counter before adding to lists
+	* Refactoring: introduce lttng_kernel_event_id_available
+	* Refactoring: remove unused event_recorder_return
+	* Refactoring: event create: introduce _lttng_event_recorder_metadata_statedump
+	* Refactoring: event create: use lttng_get_event_list_head_from_enabler
+	* Refactoring: introduce lttng_kernel_event_notifier_clear_error_counter
+	* Refactoring: introduce lttng_event_enabler_event_name_match_event
+	* Refactoring: event create: use parent structure
+	* Refactoring: introduce lttng_kernel_event_alloc and lttng_kernel_event_free
+	* Refactoring: merge lttng_sync_event_list common code
+	* Refactoring: move enablers list into common structure
+	* Refactoring: introduce lttng_event_sync_filter_state and lttng_event_sync_capture_state
+	* Refactoring: combine common code into lttng_event_enabler_ref_events
+	* Refactoring: introduce lttng_event_enabler_init_event_filter
+	* Refactoring: introduce lttng_event_enabler_init_event_capture
+	* Refactoring: combine common code into lttng_syscall_table_set_wildcard_all
+	* Refactoring: introduce list head from enabler getter
+	* Refactoring: move event list node field to common structure
+	* Refactoring: combine common code into lttng_create_event_if_missing
+	* Refactoring: combine identical functions into lttng_create_tracepoint_event_if_missing
+	* Refactoring/fix: desc match enabler: handle error internally
+	* Refactoring: syscalls: use common match functions
+	* Refactoring: combine create event common code
+	* Refactoring: combine match functions for notifier and recorder
+	* Refactoring: introduce lttng_get_event_ht_from_enabler
+	* Refactoring: combine hlist_node into common event structure
+	* Refactoring: event notifier create: use enablers
+	* Refactoring: combine event hash tables common code
+	* Refactoring: combine _lttng_event_unregister common code
+	* Refactoring: combine register_event common code
+	* Refactoring: combine lttng_create_syscall_event_if_missing common code
+	* Refactoring: syscalls: move lttng_syscalls_create_matching_event_notifiers into registration
+	* Refactoring: Rename lttng_channel_syscall_mask to lttng_syscall_table_get_active_mask
+	* Refactoring: kretprobes: use event common argument types
+	* Refactoring: kprobes: combine common code between recorder and notifier
+	* Refactoring: uprobes: combine common code between recorder and notifier
+	* Refactoring: syscalls: combine syscalls register event for notifier/recorder
+	* Refactoring: syscall: combine syscall filter enable/disable recorder/notifier
+	* Refactoring: rename lttng_syscalls_register_event to lttng_syscalls_register_event_recorder
+	* Cleanup: tracepoint probe register/unregister: use parent field
+	* Refactoring/fix: syscall table unregister/destroy
+	* Refactoring: rename lttng_channel_create to lttng_channel_buffer_create
+	* Refactoring: channel enable/disable using common type
+	* Cleanup: rename event register/unregister for event recorder
+	* Cleanup: rename lttng_syscalls_destroy_event to lttng_syscalls_destroy_channel
+	* Cleanup: syscall filter enable/disable event
+	* Cleanup: notifier syscalls: Remove useless zero-init of zeroed memory
+	* Refactoring: combine event enabler destroy for notifier and recorder
+	* Refactoring: combine event notifier notifier and recorder enable/disable
+	* Refactoring: combine filter bytecode attach functions
+	* Refactoring: rename lttng_event_enabler to lttng_event_recorder_enabler
+	* Refactoring: syscall tracing: combine common fields into struct lttng_kernel_syscall_table
+	* Rename event/notifier enabler base field to parent
+	* Rename struct lttng_enabler to struct lttng_event_enabler_common
+	* Use event enabler for event recorder creation for all instrumentation types
+	* fix: implicit-int error in EXPORT_SYMBOL_GPL
+	* fix: Revert "Makefile: Enable -Wimplicit-fallthrough for Clang" (v5.15)
+	* fix: cpu/hotplug: Remove deprecated CPU-hotplug functions. (v5.15)
+	* fix: sched: Change task_struct::state (v5.14)
+	* fix: btrfs: pass btrfs_inode to btrfs_writepage_endio_finish_ordered() (v5.14)
+	* fix: adjust ranges for RHEL 8.4
+	* fix: adjust ranges for RHEL 8.2 and 8.3
+	* Disable x86 error code bitwise enum in default build
+	* Disable mmap bitwise enum in default build
+	* Disable block rwbs bitwise enum in default build
+	* Disable sched_switch bitwise enum in default build
+	* Disable open[at] bitwise enum in default build
+	* Disable fcntl bitwise enum in default build
+	* Disable clone bitwise enum in default build
+	* Add experimental bitwise enum config option
+	* Add defaults to Kconfig options
+	* Cleanup: remove unused EXTCFLAGS from Makefile
+	* Sync `show_inode_state()` macro with upstream stable kernels
+	* Sync `show_inode_state()` macro with Ubuntu 4.15 kernel
+	* fix: block: remove disk_part_iter (v5.12)
+	* Cleanup: lib ring buffer: rename pagecpy local variable
+	* Cleanup: clarify strcpy/strcpy_from_user local variables
+	* Implement ring buffer Pascal string copy
+	* Move alignment into event write callback
+	* Cleanup: disable page fault after access_ok
+	* Fix: increment buffer offset when failing to copy from user-space
+	* Fix: incorrect in/out direction for syscall exit
+	* Fix: add missing #include for 3.8 kernel
+	* Fix: builtin script referring to old directories
+	* events.h API const-ness
+	* Rename struct lib_ring_buffer* to struct lttng_kernel_ring_buffer*
+	* Rename struct channel to struct lttng_kernel_ring_buffer_channel
+	* Refactoring: struct lttng_channel
+	* Fix: missing #include for 3.8 kernel
+	* Introduce struct lttng_kernel_tracepoint_class, enum probe_desc field
+	* Set probe descriptor field in event descriptor
+	* Split syscall tracepoint generation in their own files
+	* Include `linux/in{,6}.h` closer to where it's used
+	* Group all syscall enums in one compile unit
+	* Include `linux/mman.h` for mmap flag enum
+	* Add `struct trace_syscall_table`
+	* Define `static_assert()` when not defined by kernel
+	* Move event hash tables to private header
+	* Move forward declarations to private header
+	* Move lttng_syscall_filter forward declaration to private header
+	* Split ID tracker into public/private structures
+	* Move id tracker hash node to private header
+	* Split struct lttng_session into public/private structures
+	* Move struct lttng_metadata_stream to private header
+	* Move event notifier and counter structures to private header
+	* Rename struct lib_ring_buffer_ctx to struct lttng_kernel_ring_buffer_ctx
+	* Refactoring: struct lttng_kernel_channel_buffer_ops
+	* Rename lttng_probe_{,un}register to lttng_kernel_probe_{,un}register
+	* Move metadata cache structure to internal header
+	* Move internal APIs to internal header
+	* Move kprobes, uprobes, kretprobes, syscall structures to internal header
+	* Move kprobe, kretprobe, uprobe APIs to internal header
+	* Remove unused TRACEPOINT_HAS_DATA_ARG
+	* Move enabler APIs to internal header
+	* Move bytecode structures to internal header
+	* Remove include of internal header from tracepoint-event-impl.h
+	* Rename struct lttng_probe_ctx to struct lttng_kernel_probe_ctx
+	* Rename struct lttng_bytecode_runtime to struct lttng_kernel_bytecode_runtime
+	* Rename struct lttng_bytecode_node to struct lttng_kernel_bytecode_node
+	* Move context structures and API to internal header
+	* Move enabler structures to internal header
+	* Makefile: add .o wildcard target
+	* Fix: Makefile: generation of specific .i file not working
+	* Fix: refactor preemptible context
+	* Refactoring: context callbacks
+	* Remove event id parameter from event_reserve callback
+	* Refactoring: ring buffer context
+	* sequence and variant types: use previous field for length/tag if NULL
 
 2021-04-23 (National Take a Chance (on me ?) Day) LTTng modules 2.13.0-rc1
 	* Set the 2.13 release codename and description
