@@ -31,8 +31,8 @@
 #define LTTNG_MODULES_PATCHLEVEL_VERSION 0
 #define LTTNG_MODULES_EXTRAVERSION "-pre"
 
-#define LTTNG_VERSION_NAME		"O-Beer"
-#define LTTNG_VERSION_DESCRIPTION	"An alcoholic drink made from yeast-fermented malt flavored with hops."
+#define LTTNG_VERSION_NAME		"Orbitales"
+#define LTTNG_VERSION_DESCRIPTION	"This release is named after \"Orbitales\", a bold creation from Noctem Artisans Brasseurs in Québec City. Pitch black and dense—one team member compared the color to used motor oil—this beer offers an intriguing sensory experience. Aged in wood casks, it delivers rich aromas and flavors of blackberry as well as a hint of acidity. There’s no head to speak of, but a whisper of blue cheese funk lingers just enough to keep you curious."
 
 #ifndef CHAR_BIT
 #define CHAR_BIT 8
