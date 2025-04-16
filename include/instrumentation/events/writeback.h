@@ -367,7 +367,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(bdi_dirty_ratelimit,
 	)
 )
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,14,2))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,15,0))
 LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 
 	writeback_balance_dirty_pages,
@@ -410,7 +410,52 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 		ctf_integer(long, think,
 			current->dirty_paused_when == 0 ? 0 :
 				(long)(jiffies - current->dirty_paused_when) * 1000/HZ)
-        ctf_integer(ino_t, cgroup_ino, cgroup_ino(wb->memcg_css->cgroup))
+	        ctf_integer(ino_t, cgroup_ino, cgroup_ino(wb->memcg_css->cgroup))
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,14,2))
+LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
+
+	writeback_balance_dirty_pages,
+
+	TP_PROTO(struct bdi_writeback *wb,
+		 struct dirty_throttle_control *dtc,
+		 unsigned long dirty_ratelimit,
+		 unsigned long task_ratelimit,
+		 unsigned long dirtied,
+		 unsigned long period,
+		 long pause,
+		 unsigned long start_time),
+
+	TP_ARGS(wb, dtc, dirty_ratelimit, task_ratelimit,
+		dirtied, period, pause, start_time
+	),
+
+	TP_FIELDS(
+		ctf_string(bdi, lttng_bdi_dev_name(wb->bdi))
+		ctf_integer(unsigned long, limit, dtc->limit)
+		ctf_integer(unsigned long, setpoint,
+                    (dtc->limit + (dtc->thresh + dtc->bg_thresh)) / 2)
+		ctf_integer(unsigned long, dirty, dtc->dirty)
+		ctf_integer(unsigned long, wb_setpoint,
+                    ((dtc->limit + (dtc->thresh + dtc->bg_thresh)) / 2)
+                    * (dtc->wb_thresh / (dtc->thresh + 1)))
+		ctf_integer(unsigned long, wb_dirty, dtc->wb_dirty)
+		ctf_integer(unsigned long, dirty_ratelimit,
+			KBps(dirty_ratelimit))
+		ctf_integer(unsigned long, task_ratelimit,
+			KBps(task_ratelimit))
+		ctf_integer(unsigned int, dirtied, dirtied)
+		ctf_integer(unsigned int, dirtied_pause,
+			current->nr_dirtied_pause)
+		ctf_integer(unsigned long, paused,
+			(jiffies - start_time) * 1000 / HZ)
+		ctf_integer(long, pause, pause * 1000 / HZ)
+		ctf_integer(unsigned long, period,
+			period * 1000 / HZ)
+		ctf_integer(long, think,
+			current->dirty_paused_when == 0 ? 0 :
+				(long)(jiffies - current->dirty_paused_when) * 1000/HZ)
 	)
 )
 #else
@@ -463,7 +508,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 				(long)(jiffies - current->dirty_paused_when) * 1000/HZ)
 	)
 )
-#endif /* else (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,15,0)) */
+#endif /* else (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,14,2)) */
 
 LTTNG_TRACEPOINT_EVENT(writeback_sb_inodes_requeue,
 
