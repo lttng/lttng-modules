@@ -280,7 +280,7 @@ int write_int_fc_mappings(struct lttng_kernel_session * const session,
 		const struct lttng_kernel_type_enum * const type)
 {
 	int ret;
-	unsigned int begin_index, end_index, i;
+	unsigned int begin_index, end_index, i = 0;
 
 	ret = lttng_kernel_mj_gen_open_obj(session, "mappings");
 	if (ret)
