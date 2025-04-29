@@ -88,10 +88,12 @@ end:
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
 static const struct proc_ops lttng_test_filter_event_proc_ops = {
+	.proc_open = nonseekable_open,
 	.proc_write = lttng_test_filter_event_write,
 };
 #else
 static const struct file_operations lttng_test_filter_event_proc_ops = {
+	.open = nonseekable_open,
 	.write = lttng_test_filter_event_write,
 };
 #endif
