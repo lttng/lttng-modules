@@ -94,6 +94,7 @@ end:
 }
 
 static const struct file_operations lttng_logger_operations = {
+	.open = nonseekable_open,
 	.write = lttng_logger_write,
 };
 
@@ -103,6 +104,7 @@ static const struct file_operations lttng_logger_operations = {
  */
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
 static const struct proc_ops lttng_logger_proc_ops = {
+	.proc_open = nonseekable_open,
 	.proc_write = lttng_logger_write,
 };
 #else

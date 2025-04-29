@@ -471,6 +471,7 @@ long lttng_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
 static const struct proc_ops lttng_proc_ops = {
+	.proc_open = nonseekable_open,
 	.proc_ioctl = lttng_ioctl,
 #ifdef CONFIG_COMPAT
 	.proc_compat_ioctl = lttng_ioctl,
@@ -479,6 +480,7 @@ static const struct proc_ops lttng_proc_ops = {
 #else
 static const struct file_operations lttng_proc_ops = {
 	.owner = THIS_MODULE,
+	.open = nonseekable_open,
 	.unlocked_ioctl = lttng_ioctl,
 #ifdef CONFIG_COMPAT
 	.compat_ioctl = lttng_ioctl,
