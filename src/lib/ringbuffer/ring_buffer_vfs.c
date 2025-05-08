@@ -176,7 +176,7 @@ long _lttng_kernel_abi_ring_buffer_flush_or_populate_packet(struct lttng_kernel_
 		unsigned long arg)
 {
 	struct lttng_kernel_abi_ring_buffer_packet_flush_or_populate_packet_args flush_args;
-	struct channel_backend *lttng_chan = channel_get_private(buf->backend.chan);
+	struct channel_backend *lttng_chan = &buf->backend.chan->backend;
 	u64 packet_length, packet_length_padded;
 	bool flush_done, packet_populated;
 	unsigned long subbuffer_size;
