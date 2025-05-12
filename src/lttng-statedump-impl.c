@@ -770,7 +770,6 @@ int do_lttng_statedump(struct lttng_kernel_session *session)
 		return ret;
 
 	/* TODO lttng_dump_idt_table(session); */
-	/* TODO lttng_dump_softirq_vec(session); */
 	/* TODO lttng_list_modules(session); */
 	/* TODO lttng_dump_swap_files(session); */
 

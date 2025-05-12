@@ -214,7 +214,11 @@ void __event_template_proto___##_name(void);
 	static struct lttng_kernel_enum_entry __enum_values_sorted__##_name[ARRAY_SIZE(__enum_values__##_name)];
 #endif
 
+#define LTTNG_TRACEPOINT_ENUM_GENERATE
+
 #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+
+#undef LTTNG_TRACEPOINT_ENUM_GENERATE
 
 /*
  * Stage 1.3 of the trace events.

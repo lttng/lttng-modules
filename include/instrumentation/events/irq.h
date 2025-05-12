@@ -64,6 +64,30 @@ LTTNG_TRACEPOINT_EVENT(irq_handler_exit,
 	)
 )
 
+LTTNG_TRACEPOINT_ENUM(irq_softirq_names,
+
+	TP_ENUM_VALUES(
+		ctf_enum_value("HI", HI_SOFTIRQ)
+		ctf_enum_value("TIMER", TIMER_SOFTIRQ)
+		ctf_enum_value("NET_TX", NET_TX_SOFTIRQ)
+		ctf_enum_value("NET_RX", NET_RX_SOFTIRQ)
+		ctf_enum_value("BLOCK", BLOCK_SOFTIRQ)
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,5,0))
+		ctf_enum_value("IRQ_POLL", IRQ_POLL_SOFTIRQ)
+#else
+		ctf_enum_value("BLOCK_IOPOLL", BLOCK_IOPOLL_SOFTIRQ)
+#endif
+		ctf_enum_value("TASKLET", TASKLET_SOFTIRQ)
+		ctf_enum_value("SCHED", SCHED_SOFTIRQ)
+		ctf_enum_value("HRTIMER", HRTIMER_SOFTIRQ)
+		ctf_enum_value("RCU", RCU_SOFTIRQ)
+	)
+)
+
+#ifdef LTTNG_TRACEPOINT_ENUM_GENERATE
+static_assert(ARRAY_SIZE(__enum_values__irq_softirq_names) == NR_SOFTIRQS);
+#endif
+
 LTTNG_TRACEPOINT_EVENT_CLASS(irq_softirq,
 
 	TP_PROTO(unsigned int vec_nr),
@@ -71,7 +95,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(irq_softirq,
 	TP_ARGS(vec_nr),
 
 	TP_FIELDS(
-		ctf_integer(unsigned int, vec, vec_nr)
+		ctf_integer(u8, vec, vec_nr)
+		ctf_enum(irq_softirq_names, u8, name, vec_nr)
 	)
 )
 
