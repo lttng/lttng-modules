@@ -1220,4 +1220,28 @@ SC_LTTNG_TRACEPOINT_EVENT(open,
 #define OVERRIDE_TABLE_32_sigaction
 #endif /* CREATE_SYSCALL_TABLE */
 
+#else /* (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,9,0)) */
+
+#ifndef CREATE_SYSCALL_TABLE
+
+#if !defined(CONFIG_COMPAT_OLD_SIGACTION)
+#define OVERRIDE_32_sigaction
+#else
+#ifdef CONFIG_64BIT
+/*
+ * From the point of view of the 64-bit ABI, old_sigaction
+ * becomes compat_old_sigaction.
+ */
+#define old_sigaction compat_old_sigaction
+#endif
+#endif
+
+#else /* CREATE_SYSCALL_TABLE */
+
+#if !defined(CONFIG_COMPAT_OLD_SIGACTION)
+#define OVERRIDE_TABLE_32_sigaction
+#endif
+
+#endif /* CREATE_SYSCALL_TABLE */
+
 #endif /* (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,9,0)) */
