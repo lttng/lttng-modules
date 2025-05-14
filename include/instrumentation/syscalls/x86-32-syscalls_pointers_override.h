@@ -13,24 +13,6 @@
 #  define OVERRIDE_32_chown16
 # endif
 
-#ifdef CONFIG_X86_64
-#ifdef CONFIG_COMPAT_OLD_SIGACTION
-/*
- * From the point of view of the 64-bit ABI, old_sigaction
- * becomes compat_old_sigaction.
- */
-#define old_sigaction compat_old_sigaction
-#else /* CONFIG_COMPAT_OLD_SIGACTION */
-/*
- * The target 64-bit kernel does not enable the support for
- * the 32-bit compat version of OLD_SIGACTION. Defining
- * OVERRIDE_32_sigaction ensures we don't build a tracepoint
- * for this syscall.
- */
-#define OVERRIDE_32_sigaction
-#endif /* CONFIG_COMPAT_OLD_SIGACTION */
-#endif
-
 /*
  * Override 'pipe' to set the output field 'fildes' to an array of 2 integers
  * instead of the default integer pointer.
