@@ -2,6 +2,11 @@
 #
 # SPDX-License-Identifier: CC-BY-SA-4.0
 
+2025-05-14 LTTng modules 2.14.0-rc2
+	* Fix channel_backend lookup during `ring_buffer_flush_or_populate_packet`
+	* Fix: Use `nonseekable_open` for proc files
+	* Fix: metadata-ctf2: enum mappings are not serialized
+
 2025-04-16 (National Wear Your Pajamas to Work Day) LTTng modules 2.14.0-rc1
 	* Fix: trace_balance_dirty_pages in Linux v6.14.2
 	* Set the 2.14 release codename and description
