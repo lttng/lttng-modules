@@ -468,12 +468,35 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_process_template, sched_process_free,
 	     TP_ARGS(p))
 
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,16,0))
+/*
+ * Tracepoint for a task exiting.
+ * Note, it's a superset of sched_process_template and should be kept
+ * compatible as much as possible. sched_process_exits has an extra
+ * `group_dead` argument, so sched_process_template can't be used,
+ * unfortunately, just like sched_migrate_task above.
+ */
+LTTNG_TRACEPOINT_EVENT(sched_process_exit,
+
+	TP_PROTO(struct task_struct *p, bool group_dead),
+
+	TP_ARGS(p, group_dead),
+
+	TP_FIELDS(
+		ctf_array_text(char, comm, p->comm, TASK_COMM_LEN)
+		ctf_integer(pid_t, tid, p->pid)
+		ctf_integer(int, prio, p->prio - MAX_RT_PRIO)
+		ctf_integer(bool, group_dead, group_dead)
+	)
+)
+#else
 /*
  * Tracepoint for a task exiting:
  */
 LTTNG_TRACEPOINT_EVENT_INSTANCE(sched_process_template, sched_process_exit,
 	     TP_PROTO(struct task_struct *p),
 	     TP_ARGS(p))
+#endif
 
 /*
  * Tracepoint for waiting on task to unschedule:
