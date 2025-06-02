@@ -410,7 +410,11 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 		ctf_integer(long, think,
 			current->dirty_paused_when == 0 ? 0 :
 				(long)(jiffies - current->dirty_paused_when) * 1000/HZ)
-	        ctf_integer(ino_t, cgroup_ino, cgroup_ino(wb->memcg_css->cgroup))
+#ifdef CONFIG_CGROUP_WRITEBACK
+		ctf_integer(ino_t, cgroup_ino, cgroup_ino(wb->memcg_css->cgroup))
+#else
+        ctf_integer(ino_t, cgroup_ino, 1)
+#endif
 	)
 )
 #elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,14,2))
