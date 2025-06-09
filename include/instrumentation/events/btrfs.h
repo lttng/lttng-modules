@@ -2135,7 +2135,24 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__reserved_extent,  btrfs_reserved_extent_f
 
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,3,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,16,0))
+LTTNG_TRACEPOINT_EVENT(btrfs_find_free_extent,
+
+	TP_PROTO(const struct btrfs_root *root,
+		const struct find_free_extent_ctl *ffe_ctl),
+
+	TP_ARGS(root, ffe_ctl),
+
+	TP_FIELDS(
+		ctf_array(u8, fsid, root->lttng_fs_info_fsid, BTRFS_UUID_SIZE)
+		ctf_integer(u64, root_objectid, root->root_key.objectid)
+		ctf_integer(u64, num_bytes, ffe_ctl->num_bytes)
+		ctf_integer(u64, empty_size, ffe_ctl->empty_size)
+		ctf_integer(u64, flags, ffe_ctl->flags)
+	)
+)
+
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,3,0))
 LTTNG_TRACEPOINT_EVENT_MAP(find_free_extent,
 
 	btrfs_find_free_extent,
