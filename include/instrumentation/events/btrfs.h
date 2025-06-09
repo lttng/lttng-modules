@@ -706,7 +706,44 @@ LTTNG_TRACEPOINT_EVENT(btrfs_writepage_end_io_hook,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,12,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__writepage,
+
+	TP_PROTO(const struct folio *folio, const struct inode *inode,
+		 const struct writeback_control *wbc),
+
+	TP_ARGS(folio, inode, wbc),
+
+	TP_FIELDS(
+		ctf_integer(ino_t, ino, inode->i_ino)
+		ctf_integer(pgoff_t, index, folio->index)
+		ctf_integer(long, nr_to_write, wbc->nr_to_write)
+		ctf_integer(long, pages_skipped, wbc->pages_skipped)
+		ctf_integer(loff_t, range_start, wbc->range_start)
+		ctf_integer(loff_t, range_end, wbc->range_end)
+		ctf_integer(char, for_kupdate, wbc->for_kupdate)
+		ctf_integer(char, for_reclaim, wbc->for_reclaim)
+		ctf_integer(char, range_cyclic, wbc->range_cyclic)
+		ctf_integer(pgoff_t, writeback_index,
+				inode->i_mapping->writeback_index)
+		ctf_integer(u64, root_objectid,
+				BTRFS_I(inode)->root->root_key.objectid)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs__writepage,
+
+	__extent_writepage,
+
+	btrfs__extent_writepage,
+
+	TP_PROTO(const struct folio *folio, const struct inode *inode,
+		 const struct writeback_control *wbc),
+
+	TP_ARGS(folio, inode, wbc)
+)
+
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,73,5,0,0, 4,4,73,6,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,82,6,0,0, 4,4,82,7,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,92,6,0,0, 4,4,92,7,0,0) || \
@@ -747,20 +784,6 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs__writepage,
 	TP_ARGS(page, inode, wbc)
 )
 
-LTTNG_TRACEPOINT_EVENT(btrfs_sync_file,
-
-	TP_PROTO(const struct file *file, int datasync),
-
-	TP_ARGS(file, datasync),
-
-	TP_FIELDS(
-		ctf_integer(ino_t, ino, file->f_path.dentry->d_inode->i_ino)
-		ctf_integer(ino_t, parent, file->f_path.dentry->d_parent->d_inode->i_ino)
-		ctf_integer(int, datasync, datasync)
-		ctf_integer(u64, root_objectid,
-			BTRFS_I(file->f_path.dentry->d_inode)->root->root_key.objectid)
-	)
-)
 #else
 LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__writepage,
 
@@ -800,7 +823,28 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs__writepage,
 
 	TP_ARGS(page, inode, wbc)
 )
+#endif
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,73,5,0,0, 4,4,73,6,0,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,82,6,0,0, 4,4,82,7,0,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,92,6,0,0, 4,4,92,7,0,0) || \
+	LTTNG_SLE_KERNEL_RANGE(4,4,103,6,0,0, 4,5,0,0,0,0))
+LTTNG_TRACEPOINT_EVENT(btrfs_sync_file,
+
+	TP_PROTO(const struct file *file, int datasync),
+
+	TP_ARGS(file, datasync),
+
+	TP_FIELDS(
+		ctf_integer(ino_t, ino, file->f_path.dentry->d_inode->i_ino)
+		ctf_integer(ino_t, parent, file->f_path.dentry->d_parent->d_inode->i_ino)
+		ctf_integer(int, datasync, datasync)
+		ctf_integer(u64, root_objectid,
+			BTRFS_I(file->f_path.dentry->d_inode)->root->root_key.objectid)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT(btrfs_sync_file,
 
 	TP_PROTO(struct file *file, int datasync),
