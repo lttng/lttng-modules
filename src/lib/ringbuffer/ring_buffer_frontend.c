@@ -347,7 +347,7 @@ free_chanbuf:
 
 static void switch_buffer_timer(LTTNG_TIMER_FUNC_ARG_TYPE t)
 {
-	struct lttng_kernel_ring_buffer *buf = lttng_from_timer(buf, t, switch_timer);
+	struct lttng_kernel_ring_buffer *buf = lttng_timer_container_of(buf, t, switch_timer);
 	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 
@@ -410,7 +410,7 @@ static void lib_ring_buffer_stop_switch_timer(struct lttng_kernel_ring_buffer *b
  */
 static void read_buffer_timer(LTTNG_TIMER_FUNC_ARG_TYPE t)
 {
-	struct lttng_kernel_ring_buffer *buf = lttng_from_timer(buf, t, read_timer);
+	struct lttng_kernel_ring_buffer *buf = lttng_timer_container_of(buf, t, read_timer);
 	struct lttng_kernel_ring_buffer_channel *chan = buf->backend.chan;
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 
