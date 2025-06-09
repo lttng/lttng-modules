@@ -101,6 +101,34 @@ static inline const char *lttng_bdi_dev_name(struct backing_dev_info *bdi)
 	)
 #endif /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0)) */
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,2,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(writeback_page_template,
+
+	TP_PROTO(struct page *page, struct address_space *mapping),
+
+	TP_ARGS(page, mapping),
+
+	TP_FIELDS(
+		ctf_string(name, lttng_bdi_dev_name(mapping ? inode_to_bdi(mapping->host) : NULL))
+		ctf_integer(unsigned long, ino, (mapping && mapping->host) ? mapping->host->i_ino : 0)
+		ctf_integer(pgoff_t, index, page->index)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_page_template, writeback_dirty_page,
+
+	TP_PROTO(struct page *page, struct address_space *mapping),
+
+	TP_ARGS(page, mapping)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_page_template, wait_on_page_writeback,
+
+	TP_PROTO(struct page *page, struct address_space *mapping),
+
+	TP_ARGS(page, mapping)
+)
+#else
 LTTNG_TRACEPOINT_EVENT(writeback_dirty_page,
 	TP_PROTO(struct page *page, struct address_space *mapping),
 	TP_ARGS(page, mapping),
@@ -110,6 +138,7 @@ LTTNG_TRACEPOINT_EVENT(writeback_dirty_page,
 		ctf_integer(pgoff_t, index, page->index)
 	)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_dirty_inode_template,
 	TP_PROTO(struct inode *inode, int flags),
