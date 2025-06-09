@@ -34,6 +34,26 @@ static inline int lttng_timer_delete_sync(struct timer_list *timer)
 #endif
 }
 
+
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,16,0))
+
+#define lttng_timer_container_of(var, callback_timer, timer_fieldname) \
+	timer_container_of(var, callback_timer, timer_fieldname)
+
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0))
+
+#define lttng_timer_container_of(var, callback_timer, timer_fieldname) \
+	from_timer(var, callback_timer, timer_fieldname)
+
+#else
+
+/* timer_fieldname is unused prior to 4.15. */
+#define lttng_timer_container_of(var, timer_data, timer_fieldname) \
+	((typeof(var))timer_data)
+
+#endif
+
+
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,15,0))
 
 #define LTTNG_TIMER_PINNED		TIMER_PINNED
@@ -41,9 +61,6 @@ static inline int lttng_timer_delete_sync(struct timer_list *timer)
 
 #define lttng_mod_timer_pinned(timer, expires)  \
 	mod_timer(timer, expires)
-
-#define lttng_from_timer(var, callback_timer, timer_fieldname) \
-	from_timer(var, callback_timer, timer_fieldname)
 
 #define lttng_timer_setup(timer, callback, flags, unused) \
 	timer_setup(timer, callback, flags)
@@ -74,10 +91,6 @@ static inline int lttng_timer_delete_sync(struct timer_list *timer)
 
 #define LTTNG_TIMER_PINNED		TIMER_PINNED
 #define LTTNG_TIMER_FUNC_ARG_TYPE	unsigned long
-
-/* timer_fieldname is unused prior to 4.15. */
-#define lttng_from_timer(var, timer_data, timer_fieldname) \
-	((typeof(var))timer_data)
 
 static inline void lttng_timer_setup(struct timer_list *timer,
 		void (*function)(LTTNG_TIMER_FUNC_ARG_TYPE),
