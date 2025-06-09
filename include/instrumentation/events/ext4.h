@@ -288,6 +288,35 @@ LTTNG_TRACEPOINT_EVENT(ext4_da_writepages_result,
 	)
 )
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,5,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(ext4__folio_op,
+	TP_PROTO(struct inode *inode, struct folio *folio),
+
+	TP_ARGS(inode, folio),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
+		ctf_integer(ino_t, ino, inode->i_ino)
+		ctf_integer(pgoff_t, index, folio->index)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__folio_op, ext4_read_folio,
+
+	TP_PROTO(struct inode *inode, struct folio *folio),
+
+	TP_ARGS(inode, folio)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__folio_op, ext4_release_folio,
+
+	TP_PROTO(struct inode *inode, struct folio *folio),
+
+	TP_ARGS(inode, folio)
+)
+
+#else
+
 LTTNG_TRACEPOINT_EVENT_CLASS(ext4__page_op,
 	TP_PROTO(struct page *page),
 
@@ -320,6 +349,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__page_op, ext4_releasepage,
 
 	TP_ARGS(page)
 )
+#endif
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(ext4_invalidate_folio_op,
