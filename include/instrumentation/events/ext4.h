@@ -321,6 +321,35 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__page_op, ext4_releasepage,
 	TP_ARGS(page)
 )
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(ext4_invalidate_folio_op,
+	TP_PROTO(struct folio *folio, size_t offset, size_t length),
+
+	TP_ARGS(folio, offset, length),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, folio->mapping->host->i_sb->s_dev)
+		ctf_integer(ino_t, ino, folio->mapping->host->i_ino)
+		ctf_integer(pgoff_t, index, folio->index)
+		ctf_integer(size_t, offset, offset)
+		ctf_integer(size_t, length, length)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4_invalidate_folio_op, ext4_invalidate_folio,
+	TP_PROTO(struct folio *folio, size_t offset, size_t length),
+
+	TP_ARGS(folio, offset, length)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4_invalidate_folio_op, ext4_journalled_invalidate_folio,
+	TP_PROTO(struct folio *folio, size_t offset, size_t length),
+
+	TP_ARGS(folio, offset, length)
+)
+
+#else
+
 LTTNG_TRACEPOINT_EVENT_CLASS(ext4_invalidatepage_op,
 	TP_PROTO(struct page *page, unsigned int offset, unsigned int length),
 
@@ -346,6 +375,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4_invalidatepage_op, ext4_journalled_invalida
 
 	TP_ARGS(page, offset, length)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT(ext4_discard_blocks,
 	TP_PROTO(struct super_block *sb, unsigned long long blk,
