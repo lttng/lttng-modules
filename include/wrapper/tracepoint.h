@@ -15,6 +15,19 @@
 #include <linux/tracepoint.h>
 #include <linux/module.h>
 
+/*
+ * In v6.16, the DECLARE_TRACE macro was changed to append '_tp' to the
+ * generated 'trace_()' function and a new DECLARE_TRACE_EVENT macro was added
+ * with the old behavior.
+ */
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,16,0))
+#define LTTNG_DECLARE_TRACE_EVENT(name, proto, args)	\
+	DECLARE_TRACE_EVENT(name, PARAMS(proto), PARAMS(args))
+#else
+#define LTTNG_DECLARE_TRACE_EVENT(name, proto, args)	\
+	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
+#endif
+
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0))
 #define LTTNG_DEFINE_TRACE(name, proto, args)		\
 	DEFINE_TRACE(name, PARAMS(proto), PARAMS(args))
