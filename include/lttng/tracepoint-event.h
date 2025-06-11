@@ -36,7 +36,7 @@
 	_LTTNG_INSTRUMENTATION(LTTNG_DECLARE_TRACE_EVENT(name, PARAMS(proto), PARAMS(args)))
 #undef LTTNG_TRACEPOINT_EVENT_MAP_NOARGS
 #define LTTNG_TRACEPOINT_EVENT_MAP_NOARGS(name, map, fields) \
-	_LTTNG_INSTRUMENTATION(DECLARE_TRACE_NOARGS(name))
+	_LTTNG_INSTRUMENTATION(static_assert(0, "Tracepoint \"" #name "\" has 0 argument which is not supported anymore."))
 
 #undef LTTNG_TRACEPOINT_EVENT_CLASS
 #define LTTNG_TRACEPOINT_EVENT_CLASS(name, proto, args, fields)
@@ -52,13 +52,13 @@
 	_LTTNG_INSTRUMENTATION(LTTNG_DECLARE_TRACE_EVENT(name, PARAMS(proto), PARAMS(args)))
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_NOARGS(template, name) \
-	_LTTNG_INSTRUMENTATION(DECLARE_TRACE_NOARGS(name))
+	_LTTNG_INSTRUMENTATION(static_assert(0, "Tracepoint \"" #name "\" has 0 argument which is not supported anymore."))
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(_template, _name, _map, _proto, _args) \
 	_LTTNG_INSTRUMENTATION(LTTNG_DECLARE_TRACE_EVENT(name, PARAMS(proto), PARAMS(args)))
 #undef LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS
 #define LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP_NOARGS(_template, _name, _map) \
-	_LTTNG_INSTRUMENTATION(DECLARE_TRACE_NOARGS(name))
+	_LTTNG_INSTRUMENTATION(static_assert(0, "Tracepoint \"" #_name "\" has 0 argument which is not supported anymore."))
 
 #undef LTTNG_TRACEPOINT_ENUM
 #define LTTNG_TRACEPOINT_ENUM(_name, _values)
