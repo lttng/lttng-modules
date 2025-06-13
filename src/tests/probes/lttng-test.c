@@ -32,13 +32,19 @@ LTTNG_DEFINE_TRACE(lttng_test_filter_event,
 	PARAMS(anint, netint, values, text, textlen, etext, net_values)
 );
 
+LTTNG_DEFINE_TRACE(lttng_test_recursive_event,
+	PARAMS(unsigned int count),
+	PARAMS(count)
+);
+
 #define LTTNG_TEST_FILTER_EVENT_FILE	"lttng-test-filter-event"
+#define LTTNG_TEST_RECURSIVE_EVENT_FILE "lttng-test-recursive-event"
 
 #define LTTNG_WRITE_COUNT_MAX	64
 
 static struct proc_dir_entry *lttng_test_filter_event_dentry;
+static struct proc_dir_entry *lttng_test_recursive_event_dentry;
 
-static
 void trace_test_event(unsigned int nr_iter)
 {
 	int i, netint;
@@ -86,15 +92,53 @@ end:
 	return written;
 }
 
+/**
+ * lttng_recursive_event_write - trigger a lttng_test_filter_event
+ * @file: file pointer
+ * @user_buf: user string
+ * @count: length to copy
+ *
+ * Return -1 on error, with EFAULT errno. Returns count on success.
+ */
+static
+ssize_t lttng_test_recursive_event_write(struct file *file, const char __user *user_buf,
+		    size_t count, loff_t *ppos)
+{
+	unsigned int nr_iter;
+	ssize_t written;
+	int ret;
+
+	/* Get the number of iterations */
+	ret = kstrtouint_from_user(user_buf, count, 10, &nr_iter);
+	if (ret) {
+		written = ret;
+		goto end;
+	}
+	/* Trace the event */
+	trace_lttng_test_recursive_event(nr_iter);
+	written = count;
+	*ppos += written;
+end:
+	return written;
+}
+
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0))
 static const struct proc_ops lttng_test_filter_event_proc_ops = {
 	.proc_open = nonseekable_open,
 	.proc_write = lttng_test_filter_event_write,
 };
+static const struct proc_ops lttng_test_recursive_event_proc_ops = {
+	.proc_open = nonseekable_open,
+	.proc_write = lttng_test_recursive_event_write,
+};
 #else
 static const struct file_operations lttng_test_filter_event_proc_ops = {
 	.open = nonseekable_open,
 	.write = lttng_test_filter_event_write,
+};
+static const struct file_operations lttng_test_recursive_event_proc_ops = {
+	.open = nonseekable_open,
+	.write = lttng_test_recursive_event_write,
 };
 #endif
 
@@ -113,11 +157,25 @@ int __init lttng_test_init(void)
 		ret = -ENOMEM;
 		goto error;
 	}
+
+	lttng_test_recursive_event_dentry =
+			proc_create_data(LTTNG_TEST_RECURSIVE_EVENT_FILE,
+				S_IRUGO | S_IWUGO, NULL,
+				&lttng_test_recursive_event_proc_ops, NULL);
+	if (!lttng_test_recursive_event_dentry) {
+		printk(KERN_ERR "Error creating LTTng test recursive file\n");
+		ret = -ENOMEM;
+		goto error_events;
+	}
+
 	ret = __lttng_events_init__lttng_test();
 	if (ret)
-		goto error_events;
+		goto error_events_recursive;
+
 	return ret;
 
+error_events_recursive:
+	remove_proc_entry(LTTNG_TEST_RECURSIVE_EVENT_FILE, NULL);
 error_events:
 	remove_proc_entry(LTTNG_TEST_FILTER_EVENT_FILE, NULL);
 error:
@@ -132,6 +190,8 @@ void __exit lttng_test_exit(void)
 	__lttng_events_exit__lttng_test();
 	if (lttng_test_filter_event_dentry)
 		remove_proc_entry(LTTNG_TEST_FILTER_EVENT_FILE, NULL);
+	if (lttng_test_recursive_event_dentry)
+		remove_proc_entry(LTTNG_TEST_RECURSIVE_EVENT_FILE, NULL);
 }
 
 module_exit(lttng_test_exit);
