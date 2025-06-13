@@ -5,6 +5,18 @@
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM lttng_test
 
+#ifndef ONCE_LTTNG_TEST_H
+#define ONCE_LTTNG_TEST_H
+void trace_test_event(unsigned int nr_iter);
+
+static inline unsigned int __trace_count(unsigned int c)
+{
+  trace_test_event(c);
+  return c;
+}
+
+#endif /* ONCE_LTTNG_TEST_H */
+
 #if !defined(LTTNG_TRACE_LTTNG_TEST_H) || defined(TRACE_HEADER_MULTI_READ)
 #define LTTNG_TRACE_LTTNG_TEST_H
 
@@ -82,6 +94,14 @@ LTTNG_TRACEPOINT_EVENT(lttng_test_filter_event,
 		ctf_enum(lttng_test_filter_event_multi_range_enum, int, enum300, 300)
 		/* Match 'multiple ranges'. */
 		ctf_enum(lttng_test_filter_event_multi_range_enum, int, enum500, 500)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT(lttng_test_recursive_event,
+	TP_PROTO(unsigned int count),
+	TP_ARGS(count),
+	TP_FIELDS(
+		ctf_integer(int, intfield, __trace_count(count))
 	)
 )
 
