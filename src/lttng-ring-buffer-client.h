@@ -385,17 +385,13 @@ static void client_buffer_end(struct lttng_kernel_ring_buffer *buf, u64 timestam
 		(struct packet_header *)
 			lib_ring_buffer_offset_address(&buf->backend,
 				subbuf_idx * chan->backend.subbuf_size);
-	unsigned long records_lost = 0;
 
 	header->ctx.timestamp_end = timestamp;
 	header->ctx.content_size =
 		(uint64_t) data_size * CHAR_BIT;		/* in bits */
 	header->ctx.packet_size =
 		(uint64_t) PAGE_ALIGN(data_size) * CHAR_BIT;	/* in bits */
-	records_lost += lib_ring_buffer_get_records_lost_full(&client_config, ctx);
-	records_lost += lib_ring_buffer_get_records_lost_wrap(&client_config, ctx);
-	records_lost += lib_ring_buffer_get_records_lost_big(&client_config, ctx);
-	header->ctx.events_discarded = records_lost;
+	header->ctx.events_discarded = buf->commit_cold[subbuf_idx].end_events_discarded;
 }
 
 static int client_buffer_create(struct lttng_kernel_ring_buffer *buf, void *priv,
