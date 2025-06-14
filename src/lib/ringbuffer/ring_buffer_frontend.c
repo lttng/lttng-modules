@@ -181,6 +181,7 @@ void lib_ring_buffer_reset(struct lttng_kernel_ring_buffer *buf)
 		v_set(config, &buf->commit_hot[i].cc, 0);
 		v_set(config, &buf->commit_hot[i].seq, 0);
 		v_set(config, &buf->commit_cold[i].cc_sb, 0);
+		buf->commit_cold[i].end_events_discarded = 0;
 		buf->ts_end[i] = 0;
 	}
 	atomic_long_set(&buf->consumed, 0);
@@ -1677,6 +1678,10 @@ void lib_ring_buffer_switch_old_end(struct lttng_kernel_ring_buffer *buf,
 	 * current space reservation.
 	 */
 	*ts_end = ctx->priv.timestamp;
+	buf->commit_cold[oldidx].end_events_discarded =
+		lib_ring_buffer_get_records_lost_full(config, ctx) +
+		lib_ring_buffer_get_records_lost_wrap(config, ctx) +
+		lib_ring_buffer_get_records_lost_big(config, ctx);
 
 	/*
 	 * Order all writes to buffer and store to ts_end before the commit
@@ -1776,6 +1781,10 @@ void lib_ring_buffer_switch_new_end(struct lttng_kernel_ring_buffer *buf,
 	 * current space reservation.
 	 */
 	*ts_end = ctx->priv.timestamp;
+	buf->commit_cold[endidx].end_events_discarded =
+		lib_ring_buffer_get_records_lost_full(config, ctx) +
+		lib_ring_buffer_get_records_lost_wrap(config, ctx) +
+		lib_ring_buffer_get_records_lost_big(config, ctx);
 }
 
 /*
