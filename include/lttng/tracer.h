@@ -29,7 +29,7 @@
 #define LTTNG_MODULES_MAJOR_VERSION 2
 #define LTTNG_MODULES_MINOR_VERSION 14
 #define LTTNG_MODULES_PATCHLEVEL_VERSION 0
-#define LTTNG_MODULES_EXTRAVERSION "-rc2"
+#define LTTNG_MODULES_EXTRAVERSION ""
 
 #define LTTNG_VERSION_NAME		"Orbitales"
 #define LTTNG_VERSION_DESCRIPTION	"This release is named after \"Orbitales\", a bold creation from Noctem Artisans Brasseurs in Québec City. Pitch black and dense—one team member compared the color to used motor oil—this beer offers an intriguing sensory experience. Aged in wood casks, it delivers rich aromas and flavors of blackberry as well as a hint of acidity. There’s no head to speak of, but a whisper of blue cheese funk lingers just enough to keep you curious."

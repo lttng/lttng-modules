@@ -2,6 +2,23 @@
 #
 # SPDX-License-Identifier: CC-BY-SA-4.0
 
+2025-06-27 LTTng modules 2.14.0
+	* tracing: Cleanup: Remove DECLARE_TRACE_NOARGS (v5.7)
+	* tracepoint: Have tracepoints created with DECLARE_TRACE() have _tp suffix (v6.16)
+	* fix: treewide, timers: Rename from_timer() to timer_container_of() (v6.16)
+	* fix: mm/writeback: Convert tracing writeback_page_template to folios (v5.16)
+	* fix: mm/page-writeback: introduce tracepoint for wait_on_page_writeback() (v5.2)
+	* fix: btrfs: use the flags of an extent map to identify the compression type (v6.8)
+	* fix: btrfs: update the writepage tracepoint to take a folio (v6.12)
+	* fix: btrfs: tracepoints: add btrfs prefix to names where it's missing (v6.16)
+	* fix: ext4: Change remaining tracepoints to use folio (v6.5)
+	* fix: ext4: Convert invalidatepage to invalidate_folio (v5.18)
+	* fix: sched/tracepoints: Move and extend the sched_process_exit() tracepoint (v6.16)
+	* tests: Add recursive test event
+	* Fix: Sample discarded packet counters per sub-buffer
+	* fix: writeback: `balance_dirty_pages` Respect `CONFIG_CGROUP_WRITEBACK`
+	* Fix missing override when CONFIG_COMPAT_OLD_SIGACTION is not defined
+
 2025-05-14 LTTng modules 2.14.0-rc2
 	* Fix channel_backend lookup during `ring_buffer_flush_or_populate_packet`
 	* Fix: Use `nonseekable_open` for proc files
