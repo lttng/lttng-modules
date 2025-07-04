@@ -122,7 +122,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_folio_template, writeback_dirty_folio,
 	TP_ARGS(folio, mapping)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_folio_template, folio_wait_writeback,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_folio_template, writeback_folio_wait,
 
 	TP_PROTO(struct folio *folio, struct address_space *mapping),
 
@@ -150,7 +150,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_page_template, writeback_dirty_page,
 	TP_ARGS(page, mapping)
 )
 
-LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_page_template, wait_on_page_writeback,
+LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_page_template, writeback_wait_on_page,
 
 	TP_PROTO(struct page *page, struct address_space *mapping),
 
