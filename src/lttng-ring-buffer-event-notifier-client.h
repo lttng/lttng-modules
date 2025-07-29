@@ -363,7 +363,7 @@ size_t lttng_packet_avail_size(struct lttng_kernel_ring_buffer_channel *chan)
 	unsigned long o_begin;
 	struct lttng_kernel_ring_buffer *buf;
 
-	buf = chan->backend.buf;	/* Only for global buffer ! */
+	buf = chan->backend.global_buf;	/* Only for global buffer ! */
 	o_begin = v_read(&client_config, &buf->offset);
 	if (subbuf_offset(o_begin, chan) != 0) {
 		return chan->backend.subbuf_size - subbuf_offset(o_begin, chan);

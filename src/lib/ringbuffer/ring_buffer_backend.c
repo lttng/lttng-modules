@@ -279,7 +279,7 @@ int lttng_cpuhp_rb_backend_prepare(unsigned int cpu,
 
 	CHAN_WARN_ON(chanb, config->alloc == RING_BUFFER_ALLOC_GLOBAL);
 
-	buf = per_cpu_ptr(chanb->buf, cpu);
+	buf = per_cpu_ptr(chanb->percpu_buf, cpu);
 	ret = lib_ring_buffer_create(buf, chanb, cpu);
 	if (ret) {
 		printk(KERN_ERR
@@ -320,7 +320,7 @@ int lib_ring_buffer_cpu_hp_callback(struct notifier_block *nb,
 	switch (action) {
 	case CPU_UP_PREPARE:
 	case CPU_UP_PREPARE_FROZEN:
-		buf = per_cpu_ptr(chanb->buf, cpu);
+		buf = per_cpu_ptr(chanb->percpu_buf, cpu);
 		ret = lib_ring_buffer_create(buf, chanb, cpu);
 		if (ret) {
 			printk(KERN_ERR
@@ -419,8 +419,8 @@ int channel_backend_init(struct channel_backend *chanb,
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
 		/* Allocating the buffer per-cpu structures */
-		chanb->buf = alloc_percpu(struct lttng_kernel_ring_buffer);
-		if (!chanb->buf)
+		chanb->percpu_buf = alloc_percpu(struct lttng_kernel_ring_buffer);
+		if (!chanb->percpu_buf)
 			goto free_cpumask;
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0))
@@ -451,7 +451,7 @@ int channel_backend_init(struct channel_backend *chanb,
 
 			lttng_cpus_read_lock();
 			for_each_online_cpu(i) {
-				ret = lib_ring_buffer_create(per_cpu_ptr(chanb->buf, i),
+				ret = lib_ring_buffer_create(per_cpu_ptr(chanb->percpu_buf, i),
 							 chanb, i);
 				if (ret)
 					goto free_bufs;	/* cpu hotplug locked */
@@ -459,7 +459,7 @@ int channel_backend_init(struct channel_backend *chanb,
 			lttng_cpus_read_unlock();
 #else
 			for_each_possible_cpu(i) {
-				ret = lib_ring_buffer_create(per_cpu_ptr(chanb->buf, i),
+				ret = lib_ring_buffer_create(per_cpu_ptr(chanb->percpu_buf, i),
 							 chanb, i);
 				if (ret)
 					goto free_bufs;
@@ -468,10 +468,10 @@ int channel_backend_init(struct channel_backend *chanb,
 		}
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 	} else {
-		chanb->buf = kzalloc(sizeof(struct lttng_kernel_ring_buffer), GFP_KERNEL);
-		if (!chanb->buf)
+		chanb->global_buf = kzalloc(sizeof(struct lttng_kernel_ring_buffer), GFP_KERNEL);
+		if (!chanb->global_buf)
 			goto free_cpumask;
-		ret = lib_ring_buffer_create(chanb->buf, chanb, -1);
+		ret = lib_ring_buffer_create(chanb->global_buf, chanb, -1);
 		if (ret)
 			goto free_bufs;
 	}
@@ -495,15 +495,15 @@ free_bufs:
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 		for_each_possible_cpu(i) {
 			struct lttng_kernel_ring_buffer *buf =
-				per_cpu_ptr(chanb->buf, i);
+				per_cpu_ptr(chanb->percpu_buf, i);
 
 			if (!buf->backend.allocated)
 				continue;
 			lib_ring_buffer_free(buf);
 		}
-		free_percpu(chanb->buf);
+		free_percpu(chanb->percpu_buf);
 	} else
-		kfree(chanb->buf);
+		kfree(chanb->global_buf);
 free_cpumask:
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
 		free_cpumask_var(chanb->cpumask);
@@ -546,16 +546,16 @@ void channel_backend_free(struct channel_backend *chanb)
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
 		for_each_possible_cpu(i) {
-			struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chanb->buf, i);
+			struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chanb->percpu_buf, i);
 
 			if (!buf->backend.allocated)
 				continue;
 			lib_ring_buffer_free(buf);
 		}
 		free_cpumask_var(chanb->cpumask);
-		free_percpu(chanb->buf);
+		free_percpu(chanb->percpu_buf);
 	} else {
-		struct lttng_kernel_ring_buffer *buf = chanb->buf;
+		struct lttng_kernel_ring_buffer *buf = chanb->global_buf;
 
 		CHAN_WARN_ON(chanb, !buf->backend.allocated);
 		lib_ring_buffer_free(buf);

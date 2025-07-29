@@ -152,9 +152,9 @@ int lib_ring_buffer_reserve(const struct lttng_kernel_ring_buffer_config *config
 		return -EAGAIN;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
-		buf = per_cpu_ptr(chan->backend.buf, ctx->priv.reserve_cpu);
+		buf = per_cpu_ptr(chan->backend.percpu_buf, ctx->priv.reserve_cpu);
 	else
-		buf = chan->backend.buf;
+		buf = chan->backend.global_buf;
 	if (unlikely(atomic_read(&buf->record_disabled)))
 		return -EAGAIN;
 	ctx->priv.buf = buf;

@@ -79,7 +79,10 @@ struct channel_backend {
 					 */
 	unsigned int buf_size_order;	/* Order of buffer size */
 	unsigned int extra_reader_sb:1;	/* has extra reader subbuffer ? */
-	struct lttng_kernel_ring_buffer *buf;	/* Channel per-cpu buffers */
+	union {
+		struct lttng_kernel_ring_buffer *global_buf;	/* Channel global buffer */
+		struct lttng_kernel_ring_buffer __percpu *percpu_buf;	/* Channel per-cpu buffers */
+	};
 
 	unsigned long num_subbuf;	/* Number of sub-buffers for writer */
 	u64 start_tsc;			/* Channel creation TSC value */
