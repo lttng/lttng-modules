@@ -361,7 +361,7 @@ int lttng_cpuhp_rb_iter_online(unsigned int cpu,
 {
 	struct lttng_kernel_ring_buffer_channel *chan = container_of(node, struct lttng_kernel_ring_buffer_channel,
 					    cpuhp_iter_online);
-	struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
+	struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.percpu_buf, cpu);
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 
 	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_PER_CHANNEL);
@@ -382,7 +382,7 @@ int channel_iterator_cpu_hotplug(struct notifier_block *nb,
 	unsigned int cpu = (unsigned long)hcpu;
 	struct lttng_kernel_ring_buffer_channel *chan = container_of(nb, struct lttng_kernel_ring_buffer_channel,
 					    hp_iter_notifier);
-	struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
+	struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.percpu_buf, cpu);
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 
 	if (!chan->hp_iter_enable)
@@ -443,14 +443,14 @@ int channel_iterator_init(struct lttng_kernel_ring_buffer_channel *chan)
 
 			lttng_cpus_read_lock();
 			for_each_online_cpu(cpu) {
-				buf = per_cpu_ptr(chan->backend.buf, cpu);
+				buf = per_cpu_ptr(chan->backend.percpu_buf, cpu);
 				lib_ring_buffer_iterator_init(chan, buf);
 			}
 			chan->hp_iter_enable = 1;
 			lttng_cpus_read_unlock();
 #else
 			for_each_possible_cpu(cpu) {
-				buf = per_cpu_ptr(chan->backend.buf, cpu);
+				buf = per_cpu_ptr(chan->backend.percpu_buf, cpu);
 				lib_ring_buffer_iterator_init(chan, buf);
 			}
 #endif

@@ -505,7 +505,7 @@ int lttng_cpuhp_rb_frontend_dead(unsigned int cpu,
 {
 	struct lttng_kernel_ring_buffer_channel *chan = container_of(node, struct lttng_kernel_ring_buffer_channel,
 					    cpuhp_prepare);
-	struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
+	struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.percpu_buf, cpu);
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 
 	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_PER_CHANNEL);
@@ -526,7 +526,7 @@ int lttng_cpuhp_rb_frontend_online(unsigned int cpu,
 {
 	struct lttng_kernel_ring_buffer_channel *chan = container_of(node, struct lttng_kernel_ring_buffer_channel,
 					    cpuhp_online);
-	struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
+	struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.percpu_buf, cpu);
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 
 	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_PER_CHANNEL);
@@ -543,7 +543,7 @@ int lttng_cpuhp_rb_frontend_offline(unsigned int cpu,
 {
 	struct lttng_kernel_ring_buffer_channel *chan = container_of(node, struct lttng_kernel_ring_buffer_channel,
 					    cpuhp_online);
-	struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
+	struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.percpu_buf, cpu);
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 
 	CHAN_WARN_ON(chan, config->alloc == RING_BUFFER_ALLOC_PER_CHANNEL);
@@ -574,7 +574,7 @@ int lib_ring_buffer_cpu_hp_callback(struct notifier_block *nb,
 	unsigned int cpu = (unsigned long)hcpu;
 	struct lttng_kernel_ring_buffer_channel *chan = container_of(nb, struct lttng_kernel_ring_buffer_channel,
 					    cpu_hp_notifier);
-	struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf, cpu);
+	struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.percpu_buf, cpu);
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 
 	if (!chan->cpu_hp_enable)
@@ -741,7 +741,7 @@ static void channel_unregister_notifiers(struct lttng_kernel_ring_buffer_channel
 			lttng_cpus_read_lock();
 			chan->cpu_hp_enable = 0;
 			for_each_online_cpu(cpu) {
-				struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf,
+				struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.percpu_buf,
 								      cpu);
 				lib_ring_buffer_stop_switch_timer(buf);
 				lib_ring_buffer_stop_read_timer(buf);
@@ -750,7 +750,7 @@ static void channel_unregister_notifiers(struct lttng_kernel_ring_buffer_channel
 			unregister_cpu_notifier(&chan->cpu_hp_notifier);
 #else
 			for_each_possible_cpu(cpu) {
-				struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf,
+				struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.percpu_buf,
 								      cpu);
 				lib_ring_buffer_stop_switch_timer(buf);
 				lib_ring_buffer_stop_read_timer(buf);
@@ -759,7 +759,7 @@ static void channel_unregister_notifiers(struct lttng_kernel_ring_buffer_channel
 		}
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 	} else {
-		struct lttng_kernel_ring_buffer *buf = chan->backend.buf;
+		struct lttng_kernel_ring_buffer *buf = chan->backend.global_buf;
 
 		lib_ring_buffer_stop_switch_timer(buf);
 		lib_ring_buffer_stop_read_timer(buf);
@@ -788,14 +788,14 @@ void lib_ring_buffer_set_quiescent_channel(struct lttng_kernel_ring_buffer_chann
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
 		lttng_cpus_read_lock();
 		for_each_channel_cpu(cpu, chan) {
-			struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf,
+			struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.percpu_buf,
 							      cpu);
 
 			lib_ring_buffer_set_quiescent(buf);
 		}
 		lttng_cpus_read_unlock();
 	} else {
-		struct lttng_kernel_ring_buffer *buf = chan->backend.buf;
+		struct lttng_kernel_ring_buffer *buf = chan->backend.global_buf;
 
 		lib_ring_buffer_set_quiescent(buf);
 	}
@@ -810,14 +810,14 @@ void lib_ring_buffer_clear_quiescent_channel(struct lttng_kernel_ring_buffer_cha
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU) {
 		lttng_cpus_read_lock();
 		for_each_channel_cpu(cpu, chan) {
-			struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf,
+			struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.percpu_buf,
 							      cpu);
 
 			lib_ring_buffer_clear_quiescent(buf);
 		}
 		lttng_cpus_read_unlock();
 	} else {
-		struct lttng_kernel_ring_buffer *buf = chan->backend.buf;
+		struct lttng_kernel_ring_buffer *buf = chan->backend.global_buf;
 
 		lib_ring_buffer_clear_quiescent(buf);
 	}
@@ -915,7 +915,7 @@ struct lttng_kernel_ring_buffer_channel *channel_create(const struct lttng_kerne
 
 			lttng_cpus_read_lock();
 			for_each_online_cpu(cpu) {
-				struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf,
+				struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.percpu_buf,
 								       cpu);
 				spin_lock(&per_cpu(ring_buffer_nohz_lock, cpu));
 				lib_ring_buffer_start_switch_timer(buf);
@@ -926,7 +926,7 @@ struct lttng_kernel_ring_buffer_channel *channel_create(const struct lttng_kerne
 			lttng_cpus_read_unlock();
 #else
 			for_each_possible_cpu(cpu) {
-				struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf,
+				struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.percpu_buf,
 								      cpu);
 				spin_lock(&per_cpu(ring_buffer_nohz_lock, cpu));
 				lib_ring_buffer_start_switch_timer(buf);
@@ -947,7 +947,7 @@ struct lttng_kernel_ring_buffer_channel *channel_create(const struct lttng_kerne
 #endif /* defined(CONFIG_NO_HZ) && defined(CONFIG_LIB_RING_BUFFER) */
 
 	} else {
-		struct lttng_kernel_ring_buffer *buf = chan->backend.buf;
+		struct lttng_kernel_ring_buffer *buf = chan->backend.global_buf;
 
 		lib_ring_buffer_start_switch_timer(buf);
 		lib_ring_buffer_start_read_timer(buf);
@@ -1004,7 +1004,7 @@ void *channel_destroy(struct lttng_kernel_ring_buffer_channel *chan)
 		 * unregistered.
 		 */
 		for_each_channel_cpu(cpu, chan) {
-			struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.buf,
+			struct lttng_kernel_ring_buffer *buf = per_cpu_ptr(chan->backend.percpu_buf,
 							      cpu);
 
 			if (config->cb.buffer_finalize)
@@ -1019,7 +1019,7 @@ void *channel_destroy(struct lttng_kernel_ring_buffer_channel *chan)
 			wake_up_interruptible(&buf->read_wait);
 		}
 	} else {
-		struct lttng_kernel_ring_buffer *buf = chan->backend.buf;
+		struct lttng_kernel_ring_buffer *buf = chan->backend.global_buf;
 
 		if (config->cb.buffer_finalize)
 			config->cb.buffer_finalize(buf, chan->backend.priv, -1);
@@ -1044,9 +1044,9 @@ struct lttng_kernel_ring_buffer *channel_get_ring_buffer(
 					struct lttng_kernel_ring_buffer_channel *chan, int cpu)
 {
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CHANNEL)
-		return chan->backend.buf;
+		return chan->backend.global_buf;
 	else
-		return per_cpu_ptr(chan->backend.buf, cpu);
+		return per_cpu_ptr(chan->backend.percpu_buf, cpu);
 }
 EXPORT_SYMBOL_GPL(channel_get_ring_buffer);
 
@@ -2271,9 +2271,9 @@ static struct lttng_kernel_ring_buffer *get_current_buf(struct lttng_kernel_ring
 	const struct lttng_kernel_ring_buffer_config *config = &chan->backend.config;
 
 	if (config->alloc == RING_BUFFER_ALLOC_PER_CPU)
-		return per_cpu_ptr(chan->backend.buf, cpu);
+		return per_cpu_ptr(chan->backend.percpu_buf, cpu);
 	else
-		return chan->backend.buf;
+		return chan->backend.global_buf;
 }
 
 void lib_ring_buffer_lost_event_too_big(struct lttng_kernel_ring_buffer_channel *chan)

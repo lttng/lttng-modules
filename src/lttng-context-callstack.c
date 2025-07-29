@@ -69,7 +69,7 @@ void field_data_free(struct field_data *fdata)
 }
 
 static
-struct field_data __percpu *field_data_create(enum lttng_cs_ctx_modes mode)
+struct field_data *field_data_create(enum lttng_cs_ctx_modes mode)
 {
 	struct lttng_cs __percpu *cs_set;
 	struct field_data *fdata;
