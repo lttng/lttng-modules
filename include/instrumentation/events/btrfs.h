@@ -1929,7 +1929,25 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__chunk,  btrfs_chunk_free,
 
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,10,0)) */
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,17,0) || \
+	LTTNG_KERNEL_RANGE(6,16,4, 6,17,0))
+LTTNG_TRACEPOINT_EVENT(btrfs_cow_block,
+
+	TP_PROTO(const struct btrfs_root *root, const struct extent_buffer *buf,
+		 const struct extent_buffer *cow),
+
+	TP_ARGS(root, buf, cow),
+
+	TP_FIELDS(
+		ctf_integer(u64, root_objectid, root->root_key.objectid)
+		ctf_integer(u64, buf_start, buf->start)
+		ctf_integer(int, refs, refcount_read(&buf->refs))
+		ctf_integer(u64, cow_start, cow->start)
+		ctf_integer(int, buf_level, btrfs_header_level(buf))
+		ctf_integer(int, cow_level, btrfs_header_level(cow))
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,73,5,0,0, 4,4,73,6,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,82,6,0,0, 4,4,82,7,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,92,6,0,0, 4,4,92,7,0,0) || \
