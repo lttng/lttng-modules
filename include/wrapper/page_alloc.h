@@ -13,6 +13,7 @@
 #define _LTTNG_WRAPPER_PAGE_ALLOC_H
 
 #include <linux/mm_types.h>
+#include <lttng/kernel-version.h>
 
 /*
  * We need to redefine get_pfnblock_flags_mask to our wrapper, because
@@ -21,6 +22,21 @@
 #ifdef CONFIG_KALLSYMS
 
 #define get_pfnblock_flags_mask		wrapper_get_pfnblock_flags_mask
+
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,14,0))
+unsigned long wrapper_get_pfnblock_flags_mask(const struct page *page,
+		unsigned long pfn,
+		unsigned long mask);
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0))
+unsigned long wrapper_get_pfnblock_flags_mask(struct page *page,
+		unsigned long pfn,
+		unsigned long mask);
+#else
+unsigned long wrapper_get_pfnblock_flags_mask(struct page *page,
+		unsigned long pfn,
+		unsigned long end_bitidx,
+		unsigned long mask);
+#endif
 
 int wrapper_get_pfnblock_flags_mask_init(void);
 
