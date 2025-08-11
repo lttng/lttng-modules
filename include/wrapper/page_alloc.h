@@ -29,6 +29,21 @@
 
 #include <linux/mm_types.h>
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,14,0))
+unsigned long wrapper_get_pfnblock_flags_mask(const struct page *page,
+		unsigned long pfn,
+		unsigned long mask);
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0))
+unsigned long wrapper_get_pfnblock_flags_mask(struct page *page,
+		unsigned long pfn,
+		unsigned long mask);
+#else
+unsigned long wrapper_get_pfnblock_flags_mask(struct page *page,
+		unsigned long pfn,
+		unsigned long end_bitidx,
+		unsigned long mask);
+#endif
+
 int wrapper_get_pfnblock_flags_mask_init(void);
 
 #else
