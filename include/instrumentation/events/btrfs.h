@@ -704,7 +704,43 @@ LTTNG_TRACEPOINT_EVENT(btrfs_writepage_end_io_hook,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,12,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,17,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__writepage,
+
+	TP_PROTO(const struct folio *folio, const struct inode *inode,
+		 const struct writeback_control *wbc),
+
+	TP_ARGS(folio, inode, wbc),
+
+	TP_FIELDS(
+		ctf_integer(ino_t, ino, inode->i_ino)
+		ctf_integer(pgoff_t, index, folio->index)
+		ctf_integer(long, nr_to_write, wbc->nr_to_write)
+		ctf_integer(long, pages_skipped, wbc->pages_skipped)
+		ctf_integer(loff_t, range_start, wbc->range_start)
+		ctf_integer(loff_t, range_end, wbc->range_end)
+		ctf_integer(char, for_kupdate, wbc->for_kupdate)
+		ctf_integer(char, range_cyclic, wbc->range_cyclic)
+		ctf_integer(pgoff_t, writeback_index,
+				inode->i_mapping->writeback_index)
+		ctf_integer(u64, root_objectid,
+				BTRFS_I(inode)->root->root_key.objectid)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs__writepage,
+
+	__extent_writepage,
+
+	btrfs__extent_writepage,
+
+	TP_PROTO(const struct folio *folio, const struct inode *inode,
+		 const struct writeback_control *wbc),
+
+	TP_ARGS(folio, inode, wbc)
+)
+
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,12,0))
 LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__writepage,
 
 	TP_PROTO(const struct folio *folio, const struct inode *inode,

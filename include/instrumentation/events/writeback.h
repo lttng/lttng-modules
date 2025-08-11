@@ -430,6 +430,23 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_written,
 )
 #endif
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,17,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(writeback_wbc_class,
+	TP_PROTO(struct writeback_control *wbc, struct backing_dev_info *bdi),
+	TP_ARGS(wbc, bdi),
+	TP_FIELDS(
+		ctf_string(name, lttng_bdi_dev_name(bdi))
+		ctf_integer(long, nr_to_write, wbc->nr_to_write)
+		ctf_integer(long, pages_skipped, wbc->pages_skipped)
+		ctf_integer(int, sync_mode, wbc->sync_mode)
+		ctf_integer(int, for_kupdate, wbc->for_kupdate)
+		ctf_integer(int, for_background, wbc->for_background)
+		ctf_integer(int, range_cyclic, wbc->range_cyclic)
+		ctf_integer(long, range_start, (long) wbc->range_start)
+		ctf_integer(long, range_end, (long) wbc->range_end)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_wbc_class,
 	TP_PROTO(struct writeback_control *wbc, struct backing_dev_info *bdi),
 	TP_ARGS(wbc, bdi),
@@ -451,6 +468,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_wbc_class,
 		ctf_integer(long, range_end, (long) wbc->range_end)
 	)
 )
+#endif
 
 #undef DEFINE_WBC_EVENT
 #define LTTNG_TRACEPOINT_EVENT_WBC_INSTANCE(name, map) \
