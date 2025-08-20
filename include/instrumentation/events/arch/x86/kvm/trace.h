@@ -150,7 +150,8 @@ LTTNG_TRACEPOINT_EVENT_CODE_MAP(kvm_exit, kvm_x86_exit,
 
 	TP_code_post()
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,16,0))
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,16,0) || \
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,425,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT_CODE_MAP(kvm_exit, kvm_x86_exit,
 	TP_PROTO(struct kvm_vcpu *vcpu, u32 isa),
 	TP_ARGS(vcpu, isa),
@@ -183,7 +184,7 @@ LTTNG_TRACEPOINT_EVENT_CODE_MAP(kvm_exit, kvm_x86_exit,
 	TP_code_post()
 )
 #elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,10,0) || \
-	LTTNG_RHEL_KERNEL_RANGE(4,18,0,240,0,0, 4,19,0,0,0,0))
+	LTTNG_RHEL_KERNEL_RANGE(4,18,0,240,0,0, 4,18,0,425,0,0))
 LTTNG_TRACEPOINT_EVENT_CODE_MAP(kvm_exit, kvm_x86_exit,
 	TP_PROTO(unsigned int exit_reason, struct kvm_vcpu *vcpu, u32 isa),
 	TP_ARGS(exit_reason, vcpu, isa),
