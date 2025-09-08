@@ -1,3 +1,21 @@
+2025-09-08 LTTng modules 2.13.20
+	* Add missing prototype for wrapper_get_pfnblock_flags_mask()
+	* fix: mm: remove the for_reclaim field from struct writeback_control (v6.17)
+	* fix: btrfs: use refcount_t type for the extent buffer reference counter (v6.17)
+	* fix: percpu: repurpose __percpu tag as a named address space qualifier (v6.15)
+	* tracepoint: Have tracepoints created with DECLARE_TRACE() have _tp suffix (v6.16)
+	* fix: treewide, timers: Rename from_timer() to timer_container_of() (v6.16)
+	* fix: mm/writeback: Convert tracing writeback_page_template to folios (v5.16)
+	* fix: mm/page-writeback: introduce tracepoint for wait_on_page_writeback() (v5.2)
+	* fix: btrfs: use the flags of an extent map to identify the compression type (v6.8)
+	* fix: btrfs: update the writepage tracepoint to take a folio (v6.12)
+	* fix: btrfs: tracepoints: add btrfs prefix to names where it's missing (v6.16)
+	* fix: ext4: Change remaining tracepoints to use folio (v6.5)
+	* fix: ext4: Convert invalidatepage to invalidate_folio (v5.18)
+	* fix: sched/tracepoints: Move and extend the sched_process_exit() tracepoint (v6.16)
+	* Fix: `fast_page_fault` changed in RHEL 8.7
+	* Fix: `kvm_exit` changed in RHEL 8.7
+
 2025-06-10 LTTng modules 2.13.19
 	* Fix missing override when CONFIG_COMPAT_OLD_SIGACTION is not defined
 	* fix: writeback: `balance_dirty_pages` Respect `CONFIG_CGROUP_WRITEBACK`
