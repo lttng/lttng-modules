@@ -2,6 +2,15 @@
 #
 # SPDX-License-Identifier: CC-BY-SA-4.0
 
+2025-09-08 LTTng modules 2.14.1
+	* Add missing prototype for wrapper_get_pfnblock_flags_mask()
+	* fix: mm: remove the for_reclaim field from struct writeback_control (v6.17)
+	* fix: btrfs: use refcount_t type for the extent buffer reference counter (v6.17)
+	* Fix: `fast_page_fault` changed in RHEL 8.7
+	* Fix: `kvm_exit` changed in RHEL 8.7
+	* fix: percpu: repurpose __percpu tag as a named address space qualifier (v6.15)
+	* writeback instrumentation: Add missing provider name prefix
+
 2025-06-27 LTTng modules 2.14.0
 	* tracing: Cleanup: Remove DECLARE_TRACE_NOARGS (v5.7)
 	* tracepoint: Have tracepoints created with DECLARE_TRACE() have _tp suffix (v6.16)
