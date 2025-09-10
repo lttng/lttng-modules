@@ -809,9 +809,9 @@ EXPORT_SYMBOL_GPL(_lib_ring_buffer_pstrcpy);
  * @src : source address
  * @len : length to write
  *
- * This function deals with userspace pointers, it should never be called
- * directly without having the src pointer checked with access_ok()
- * previously.
+ * This function deals with userspace pointers. It should be called
+ * after having the src pointer checked with access_ok() and with page
+ * fault handler disabled.
  */
 void _lib_ring_buffer_copy_from_user_inatomic(struct lttng_kernel_ring_buffer_backend *bufb,
 				      size_t offset, const void __user *src, size_t len)
@@ -862,9 +862,9 @@ EXPORT_SYMBOL_GPL(_lib_ring_buffer_copy_from_user_inatomic);
  * @len : length to write
  * @pad : character to use for padding
  *
- * This function deals with userspace pointers, it should never be called
- * directly without having the src pointer checked with access_ok()
- * previously.
+ * This function deals with userspace pointers. It should be called
+ * after having the src pointer checked with access_ok() and with page
+ * fault handler disabled.
  */
 void _lib_ring_buffer_strcpy_from_user_inatomic(struct lttng_kernel_ring_buffer_backend *bufb,
 		size_t offset, const char __user *src, size_t len, int pad)
@@ -952,9 +952,9 @@ EXPORT_SYMBOL_GPL(_lib_ring_buffer_strcpy_from_user_inatomic);
  * The length of the pascal strings in the ring buffer is explicit: it
  * is either the array or sequence length.
  *
- * This function deals with userspace pointers, it should never be called
- * directly without having the src pointer checked with access_ok()
- * previously.
+ * This function deals with userspace pointers. It should be called
+ * after having the src pointer checked with access_ok() and with page
+ * fault handler disabled.
  */
 void _lib_ring_buffer_pstrcpy_from_user_inatomic(struct lttng_kernel_ring_buffer_backend *bufb,
 			size_t offset, const char __user *src, size_t len, int pad)

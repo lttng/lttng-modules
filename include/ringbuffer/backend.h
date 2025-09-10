@@ -170,9 +170,9 @@ size_t lib_ring_buffer_do_strcpy(const struct lttng_kernel_ring_buffer_config *c
  * Returns the number of bytes copied. Does *not* terminate @dest with
  * NULL terminating character.
  *
- * This function deals with userspace pointers, it should never be called
- * directly without having the src pointer checked with access_ok()
- * previously.
+ * This function deals with userspace pointers. It should be called
+ * after having the src pointer checked with access_ok() and with page
+ * fault handler disabled.
  */
 static inline __attribute__((always_inline))
 size_t lib_ring_buffer_do_strcpy_from_user_inatomic(const struct lttng_kernel_ring_buffer_config *config,
