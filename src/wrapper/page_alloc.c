@@ -113,7 +113,41 @@ int wrapper_get_pfnblock_flags_mask_init(void)
 }
 EXPORT_SYMBOL_GPL(wrapper_get_pfnblock_flags_mask_init);
 
-#else
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,17,0))
+static
+enum migratetype (*get_pfnblock_migratetype_sym)(const struct page *page,
+		unsigned long pfn);
+
+enum migratetype wrapper_get_pfnblock_migratetype(const struct page *page,
+		unsigned long pfn)
+{
+	WARN_ON_ONCE(!get_pfnblock_migratetype_sym);
+	if (get_pfnblock_migratetype_sym) {
+		struct irq_ibt_state irq_ibt_state;
+		enum migratetype ret;
+
+		irq_ibt_state = wrapper_irq_ibt_save();
+		ret = get_pfnblock_migratetype_sym(page, pfn);
+		wrapper_irq_ibt_restore(irq_ibt_state);
+		return ret;
+	}
+	return -ENOSYS;
+}
+
+int wrapper_get_pfnblock_migratetype_init(void)
+{
+	get_pfnblock_migratetype_sym =
+		(void *) kallsyms_lookup_funcptr("get_pfnblock_migratetype");
+	if (!get_pfnblock_migratetype_sym)
+		return -1;
+	return 0;
+}
+
+EXPORT_SYMBOL_GPL(wrapper_get_pfnblock_migratetype);
+EXPORT_SYMBOL_GPL(wrapper_get_pfnblock_migratetype_init);
+#endif /* LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,17,0) */
+
+#else /* CONFIG_KALLSYMS */
 
 #include <linux/pageblock-flags.h>
 

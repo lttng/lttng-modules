@@ -492,7 +492,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
 			(alloc_migratetype == get_pageblock_migratetype(page)))
 	)
 )
-
 #elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,12,30))
 
 LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,

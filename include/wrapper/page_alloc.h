@@ -90,4 +90,27 @@ int wrapper_get_pageblock_flags_mask_init(void)
 
 #endif
 
+/*
+ * We need to redefine get_pfnblock_migratetype to our wrapper because
+ * the get_pageblock_migratetype() macro uses it.
+ */
+#ifdef CONFIG_KALLSYMS
+#define get_pfnblock_migratetype	wrapper_get_pfnblock_migratetype
+
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,17,0))
+enum migratetype wrapper_get_pfnblock_migratetype(const struct page *page,
+		unsigned long pfn);
+int wrapper_get_pfnblock_migratetype_init(void);
+
+#else
+
+static inline
+int wrapper_get_pfnblock_migratetype_init(void)
+{
+	return 0;
+}
+#endif /* else LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,17,0) */
+
+#endif /* else CONFIG_KALLSYMS */
+
 #endif /* _LTTNG_WRAPPER_PAGE_ALLOC_H */
