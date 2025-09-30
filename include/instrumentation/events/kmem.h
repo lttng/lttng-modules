@@ -470,7 +470,6 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
 			(alloc_migratetype == get_pageblock_migratetype(page)))
 	)
 )
-
 #endif /* LTTNG_TRACE_KMEM_H */
 
 /* This part must be outside protection */
