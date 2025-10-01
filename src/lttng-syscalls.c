@@ -33,6 +33,10 @@
 #include <lttng/utils.h>
 #include <lttng/kernel-version.h>
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,13,0))
+#include <linux/cleanup.h>
+#endif
+
 #include "lttng-syscalls.h"
 
 #ifndef CONFIG_COMPAT
@@ -130,6 +134,15 @@ static void syscall_entry_event_unknown(struct hlist_head *unknown_action_list_h
 {
 	unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 	struct lttng_kernel_event_common_private *event_priv;
+
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,13,0))
+	/*
+	 * Starting with kernel v6.13, the syscall probes are called
+	 * with preemption enabled, but the ring buffer and per-cpu data
+	 * require preemption to be disabled.
+	 */
+	guard(preempt_notrace)();
+#endif
 
 	lttng_syscall_get_arguments(current, regs, args);
 	lttng_hlist_for_each_entry_rcu(event_priv, unknown_action_list_head, u.syscall.node) {
@@ -249,6 +262,15 @@ void syscall_entry_event_probe(void *__data, struct pt_regs *regs, long id)
 	const struct trace_syscall_entry *table, *entry;
 	size_t table_len;
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,13,0))
+	/*
+	 * Starting with kernel v6.13, the syscall probes are called
+	 * with preemption enabled, but the ring buffer and per-cpu data
+	 * require preemption to be disabled.
+	 */
+	guard(preempt_notrace)();
+#endif
+
 #ifdef CONFIG_X86_X32_ABI
 	if (in_x32_syscall()) {
 		/* x32 system calls are not supported. */
@@ -305,6 +327,15 @@ static void syscall_exit_event_unknown(struct hlist_head *unknown_action_list_he
 {
 	unsigned long args[LTTNG_SYSCALL_NR_ARGS];
 	struct lttng_kernel_event_common_private *event_priv;
+
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,13,0))
+	/*
+	 * Starting with kernel v6.13, the syscall probes are called
+	 * with preemption enabled, but the ring buffer and per-cpu data
+	 * require preemption to be disabled.
+	 */
+	guard(preempt_notrace)();
+#endif
 
 	lttng_syscall_get_arguments(current, regs, args);
 	lttng_hlist_for_each_entry_rcu(event_priv, unknown_action_list_head, u.syscall.node) {
@@ -432,6 +463,15 @@ void syscall_exit_event_probe(void *__data, struct pt_regs *regs, long ret)
 	const struct trace_syscall_entry *table, *entry;
 	size_t table_len;
 	long id;
+
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,13,0))
+	/*
+	 * Starting with kernel v6.13, the syscall probes are called
+	 * with preemption enabled, but the ring buffer and per-cpu data
+	 * require preemption to be disabled.
+	 */
+	guard(preempt_notrace)();
+#endif
 
 #ifdef CONFIG_X86_X32_ABI
 	if (in_x32_syscall()) {
