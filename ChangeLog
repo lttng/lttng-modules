@@ -1,3 +1,7 @@
+2025-10-06 LTTng modules 2.13.21
+	* Fix: Add wrapper for `get_pfnblock_migatetype`
+	* Fix: Protect syscall probes with preemption disable
+
 2025-09-08 LTTng modules 2.13.20
 	* Add missing prototype for wrapper_get_pfnblock_flags_mask()
 	* fix: mm: remove the for_reclaim field from struct writeback_control (v6.17)
