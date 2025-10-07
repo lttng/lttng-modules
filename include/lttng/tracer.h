@@ -55,6 +55,8 @@
 /* CTF specification version followed */
 #define CTF_SPEC_MAJOR			1
 #define CTF_SPEC_MINOR			8
+#define CTF2_SPEC_MAJOR		2
+#define CTF2_SPEC_MINOR		0
 
 /*
  * Number of milliseconds to retry before failing metadata writes on buffer full

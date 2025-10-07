@@ -429,6 +429,7 @@ struct lttng_metadata_cache {
 	guid_t uuid;			/* Trace session unique ID (copy) */
 	struct mutex lock;		/* Produce/consume lock */
 	uint64_t version;		/* Current version of the metadata */
+	struct lttng_kernel_session *session; /* Back-reference to the associated session */
 };
 
 struct lttng_metadata_stream {

@@ -163,6 +163,7 @@ struct lttng_kernel_session *lttng_session_create(void)
 	kref_init(&metadata_cache->refcount);
 	mutex_init(&metadata_cache->lock);
 	session_priv->metadata_cache = metadata_cache;
+	metadata_cache->session = session;
 	INIT_LIST_HEAD(&metadata_cache->metadata_stream);
 	memcpy(&metadata_cache->uuid, &session_priv->uuid,
 		sizeof(metadata_cache->uuid));
