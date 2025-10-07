@@ -101,8 +101,22 @@ static void client_buffer_begin(struct lttng_kernel_ring_buffer *buf, u64 timest
 	header->compression_scheme = 0;	/* 0 if unused */
 	header->encryption_scheme = 0;	/* 0 if unused */
 	header->checksum_scheme = 0;	/* 0 if unused */
-	header->major = CTF_SPEC_MAJOR;
-	header->minor = CTF_SPEC_MINOR;
+
+	switch (metadata_cache->session->priv->output_format) {
+	case LTTNG_KERNEL_ABI_SESSION_OUTPUT_FORMAT_CTF_1_8:
+		header->major = CTF_SPEC_MAJOR;
+		header->minor = CTF_SPEC_MINOR;
+		break;
+
+	case LTTNG_KERNEL_ABI_SESSION_OUTPUT_FORMAT_CTF_2:
+		header->major = CTF2_SPEC_MAJOR;
+		header->minor = CTF2_SPEC_MINOR;
+		break;
+
+	default:
+		printk(KERN_WARNING "LTTng: Unknown session output format");
+		break;
+	};
 }
 
 /*
