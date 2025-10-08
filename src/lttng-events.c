@@ -3578,18 +3578,20 @@ static int __init lttng_events_init(void)
 
 	ret = wrapper_get_pfnblock_flags_mask_init();
 	if (ret)
-		return ret;
+		goto error;
 
 	ret = wrapper_get_pfnblock_migratetype_init();
 	if (ret)
-		return ret;
+		goto error;
 
 	ret = lttng_probes_init();
 	if (ret)
-		return ret;
+		goto error;
+
 	ret = lttng_context_init();
 	if (ret)
-		return ret;
+		goto error;
+
 	ret = lttng_tracepoint_init();
 	if (ret)
 		goto error_tp;
@@ -3673,6 +3675,8 @@ error_kmem_event_recorder:
 	lttng_tracepoint_exit();
 error_tp:
 	lttng_context_exit();
+
+error:
 	printk(KERN_NOTICE "LTTng: Failed to load modules v%s.%s.%s%s (%s)%s%s\n",
 		__stringify(LTTNG_MODULES_MAJOR_VERSION),
 		__stringify(LTTNG_MODULES_MINOR_VERSION),
