@@ -309,3 +309,11 @@ int lttng_kretprobes_event_enable_state(struct lttng_kernel_event_common *event,
 	return 0;
 }
 EXPORT_SYMBOL_GPL(lttng_kretprobes_event_enable_state);
+
+MODULE_LICENSE("GPL and additional rights");
+MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");
+MODULE_DESCRIPTION("LTTng kretprobes probes");
+MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
+	__stringify(LTTNG_MODULES_MINOR_VERSION) "."
+	__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION)
+	LTTNG_MODULES_EXTRAVERSION);

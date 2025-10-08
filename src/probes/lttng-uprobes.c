@@ -413,3 +413,7 @@ void lttng_uprobes_destroy_event_notifier_private(struct lttng_kernel_event_noti
 	kfree(event_notifier->priv->parent.desc);
 }
 EXPORT_SYMBOL_GPL(lttng_uprobes_destroy_event_notifier_private);
+
+MODULE_LICENSE("GPL and additional rights");
+MODULE_AUTHOR("Yannick Brosseau");
+MODULE_DESCRIPTION("Linux Trace Toolkit Uprobes Support");
