@@ -15,11 +15,13 @@
 #include <linux/mm_types.h>
 #include <lttng/kernel-version.h>
 
+#if defined(CONFIG_KALLSYMS) && \
+	(LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(6,17,0))
+
 /*
  * We need to redefine get_pfnblock_flags_mask to our wrapper, because
  * the get_pageblock_migratetype() macro uses it.
  */
-#ifdef CONFIG_KALLSYMS
 #define get_pfnblock_flags_mask		wrapper_get_pfnblock_flags_mask
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,14,0))
@@ -49,14 +51,16 @@ int wrapper_get_pfnblock_flags_mask_init(void)
 
 #endif
 
+
+#if defined(CONFIG_KALLSYMS) && \
+	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,17,0))
+
 /*
  * We need to redefine get_pfnblock_migratetype to our wrapper because
  * the get_pageblock_migratetype() macro uses it.
  */
-#ifdef CONFIG_KALLSYMS
 #define get_pfnblock_migratetype	wrapper_get_pfnblock_migratetype
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,17,0))
 enum migratetype wrapper_get_pfnblock_migratetype(const struct page *page,
 		unsigned long pfn);
 int wrapper_get_pfnblock_migratetype_init(void);
@@ -68,7 +72,6 @@ int wrapper_get_pfnblock_migratetype_init(void)
 {
 	return 0;
 }
-#endif /* else LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,17,0) */
 
 #endif /* else CONFIG_KALLSYMS */
 
