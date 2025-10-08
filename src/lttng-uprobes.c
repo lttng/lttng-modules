@@ -371,7 +371,3 @@ void lttng_uprobes_destroy_event_private(struct lttng_kernel_event_common *event
 	kfree(event->priv->desc->event_name);
 	kfree(event->priv->desc);
 }
-
-MODULE_LICENSE("GPL and additional rights");
-MODULE_AUTHOR("Yannick Brosseau");
-MODULE_DESCRIPTION("Linux Trace Toolkit Uprobes Support");

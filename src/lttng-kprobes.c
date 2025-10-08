@@ -240,11 +240,3 @@ void lttng_kprobes_destroy_event_private(struct lttng_kernel_event_common *event
 	kfree(event->priv->desc->event_name);
 	kfree(event->priv->desc);
 }
-
-MODULE_LICENSE("GPL and additional rights");
-MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");
-MODULE_DESCRIPTION("LTTng kprobes probes");
-MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
-	__stringify(LTTNG_MODULES_MINOR_VERSION) "."
-	__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION)
-	LTTNG_MODULES_EXTRAVERSION);

@@ -330,11 +330,3 @@ void lttng_kretprobes_destroy_event_private(struct lttng_kernel_event_common *ev
 	kfree(event->priv->desc);
 	lttng_kretprobes_put_krp(event->priv->u.kretprobe.lttng_krp);
 }
-
-MODULE_LICENSE("GPL and additional rights");
-MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");
-MODULE_DESCRIPTION("LTTng kretprobes probes");
-MODULE_VERSION(__stringify(LTTNG_MODULES_MAJOR_VERSION) "."
-	__stringify(LTTNG_MODULES_MINOR_VERSION) "."
-	__stringify(LTTNG_MODULES_PATCHLEVEL_VERSION)
-	LTTNG_MODULES_EXTRAVERSION);
