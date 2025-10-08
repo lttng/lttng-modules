@@ -28,7 +28,9 @@
 #include <wrapper/kallsyms.h>
 #include <lttng/kernel-version.h>
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,14,0))
+/* get_pfnblock_flags_mask() was removed in 6.17 */
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(6,17,0))
+# if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,14,0))
 static
 unsigned long (*get_pfnblock_flags_mask_sym)(const struct page *page,
 		unsigned long pfn,
@@ -51,7 +53,7 @@ unsigned long wrapper_get_pfnblock_flags_mask(const struct page *page,
 		return -ENOSYS;
 	}
 }
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0))
+# elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0))
 static
 unsigned long (*get_pfnblock_flags_mask_sym)(struct page *page,
 		unsigned long pfn,
@@ -74,7 +76,7 @@ unsigned long wrapper_get_pfnblock_flags_mask(struct page *page,
 		return -ENOSYS;
 	}
 }
-#else	/* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0)) */
+# else	/* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0)) */
 static
 unsigned long (*get_pfnblock_flags_mask_sym)(struct page *page,
 		unsigned long pfn,
@@ -99,7 +101,7 @@ unsigned long wrapper_get_pfnblock_flags_mask(struct page *page,
 		return -ENOSYS;
 	}
 }
-#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0)) */
+# endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0)) */
 
 EXPORT_SYMBOL_GPL(wrapper_get_pfnblock_flags_mask);
 
@@ -112,7 +114,10 @@ int wrapper_get_pfnblock_flags_mask_init(void)
 	return 0;
 }
 EXPORT_SYMBOL_GPL(wrapper_get_pfnblock_flags_mask_init);
+#endif
 
+
+/* get_pfnblock_migratetype() was introduced in 6.17 */
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,17,0))
 static
 enum migratetype (*get_pfnblock_migratetype_sym)(const struct page *page,
@@ -133,6 +138,7 @@ enum migratetype wrapper_get_pfnblock_migratetype(const struct page *page,
 	}
 	return -ENOSYS;
 }
+EXPORT_SYMBOL_GPL(wrapper_get_pfnblock_migratetype);
 
 int wrapper_get_pfnblock_migratetype_init(void)
 {
@@ -142,8 +148,6 @@ int wrapper_get_pfnblock_migratetype_init(void)
 		return -1;
 	return 0;
 }
-
-EXPORT_SYMBOL_GPL(wrapper_get_pfnblock_migratetype);
 EXPORT_SYMBOL_GPL(wrapper_get_pfnblock_migratetype_init);
 #endif /* LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,17,0) */
 
