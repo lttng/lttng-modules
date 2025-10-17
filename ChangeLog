@@ -1,3 +1,7 @@
+2025-10-17 LTTng modules 2.13.22
+	* fix: always print to kernel log on module load failure
+	* fix: get_pfnblock_flags_mask / get_pfnblock_migratetype wrappers for v6.17
+
 2025-10-06 LTTng modules 2.13.21
 	* Fix: Add wrapper for `get_pfnblock_migatetype`
 	* Fix: Protect syscall probes with preemption disable
