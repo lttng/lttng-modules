@@ -112,4 +112,7 @@ void syscall_entry_event_notifier_probe(void *__data, struct pt_regs *regs,
 void syscall_exit_event_notifier_probe(void *__data, struct pt_regs *regs,
 		long ret);
 
+int lttng_syscall_tables_init(void);
+static inline void lttng_syscall_tables_exit(void) { }
+
 #endif /* LTTNG_SYSCALLS_H */

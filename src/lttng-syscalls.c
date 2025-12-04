@@ -38,6 +38,7 @@
 #endif
 
 #include "lttng-syscalls.h"
+#include "init-enum-desc-sorted-entries.h"
 
 #ifndef CONFIG_COMPAT
 # ifndef is_compat_task
@@ -1409,4 +1410,27 @@ long lttng_syscall_table_get_active_mask(struct lttng_kernel_syscall_table *sysc
 		ret = -EFAULT;
 	kfree(tmp_mask);
 	return ret;
+}
+
+static
+void __init init_table(const struct trace_syscall_table *sc_table)
+{
+	size_t i;
+
+	for (i = 0; i < sc_table->len; i++) {
+		const struct trace_syscall_entry *entry = &sc_table->table[i];
+
+		if (!entry->desc)
+			continue;
+		init_event_desc_enum_desc_sorted_entries(entry->desc);
+	}
+}
+
+int __init lttng_syscall_tables_init(void)
+{
+	init_table(&sc_table);
+	init_table(&compat_sc_table);
+	init_table(&sc_exit_table);
+	init_table(&compat_sc_exit_table);
+	return 0;
 }
