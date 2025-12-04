@@ -103,16 +103,12 @@ struct trace_syscall_table {
 	const size_t len;
 };
 
-extern
 void syscall_entry_event_probe(void *__data, struct pt_regs *regs, long id);
 
-extern
 void syscall_exit_event_probe(void *__data, struct pt_regs *regs, long ret);
 
-extern
 void syscall_entry_event_notifier_probe(void *__data, struct pt_regs *regs,
 		long id);
-extern
 void syscall_exit_event_notifier_probe(void *__data, struct pt_regs *regs,
 		long ret);
 
