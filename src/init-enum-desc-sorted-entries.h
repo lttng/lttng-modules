@@ -13,25 +13,12 @@
 #include <lttng/events.h>
 #include <lttng/events-internal.h>
 
-/*
- * Initializes the `lttng_kernel_enum_desc::sorted_entries` field for
- * each instance of `struct lttng_kernel_enum_desc` recursively found
- * in `type`.
- *
- * See `struct lttng_kernel_enum_desc` to learn the role of
- * the `sorted_entries` field.
- */
 void init_type_enum_desc_sorted_entries(
 		const struct lttng_kernel_type_common * type);
 
-/*
- * Initializes the `lttng_kernel_enum_desc::sorted_entries` field for
- * each instance of `struct lttng_kernel_enum_desc` recursively found
- * in `desc`.
- *
- * See `struct lttng_kernel_enum_desc` to learn the role of
- * the `sorted_entries` field.
- */
+void init_event_desc_enum_desc_sorted_entries(
+		const struct lttng_kernel_event_desc * const desc);
+
 void init_probe_desc_enum_desc_sorted_entries(
 		const struct lttng_kernel_probe_desc *desc);
 

@@ -102,6 +102,17 @@ void init_enum_type_desc_sorted_entries(
 	}
 }
 
+/**
+ * init_type_enum_desc_sorted_entries - Initialize sorted enumeration mapping entries under type.
+ * @type: Type to recursively iterate.
+ *
+ * Initializes the `lttng_kernel_enum_desc::sorted_entries` field for
+ * each instance of `struct lttng_kernel_enum_desc` recursively found
+ * in `type`.
+ *
+ * See `struct lttng_kernel_enum_desc` to learn the role of
+ * the `sorted_entries` field.
+ */
 void init_type_enum_desc_sorted_entries(
 		const struct lttng_kernel_type_common * const type)
 {
@@ -154,15 +165,17 @@ void init_fields_enum_desc_sorted_entries(
 	}
 }
 
-/*
+/**
+ * init_event_desc_enum_desc_sorted_entries - Initialize sorted enumeration mapping entries under event descriptor.
+ * @desc: The event descriptor.
+ *
  * Initializes the `lttng_kernel_enum_desc::sorted_entries` field for
  * each instance of `struct lttng_kernel_enum_desc` recursively found
- * in `desc`.
+ * in the event descriptor `desc`.
  *
  * See `struct lttng_kernel_enum_desc` to learn the role of
  * the `sorted_entries` field.
  */
-static
 void init_event_desc_enum_desc_sorted_entries(
 		const struct lttng_kernel_event_desc * const desc)
 {
@@ -170,6 +183,17 @@ void init_event_desc_enum_desc_sorted_entries(
 		desc->tp_class->nr_fields);
 }
 
+/**
+ * init_probe_desc_enum_desc_sorted_entries - Initialize sorted enumeration mapping entries under probe descriptor.
+ * @desc: The probe descriptor.
+ *
+ * Initializes the `lttng_kernel_enum_desc::sorted_entries` field for
+ * each instance of `struct lttng_kernel_enum_desc` recursively found
+ * in the probe descriptor `desc`.
+ *
+ * See `struct lttng_kernel_enum_desc` to learn the role of
+ * the `sorted_entries` field.
+ */
 void init_probe_desc_enum_desc_sorted_entries(
 		const struct lttng_kernel_probe_desc * const desc)
 {
