@@ -15,6 +15,7 @@
 #include "metadata-ctf-1-8.h"
 #include "metadata-ctf-2.h"
 #include "lttng-metadata-print.h"
+#include "lttng-syscalls.h"
 
 #include <linux/module.h>
 #include <linux/mutex.h>
@@ -3596,6 +3597,9 @@ static int __init lttng_events_init(void)
 	ret = lttng_tracepoint_init();
 	if (ret)
 		goto error_tp;
+	ret = lttng_syscall_tables_init();
+	if (ret)
+		goto error_sc_tables;
 	event_recorder_cache = KMEM_CACHE(lttng_kernel_event_recorder, 0);
 	if (!event_recorder_cache) {
 		ret = -ENOMEM;
@@ -3673,6 +3677,8 @@ error_kmem_event_counter:
 error_kmem_event_recorder_private:
 	kmem_cache_destroy(event_recorder_cache);
 error_kmem_event_recorder:
+	lttng_syscall_tables_exit();
+error_sc_tables:
 	lttng_tracepoint_exit();
 error_tp:
 	lttng_context_exit();
@@ -3714,6 +3720,7 @@ static void __exit lttng_events_exit(void)
 	kmem_cache_destroy(event_counter_private_cache);
 	kmem_cache_destroy(event_notifier_cache);
 	kmem_cache_destroy(event_notifier_private_cache);
+	lttng_syscall_tables_exit();
 	lttng_tracepoint_exit();
 	lttng_context_exit();
 	printk(KERN_NOTICE "LTTng: Unloaded modules v%s.%s.%s%s (%s)%s%s\n",
