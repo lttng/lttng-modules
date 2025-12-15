@@ -168,6 +168,19 @@ LTTNG_TRACEPOINT_EVENT(writeback_dirty_page,
 )
 #endif
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,19,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(writeback_dirty_inode_template,
+	TP_PROTO(struct inode *inode, int flags),
+	TP_ARGS(inode, flags),
+	TP_FIELDS(
+		/* may be called for files on pseudo FSes w/ unregistered bdi */
+		ctf_string(name, lttng_bdi_dev_name(inode_to_bdi(inode)))
+		ctf_integer(unsigned long, ino, inode->i_ino)
+		ctf_integer(unsigned long, state, inode_state_read_once(inode))
+		ctf_integer(unsigned long, flags, flags)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_dirty_inode_template,
 	TP_PROTO(struct inode *inode, int flags),
 	TP_ARGS(inode, flags),
@@ -179,6 +192,8 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_dirty_inode_template,
 		ctf_integer(unsigned long, flags, flags)
 	)
 )
+#endif
+
 #define LTTNG_TRACEPOINT_EVENT_WRITEBACK_DIRTY_INODE_TEMPLATE(name) \
 LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_dirty_inode_template, name, \
 	TP_PROTO(struct inode *inode, int flags), \
@@ -589,6 +604,20 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 )
 #endif /* else (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,14,2)) */
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,19,0))
+LTTNG_TRACEPOINT_EVENT(writeback_sb_inodes_requeue,
+
+	TP_PROTO(struct inode *inode),
+	TP_ARGS(inode),
+
+	TP_FIELDS(
+		ctf_string(name, lttng_bdi_dev_name(inode_to_bdi(inode)))
+		ctf_integer(unsigned long, ino, inode->i_ino)
+		ctf_integer(unsigned long, state, inode_state_read_once(inode))
+		ctf_integer(unsigned long, dirtied_when, inode->dirtied_when)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT(writeback_sb_inodes_requeue,
 
 	TP_PROTO(struct inode *inode),
@@ -601,6 +630,7 @@ LTTNG_TRACEPOINT_EVENT(writeback_sb_inodes_requeue,
 		ctf_integer(unsigned long, dirtied_when, inode->dirtied_when)
 	)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_congest_waited_template,
 
@@ -628,6 +658,29 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_congest_waited_template, writeback_wai
 	TP_ARGS(usec_timeout, usec_delayed)
 )
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,19,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(writeback_single_inode_template,
+
+	TP_PROTO(struct inode *inode,
+		 struct writeback_control *wbc,
+		 unsigned long nr_to_write
+	),
+
+	TP_ARGS(inode, wbc, nr_to_write),
+
+	TP_FIELDS(
+		ctf_string(name, lttng_bdi_dev_name(inode_to_bdi(inode)))
+		ctf_integer(unsigned long, ino, inode->i_ino)
+		ctf_integer(unsigned long, state, inode_state_read_once(inode))
+		ctf_integer(unsigned long, dirtied_when, inode->dirtied_when)
+		ctf_integer(unsigned long, writeback_index,
+			inode->i_mapping->writeback_index)
+		ctf_integer(long, nr_to_write, nr_to_write)
+		ctf_integer(unsigned long, wrote,
+			nr_to_write - wbc->nr_to_write)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT_CLASS(writeback_single_inode_template,
 
 	TP_PROTO(struct inode *inode,
@@ -649,6 +702,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_single_inode_template,
 			nr_to_write - wbc->nr_to_write)
 	)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_single_inode_template, writeback_single_inode,
 	TP_PROTO(struct inode *inode,
