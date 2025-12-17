@@ -1015,7 +1015,6 @@ LTTNG_TRACEPOINT_EVENT_CLASS(writeback_single_inode_template,
 			nr_to_write - wbc->nr_to_write)
 	)
 )
-#endif
 
 #if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,5,0))
 LTTNG_TRACEPOINT_EVENT_INSTANCE(writeback_single_inode_template, writeback_single_inode_requeue,
