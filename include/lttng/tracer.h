@@ -31,8 +31,8 @@
 #define LTTNG_MODULES_PATCHLEVEL_VERSION 0
 #define LTTNG_MODULES_EXTRAVERSION "-pre"
 
-#define LTTNG_VERSION_NAME		"P-Beer"
-#define LTTNG_VERSION_DESCRIPTION	"An alcoholic drink made from yeast-fermented malt flavored with hops."
+#define LTTNG_VERSION_NAME		"Péché Mortel"
+#define LTTNG_VERSION_DESCRIPTION	"This release is named after Péché Mortel, the iconic Imperial Stout from Montréal’s Dieu du Ciel! and a long-time team favorite. Deep black and unapologetically intense, Péché Mortel pours with a dense, mocha-tinted head and an aroma that immediately announces freshly roasted coffee. Decadent and dangerously drinkable, it is the ideal companion for long, cold winter evenings."
 
 #ifndef CHAR_BIT
 #define CHAR_BIT 8
