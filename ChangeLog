@@ -2,6 +2,50 @@
 #
 # SPDX-License-Identifier: CC-BY-SA-4.0
 
+2025-12-19 LTTng modules 2.15.0-rc1
+	* Add the 2.15 "Péché Mortel" beer description
+	* fix: Manual conversion to use ->i_state accessors (v6.19)
+	* fix: btrfs: headers cleanup to remove unnecessary local includes (v6.19)
+	* Fix: Initialize syscall tables sorted entries
+	* Cleanup lttng-syscalls.h: Remove extern on function prototypes
+	* Make init_event_desc_enum_desc_sorted_entries public
+	* Update .gitreview for stable-2.15
+	* Fix: Set CTF version in metadata packet headers for CTF2
+	* fix: always print to kernel log on module load failure
+	* fix: get_pfnblock_flags_mask / get_pfnblock_migratetype wrappers for v6.17
+	* fix: remove duplicated MODULE macros
+	* Fix: Add wrapper for `get_pfnblock_migatetype`
+	* Fix: Protect syscall probes with preemption disable
+	* ring buffer: clarify requirement for disabled page fault handler
+	* Add missing prototype for wrapper_get_pfnblock_flags_mask()
+	* fix: mm: remove the for_reclaim field from struct writeback_control (v6.17)
+	* fix: btrfs: use refcount_t type for the extent buffer reference counter (v6.17)
+	* Fix: `fast_page_fault` changed in RHEL 8.7
+	* Fix: `kvm_exit` changed in RHEL 8.7
+	* fix: percpu: repurpose __percpu tag as a named address space qualifier (v6.15)
+	* writeback instrumentation: Add missing provider name prefix
+	* tracing: Cleanup: Remove DECLARE_TRACE_NOARGS (v5.7)
+	* tracepoint: Have tracepoints created with DECLARE_TRACE() have _tp suffix (v6.16)
+	* fix: treewide, timers: Rename from_timer() to timer_container_of() (v6.16)
+	* fix: mm/writeback: Convert tracing writeback_page_template to folios (v5.16)
+	* fix: mm/page-writeback: introduce tracepoint for wait_on_page_writeback() (v5.2)
+	* fix: btrfs: use the flags of an extent map to identify the compression type (v6.8)
+	* fix: btrfs: update the writepage tracepoint to take a folio (v6.12)
+	* fix: btrfs: tracepoints: add btrfs prefix to names where it's missing (v6.16)
+	* fix: ext4: Change remaining tracepoints to use folio (v6.5)
+	* fix: ext4: Convert invalidatepage to invalidate_folio (v5.18)
+	* fix: sched/tracepoints: Move and extend the sched_process_exit() tracepoint (v6.16)
+	* tests: Add recursive test event
+	* Fix: Sample discarded packet counters per sub-buffer
+	* fix: writeback: `balance_dirty_pages` Respect `CONFIG_CGROUP_WRITEBACK`
+	* Fix missing override when CONFIG_COMPAT_OLD_SIGACTION is not defined
+	* Remove stale statedump TODO comment
+	* Introduce softirq name enumeration for irq_softirq event class
+	* Fix channel_backend lookup during `ring_buffer_flush_or_populate_packet`
+	* Fix: Use `nonseekable_open` for proc files
+	* Fix: metadata-ctf2: enum mappings are not serialized
+	* Set version to 2.15.0-pre
+
 2025-04-16 (National Wear Your Pajamas to Work Day) LTTng modules 2.14.0-rc1
 	* Fix: trace_balance_dirty_pages in Linux v6.14.2
 	* Set the 2.14 release codename and description
