@@ -29,7 +29,7 @@
 #define LTTNG_MODULES_MAJOR_VERSION 2
 #define LTTNG_MODULES_MINOR_VERSION 15
 #define LTTNG_MODULES_PATCHLEVEL_VERSION 0
-#define LTTNG_MODULES_EXTRAVERSION "-pre"
+#define LTTNG_MODULES_EXTRAVERSION "-rc1"
 
 #define LTTNG_VERSION_NAME		"Péché Mortel"
 #define LTTNG_VERSION_DESCRIPTION	"This release is named after Péché Mortel, the iconic Imperial Stout from Montréal’s Dieu du Ciel! and a long-time team favorite. Deep black and unapologetically intense, Péché Mortel pours with a dense, mocha-tinted head and an aroma that immediately announces freshly roasted coffee. Decadent and dangerously drinkable, it is the ideal companion for long, cold winter evenings."
