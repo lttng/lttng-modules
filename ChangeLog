@@ -2,6 +2,14 @@
 #
 # SPDX-License-Identifier: CC-BY-SA-4.0
 
+2026-02-09 LTTng modules 2.14.4
+	* fix: Manual conversion to use ->i_state accessors (v6.19)
+	* fix: btrfs: headers cleanup to remove unnecessary local includes (v6.19)
+	* Fix: Initialize syscall tables sorted entries
+	* Cleanup lttng-syscalls.h: Remove extern on function prototypes
+	* Make init_event_desc_enum_desc_sorted_entries public
+	* Update .gitreview for stable-2.14
+
 2025-10-17 LTTng modules 2.14.3
 	* Fix: Set CTF version in metadata packet headers for CTF2
 	* fix: always print to kernel log on module load failure
