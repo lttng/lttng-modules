@@ -1,3 +1,8 @@
+2026-02-13 LTTng modules 2.13.23
+	* fix: backport of: Manual conversion to use ->i_state accessors (v6.19)
+	* fix: Manual conversion to use ->i_state accessors (v6.19)
+	* fix: btrfs: headers cleanup to remove unnecessary local includes (v6.19)
+
 2025-10-17 LTTng modules 2.13.22
 	* fix: always print to kernel log on module load failure
 	* fix: get_pfnblock_flags_mask / get_pfnblock_migratetype wrappers for v6.17
