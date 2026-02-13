@@ -2,6 +2,9 @@
 #
 # SPDX-License-Identifier: CC-BY-SA-4.0
 
+2026-02-13 LTTng modules 2.15.0
+	* (no change)
+
 2025-12-19 LTTng modules 2.15.0-rc1
 	* Add the 2.15 "Péché Mortel" beer description
 	* fix: Manual conversion to use ->i_state accessors (v6.19)
