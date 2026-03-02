@@ -12,6 +12,10 @@
 #include <linux/ktime.h>
 #include <lttng/kernel-version.h>
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(7,0,0))
+#include <sound/soc-dapm.h>
+#endif
+
 #define DAPM_DIRECT "(direct)"
 #define DAPM_COMPONENT_NONE "(none)"
 
@@ -23,7 +27,42 @@ struct snd_soc_dapm_widget;
 struct snd_soc_dapm_path;
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,9,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(7,0,0))
+
+LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_dapm_context,
+
+	TP_PROTO(struct snd_soc_dapm_context *dapm, int val),
+
+	TP_ARGS(dapm, val),
+
+	TP_FIELDS(
+		ctf_string(name, snd_soc_dapm_to_card(dapm)->name)
+		ctf_string(component, snd_soc_dapm_to_component(dapm) ? snd_soc_dapm_to_component(dapm)->name : DAPM_COMPONENT_NONE)
+		ctf_integer(int, val, val)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_dapm_context, snd_soc_bias_level_start,
+
+	asoc_snd_soc_bias_level_start,
+
+	TP_PROTO(struct snd_soc_dapm_context *dapm, int val),
+
+	TP_ARGS(dapm, val)
+
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(asoc_snd_soc_dapm_context, snd_soc_bias_level_done,
+
+	asoc_snd_soc_bias_level_done,
+
+	TP_PROTO(struct snd_soc_dapm_context *dapm, int val),
+
+	TP_ARGS(dapm, val)
+
+)
+
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,9,0) || \
     LTTNG_RHEL_KERNEL_RANGE(5,14,0,503,21,1,  5,15,0,0,0,0))
 
 LTTNG_TRACEPOINT_EVENT_CLASS(asoc_snd_soc_dapm_context,
