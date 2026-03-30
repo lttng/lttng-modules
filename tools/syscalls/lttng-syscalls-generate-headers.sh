@@ -88,7 +88,7 @@ fi
 
 echo "// SPDX-FileCopyrightText: $(date +%Y) EfficiOS Inc.
 //
-// SPDX-License-Identifier: GPL-2.0-only OR LGPL-2.1-only */
+// SPDX-License-Identifier: GPL-2.0-only OR LGPL-2.1-only
 
 /* THIS FILE IS AUTO-GENERATED. DO NOT EDIT */
 
@@ -345,7 +345,7 @@ fi
 
 #others.
 # shellcheck disable=SC2026
-grep -v "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " "${SRCFILE}" | \
+grep -v -e "^#" -e "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " "${SRCFILE}" | \
 	perl -p -e 's/^syscall ([^ ]*) nr ([^ ]*) nbargs ([^ ]*) .*$/'\
 '#ifndef OVERRIDE_TABLE_'"${BITNESS}"'_$1\n'\
 'TRACE_SYSCALL_TABLE($1, $1, $2, $3)\n'\
