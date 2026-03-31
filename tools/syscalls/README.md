@@ -9,15 +9,19 @@ SPDX-License-Identifier: CC-BY-SA-4.0
 
 ## lttng-syscall-extractor
 
-You need to build a kernel with `CONFIG_FTRACE_SYSCALLS=y` and
-`CONFIG_KALLSYMS_ALL=y` for extraction. Apply the linker patch to get your
-kernel to keep the system call metadata after boot.  Then build and load
-the LTTng syscall extractor module. The module will fail to load (this
-is expected). See the dmesg output for system call metadata.
+You need to build a kernel with `CONFIG_FTRACE_SYSCALLS=y`,
+`CONFIG_KALLSYMS_ALL=y` and `CONFIG_DEBUG_FS=y` for extraction. Apply the
+linker patch to get your kernel to keep the system call metadata after boot.
+Then build and load the LTTng syscall extractor module. If your distribution
+doesn't mount the debug filesystem by default you can do it manually:
+
+    mount -t debugfs none /sys/kernel/debug
+
+Then read the content of `/sys/kernel/debug/lttng/syscalls-extractor`.
 
 ## Generate system call TRACE_EVENT().
 
-Take the dmesg data and feed it to `lttng-syscalls-generate-headers.sh` from the
+Take the data and feed it to `lttng-syscalls-generate-headers.sh` from the
 tools/syscalls directory. See the script header for usage example. It should be
 run for both the integers and pointers types.
 

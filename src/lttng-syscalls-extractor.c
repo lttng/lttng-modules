@@ -2,24 +2,18 @@
  *
  * lttng-syscalls-extractor.c
  *
- * Dump syscall metadata to console.
+ * Dump syscall metadata to debugfs.
  *
  * Copyright 2011 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  * Copyright 2011 EfficiOS Inc.
+ * Copyright 2026 Michael Jeanson <mjeanson@efficios.com>
  */
 
-#include <linux/module.h>
-#include <linux/kernel.h>
-#include <linux/types.h>
-#include <linux/list.h>
-#include <linux/err.h>
-#include <linux/slab.h>
-#include <linux/kallsyms.h>
-#include <linux/dcache.h>
-#include <linux/trace_events.h>
-#include <linux/kprobes.h>
-#include <trace/syscall.h>
 #include <asm/syscall.h>
+#include <linux/debugfs.h>
+#include <linux/init.h>
+#include <linux/module.h>
+#include <trace/syscall.h>
 #include <wrapper/kallsyms.h>
 
 #ifndef CONFIG_FTRACE_SYSCALLS
@@ -30,17 +24,14 @@
 #error "You need to set CONFIG_KALLSYMS_ALL=y"
 #endif
 
-/*
- * The 'ident' parameter is prepended to each printk line to help
- * extract the proper lines from dmesg.
- */
-static char *ident = "";
-module_param(ident, charp, 0);
+#ifndef CONFIG_DEBUG_FS
+#error "You need to set CONFIG_DEBUG_FS=y"
+#endif
 
 static struct syscall_metadata **__start_syscalls_metadata;
 static struct syscall_metadata **__stop_syscalls_metadata;
 
-static __init
+static
 struct syscall_metadata *find_syscall_meta(unsigned long syscall)
 {
 	struct syscall_metadata **iter;
@@ -53,7 +44,8 @@ struct syscall_metadata *find_syscall_meta(unsigned long syscall)
 	return NULL;
 }
 
-int init_module(void)
+static
+int lse_debug_show(struct seq_file *m, void *p)
 {
 	struct syscall_metadata *meta;
 	int i;
@@ -61,40 +53,67 @@ int init_module(void)
 	__start_syscalls_metadata = (void *) wrapper_kallsyms_lookup_name("__start_syscalls_metadata");
 	__stop_syscalls_metadata = (void *) wrapper_kallsyms_lookup_name("__stop_syscalls_metadata");
 
-	printk("%s---START---\n", ident);
 	for (i = 0; i < NR_syscalls; i++) {
 		int j;
 
 		meta = find_syscall_meta(i);
 		if (!meta)
 			continue;
-		printk("%ssyscall %s nr %d nbargs %d ",
-			ident, meta->name, meta->syscall_nr, meta->nb_args);
-		printk(KERN_CONT "types: (");
+		seq_printf(m, "syscall %s nr %d nbargs %d ",
+			meta->name, meta->syscall_nr, meta->nb_args);
+		seq_printf(m, KERN_CONT "types: (");
 		for (j = 0; j < meta->nb_args; j++) {
 			if (j > 0)
-				printk(KERN_CONT ", ");
-			printk(KERN_CONT "%s", meta->types[j]);
+				seq_printf(m, KERN_CONT ", ");
+			seq_printf(m, KERN_CONT "%s", meta->types[j]);
 		}
-		printk(KERN_CONT ") ");
-		printk(KERN_CONT "args: (");
+		seq_printf(m, KERN_CONT ") ");
+		seq_printf(m, KERN_CONT "args: (");
 		for (j = 0; j < meta->nb_args; j++) {
 			if (j > 0)
-				printk(KERN_CONT ", ");
-			printk(KERN_CONT "%s", meta->args[j]);
+				seq_printf(m, KERN_CONT ", ");
+			seq_printf(m, KERN_CONT "%s", meta->args[j]);
 		}
-		printk(KERN_CONT ")\n");
+		seq_printf(m, KERN_CONT ")\n");
 	}
-	printk("%s---END---\n", ident);
 
-	/*
-	 * This module always fails to load.
-	 */
-	return -1;
+        return 0;
 }
 
-void cleanup_module(void)
+static
+int lse_debug_open(struct inode *inode, struct file *file)
 {
+        return single_open(file, lse_debug_show, inode->i_private);
 }
 
-MODULE_LICENSE("GPL");
+static const struct file_operations lse_debug_ops = {
+        .open           = lse_debug_open,
+        .read           = seq_read,
+        .llseek         = seq_lseek,
+        .release        = single_release,
+};
+
+
+static struct dentry *lttng_dir = NULL;
+
+static
+int __init lttng_syscalls_extractor_init(void)
+{
+	lttng_dir = debugfs_create_dir("lttng", NULL);
+
+	debugfs_create_file("syscalls-extractor", 0444, lttng_dir, NULL, &lse_debug_ops);
+
+	return 0;
+}
+module_init(lttng_syscalls_extractor_init);
+
+static
+void __exit lttng_syscalls_extractor_exit(void)
+{
+	debugfs_remove(lttng_dir);
+}
+module_exit(lttng_syscalls_extractor_exit);
+
+MODULE_LICENSE("GPL and additional rights");
+MODULE_AUTHOR("Mathieu Desnoyers <mathieu.desnoyers@efficios.com>");
+MODULE_DESCRIPTION("LTTng Syscalls Extractor");
