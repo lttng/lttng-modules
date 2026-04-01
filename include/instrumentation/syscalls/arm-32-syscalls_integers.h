@@ -4,7 +4,7 @@
 
 /* THIS FILE IS AUTO-GENERATED. DO NOT EDIT */
 
-/* Generated from arm-32-syscalls 6.0.7 */
+/* Generated from arm-32-syscalls 7.2 */
 
 #ifndef CREATE_SYSCALL_TABLE
 
@@ -531,9 +531,9 @@ SC_LTTNG_TRACEPOINT_EVENT(munmap,
 #endif
 #ifndef OVERRIDE_32_ftruncate
 SC_LTTNG_TRACEPOINT_EVENT(ftruncate,
-	TP_PROTO(sc_exit(long ret,) unsigned int fd, unsigned long length),
+	TP_PROTO(sc_exit(long ret,) unsigned int fd, off_t length),
 	TP_ARGS(sc_exit(ret,) fd, length),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(unsigned int, fd, fd)) sc_in(ctf_integer(unsigned long, length, length)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(unsigned int, fd, fd)) sc_in(ctf_integer(off_t, length, length)))
 )
 #endif
 #ifndef OVERRIDE_32_fchmod
@@ -730,6 +730,13 @@ SC_LTTNG_TRACEPOINT_EVENT(mprotect,
 	TP_PROTO(sc_exit(long ret,) unsigned long start, size_t len, unsigned long prot),
 	TP_ARGS(sc_exit(ret,) start, len, prot),
 	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(unsigned long, start, start)) sc_in(ctf_integer(size_t, len, len)) sc_in(ctf_integer(unsigned long, prot, prot)))
+)
+#endif
+#ifndef OVERRIDE_32_sysfs
+SC_LTTNG_TRACEPOINT_EVENT(sysfs,
+	TP_PROTO(sc_exit(long ret,) int option, unsigned long arg1, unsigned long arg2),
+	TP_ARGS(sc_exit(ret,) option, arg1, arg2),
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(int, option, option)) sc_in(ctf_integer(unsigned long, arg1, arg1)) sc_in(ctf_integer(unsigned long, arg2, arg2)))
 )
 #endif
 #ifndef OVERRIDE_32_msync
@@ -1186,6 +1193,9 @@ TRACE_SYSCALL_TABLE(getpgid, getpgid, 132, 1)
 #endif
 #ifndef OVERRIDE_TABLE_32_fchdir
 TRACE_SYSCALL_TABLE(fchdir, fchdir, 133, 1)
+#endif
+#ifndef OVERRIDE_TABLE_32_sysfs
+TRACE_SYSCALL_TABLE(sysfs, sysfs, 135, 3)
 #endif
 #ifndef OVERRIDE_TABLE_32_personality
 TRACE_SYSCALL_TABLE(personality, personality, 136, 1)
