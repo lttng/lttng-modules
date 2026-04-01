@@ -6,3 +6,23 @@
 syscall sigsuspend nbargs 1 rw: (r)
 # CLONE_BACKWARDS: tls passed as the 4th argument of clone(2), not the 5th one.
 syscall clone nbargs 5 rw: (r, r, w, r, w)
+# sys_ppc_pread64: the 64-bit offset parameter is split into two 32-bit parts with an unused register for alignment
+syscall pread64 nbargs 6 rw: (r, w, r, r, r, r)
+# sys_ppc_pwrite64: the 64-bit offset parameter is split into two 32-bit parts with an unused register for alignment
+syscall pwrite64 nbargs 6 rw: (r, r, r, r, r, r)
+# sys_ppc_truncate64: the 64-bit length parameter is split into two 32-bit parts with an unused register for alignment
+syscall truncate64 nbargs 4 rw: (r, r, r, r)
+# sys_ppc_ftruncate64: the 64-bit length parameter is split into two 32-bit parts with an unused register for alignment
+syscall ftruncate64 nbargs 4 rw: (r, r, r, r)
+# sys_ppc_readahead: the 64-bit offset parameter is split into two 32-bit parts
+syscall readahead nbargs 5 rw: (r, r, r, r, r)
+# sys_ppc32_fadvise64: the 64-bit offset parameter is split into two 32-bit parts
+syscall fadvise64 nbargs 6 rw: (r, r, r, r, r, r)
+# sys_ppc_fadvise64_64: the 64-bit offset and len parameters are split into two 32-bit parts
+syscall fadvise64_64 nbargs 6 rw: (r, r, r, r, r, r)
+# sys_ppc_sync_file_range2: the 64-bit offset and nbytes parameters are split into two 32-bit parts
+syscall sync_file_range2 nbargs 6 rw: (r, r, r, r, r, r)
+# sys_ppc_fallocate: the 64-bit offset and len parameters are split into two 32-bit parts
+syscall fallocate nbargs 6 rw: (r, r, r, r, r, r)
+# sys_fanotify_mark: the 64-bit mask parameter is split into two 32-bit parts
+syscall fanotify_mark nbargs 6 rw: (r, r, r, r, r, r)

@@ -106,7 +106,7 @@ syscall sys_quotactl nr 131 nbargs 4 types: (unsigned int, const char *, qid_t, 
 syscall sys_getpgid nr 132 nbargs 1 types: (pid_t) args: (pid)
 syscall sys_fchdir nr 133 nbargs 1 types: (unsigned int) args: (fd)
 syscall sys_sysfs nr 135 nbargs 3 types: (int, unsigned long, unsigned long) args: (option, arg1, arg2)
-syscall sys_ppc64_personality nr 136 nbargs 1 types: (unsigned long) args: (personality)
+syscall sys_personality nr 136 nbargs 1 types: (unsigned long) args: (personality)
 syscall sys_setfsuid nr 138 nbargs 1 types: (uid_t) args: (uid)
 syscall sys_setfsgid nr 139 nbargs 1 types: (gid_t) args: (gid)
 syscall sys_llseek nr 140 nbargs 5 types: (unsigned int, unsigned long, unsigned long, loff_t *, unsigned int) args: (fd, offset_high, offset_low, result, whence)
