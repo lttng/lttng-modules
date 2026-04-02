@@ -61,20 +61,20 @@ int lse_debug_show(struct seq_file *m, void *p)
 			continue;
 		seq_printf(m, "syscall %s nr %d nbargs %d ",
 			meta->name, meta->syscall_nr, meta->nb_args);
-		seq_printf(m, KERN_CONT "types: (");
+		seq_printf(m, "types: (");
 		for (j = 0; j < meta->nb_args; j++) {
 			if (j > 0)
-				seq_printf(m, KERN_CONT ", ");
-			seq_printf(m, KERN_CONT "%s", meta->types[j]);
+				seq_printf(m, ", ");
+			seq_printf(m, "%s", meta->types[j]);
 		}
-		seq_printf(m, KERN_CONT ") ");
-		seq_printf(m, KERN_CONT "args: (");
+		seq_printf(m, ") ");
+		seq_printf(m, "args: (");
 		for (j = 0; j < meta->nb_args; j++) {
 			if (j > 0)
-				seq_printf(m, KERN_CONT ", ");
-			seq_printf(m, KERN_CONT "%s", meta->args[j]);
+				seq_printf(m, ", ");
+			seq_printf(m, "%s", meta->args[j]);
 		}
-		seq_printf(m, KERN_CONT ")\n");
+		seq_printf(m, ")\n");
 	}
 
         return 0;
