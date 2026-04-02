@@ -36,13 +36,21 @@ enum landlock_rule_type {
  * against old kernels which do not declare the more recent system call
  * argument structure types.
  */
+struct bpf_common_attr;
+struct cachestat;
+struct cachestat_range;
 struct clone_args;
+struct file_attr;
 struct file_handle;
 struct futex_waitv;
+struct getcpu_cache;
 struct io_uring_params;
+struct lsm_ctx;
 struct mmap_arg_struct;
 struct mmsghdr;
 struct mount_attr;
+struct mnt_id_req;
+struct ns_id_req;
 struct oldold_utsname;
 struct old_utsname;
 struct old_itimerspec32;
@@ -51,12 +59,17 @@ struct old_timeval32;
 struct old_timex32;
 struct old_utimbuf32;
 struct open_how;
+struct riscv_hwprobe;
 struct rlimit64;
 struct rseq;
 struct sched_attr;
 struct sel_arg_struct;
+struct sig_dbg_op;
+struct statmount;
 struct statx;
+struct ucontext;
 struct user_msghdr;
+struct xattr_args;
 
 struct __aio_sigset;
 struct __kernel_old_itimerval;
