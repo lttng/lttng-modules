@@ -482,7 +482,7 @@ SC_LTTNG_TRACEPOINT_EVENT(shutdown,
 SC_LTTNG_TRACEPOINT_EVENT(munmap,
 	TP_PROTO(sc_exit(long ret,) unsigned long addr, size_t len),
 	TP_ARGS(sc_exit(ret,) addr, len),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(unsigned long, addr, addr)) sc_in(ctf_integer(size_t, len, len)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer_hex(unsigned long, addr, addr)) sc_in(ctf_integer(size_t, len, len)))
 )
 #endif
 #ifndef OVERRIDE_32_mlock
@@ -713,7 +713,7 @@ SC_LTTNG_TRACEPOINT_EVENT(sync_file_range,
 SC_LTTNG_TRACEPOINT_EVENT(ptrace,
 	TP_PROTO(sc_exit(long ret,) long request, long pid, unsigned long addr, unsigned long data),
 	TP_ARGS(sc_exit(ret,) request, pid, addr, data),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(long, request, request)) sc_in(ctf_integer(long, pid, pid)) sc_inout(ctf_integer(unsigned long, addr, addr)) sc_inout(ctf_integer(unsigned long, data, data)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(long, request, request)) sc_in(ctf_integer(long, pid, pid)) sc_inout(ctf_integer_hex(unsigned long, addr, addr)) sc_inout(ctf_integer(unsigned long, data, data)))
 )
 #endif
 #ifndef OVERRIDE_32_semctl
@@ -748,7 +748,7 @@ SC_LTTNG_TRACEPOINT_EVENT(prctl,
 SC_LTTNG_TRACEPOINT_EVENT(mremap,
 	TP_PROTO(sc_exit(long ret,) unsigned long addr, unsigned long old_len, unsigned long new_len, unsigned long flags, unsigned long new_addr),
 	TP_ARGS(sc_exit(ret,) addr, old_len, new_len, flags, new_addr),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(unsigned long, addr, addr)) sc_in(ctf_integer(unsigned long, old_len, old_len)) sc_in(ctf_integer(unsigned long, new_len, new_len)) sc_in(ctf_integer(unsigned long, flags, flags)) sc_in(ctf_integer(unsigned long, new_addr, new_addr)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer_hex(unsigned long, addr, addr)) sc_in(ctf_integer(unsigned long, old_len, old_len)) sc_in(ctf_integer(unsigned long, new_len, new_len)) sc_in(ctf_integer(unsigned long, flags, flags)) sc_in(ctf_integer_hex(unsigned long, new_addr, new_addr)))
 )
 #endif
 #ifndef OVERRIDE_32_keyctl
@@ -776,7 +776,7 @@ SC_LTTNG_TRACEPOINT_EVENT(kcmp,
 SC_LTTNG_TRACEPOINT_EVENT(mmap2,
 	TP_PROTO(sc_exit(long ret,) unsigned long addr, unsigned long len, unsigned long prot, unsigned long flags, unsigned long fd, unsigned long offset),
 	TP_ARGS(sc_exit(ret,) addr, len, prot, flags, fd, offset),
-	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer(unsigned long, addr, addr)) sc_in(ctf_integer(unsigned long, len, len)) sc_in(ctf_integer(unsigned long, prot, prot)) sc_in(ctf_integer(unsigned long, flags, flags)) sc_in(ctf_integer(unsigned long, fd, fd)) sc_in(ctf_integer(unsigned long, offset, offset)))
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret)) sc_in(ctf_integer_hex(unsigned long, addr, addr)) sc_in(ctf_integer(unsigned long, len, len)) sc_in(ctf_integer(unsigned long, prot, prot)) sc_in(ctf_integer(unsigned long, flags, flags)) sc_in(ctf_integer(unsigned long, fd, fd)) sc_in(ctf_integer(unsigned long, offset, offset)))
 )
 #endif
 

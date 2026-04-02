@@ -355,17 +355,19 @@ grep -v -e "^#" -e "^syscall [^ ]* nr [^ ]* nbargs ${NRARGS} " "${SRCFILE}" | \
 
 printf '\n#endif /* CREATE_SYSCALL_TABLE */\n' >> "${HEADER}"
 
-#fields names: ...char * type with *name* or *file* or *path* or *root*
-# or *put_old* or *type*
+
+# Types heuristics
+
+# Convert ctf_integer fields of type "char *" with names containing "name", "file", "path", "root", "put_old" or "type" to ctf_user_string
 perl -pi -e 's/ctf_integer\(([^,)]*char \*), ([^\)]*)(name|file|path|root|put_old|type)([^\)]*)\)/ctf_user_string($2$3$4)/g' \
 	"${HEADER}"
 
-#prettify addresses heuristics.
-#field names with addr or ptr
-perl -pi -e 's/ctf_integer\(([^,)]*), ([^,)]*addr|[^,)]*ptr)([^),]*)\)/ctf_integer_hex($1, $2$3, $2$3)/g' \
+# Prettify addresses heuristics.
+# Convert ctf_integer field names that contain addr or ptr and that are not pointers to ctf_integer_hex
+perl -pi -e 's/ctf_integer\(([^,)*]+), ([^,)]*addr|[^,)]*ptr)([^),]*), ([^),]+)\)/ctf_integer_hex($1, $2$3, $4)/g' \
 	"${HEADER}"
 
-#field types ending with '*'
-perl -pi -e 's/ctf_integer\(([^,)]*\*), ([^),]*)\)/ctf_integer_hex($1, $2, $2)/g' "${HEADER}"
+# Convert ctf_integer field types ending with '*' to ctf_integer_hex
+perl -pi -e 's/ctf_integer\(([^,)]+\*), ([^),]+), ([^),]+)\)/ctf_integer_hex($1, $2, $3)/g' "${HEADER}"
 
 # EOF
