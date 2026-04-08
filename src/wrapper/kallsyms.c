@@ -67,10 +67,10 @@ unsigned long kallsyms_get_arch_call_addr(const struct kprobe *probe)
 # include <asm/types.h>
 # define LTTNG_FUNC_DESC_TYPE func_descr_t
 # define LTTNG_FUNC_DESC_ADDR_NAME entry
+# endif
 
 static
 LTTNG_FUNC_DESC_TYPE kallsyms_lookup_name_func_desc;
-# endif
 
 static
 unsigned long kallsyms_get_arch_call_addr(const struct kprobe *probe)
@@ -81,7 +81,7 @@ unsigned long kallsyms_get_arch_call_addr(const struct kprobe *probe)
 	 * 'sprint_symbol' which is in the same compile unit and exported. I
 	 * hate this on so many levels but it works.
 	 */
-	kallsyms_lookup_name_func_desc.LTTNG_FUNC_DESC_ADDR_NAME = (unsigned long) probe.addr;
+	kallsyms_lookup_name_func_desc.LTTNG_FUNC_DESC_ADDR_NAME = (unsigned long) probe->addr;
 	kallsyms_lookup_name_func_desc.toc = ((LTTNG_FUNC_DESC_TYPE *) &sprint_symbol)->toc;
 	return (unsigned long) &kallsyms_lookup_name_func_desc;
 }
