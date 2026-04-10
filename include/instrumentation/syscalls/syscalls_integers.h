@@ -18,10 +18,6 @@
 #include "powerpc-32-syscalls_integers.h"
 #endif
 
-#ifdef CONFIG_CPU_MIPS32
-#include "mips-32-syscalls_integers.h"
-#endif
-
 #ifdef CONFIG_ARM64
 #include "arm-64-syscalls_integers.h"
 #endif
