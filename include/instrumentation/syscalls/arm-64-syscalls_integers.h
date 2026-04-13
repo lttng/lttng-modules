@@ -14,7 +14,8 @@
 #include <lttng/tracepoint-event.h>
 #include <linux/syscalls.h>
 #include "arm-64-syscalls_integers_override.h"
-#include "syscalls_integers_override.h"
+#include "generic-64-syscalls_integers_override.h"
+#include "generic-syscalls_integers_override.h"
 
 #ifdef SC_ENTER
 SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(syscalls_noargs,
@@ -822,7 +823,8 @@ SC_LTTNG_TRACEPOINT_EVENT(mmap,
 #else /* CREATE_SYSCALL_TABLE */
 
 #include "arm-64-syscalls_integers_override.h"
-#include "syscalls_integers_override.h"
+#include "generic-64-syscalls_integers_override.h"
+#include "generic-syscalls_integers_override.h"
 
 #ifdef SC_ENTER
 #ifndef OVERRIDE_TABLE_64_vhangup

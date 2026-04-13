@@ -14,7 +14,8 @@
 #include <lttng/tracepoint-event.h>
 #include <linux/syscalls.h>
 #include "riscv-32-syscalls_pointers_override.h"
-#include "syscalls_pointers_override.h"
+#include "generic-32-syscalls_pointers_override.h"
+#include "generic-syscalls_pointers_override.h"
 
 #ifndef OVERRIDE_32_chdir
 SC_LTTNG_TRACEPOINT_EVENT(chdir,
@@ -1460,7 +1461,8 @@ SC_LTTNG_TRACEPOINT_EVENT(getxattrat,
 #else /* CREATE_SYSCALL_TABLE */
 
 #include "riscv-32-syscalls_pointers_override.h"
-#include "syscalls_pointers_override.h"
+#include "generic-32-syscalls_pointers_override.h"
+#include "generic-syscalls_pointers_override.h"
 
 #ifndef OVERRIDE_TABLE_32_io_setup
 TRACE_SYSCALL_TABLE(io_setup, io_setup, 0, 2)

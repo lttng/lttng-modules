@@ -14,7 +14,8 @@
 #include <lttng/tracepoint-event.h>
 #include <linux/syscalls.h>
 #include "x86-32-syscalls_integers_override.h"
-#include "syscalls_integers_override.h"
+#include "generic-32-syscalls_integers_override.h"
+#include "generic-syscalls_integers_override.h"
 
 #ifdef SC_ENTER
 SC_LTTNG_TRACEPOINT_EVENT_CLASS_NOARGS(syscalls_noargs,
@@ -1058,7 +1059,8 @@ SC_LTTNG_TRACEPOINT_EVENT(fallocate,
 #else /* CREATE_SYSCALL_TABLE */
 
 #include "x86-32-syscalls_integers_override.h"
-#include "syscalls_integers_override.h"
+#include "generic-32-syscalls_integers_override.h"
+#include "generic-syscalls_integers_override.h"
 
 #ifdef SC_ENTER
 #ifndef OVERRIDE_TABLE_32_restart_syscall

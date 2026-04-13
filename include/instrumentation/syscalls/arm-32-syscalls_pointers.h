@@ -14,7 +14,8 @@
 #include <lttng/tracepoint-event.h>
 #include <linux/syscalls.h>
 #include "arm-32-syscalls_pointers_override.h"
-#include "syscalls_pointers_override.h"
+#include "generic-32-syscalls_pointers_override.h"
+#include "generic-syscalls_pointers_override.h"
 
 #ifndef OVERRIDE_32_unlink
 SC_LTTNG_TRACEPOINT_EVENT(unlink,
@@ -1950,7 +1951,8 @@ SC_LTTNG_TRACEPOINT_EVENT(getxattrat,
 #else /* CREATE_SYSCALL_TABLE */
 
 #include "arm-32-syscalls_pointers_override.h"
-#include "syscalls_pointers_override.h"
+#include "generic-32-syscalls_pointers_override.h"
+#include "generic-syscalls_pointers_override.h"
 
 #ifndef OVERRIDE_TABLE_32_read
 TRACE_SYSCALL_TABLE(read, read, 3, 3)

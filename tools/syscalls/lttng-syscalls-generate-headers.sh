@@ -102,7 +102,8 @@ echo "// SPDX-FileCopyrightText: $(date +%Y) EfficiOS Inc.
 #include <lttng/tracepoint-event.h>
 #include <linux/syscalls.h>
 #include \"${INPUTFILE}_${CLASS}_override.h\"
-#include \"syscalls_${CLASS}_override.h\"
+#include \"generic-${BITNESS}-syscalls_${CLASS}_override.h\"
+#include \"generic-syscalls_${CLASS}_override.h\"
 " > "${HEADER}"
 
 if [ "$CLASS" = integers ]; then
@@ -313,7 +314,8 @@ echo \
 #else /* CREATE_SYSCALL_TABLE */
 
 #include \"${INPUTFILE}_${CLASS}_override.h\"
-#include \"syscalls_${CLASS}_override.h\"
+#include \"generic-${BITNESS}-syscalls_${CLASS}_override.h\"
+#include \"generic-syscalls_${CLASS}_override.h\"
 " >> "${HEADER}"
 
 NRARGS=0
