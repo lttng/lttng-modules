@@ -2,6 +2,8 @@
 //
 // SPDX-License-Identifier: GPL-2.0-only OR LGPL-2.1-only
 
+#include "common-syscall-poll.h"
+
 #ifndef CREATE_SYSCALL_TABLE
 
 #ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
@@ -379,7 +381,7 @@ end:	; /* Label at end of compound statement. */					\
 #define OVERRIDE_64_select
 SC_LTTNG_TRACEPOINT_EVENT_CODE(select,
 	TP_PROTO(sc_exit(long ret,) int n, fd_set __user *inp, fd_set __user *outp,
-		fd_set __user *exp, struct timeval *tvp),
+		fd_set __user *exp, struct __kernel_old_timeval *tvp),
 	TP_ARGS(sc_exit(ret,) n, inp, outp, exp, tvp),
 	TP_locvar(
 		LTTNG_SYSCALL_SELECT_locvar
@@ -391,7 +393,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(select,
 		sc_exit(ctf_integer(long, ret, ret))
 		sc_in(ctf_integer(int, n, n))
 		sc_inout(ctf_integer(uint8_t, overflow, tp_locvar->overflow))
-		sc_inout(ctf_integer(struct timeval *, tvp, tvp))
+		sc_inout(ctf_integer(struct __kernel_old_timeval *, tvp, tvp))
 
 		sc_inout(
 #if (__BYTE_ORDER == __LITTLE_ENDIAN)
@@ -411,8 +413,10 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(select,
 )
 #endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM) */
 
-#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM)
 /*
+ * This is the new 'pselect6_time64' syscall, for the old 'pselect6' now
+ * renamed 'pselect6_time32' see the generic-32 header.
+ *
  * Instead of extracting the user-space pointers of the 3 fd_set,
  * extract the bitmask of the FDs in the sets (in, out, ex) in the form
  * of an array of uint8_t (1024 FDs is the limit in the kernel).
@@ -421,7 +425,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(select,
 #define OVERRIDE_64_pselect6
 SC_LTTNG_TRACEPOINT_EVENT_CODE(pselect6,
 	TP_PROTO(sc_exit(long ret,) int n, fd_set __user * inp, fd_set __user * outp,
-		fd_set __user * exp, struct timeval __user * tvp, void __user * sig),
+		fd_set __user * exp, struct __kernel_old_timeval __user * tvp, void __user * sig),
 	TP_ARGS(sc_exit(ret,) n, inp, outp, exp, tvp, sig),
 	TP_locvar(
 		LTTNG_SYSCALL_SELECT_locvar
@@ -433,7 +437,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(pselect6,
 		sc_exit(ctf_integer(long, ret, ret))
 		sc_in(ctf_integer(int, n, n))
 		sc_inout(ctf_integer(uint8_t, overflow, tp_locvar->overflow))
-		sc_inout(ctf_integer(struct timeval *, tvp, tvp))
+		sc_inout(ctf_integer(struct __kernel_old_timeval *, tvp, tvp))
 		sc_in(ctf_integer_hex(void *, sig, sig))
 
 		sc_inout(
@@ -452,236 +456,6 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(pselect6,
 		LTTNG_SYSCALL_SELECT_code_post
 	)
 )
-#endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM) */
-
-#if defined(CONFIG_X86_32) || defined(CONFIG_ARM)
-/*
- * Instead of extracting the user-space pointers of the 3 fd_set,
- * extract the bitmask of the FDs in the sets (in, out, ex) in the form
- * of an array of uint8_t (1024 FDs is the limit in the kernel).
- */
-#define OVERRIDE_32_pselect6_time32
-SC_LTTNG_TRACEPOINT_EVENT_CODE(pselect6_time32,
-	TP_PROTO(sc_exit(long ret,) int n, fd_set __user * inp, fd_set __user * outp,
-		fd_set __user * exp, struct old_timespec32 __user * tvp, void __user * sig),
-	TP_ARGS(sc_exit(ret,) n, inp, outp, exp, tvp, sig),
-	TP_locvar(
-		LTTNG_SYSCALL_SELECT_locvar
-	),
-	TP_code_pre(
-		LTTNG_SYSCALL_SELECT_code_pre
-	),
-	TP_FIELDS(
-		sc_exit(ctf_integer(long, ret, ret))
-		sc_in(ctf_integer(int, n, n))
-		sc_inout(ctf_integer(uint8_t, overflow, tp_locvar->overflow))
-		sc_inout(ctf_integer(struct old_timespec32 *, tvp, tvp))
-		sc_in(ctf_integer_hex(void *, sig, sig))
-
-		sc_inout(
-#if (__BYTE_ORDER == __LITTLE_ENDIAN)
-			LTTNG_SYSCALL_SELECT_fds_field_LE(readfds, inp)
-			LTTNG_SYSCALL_SELECT_fds_field_LE(writefds, outp)
-			LTTNG_SYSCALL_SELECT_fds_field_LE(exceptfds, exp)
-#else
-			LTTNG_SYSCALL_SELECT_fds_field_BE(readfds, inp)
-			LTTNG_SYSCALL_SELECT_fds_field_BE(writefds, outp)
-			LTTNG_SYSCALL_SELECT_fds_field_BE(exceptfds, exp)
-#endif
-		)
-	),
-	TP_code_post(
-		LTTNG_SYSCALL_SELECT_code_post
-	)
-)
-#endif /* defined(CONFIG_X86_32) || defined(CONFIG_ARM) */
-
-#ifdef LTTNG_CREATE_FIELD_METADATA
-#ifndef ONCE_LTTNG_TRACE_POLL_H
-#define ONCE_LTTNG_TRACE_POLL_H
-
-#define LTTNG_POLL_NRFLAGS (POLLNVAL + 1)
-#define POLL_FLAGS_PADDING_SIZE (sizeof(uint8_t) * BITS_PER_BYTE) - \
-	ilog2(LTTNG_POLL_NRFLAGS - 1)
-
-#ifndef LTTNG_TRACEPOINT_TYPE_EXTERN
-/*
- * Only extract the values specified by iBCS2 for now.
- */
-static const struct lttng_kernel_event_field *lttng_pollfd_flag_fields[] = {
-	[ilog2(POLLIN)] = lttng_kernel_static_event_field("POLLIN",
-				lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10),
-				false, false),
-	[ilog2(POLLPRI)] = lttng_kernel_static_event_field("POLLPRI",
-				lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10),
-				false, false),
-	[ilog2(POLLOUT)] = lttng_kernel_static_event_field("POLLOUT",
-				lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10),
-				false, false),
-	[ilog2(POLLERR)] = lttng_kernel_static_event_field("POLLERR",
-				lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10),
-				false, false),
-	[ilog2(POLLHUP)] = lttng_kernel_static_event_field("POLLHUP",
-				lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10),
-				false, false),
-	[ilog2(POLLNVAL)] = lttng_kernel_static_event_field("POLLNVAL",
-				lttng_kernel_static_type_integer(1, 1, 0, __LITTLE_ENDIAN, 10),
-				false, false),
-	[ilog2(LTTNG_POLL_NRFLAGS)] = lttng_kernel_static_event_field("padding",
-				lttng_kernel_static_type_integer(POLL_FLAGS_PADDING_SIZE, 1, 0, __LITTLE_ENDIAN, 10),
-				false, false),
-};
-
-static_assert(((ARRAY_SIZE(lttng_pollfd_flag_fields) - 1) + POLL_FLAGS_PADDING_SIZE) == sizeof(uint8_t) * BITS_PER_BYTE);
-
-#endif /* LTTNG_TRACEPOINT_TYPE_EXTERN */
-
-LTTNG_TRACEPOINT_TYPE(PARAMS(const struct lttng_kernel_type_struct lttng_pollfd_flag_fields_struct),
-	PARAMS(lttng_kernel_static_type_struct_init(ARRAY_SIZE(lttng_pollfd_flag_fields), lttng_pollfd_flag_fields, 0)))
-
-#ifndef LTTNG_TRACEPOINT_TYPE_EXTERN
-static const struct lttng_kernel_event_field *lttng_pollfd_fields[] = {
-	[0] = lttng_kernel_static_event_field("fd", lttng_kernel_static_type_integer_from_type(int, __BYTE_ORDER, 10),
-				false, false),
-	[1] = lttng_kernel_static_event_field("raw_events", lttng_kernel_static_type_integer_from_type(uint16_t, __BYTE_ORDER, 16),
-				false, false),
-	[2] = lttng_kernel_static_event_field("events",
-		(const struct lttng_kernel_type_common *) &lttng_pollfd_flag_fields_struct,
-		false, false),
-};
-#endif /* LTTNG_TRACEPOINT_TYPE_EXTERN */
-
-LTTNG_TRACEPOINT_TYPE(PARAMS(const struct lttng_kernel_type_struct lttng_pollfd_fields_struct),
-	PARAMS(lttng_kernel_static_type_struct_init(ARRAY_SIZE(lttng_pollfd_fields), lttng_pollfd_fields, 0)))
-
-#endif /* ONCE_LTTNG_TRACE_POLL_H */
-#endif /* LTTNG_CREATE_FIELD_METADATA */
-
-#define LTTNG_SYSCALL_POLL_locvar				\
-	unsigned int fds_length, fds_max_len, alloc_fds;	\
-	struct pollfd *fds;					\
-	uint8_t overflow;
-
-#define LTTNG_SYSCALL_POLL_code_pre				\
-	tp_locvar->fds = NULL;								\
-	tp_locvar->overflow = 0;							\
-											\
-	sc_in(										\
-		if (nfds > PAGE_SIZE / sizeof(struct pollfd)) {				\
-			tp_locvar->fds_length = PAGE_SIZE / sizeof(struct pollfd);	\
-			tp_locvar->fds_max_len = PAGE_SIZE / sizeof(struct pollfd);	\
-			tp_locvar->overflow = 1;					\
-		} else {								\
-			tp_locvar->fds_length = nfds;					\
-			tp_locvar->fds_max_len = nfds;					\
-		}									\
-		tp_locvar->alloc_fds = tp_locvar->fds_length * sizeof(struct pollfd);	\
-	)										\
-	/*										\
-	 * On exit, the number of active FDs is determined by ret,			\
-	 * nfds stays the same as the entry, but we only want to			\
-	 * output the FDs that are relevant.						\
-	 */										\
-	sc_out(										\
-		if (ret <= 0 || ret > nfds)						\
-			goto error;							\
-											\
-		if (nfds > PAGE_SIZE / sizeof(struct pollfd)) {				\
-			tp_locvar->fds_length = PAGE_SIZE / sizeof(struct pollfd);	\
-			tp_locvar->fds_max_len = PAGE_SIZE / sizeof(struct pollfd);	\
-			tp_locvar->overflow = 1;					\
-		} else {								\
-			tp_locvar->fds_length = ret;					\
-			tp_locvar->fds_max_len = nfds;					\
-		}									\
-		tp_locvar->alloc_fds = tp_locvar->fds_max_len * sizeof(struct pollfd);	\
-	)										\
-	{										\
-		int err;								\
-											\
-		tp_locvar->fds = lttng_tp_mempool_alloc(tp_locvar->alloc_fds);		\
-		if (!tp_locvar->fds)							\
-			goto error;							\
-		err = lib_ring_buffer_copy_from_user_check_nofault(			\
-			tp_locvar->fds, ufds, tp_locvar->alloc_fds);			\
-		if (err != 0)								\
-			goto error;							\
-	}										\
-	goto end;									\
-											\
-error:											\
-	tp_locvar->fds_length = 0;							\
-	tp_locvar->fds_max_len = 0;							\
-end:											\
-	;
-
-#define LTTNG_SYSCALL_POLL_fds_field								\
-	sc_in(											\
-		ctf_custom_field(								\
-			ctf_custom_type(							\
-				lttng_kernel_static_type_sequence("fds_length",			\
-					(const struct lttng_kernel_type_common *) &lttng_pollfd_fields_struct, \
-					0,							\
-					none)							\
-			),									\
-			fds,									\
-			ctf_custom_code(							\
-				uint32_t i;							\
-												\
-				ctf_align(int) /* Align on largest field in struct. */		\
-				for (i = 0; i < tp_locvar->fds_length; i++) {			\
-					ctf_integer_type(int, tp_locvar->fds[i].fd)		\
-					ctf_integer_type(short, tp_locvar->fds[i].events)	\
-					ctf_integer_bitfield_type(uint8_t,			\
-						(uint8_t) tp_locvar->fds[i].events)		\
-				}								\
-			)									\
-		)										\
-	)											\
-	sc_out(											\
-		ctf_custom_field(								\
-			ctf_custom_type(							\
-				lttng_kernel_static_type_sequence("fds_length",			\
-					(const struct lttng_kernel_type_common *) &lttng_pollfd_fields_struct, \
-					0,							\
-					none)							\
-			),									\
-			fds,									\
-			ctf_custom_code(							\
-				unsigned int i, nr = 0;						\
-												\
-				ctf_align(int) /* Align on largest field in struct. */		\
-				/*								\
-				 * Iterate over the complete array, but only output		\
-				 * "ret" active FDs.						\
-				 */								\
-				for (i = 0; i < tp_locvar->fds_max_len; i++) {			\
-					if (!tp_locvar->fds[i].revents)				\
-						continue;					\
-					if (nr++ >= tp_locvar->fds_length)			\
-						break;						\
-					ctf_integer_type(int, tp_locvar->fds[i].fd)		\
-					ctf_integer_type(short, tp_locvar->fds[i].revents)	\
-					ctf_integer_bitfield_type(uint8_t,			\
-						(uint8_t) tp_locvar->fds[i].revents)		\
-				}								\
-				/*								\
-				 * If there is a discrepancy between ret and the		\
-				 * content of revents (e.g. caused by userspace corrupting	\
-				 * the array from a concurrent thread), we have to output	\
-				 * zeros to keep the trace readable.				\
-				 */								\
-				for (i = nr; i < tp_locvar->fds_length; i++) {			\
-					ctf_integer_type(int, 0)				\
-					ctf_integer_type(short, 0)				\
-					ctf_integer_bitfield_type(uint8_t, 0)			\
-				}								\
-			)									\
-		)										\
-	)
-
-#define LTTNG_SYSCALL_POLL_code_post	\
-	lttng_tp_mempool_free(tp_locvar->fds);
 
 #if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM)
 /*
@@ -717,8 +491,10 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(poll,
 )
 #endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM) */
 
-#if defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM)
 /*
+ * This is the new 'ppoll_time64' syscall, for the old 'ppoll' now
+ * renamed 'ppoll_time32' see the generic-32 header.
+ *
  * Instead of printing the pointer address of the poll set, extract all the FDs
  * and flags from the poll set. For now, only output the standardized
  * set of events to limit the verbosity of the output, and also extract
@@ -729,7 +505,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(poll,
 #define OVERRIDE_64_ppoll
 SC_LTTNG_TRACEPOINT_EVENT_CODE(ppoll,
 	TP_PROTO(sc_exit(long ret,) struct pollfd __user * ufds,
-		unsigned int nfds, struct timespec * tsp, const sigset_t * sigmask, size_t sigsetsize),
+		unsigned int nfds, struct __kernel_timespec * tsp, const sigset_t * sigmask, size_t sigsetsize),
 	TP_ARGS(sc_exit(ret,) ufds, nfds, tsp, sigmask, sigsetsize),
 	TP_locvar(
 		LTTNG_SYSCALL_POLL_locvar
@@ -739,7 +515,7 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(ppoll,
 	),
 	TP_FIELDS(
 		sc_exit(ctf_integer(long, ret, ret))
-		sc_in(ctf_integer(struct timespec *, tsp, tsp))
+		sc_in(ctf_integer(struct __kernel_timespec *, tsp, tsp))
 		sc_in(ctf_integer(const sigset_t *, sigmask, sigmask))
 		sc_in(ctf_integer(size_t, sigsetsize, sigsetsize))
 		sc_inout(ctf_integer(unsigned int, nfds, nfds))
@@ -751,42 +527,6 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(ppoll,
 		LTTNG_SYSCALL_POLL_code_post
 	)
 )
-#endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM) */
-
-#if defined(CONFIG_X86_32) || defined(CONFIG_ARM)
-/*
- * Instead of printing the pointer address of the poll set, extract all the FDs
- * and flags from the poll set. For now, only output the standardized
- * set of events to limit the verbosity of the output, and also extract
- * the raw value. In the future, moving to CTF2 will allow hiding unset
- * fields and then allow extracting all the fields.
- */
-#define OVERRIDE_32_ppoll_time32
-SC_LTTNG_TRACEPOINT_EVENT_CODE(ppoll_time32,
-	TP_PROTO(sc_exit(long ret,) struct pollfd __user * ufds,
-		unsigned int nfds, struct old_timespec32 * tsp, const sigset_t * sigmask, size_t sigsetsize),
-	TP_ARGS(sc_exit(ret,) ufds, nfds, tsp, sigmask, sigsetsize),
-	TP_locvar(
-		LTTNG_SYSCALL_POLL_locvar
-	),
-	TP_code_pre(
-		LTTNG_SYSCALL_POLL_code_pre
-	),
-	TP_FIELDS(
-		sc_exit(ctf_integer(long, ret, ret))
-		sc_in(ctf_integer(struct old_timespec32 *, tsp, tsp))
-		sc_in(ctf_integer(const sigset_t *, sigmask, sigmask))
-		sc_in(ctf_integer(size_t, sigsetsize, sigsetsize))
-		sc_inout(ctf_integer(unsigned int, nfds, nfds))
-		sc_inout(ctf_integer(unsigned int, fds_length, tp_locvar->fds_length))
-		sc_inout(ctf_integer(uint8_t, overflow, tp_locvar->overflow))
-		LTTNG_SYSCALL_POLL_fds_field
-	),
-	TP_code_post(
-		LTTNG_SYSCALL_POLL_code_post
-	)
-)
-#endif /* defined(CONFIG_X86_32) || defined(CONFIG_ARM) */
 
 #include <linux/eventpoll.h>
 
