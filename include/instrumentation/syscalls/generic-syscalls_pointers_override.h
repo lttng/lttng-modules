@@ -803,6 +803,9 @@ LTTNG_TRACEPOINT_TYPE(PARAMS(const struct lttng_kernel_type_struct lttng_epoll_w
  * The 'epoll_wait' syscall is only available on x86 32/64, ppc 32/64 and arm-32.
  */
 #if defined(CONFIG_X86) || defined(CONFIG_PPC) || defined(CONFIG_ARM)
+/*
+ * Override 'epoll_wait', extract the content of the "events" field (events set and data payload)
+ */
 #define OVERRIDE_32_epoll_wait
 #define OVERRIDE_64_epoll_wait
 SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_wait,
@@ -832,6 +835,9 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_wait,
 )
 #endif /* defined(CONFIG_X86) || defined(CONFIG_PPC) || defined(CONFIG_ARM) */
 
+/*
+ * Override 'epoll_pwait', extract the content of the "events" field (events set and data payload)
+ */
 #define OVERRIDE_32_epoll_pwait
 #define OVERRIDE_64_epoll_pwait
 SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_pwait,
@@ -849,6 +855,39 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_pwait,
 		sc_in(ctf_integer(int, epfd, epfd))
 		sc_in(ctf_integer(int, maxevents, maxevents))
 		sc_in(ctf_integer(int, timeout, timeout))
+		sc_in(ctf_integer_hex(const sigset_t *, sigmask, sigmask))
+		sc_in(ctf_integer(size_t, sigsetsize, sigsetsize))
+		sc_out(ctf_integer(unsigned int, fds_length, tp_locvar->fds_length))
+		sc_out(ctf_integer(uint8_t, overflow, tp_locvar->overflow))
+		sc_out(
+			LTTNG_SYSCALL_EPOLL_WAIT_fds_field
+		)
+	),
+	TP_code_post(
+		LTTNG_SYSCALL_EPOLL_WAIT_code_post
+	)
+)
+
+/*
+ * Override 'epoll_pwait2', extract the content of the "events" field (events set and data payload)
+ */
+#define OVERRIDE_32_epoll_pwait2
+#define OVERRIDE_64_epoll_pwait2
+SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_pwait2,
+	TP_PROTO(sc_exit(long ret,) int epfd, struct epoll_event __user * uevents,
+		int maxevents, const struct __kernel_timespec * timeout, const sigset_t __user * sigmask, size_t sigsetsize),
+	TP_ARGS(sc_exit(ret,) epfd, uevents, maxevents, timeout, sigmask, sigsetsize),
+	TP_locvar(
+		LTTNG_SYSCALL_EPOLL_WAIT_locvar
+	),
+	TP_code_pre(
+		LTTNG_SYSCALL_EPOLL_WAIT_code_pre
+	),
+	TP_FIELDS(
+		sc_exit(ctf_integer(long, ret, ret))
+		sc_in(ctf_integer(int, epfd, epfd))
+		sc_in(ctf_integer(int, maxevents, maxevents))
+		sc_in(ctf_integer_hex(const struct __kernel_timespec *, timeout, timeout))
 		sc_in(ctf_integer_hex(const sigset_t *, sigmask, sigmask))
 		sc_in(ctf_integer(size_t, sigsetsize, sigsetsize))
 		sc_out(ctf_integer(unsigned int, fds_length, tp_locvar->fds_length))
