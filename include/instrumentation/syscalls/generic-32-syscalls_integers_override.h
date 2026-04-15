@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-2.0-only OR LGPL-2.1-only
 
 #include "common-syscall-32-loff_t.h"
+#include "common-syscall-fcntl.h"
 #include "common-syscall-mmap.h"
 
 #ifndef CREATE_SYSCALL_TABLE
@@ -196,6 +197,21 @@ SC_LTTNG_TRACEPOINT_EVENT(fallocate,
 		sc_in(ctf_integer(loff_t, offset, tp_field_loff_t(offset)))
 		sc_in(ctf_integer(loff_t, len, tp_field_loff_t(len))))
 )
+
+#ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
+/*
+ * Override 'fcntl64' to set the output field 'cmd' to a flag enumeration.
+ */
+#define OVERRIDE_32_fcntl64
+SC_LTTNG_TRACEPOINT_EVENT(fcntl64,
+	TP_PROTO(sc_exit(long ret,) int fd, unsigned int cmd, unsigned long arg),
+	TP_ARGS(sc_exit(ret,) fd, cmd, arg),
+	TP_FIELDS(sc_exit(ctf_integer(long, ret, ret))
+		sc_in(ctf_integer(int, fd, fd))
+		sc_in(ctf_enum(lttng_fcntl_cmd_flags, unsigned int, cmd, cmd))
+		sc_inout(ctf_integer(unsigned long, arg, arg)))
+)
+#endif /* CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM */
 
 #else /* CREATE_SYSCALL_TABLE */
 
