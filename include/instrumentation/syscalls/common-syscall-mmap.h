@@ -66,8 +66,6 @@ SC_LTTNG_TRACEPOINT_ENUM(lttng_mmap_flags_options,
 		ctf_enum_value("MAP_GROWSDOWN",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_GROWSDOWN))
 		ctf_enum_value("MAP_HUGETLB",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_HUGETLB))
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0))
-
 #if defined (MAP_HUGE_2MB) && MAP_HUGE_2MB != 0
 		ctf_enum_value("MAP_HUGE_2MB",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_HUGE_2MB))
 #endif /* defined (MAP_HUGE_2MB) && MAP_HUGE_2MB != 0 */
@@ -75,8 +73,6 @@ SC_LTTNG_TRACEPOINT_ENUM(lttng_mmap_flags_options,
 #if defined (MAP_HUGE_1GB) && MAP_HUGE_1GB != 0
 		ctf_enum_value("MAP_HUGE_1GB",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_HUGE_1GB))
 #endif /* defined (MAP_HUGE_1GB) && MAP_HUGE_1GB != 0 */
-
-#endif /* (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,8,0)) */
 
 		ctf_enum_value("MAP_LOCKED",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_LOCKED))
 		ctf_enum_value("MAP_NONBLOCK",		LTTNG_MMAP_FLAGS_TO_CTF(MAP_NONBLOCK))

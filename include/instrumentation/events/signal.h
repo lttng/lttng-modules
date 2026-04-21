@@ -70,7 +70,7 @@ LTTNG_TRACEPOINT_EVENT(signal_generate,
 		ctf_integer(int, result, result)
 	)
 )
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,4,0))
+#else
 LTTNG_TRACEPOINT_EVENT(signal_generate,
 
 	TP_PROTO(int sig, struct siginfo *info, struct task_struct *task,
@@ -85,20 +85,6 @@ LTTNG_TRACEPOINT_EVENT(signal_generate,
 		ctf_integer(pid_t, pid, task->pid)
 		ctf_integer(int, group, group)
 		ctf_integer(int, result, result)
-	)
-)
-#else
-LTTNG_TRACEPOINT_EVENT(signal_generate,
-
-	TP_PROTO(int sig, struct siginfo *info, struct task_struct *task),
-
-	TP_ARGS(sig, info, task),
-
-	TP_FIELDS(
-		ctf_integer(int, sig, sig)
-		LTTNG_FIELDS_SIGINFO(info)
-		ctf_array_text(char, comm, task->comm, TASK_COMM_LEN)
-		ctf_integer(pid_t, pid, task->pid)
 	)
 )
 #endif
@@ -145,57 +131,6 @@ LTTNG_TRACEPOINT_EVENT(signal_deliver,
 		ctf_integer(unsigned long, sa_handler, (unsigned long) ka->sa.sa_handler)
 		ctf_integer(unsigned long, sa_flags, ka->sa.sa_flags)
 	)
-)
-#endif
-
-#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(3,4,0))
-LTTNG_TRACEPOINT_EVENT_CLASS(signal_queue_overflow,
-
-	TP_PROTO(int sig, int group, struct siginfo *info),
-
-	TP_ARGS(sig, group, info),
-
-	TP_FIELDS(
-		ctf_integer(int, sig, sig)
-		ctf_integer(int, group, group)
-		LTTNG_FIELDS_SIGINFO(info)
-	)
-)
-
-/**
- * signal_overflow_fail - called when signal queue is overflow
- * @sig: signal number
- * @group: signal to process group or not (bool)
- * @info: pointer to struct siginfo
- *
- * Kernel fails to generate 'sig' signal with 'info' siginfo, because
- * siginfo queue is overflow, and the signal is dropped.
- * 'group' is not 0 if the signal will be sent to a process group.
- * 'sig' is always one of RT signals.
- */
-LTTNG_TRACEPOINT_EVENT_INSTANCE(signal_queue_overflow, signal_overflow_fail,
-
-	TP_PROTO(int sig, int group, struct siginfo *info),
-
-	TP_ARGS(sig, group, info)
-)
-
-/**
- * signal_lose_info - called when siginfo is lost
- * @sig: signal number
- * @group: signal to process group or not (bool)
- * @info: pointer to struct siginfo
- *
- * Kernel generates 'sig' signal but loses 'info' siginfo, because siginfo
- * queue is overflow.
- * 'group' is not 0 if the signal will be sent to a process group.
- * 'sig' is always one of non-RT signals.
- */
-LTTNG_TRACEPOINT_EVENT_INSTANCE(signal_queue_overflow, signal_lose_info,
-
-	TP_PROTO(int sig, int group, struct siginfo *info),
-
-	TP_ARGS(sig, group, info)
 )
 #endif
 

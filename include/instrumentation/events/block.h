@@ -1115,7 +1115,7 @@ LTTNG_TRACEPOINT_EVENT(block_bio_queue,
 		ctf_array_text(char, comm, current->comm, TASK_COMM_LEN)
 	)
 )
-#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,9,0)) */
+#endif
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
 /**

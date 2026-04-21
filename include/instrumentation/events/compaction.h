@@ -140,7 +140,7 @@ LTTNG_TRACEPOINT_EVENT_CODE_MAP(mm_compaction_migratepages,
 
 	TP_code_post()
 )
-#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(3,16,0)) */
+#endif
 
 #endif /* LTTNG_TRACE_COMPACTION_H */
 
