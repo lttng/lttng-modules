@@ -26,6 +26,16 @@ config LTTNG_EXPERIMENTAL_BITWISE_ENUM
 
 	  If unsure, say N.
 
+config LTTNG_FORCE_ALIGNED_ACCESS
+	bool "LTTng experimental counter support"
+	default n
+	depends on LTTNG
+	help
+	  Force LTTng to use aligned accesses to store fields to the ring
+	  buffer.
+
+	  If unsure, say N.
+
 config LTTNG_SYSCALLS_EXTRACTOR
 	bool "LTTng syscalls extraction helper"
 	default n
@@ -34,5 +44,7 @@ config LTTNG_SYSCALLS_EXTRACTOR
 	  Enable the LTTng system call extraction helper which prints the list
 	  of enabled system calls, along with their signature, to dmesg. This
 	  is not meant for mainline; it is a development helper.
+
+	  If unsure, say N.
 
 source "lttng/src/tests/Kconfig"
