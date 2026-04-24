@@ -1,6 +1,11 @@
-# SPDX-FileCopyrightText: 2011-2025 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+# SPDX-FileCopyrightText: 2011-2026 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 #
 # SPDX-License-Identifier: CC-BY-SA-4.0
+
+2026-04-24 LTTng modules 2.15.1
+	* Fix: kallsyms on powerpc64 with ABI V1
+	* fix: ASoC: soc-dapm: move struct snd_soc_dapm_context (v7.0)
+	* fix: adjust range in btrfs probe for v6.18.14
 
 2026-02-13 LTTng modules 2.15.0
 	* (no change)
