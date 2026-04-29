@@ -830,7 +830,10 @@ SC_LTTNG_TRACEPOINT_EVENT_CODE(epoll_pwait,
 )
 #endif /* defined(CONFIG_X86_32) || defined(CONFIG_X86_64) || defined(CONFIG_ARM64) || defined(CONFIG_ARM) */
 
-#if (defined(CONFIG_X86_64) && !defined(LTTNG_SC_COMPAT)) || defined(CONFIG_ARM64) || defined(CONFIG_ARM)
+/*
+ * Override 'socketpair' to set the output field 'usockvec' to an array of 2
+ * integers instead of the default integer pointer.
+ */
 #define OVERRIDE_32_socketpair
 #define OVERRIDE_64_socketpair
 SC_LTTNG_TRACEPOINT_EVENT(socketpair,
@@ -844,7 +847,6 @@ SC_LTTNG_TRACEPOINT_EVENT(socketpair,
 		sc_out(ctf_user_array(int, socket, usockvec, 2))
 	)
 )
-#endif /* (defined(CONFIG_X86_64) && !defined(LTTNG_SC_COMPAT)) || defined(CONFIG_ARM64) || defined(CONFIG_ARM) */
 
 #ifdef CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM
 /*
