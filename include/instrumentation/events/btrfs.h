@@ -97,7 +97,46 @@ LTTNG_TRACEPOINT_EVENT(btrfs_transaction_commit,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,18,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__inode,
+
+	TP_PROTO(const struct inode *inode),
+
+	TP_ARGS(inode),
+
+	TP_FIELDS(
+		ctf_integer(u64, ino, btrfs_ino(BTRFS_I(inode)))
+		ctf_integer(blkcnt_t, blocks, inode->i_blocks)
+		ctf_integer(u64, disk_i_size, BTRFS_I(inode)->disk_i_size)
+		ctf_integer(u64, generation, BTRFS_I(inode)->generation)
+		ctf_integer(u64, last_trans, BTRFS_I(inode)->last_trans)
+		ctf_integer(u64, logged_trans, BTRFS_I(inode)->logged_trans)
+		ctf_integer(u64, root_objectid,
+				BTRFS_I(inode)->root->root_key.objectid)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__inode, btrfs_inode_new,
+
+	TP_PROTO(const struct inode *inode),
+
+	TP_ARGS(inode)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__inode, btrfs_inode_request,
+
+	TP_PROTO(const struct inode *inode),
+
+	TP_ARGS(inode)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE(btrfs__inode, btrfs_inode_evict,
+
+	TP_PROTO(const struct inode *inode),
+
+	TP_ARGS(inode)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,73,5,0,0, 4,4,73,6,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,82,6,0,0, 4,4,82,7,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,92,6,0,0, 4,4,92,7,0,0) || \
@@ -427,7 +466,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__ordered_extent,
 
 	TP_FIELDS(
 		ctf_array(u8, fsid, inode->root->lttng_fs_info_fsid, BTRFS_UUID_SIZE)
-		ctf_integer(ino_t, ino, btrfs_ino(inode))
+		ctf_integer(u64, ino, btrfs_ino(inode))
 		ctf_integer(u64, file_offset, ordered->file_offset)
 		ctf_integer(u64, start, ordered->disk_bytenr)
 		ctf_integer(u64, len, ordered->num_bytes)
@@ -449,10 +488,32 @@ LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__ordered_extent,
 
 	TP_FIELDS(
 		ctf_integer(ino_t, ino, inode->i_ino)
-		ctf_integer(u64, file_offset, ordered->file_offset)
+		ctf_integer(u64, ino, btrfs_ino(BTRFS_I(inode)))
 		ctf_integer(u64, start, ordered->disk_bytenr)
 		ctf_integer(u64, len, ordered->num_bytes)
 		ctf_integer(u64, disk_len, ordered->disk_num_bytes)
+		ctf_integer(u64, bytes_left, ordered->bytes_left)
+		ctf_integer(unsigned long, flags, ordered->flags)
+		ctf_integer(int, compress_type, ordered->compress_type)
+		ctf_integer(int, refs, refcount_read(&ordered->refs))
+		ctf_integer(u64, root_objectid,
+				BTRFS_I(inode)->root->root_key.objectid)
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,18,0))
+LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__ordered_extent,
+
+	TP_PROTO(const struct inode *inode,
+		 const struct btrfs_ordered_extent *ordered),
+
+	TP_ARGS(inode, ordered),
+
+	TP_FIELDS(
+		ctf_integer(u64, ino, btrfs_ino(BTRFS_I(inode)))
+		ctf_integer(u64, file_offset, ordered->file_offset)
+		ctf_integer(u64, start, ordered->start)
+		ctf_integer(u64, len, ordered->len)
+		ctf_integer(u64, disk_len, ordered->disk_len)
 		ctf_integer(u64, bytes_left, ordered->bytes_left)
 		ctf_integer(unsigned long, flags, ordered->flags)
 		ctf_integer(int, compress_type, ordered->compress_type)
@@ -731,6 +792,25 @@ LTTNG_TRACEPOINT_EVENT(btrfs_writepage_end_io_hook,
 	)
 )
 
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,18,0))
+
+LTTNG_TRACEPOINT_EVENT(btrfs_writepage_end_io_hook,
+
+	TP_PROTO(const struct page *page, u64 start, u64 end, int uptodate),
+
+	TP_ARGS(page, start, end, uptodate),
+
+	TP_FIELDS(
+		ctf_integer(u64, ino, btrfs_ino(BTRFS_I(page->mapping->host)))
+		ctf_integer(pgoff_t, index, page->index)
+		ctf_integer(u64, start, start)
+		ctf_integer(u64, end, end)
+		ctf_integer(int, uptodate, uptodate)
+		ctf_integer(u64, root_objectid,
+			BTRFS_I(page->mapping->host)->root->root_key.objectid)
+	)
+)
+
 #elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,73,5,0,0, 4,4,73,6,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,82,6,0,0, 4,4,82,7,0,0) || \
@@ -783,7 +863,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__writepage,
 	TP_ARGS(folio, inode, wbc),
 
 	TP_FIELDS(
-		ctf_integer(ino_t, ino, inode->i_ino)
+		ctf_integer(u64, ino, btrfs_ino(BTRFS_I(inode)))
 		ctf_integer(pgoff_t, index, folio->index)
 		ctf_integer(long, nr_to_write, wbc->nr_to_write)
 		ctf_integer(long, pages_skipped, wbc->pages_skipped)
@@ -819,7 +899,7 @@ LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__writepage,
 	TP_ARGS(folio, inode, wbc),
 
 	TP_FIELDS(
-		ctf_integer(ino_t, ino, inode->i_ino)
+		ctf_integer(u64, ino, btrfs_ino(BTRFS_I(inode)))
 		ctf_integer(pgoff_t, index, folio->index)
 		ctf_integer(long, nr_to_write, wbc->nr_to_write)
 		ctf_integer(long, pages_skipped, wbc->pages_skipped)
@@ -845,6 +925,44 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs__writepage,
 		 const struct writeback_control *wbc),
 
 	TP_ARGS(folio, inode, wbc)
+)
+
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,18,0))
+
+LTTNG_TRACEPOINT_EVENT_CLASS(btrfs__writepage,
+
+	TP_PROTO(const struct page *page, const struct inode *inode,
+		 const struct writeback_control *wbc),
+
+	TP_ARGS(page, inode, wbc),
+
+	TP_FIELDS(
+		ctf_integer(u64, ino, btrfs_ino(BTRFS_I(inode)))
+		ctf_integer(pgoff_t, index, page->index)
+		ctf_integer(long, nr_to_write, wbc->nr_to_write)
+		ctf_integer(long, pages_skipped, wbc->pages_skipped)
+		ctf_integer(loff_t, range_start, wbc->range_start)
+		ctf_integer(loff_t, range_end, wbc->range_end)
+		ctf_integer(char, for_kupdate, wbc->for_kupdate)
+		ctf_integer(char, for_reclaim, wbc->for_reclaim)
+		ctf_integer(char, range_cyclic, wbc->range_cyclic)
+		ctf_integer(pgoff_t, writeback_index,
+				inode->i_mapping->writeback_index)
+		ctf_integer(u64, root_objectid,
+				BTRFS_I(inode)->root->root_key.objectid)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs__writepage,
+
+	__extent_writepage,
+
+	btrfs__extent_writepage,
+
+	TP_PROTO(const struct page *page, const struct inode *inode,
+		 const struct writeback_control *wbc),
+
+	TP_ARGS(page, inode, wbc)
 )
 
 #elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
@@ -926,7 +1044,21 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(btrfs__writepage,
 )
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,18,0))
+LTTNG_TRACEPOINT_EVENT(btrfs_sync_file,
+
+	TP_PROTO(const struct file *file, int datasync),
+
+	TP_ARGS(file, datasync),
+
+	TP_FIELDS(
+		ctf_integer(u64, ino, btrfs_ino(BTRFS_I(file_inode(file))))
+		ctf_integer(u64, parent, btrfs_ino(BTRFS_I(d_inode(file_dentry(file)->d_parent))))
+		ctf_integer(int, datasync, datasync)
+		ctf_integer(u64, root_objectid, BTRFS_I(file_inode(file))->root->root_key.objectid)
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,73,5,0,0, 4,4,73,6,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,82,6,0,0, 4,4,82,7,0,0) || \
 	LTTNG_SLE_KERNEL_RANGE(4,4,92,6,0,0, 4,4,92,7,0,0) || \
