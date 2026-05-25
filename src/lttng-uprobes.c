@@ -256,8 +256,8 @@ int lttng_uprobes_add_callsite(struct lttng_uprobe *uprobe,
 		      uprobe_handler->offset, &uprobe_handler->up_consumer);
 #endif
 	if (ret) {
-		printk(KERN_WARNING "LTTng: Error registering probe on inode %lu "
-		       "and offset 0x%llx\n", uprobe->inode->i_ino,
+		printk(KERN_WARNING "LTTng: Error registering probe on inode %llu "
+		       "and offset 0x%llx\n", (u64) uprobe->inode->i_ino,
 		       uprobe_handler->offset);
 		ret = -1;
 		goto register_error;
