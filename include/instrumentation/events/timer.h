@@ -220,12 +220,43 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_init,
 	)
 )
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(7,1,0) || \
+	LTTNG_KERNEL_RANGE(7,0,10, 7,1,0) || \
+	LTTNG_KERNEL_RANGE(6,18,33, 6,19,0) || \
+	LTTNG_KERNEL_RANGE(6,12,91, 6,13,0) || \
+	LTTNG_KERNEL_RANGE(6,6,141, 6,7,0))
 /**
  * hrtimer_start - called when the hrtimer is started
- * @timer: pointer to struct hrtimer
+ * @hrtimer:	pointer to struct hrtimer
+ * @mode:	the hrtimers mode
+ * @was_armed:	Was armed when hrtimer_start*() was invoked
  */
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,16,0) || \
+LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_start,
+
+	timer_hrtimer_start,
+
+	TP_PROTO(struct hrtimer *hrtimer, enum hrtimer_mode mode, bool was_armed),
+
+	TP_ARGS(hrtimer, mode, was_armed),
+
+	TP_FIELDS(
+		ctf_integer_hex(void *, hrtimer, hrtimer)
+		ctf_integer_hex(void *, function, hrtimer->function)
+		ctf_integer(s64, expires,
+			lttng_ktime_get_tv64(hrtimer_get_expires(hrtimer)))
+		ctf_integer(s64, softexpires,
+			lttng_ktime_get_tv64(hrtimer_get_softexpires(hrtimer)))
+		ctf_enum(hrtimer_mode, unsigned int, mode, mode)
+		ctf_integer(bool, was_armed, was_armed)
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,16,0) || \
 	LTTNG_RT_KERNEL_RANGE(4,14,0,0, 4,15,0,0))
+/**
+ * hrtimer_start - called when the hrtimer is started
+ * @hrtimer:	pointer to struct hrtimer
+ * @mode:	the hrtimers mode
+ */
 LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_start,
 
 	timer_hrtimer_start,
@@ -245,6 +276,10 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_start,
 	)
 )
 #else
+/**
+ * hrtimer_start - called when the hrtimer is started
+ * @hrtimer: pointer to struct hrtimer
+ */
 LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_start,
 
 	timer_hrtimer_start,
