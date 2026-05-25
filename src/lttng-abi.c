@@ -1015,7 +1015,6 @@ long lttng_counter_ioctl_abi_old_counter_clear(struct lttng_kernel_channel_count
 	return lttng_kernel_counter_clear(counter, indexes);
 }
 
-#ifdef CONFIG_LTTNG_EXPERIMENTAL_COUNTER
 static
 long lttng_counter_ioctl_abi_counter_read(struct lttng_kernel_channel_counter *counter,
 		unsigned int cmd, unsigned long arg)
@@ -1155,7 +1154,6 @@ long lttng_counter_ioctl_abi_counter_clear(struct lttng_kernel_channel_counter *
 	}
 	return lttng_kernel_counter_clear(counter, indexes);
 }
-#endif	/* CONFIG_LTTNG_EXPERIMENTAL_COUNTER */
 
 static
 long lttng_counter_ioctl_abi_counter_event(struct file *file,
@@ -1277,14 +1275,12 @@ long lttng_counter_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return lttng_counter_ioctl_abi_old_counter_aggregate(counter, cmd, arg);
 	case LTTNG_KERNEL_ABI_OLD_COUNTER_CLEAR:
 		return lttng_counter_ioctl_abi_old_counter_clear(counter, cmd, arg);
-#ifdef CONFIG_LTTNG_EXPERIMENTAL_COUNTER
 	case LTTNG_KERNEL_ABI_COUNTER_READ:
 		return lttng_counter_ioctl_abi_counter_read(counter, cmd, arg);
 	case LTTNG_KERNEL_ABI_COUNTER_AGGREGATE:
 		return lttng_counter_ioctl_abi_counter_aggregate(counter, cmd, arg);
 	case LTTNG_KERNEL_ABI_COUNTER_CLEAR:
 		return lttng_counter_ioctl_abi_counter_clear(counter, cmd, arg);
-#endif	/* CONFIG_LTTNG_EXPERIMENTAL_COUNTER */
 	case LTTNG_KERNEL_ABI_COUNTER_EVENT:
 		return lttng_counter_ioctl_abi_counter_event(file, counter, cmd, arg);
 	case LTTNG_KERNEL_ABI_ENABLE:

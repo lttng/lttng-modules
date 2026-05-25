@@ -112,11 +112,6 @@ The following kernel configuration options are provided by LTTng:
 
          make CONFIG_LTTNG_EXPERIMENTAL_BITWISE_ENUM=y
 
-  - `CONFIG_LTTNG_EXPERIMENTAL_COUNTER`: Enable the experimental trace
-    hit counters (Defaults to 'n'). This can be enabled by building with:
-
-         make CONFIG_LTTNG_EXPERIMENTAL_COUNTER=y
-
   - `CONFIG_LTTNG_FORCE_ALIGNED_ACCESS`: Force LTTng to use aligned
     accesses to store fields to the ring buffer (Defaults to 'n').
     This can be enabled by building with:
