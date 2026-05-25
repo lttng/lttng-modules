@@ -299,6 +299,29 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_start,
 )
 #endif
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(7,1,0))
+/**
+ * htimmer_expire_entry - called immediately before the hrtimer callback
+ * @timer:	pointer to struct hrtimer
+ * @now:	variable which contains current time of the timers base.
+ *
+ * Allows to determine the timer latency.
+ */
+LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_expire_entry,
+
+	timer_hrtimer_expire_entry,
+
+	TP_PROTO(struct hrtimer *hrtimer, ktime_t now),
+
+	TP_ARGS(hrtimer, now),
+
+	TP_FIELDS(
+		ctf_integer_hex(void *, hrtimer, hrtimer)
+		ctf_integer(s64, now, lttng_ktime_get_tv64(now))
+		ctf_integer_hex(void *, function, hrtimer->function)
+	)
+)
+#else
 /**
  * htimmer_expire_entry - called immediately before the hrtimer callback
  * @timer:	pointer to struct hrtimer
@@ -321,6 +344,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_expire_entry,
 		ctf_integer_hex(void *, function, hrtimer->function)
 	)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT_CLASS(timer_hrtimer_class,
 
