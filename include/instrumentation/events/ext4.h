@@ -242,6 +242,39 @@ LTTNG_TRACEPOINT_EVENT(ext4_da_writepages,
 	)
 )
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,17,0))
+LTTNG_TRACEPOINT_EVENT(ext4_da_write_folios_start,
+	TP_PROTO(struct inode *inode, loff_t start_pos, loff_t next_pos,
+		 struct writeback_control *wbc),
+
+	TP_ARGS(inode, start_pos, next_pos, wbc),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
+		ctf_integer(ino_t, ino, inode->i_ino)
+		ctf_integer(loff_t, start_pos, start_pos)
+		ctf_integer(loff_t, next_pos, next_pos)
+		ctf_integer(long, nr_to_write, wbc->nr_to_write)
+		ctf_integer(int, sync_mode, wbc->sync_mode)
+	)
+)
+
+LTTNG_TRACEPOINT_EVENT(ext4_da_write_folios_end,
+	TP_PROTO(struct inode *inode, loff_t start_pos, loff_t next_pos,
+		 struct writeback_control *wbc, int ret),
+
+	TP_ARGS(inode, start_pos, next_pos, wbc, ret),
+
+	TP_FIELDS(
+		ctf_integer(dev_t, dev, inode->i_sb->s_dev)
+		ctf_integer(ino_t, ino, inode->i_ino)
+		ctf_integer(loff_t, start_pos, start_pos)
+		ctf_integer(loff_t, next_pos, next_pos)
+		ctf_integer(long, nr_to_write, wbc->nr_to_write)
+		ctf_integer(int, ret, ret)
+	)
+)
+#else
 LTTNG_TRACEPOINT_EVENT(ext4_da_write_pages,
 	TP_PROTO(struct inode *inode, pgoff_t first_page,
 		 struct writeback_control *wbc),
@@ -256,6 +289,7 @@ LTTNG_TRACEPOINT_EVENT(ext4_da_write_pages,
 		ctf_integer(int, sync_mode, wbc->sync_mode)
 	)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT(ext4_da_write_pages_extent,
 	TP_PROTO(struct inode *inode, struct ext4_map_blocks *map),
