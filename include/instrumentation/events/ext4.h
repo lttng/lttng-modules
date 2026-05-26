@@ -965,6 +965,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE(ext4__bitmap_load, ext4_load_inode_bitmap,
 	TP_ARGS(sb, group)
 )
 
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(5,13,0))
 LTTNG_TRACEPOINT_EVENT(ext4_direct_IO_enter,
 	TP_PROTO(struct inode *inode, loff_t offset, unsigned long len, int rw),
 
@@ -994,6 +995,7 @@ LTTNG_TRACEPOINT_EVENT(ext4_direct_IO_exit,
 		ctf_integer(int, ret, ret)
 	)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT(ext4_fallocate_exit,
 	TP_PROTO(struct inode *inode, loff_t offset,
@@ -1328,6 +1330,7 @@ LTTNG_TRACEPOINT_EVENT(ext4_get_implied_cluster_alloc_exit,
 	)
 )
 
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(5,13,0))
 LTTNG_TRACEPOINT_EVENT(ext4_ext_put_in_cache,
 	TP_PROTO(struct inode *inode, ext4_lblk_t lblk, unsigned int len,
 		 ext4_fsblk_t start),
@@ -1385,6 +1388,7 @@ LTTNG_TRACEPOINT_EVENT(ext4_get_reserved_cluster_alloc,
 		ctf_integer(unsigned int, len, len)
 	)
 )
+#endif
 
 LTTNG_TRACEPOINT_EVENT(ext4_ext_show_extent,
 	TP_PROTO(struct inode *inode, ext4_lblk_t lblk, ext4_fsblk_t pblk,
