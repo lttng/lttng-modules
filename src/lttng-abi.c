@@ -768,7 +768,7 @@ int create_counter_key_from_abi_dimensions(struct lttng_kernel_counter_key **_co
 			case LTTNG_KERNEL_ABI_KEY_TOKEN_STRING:
 			{
 				struct lttng_kernel_abi_key_token_string __user *utoken_string;
-				struct lttng_kernel_abi_key_token_string *ktoken_string;
+				struct lttng_kernel_abi_key_token_string ktoken_string = {};
 				char __user *string_ptr;
 				size_t string_len;
 
@@ -778,7 +778,7 @@ int create_counter_key_from_abi_dimensions(struct lttng_kernel_counter_key **_co
 				if (ret)
 					goto error;
 				string_ptr = (char __user *) ((unsigned long)utoken_string + ktoken.len);
-				string_len = ktoken_string->string_len;
+				string_len = ktoken_string.string_len;
 				key_token->type = LTTNG_KEY_TOKEN_STRING;
 				if (!string_len || string_len > PAGE_SIZE) {
 					ret = -EINVAL;
