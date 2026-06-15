@@ -539,7 +539,8 @@ int lttng_abi_create_channel(struct file *session_file,
 			transport_name = chan_param->overwrite ?
 				"relay-overwrite-mmap" : "relay-discard-mmap";
 		} else {
-			return -EINVAL;
+			ret = -EINVAL;
+			goto refcount_error;
 		}
 		break;
 	case METADATA_CHANNEL:
@@ -547,8 +548,10 @@ int lttng_abi_create_channel(struct file *session_file,
 			transport_name = "relay-metadata";
 		else if (chan_param->output == LTTNG_KERNEL_ABI_MMAP)
 			transport_name = "relay-metadata-mmap";
-		else
-			return -EINVAL;
+		else {
+			ret = -EINVAL;
+			goto refcount_error;
+		}
 		break;
 	default:
 		transport_name = "<unknown>";
