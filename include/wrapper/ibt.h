@@ -8,6 +8,8 @@
 #ifndef _LTTNG_WRAPPER_IBT_H
 #define _LTTNG_WRAPPER_IBT_H
 
+#include <lttng/kernel-version.h>
+
 struct irq_ibt_state {
 	u64 msr;
 	unsigned long flags;
@@ -22,6 +24,15 @@ struct irq_ibt_state {
 #ifdef CONFIG_X86_KERNEL_IBT
 # include <asm/cpufeature.h>
 # include <asm/msr.h>
+
+# if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,16,0))
+#  define lttng_rdmsrq rdmsrq
+#  define lttng_wrmsrq wrmsrq
+# else
+#  define lttng_rdmsrq rdmsrl
+#  define lttng_wrmsrq wrmsrl
+# endif
+
 static inline __attribute__((always_inline))
 struct irq_ibt_state wrapper_irq_ibt_save(void)
 {
@@ -31,8 +42,8 @@ struct irq_ibt_state wrapper_irq_ibt_save(void)
 	if (!cpu_feature_enabled(X86_FEATURE_IBT))
 		goto end;
 	local_irq_save(state.flags);
-	rdmsrl(MSR_IA32_S_CET, msr);
-	wrmsrl(MSR_IA32_S_CET, msr & ~CET_ENDBR_EN);
+	lttng_rdmsrq(MSR_IA32_S_CET, msr);
+	lttng_wrmsrq(MSR_IA32_S_CET, msr & ~CET_ENDBR_EN);
 	state.msr = msr;
 end:
 	return state;
@@ -45,10 +56,10 @@ void wrapper_irq_ibt_restore(struct irq_ibt_state state)
 
 	if (!cpu_feature_enabled(X86_FEATURE_IBT))
 		return;
-	rdmsrl(MSR_IA32_S_CET, msr);
+	lttng_rdmsrq(MSR_IA32_S_CET, msr);
 	msr &= ~CET_ENDBR_EN;
 	msr |= (state.msr & CET_ENDBR_EN);
-	wrmsrl(MSR_IA32_S_CET, msr);
+	lttng_wrmsrq(MSR_IA32_S_CET, msr);
 	local_irq_restore(state.flags);
 }
 #else
