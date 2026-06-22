@@ -55,7 +55,18 @@ struct extent_state;
 #define lttng_fs_info_fsid fs_info->fsid
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(7,2,0))
+LTTNG_TRACEPOINT_EVENT(btrfs_transaction_commit,
+
+	TP_PROTO(const struct btrfs_trans_handle *trans),
+
+	TP_ARGS(trans),
+
+	TP_FIELDS(
+		ctf_integer(u64, generation, trans->transid)
+	)
+)
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
 LTTNG_TRACEPOINT_EVENT(btrfs_transaction_commit,
 
 	TP_PROTO(const struct btrfs_fs_info *fs_info),
