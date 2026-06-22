@@ -56,6 +56,19 @@ struct extent_state;
 #endif
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(7,2,0))
+LTTNG_TRACEPOINT_ENUM(btrfs_transaction_states,
+
+	TP_ENUM_VALUES(
+		ctf_enum_value("TRANS_STATE_RUNNING", TRANS_STATE_RUNNING)
+		ctf_enum_value("TRANS_STATE_COMMIT_PREP", TRANS_STATE_COMMIT_PREP)
+		ctf_enum_value("TRANS_STATE_COMMIT_START", TRANS_STATE_COMMIT_START)
+		ctf_enum_value("TRANS_STATE_COMMIT_DOING", TRANS_STATE_COMMIT_DOING)
+		ctf_enum_value("TRANS_STATE_UNBLOCKED", TRANS_STATE_UNBLOCKED)
+		ctf_enum_value("TRANS_STATE_SUPER_COMMITTED", TRANS_STATE_SUPER_COMMITTED)
+		ctf_enum_value("TRANS_STATE_COMPLETED", TRANS_STATE_COMPLETED)
+	)
+)
+
 LTTNG_TRACEPOINT_EVENT(btrfs_transaction_commit,
 
 	TP_PROTO(const struct btrfs_trans_handle *trans),
@@ -65,6 +78,7 @@ LTTNG_TRACEPOINT_EVENT(btrfs_transaction_commit,
 	TP_FIELDS(
 		ctf_integer(u64, generation, trans->transid)
 		ctf_integer(bool, in_fsync, trans->in_fsync)
+		ctf_enum(btrfs_transaction_states, int, state, trans->transaction->state)
 	)
 )
 #elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
