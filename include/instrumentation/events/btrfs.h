@@ -64,6 +64,7 @@ LTTNG_TRACEPOINT_EVENT(btrfs_transaction_commit,
 
 	TP_FIELDS(
 		ctf_integer(u64, generation, trans->transid)
+		ctf_integer(bool, in_fsync, trans->in_fsync)
 	)
 )
 #elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,17,0))
