@@ -12,7 +12,12 @@
 #include <lttng/kernel-version.h>
 #include <wrapper/kvm-x86.h>
 #include <../arch/x86/kvm/lapic.h>
+
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(7,2,0))
+#include <../arch/x86/kvm/regs.h>
+#else
 #include <../arch/x86/kvm/kvm_cache_regs.h>
+#endif
 
 #undef TRACE_SYSTEM
 #define TRACE_SYSTEM kvm_x86
