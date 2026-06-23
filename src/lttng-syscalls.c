@@ -28,6 +28,7 @@
 #include <wrapper/rcu.h>
 #include <wrapper/syscall.h>
 #include <wrapper/limits.h>
+#include <wrapper/string.h>
 #include <lttng/events.h>
 #include <lttng/events-internal.h>
 #include <lttng/utils.h>
@@ -609,8 +610,7 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 			ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
 			break;
 		}
-		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1);
-		ev.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
+		lttng_strscpy_pad(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 		ev.token = syscall_event_enabler->user_token;
 		event_recorder_enabler = lttng_event_recorder_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev,
@@ -701,8 +701,7 @@ void lttng_syscall_event_enabler_create_event(struct lttng_event_enabler_common 
 			ev.u.syscall.abi = LTTNG_KERNEL_ABI_SYSCALL_ABI_COMPAT;
 			break;
 		}
-		strncpy(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1);
-		ev.name[LTTNG_KERNEL_ABI_SYM_NAME_LEN - 1] = '\0';
+		lttng_strscpy_pad(ev.name, desc->event_name, LTTNG_KERNEL_ABI_SYM_NAME_LEN);
 		ev.instrumentation = LTTNG_KERNEL_ABI_SYSCALL;
 		ev.token = syscall_event_enabler->user_token;
 		event_counter_enabler = lttng_event_counter_enabler_create(LTTNG_ENABLER_FORMAT_NAME, &ev,
