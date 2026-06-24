@@ -1,6 +1,28 @@
-# SPDX-FileCopyrightText: 2011-2025 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+# SPDX-FileCopyrightText: 2011-2026 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
 #
 # SPDX-License-Identifier: CC-BY-SA-4.0
+
+2026-06-24 LTTng modules 2.16.0-rc1
+	* Reconcile Changelog with version 2.15.0-rc1
+	* fix: leaked file and fd on channel create error
+	* Fix: counter key string literal tokens are not usable
+	* fix: backport: hrtimer: Reduce trace noise in hrtimer_start() (v6.1.175)
+	* Make trace hit counters always enabled
+	* fix: ext4: widen trace event i_ino fields to u64 (v7.1)
+	* fix: ext4: delete some unused tracepoint definitions (v5.13)
+	* fix: ext4: enhance tracepoints during the folios writeback (v6.17)
+	* fix: btrfs: tracepoints, use correct type for inode number (v4.18)
+	* fix: vfs: widen trace event i_ino fields to u64 (v7.1)
+	* fix: treewide: change inode->i_ino from unsigned long to u64 (v7.1)
+	* fix: mm/vmscan: Convert pageout() to take a folio (v5.18)
+	* fix: mm: vmscan: add cgroup IDs to vmscan tracepoints (v7.1)
+	* fix: hrtimer: Drop unnecessary pointer indirection in hrtimer_expire_entry event (v7.1)
+	* fix: hrtimer: Reduce trace noise in hrtimer_start() (v7.1)
+	* Fix: kallsyms on powerpc64 with ABI V1
+	* Syscalls extractor: Use debugfs instead of dmesg
+	* fix: ASoC: soc-dapm: move struct snd_soc_dapm_context (v7.0)
+	* fix: adjust range in btrfs probe for v6.18.14
+	* Set version to 2.16.0-pre
 
 2025-12-19 LTTng modules 2.15.0-rc1
 	* Add the 2.15 "Péché Mortel" beer description
