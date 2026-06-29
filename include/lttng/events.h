@@ -24,7 +24,32 @@
 #include <lttng/abi-old.h>
 #include <lttng/endian.h>
 
-#define lttng_is_signed_type(type)	(((type) -1) < (type) 1)
+/**
+ * On some architectures the base 'char' type is signed but
+ * '__builtin_types_compatible_p(char, signed char)' will return false.
+ *
+ * Returns true if the type of @type is compatible with 'char', only on
+ * architectures where 'char' is signed.
+ */
+#ifdef __CHAR_UNSIGNED__
+#define lttng_char_signed_compatible_p(type)	0
+#else
+#define lttng_char_signed_compatible_p(type)	\
+	__builtin_types_compatible_p(type, char)
+#endif
+
+/**
+ * lttng_is_signed_type - check if type is signed
+ *
+ * Returns true if the type of @type is signed.
+ */
+#define lttng_is_signed_type(type)				\
+	(lttng_char_signed_compatible_p(type) ||		\
+	__builtin_types_compatible_p(type, signed char) ||	\
+	__builtin_types_compatible_p(type, signed short) ||	\
+	__builtin_types_compatible_p(type, signed int) ||	\
+	__builtin_types_compatible_p(type, signed long) ||	\
+	__builtin_types_compatible_p(type, signed long long))
 
 struct lttng_kernel_channel_buffer;
 struct lttng_kernel_channel_counter;
