@@ -376,7 +376,7 @@ struct lttng_kernel_probe_ctx {
 };
 
 struct lttng_kernel_tracepoint_class {
-	void (*probe_callback)(void);
+	void *probe_callback;
 	const struct lttng_kernel_event_field * const *fields;	/* event payload */
 	unsigned int nr_fields;
 	const struct lttng_kernel_probe_desc *probe_desc;
