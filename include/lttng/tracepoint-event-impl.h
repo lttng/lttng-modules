@@ -355,7 +355,7 @@ static __used struct lttng_kernel_probe_desc TP_ID(__probe_desc___, TRACE_SYSTEM
 	static const struct lttng_kernel_tracepoint_class lttng_kernel__event_class___##_name = { \
 		.fields = __event_fields___##_name,			     \
 		.nr_fields = ARRAY_SIZE(__event_fields___##_name),	     \
-		.probe_callback = (void (*)(void)) TP_PROBE_CB(_name),	     \
+		.probe_callback = (void *) TP_PROBE_CB(_name),	     \
 		.probe_desc = &TP_ID(__probe_desc___, TRACE_SYSTEM),	     \
 	};
 
