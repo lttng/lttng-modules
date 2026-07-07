@@ -42,7 +42,7 @@
 #include <wrapper/uaccess.h>
 #include <lttng/string-utils.h>
 #include <lttng/abi.h>
-#include <lttng/abi-old.h>
+#include <lttng/old-counter-abi.h>
 #include <lttng/events.h>
 #include <lttng/events-internal.h>
 #include <lttng/tracer.h>
@@ -388,27 +388,10 @@ static
 long lttng_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	switch (cmd) {
-	case LTTNG_KERNEL_ABI_OLD_SESSION:
 	case LTTNG_KERNEL_ABI_SESSION:
 		return lttng_abi_create_session();
 	case LTTNG_KERNEL_ABI_EVENT_NOTIFIER_GROUP_CREATE:
 		return lttng_abi_create_event_notifier_group();
-	case LTTNG_KERNEL_ABI_OLD_TRACER_VERSION:
-	{
-		struct lttng_kernel_abi_tracer_version v;
-		struct lttng_kernel_abi_old_tracer_version oldv;
-		struct lttng_kernel_abi_old_tracer_version *uversion =
-			(struct lttng_kernel_abi_old_tracer_version __user *) arg;
-
-		lttng_abi_tracer_version(&v);
-		oldv.major = v.major;
-		oldv.minor = v.minor;
-		oldv.patchlevel = v.patchlevel;
-
-		if (copy_to_user(uversion, &oldv, sizeof(oldv)))
-			return -EFAULT;
-		return 0;
-	}
 	case LTTNG_KERNEL_ABI_TRACER_VERSION:
 	{
 		struct lttng_kernel_abi_tracer_version version;
@@ -433,31 +416,13 @@ long lttng_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 			return -EFAULT;
 		return 0;
 	}
-	case LTTNG_KERNEL_ABI_OLD_TRACEPOINT_LIST:
 	case LTTNG_KERNEL_ABI_TRACEPOINT_LIST:
 		return lttng_abi_tracepoint_list();
 	case LTTNG_KERNEL_ABI_SYSCALL_LIST:
 		return lttng_abi_syscall_list();
-	case LTTNG_KERNEL_ABI_OLD_WAIT_QUIESCENT:
 	case LTTNG_KERNEL_ABI_WAIT_QUIESCENT:
 		synchronize_trace();
 		return 0;
-	case LTTNG_KERNEL_ABI_OLD_CALIBRATE:
-	{
-		struct lttng_kernel_abi_old_calibrate __user *ucalibrate =
-			(struct lttng_kernel_abi_old_calibrate __user *) arg;
-		struct lttng_kernel_abi_old_calibrate old_calibrate;
-		struct lttng_kernel_abi_calibrate calibrate;
-		int ret;
-
-		if (copy_from_user(&old_calibrate, ucalibrate, sizeof(old_calibrate)))
-			return -EFAULT;
-		calibrate.type = old_calibrate.type;
-		ret = lttng_calibrate(&calibrate);
-		if (copy_to_user(ucalibrate, &old_calibrate, sizeof(old_calibrate)))
-			return -EFAULT;
-		return ret;
-	}
 	case LTTNG_KERNEL_ABI_CALIBRATE:
 	{
 		struct lttng_kernel_abi_calibrate __user *ucalibrate =
@@ -1497,57 +1462,9 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	struct lttng_kernel_session *session = file->private_data;
 	struct lttng_kernel_abi_channel chan_param;
-	struct lttng_kernel_abi_old_channel old_chan_param;
 	int ret;
 
-	/*
-	 * Handle backward compatibility. OLD commands have wrong
-	 * directions, replace them by the correct direction.
-	 */
 	switch (cmd) {
-	case LTTNG_KERNEL_ABI_OLD_SESSION_TRACK_PID:
-		cmd = LTTNG_KERNEL_ABI_SESSION_TRACK_PID;
-		break;
-	case LTTNG_KERNEL_ABI_OLD_SESSION_UNTRACK_PID:
-		cmd = LTTNG_KERNEL_ABI_SESSION_UNTRACK_PID;
-		break;
-	case LTTNG_KERNEL_ABI_OLD_SESSION_TRACK_ID:
-		cmd = LTTNG_KERNEL_ABI_SESSION_TRACK_ID;
-		break;
-	case LTTNG_KERNEL_ABI_OLD_SESSION_UNTRACK_ID:
-		cmd = LTTNG_KERNEL_ABI_SESSION_UNTRACK_ID;
-		break;
-	case LTTNG_KERNEL_ABI_OLD_SESSION_LIST_TRACKER_IDS:
-		cmd = LTTNG_KERNEL_ABI_SESSION_LIST_TRACKER_IDS;
-		break;
-	case LTTNG_KERNEL_ABI_OLD_SESSION_SET_NAME:
-		cmd = LTTNG_KERNEL_ABI_SESSION_SET_NAME;
-		break;
-	case LTTNG_KERNEL_ABI_OLD_SESSION_SET_CREATION_TIME:
-		cmd = LTTNG_KERNEL_ABI_SESSION_SET_CREATION_TIME;
-		break;
-	default:
-		/* Nothing to do. */
-		break;
-	}
-
-	switch (cmd) {
-	case LTTNG_KERNEL_ABI_OLD_CHANNEL:
-	{
-		if (copy_from_user(&old_chan_param,
-				(struct lttng_kernel_abi_old_channel __user *) arg,
-				sizeof(struct lttng_kernel_abi_old_channel)))
-			return -EFAULT;
-		chan_param.overwrite = old_chan_param.overwrite;
-		chan_param.subbuf_size = old_chan_param.subbuf_size;
-		chan_param.num_subbuf = old_chan_param.num_subbuf;
-		chan_param.switch_timer_interval = old_chan_param.switch_timer_interval;
-		chan_param.read_timer_interval = old_chan_param.read_timer_interval;
-		chan_param.output = old_chan_param.output;
-
-		return lttng_abi_create_channel(file, &chan_param,
-				PER_CPU_CHANNEL);
-	}
 	case LTTNG_KERNEL_ABI_CHANNEL:
 	{
 		if (copy_from_user(&chan_param,
@@ -1557,32 +1474,12 @@ long lttng_session_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 		return lttng_abi_create_channel(file, &chan_param,
 				PER_CPU_CHANNEL);
 	}
-	case LTTNG_KERNEL_ABI_OLD_SESSION_START:
-	case LTTNG_KERNEL_ABI_OLD_ENABLE:
 	case LTTNG_KERNEL_ABI_SESSION_START:
 	case LTTNG_KERNEL_ABI_ENABLE:
 		return lttng_session_enable(session);
-	case LTTNG_KERNEL_ABI_OLD_SESSION_STOP:
-	case LTTNG_KERNEL_ABI_OLD_DISABLE:
 	case LTTNG_KERNEL_ABI_SESSION_STOP:
 	case LTTNG_KERNEL_ABI_DISABLE:
 		return lttng_session_disable(session);
-	case LTTNG_KERNEL_ABI_OLD_METADATA:
-	{
-		if (copy_from_user(&old_chan_param,
-				(struct lttng_kernel_abi_old_channel __user *) arg,
-				sizeof(struct lttng_kernel_abi_old_channel)))
-			return -EFAULT;
-		chan_param.overwrite = old_chan_param.overwrite;
-		chan_param.subbuf_size = old_chan_param.subbuf_size;
-		chan_param.num_subbuf = old_chan_param.num_subbuf;
-		chan_param.switch_timer_interval = old_chan_param.switch_timer_interval;
-		chan_param.read_timer_interval = old_chan_param.read_timer_interval;
-		chan_param.output = old_chan_param.output;
-
-		return lttng_abi_create_channel(file, &chan_param,
-				METADATA_CHANNEL);
-	}
 	case LTTNG_KERNEL_ABI_METADATA:
 	{
 		if (copy_from_user(&chan_param,
@@ -3504,75 +3401,8 @@ long lttng_channel_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	struct lttng_kernel_channel_buffer *channel = file->private_data;
 
 	switch (cmd) {
-	case LTTNG_KERNEL_ABI_OLD_STREAM:
 	case LTTNG_KERNEL_ABI_STREAM:
 		return lttng_abi_open_stream(file);
-	case LTTNG_KERNEL_ABI_OLD_EVENT:
-	{
-		struct lttng_kernel_abi_event *uevent_param;
-		struct lttng_kernel_abi_old_event *old_uevent_param;
-		int ret;
-
-		uevent_param = kmalloc(sizeof(struct lttng_kernel_abi_event),
-				GFP_KERNEL);
-		if (!uevent_param) {
-			ret = -ENOMEM;
-			goto old_event_end;
-		}
-		old_uevent_param = kmalloc(
-				sizeof(struct lttng_kernel_abi_old_event),
-				GFP_KERNEL);
-		if (!old_uevent_param) {
-			ret = -ENOMEM;
-			goto old_event_error_free_param;
-		}
-		if (copy_from_user(old_uevent_param,
-				(struct lttng_kernel_abi_old_event __user *) arg,
-				sizeof(struct lttng_kernel_abi_old_event))) {
-			ret = -EFAULT;
-			goto old_event_error_free_old_param;
-		}
-
-		memcpy(uevent_param->name, old_uevent_param->name,
-				sizeof(uevent_param->name));
-		uevent_param->instrumentation =
-			old_uevent_param->instrumentation;
-
-		switch (old_uevent_param->instrumentation) {
-		case LTTNG_KERNEL_ABI_KPROBE:
-			uevent_param->u.kprobe.addr =
-				old_uevent_param->u.kprobe.addr;
-			uevent_param->u.kprobe.offset =
-				old_uevent_param->u.kprobe.offset;
-			memcpy(uevent_param->u.kprobe.symbol_name,
-				old_uevent_param->u.kprobe.symbol_name,
-				sizeof(uevent_param->u.kprobe.symbol_name));
-			break;
-		case LTTNG_KERNEL_ABI_KRETPROBE:
-			uevent_param->u.kretprobe.addr =
-				old_uevent_param->u.kretprobe.addr;
-			uevent_param->u.kretprobe.offset =
-				old_uevent_param->u.kretprobe.offset;
-			memcpy(uevent_param->u.kretprobe.symbol_name,
-				old_uevent_param->u.kretprobe.symbol_name,
-				sizeof(uevent_param->u.kretprobe.symbol_name));
-			break;
-		case LTTNG_KERNEL_ABI_FUNCTION:
-			WARN_ON_ONCE(1);
-			/* Not implemented. */
-			break;
-		default:
-			break;
-		}
-		ret = lttng_abi_create_event_recorder_enabler(file, uevent_param, NULL);
-
-old_event_error_free_old_param:
-		kfree(old_uevent_param);
-old_event_error_free_param:
-		kfree(uevent_param);
-old_event_end:
-		return ret;
-	}
 	case LTTNG_KERNEL_ABI_EVENT:
 	{
 		struct lttng_kernel_abi_event uevent_param;
@@ -3588,56 +3418,6 @@ old_event_end:
 			return ret;
 		return lttng_abi_create_event_recorder_enabler(file, &uevent_param, &uevent_param_ext);
 	}
-	case LTTNG_KERNEL_ABI_OLD_CONTEXT:
-	{
-		struct lttng_kernel_abi_context *ucontext_param;
-		struct lttng_kernel_abi_old_context *old_ucontext_param;
-		int ret;
-
-		ucontext_param = kmalloc(sizeof(struct lttng_kernel_abi_context),
-				GFP_KERNEL);
-		if (!ucontext_param) {
-			ret = -ENOMEM;
-			goto old_ctx_end;
-		}
-		old_ucontext_param = kmalloc(sizeof(struct lttng_kernel_abi_old_context),
-				GFP_KERNEL);
-		if (!old_ucontext_param) {
-			ret = -ENOMEM;
-			goto old_ctx_error_free_param;
-		}
-
-		if (copy_from_user(old_ucontext_param,
-				(struct lttng_kernel_abi_old_context __user *) arg,
-				sizeof(struct lttng_kernel_abi_old_context))) {
-			ret = -EFAULT;
-			goto old_ctx_error_free_old_param;
-		}
-		ucontext_param->ctx = old_ucontext_param->ctx;
-		memcpy(ucontext_param->padding, old_ucontext_param->padding,
-				sizeof(ucontext_param->padding));
-		/* only type that uses the union */
-		if (old_ucontext_param->ctx == LTTNG_KERNEL_ABI_CONTEXT_PERF_COUNTER) {
-			ucontext_param->u.perf_counter.type =
-				old_ucontext_param->u.perf_counter.type;
-			ucontext_param->u.perf_counter.config =
-				old_ucontext_param->u.perf_counter.config;
-			memcpy(ucontext_param->u.perf_counter.name,
-				old_ucontext_param->u.perf_counter.name,
-				sizeof(ucontext_param->u.perf_counter.name));
-		}
-
-		ret = lttng_abi_add_context(file,
-				ucontext_param,
-				&channel->priv->ctx, channel->parent.session);
-
-old_ctx_error_free_old_param:
-		kfree(old_ucontext_param);
-old_ctx_error_free_param:
-		kfree(ucontext_param);
-old_ctx_end:
-		return ret;
-	}
 	case LTTNG_KERNEL_ABI_CONTEXT:
 	{
 		struct lttng_kernel_abi_context ucontext_param;
@@ -3650,10 +3430,8 @@ old_ctx_end:
 				&ucontext_param,
 				&channel->priv->ctx, channel->parent.session);
 	}
-	case LTTNG_KERNEL_ABI_OLD_ENABLE:
 	case LTTNG_KERNEL_ABI_ENABLE:
 		return lttng_channel_enable(&channel->parent);
-	case LTTNG_KERNEL_ABI_OLD_DISABLE:
 	case LTTNG_KERNEL_ABI_DISABLE:
 		return lttng_channel_disable(&channel->parent);
 	case LTTNG_KERNEL_ABI_SYSCALL_MASK:
@@ -3681,7 +3459,6 @@ static
 long lttng_metadata_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 {
 	switch (cmd) {
-	case LTTNG_KERNEL_ABI_OLD_STREAM:
 	case LTTNG_KERNEL_ABI_STREAM:
 		return lttng_abi_open_metadata_stream(file);
 	default:
@@ -3781,20 +3558,13 @@ long lttng_event_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
 	struct lttng_kernel_event_common *event = file->private_data;
 
 	switch (cmd) {
-	case LTTNG_KERNEL_ABI_OLD_CONTEXT:
-	{
-		/* Not implemented */
-		return -ENOSYS;
-	}
 	case LTTNG_KERNEL_ABI_CONTEXT:
 	{
 		/* Not implemented */
 		return -ENOSYS;
 	}
-	case LTTNG_KERNEL_ABI_OLD_ENABLE:
 	case LTTNG_KERNEL_ABI_ENABLE:
 		return lttng_event_enable(event);
-	case LTTNG_KERNEL_ABI_OLD_DISABLE:
 	case LTTNG_KERNEL_ABI_DISABLE:
 		return lttng_event_disable(event);
 	case LTTNG_KERNEL_ABI_FILTER:
@@ -3828,20 +3598,13 @@ long lttng_event_enabler_ioctl(struct file *file, unsigned int cmd, unsigned lon
 	struct lttng_event_enabler_common *event_enabler = file->private_data;
 
 	switch (cmd) {
-	case LTTNG_KERNEL_ABI_OLD_CONTEXT:
-	{
-		/* Not implemented */
-		return -ENOSYS;
-	}
 	case LTTNG_KERNEL_ABI_CONTEXT:
 	{
 		/* Not implemented */
 		return -ENOSYS;
 	}
-	case LTTNG_KERNEL_ABI_OLD_ENABLE:
 	case LTTNG_KERNEL_ABI_ENABLE:
 		return lttng_event_enabler_enable(event_enabler);
-	case LTTNG_KERNEL_ABI_OLD_DISABLE:
 	case LTTNG_KERNEL_ABI_DISABLE:
 		return lttng_event_enabler_disable(event_enabler);
 	case LTTNG_KERNEL_ABI_FILTER:

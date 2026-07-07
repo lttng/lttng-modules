@@ -567,7 +567,7 @@ struct lttng_kernel_abi_tracker_args {
 
 /* Event notifier group and session ioctl */
 
-/* (0xF6, 0x84) is reserved for old ABI. */
+/* (0xF6, 0x84) is reserved for old counter ABI. */
 
 #define LTTNG_KERNEL_ABI_COUNTER \
 	_IOW(0xF6, 0x85, struct lttng_kernel_abi_counter_conf)
@@ -593,7 +593,7 @@ struct lttng_kernel_abi_tracker_args {
 /* Event notifier file descriptor ioctl */
 #define LTTNG_KERNEL_ABI_CAPTURE			_IO(0xF6, 0xB8)
 
-/* (0xF6, {0xC0, 0xC1, 0xC2}) are reserved for old ABI. */
+/* (0xF6, {0xC0, 0xC1, 0xC2}) are reserved for old counter ABI. */
 
 /* Counter file descriptor ioctl */
 #define LTTNG_KERNEL_ABI_COUNTER_MAP_NR_DESCRIPTORS \
@@ -646,25 +646,6 @@ struct lttng_kernel_abi_ring_buffer_packet_flush_or_populate_packet_args {
 	__u8 flush_done;
 	__u8 packet_populated;
 } __attribute__((packed));
-
-/*
- * Those ioctl numbers use the wrong direction, but are kept for ABI backward
- * compatibility.
- */
-#define LTTNG_KERNEL_ABI_OLD_SESSION_SET_NAME		\
-	_IOR(0xF6, 0x5D, struct lttng_kernel_abi_session_name)
-#define LTTNG_KERNEL_ABI_OLD_SESSION_SET_CREATION_TIME	\
-	_IOR(0xF6, 0x5E, struct lttng_kernel_abi_session_creation_time)
-#define LTTNG_KERNEL_ABI_OLD_SESSION_TRACK_PID		\
-	_IOR(0xF6, 0x58, int32_t)
-#define LTTNG_KERNEL_ABI_OLD_SESSION_UNTRACK_PID	\
-	_IOR(0xF6, 0x59, int32_t)
-#define LTTNG_KERNEL_ABI_OLD_SESSION_LIST_TRACKER_IDS	\
-	_IOR(0xF6, 0xA0, struct lttng_kernel_abi_tracker_args)
-#define LTTNG_KERNEL_ABI_OLD_SESSION_TRACK_ID		\
-	_IOR(0xF6, 0xA1, struct lttng_kernel_abi_tracker_args)
-#define LTTNG_KERNEL_ABI_OLD_SESSION_UNTRACK_ID		\
-	_IOR(0xF6, 0xA2, struct lttng_kernel_abi_tracker_args)
 
 #ifdef CONFIG_COMPAT
 /* returns the timestamp begin of the current sub-buffer */

@@ -21,7 +21,6 @@
 #include <lttng/cpuhotplug.h>
 #include <lttng/tracer.h>
 #include <lttng/abi.h>
-#include <lttng/abi-old.h>
 #include <lttng/endian.h>
 
 /**
