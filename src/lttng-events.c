@@ -2402,12 +2402,19 @@ static
 bool lttng_event_session_enabler_match_event_session(struct lttng_event_enabler_session_common *event_enabler_session,
 		struct lttng_kernel_event_session_common_private *event_session_priv)
 {
-	if (lttng_desc_match_enabler(event_session_priv->parent.desc, &event_enabler_session->parent)
-			&& event_session_priv->chan == event_enabler_session->chan
-			&& match_event_session_token(event_session_priv, event_enabler_session->parent.user_token))
-		return true;
-	else
+	const struct lttng_kernel_event_desc *desc = event_session_priv->parent.desc;
+	char key_string[LTTNG_KERNEL_COUNTER_KEY_LEN] = { 0 };
+
+	if (!lttng_desc_match_enabler(desc, &event_enabler_session->parent))
 		return false;
+	if (event_session_priv->chan != event_enabler_session->chan)
+		return false;
+	if (!match_event_session_token(event_session_priv, event_enabler_session->parent.user_token))
+		return false;
+
+	if (format_event_key(&event_enabler_session->parent, key_string, desc->event_name))
+		return false;
+	return match_event_key(event_session_priv->parent.pub, key_string);
 }
 
 static
