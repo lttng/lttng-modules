@@ -515,6 +515,7 @@ int client_user_packet_initialize(const struct lttng_kernel_ring_buffer_config *
 {
 	struct lttng_kernel_channel_buffer *lttng_chan = channel_get_private(bufb->backend.chan);
 	struct lttng_kernel_ring_buffer_channel *chan = bufb->backend.chan;
+	struct lttng_kernel_session *session = lttng_chan->parent.session;
 	struct packet_header packet_header = {};
 	int ret;
 
@@ -525,6 +526,8 @@ int client_user_packet_initialize(const struct lttng_kernel_ring_buffer_config *
 	 * See client_buffer_begin()
 	 */
 	packet_header.magic = CTF_MAGIC_NUMBER;
+	memcpy(packet_header.uuid, session->priv->uuid.b,
+		sizeof(session->priv->uuid));
 	packet_header.stream_id = lttng_chan->priv->id;
 	packet_header.stream_instance_id = bufb->backend.cpu;
 
