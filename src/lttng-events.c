@@ -2805,7 +2805,7 @@ void lttng_event_enabler_session_add(struct lttng_kernel_session *session,
 		struct lttng_event_enabler_session_common *event_enabler)
 {
 	mutex_lock(&sessions_mutex);
-	list_add(&event_enabler->parent.node, &session->priv->enablers_head);
+	list_add_tail(&event_enabler->parent.node, &session->priv->enablers_head);
 	event_enabler->parent.published = true;
 	lttng_session_lazy_sync_event_enablers(session);
 	mutex_unlock(&sessions_mutex);
