@@ -29,7 +29,7 @@
 #define LTTNG_MODULES_MAJOR_VERSION 2
 #define LTTNG_MODULES_MINOR_VERSION 16
 #define LTTNG_MODULES_PATCHLEVEL_VERSION 0
-#define LTTNG_MODULES_EXTRAVERSION "-rc1"
+#define LTTNG_MODULES_EXTRAVERSION "-rc2"
 
 #define LTTNG_VERSION_NAME		"Question de Perspective"
 #define LTTNG_VERSION_DESCRIPTION	"This release is named after Question de Perspective, a stout brewed by Ayawan in Val-Morin that the team adopted for its name. It is a thoroughly standard stout: dark and roasty, faithful to the expectations of the style, and remarkable mostly for how unremarkably it conforms to them. An std::stout, if you will. Whether that counts for or against it is, fittingly, a question of perspective."

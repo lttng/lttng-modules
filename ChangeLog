@@ -2,6 +2,23 @@
 #
 # SPDX-License-Identifier: CC-BY-SA-4.0
 
+2026-07-30 LTTng modules 2.16.0-rc2
+	* fix: backport: hrtimer: Reduce trace noise in hrtimer_start() (Ubuntu-6.8.0-136)
+	* Fix: session enablers synchronize in reverse creation order
+	* Bump LTTNG_KERNEL_ABI_MINOR_VERSION to 8
+	* fix: string: Remove strncpy() from the kernel (v7.2)
+	* fix: btrfs: tracepoints: trace transaction states during commit phase (v7.2)
+	* fix: btrfs: tracepoints: add in_fsync field to transaction commit event (v7.2)
+	* fix: btrfs: tracepoints: pass a transaction handle to transaction commit event (v7.2)
+	* fix: net: constify sk_skb_reason_drop() sock parameter (v7.2)
+	* fix: KVM: x86: Rename kvm_cache_regs.h => regs.h (v7.2)
+	* fix: x86/msr: Remove rdmsrl() / wrmsrl() (v7.2)
+	* fix: warning -Wordered-compare-function-pointers with LLVM
+	* fix: warning -Wcast-function-type-strict with LLVM
+	* Fix: counter: enabler filters apply to the counters of other keys
+	* Fix: ring buffer: zeroed UUID in populated empty packet headers
+	* misc: Update .gitreview for stable-2.16
+
 2026-06-24 LTTng modules 2.16.0-rc1
 	* Reconcile Changelog with version 2.15.0-rc1
 	* fix: leaked file and fd on channel create error
