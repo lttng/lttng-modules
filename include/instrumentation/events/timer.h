@@ -225,7 +225,8 @@ LTTNG_TRACEPOINT_EVENT_MAP(hrtimer_init,
 	LTTNG_KERNEL_RANGE(6,18,33, 6,19,0) || \
 	LTTNG_KERNEL_RANGE(6,12,91, 6,13,0) || \
 	LTTNG_KERNEL_RANGE(6,6,141, 6,7,0) || \
-	LTTNG_KERNEL_RANGE(6,1,175, 6,2,0))
+	LTTNG_KERNEL_RANGE(6,1,175, 6,2,0) || \
+	LTTNG_UBUNTU_KERNEL_RANGE(6,8,0,136, 6,9,0,0))
 /**
  * hrtimer_start - called when the hrtimer is started
  * @hrtimer:	pointer to struct hrtimer
