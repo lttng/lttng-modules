@@ -154,7 +154,8 @@ to print traces as a human-readable text log.
 Support
 -------
 
-Linux kernels >= 4.4 are supported.
+Linux kernels >= 4.4 are supported. The stable-2.14 branch supports
+kernels <= 7.1.
 
 
 Notes
