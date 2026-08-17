@@ -2,6 +2,13 @@
 #
 # SPDX-License-Identifier: CC-BY-SA-4.0
 
+2026-08-17 LTTng modules 2.14.7
+	* Document last supported kernel version for stable-2.14 branch
+	* fix: backport: hrtimer: Reduce trace noise in hrtimer_start() (Ubuntu-6.8.0-136)
+	* fix: warning -Wordered-compare-function-pointers with LLVM
+	* fix: warning -Wcast-function-type-strict with LLVM
+	* Fix: ring buffer: zeroed UUID in populated empty packet headers
+
 2026-06-19 LTTng modules 2.14.6
 	* fix: leaked file and fd on channel create error
 	* fix: backport: hrtimer: Reduce trace noise in hrtimer_start() (v6.1.175)
