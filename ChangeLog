@@ -2,6 +2,9 @@
 #
 # SPDX-License-Identifier: CC-BY-SA-4.0
 
+2026-08-27 LTTng modules 2.16.0
+	* (no change)
+
 2026-07-30 LTTng modules 2.16.0-rc2
 	* fix: backport: hrtimer: Reduce trace noise in hrtimer_start() (Ubuntu-6.8.0-136)
 	* Fix: session enablers synchronize in reverse creation order
