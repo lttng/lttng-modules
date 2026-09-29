@@ -10,6 +10,8 @@
 #include <linux/errno.h>
 #include <linux/module.h>
 
+#include <wrapper/random.h>
+
 /* boot_id depends on sysctl */
 #if defined(CONFIG_SYSCTL)
 
@@ -17,7 +19,6 @@
 #include <linux/file.h>
 #include <linux/sched.h>
 #include <linux/uaccess.h>
-#include <wrapper/random.h>
 
 /*
  * Returns string boot id.
