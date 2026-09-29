@@ -9,16 +9,16 @@
  * Copyright (C) 2015 Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
  */
 
-#ifdef CONFIG_KALLSYMS
+#include <wrapper/kallsyms.h>
 
 /* Include page_alloc wrapper before pageblock-flags.h. */
 #include <wrapper/page_alloc.h>
-
 #include <linux/pageblock-flags.h>
-#include <linux/kallsyms.h>
+
+#ifdef LTTNG_HAS_KALLSYMS
+
 #include <linux/mm_types.h>
 #include <linux/module.h>
-#include <wrapper/kallsyms.h>
 #include <lttng/kernel-version.h>
 
 /* get_pfnblock_flags_mask() was removed in 6.17 */
@@ -144,8 +144,4 @@ int wrapper_get_pfnblock_migratetype_init(void)
 EXPORT_SYMBOL_GPL(wrapper_get_pfnblock_migratetype_init);
 #endif /* LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,17,0) */
 
-#else /* CONFIG_KALLSYMS */
-
-#include <linux/pageblock-flags.h>
-
-#endif
+#endif /* LTTNG_HAS_KALLSYMS */

@@ -16,6 +16,25 @@
 #include <linux/kallsyms.h>
 #include <lttng/kernel-version.h>
 
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,7,0))
+/* With kernel >= 5.7, kprobes is required to use kallsyms. */
+# if defined(CONFIG_KALLSYMS) && defined(CONFIG_KPROBES)
+#  define LTTNG_HAS_KALLSYMS 1
+#  define LTTNG_KALLSYMS_REQUIRES_KPROBE 1
+# endif
+#else
+/* Prior to kernel 5.7, we can use kallsyms directly. */
+# if defined(CONFIG_KALLSYMS)
+#  define LTTNG_HAS_KALLSYMS 1
+# endif
+#endif
+
+#if defined(LTTNG_HAS_KALLSYMS) && defined(CONFIG_KALLSYMS_ALL)
+#define LTTNG_HAS_KALLSYMS_ALL 1
+#endif
+
+#ifdef LTTNG_HAS_KALLSYMS
+
 #include <wrapper/ibt.h>
 
 /* CONFIG_PPC64_ELF_ABI_V1/V2 were introduced in v5.19 */
@@ -36,11 +55,11 @@
 # endif
 #endif
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,7,0))
+#ifdef LTTNG_KALLSYMS_REQUIRES_KPROBE
 
 unsigned long wrapper_kallsyms_lookup_name(const char *name);
 
-#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,7,0)) */
+#else /* !LTTNG_KALLSYMS_REQUIRES_KPROBE */
 
 static inline
 unsigned long wrapper_kallsyms_lookup_name(const char *name)
@@ -48,7 +67,7 @@ unsigned long wrapper_kallsyms_lookup_name(const char *name)
 	return kallsyms_lookup_name(name);
 }
 
-#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,7,0)) */
+#endif /* !LTTNG_KALLSYMS_REQUIRES_KPROBE */
 
 static inline
 unsigned long kallsyms_lookup_funcptr(const char *name)
@@ -63,10 +82,14 @@ unsigned long kallsyms_lookup_funcptr(const char *name)
 	return addr;
 }
 
+#ifdef LTTNG_HAS_KALLSYMS_ALL
 static inline
 unsigned long kallsyms_lookup_dataptr(const char *name)
 {
 	return wrapper_kallsyms_lookup_name(name);
 }
+#endif /* LTTNG_HAS_KALLSYMS_ALL */
+
+#endif /* LTTNG_HAS_KALLSYMS */
 
 #endif /* _LTTNG_WRAPPER_KALLSYMS_H */

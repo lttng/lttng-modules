@@ -13,9 +13,9 @@
 
 #if LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0)
 
-#ifdef CONFIG_KALLSYMS_ALL
-#include <linux/kallsyms.h>
 #include <wrapper/kallsyms.h>
+
+#ifdef LTTNG_HAS_KALLSYMS_ALL
 
 static struct kvm_x86_ops *kvm_x86_ops_sym;
 
@@ -65,7 +65,7 @@ unsigned int __canary__kvm_x86_ops(void)
 	return kvm_x86_ops.vm_size;
 }
 
-#endif /* CONFIG_KALLSYMS_ALL */
+#endif /* LTTNG_HAS_KALLSYMS_ALL */
 
 #endif
 

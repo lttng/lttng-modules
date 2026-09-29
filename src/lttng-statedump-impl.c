@@ -43,6 +43,7 @@
 #include <wrapper/tracepoint.h>
 #include <wrapper/blkdev.h>
 #include <wrapper/sched.h>
+#include <wrapper/kallsyms.h>
 
 /* Define the tracepoints, but do not build the probes */
 #define CREATE_TRACE_POINTS
@@ -549,6 +550,7 @@ int lttng_enumerate_vm_maps(struct lttng_kernel_session *session)
 }
 #endif
 
+#ifdef LTTNG_HAS_KALLSYMS
 static
 int lttng_list_interrupts(struct lttng_kernel_session *session)
 {
@@ -575,6 +577,13 @@ int lttng_list_interrupts(struct lttng_kernel_session *session)
 	return 0;
 #undef irq_to_desc
 }
+#else
+static
+int lttng_list_interrupts(struct lttng_kernel_session *session)
+{
+	return -ENOSYS;
+}
+#endif
 
 /*
  * Statedump the task's namespaces using the proc filesystem inode number as
@@ -749,9 +758,18 @@ int do_lttng_statedump(struct lttng_kernel_session *session)
 	 * if (ret)
 	 * 	return ret;
 	 */
+
 	ret = lttng_list_interrupts(session);
-	if (ret)
+	switch (ret) {
+	case 0:
+		break;
+	case -ENOSYS:
+		printk(KERN_WARNING "LTTng: interrupts enumeration is not supported by kernel\n");
+		break;
+	default:
 		return ret;
+	}
+
 	ret = lttng_enumerate_network_ip_interface(session);
 	if (ret)
 		return ret;

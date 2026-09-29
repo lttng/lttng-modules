@@ -38,6 +38,11 @@
  */
 
 #include <linux/module.h>
+#include <wrapper/kallsyms.h>
+#include <lttng/events-internal.h>
+
+#ifdef LTTNG_HAS_KALLSYMS
+
 #include <linux/slab.h>
 #include <linux/sched.h>
 #include <linux/utsname.h>
@@ -46,7 +51,6 @@
 #include <ringbuffer/backend.h>
 #include <ringbuffer/frontend.h>
 #include <lttng/events.h>
-#include <lttng/events-internal.h>
 #include <lttng/tracer.h>
 #include <lttng/endian.h>
 #include "wrapper/vmalloc.h"
@@ -218,3 +222,16 @@ int lttng_add_callstack_to_ctx(struct lttng_kernel_ctx **ctx, int type)
 	}
 }
 EXPORT_SYMBOL_GPL(lttng_add_callstack_to_ctx);
+
+#else /* LTTNG_HAS_KALLSYMS */
+
+/*
+ * Without KALLSYMS, no callstack contexts are available.
+ */
+int lttng_add_callstack_to_ctx(struct lttng_kernel_ctx **ctx, int type)
+{
+	return -EINVAL;
+}
+EXPORT_SYMBOL_GPL(lttng_add_callstack_to_ctx);
+
+#endif /* LTTNG_HAS_KALLSYMS */

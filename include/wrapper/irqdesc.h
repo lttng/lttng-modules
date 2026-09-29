@@ -14,6 +14,9 @@
 
 #include <linux/interrupt.h>
 #include <linux/irqnr.h>
+#include <wrapper/kallsyms.h>
+
+#ifdef LTTNG_HAS_KALLSYMS
 
 struct irq_desc *wrapper_irq_to_desc(unsigned int irq);
 
@@ -29,5 +32,7 @@ struct irq_desc *__canary__irq_to_desc(unsigned int irq)
 {
 	return irq_to_desc(irq);
 }
+
+#endif /* LTTNG_HAS_KALLSYMS */
 
 #endif /* _LTTNG_WRAPPER_IRQDESC_H */

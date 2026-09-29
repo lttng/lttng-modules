@@ -28,10 +28,9 @@
 #define LTTNG_GENHD_FL_HIDDEN GENHD_FL_SUPPRESS_PARTITION_INFO
 #endif
 
-#ifdef CONFIG_KALLSYMS_ALL
-
-#include <linux/kallsyms.h>
 #include <wrapper/kallsyms.h>
+
+#ifdef LTTNG_HAS_KALLSYMS_ALL
 
 static inline
 struct class *wrapper_get_block_class(void)
@@ -87,10 +86,6 @@ struct device_type *wrapper_get_disk_type(void)
 static inline
 struct class *wrapper_get_block_class(void)
 {
-	/*
-	 * Symbol block_class is not exported.
-	 * TODO: return &block_class;
-	 */
 	/* Feature currently unavailable without KALLSYMS_ALL */
 	return NULL;
 }
@@ -98,14 +93,10 @@ struct class *wrapper_get_block_class(void)
 static inline
 struct device_type *wrapper_get_disk_type(void)
 {
-	/*
-	 * Symbol disk_type is not exported.
-	 * TODO: return &disk_type;
-	 */
 	/* Feature currently unavailable without KALLSYMS_ALL */
 	return NULL;
 }
 
-#endif
+#endif /* LTTNG_HAS_KALLSYMS_ALL */
 
 #endif /* _LTTNG_WRAPPER_BLKDEV_H */

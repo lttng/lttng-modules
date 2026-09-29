@@ -12,8 +12,11 @@
 #include <lttng/kernel-version.h>
 #include <linux/module.h>
 
-#if (defined(CONFIG_KALLSYMS) && \
-	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0)))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,11,0))
+
+#include <wrapper/kallsyms.h>
+
+#ifdef LTTNG_HAS_KALLSYMS
 
 #include <linux/kallsyms.h>
 #include <linux/interrupt.h>
@@ -42,6 +45,8 @@ struct irq_desc *wrapper_irq_to_desc(unsigned int irq)
 	}
 }
 EXPORT_SYMBOL_GPL(wrapper_irq_to_desc);
+
+#endif /* LTTNG_HAS_KALLSYMS */
 
 #else
 

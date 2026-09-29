@@ -17,11 +17,9 @@
 #include <linux/slab.h>
 #include <linux/mm.h>
 
-#ifdef CONFIG_KALLSYMS
-
-#include <linux/kallsyms.h>
 #include <wrapper/kallsyms.h>
-#include <lttng/kernel-version.h>
+
+#ifdef LTTNG_HAS_KALLSYMS
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,8,0))
 
@@ -119,7 +117,7 @@ void __canary__vmalloc_sync_all(void)
 
 #endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0)) */
 
-#else /* CONFIG_KALLSYMS */
+#else /* LTTNG_HAS_KALLSYMS */
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,8,0))
 
@@ -131,35 +129,20 @@ static inline
 void wrapper_vmalloc_sync_mappings(void)
 {}
 
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0) \
-  || LTTNG_KERNEL_RANGE(5,5,12, 5,6,0)            \
-  || LTTNG_KERNEL_RANGE(5,4,28, 5,5,0)            \
-  || LTTNG_KERNEL_RANGE(5,2,37, 5,3,0)            \
-  || LTTNG_KERNEL_RANGE(4,19,113, 4,20,0)         \
-  || LTTNG_KERNEL_RANGE(4,14,175, 4,15,0)         \
-  || LTTNG_KERNEL_RANGE(4,9,218, 4,10,0)          \
-  || LTTNG_KERNEL_RANGE(4,4,218, 4,5,0))	  \
-  || LTTNG_UBUNTU_KERNEL_RANGE(4,15,18,97, 4,18,0,0) \
-  || LTTNG_UBUNTU_KERNEL_RANGE(5,0,21,48, 5,1,0,0)   \
-  || LTTNG_UBUNTU_KERNEL_RANGE(5,3,18,52, 5,4,0,0)
+#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,8,0)) */
 
 static inline
 void wrapper_vmalloc_sync_mappings(void)
 {
-	return vmalloc_sync_mappings();
+#ifdef CONFIG_X86
+# error "Kernels < v5.8 require CONFIG_KALLSYMS."
+#endif
 }
 
-#else /* #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0)) */
+#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,8,0)) */
 
-static inline
-void wrapper_vmalloc_sync_mappings(void)
-{
-	return vmalloc_sync_all();
-}
+#endif /* LTTNG_HAS_KALLSYMS */
 
-#endif /* #else #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,6,0)) */
-
-#endif /* CONFIG_KALLSYMS */
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,12,0))
 static inline
@@ -206,14 +189,6 @@ void lttng_kvfree(const void *addr)
 
 #include <linux/slab.h>
 
-static inline
-void print_vmalloc_node_range_warning(void)
-{
-	printk_once(KERN_WARNING "LTTng: __vmalloc_node_range symbol lookup failed.\n");
-	printk_once(KERN_WARNING "LTTng: Tracer performance will be degraded on NUMA systems.\n");
-	printk_once(KERN_WARNING "LTTng: Please rebuild your kernel with CONFIG_KALLSYMS enabled.\n");
-}
-
 /*
  * kallsyms wrapper of __vmalloc_node with a fallback to kmalloc_node.
  */
@@ -223,7 +198,7 @@ void *__lttng_vmalloc_node_range(unsigned long size, unsigned long align,
 			pgprot_t prot, unsigned long vm_flags, int node,
 			const void *caller)
 {
-#ifdef CONFIG_KALLSYMS
+#ifdef LTTNG_HAS_KALLSYMS
 	/*
 	 * If we have KALLSYMS, get * __vmalloc_node_range which is not exported.
 	 */
@@ -237,8 +212,11 @@ void *__lttng_vmalloc_node_range(unsigned long size, unsigned long align,
 		return lttng__vmalloc_node_range(size, align, start, end, gfp_mask, prot,
 				vm_flags, node, caller);
 #endif
-	if (node != NUMA_NO_NODE)
-		print_vmalloc_node_range_warning();
+	if (node != NUMA_NO_NODE) {
+		printk_once(KERN_WARNING "LTTng: __vmalloc_node_range symbol lookup failed.\n");
+		printk_once(KERN_WARNING "LTTng: Tracer performance will be degraded on NUMA systems.\n");
+		printk_once(KERN_WARNING "LTTng: Please rebuild your kernel with CONFIG_KALLSYMS enabled.\n");
+	}
 	return __vmalloc(size, gfp_mask, prot);
 }
 

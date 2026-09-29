@@ -14,11 +14,7 @@
 #include <linux/module.h>
 #include <wrapper/kallsyms.h>
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,7,0))
-
-#ifndef CONFIG_KPROBES
-# error "LTTng-modules requires CONFIG_KPROBES on kernels >= 5.7.0"
-#endif
+#ifdef LTTNG_KALLSYMS_REQUIRES_KPROBE
 
 static
 unsigned long (*kallsyms_lookup_name_sym)(const char *name);
@@ -142,7 +138,7 @@ unsigned long wrapper_kallsyms_lookup_name(const char *name)
 }
 EXPORT_SYMBOL_GPL(wrapper_kallsyms_lookup_name);
 
-#endif
+#endif /* LTTNG_KALLSYMS_REQUIRES_KPROBE */
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,4,0) && defined(CONFIG_ANDROID))
 MODULE_IMPORT_NS(VFS_internal_I_am_really_a_filesystem_and_am_NOT_a_driver);

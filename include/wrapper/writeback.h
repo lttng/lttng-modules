@@ -12,10 +12,10 @@
 #ifndef _LTTNG_WRAPPER_WRITEBACK_H
 #define _LTTNG_WRAPPER_WRITEBACK_H
 
-#ifdef CONFIG_KALLSYMS_ALL
-
-#include <linux/kallsyms.h>
+#include <linux/writeback.h>
 #include <wrapper/kallsyms.h>
+
+#ifdef LTTNG_HAS_KALLSYMS_ALL
 
 static struct wb_domain *global_wb_domain_sym;
 
@@ -46,16 +46,6 @@ unsigned long __canary__global_wb_domain(void)
 	return global_wb_domain.dirty_limit;
 }
 
-#else /* CONFIG_KALLSYMS_ALL */
-
-#include <linux/writeback.h>
-
-static inline
-unsigned long wrapper_global_dirty_limit(void)
-{
-	return global_dirty_limit;
-}
-
-#endif /* CONFIG_KALLSYMS_ALL */
+#endif /* LTTNG_HAS_KALLSYMS_ALL */
 
 #endif /* _LTTNG_WRAPPER_WRITEBACK_H */
