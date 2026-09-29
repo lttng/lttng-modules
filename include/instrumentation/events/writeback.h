@@ -13,6 +13,7 @@
 #include <linux/backing-dev.h>
 #include <linux/writeback.h>
 #include <lttng/kernel-version.h>
+#include <wrapper/kallsyms.h>
 
 #ifndef _TRACE_WRITEBACK_DEF_
 #define _TRACE_WRITEBACK_DEF_
@@ -438,6 +439,7 @@ LTTNG_TRACEPOINT_EVENT(writeback_queue_io,
 )
 #endif
 
+#ifdef LTTNG_HAS_KALLSYMS_ALL
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,8,0) || \
 	LTTNG_RHEL_KERNEL_RANGE(4,18,0,305,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
@@ -459,7 +461,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 		ctf_integer(unsigned long, nr_written, global_node_page_state(NR_WRITTEN))
 		ctf_integer(unsigned long, background_thresh, background_thresh)
 		ctf_integer(unsigned long, dirty_thresh, dirty_thresh)
-		ctf_integer(unsigned long, dirty_limit, global_dirty_limit)
+		ctf_integer(unsigned long, dirty_limit, wrapper_global_dirty_limit())
 	)
 )
 #elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(4,14,0))
@@ -483,7 +485,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 		ctf_integer(unsigned long, nr_written, global_node_page_state(NR_WRITTEN))
 		ctf_integer(unsigned long, background_thresh, background_thresh)
 		ctf_integer(unsigned long, dirty_thresh, dirty_thresh)
-		ctf_integer(unsigned long, dirty_limit, global_dirty_limit)
+		ctf_integer(unsigned long, dirty_limit, wrapper_global_dirty_limit())
 	)
 )
 #else
@@ -507,10 +509,11 @@ LTTNG_TRACEPOINT_EVENT_MAP(global_dirty_state,
 		ctf_integer(unsigned long, nr_written, global_page_state(NR_WRITTEN))
 		ctf_integer(unsigned long, background_thresh, background_thresh)
 		ctf_integer(unsigned long, dirty_thresh, dirty_thresh)
-		ctf_integer(unsigned long, dirty_limit, global_dirty_limit)
+		ctf_integer(unsigned long, dirty_limit, wrapper_global_dirty_limit())
 	)
 )
 #endif
+#endif /* LTTNG_HAS_KALLSYMS_ALL */
 
 #define KBps(x)			((x) << (PAGE_SHIFT - 10))
 
@@ -678,6 +681,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 	)
 )
 #else
+#ifdef LTTNG_HAS_KALLSYMS_ALL
 LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 
 	writeback_balance_dirty_pages,
@@ -702,12 +706,12 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 
 	TP_FIELDS(
 		ctf_string(bdi, lttng_bdi_dev_name(wb->bdi))
-		ctf_integer(unsigned long, limit, global_dirty_limit)
+		ctf_integer(unsigned long, limit, wrapper_global_dirty_limit())
 		ctf_integer(unsigned long, setpoint,
-			(global_dirty_limit + (thresh + bg_thresh) / 2) / 2)
+			(wrapper_global_dirty_limit() + (thresh + bg_thresh) / 2) / 2)
 		ctf_integer(unsigned long, dirty, dirty)
 		ctf_integer(unsigned long, bdi_setpoint,
-			((global_dirty_limit + (thresh + bg_thresh) / 2) / 2) *
+			((wrapper_global_dirty_limit() + (thresh + bg_thresh) / 2) / 2) *
 				bdi_thresh / (thresh + 1))
 		ctf_integer(unsigned long, bdi_dirty, bdi_dirty)
 		ctf_integer(unsigned long, dirty_ratelimit,
@@ -727,6 +731,7 @@ LTTNG_TRACEPOINT_EVENT_MAP(balance_dirty_pages,
 				(long)(jiffies - current->dirty_paused_when) * 1000/HZ)
 	)
 )
+#endif /* LTTNG_HAS_KALLSYMS_ALL */
 #endif /* else (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,14,2)) */
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(7,1,0))

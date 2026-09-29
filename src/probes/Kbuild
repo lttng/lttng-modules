@@ -229,13 +229,7 @@ endif # CONFIG_VIDEO_V4L2
 
 obj-$(CONFIG_LTTNG) += lttng-probe-workqueue.o
 
-ifneq ($(CONFIG_KALLSYMS_ALL),)
-  obj-$(CONFIG_LTTNG) += lttng-probe-writeback.o
-else
-  ifdef CONFIG_LOCALVERSION # Check if dot-config is included.
-    $(warning CONFIG_KALLSYMS_ALL is disabled, therefore probe "writeback" is disabled. Rebuild your kernel with this configuration option enabled in order to trace this subsystem.)
-  endif
-endif # CONFIG_KALLSYMS_ALL
+obj-$(CONFIG_LTTNG) += lttng-probe-writeback.o
 
 ifneq ($(CONFIG_PREEMPTIRQ_EVENTS),)
   obj-$(CONFIG_LTTNG) += lttng-probe-preemptirq.o

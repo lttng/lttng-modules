@@ -19,14 +19,7 @@
  */
 #include <trace/events/writeback.h>
 
-#include <lttng/kernel-version.h>
 #include <wrapper/writeback.h>
-
-/* #if <check version number if global_dirty_limit will be exported> */
-
-#define global_dirty_limit wrapper_global_dirty_limit()
-
-/* #endif <check version number> */
 
 /*
  * Create LTTng tracepoint probes.
