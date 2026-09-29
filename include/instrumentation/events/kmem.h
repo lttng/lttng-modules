@@ -11,6 +11,7 @@
 #include <lttng/tracepoint-event.h>
 #include <linux/types.h>
 #include <lttng/kernel-version.h>
+#include <wrapper/kallsyms.h>
 
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,0,0))
 #include <../../mm/slab.h>
@@ -447,6 +448,7 @@ LTTNG_TRACEPOINT_EVENT_INSTANCE_MAP(kmem_mm_page, mm_page_pcpu_drain,
 )
 #endif
 
+#ifdef LTTNG_HAS_KALLSYMS
 LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
 
 	kmem_mm_page_alloc_extfrag,
@@ -470,6 +472,8 @@ LTTNG_TRACEPOINT_EVENT_MAP(mm_page_alloc_extfrag,
 			(alloc_migratetype == get_pageblock_migratetype(page)))
 	)
 )
+#endif
+
 #endif /* LTTNG_TRACE_KMEM_H */
 
 /* This part must be outside protection */

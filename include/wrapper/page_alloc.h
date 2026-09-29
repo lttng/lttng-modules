@@ -14,8 +14,11 @@
 
 #include <linux/mm_types.h>
 #include <lttng/kernel-version.h>
+#include <wrapper/kallsyms.h>
 
-#if defined(CONFIG_KALLSYMS) && \
+
+/* get_pfnblock_flags_mask() was removed in 6.17 */
+#if defined(LTTNG_HAS_KALLSYMS) && \
 	(LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(6,17,0))
 
 /*
@@ -24,20 +27,76 @@
  */
 #define get_pfnblock_flags_mask		wrapper_get_pfnblock_flags_mask
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,14,0))
+# if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,14,0))
 unsigned long wrapper_get_pfnblock_flags_mask(const struct page *page,
 		unsigned long pfn,
 		unsigned long mask);
-#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0))
+
+/*
+ * Canary function to check for 'get_pfnblock_flags_mask' at compile time.
+ *
+ * From 'include/linux/pageblock-flags.h':
+ *
+ *   enum migratetype get_pfnblock_flags_mask(const struct page *page,
+ *		unsigned long pfn,
+ *		unsigned long mask);
+ */
+static inline
+enum migratetype __canary__get_pfnblock_flags_mask(const struct page *page,
+		unsigned long pfn,
+		unsigned long mask)
+{
+	return get_pfnblock_flags_mask(page, pfn, mask);
+}
+
+# elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,9,0))
 unsigned long wrapper_get_pfnblock_flags_mask(struct page *page,
 		unsigned long pfn,
 		unsigned long mask);
-#else
+
+/*
+ * Canary function to check for 'get_pfnblock_flags_mask' at compile time.
+ *
+ * From 'include/linux/pageblock-flags.h':
+ *
+ *   enum migratetype get_pfnblock_flags_mask(struct page *page,
+ *		unsigned long pfn,
+ *		unsigned long mask);
+ */
+static inline
+enum migratetype __canary__get_pfnblock_flags_mask(struct page *page,
+		unsigned long pfn,
+		unsigned long mask)
+{
+	return get_pfnblock_flags_mask(page, pfn, mask);
+}
+
+# else
 unsigned long wrapper_get_pfnblock_flags_mask(struct page *page,
 		unsigned long pfn,
 		unsigned long end_bitidx,
 		unsigned long mask);
-#endif
+
+/*
+ * Canary function to check for 'get_pfnblock_flags_mask' at compile time.
+ *
+ * From 'include/linux/pageblock-flags.h':
+ *
+ *   unsigned long get_pfnblock_flags_mask(struct page *page,
+ *		unsigned long pfn,
+ *		unsigned long end_bitidx,
+ *		unsigned long mask);
+ */
+static inline
+unsigned long __canary__get_pfnblock_flags_mask(struct page *page,
+		unsigned long pfn,
+		unsigned long end_bitidx,
+		unsigned long mask)
+{
+	return get_pfnblock_flags_mask(page, pfn, end_bitidx, mask);
+}
+
+# endif
 
 int wrapper_get_pfnblock_flags_mask_init(void);
 
@@ -52,7 +111,8 @@ int wrapper_get_pfnblock_flags_mask_init(void)
 #endif
 
 
-#if defined(CONFIG_KALLSYMS) && \
+/* get_pfnblock_migratetype() was introduced in 6.17 */
+#if defined(LTTNG_HAS_KALLSYMS) && \
 	(LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(6,17,0))
 
 /*
@@ -64,6 +124,21 @@ int wrapper_get_pfnblock_flags_mask_init(void)
 enum migratetype wrapper_get_pfnblock_migratetype(const struct page *page,
 		unsigned long pfn);
 int wrapper_get_pfnblock_migratetype_init(void);
+
+/*
+ * Canary function to check for 'get_pfnblock_migratetype' at compile time.
+ *
+ * From 'include/linux/pageblock-flags.h':
+ *
+ *   enum migratetype get_pfnblock_migratetype(const struct page *page,
+ *		unsigned long pfn);
+ */
+static inline
+enum migratetype __canary__get_pfnblock_migratetype(const struct page *page,
+		unsigned long pfn)
+{
+	return get_pfnblock_migratetype(page, pfn);
+}
 
 #else
 
