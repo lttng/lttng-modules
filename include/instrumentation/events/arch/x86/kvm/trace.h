@@ -10,6 +10,7 @@
 #include <asm/svm.h>
 #include <asm/clocksource.h>
 #include <lttng/kernel-version.h>
+#include <wrapper/kallsyms.h>
 #include <wrapper/kvm-x86.h>
 #include <../arch/x86/kvm/lapic.h>
 
@@ -123,6 +124,8 @@ LTTNG_TRACEPOINT_EVENT_MAP(kvm_apic, kvm_x86_apic,
  * Tracepoint for kvm guest exit:
  */
 #if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,18,0))
+
+#ifdef LTTNG_HAS_KALLSYMS_ALL
 LTTNG_TRACEPOINT_EVENT_CODE_MAP(kvm_exit, kvm_x86_exit,
 	TP_PROTO(struct kvm_vcpu *vcpu, u32 isa),
 	TP_ARGS(vcpu, isa),
@@ -155,6 +158,8 @@ LTTNG_TRACEPOINT_EVENT_CODE_MAP(kvm_exit, kvm_x86_exit,
 
 	TP_code_post()
 )
+#endif /* LTTNG_HAS_KALLSYMS_ALL */
+
 #elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,16,0) || \
 	LTTNG_RHEL_KERNEL_RANGE(4,18,0,425,0,0, 4,19,0,0,0,0))
 LTTNG_TRACEPOINT_EVENT_CODE_MAP(kvm_exit, kvm_x86_exit,
@@ -549,13 +554,14 @@ LTTNG_TRACEPOINT_EVENT_MAP(kvm_skinit, kvm_x86_skinit,
 	flags;						\
 	})
 
+#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(5,7,0) && \
+	!LTTNG_RHEL_KERNEL_RANGE(4,18,0,305,0,0, 4,19,0,0,0,0))
+
 LTTNG_TRACEPOINT_EVENT_MAP(kvm_emulate_insn, kvm_x86_emulate_insn,
 	TP_PROTO(struct kvm_vcpu *vcpu, __u8 failed),
 	TP_ARGS(vcpu, failed),
 
 	TP_FIELDS(
-#if (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(5,7,0) && \
-	!LTTNG_RHEL_KERNEL_RANGE(4,18,0,305,0,0, 4,19,0,0,0,0))
 		ctf_integer(__u64, rip, vcpu->arch.emulate_ctxt._eip -
 				(vcpu->arch.emulate_ctxt.fetch.ptr -
 					vcpu->arch.emulate_ctxt.fetch.data))
@@ -564,8 +570,18 @@ LTTNG_TRACEPOINT_EVENT_MAP(kvm_emulate_insn, kvm_x86_emulate_insn,
 				vcpu->arch.emulate_ctxt.fetch.data)
 		ctf_array(__u8, insn, vcpu->arch.emulate_ctxt.fetch.data, 15)
 		ctf_integer(__u8, flags, kei_decode_mode(vcpu->arch.emulate_ctxt.mode))
+		ctf_integer(__u8, failed, failed)
+	)
+)
+
 #elif (LTTNG_LINUX_VERSION_CODE < LTTNG_KERNEL_VERSION(5,18,0) || \
 	LTTNG_RHEL_KERNEL_RANGE(4,18,0,305,0,0, 4,19,0,0,0,0))
+
+LTTNG_TRACEPOINT_EVENT_MAP(kvm_emulate_insn, kvm_x86_emulate_insn,
+	TP_PROTO(struct kvm_vcpu *vcpu, __u8 failed),
+	TP_ARGS(vcpu, failed),
+
+	TP_FIELDS(
 		ctf_integer(__u64, rip, vcpu->arch.emulate_ctxt->_eip -
 				(vcpu->arch.emulate_ctxt->fetch.ptr -
 					vcpu->arch.emulate_ctxt->fetch.data))
@@ -574,7 +590,18 @@ LTTNG_TRACEPOINT_EVENT_MAP(kvm_emulate_insn, kvm_x86_emulate_insn,
 				vcpu->arch.emulate_ctxt->fetch.data)
 		ctf_array(__u8, insn, vcpu->arch.emulate_ctxt->fetch.data, 15)
 		ctf_integer(__u8, flags, kei_decode_mode(vcpu->arch.emulate_ctxt->mode))
+		ctf_integer(__u8, failed, failed)
+	)
+)
+
 #else
+
+#ifdef LTTNG_HAS_KALLSYMS_ALL
+LTTNG_TRACEPOINT_EVENT_MAP(kvm_emulate_insn, kvm_x86_emulate_insn,
+	TP_PROTO(struct kvm_vcpu *vcpu, __u8 failed),
+	TP_ARGS(vcpu, failed),
+
+	TP_FIELDS(
 		ctf_integer(__u64, rip, vcpu->arch.emulate_ctxt->_eip -
 				(vcpu->arch.emulate_ctxt->fetch.ptr -
 					vcpu->arch.emulate_ctxt->fetch.data))
@@ -583,10 +610,12 @@ LTTNG_TRACEPOINT_EVENT_MAP(kvm_emulate_insn, kvm_x86_emulate_insn,
 				vcpu->arch.emulate_ctxt->fetch.data)
 		ctf_array(__u8, insn, vcpu->arch.emulate_ctxt->fetch.data, 15)
 		ctf_integer(__u8, flags, kei_decode_mode(vcpu->arch.emulate_ctxt->mode))
-#endif
 		ctf_integer(__u8, failed, failed)
 	)
 )
+#endif /* LTTNG_HAS_KALLSYMS_ALL */
+
+#endif
 
 #define trace_kvm_emulate_insn_start(vcpu) trace_kvm_emulate_insn(vcpu, 0)
 #define trace_kvm_emulate_insn_failed(vcpu) trace_kvm_emulate_insn(vcpu, 1)
