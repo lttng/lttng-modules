@@ -47,7 +47,12 @@ static void lib_ring_buffer_pipe_buf_release(struct pipe_inode_info *pipe,
 	__free_page(pbuf->page);
 }
 
-#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,8,0))
+#if (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(7,4,0))
+static const struct pipe_buf_operations ring_buffer_pipe_buf_ops = {
+	.release = lib_ring_buffer_pipe_buf_release,
+	.get = generic_pipe_buf_get
+};
+#elif (LTTNG_LINUX_VERSION_CODE >= LTTNG_KERNEL_VERSION(5,8,0))
 static const struct pipe_buf_operations ring_buffer_pipe_buf_ops = {
 	.release = lib_ring_buffer_pipe_buf_release,
 	.try_steal = generic_pipe_buf_try_steal,
