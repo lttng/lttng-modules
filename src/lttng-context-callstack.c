@@ -213,7 +213,7 @@ int lttng_add_callstack_to_ctx(struct lttng_kernel_ctx **ctx, int type)
 	switch (type) {
 	case LTTNG_KERNEL_ABI_CONTEXT_CALLSTACK_KERNEL:
 		return __lttng_add_callstack_generic(ctx, CALLSTACK_KERNEL);
-#ifdef CONFIG_X86
+#ifdef LTTNG_HAS_CALLSTACK_USER
 	case LTTNG_KERNEL_ABI_CONTEXT_CALLSTACK_USER:
 		return __lttng_add_callstack_generic(ctx, CALLSTACK_USER);
 #endif

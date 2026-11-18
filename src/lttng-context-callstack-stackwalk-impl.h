@@ -12,6 +12,10 @@
  * Copyright (C) 2014 Francis Giraldeau <francis.giraldeau@gmail.com>
  */
 
+#ifdef CONFIG_USER_STACKTRACE_SUPPORT
+#define LTTNG_HAS_CALLSTACK_USER
+#endif
+
 #define MAX_ENTRIES 128
 
 enum lttng_cs_ctx_modes {
