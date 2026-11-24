@@ -306,6 +306,67 @@ int lttng_context_init(void)
 	if (ret && ret != -ENOSYS) {
 		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_time_ns_to_ctx");
 	}
+
+	ret = lttng_add_uid_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_uid_to_ctx");
+	}
+
+	ret = lttng_add_euid_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_euid_to_ctx");
+	}
+
+	ret = lttng_add_suid_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_suid_to_ctx");
+	}
+
+	ret = lttng_add_gid_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_gid_to_ctx");
+	}
+
+	ret = lttng_add_egid_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_egid_to_ctx");
+	}
+
+	ret = lttng_add_sgid_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_sgid_to_ctx");
+	}
+
+	ret = lttng_add_vuid_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_vuid_to_ctx");
+	}
+
+	ret = lttng_add_veuid_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_veuid_to_ctx");
+	}
+
+	ret = lttng_add_vsuid_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_vsuid_to_ctx");
+	}
+
+	ret = lttng_add_vgid_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_vgid_to_ctx");
+	}
+
+	ret = lttng_add_vegid_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_vegid_to_ctx");
+	}
+
+	ret = lttng_add_vsgid_to_ctx(&lttng_static_ctx);
+	if (ret && ret != -ENOSYS) {
+		printk(KERN_WARNING "LTTng: Cannot add context lttng_add_vsgid_to_ctx");
+	}
+
 	/* TODO: perf counters for filtering */
 	return 0;
 }
